@@ -1,0 +1,559 @@
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:navivox/core/channel/navivox_channel.dart';
+import 'package:navivox/core/channel/navivox_channel_provider.dart';
+import 'package:navivox/core/protocol/navivox_voice_run.dart';
+import 'package:navivox/features/chat/screens/chat_screen.dart';
+import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
+import 'package:navivox/features/voice/services/voice_capture_service.dart';
+import 'package:navivox/router/app_router.dart';
+
+import '../../support/test_navivox_channel.dart';
+
+const _servers = [
+  NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
+  NavivoxServer(id: 'office', name: 'Office', status: 'online'),
+];
+
+final _contacts = [
+  const NavivoxProfileContact(
+    serverId: 'local',
+    profileId: 'mineru',
+    displayName: 'Mineru',
+    serverLabel: 'local',
+    health: NavivoxProfileHealth.online,
+    latestPreview: 'Ready',
+    workspaceRootCount: 1,
+    micAvailable: true,
+  ),
+  const NavivoxProfileContact(
+    serverId: 'office',
+    profileId: 'support',
+    displayName: 'Support',
+    serverLabel: 'office',
+    health: NavivoxProfileHealth.online,
+    latestPreview: 'Ready',
+    workspaceRootCount: 1,
+    micAvailable: true,
+  ),
+];
+
+void main() {
+  testWidgets('typed command switches profile locally and is not sent', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'office::support');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(
+          home: ChatScreen(serverId: 'office', profileId: 'support'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Message Gormes'),
+      'navi mineru',
+    );
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+
+    expect(channel.selectedProfileScope, (
+      serverId: 'local',
+      profileId: 'mineru',
+    ));
+    expect(channel.sentTexts, isEmpty);
+    expect(channel.state.voiceRuns, isEmpty);
+  });
+
+  testWidgets('duplicate profile voice command asks for disambiguation', (
+    tester,
+  ) async {
+    final channel = TestNavivoxChannel()
+      ..seedServers(_servers, activeServerId: 'local')
+      ..seedProfileContacts([
+        ..._contacts,
+        const NavivoxProfileContact(
+          serverId: 'office',
+          profileId: 'mineru',
+          displayName: 'Mineru',
+          serverLabel: 'office',
+          health: NavivoxProfileHealth.online,
+          latestPreview: 'Ready',
+          workspaceRootCount: 1,
+          micAvailable: true,
+        ),
+      ], selectedKey: 'local::mineru');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(
+          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Message Gormes'),
+      'navi mineru',
+    );
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+
+    expect(channel.sentTexts, isEmpty);
+    expect(
+      find.textContaining('Choose one profile named mineru'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('voice command mode accepts one bare command', (tester) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = _QueueVoiceCaptureService([
+      _capture('navi'),
+      _capture('support'),
+    ]);
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+    );
+
+    await _tapMic(tester);
+    expect(find.text('Command mode'), findsOneWidget);
+
+    await _tapMic(tester);
+    expect(channel.selectedProfileScope, (
+      serverId: 'office',
+      profileId: 'support',
+    ));
+    expect(channel.sentVoiceTranscripts, isEmpty);
+  });
+
+  testWidgets('voice command mode timeout treats later bare voice as chat', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = _QueueVoiceCaptureService([
+      _capture('navi'),
+      _capture('support'),
+    ]);
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+      voiceAutoSendGrace: const Duration(milliseconds: 100),
+      voiceCommandTimeout: const Duration(milliseconds: 50),
+    );
+
+    await _tapMic(tester);
+    expect(find.text('Command mode'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 60));
+
+    await _tapMic(tester);
+    await tester.pump(const Duration(milliseconds: 120));
+
+    expect(channel.sentVoiceTranscripts, hasLength(1));
+    expect(channel.sentVoiceTranscripts.single, 'support');
+    expect(channel.selectedProfileScope, isNull);
+  });
+
+  testWidgets('local cancel stop and help commands stay out of chat', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(
+          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _submitText(tester, 'navi help');
+    expect(find.textContaining('Voice commands:'), findsOneWidget);
+
+    await _submitText(tester, 'navi cancel');
+    await _submitText(tester, 'navi stop');
+
+    expect(channel.cancelRequests, 1);
+    expect(channel.stopRequests, 1);
+    expect(channel.sentTexts, isEmpty);
+  });
+
+  testWidgets('navi cancel discards pending voice before server commit', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([7, 8, 9]),
+      transcript: 'before commit',
+      duration: const Duration(milliseconds: 800),
+      confidence: 0.91,
+    );
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+      voiceAutoSendGrace: const Duration(milliseconds: 300),
+    );
+
+    await _tapMic(tester);
+    expect(find.text('Sending...'), findsOneWidget);
+
+    await _submitText(tester, 'navi cancel');
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(channel.cancelRequests, 0);
+    expect(find.textContaining('before commit'), findsNothing);
+  });
+
+  testWidgets(
+    'disabled voice profile switching rejects local profile command',
+    (tester) async {
+      final channel = _seedChannel(selectedKey: 'local::mineru');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+          child: const MaterialApp(
+            home: ChatScreen(serverId: 'local', profileId: 'mineru'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ChatScreen)),
+      );
+      container
+          .read(navivoxVoiceSettingsProvider.notifier)
+          .setProfileSwitchingEnabled(false);
+      await tester.pump();
+
+      await _submitText(tester, 'navi support');
+
+      expect(channel.selectedProfileScope, isNull);
+      expect(channel.sentTexts, isEmpty);
+      expect(
+        find.textContaining('Voice profile switching is disabled'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('continuous voice banner opens a control sheet', (tester) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([1]),
+      transcript: 'hello',
+      duration: const Duration(milliseconds: 500),
+      confidence: 0.9,
+    );
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('continuous-voice-banner')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Continuous voice'), findsOneWidget);
+    expect(find.text('Ready for Mineru'), findsOneWidget);
+    expect(
+      find.text('Tap the mic to speak. Say “navi” for command mode.'),
+      findsOneWidget,
+    );
+    expect(find.text('Command word'), findsOneWidget);
+    expect(find.text('navi'), findsOneWidget);
+  });
+
+  testWidgets('continuous voice control sheet exposes pending cancel', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([1, 2, 3]),
+      transcript: 'check status',
+      duration: const Duration(milliseconds: 900),
+      confidence: 0.9,
+    );
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+      voiceAutoSendGrace: const Duration(seconds: 5),
+    );
+
+    await tester.tap(find.byIcon(Icons.mic));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1));
+
+    await tester.tap(find.byKey(const ValueKey('continuous-voice-banner')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text('Pending voice turn'), findsOneWidget);
+    expect(find.textContaining('check status'), findsWidgets);
+
+    await tester.tap(find.text('Cancel pending voice'));
+    await tester.pumpAndSettle();
+
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(find.textContaining('check status'), findsNothing);
+  });
+
+  testWidgets('trusted healthy voice capture shows grace and can cancel', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([1, 2, 3]),
+      transcript: 'check status',
+      duration: const Duration(milliseconds: 900),
+      confidence: 0.9,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          home: ChatScreen(
+            serverId: 'local',
+            profileId: 'mineru',
+            voiceCaptureServiceOverride: voiceService,
+            voiceAutoSendGrace: const Duration(milliseconds: 300),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Voice disabled: trust local'), findsOneWidget);
+    expect(find.byIcon(Icons.mic), findsNothing);
+
+    await tester.tap(find.text('Trust server'));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.mic), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.mic));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1));
+
+    expect(find.text('Sending...'), findsOneWidget);
+    expect(find.textContaining('check status'), findsOneWidget);
+    expect(
+      channel.state.activeVoiceRun?.status,
+      NavivoxVoiceRunStatus.pendingSend,
+    );
+    expect(channel.state.activeVoiceRun?.transcript, 'check status');
+    expect(channel.sentVoiceTranscripts, isEmpty);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(
+      channel.state.activeVoiceRun?.status,
+      NavivoxVoiceRunStatus.cancelled,
+    );
+    expect(find.textContaining('check status'), findsNothing);
+  });
+
+  testWidgets('voice capture timeout records failed Voice run reason', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = _ThrowingVoiceCaptureService(
+      const VoiceCaptureTimeout(),
+    );
+
+    await _pumpTrustedChat(
+      tester,
+      channel: channel,
+      voiceService: voiceService,
+    );
+
+    await _tapMic(tester);
+    await tester.pumpAndSettle();
+
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(channel.state.activeVoiceRun?.status, NavivoxVoiceRunStatus.failed);
+    expect(channel.state.activeVoiceRun?.reason, 'Voice capture timed out.');
+    expect(find.text('Voice capture timed out.'), findsOneWidget);
+  });
+
+  testWidgets('trusted voice capture auto-sends after grace', (tester) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+    final voiceService = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([4, 5, 6]),
+      transcript: 'summarize workspace',
+      duration: const Duration(milliseconds: 1200),
+      confidence: 0.88,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          home: ChatScreen(
+            serverId: 'local',
+            profileId: 'mineru',
+            voiceCaptureServiceOverride: voiceService,
+            voiceAutoSendGrace: const Duration(milliseconds: 100),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Trust server'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.mic));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(channel.sentVoiceTranscripts, hasLength(1));
+    expect(channel.sentVoiceTranscripts.single, 'summarize workspace');
+    expect(
+      channel.state.activeVoiceRun?.status,
+      NavivoxVoiceRunStatus.submitted,
+    );
+    expect(channel.state.activeVoiceRun?.transcript, 'summarize workspace');
+  });
+
+  testWidgets('typed navi settings opens local voice settings', (tester) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const _RouterTestApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Mineru'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Message Gormes'),
+      'navi settings',
+    );
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Voice settings'), findsOneWidget);
+    expect(find.text('Command word'), findsOneWidget);
+    expect(channel.sentTexts, isEmpty);
+  });
+}
+
+TestNavivoxChannel _seedChannel({required String selectedKey}) {
+  return TestNavivoxChannel()
+    ..seedServers(_servers, activeServerId: selectedKey.split('::').first)
+    ..seedProfileContacts(_contacts, selectedKey: selectedKey);
+}
+
+VoiceCapture _capture(String transcript) {
+  return VoiceCapture(
+    audio: Uint8List.fromList(transcript.codeUnits),
+    transcript: transcript,
+    duration: const Duration(milliseconds: 500),
+    confidence: 0.95,
+  );
+}
+
+Future<void> _pumpTrustedChat(
+  WidgetTester tester, {
+  required TestNavivoxChannel channel,
+  required VoiceCaptureService voiceService,
+  Duration voiceAutoSendGrace = const Duration(milliseconds: 800),
+  Duration voiceCommandTimeout = const Duration(seconds: 5),
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+      child: MaterialApp(
+        home: ChatScreen(
+          serverId: 'local',
+          profileId: 'mineru',
+          voiceCaptureServiceOverride: voiceService,
+          voiceAutoSendGrace: voiceAutoSendGrace,
+          voiceCommandTimeout: voiceCommandTimeout,
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Trust server'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapMic(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.mic));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 1));
+}
+
+Future<void> _submitText(WidgetTester tester, String text) async {
+  await tester.enterText(
+    find.widgetWithText(TextField, 'Message Gormes'),
+    text,
+  );
+  await tester.tap(find.byIcon(Icons.send));
+  await tester.pump();
+}
+
+class _ThrowingVoiceCaptureService implements VoiceCaptureService {
+  const _ThrowingVoiceCaptureService(this.error);
+
+  final Object error;
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) async {
+    throw error;
+  }
+}
+
+class _QueueVoiceCaptureService implements VoiceCaptureService {
+  _QueueVoiceCaptureService(List<VoiceCapture> captures)
+    : _captures = List.of(captures);
+
+  final List<VoiceCapture> _captures;
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) async {
+    if (_captures.isEmpty) {
+      throw StateError('No queued voice capture');
+    }
+    return _captures.removeAt(0);
+  }
+}
+
+class _RouterTestApp extends ConsumerWidget {
+  const _RouterTestApp();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(routerConfig: ref.watch(routerProvider));
+  }
+}

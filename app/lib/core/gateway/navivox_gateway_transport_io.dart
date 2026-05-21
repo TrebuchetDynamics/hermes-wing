@@ -18,18 +18,37 @@ Future<String> defaultGet(Uri uri, Map<String, String> headers) async {
   try {
     final request = await client.getUrl(uri);
     headers.forEach(request.headers.set);
-    final response = await request.close();
-    final body = await utf8.decoder.bind(response).join();
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw HttpException(
-        'Navivox gateway returned HTTP ${response.statusCode}',
-        uri: uri,
-      );
-    }
-    return body;
+    return _readResponse(await request.close(), uri);
   } finally {
     client.close();
   }
+}
+
+Future<String> defaultPost(
+  Uri uri,
+  Map<String, String> headers,
+  String body,
+) async {
+  final client = HttpClient();
+  try {
+    final request = await client.postUrl(uri);
+    headers.forEach(request.headers.set);
+    request.add(utf8.encode(body));
+    return _readResponse(await request.close(), uri);
+  } finally {
+    client.close();
+  }
+}
+
+Future<String> _readResponse(HttpClientResponse response, Uri uri) async {
+  final body = await utf8.decoder.bind(response).join();
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw HttpException(
+      'Navivox gateway returned HTTP ${response.statusCode}',
+      uri: uri,
+    );
+  }
+  return body;
 }
 
 Future<NavivoxGatewaySocket> defaultConnectWebSocket(

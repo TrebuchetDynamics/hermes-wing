@@ -32,6 +32,7 @@ class TestNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   NavivoxMemoryOverview? _memoryOverview;
   NavivoxMemorySearchResult? _memorySearch;
   NavivoxMemoryDetail? _memoryDetail;
+  NavivoxMemoryActionResult? _memoryActionResult;
   final List<
     ({
       String? serverId,
@@ -47,6 +48,17 @@ class TestNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     ({String? serverId, String? profileId, String id, NavivoxMemoryType type})
   >
   memoryDetailCalls = [];
+  final List<
+    ({
+      String? serverId,
+      String? profileId,
+      String id,
+      NavivoxMemoryType type,
+      NavivoxMemoryActionType action,
+      String? correction,
+    })
+  >
+  memoryActionCalls = [];
 
   @override
   NavivoxChannelState get state => _state;
@@ -115,6 +127,10 @@ class TestNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
 
   void seedMemoryDetail(NavivoxMemoryDetail detail) {
     _memoryDetail = detail;
+  }
+
+  void seedMemoryActionResult(NavivoxMemoryActionResult result) {
+    _memoryActionResult = result;
   }
 
   @override
@@ -297,6 +313,32 @@ class TestNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
         NavivoxMemoryDetail.degraded(
           id: id,
           reason: 'Gormes memory detail API is unavailable.',
+        );
+  }
+
+  @override
+  Future<NavivoxMemoryActionResult> memoryAction({
+    String? serverId,
+    String? profileId,
+    required String id,
+    required NavivoxMemoryType type,
+    required NavivoxMemoryActionType action,
+    String? correction,
+  }) async {
+    final active = _state.activeProfileContact;
+    memoryActionCalls.add((
+      serverId: serverId ?? active?.serverId,
+      profileId: profileId ?? active?.profileId,
+      id: id,
+      type: type,
+      action: action,
+      correction: correction?.trim(),
+    ));
+    return _memoryActionResult ??
+        NavivoxMemoryActionResult(
+          accepted: true,
+          action: action,
+          message: '${action.label} requested.',
         );
   }
 

@@ -245,6 +245,118 @@ void main() {
     },
   );
 
+  testWidgets('memory detail sends safe management actions', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final channel = TestNavivoxChannel()
+      ..seedServers(const [
+        NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
+      ], activeServerId: 'local')
+      ..seedProfileContacts(const [
+        NavivoxProfileContact(
+          serverId: 'local',
+          profileId: 'mineru',
+          displayName: 'Mineru Builder',
+          serverLabel: 'local',
+          health: NavivoxProfileHealth.online,
+          latestPreview: 'Goncho memory active',
+        ),
+      ], selectedKey: 'local::mineru')
+      ..seedMemoryOverview(
+        const NavivoxMemoryOverview(
+          profileId: 'mineru',
+          workspaceId: 'gormes',
+          databaseLabel: '~/.gormes/profiles/mineru/memory.db',
+          health: NavivoxMemoryHealth.active,
+          totalTurns: 2,
+          activeMemoryItems: 1,
+          observations: 0,
+          conclusions: 1,
+          sessionSummaries: 0,
+          entities: 0,
+          relationships: 0,
+        ),
+      )
+      ..seedMemorySearch(
+        const NavivoxMemorySearchResult(
+          items: [
+            NavivoxMemoryItem(
+              id: 'mem-1',
+              type: NavivoxMemoryType.memoryItems,
+              snippet: 'Mineru uses Goncho memory for workspace recall.',
+              sessionId: 's-1',
+              peerId: 'mineru',
+              status: 'current',
+            ),
+          ],
+        ),
+      )
+      ..seedMemoryDetail(
+        const NavivoxMemoryDetail(
+          id: 'mem-1',
+          type: NavivoxMemoryType.memoryItems,
+          content: 'Mineru uses Goncho memory for workspace recall.',
+          source: 'goncho_memory_items',
+          sessionId: 's-1',
+          peerId: 'mineru',
+          status: 'current',
+        ),
+      )
+      ..seedMemoryActionResult(
+        const NavivoxMemoryActionResult(
+          accepted: true,
+          action: NavivoxMemoryActionType.archive,
+          message: 'Archive requested.',
+          rawSourcePreserved: true,
+        ),
+      );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(home: MemoryDashboardScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('memory-item-memory_items-mem-1')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Archive'));
+    await tester.pumpAndSettle();
+
+    expect(channel.memoryActionCalls.last.id, 'mem-1');
+    expect(channel.memoryActionCalls.last.profileId, 'mineru');
+    expect(
+      channel.memoryActionCalls.last.action,
+      NavivoxMemoryActionType.archive,
+    );
+    expect(find.text('Archive requested.'), findsOneWidget);
+
+    await tester.tap(find.text('Add correction'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).last,
+      'Use Mineru profile memory only.',
+    );
+    await tester.tap(find.text('Save correction'));
+    await tester.pumpAndSettle();
+
+    expect(channel.memoryActionCalls.last.id, 'mem-1');
+    expect(
+      channel.memoryActionCalls.last.action,
+      NavivoxMemoryActionType.addCorrection,
+    );
+    expect(
+      channel.memoryActionCalls.last.correction,
+      'Use Mineru profile memory only.',
+    );
+    expect(find.text('Raw source preserved'), findsOneWidget);
+  });
+
   testWidgets('memory dashboard reports degraded API state safely', (
     tester,
   ) async {

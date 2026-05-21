@@ -25,6 +25,29 @@ enum NavivoxMemoryType {
   }
 }
 
+enum NavivoxMemoryActionType {
+  pin('pin', 'Pin'),
+  unpin('unpin', 'Unpin'),
+  archive('archive', 'Archive'),
+  unarchive('unarchive', 'Unarchive'),
+  markStale('mark_stale', 'Mark stale'),
+  addCorrection('add_correction', 'Add correction');
+
+  const NavivoxMemoryActionType(this.wireValue, this.label);
+
+  final String wireValue;
+  final String label;
+
+  static NavivoxMemoryActionType fromWire(Object? value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) return archive;
+    for (final type in values) {
+      if (type.wireValue == text) return type;
+    }
+    return archive;
+  }
+}
+
 class NavivoxMemorySearchResult {
   const NavivoxMemorySearchResult({
     required this.items,
@@ -182,6 +205,45 @@ class NavivoxMemoryDetail {
   bool get isDegraded => degradedReason.trim().isNotEmpty;
 }
 
+class NavivoxMemoryActionResult {
+  const NavivoxMemoryActionResult({
+    required this.accepted,
+    required this.action,
+    required this.message,
+    this.rawSourcePreserved = true,
+    this.degradedReason = '',
+  });
+
+  const NavivoxMemoryActionResult.degraded({
+    required this.action,
+    required String reason,
+  }) : accepted = false,
+       message = '',
+       rawSourcePreserved = true,
+       degradedReason = reason;
+
+  factory NavivoxMemoryActionResult.fromJson(Map<String, Object?> json) {
+    return NavivoxMemoryActionResult(
+      accepted: _bool(json['accepted']),
+      action: NavivoxMemoryActionType.fromWire(json['action']),
+      message: _string(json['message'], fallback: ''),
+      rawSourcePreserved: _bool(json['raw_source_preserved'], fallback: true),
+      degradedReason: _string(
+        json['degraded_reason'] ?? json['reason'],
+        fallback: '',
+      ),
+    );
+  }
+
+  final bool accepted;
+  final NavivoxMemoryActionType action;
+  final String message;
+  final bool rawSourcePreserved;
+  final String degradedReason;
+
+  bool get isDegraded => degradedReason.trim().isNotEmpty;
+}
+
 class NavivoxMemoryOverview {
   const NavivoxMemoryOverview({
     required this.profileId,
@@ -288,6 +350,14 @@ double? _double(Object? value) {
   if (value is double) return value;
   if (value is num) return value.toDouble();
   return double.tryParse(value?.toString() ?? '');
+}
+
+bool _bool(Object? value, {bool fallback = false}) {
+  if (value is bool) return value;
+  final text = value?.toString().trim().toLowerCase();
+  if (text == 'true' || text == '1' || text == 'yes') return true;
+  if (text == 'false' || text == '0' || text == 'no') return false;
+  return fallback;
 }
 
 List<String> _stringList(Object? value) {

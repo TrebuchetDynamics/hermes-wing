@@ -41,6 +41,28 @@ Future<String> defaultGet(Uri uri, Map<String, String> headers) async {
         web.RequestInit(headers: _headersToRecord(headers)),
       )
       .toDart;
+  return _readResponse(response);
+}
+
+Future<String> defaultPost(
+  Uri uri,
+  Map<String, String> headers,
+  String body,
+) async {
+  final response = await web.window
+      .fetch(
+        uri.toString().toJS,
+        web.RequestInit(
+          method: 'POST',
+          headers: _headersToRecord(headers),
+          body: body.toJS,
+        ),
+      )
+      .toDart;
+  return _readResponse(response);
+}
+
+Future<String> _readResponse(web.Response response) async {
   if (!response.ok) {
     throw StateError('Navivox gateway returned HTTP ${response.status}');
   }

@@ -13,6 +13,9 @@ typedef NavivoxGatewaySocket = transport.NavivoxGatewaySocket;
 typedef NavivoxGatewayGet =
     Future<String> Function(Uri uri, Map<String, String> headers);
 
+typedef NavivoxGatewayPost =
+    Future<String> Function(Uri uri, Map<String, String> headers, String body);
+
 typedef NavivoxGatewayWebSocketConnector =
     Future<NavivoxGatewaySocket> Function(Uri uri, Map<String, String> headers);
 
@@ -20,12 +23,15 @@ class NavivoxGatewayClient {
   NavivoxGatewayClient({
     required this.config,
     NavivoxGatewayGet? get,
+    NavivoxGatewayPost? post,
     NavivoxGatewayWebSocketConnector? connectWebSocket,
   }) : _get = get ?? _defaultGet,
+       _post = post ?? _defaultPost,
        _connectWebSocket = connectWebSocket ?? _defaultConnectWebSocket;
 
   final NavivoxGatewayConfig config;
   final NavivoxGatewayGet _get;
+  final NavivoxGatewayPost _post;
   final NavivoxGatewayWebSocketConnector _connectWebSocket;
 
   Future<Map<String, Object?>> health() => _getJson(config.healthUri);
@@ -85,6 +91,30 @@ class NavivoxGatewayClient {
     );
   }
 
+  Future<NavivoxMemoryActionResult> memoryAction({
+    String? serverId,
+    String? profileId,
+    required String id,
+    required NavivoxMemoryType type,
+    required NavivoxMemoryActionType action,
+    String? correction,
+  }) async {
+    final body = <String, Object?>{
+      if (serverId != null && serverId.trim().isNotEmpty)
+        'server_id': serverId.trim(),
+      if (profileId != null && profileId.trim().isNotEmpty)
+        'profile_id': profileId.trim(),
+      'id': id.trim(),
+      'type': type.wireValue,
+      'action': action.wireValue,
+      if (correction != null && correction.trim().isNotEmpty)
+        'correction': correction.trim(),
+    };
+    return NavivoxMemoryActionResult.fromJson(
+      await _postJson(config.memoryActionUri, body),
+    );
+  }
+
   Future<List<Map<String, Object?>>> profileContacts() async {
     final body = await _getJson(config.profileContactsUri);
     final contacts = body['contacts'];
@@ -122,6 +152,21 @@ class NavivoxGatewayClient {
 
   Future<Map<String, Object?>> _getJson(Uri uri) async {
     final body = await _get(uri, config.headers);
+    return _decodeObject(body);
+  }
+
+  Future<Map<String, Object?>> _postJson(
+    Uri uri,
+    Map<String, Object?> body,
+  ) async {
+    final headers = <String, String>{
+      ...config.headers,
+      'Content-Type': 'application/json',
+    };
+    return _decodeObject(await _post(uri, headers, jsonEncode(body)));
+  }
+
+  Map<String, Object?> _decodeObject(String body) {
     final decoded = jsonDecode(body);
     if (decoded is! Map) {
       throw const FormatException('expected JSON object');
@@ -131,6 +176,14 @@ class NavivoxGatewayClient {
 
   static Future<String> _defaultGet(Uri uri, Map<String, String> headers) {
     return transport.defaultGet(uri, headers);
+  }
+
+  static Future<String> _defaultPost(
+    Uri uri,
+    Map<String, String> headers,
+    String body,
+  ) {
+    return transport.defaultPost(uri, headers, body);
   }
 
   static Future<NavivoxGatewaySocket> _defaultConnectWebSocket(

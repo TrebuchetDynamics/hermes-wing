@@ -319,13 +319,83 @@ class _MemoryItemCard extends StatelessWidget {
   }
 }
 
-class _MemoryDetailSheet extends StatelessWidget {
+class _MemoryDetailSheet extends ConsumerWidget {
   const _MemoryDetailSheet({required this.detail});
 
   final Future<NavivoxMemoryDetail> detail;
 
+  Future<void> _requestAction(
+    BuildContext context,
+    WidgetRef ref,
+    NavivoxMemoryDetail item,
+    NavivoxMemoryActionType action, {
+    String? correction,
+  }) async {
+    final channel = ref.read(navivoxChannelProvider);
+    final activeProfile = channel.state.activeProfileContact;
+    final result = await channel.memoryAction(
+      serverId: activeProfile?.serverId,
+      profileId: activeProfile?.profileId,
+      id: item.id,
+      type: item.type,
+      action: action,
+      correction: correction,
+    );
+    if (!context.mounted) return;
+    final message = result.isDegraded
+        ? result.degradedReason
+        : result.message.trim().isEmpty
+        ? '${action.label} requested.'
+        : result.message;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _requestCorrection(
+    BuildContext context,
+    WidgetRef ref,
+    NavivoxMemoryDetail item,
+  ) async {
+    var note = '';
+    final correction = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add correction'),
+        content: TextField(
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Correction note',
+            helperText: 'Adds a superseding note; raw source is preserved.',
+          ),
+          maxLines: 3,
+          onChanged: (value) => note = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(note),
+            child: const Text('Save correction'),
+          ),
+        ],
+      ),
+    );
+    final trimmed = correction?.trim();
+    if (trimmed == null || trimmed.isEmpty || !context.mounted) return;
+    await _requestAction(
+      context,
+      ref,
+      item,
+      NavivoxMemoryActionType.addCorrection,
+      correction: trimmed,
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: FutureBuilder<NavivoxMemoryDetail>(
         future: detail,
@@ -394,13 +464,37 @@ class _MemoryDetailSheet extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: const [
-                  OutlinedButton(onPressed: null, child: Text('Pin')),
-                  OutlinedButton(onPressed: null, child: Text('Archive')),
-                  OutlinedButton(onPressed: null, child: Text('Mark stale')),
+                children: [
                   OutlinedButton(
-                    onPressed: null,
-                    child: Text('Add correction'),
+                    onPressed: () => _requestAction(
+                      context,
+                      ref,
+                      item,
+                      NavivoxMemoryActionType.pin,
+                    ),
+                    child: const Text('Pin'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _requestAction(
+                      context,
+                      ref,
+                      item,
+                      NavivoxMemoryActionType.archive,
+                    ),
+                    child: const Text('Archive'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _requestAction(
+                      context,
+                      ref,
+                      item,
+                      NavivoxMemoryActionType.markStale,
+                    ),
+                    child: const Text('Mark stale'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () => _requestCorrection(context, ref, item),
+                    child: const Text('Add correction'),
                   ),
                 ],
               ),

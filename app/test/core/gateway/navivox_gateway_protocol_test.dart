@@ -59,6 +59,10 @@ void main() {
       'https://gromit.tailnet.test:8765/v1/navivox/memory/detail?server_id=local&profile_id=mineru&id=mem-1&type=memory_items',
     );
     expect(
+      config.memoryActionUri.toString(),
+      'https://gromit.tailnet.test:8765/v1/navivox/memory/action',
+    );
+    expect(
       config.streamUri.toString(),
       'wss://gromit.tailnet.test:8765/v1/navivox/stream',
     );
@@ -304,6 +308,55 @@ void main() {
       'http://127.0.0.1:8765/v1/navivox/memory/detail?server_id=local&profile_id=mineru&id=mem-1&type=memory_items',
     );
     expect(seen.values.single['Authorization'], 'Bearer nvbx_test_token');
+  });
+
+  test('client sends authenticated memory management actions safely', () async {
+    final seen = <Uri, Map<String, String>>{};
+    final bodies = <Map<String, Object?>>[];
+    final client = NavivoxGatewayClient(
+      config: NavivoxGatewayConfig.fromBaseUrl(
+        'http://127.0.0.1:8765',
+        token: 'nvbx_test_token',
+      ),
+      post: (uri, headers, body) async {
+        seen[uri] = headers;
+        bodies.add(Map<String, Object?>.from(jsonDecode(body) as Map));
+        return jsonEncode({
+          'accepted': true,
+          'action': 'add_correction',
+          'message': 'Correction added without mutating raw memory.',
+          'raw_source_preserved': true,
+        });
+      },
+    );
+
+    final result = await client.memoryAction(
+      serverId: 'local',
+      profileId: 'mineru',
+      id: 'mem-1',
+      type: NavivoxMemoryType.memoryItems,
+      action: NavivoxMemoryActionType.addCorrection,
+      correction: 'Use Mineru profile memory only.',
+    );
+
+    expect(result.accepted, isTrue);
+    expect(result.action, NavivoxMemoryActionType.addCorrection);
+    expect(result.rawSourcePreserved, isTrue);
+    expect(result.message, 'Correction added without mutating raw memory.');
+    expect(
+      seen.keys.single.toString(),
+      'http://127.0.0.1:8765/v1/navivox/memory/action',
+    );
+    expect(seen.values.single['Authorization'], 'Bearer nvbx_test_token');
+    expect(seen.values.single['Content-Type'], 'application/json');
+    expect(bodies.single, {
+      'server_id': 'local',
+      'profile_id': 'mineru',
+      'id': 'mem-1',
+      'type': 'memory_items',
+      'action': 'add_correction',
+      'correction': 'Use Mineru profile memory only.',
+    });
   });
 
   test(

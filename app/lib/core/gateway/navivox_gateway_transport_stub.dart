@@ -12,6 +12,10 @@ Future<String> defaultGet(Uri uri, Map<String, String> headers) {
   throw UnsupportedError('Navivox gateway HTTP is not supported here.');
 }
 
+Future<String> defaultPost(Uri uri, Map<String, String> headers, String body) {
+  throw UnsupportedError('Navivox gateway HTTP is not supported here.');
+}
+
 Future<NavivoxGatewaySocket> defaultConnectWebSocket(
   Uri uri,
   Map<String, String> headers,

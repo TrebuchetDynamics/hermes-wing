@@ -59,6 +59,7 @@ class NavivoxGatewayConfig {
   Uri get healthUri => _withPath('/healthz');
   Uri get statusUri => _withPath('/v1/navivox/status');
   Uri get profileContactsUri => _withPath('/v1/navivox/profile-contacts');
+  Uri get memoryActionUri => _withPath('/v1/navivox/memory/action');
   Uri memoryOverviewUri({String? serverId, String? profileId}) {
     final query = <String, String>{
       if (serverId != null && serverId.trim().isNotEmpty)

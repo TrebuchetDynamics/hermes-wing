@@ -10,6 +10,7 @@ Future<void> _showTranscriptMessageActions({
   )?
   onForward,
   required TextToSpeechService? textToSpeechService,
+  required VoidCallback? onCancelActiveTurn,
 }) {
   final text = _messageActionText(message);
   return showModalBottomSheet<void>(
@@ -33,6 +34,19 @@ Future<void> _showTranscriptMessageActions({
                 borderRadius: BorderRadius.circular(16),
               ),
               child: SelectableText(text),
+            ),
+          if (onCancelActiveTurn != null)
+            ListTile(
+              leading: const Icon(Icons.pause_circle_outline),
+              title: const Text('Pause stream'),
+              subtitle: const Text('Stop the current assistant response.'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                onCancelActiveTurn();
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  const SnackBar(content: Text('Stream pause requested')),
+                );
+              },
             ),
           if (text.isNotEmpty) ...[
             ListTile(

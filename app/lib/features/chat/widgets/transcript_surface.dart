@@ -25,6 +25,7 @@ class TranscriptSurface extends StatefulWidget {
     this.voiceUnavailableReason,
     this.textToSpeechService,
     this.assistantTypingLabel,
+    this.onCancelActiveTurn,
     this.forwardTargets = const [],
     this.onForward,
     super.key,
@@ -40,6 +41,7 @@ class TranscriptSurface extends StatefulWidget {
   final String? voiceUnavailableReason;
   final TextToSpeechService? textToSpeechService;
   final String? assistantTypingLabel;
+  final VoidCallback? onCancelActiveTurn;
   final List<NavivoxProfileContact> forwardTargets;
   final void Function(NavivoxChatMessage message, NavivoxProfileContact target)?
   onForward;
@@ -137,6 +139,9 @@ class _TranscriptSurfaceState extends State<TranscriptSurface> {
                       forwardTargets: widget.forwardTargets,
                       onForward: widget.onForward,
                       textToSpeechService: widget.textToSpeechService,
+                      onCancelActiveTurn: widget.assistantTypingLabel == null
+                          ? null
+                          : widget.onCancelActiveTurn,
                     );
                   },
                 ),

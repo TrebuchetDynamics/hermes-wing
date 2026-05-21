@@ -49,6 +49,7 @@ class _TelegramBubble extends StatelessWidget {
     required this.forwardTargets,
     required this.onForward,
     required this.textToSpeechService,
+    required this.onCancelActiveTurn,
   });
 
   final NavivoxChatMessage message;
@@ -58,6 +59,7 @@ class _TelegramBubble extends StatelessWidget {
   final void Function(NavivoxChatMessage message, NavivoxProfileContact target)?
   onForward;
   final TextToSpeechService? textToSpeechService;
+  final VoidCallback? onCancelActiveTurn;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +82,9 @@ class _TelegramBubble extends StatelessWidget {
         forwardTargets: forwardTargets,
         onForward: onForward,
         textToSpeechService: textToSpeechService,
+        onCancelActiveTurn: message.author == NavivoxMessageAuthor.assistant
+            ? onCancelActiveTurn
+            : null,
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 2),

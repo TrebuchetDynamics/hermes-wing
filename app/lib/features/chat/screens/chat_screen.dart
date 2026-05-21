@@ -191,6 +191,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   activeProfile?.activeTurnState == 'streaming'
                   ? '${activeProfile!.displayName} is typing…'
                   : null,
+              onCancelActiveTurn: activeProfile?.activeTurnState == 'streaming'
+                  ? () => channel.cancelActiveTurn()
+                  : null,
               onVoice: (capture) => _handleVoiceCapture(channel, capture),
               onVoiceCaptureStarted: () {
                 _pendingVoiceRunId = channel.startVoiceRun();

@@ -105,6 +105,45 @@ void main() {
     );
   });
 
+  testWidgets('unavailable STT reason disables mic even with a voice service', (
+    tester,
+  ) async {
+    final service = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([1]),
+      transcript: 'should not capture',
+      duration: const Duration(milliseconds: 1),
+      confidence: 1,
+    );
+    VoiceCapture? captured;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TranscriptSurface(
+            messages: const <NavivoxChatMessage>[],
+            onSend: (_) {},
+            voiceCaptureService: service,
+            voiceUnavailableReason: 'device STT unavailable',
+            onVoice: (capture) => captured = capture,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.mic), findsNothing);
+    expect(find.byIcon(Icons.mic_off), findsOneWidget);
+    expect(
+      find.byTooltip('Voice unavailable: device STT unavailable'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.mic_off));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Voice unavailable'), findsOneWidget);
+    expect(captured, isNull);
+  });
+
   testWidgets(
     'tap mic invokes the voice service and forwards result via onVoice',
     (tester) async {

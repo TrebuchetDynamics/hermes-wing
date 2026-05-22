@@ -918,6 +918,8 @@ class _InputBarState extends State<_InputBar> {
     final unavailableTooltip = unavailableReason?.isNotEmpty == true
         ? 'Voice unavailable: $unavailableReason'
         : 'Voice unavailable';
+    final voiceAvailable =
+        widget.voiceService != null && unavailableReason?.isNotEmpty != true;
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       decoration: BoxDecoration(
@@ -981,7 +983,7 @@ class _InputBarState extends State<_InputBar> {
                 onPressed: () => _showShareSheet(context),
                 icon: const Icon(Icons.attach_file),
               ),
-              if (widget.voiceService != null)
+              if (voiceAvailable)
                 IconButton.filledTonal(
                   onPressed: widget.onToggleVoice,
                   icon: Icon(widget.capturing ? Icons.stop : Icons.mic),

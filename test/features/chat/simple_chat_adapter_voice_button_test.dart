@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/widgets/simple_chat_adapter.dart';
+import 'package:navivox/features/voice/services/voice_capture_service.dart';
 
 void main() {
   testWidgets('disabled STT mic explains recovery in simple chat adapter', (
@@ -127,5 +130,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(opened, isTrue);
+  });
+
+  testWidgets('unavailable STT reason disables mic even with a voice service', (
+    tester,
+  ) async {
+    final service = FakeVoiceCaptureService(
+      audio: Uint8List.fromList([1]),
+      transcript: 'should not capture',
+      duration: const Duration(milliseconds: 1),
+      confidence: 1,
+    );
+    VoiceCapture? captured;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SimpleChatAdapter(
+            messages: const <NavivoxChatMessage>[],
+            onSend: (_) {},
+            voiceCaptureService: service,
+            voiceUnavailableReason: 'device STT unavailable',
+            onVoice: (capture) => captured = capture,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.mic), findsNothing);
+    expect(find.byIcon(Icons.mic_off), findsOneWidget);
+    expect(
+      find.byTooltip('Voice unavailable: device STT unavailable'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.mic_off));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Voice unavailable'), findsOneWidget);
+    expect(captured, isNull);
   });
 }

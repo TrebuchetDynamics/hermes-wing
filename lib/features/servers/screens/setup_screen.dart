@@ -170,8 +170,8 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Paste the base URL and token from '
-                    '`gormes navivox connect-info` to open chat immediately.',
+                    'Scan/import the QR from `gormes navivox pair`; use '
+                    '`gormes navivox connect-info` only as fallback.',
                   ),
                   const SizedBox(height: 12),
                   Card(

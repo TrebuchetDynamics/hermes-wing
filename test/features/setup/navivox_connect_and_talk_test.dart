@@ -38,6 +38,7 @@ void main() {
       find.widgetWithText(TextField, 'Pairing token'),
       'nvbx_test_token',
     );
+    await tester.ensureVisible(find.text('Connect and talk'));
     await tester.tap(find.text('Connect and talk'));
     await tester.pumpAndSettle();
 
@@ -93,7 +94,11 @@ void main() {
     );
     expect(find.textContaining('Navivox (recommended)'), findsOneWidget);
     expect(find.textContaining('paste one command'), findsOneWidget);
-    expect(find.textContaining('gormes navivox pair'), findsOneWidget);
+    expect(
+      find.textContaining('Scan/import the QR from `gormes navivox pair`'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('gormes navivox pair'), findsWidgets);
     expect(find.textContaining('connect-info fallback'), findsOneWidget);
     expect(_caseInsensitiveText('curl | sh'), findsNothing);
   });
@@ -532,6 +537,7 @@ void main() {
         find.widgetWithText(TextField, 'Pairing token'),
         'nvbx_secret_should_not_render',
       );
+      await tester.ensureVisible(find.text('Connect and talk'));
       await tester.tap(find.text('Connect and talk'));
       await tester.pumpAndSettle();
 

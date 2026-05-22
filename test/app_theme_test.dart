@@ -14,6 +14,17 @@ void main() {
     expect(navivoxDarkTheme.appBarTheme.centerTitle, isFalse);
   });
 
+  test('Navivox themes keep top bars flat like Telegram', () {
+    for (final theme in [navivoxLightTheme, navivoxDarkTheme]) {
+      final appBarTheme = theme.appBarTheme;
+
+      expect(appBarTheme.elevation, 0);
+      expect(appBarTheme.scrolledUnderElevation, 0);
+      expect(appBarTheme.shadowColor, Colors.transparent);
+      expect(appBarTheme.surfaceTintColor, Colors.transparent);
+    }
+  });
+
   test('Navivox themes style the drawer like a Telegram side menu', () {
     for (final theme in [navivoxLightTheme, navivoxDarkTheme]) {
       final colorScheme = theme.colorScheme;

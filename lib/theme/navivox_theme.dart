@@ -18,8 +18,10 @@ ThemeData _buildNavivoxTheme(Brightness brightness) {
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
+      scrolledUnderElevation: 0,
       backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.onSurface,
+      shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(

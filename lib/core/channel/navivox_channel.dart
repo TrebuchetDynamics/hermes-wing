@@ -63,7 +63,7 @@ class NavivoxVoiceCapability {
   final String recoveryAction;
   final bool isReported;
 
-  bool get enabled => disabledReason.trim().isEmpty;
+  bool get enabled => disabledReason.trim().isEmpty && !blocksDeviceCapture;
 
   bool get blocksDeviceCapture =>
       deviceStt.trim().toLowerCase() == 'unavailable' &&

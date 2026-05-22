@@ -107,6 +107,10 @@ class _InputBarState extends State<_InputBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final unavailableReason = widget.voiceUnavailableReason?.trim();
+    final unavailableTooltip = unavailableReason?.isNotEmpty == true
+        ? 'Voice unavailable: $unavailableReason'
+        : 'Voice unavailable';
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       decoration: BoxDecoration(
@@ -182,7 +186,7 @@ class _InputBarState extends State<_InputBar> {
                 )
               else
                 IconButton.outlined(
-                  tooltip: 'Voice unavailable',
+                  tooltip: unavailableTooltip,
                   onPressed: () => _showVoiceUnavailable(context),
                   icon: const Icon(Icons.mic_off),
                 ),

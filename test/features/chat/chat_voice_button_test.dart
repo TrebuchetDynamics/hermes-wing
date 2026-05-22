@@ -52,6 +52,10 @@ void main() {
 
     expect(find.byIcon(Icons.mic_off), findsOneWidget);
     expect(find.byIcon(Icons.send), findsOneWidget);
+    expect(
+      find.byTooltip('Voice unavailable: device STT unavailable'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byIcon(Icons.mic_off));
     await tester.pumpAndSettle();

@@ -242,6 +242,56 @@ void main() {
     expect(find.text('Copied same-device connection hint.'), findsOneWidget);
   });
 
+  testWidgets('copy optional Termux storage command stays permission-scoped', (
+    tester,
+  ) async {
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add(
+            (call.arguments as Map<Object?, Object?>)['text']! as String,
+          );
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    final channel = ConnectAndTalkChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const _RouterTestApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Copy optional storage command'));
+    await tester.tap(find.text('Copy optional storage command'));
+    await tester.pumpAndSettle();
+
+    expect(copied, hasLength(1));
+    expect(copied.single, contains('termux-setup-storage'));
+    expect(copied.single, contains('Only run this if'));
+    expect(copied.single, contains('Android storage permission'));
+    expect(copied.single, contains('logs, screenshots, or exported files'));
+    expect(copied.single.toLowerCase(), isNot(contains('nvbx_')));
+    expect(copied.single.toLowerCase(), isNot(contains('bash install.sh')));
+    expect(
+      find.text('Copied optional Termux storage command.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'connect failure gives connect-info guidance without token leak',
     (tester) async {

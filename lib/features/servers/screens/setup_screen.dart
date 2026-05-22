@@ -37,6 +37,16 @@ Navivox connection hints:
 Paste pairing tokens only into Navivox. Do not share tokens in logs, screenshots, issues, or chat transcripts.
 ''';
 
+const termuxOptionalStorageCommand = '''
+Optional Termux shared-storage access:
+Only run this if you need to move logs, screenshots, or exported files between Android storage and Termux.
+
+Command:
+termux-setup-storage
+
+Android will show an Android storage permission prompt. This is not required for the normal Gormes install path.
+''';
+
 typedef SetupQrImageImporter = Future<SetupQrImageImport?> Function();
 
 class SetupQrImageImport {
@@ -235,6 +245,12 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                               'Copy same-device connection hint',
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: _copyTermuxStorageCommand,
+                            icon: const Icon(Icons.folder_shared),
+                            label: const Text('Copy optional storage command'),
+                          ),
                         ],
                       ),
                     ),
@@ -358,6 +374,25 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _error = 'Could not copy connection hint.');
+      }
+    }
+  }
+
+  Future<void> _copyTermuxStorageCommand() async {
+    setState(() {
+      _error = null;
+      _status = null;
+    });
+    try {
+      await Clipboard.setData(
+        const ClipboardData(text: termuxOptionalStorageCommand),
+      );
+      if (mounted) {
+        setState(() => _status = 'Copied optional Termux storage command.');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Could not copy storage command.');
       }
     }
   }

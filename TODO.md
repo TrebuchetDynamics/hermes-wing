@@ -1,5 +1,13 @@
 # Navivox TODO
 
+[BLOCKED] Android continuous voice device smoke validation — 2026-05-22 17:55 CST
+  blocker: connected emulator `emulator-5554` is listed by ADB but shell commands time out, so this host cannot validate microphone permission or real device STT capture.
+  evidence: `adb devices -l` lists `emulator-5554`; `timeout 5s adb -s emulator-5554 shell true` exits 124; `timeout 5s adb -s emulator-5554 shell getprop sys.boot_completed` exits 124.
+  unblocks when: a responsive Android emulator or physical USB-debuggable device is available for `adb shell` plus Navivox APK install/run.
+  owner: local Android test environment / Juan.
+  workaround/pivot: document a repeatable Android continuous-voice smoke checklist and keep code-level Flutter gates green.
+  next check: next Navivox Android smoke iteration.
+
 [RESOLVED] Commit/push screenshot iteration 1 repeated agent-list message slice — 2026-05-22 16:23 CST
   resolved: 2026-05-22 16:45 CST
   evidence: `flutter analyze`, `flutter test`, and `git diff --check` all passed after fixing stale E2E/control finders, the profile-contact back-button expectation, and the README setup screenshot golden.

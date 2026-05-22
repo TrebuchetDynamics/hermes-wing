@@ -21,6 +21,18 @@ void main() {
     expect(text, contains('gormes navivox connect-info'));
     expect(text, contains('LAN, VPN, or Tailscale'));
     expect(text, contains('Do not paste tokens'));
+    expect(text, contains('## 5. Continuous voice smoke'));
+    expect(
+      text,
+      contains('adb install -r build/app/outputs/flutter-apk/app-debug.apk'),
+    );
+    expect(
+      text,
+      contains(
+        'adb shell cmd package query-services -a android.speech.RecognitionService',
+      ),
+    );
+    expect(text, contains('Continuous voice ready'));
     expect(text, isNot(contains('nvbx_')));
   });
 }

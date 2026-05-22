@@ -19,6 +19,15 @@ void main() {
     expect(text, contains('build/app/outputs/bundle/release/app-release.aab'));
     expect(text, contains('Do not ship pairing tokens'));
     expect(text, contains('trusted tester'));
+    expect(text, contains('## Continuous voice smoke after install'));
+    expect(
+      text,
+      contains(
+        'adb shell cmd package query-services -a android.speech.RecognitionService',
+      ),
+    );
+    expect(text, contains('microphone permission'));
+    expect(text, contains('Continuous voice ready'));
     expect(text, isNot(contains('nvbx_')));
   });
 }

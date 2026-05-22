@@ -40,8 +40,28 @@ Choose the base URL based on the Android target:
 
 Paste the reachable base URL and pairing token into Navivox only. Do not paste tokens into issues, logs, screenshots, or chat transcripts.
 
-## 5. Quick recovery checks
+## 5. Continuous voice smoke
+
+After building a debug APK, install it on the selected Android target:
+
+```bash
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Before using a target for voice validation, confirm ADB shell and Android speech recognition are responsive:
+
+```bash
+adb shell true
+adb shell cmd package query-services -a android.speech.RecognitionService
+```
+
+Then launch Navivox, connect to the trusted Gormes gateway, and open the chat for the active profile. Tap the mic, grant the microphone permission prompt if Android shows one, and confirm the continuous voice banner reaches `Continuous voice ready` instead of `Continuous voice unavailable: device STT unavailable`.
+
+If `adb shell` hangs or the speech-recognition query prints no recognition service, do not treat that target as a valid STT smoke result. Retry with a responsive emulator image, a physical Android device with Google speech services enabled, or the actual Termux device that will run Gormes.
+
+## 6. Quick recovery checks
 
 - `Connection refused`: confirm Gormes is running and the selected URL is reachable from the Android target.
 - `401` or `403`: rerun `gormes navivox connect-info` and paste the refreshed token into Navivox.
 - No Android target: rerun `flutter devices`, then start an emulator or reconnect the physical device.
+- Continuous voice still reports `device STT unavailable`: confirm microphone permission is granted and Android has an enabled speech recognition service.

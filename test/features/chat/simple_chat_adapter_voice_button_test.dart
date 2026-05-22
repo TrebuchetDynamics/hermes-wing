@@ -95,4 +95,37 @@ void main() {
     expect(find.text('Recovery action'), findsOneWidget);
     expect(find.text('Enable device speech recognition'), findsOneWidget);
   });
+
+  testWidgets('disabled STT mic can open voice settings', (tester) async {
+    var opened = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SimpleChatAdapter(
+            messages: const <NavivoxChatMessage>[],
+            onSend: (_) {},
+            voiceUnavailableReason: 'device STT unavailable',
+            onOpenVoiceSettings: () => opened = true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.mic_off));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Open voice settings'), findsOneWidget);
+    expect(
+      find.text(
+        'Review continuous voice after enabling device speech recognition.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Open voice settings'));
+    await tester.pumpAndSettle();
+
+    expect(opened, isTrue);
+  });
 }

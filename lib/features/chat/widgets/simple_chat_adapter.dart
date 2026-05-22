@@ -17,6 +17,7 @@ class SimpleChatAdapter extends StatefulWidget {
     this.voiceCaptureTimeout = const Duration(seconds: 30),
     this.voiceUnavailableReason,
     this.voiceRecoveryAction,
+    this.onOpenVoiceSettings,
     this.textToSpeechService,
     this.assistantTypingLabel,
     this.forwardTargets = const [],
@@ -31,6 +32,7 @@ class SimpleChatAdapter extends StatefulWidget {
   final Duration voiceCaptureTimeout;
   final String? voiceUnavailableReason;
   final String? voiceRecoveryAction;
+  final VoidCallback? onOpenVoiceSettings;
   final TextToSpeechService? textToSpeechService;
   final String? assistantTypingLabel;
   final List<NavivoxProfileContact> forwardTargets;
@@ -150,6 +152,7 @@ class _SimpleChatAdapterState extends State<SimpleChatAdapter> {
             voiceService: widget.voiceCaptureService,
             voiceUnavailableReason: widget.voiceUnavailableReason,
             voiceRecoveryAction: widget.voiceRecoveryAction,
+            onOpenVoiceSettings: widget.onOpenVoiceSettings,
             capturing: _capturing,
             onToggleVoice: _toggleVoiceCapture,
           ),
@@ -764,6 +767,7 @@ class _InputBar extends StatefulWidget {
     this.voiceService,
     this.voiceUnavailableReason,
     this.voiceRecoveryAction,
+    this.onOpenVoiceSettings,
     this.capturing = false,
     this.onToggleVoice,
   });
@@ -773,6 +777,7 @@ class _InputBar extends StatefulWidget {
   final VoiceCaptureService? voiceService;
   final String? voiceUnavailableReason;
   final String? voiceRecoveryAction;
+  final VoidCallback? onOpenVoiceSettings;
   final bool capturing;
   final VoidCallback? onToggleVoice;
 
@@ -792,6 +797,14 @@ class _InputBarState extends State<_InputBar> {
       return 'device STT unavailable';
     }
     return trimmed;
+  }
+
+  String _voiceSettingsSubtitle(String? reason) {
+    return reason == 'device STT unavailable'
+        ? 'Review continuous voice after enabling device speech recognition.'
+        : reason == 'select a profile contact'
+        ? 'Select a profile contact before reviewing continuous voice settings.'
+        : 'Review continuous voice and trust settings';
   }
 
   void _showVoiceUnavailable(BuildContext context) {
@@ -832,6 +845,17 @@ class _InputBarState extends State<_InputBar> {
                   leading: const Icon(Icons.tips_and_updates_outlined),
                   title: const Text('Recovery action'),
                   subtitle: Text(recoveryAction!),
+                ),
+              if (widget.onOpenVoiceSettings != null)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.settings_voice_outlined),
+                  title: const Text('Open voice settings'),
+                  subtitle: Text(_voiceSettingsSubtitle(reason)),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    widget.onOpenVoiceSettings?.call();
+                  },
                 ),
             ],
           ),

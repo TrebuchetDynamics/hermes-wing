@@ -68,6 +68,8 @@ class _MobileShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       drawer: showNavigationMenu
           ? _AppNavigationDrawer(
@@ -81,6 +83,11 @@ class _MobileShell extends StatelessWidget {
               builder: (context) => FloatingActionButton.small(
                 heroTag: 'navivox-navigation-menu',
                 tooltip: 'Open navigation menu',
+                backgroundColor: colorScheme.surface,
+                foregroundColor: colorScheme.primary,
+                elevation: 0,
+                highlightElevation: 0,
+                shape: const CircleBorder(),
                 onPressed: () => Scaffold.of(context).openDrawer(),
                 child: const Icon(Icons.menu),
               ),

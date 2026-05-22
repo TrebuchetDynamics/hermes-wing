@@ -49,6 +49,30 @@ void main() {
     });
   });
 
+  testWidgets('mobile hamburger button is flat and theme-colored', (
+    tester,
+  ) async {
+    await _withMobileSurface(tester, () async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: navivoxLightTheme,
+          home: const AppShell(location: '/chats', child: Text('Contact list')),
+        ),
+      );
+
+      expect(find.byTooltip('Open navigation menu'), findsOneWidget);
+      final menuButton = tester.widget<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+
+      expect(menuButton.backgroundColor, navivoxLightTheme.colorScheme.surface);
+      expect(menuButton.foregroundColor, navivoxLightTheme.colorScheme.primary);
+      expect(menuButton.elevation, 0);
+      expect(menuButton.highlightElevation, 0);
+      expect(menuButton.shape, const CircleBorder());
+    });
+  });
+
   testWidgets('mobile drawer uses Telegram-blue branded header', (
     tester,
   ) async {

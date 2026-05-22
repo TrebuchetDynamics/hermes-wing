@@ -85,6 +85,21 @@ void main() {
     }
   });
 
+  test('Navivox themes keep cards flat with subtle Telegram-like outlines', () {
+    for (final theme in [navivoxLightTheme, navivoxDarkTheme]) {
+      final colorScheme = theme.colorScheme;
+      final cardTheme = theme.cardTheme;
+      final cardShape = cardTheme.shape as RoundedRectangleBorder?;
+
+      expect(cardTheme.color, colorScheme.surface);
+      expect(cardTheme.surfaceTintColor, Colors.transparent);
+      expect(cardTheme.elevation, 0);
+      expect(cardShape?.borderRadius, BorderRadius.circular(16));
+      expect(cardShape?.side.color, colorScheme.outlineVariant.withAlpha(96));
+      expect(cardShape?.side.width, 1);
+    }
+  });
+
   testWidgets('NavivoxApp exposes system light and dark themes', (
     tester,
   ) async {

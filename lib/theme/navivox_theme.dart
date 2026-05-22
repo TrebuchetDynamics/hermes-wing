@@ -38,6 +38,15 @@ ThemeData _buildNavivoxTheme(Brightness brightness) {
       thickness: 1,
       space: 1,
     ),
+    cardTheme: CardThemeData(
+      color: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant.withAlpha(96)),
+      ),
+    ),
     listTileTheme: ListTileThemeData(
       iconColor: colorScheme.onSurfaceVariant,
       textColor: colorScheme.onSurface,

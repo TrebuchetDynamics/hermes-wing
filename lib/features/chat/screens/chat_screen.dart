@@ -333,8 +333,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     required NavivoxVoiceSettings settings,
   }) {
     if (!settings.continuousVoiceEnabled) return 'disabled in Settings';
-    if (voiceService == null) return 'device STT unavailable';
     if (activeProfile == null) return 'select a profile';
+    if (voiceService == null) return 'device STT unavailable';
     if (!settings.isTrusted(activeProfile.serverId)) {
       return 'trust ${activeProfile.serverLabel}';
     }

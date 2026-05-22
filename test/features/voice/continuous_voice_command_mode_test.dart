@@ -288,6 +288,32 @@ void main() {
     expect(find.text('device STT unavailable'), findsOneWidget);
   });
 
+  testWidgets('missing profile selection beats unavailable STT', (
+    tester,
+  ) async {
+    final channel = TestNavivoxChannel()
+      ..seedServers(_servers, activeServerId: 'local')
+      ..seedProfileContacts(_contacts);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(home: ChatScreen(serverId: 'local')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Continuous voice unavailable: select a profile'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Continuous voice unavailable: device STT unavailable'),
+      findsNothing,
+    );
+    expect(channel.sentVoiceTranscripts, isEmpty);
+  });
+
   testWidgets('disabled continuous voice setting beats unavailable STT', (
     tester,
   ) async {

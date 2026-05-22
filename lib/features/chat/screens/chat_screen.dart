@@ -10,16 +10,17 @@ import '../../../core/protocol/navivox_event.dart';
 import '../../../core/protocol/navivox_voice_run.dart';
 import '../../../router/app_routes.dart';
 import '../../settings/providers/voice_settings_provider.dart';
+import '../../voice/services/default_voice_capture_service.dart';
+import '../../voice/services/speech_to_text_voice_capture_service.dart';
 import '../../voice/services/text_to_speech_service.dart';
 import '../../voice/services/voice_capture_service.dart';
 import '../widgets/approval_banner.dart';
 import '../widgets/transcript_surface.dart';
 
 /// Voice-capture service used by the chat input bar. Override in tests with
-/// [FakeVoiceCaptureService]; production wiring slots in
-/// [RecordVoiceCaptureService] once the real mic + STT plugins land.
+/// [FakeVoiceCaptureService]; Android production uses platform speech-to-text.
 final chatVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>(
-  (_) => null,
+  (_) => createDefaultVoiceCaptureService(),
 );
 
 final chatTextToSpeechServiceProvider = Provider<TextToSpeechService?>(
@@ -321,6 +322,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   String _voiceCaptureFailureReason(Object error) {
     if (error is VoiceCaptureTimeout) return 'Voice capture timed out.';
+    if (error is DeviceSpeechUnavailable) return 'device STT unavailable';
     return 'Voice capture failed.';
   }
 

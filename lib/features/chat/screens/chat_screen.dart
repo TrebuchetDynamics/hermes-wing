@@ -821,11 +821,13 @@ class _VoiceModeBanner extends StatelessWidget {
               title: const Text('Command word'),
               subtitle: Text(commandWord),
             ),
-            const ListTile(
-              leading: Icon(Icons.record_voice_over),
-              title: Text('How it works'),
+            ListTile(
+              leading: const Icon(Icons.record_voice_over),
+              title: const Text('How it works'),
               subtitle: Text(
-                'Tap once to capture a turn. Use command mode for local actions like switching profiles, stop, cancel, help, or settings.',
+                disabledReason == null
+                    ? 'Tap once to capture a turn. Use command mode for local actions like switching profiles, stop, cancel, help, or settings.'
+                    : 'Reason: $disabledReason. Continuous voice stays off until resolved.',
               ),
             ),
             if (!pending && canTrustServer)

@@ -316,6 +316,36 @@ void main() {
     expect(channel.sentVoiceTranscripts, isEmpty);
   });
 
+  testWidgets('continuous voice unavailable sheet avoids capture instructions', (
+    tester,
+  ) async {
+    final channel = _seedChannel(selectedKey: 'local::mineru');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(
+          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('continuous-voice-banner')));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+
+    expect(find.text('How it works'), findsOneWidget);
+    expect(
+      find.text(
+        'Reason: device STT unavailable. Continuous voice stays off until resolved.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Tap once to capture a turn'), findsNothing);
+  });
+
   testWidgets('continuous voice unavailable banner announces controls', (
     tester,
   ) async {

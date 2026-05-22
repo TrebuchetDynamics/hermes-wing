@@ -343,6 +343,56 @@ void main() {
     },
   );
 
+  testWidgets('copy Termux boot helper stays explicit and reversible', (
+    tester,
+  ) async {
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add(
+            (call.arguments as Map<Object?, Object?>)['text']! as String,
+          );
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    final channel = ConnectAndTalkChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const _RouterTestApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Copy Termux:Boot helper'));
+    await tester.tap(find.text('Copy Termux:Boot helper'));
+    await tester.pumpAndSettle();
+
+    expect(copied, hasLength(1));
+    expect(copied.single, contains('Termux:Boot'));
+    expect(copied.single, contains('same APK source'));
+    expect(copied.single, contains('gormes gateway boot-install'));
+    expect(copied.single, contains('gormes gateway boot-uninstall'));
+    expect(copied.single, contains('.termux/boot/gormes-gateway.sh'));
+    expect(copied.single.toLowerCase(), contains('reboot'));
+    expect(copied.single, contains('does not install APKs'));
+    expect(copied.single.toLowerCase(), isNot(contains('nvbx_')));
+    expect(copied.single.toLowerCase(), isNot(contains('pm install')));
+    expect(find.text('Copied Termux:Boot helper.'), findsOneWidget);
+  });
+
   testWidgets('copy optional Termux storage command stays permission-scoped', (
     tester,
   ) async {

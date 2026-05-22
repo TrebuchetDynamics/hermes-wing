@@ -51,6 +51,22 @@ termux-wake-lock and Android battery settings are best-effort only. Android may 
 Paste pairing tokens only into Navivox; do not share tokens in logs or screenshots.
 ''';
 
+const termuxBootHelper = '''
+Optional Termux:Boot gateway auto-start helper:
+Only use this after Gormes works manually in Termux and after installing the Termux:Boot plugin from the same APK source as Termux.
+
+Commands:
+gormes gateway boot-install
+gormes gateway status
+gormes navivox connect-info
+
+Rollback:
+gormes gateway boot-uninstall
+
+The boot-install command writes ~/.termux/boot/gormes-gateway.sh. Reboot Android to let Termux:Boot start the tmux gateway, then verify with gormes gateway status.
+Android may still stop background processes. Navivox does not install APKs or run these commands for you.
+''';
+
 const termuxSameDeviceConnectionHint = '''
 Navivox connection hints:
 - Same Android device (Gormes in Termux): use the loopback URL printed by `gormes navivox connect-info`, usually http://127.0.0.1:<port>.
@@ -274,6 +290,12 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                           ),
                           const SizedBox(height: 8),
                           OutlinedButton.icon(
+                            onPressed: _copyTermuxBootHelper,
+                            icon: const Icon(Icons.power_settings_new),
+                            label: const Text('Copy Termux:Boot helper'),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
                             onPressed: _copyTermuxConnectionHint,
                             icon: const Icon(Icons.device_hub),
                             label: const Text(
@@ -428,6 +450,23 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _error = 'Could not copy gateway lifecycle.');
+      }
+    }
+  }
+
+  Future<void> _copyTermuxBootHelper() async {
+    setState(() {
+      _error = null;
+      _status = null;
+    });
+    try {
+      await Clipboard.setData(const ClipboardData(text: termuxBootHelper));
+      if (mounted) {
+        setState(() => _status = 'Copied Termux:Boot helper.');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Could not copy Termux:Boot helper.');
       }
     }
   }

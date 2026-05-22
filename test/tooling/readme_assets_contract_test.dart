@@ -22,6 +22,9 @@ void main() {
     expect(readme, contains('flutter test'));
     expect(readme, contains('flutter devices'));
     expect(readme, contains('flutter run -d <device-id>'));
+    expect(readme, contains('Android emulator'));
+    expect(readme, contains('10.0.2.2'));
+    expect(readme, contains('physical Android device'));
     expect(readme, contains('## Connected Smoke Test'));
     expect(readme, contains('GET /healthz'));
     expect(readme, contains('GET /v1/navivox/status'));
@@ -34,7 +37,10 @@ void main() {
     expect(readme, contains('No supported devices found'));
     expect(readme, contains('Connection refused'));
     expect(readme, contains('`401` or `403`'));
-    expect(readme, contains('Do not delete source files while clearing generated state.'));
+    expect(
+      readme,
+      contains('Do not delete source files while clearing generated state.'),
+    );
     expect(readme, isNot(contains('cd app')));
     expect(readme, contains('## Screenshots'));
     expect(readme, contains('![Setup screen](docs/screenshots/setup.png)'));

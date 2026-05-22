@@ -23,6 +23,9 @@ void main() {
     expect(find.text('Connect to Gormes'), findsOneWidget);
     expect(find.text('Connect and talk'), findsOneWidget);
     expect(find.textContaining('gormes navivox connect-info'), findsWidgets);
+    expect(find.textContaining('Android emulator'), findsOneWidget);
+    expect(find.textContaining('10.0.2.2'), findsOneWidget);
+    expect(find.textContaining('physical Android device'), findsOneWidget);
     expect(_caseInsensitiveText('telephony'), findsNothing);
     expect(_caseInsensitiveText('fake'), findsNothing);
 

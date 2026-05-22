@@ -111,6 +111,12 @@ Run the app from the repository root, replacing `<device-id>` with one of the li
 flutter run -d <device-id>
 ```
 
+Android target notes:
+
+- Android emulator: use `http://10.0.2.2:<port>` when the Gormes gateway is running on the host machine.
+- A physical Android device cannot reach the host through `127.0.0.1`; use the host LAN, VPN, or Tailscale URL printed by `gormes navivox connect-info`.
+- Keep the pairing token inside Navivox only; never paste it into issue reports, logs, screenshots, or chat transcripts.
+
 ## Connected Smoke Test
 
 Use this only with a trusted local or self-hosted Gormes host:

@@ -281,6 +281,45 @@ void main() {
     ));
   });
 
+  testWidgets('chat back button returns to profile contacts', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final channel = TestNavivoxChannel()
+      ..seedServers(_servers, activeServerId: 'local')
+      ..seedProfileContacts(_contacts);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
+        child: const _RouterTestApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('profile-contact-office-support')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Support Triage'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Navivox'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('profile-contact-local-mineru')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('profile-contact-office-support')),
+      findsOneWidget,
+    );
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
   testWidgets('long pressing a profile opens diagnostics and scoped actions', (
     tester,
   ) async {

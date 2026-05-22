@@ -1,12 +1,38 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/channel/navivox_channel_provider.dart';
 import '../../../router/app_routes.dart';
 
+typedef SetupQrImageImporter = Future<SetupQrImageImport?> Function();
+
+class SetupQrImageImport {
+  const SetupQrImageImport({this.baseUrl, this.token});
+
+  final String? baseUrl;
+  final String? token;
+
+  bool get hasValues => baseUrl != null || token != null;
+}
+
+class SetupQrImageImportException implements Exception {
+  const SetupQrImageImportException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class SetupScreen extends ConsumerStatefulWidget {
-  const SetupScreen({super.key});
+  const SetupScreen({this.qrImageImporter, super.key});
+
+  final SetupQrImageImporter? qrImageImporter;
 
   @override
   ConsumerState<SetupScreen> createState() => _SetupScreenState();
@@ -18,7 +44,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
   );
   final _tokenController = TextEditingController();
   bool _connecting = false;
+  bool _showToken = false;
+  bool _importingQr = false;
   String? _error;
+  String? _status;
 
   @override
   void dispose() {
@@ -50,6 +79,18 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     'Paste the base URL and token from '
                     '`gormes navivox connect-info` to open chat immediately.',
                   ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        'Android emulator: use http://10.0.2.2:<port> for '
+                        'a host gateway. On a physical Android device, use '
+                        'the host LAN, VPN, or Tailscale URL from connect-info.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   TextField(
                     controller: _baseUrlController,
@@ -62,12 +103,53 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _tokenController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
                       labelText: 'Pairing token',
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: 'Import QR image',
+                            icon: _importingQr
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.qr_code_scanner),
+                            onPressed: _connecting || _importingQr
+                                ? null
+                                : _importQrImage,
+                          ),
+                          IconButton(
+                            tooltip: _showToken
+                                ? 'Hide pairing token'
+                                : 'Show pairing token',
+                            icon: Icon(
+                              _showToken
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() => _showToken = !_showToken);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: !_showToken,
                   ),
+                  if (_status != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _status!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     onPressed: _connecting ? null : _connectGateway,
@@ -96,10 +178,47 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     );
   }
 
+  Future<void> _importQrImage() async {
+    setState(() {
+      _importingQr = true;
+      _error = null;
+      _status = null;
+    });
+    try {
+      final importer = widget.qrImageImporter ?? importNavivoxQrImage;
+      final result = await importer();
+      if (!mounted) return;
+      if (result == null || !result.hasValues) {
+        setState(() => _status = 'No QR image selected.');
+        return;
+      }
+      setState(() {
+        if (result.baseUrl != null) {
+          _baseUrlController.text = result.baseUrl!;
+        }
+        if (result.token != null) {
+          _tokenController.text = result.token!;
+        }
+        _status = 'Imported QR connection details.';
+      });
+    } on SetupQrImageImportException {
+      if (mounted) {
+        setState(() => _error = 'Could not read a Navivox QR image.');
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Could not read a Navivox QR image.');
+      }
+    } finally {
+      if (mounted) setState(() => _importingQr = false);
+    }
+  }
+
   Future<void> _connectGateway() async {
     setState(() {
       _connecting = true;
       _error = null;
+      _status = null;
     });
     try {
       await ref
@@ -117,4 +236,233 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
       if (mounted) setState(() => _connecting = false);
     }
   }
+}
+
+Future<SetupQrImageImport?> importNavivoxQrImage() async {
+  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  if (image == null) return null;
+
+  final scanner = MobileScannerController(autoStart: false);
+  try {
+    final capture = await scanner.analyzeImage(
+      image.path,
+      formats: const [BarcodeFormat.qrCode],
+    );
+    for (final barcode in capture?.barcodes ?? const <Barcode>[]) {
+      final payload = barcode.rawValue ?? barcode.displayValue;
+      if (payload == null) continue;
+      final result = parseNavivoxQrPayload(payload);
+      if (result != null && result.hasValues) return result;
+    }
+    throw const SetupQrImageImportException(
+      'No Navivox connection details were found in the QR image.',
+    );
+  } on SetupQrImageImportException {
+    rethrow;
+  } on UnsupportedError {
+    throw const SetupQrImageImportException(
+      'QR image import is not supported on this platform.',
+    );
+  } catch (_) {
+    throw const SetupQrImageImportException(
+      'Could not read a Navivox QR image.',
+    );
+  } finally {
+    scanner.dispose();
+  }
+}
+
+SetupQrImageImport? parseNavivoxQrPayload(String payload) {
+  final text = payload.trim();
+  if (text.isEmpty) return null;
+
+  final jsonResult = _parseQrJsonPayload(text);
+  if (jsonResult != null && jsonResult.hasValues) return jsonResult;
+
+  final uri = Uri.tryParse(text);
+  if (uri != null && uri.hasScheme) {
+    final token = _firstNonEmpty([
+      uri.queryParameters['token'],
+      uri.queryParameters['pairing_token'],
+      uri.queryParameters['pairingToken'],
+      uri.queryParameters['auth_token'],
+    ]);
+    final queryBaseUrl = _normalizeBaseUrl(
+      _firstNonEmpty([
+        uri.queryParameters['base_url'],
+        uri.queryParameters['baseUrl'],
+        uri.queryParameters['gateway_url'],
+        uri.queryParameters['url'],
+      ]),
+    );
+
+    if (queryBaseUrl != null || token != null) {
+      return SetupQrImageImport(baseUrl: queryBaseUrl, token: token);
+    }
+    if (uri.scheme == 'http' || uri.scheme == 'https') {
+      return SetupQrImageImport(baseUrl: _originFromUri(uri), token: token);
+    }
+  }
+
+  final baseUrl = _normalizeBaseUrl(_firstUrl(text));
+  final token = _firstToken(text);
+  if (baseUrl != null || token != null) {
+    return SetupQrImageImport(baseUrl: baseUrl, token: token);
+  }
+  return null;
+}
+
+SetupQrImageImport? _parseQrJsonPayload(String text) {
+  Object? decoded;
+  try {
+    decoded = jsonDecode(text);
+  } catch (_) {
+    return null;
+  }
+  if (decoded is! Map) return null;
+
+  final topLevelToken = _stringField(decoded, const [
+    'token',
+    'pairing_token',
+    'pairingToken',
+    'auth_token',
+  ]);
+  final topLevelBaseUrl = _normalizeBaseUrl(
+    _stringField(decoded, const ['base_url', 'baseUrl', 'gateway_url', 'url']),
+  );
+  if (topLevelBaseUrl != null || topLevelToken != null) {
+    return SetupQrImageImport(baseUrl: topLevelBaseUrl, token: topLevelToken);
+  }
+
+  final entries = decoded['entries'];
+  if (entries is List) {
+    for (final entry in entries) {
+      if (entry is! Map) continue;
+      final baseUrl = _normalizeBaseUrl(
+        _stringField(entry, const [
+          'base_url',
+          'baseUrl',
+          'gateway_url',
+          'url',
+        ]),
+      );
+      final token = _stringField(entry, const [
+        'token',
+        'pairing_token',
+        'pairingToken',
+        'auth_token',
+      ]);
+      if (baseUrl != null || token != null) {
+        return SetupQrImageImport(baseUrl: baseUrl, token: token);
+      }
+    }
+  }
+  return null;
+}
+
+String? _stringField(Map<dynamic, dynamic> map, List<String> names) {
+  for (final name in names) {
+    final exact = _asNonEmptyString(map[name]);
+    if (exact != null) return exact;
+  }
+  final normalizedNames = {for (final name in names) _normalizeKey(name)};
+  for (final entry in map.entries) {
+    if (!normalizedNames.contains(_normalizeKey('${entry.key}'))) continue;
+    final value = _asNonEmptyString(entry.value);
+    if (value != null) return value;
+  }
+  return null;
+}
+
+String _normalizeKey(String value) => value.toLowerCase().replaceAll('_', '');
+
+String? _asNonEmptyString(Object? value) {
+  if (value is! String) return null;
+  final text = value.trim();
+  return text.isEmpty ? null : text;
+}
+
+String? _firstNonEmpty(Iterable<String?> values) {
+  for (final value in values) {
+    final text = _asNonEmptyString(value);
+    if (text != null) return text;
+  }
+  return null;
+}
+
+String? _firstUrl(String text) {
+  var value = RegExp(r'https?://\S+').firstMatch(text)?.group(0);
+  while (value != null &&
+      value.isNotEmpty &&
+      ',;)]}"'.contains(value[value.length - 1])) {
+    value = value.substring(0, value.length - 1);
+  }
+  return value;
+}
+
+String? _firstToken(String text) {
+  final lower = text.toLowerCase();
+  const labels = [
+    'pairing token',
+    'pairing_token',
+    'pairing-token',
+    'auth token',
+    'auth_token',
+    'auth-token',
+    'token',
+  ];
+  for (final label in labels) {
+    for (final separator in const [':', '=']) {
+      final needle = '$label$separator';
+      final index = lower.indexOf(needle);
+      if (index < 0) continue;
+      final token = _readTokenAt(text, index + needle.length);
+      if (token != null) return token;
+    }
+  }
+
+  final navivoxIndex = lower.indexOf('nvbx_');
+  return navivoxIndex < 0 ? null : _readTokenAt(text, navivoxIndex);
+}
+
+String? _readTokenAt(String text, int start) {
+  var index = start;
+  while (index < text.length && text.codeUnitAt(index) <= 32) {
+    index++;
+  }
+  final tokenStart = index;
+  while (index < text.length && _isTokenChar(text.codeUnitAt(index))) {
+    index++;
+  }
+  if (index == tokenStart) return null;
+  return text.substring(tokenStart, index);
+}
+
+bool _isTokenChar(int codeUnit) {
+  return (codeUnit >= 0x30 && codeUnit <= 0x39) ||
+      (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
+      (codeUnit >= 0x61 && codeUnit <= 0x7a) ||
+      codeUnit == 0x2d ||
+      codeUnit == 0x2e ||
+      codeUnit == 0x2f ||
+      codeUnit == 0x3a ||
+      codeUnit == 0x3d ||
+      codeUnit == 0x5f ||
+      codeUnit == 0x7e ||
+      codeUnit == 0x2b;
+}
+
+String? _normalizeBaseUrl(String? raw) {
+  final value = _asNonEmptyString(raw);
+  if (value == null) return null;
+  final uri = Uri.tryParse(value);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return value;
+  if (uri.scheme != 'http' && uri.scheme != 'https') return value;
+  return _originFromUri(uri);
+}
+
+String _originFromUri(Uri uri) {
+  final host = uri.host.contains(':') ? '[${uri.host}]' : uri.host;
+  final port = uri.hasPort ? ':${uri.port}' : '';
+  return '${uri.scheme}://$host$port';
 }

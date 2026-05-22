@@ -121,7 +121,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        leading: BackButton(
+          onPressed: () {
+            final router = GoRouter.maybeOf(context);
+            if (router != null) {
+              router.go(AppRoutes.chats);
+              return;
+            }
+            Navigator.of(context).maybePop();
+          },
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

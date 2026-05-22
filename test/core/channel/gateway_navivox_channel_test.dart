@@ -178,6 +178,97 @@ void main() {
     },
   );
 
+  test('requestAgentList refreshes Gormes profile contacts', () async {
+    var contacts = <Map<String, Object?>>[
+      {
+        'server_id': 'local-gormes',
+        'profile_id': 'mineru',
+        'display_name': 'Mineru Builder',
+        'server_label': 'local',
+        'health': 'online',
+        'latest_preview': 'Initial profile snapshot',
+        'workspace_root_count': 1,
+        'workspace_roots_ok': true,
+        'attention_badges': <String>[],
+        'mic_available': true,
+        'active_turn_state': 'idle',
+      },
+    ];
+    final server = await _FakeGatewayServer.start(
+      contactsProvider: () => contacts,
+    );
+    addTearDown(server.close);
+
+    final channel = GatewayNavivoxChannel();
+    addTearDown(channel.dispose);
+
+    await channel.connect(
+      baseUrl: server.baseUrl,
+      token: _FakeGatewayServer.token,
+    );
+
+    expect(
+      channel.state.profileContacts.single.latestPreview,
+      'Initial profile snapshot',
+    );
+
+    contacts = [
+      {
+        'server_id': 'local-gormes',
+        'profile_id': 'mineru',
+        'display_name': 'Mineru Builder',
+        'server_label': 'local',
+        'health': 'warning',
+        'latest_preview': 'Refreshed profile snapshot',
+        'workspace_root_count': 2,
+        'workspace_roots_ok': false,
+        'workspace_roots_warning': 1,
+        'workspace_roots_error': 0,
+        'attention_badges': ['workspace'],
+        'mic_available': false,
+        'active_turn_state': 'idle',
+      },
+    ];
+
+    final refreshed = Completer<void>();
+    channel.addListener(() {
+      final stateContacts = channel.state.profileContacts;
+      if (stateContacts.length == 1 &&
+          stateContacts.single.latestPreview == 'Refreshed profile snapshot' &&
+          !refreshed.isCompleted) {
+        refreshed.complete();
+      }
+    });
+
+    channel.requestAgentList();
+    await refreshed.future.timeout(const Duration(seconds: 2));
+
+    final contact = channel.state.profileContacts.single;
+    expect(contact.latestPreview, 'Refreshed profile snapshot');
+    expect(contact.health, NavivoxProfileHealth.warning);
+    expect(contact.workspaceRootCount, 2);
+    expect(contact.workspaceRootsOk, isFalse);
+  });
+
+  test('requestAgentList does not repeat unavailable refresh guidance', () async {
+    final channel = GatewayNavivoxChannel();
+    addTearDown(channel.dispose);
+
+    channel.requestAgentList();
+    channel.requestAgentList();
+    await Future<void>.delayed(Duration.zero);
+
+    final refreshMessages = channel.state.messagesList
+        .where(
+          (message) =>
+              message.author == NavivoxMessageAuthor.system &&
+              message.text == 'Connect to Gormes to refresh profiles.',
+        )
+        .toList();
+
+    expect(refreshMessages, hasLength(1));
+  });
+
   test(
     'voice transcript renders locally and submits as a gateway turn',
     () async {
@@ -435,6 +526,7 @@ class _FakeGatewayServer {
     this.port,
     this._streamEvents,
     this._contacts,
+    this._contactsProvider,
   );
 
   static const token = 'nvbx_test_token';
@@ -443,6 +535,7 @@ class _FakeGatewayServer {
   final int port;
   final List<Map<String, Object?>> Function(String requestId)? _streamEvents;
   final List<Map<String, Object?>>? _contacts;
+  final List<Map<String, Object?>> Function()? _contactsProvider;
   final Completer<Map<String, Object?>> _nextClientMessage = Completer();
 
   String get baseUrl => 'http://127.0.0.1:$port';
@@ -452,6 +545,7 @@ class _FakeGatewayServer {
   static Future<_FakeGatewayServer> start({
     List<Map<String, Object?>> Function(String requestId)? streamEvents,
     List<Map<String, Object?>>? contacts,
+    List<Map<String, Object?>> Function()? contactsProvider,
   }) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final fake = _FakeGatewayServer._(
@@ -459,6 +553,7 @@ class _FakeGatewayServer {
       server.port,
       streamEvents,
       contacts,
+      contactsProvider,
     );
     server.listen(fake._handle);
     return fake;
@@ -483,28 +578,7 @@ class _FakeGatewayServer {
       return;
     }
     if (request.uri.path == '/v1/navivox/profile-contacts') {
-      _writeJson(request.response, {
-        'contacts':
-            _contacts ??
-            [
-              {
-                'server_id': 'navivox-gateway',
-                'profile_id': 'default',
-                'display_name': 'Default profile',
-                'server_label': 'Gormes Gateway',
-                'health': 'online',
-                'latest_preview': 'Gateway online',
-                'latest_preview_kind': 'status',
-                'workspace_root_count': 1,
-                'workspace_roots_ok': true,
-                'workspace_roots_warning': 0,
-                'workspace_roots_error': 0,
-                'attention_badges': <String>[],
-                'mic_available': true,
-                'active_turn_state': 'idle',
-              },
-            ],
-      });
+      _writeJson(request.response, {'contacts': _profileContacts()});
       return;
     }
     if (request.uri.path == '/v1/navivox/stream') {
@@ -523,6 +597,29 @@ class _FakeGatewayServer {
     }
     request.response.statusCode = HttpStatus.notFound;
     await request.response.close();
+  }
+
+  List<Map<String, Object?>> _profileContacts() {
+    return _contactsProvider?.call() ??
+        _contacts ??
+        [
+          {
+            'server_id': 'navivox-gateway',
+            'profile_id': 'default',
+            'display_name': 'Default profile',
+            'server_label': 'Gormes Gateway',
+            'health': 'online',
+            'latest_preview': 'Gateway online',
+            'latest_preview_kind': 'status',
+            'workspace_root_count': 1,
+            'workspace_roots_ok': true,
+            'workspace_roots_warning': 0,
+            'workspace_roots_error': 0,
+            'attention_badges': <String>[],
+            'mic_available': true,
+            'active_turn_state': 'idle',
+          },
+        ];
   }
 
   bool _authorized(HttpRequest request) {

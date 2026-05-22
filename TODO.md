@@ -1,5 +1,10 @@
 # Navivox TODO
 
+[RESOLVED] Commit/push screenshot iteration 1 repeated agent-list message slice — 2026-05-22 16:23 CST
+  resolved: 2026-05-22 16:45 CST
+  evidence: `flutter analyze`, `flutter test`, and `git diff --check` all passed after fixing stale E2E/control finders, the profile-contact back-button expectation, and the README setup screenshot golden.
+  owner: Navivox app owner / Mineru
+
 [BLOCKED] Commit/push Transcript surface plan and context updates — 2026-05-20 20:56 CST
   blocker: `navivox-app` is untracked inside parent repo `/home/xel/git/sages-openclaw`, so committing only plan/context files would add a partial project tree.
   evidence: `git rev-parse --show-toplevel` => `/home/xel/git/sages-openclaw`; `git status --short -- /home/xel/git/sages-openclaw/workspace-mineru/navivox-app` => `?? workspace-mineru/navivox-app/`.

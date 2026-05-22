@@ -272,7 +272,39 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
 
   @override
   void requestAgentList() {
-    _appendSystemMessage('Agent listing is not available on this channel yet.');
+    unawaited(_refreshProfileContacts());
+  }
+
+  Future<void> _refreshProfileContacts() async {
+    final client = _client;
+    if (client == null) {
+      _appendSystemMessage('Connect to Gormes to refresh profiles.');
+      return;
+    }
+    try {
+      final contactPayloads = await client.profileContacts();
+      final profileContacts = contactPayloads
+          .map(_profileContactFromJson)
+          .toList(growable: false);
+      final contacts = profileContacts.isEmpty
+          ? [_fallbackProfileContact()]
+          : profileContacts;
+      final selectedKey =
+          contacts.any(
+            (contact) => contact.key == _state.selectedProfileContactKey,
+          )
+          ? _state.selectedProfileContactKey
+          : contacts.first.key;
+      _state = _state.copyWith(
+        servers: _serversFromProfileContacts(contacts, client.config),
+        activeServerId: contacts.first.serverId,
+        profileContacts: contacts,
+        selectedProfileContactKey: selectedKey,
+      );
+      notifyListeners();
+    } catch (_) {
+      _appendSystemMessage('Could not refresh Gormes profiles.');
+    }
   }
 
   @override
@@ -593,6 +625,14 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   void _appendSystemMessage(String text) {
+    final messages = _state.messagesList;
+    final lastMessage = messages.isEmpty ? null : messages.last;
+    if (lastMessage?.author == NavivoxMessageAuthor.system &&
+        lastMessage?.kind == NavivoxMessageKind.text &&
+        lastMessage?.text == text) {
+      return;
+    }
+
     _putMessage(
       NavivoxChatMessage(
         id: _uuid.v4(),

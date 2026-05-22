@@ -9,6 +9,9 @@ void main() {
   testWidgets('web browser e2e failed setup keeps token secret and retryable', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     final channel = FailingConnectChannel();
     addTearDown(channel.dispose);
 
@@ -28,7 +31,8 @@ void main() {
       find.widgetWithText(TextField, 'Pairing token'),
       'nvbx_super_secret_token',
     );
-    await tester.tap(find.text('Connect and talk'));
+    await tester.ensureVisible(_connectAndTalkButton());
+    await tester.tap(_connectAndTalkButton());
     await tester.pumpAndSettle();
 
     expect(find.text('Could not connect to Gormes gateway.'), findsOneWidget);
@@ -44,6 +48,9 @@ void main() {
   testWidgets('web browser e2e connects from setup and sends first text turn', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
@@ -68,7 +75,8 @@ void main() {
       find.widgetWithText(TextField, 'Pairing token'),
       'nvbx_test_token',
     );
-    await tester.tap(find.text('Connect and talk'));
+    await tester.ensureVisible(_connectAndTalkButton());
+    await tester.tap(_connectAndTalkButton());
     await tester.pumpAndSettle();
 
     expect(channel.connectedBaseUrl, 'http://127.0.0.1:8765');
@@ -91,6 +99,13 @@ void main() {
     expect(find.text('hello from gateway'), findsOneWidget);
     expect(_caseInsensitiveText('telephony'), findsNothing);
   });
+}
+
+Finder _connectAndTalkButton() {
+  return find.ancestor(
+    of: find.text('Connect and talk'),
+    matching: find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
+  );
 }
 
 Finder _visibleTextContaining(String needle) {

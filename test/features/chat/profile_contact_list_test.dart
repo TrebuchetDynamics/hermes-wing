@@ -317,7 +317,8 @@ void main() {
       find.byKey(const ValueKey('profile-contact-office-support')),
       findsOneWidget,
     );
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byTooltip('Open navigation menu'), findsOneWidget);
   });
 
   testWidgets('long pressing a profile opens diagnostics and scoped actions', (

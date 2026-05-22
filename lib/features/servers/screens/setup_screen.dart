@@ -604,6 +604,8 @@ SetupQrImageImport? parseNavivoxQrPayload(String payload) {
       uri.queryParameters['pairing_token'],
       uri.queryParameters['pairingToken'],
       uri.queryParameters['auth_token'],
+      uri.queryParameters['rest_token'],
+      uri.queryParameters['restToken'],
     ]);
     final queryBaseUrl = _normalizeBaseUrl(
       _firstNonEmpty([

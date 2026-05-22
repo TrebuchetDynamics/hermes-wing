@@ -47,6 +47,15 @@ void main() {
     expect(result?.token, 'nvbx_uri_token');
   });
 
+  test('parses Gormes navivox pair QR descriptor rest token', () {
+    final result = parseNavivoxQrPayload(
+      'navivox://connect?base_url=http%3A%2F%2F127.0.0.1%3A8765&websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fv1%2Fnavivox%2Fstream&auth_mode=pairing_token&exposure_mode=local&token_required=true&rest_token=nvbx_pair_rest_token',
+    );
+
+    expect(result?.baseUrl, 'http://127.0.0.1:8765');
+    expect(result?.token, 'nvbx_pair_rest_token');
+  });
+
   test('parses connect-info JSON payloads', () {
     final result = parseNavivoxQrPayload('''
 {

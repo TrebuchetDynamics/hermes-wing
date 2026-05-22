@@ -31,6 +31,11 @@ ThemeData _buildNavivoxTheme(Brightness brightness) {
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     ),
+    dividerTheme: DividerThemeData(
+      color: colorScheme.outlineVariant.withAlpha(96),
+      thickness: 1,
+      space: 1,
+    ),
     listTileTheme: ListTileThemeData(
       selectedColor: colorScheme.primary,
       selectedTileColor: colorScheme.primary.withAlpha(24),

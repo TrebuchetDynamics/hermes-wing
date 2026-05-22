@@ -45,6 +45,19 @@ void main() {
     },
   );
 
+  test('Navivox themes use subtle Telegram-like navigation dividers', () {
+    for (final theme in [navivoxLightTheme, navivoxDarkTheme]) {
+      final colorScheme = theme.colorScheme;
+
+      expect(
+        theme.dividerTheme.color,
+        colorScheme.outlineVariant.withAlpha(96),
+      );
+      expect(theme.dividerTheme.thickness, 1);
+      expect(theme.dividerTheme.space, 1);
+    }
+  });
+
   testWidgets('NavivoxApp exposes system light and dark themes', (
     tester,
   ) async {

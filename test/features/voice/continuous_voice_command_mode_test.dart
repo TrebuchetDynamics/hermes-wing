@@ -527,6 +527,81 @@ void main() {
     expect(channel.sentVoiceTranscripts, isEmpty);
   });
 
+  testWidgets(
+    'STT unavailable sheet separates Android recognizer and microphone permission diagnostics',
+    (tester) async {
+      final channel = TestNavivoxChannel()
+        ..seedServers(_servers, activeServerId: 'local')
+        ..seedProfileContacts([
+          const NavivoxProfileContact(
+            serverId: 'local',
+            profileId: 'mineru',
+            displayName: 'Mineru',
+            serverLabel: 'local',
+            health: NavivoxProfileHealth.online,
+            latestPreview: 'Ready',
+            workspaceRootCount: 1,
+            micAvailable: true,
+            voiceCapability: NavivoxVoiceCapability(
+              deviceStt: 'unavailable',
+              disabledReason: 'device STT unavailable',
+            ),
+          ),
+        ], selectedKey: 'local::mineru');
+      final voiceService = FakeVoiceCaptureService(
+        audio: Uint8List.fromList([1]),
+        transcript: 'should not capture',
+        duration: const Duration(milliseconds: 500),
+        confidence: 0.9,
+      );
+
+      await _pumpTrustedChat(
+        tester,
+        channel: channel,
+        voiceService: voiceService,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('continuous-voice-banner')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Voice diagnostics'), findsOneWidget);
+      expect(
+        find.text('Android recognizer', skipOffstage: false),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Ready in Navivox; gateway STT status is separate.',
+          skipOffstage: false,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Microphone permission', skipOffstage: false),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Not denied by Android in this session; checked when capture starts.',
+          skipOffstage: false,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Gateway profile STT', skipOffstage: false),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Gateway reported device STT unavailable for this profile.',
+          skipOffstage: false,
+        ),
+        findsOneWidget,
+      );
+      expect(channel.sentVoiceTranscripts, isEmpty);
+    },
+  );
+
   testWidgets('profile STT disabled reason is canonicalized', (tester) async {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')

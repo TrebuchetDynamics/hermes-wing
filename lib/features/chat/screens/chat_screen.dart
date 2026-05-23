@@ -179,6 +179,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             pendingTranscript: pendingVoiceRun?.transcript,
             profileName: activeProfile?.displayName,
             recoveryAction: voiceRecoveryAction,
+            localVoiceCaptureAvailable: voiceService != null,
             ready:
                 voiceService != null &&
                 activeProfile != null &&
@@ -704,6 +705,7 @@ class _VoiceModeBanner extends StatelessWidget {
     required this.pendingTranscript,
     required this.profileName,
     required this.recoveryAction,
+    required this.localVoiceCaptureAvailable,
     required this.ready,
     required this.canTrustServer,
     required this.onTrustServer,
@@ -718,6 +720,7 @@ class _VoiceModeBanner extends StatelessWidget {
   final String? pendingTranscript;
   final String? profileName;
   final String? recoveryAction;
+  final bool localVoiceCaptureAvailable;
   final bool ready;
   final bool canTrustServer;
   final VoidCallback? onTrustServer;
@@ -788,6 +791,9 @@ class _VoiceModeBanner extends StatelessWidget {
         : disabledReason == 'select a profile contact'
         ? 'Select a profile contact before reviewing continuous voice settings.'
         : 'Review continuous voice and trust settings';
+    final showSttDiagnostics =
+        disabledReason == 'device STT unavailable' ||
+        disabledReason == 'microphone permission denied';
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -838,6 +844,42 @@ class _VoiceModeBanner extends StatelessWidget {
                   GoRouter.maybeOf(context)?.go(AppRoutes.settings);
                 },
               ),
+            if (showSttDiagnostics) ...[
+              const ListTile(
+                leading: Icon(Icons.fact_check_outlined),
+                title: Text('Voice diagnostics'),
+                subtitle: Text(
+                  'Android recognizer, microphone permission, and gateway profile STT are separate checks.',
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.android),
+                title: const Text('Android recognizer'),
+                subtitle: Text(
+                  localVoiceCaptureAvailable
+                      ? 'Ready in Navivox; gateway STT status is separate.'
+                      : 'No local speech recognizer is active in Navivox.',
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.mic_external_on_outlined),
+                title: const Text('Microphone permission'),
+                subtitle: Text(
+                  disabledReason == 'microphone permission denied'
+                      ? 'Denied by Android. Grant microphone permission in App info.'
+                      : 'Not denied by Android in this session; checked when capture starts.',
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.cloud_outlined),
+                title: const Text('Gateway profile STT'),
+                subtitle: Text(
+                  disabledReason == 'device STT unavailable'
+                      ? 'Gateway reported device STT unavailable for this profile.'
+                      : 'Gateway profile STT is not the current blocker.',
+                ),
+              ),
+            ],
             ListTile(
               leading: const Icon(Icons.short_text),
               title: const Text('Command word'),

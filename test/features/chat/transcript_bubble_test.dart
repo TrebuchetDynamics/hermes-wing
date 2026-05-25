@@ -78,6 +78,76 @@ void main() {
     expect(find.text('/setup?tab=android'), findsOneWidget);
   });
 
+  testWidgets('renders Telegram-style fenced code blocks in text bubbles', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TranscriptBubble(
+            message: _textMessage(
+              id: 'code-1',
+              text: "Run this:\n```dart\nprint('hi');\n```\nThen continue.",
+              author: NavivoxMessageAuthor.assistant,
+            ),
+            isUser: false,
+            showTail: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Run this:'), findsOneWidget);
+    expect(find.text('Then continue.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('transcript-code-block')), findsOneWidget);
+    expect(find.text('dart'), findsOneWidget);
+    expect(find.text("print('hi');"), findsOneWidget);
+    expect(find.byTooltip('Copy code'), findsOneWidget);
+
+    expect(find.byIcon(Icons.copy_rounded), findsOneWidget);
+  });
+
+  testWidgets('collapses long Telegram-style text bubbles behind show more', (
+    tester,
+  ) async {
+    final longText = List.filled(
+      18,
+      'Long deployment paragraph with enough details for a chat bubble.',
+    ).join(' ');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: TranscriptBubble(
+              message: _textMessage(
+                id: 'long-1',
+                text: longText,
+                author: NavivoxMessageAuthor.assistant,
+              ),
+              isUser: false,
+              showTail: true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final text = tester.widget<Text>(find.text(longText));
+    expect(text.maxLines, 8);
+    expect(text.overflow, TextOverflow.fade);
+    expect(find.text('Show more'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('transcript-expand-text-toggle')),
+    );
+    await tester.pump();
+
+    final expandedText = tester.widget<Text>(find.text(longText));
+    expect(expandedText.maxLines, isNull);
+    expect(find.text('Show less'), findsOneWidget);
+  });
+
   testWidgets('renders Telegram-style sent tick for user messages', (
     tester,
   ) async {

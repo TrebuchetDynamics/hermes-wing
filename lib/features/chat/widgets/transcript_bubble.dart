@@ -289,14 +289,223 @@ class _TextBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          presentation.text,
-          style: TextStyle(color: textColor, fontSize: 15),
-        ),
+        _TelegramFormattedText(text: presentation.text, textColor: textColor),
         if (linkPreview != null) ...[
           const SizedBox(height: 8),
           _TelegramLinkPreview(linkPreview: linkPreview, textColor: textColor),
         ],
+      ],
+    );
+  }
+}
+
+class _TelegramFormattedText extends StatelessWidget {
+  const _TelegramFormattedText({required this.text, this.textColor});
+
+  final String text;
+  final Color? textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final segments = _TelegramTextSegment.parse(text);
+    if (segments.length == 1 && !segments.single.isCode) {
+      return _TelegramExpandableText(text: text, textColor: textColor);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final segment in segments) ...[
+          if (segment.isCode)
+            _TelegramCodeBlock(segment: segment, textColor: textColor)
+          else
+            _TelegramExpandableText(text: segment.text, textColor: textColor),
+          if (segment != segments.last) const SizedBox(height: 6),
+        ],
+      ],
+    );
+  }
+}
+
+class _TelegramTextSegment {
+  const _TelegramTextSegment.text(this.text) : language = null;
+  const _TelegramTextSegment.code({required this.text, this.language});
+
+  static final _codeFencePattern = RegExp(
+    r'```([A-Za-z0-9_+.-]*)\n([\s\S]*?)```',
+    multiLine: true,
+  );
+
+  final String text;
+  final String? language;
+
+  bool get isCode => language != null;
+
+  static List<_TelegramTextSegment> parse(String text) {
+    final segments = <_TelegramTextSegment>[];
+    var cursor = 0;
+    for (final match in _codeFencePattern.allMatches(text)) {
+      final before = text.substring(cursor, match.start).trim();
+      if (before.isNotEmpty) segments.add(_TelegramTextSegment.text(before));
+      final language = match.group(1)?.trim();
+      final code = match.group(2)?.trimRight() ?? '';
+      segments.add(
+        _TelegramTextSegment.code(
+          text: code,
+          language: language == null || language.isEmpty ? 'code' : language,
+        ),
+      );
+      cursor = match.end;
+    }
+    final after = text.substring(cursor).trim();
+    if (after.isNotEmpty) segments.add(_TelegramTextSegment.text(after));
+    return segments.isEmpty ? [_TelegramTextSegment.text(text)] : segments;
+  }
+}
+
+class _TelegramCodeBlock extends StatelessWidget {
+  const _TelegramCodeBlock({required this.segment, this.textColor});
+
+  final _TelegramTextSegment segment;
+  final Color? textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final foreground = textColor ?? theme.colorScheme.onSurface;
+    final background = foreground.withValues(alpha: 0.08);
+    return Container(
+      key: const ValueKey('transcript-code-block'),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: foreground.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(left: 10, right: 4),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: foreground.withValues(alpha: 0.10)),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    segment.language ?? 'code',
+                    style: TextStyle(
+                      color: foreground.withValues(alpha: 0.64),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Copy code',
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 16,
+                  onPressed: () async {
+                    await Clipboard.setData(ClipboardData(text: segment.text));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                      const SnackBar(content: Text('Code copied')),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.copy_rounded,
+                    color: foreground.withValues(alpha: 0.62),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+            child: SelectableText(
+              segment.text,
+              style: TextStyle(
+                color: foreground,
+                fontFamily: 'monospace',
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TelegramExpandableText extends StatefulWidget {
+  const _TelegramExpandableText({required this.text, this.textColor});
+
+  static const collapsedMaxLines = 8;
+  static const collapseCharacterThreshold = 520;
+  static const collapseLineThreshold = 8;
+
+  final String text;
+  final Color? textColor;
+
+  @override
+  State<_TelegramExpandableText> createState() =>
+      _TelegramExpandableTextState();
+}
+
+class _TelegramExpandableTextState extends State<_TelegramExpandableText> {
+  bool _expanded = false;
+
+  bool get _shouldCollapse =>
+      widget.text.length > _TelegramExpandableText.collapseCharacterThreshold ||
+      '\n'.allMatches(widget.text).length >=
+          _TelegramExpandableText.collapseLineThreshold;
+
+  @override
+  void didUpdateWidget(covariant _TelegramExpandableText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) _expanded = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final shouldClamp = _shouldCollapse && !_expanded;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.text,
+          key: const ValueKey('transcript-expandable-text'),
+          maxLines: shouldClamp
+              ? _TelegramExpandableText.collapsedMaxLines
+              : null,
+          overflow: shouldClamp ? TextOverflow.fade : null,
+          style: TextStyle(color: widget.textColor, fontSize: 15),
+        ),
+        if (_shouldCollapse)
+          TextButton(
+            key: const ValueKey('transcript-expand-text-toggle'),
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.only(top: 4),
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: () => setState(() => _expanded = !_expanded),
+            child: Text(
+              _expanded ? 'Show less' : 'Show more',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
       ],
     );
   }

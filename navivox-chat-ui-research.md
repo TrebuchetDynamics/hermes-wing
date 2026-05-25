@@ -176,6 +176,12 @@ Telegram backend or third-party chat state manager:
 - `chat_bubbles` / `v_chat_bubbles` link-preview cards: detect URLs in local
   text turns and render a compact host/path preview without network metadata or
   a new dependency.
+- `v_chat_bubbles` expandable text behavior: long text turns collapse behind a
+  compact Show more / Show less control so verbose tool explanations do not
+  dominate the visible transcript.
+- `v_chat_bubbles` block formatting: fenced code in text turns renders as a
+  Telegram-style code card with language header, monospace body, and copy
+  affordance.
 - Telegram-style draggable sheets: use Flutter `DraggableScrollableSheet` for
   chat info and message actions so diagnostics and actions can expand without
   taking over the transcript.

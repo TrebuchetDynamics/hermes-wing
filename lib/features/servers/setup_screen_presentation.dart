@@ -7,7 +7,9 @@ class SetupScreenPresentation {
 
   String get pairingInstructions =>
       'Run `gormes navivox pair`. On Android, Gormes can open Navivox '
-      'directly; QR/import and `gormes navivox connect-info` are fallbacks.';
+      'directly; QR/import and `gormes navivox connect-info` are fallbacks. '
+      'After pairing, the session is saved so you stay logged in when you '
+      'close and reopen Navivox.';
 
   String get networkHint =>
       'Android emulator: use http://10.0.2.2:<port> for a host gateway. '
@@ -68,6 +70,15 @@ class SetupScreenPresentation {
     'Could not connect to Gormes gateway.',
     recoveryMessage: 'Run `gormes navivox connect-info` on the host and retry.',
   );
+
+  SetupScreenNotice get connectSuccessNotice =>
+      const SetupScreenNotice.info('Connected and logged in. Session saved.');
+
+  String get connectCommandExplanation =>
+      'This command starts the Gormes gateway and prints a connection URL '
+      'or QR code. Scan the QR with Navivox to pair, or copy the connection '
+      'URL shown in your terminal. After pairing, this connection is saved '
+      'so you do not need to re-pair unless the session expires.';
 }
 
 class SetupScreenNotice {

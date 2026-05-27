@@ -9,6 +9,7 @@ import '../gateway/navivox_gateway_protocol.dart';
 import '../protocol/navivox_event.dart';
 import '../protocol/navivox_memory.dart';
 import '../protocol/navivox_voice_run.dart';
+import '../session/session_persistence_service.dart';
 import 'navivox_channel.dart';
 
 class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
@@ -21,6 +22,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   final StreamController<NavivoxApprovalRequest> _approvals =
       StreamController<NavivoxApprovalRequest>.broadcast();
 
+  final SessionPersistenceService _sessionService = SessionPersistenceService();
   NavivoxGatewayClient? _client;
   NavivoxCapabilityDocument? _capabilities;
   NavivoxGatewaySocket? _socket;
@@ -57,7 +59,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     String? token,
     String? webSocketUrl,
   }) async {
-    await disconnect();
+    await _closeConnection(clearSavedSession: false);
     final config = NavivoxGatewayConfig(
       baseUri: Uri.parse(baseUrl),
       token: token,
@@ -123,6 +125,15 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       configDiff: const {},
     );
     notifyListeners();
+    // Persist connection parameters so the app can reconnect automatically.
+    unawaited(
+      _sessionService.saveConnection(
+        baseUrl: baseUrl,
+        token: token,
+        webSocketUrl: webSocketUrl,
+        gatewayId: status.capabilitiesUrl,
+      ),
+    );
     if (!streamAvailable) {
       _appendSystemMessage('Navivox stream is not advertised by this gateway.');
     }
@@ -130,6 +141,10 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
 
   @override
   Future<void> disconnect() async {
+    await _closeConnection(clearSavedSession: true);
+  }
+
+  Future<void> _closeConnection({required bool clearSavedSession}) async {
     await _events?.cancel();
     _events = null;
     await _socket?.close();
@@ -137,6 +152,9 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     _client = null;
     _capabilities = null;
     _configAdminAvailable = false;
+    if (clearSavedSession) {
+      unawaited(_sessionService.clearSession());
+    }
   }
 
   Uri? _optionalUri(String? value) {
@@ -839,9 +857,33 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     }
   }
 
+  /// Attempt to reconnect using a previously saved session.
+  /// Returns true if a session was found and connection succeeded.
+  Future<bool> tryReconnect() async {
+    final session = await _sessionService.loadSession();
+    if (session == null) return false;
+    try {
+      await connect(
+        baseUrl: session.baseUrl,
+        token: session.token,
+        webSocketUrl: session.webSocketUrl,
+      );
+      return true;
+    } catch (_) {
+      // Saved session expired or invalid — clear it so the user sees setup.
+      await _sessionService.clearSession();
+      _state = _state.copyWith(servers: [], activeServerId: null);
+      notifyListeners();
+      _appendSystemMessage(
+        'Saved session expired. Please re-pair with your gateway.',
+      );
+      return false;
+    }
+  }
+
   @override
   void dispose() {
-    unawaited(disconnect());
+    unawaited(_closeConnection(clearSavedSession: false));
     unawaited(_approvals.close());
     super.dispose();
   }
@@ -852,6 +894,10 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
         return;
       case 'session_started':
         _activeSessionId = event.sessionId ?? _activeSessionId;
+      case 'gateway_identity':
+        // Gormes gateway identity updates are ignored by the client;
+        // persistent session identity is in saved session metadata.
+        return;
       case 'assistant_delta':
         _appendAssistantDelta(event);
       case 'assistant_message':

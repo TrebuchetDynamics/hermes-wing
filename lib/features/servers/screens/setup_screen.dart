@@ -13,6 +13,7 @@ import '../navivox_connect_intent_source.dart';
 import '../setup_guide_presentation.dart';
 import '../setup_qr_import_presentation.dart';
 import '../setup_screen_presentation.dart';
+import '../../../core/session/session_persistence_service.dart';
 
 export '../setup_qr_import_presentation.dart'
     show SetupQrImageImport, parseNavivoxQrPayload;
@@ -64,6 +65,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     _connectIntentSource =
         widget.connectIntentSource ?? const NavivoxConnectIntentSource();
     unawaited(_startConnectIntentHandling());
+    unawaited(_tryAutoReconnect());
   }
 
   @override
@@ -73,6 +75,42 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     _portController.dispose();
     _tokenController.dispose();
     super.dispose();
+  }
+
+  Future<void> _tryAutoReconnect() async {
+    final session = SessionPersistenceService();
+    final saved = await session.loadSession();
+    if (saved == null || saved.isStale) return;
+    if (!mounted) return;
+    setState(() {
+      _connecting = true;
+      _notice = const SetupScreenNotice.info('Reconnecting to saved gateway…');
+    });
+    try {
+      await ref
+          .read(gatewayNavivoxChannelProvider)
+          .connect(
+            baseUrl: saved.baseUrl,
+            token: saved.token,
+            webSocketUrl: saved.webSocketUrl,
+          );
+      // Reconnect success: router redirect will handle navigation to chat.
+    } catch (_) {
+      if (mounted) {
+        final stale = saved.isStale;
+        setState(() {
+          _notice = SetupScreenNotice.error(
+            stale
+                ? 'Saved session expired. Please pair again with your gateway.'
+                : 'Could not reconnect to saved gateway. Pair again.',
+            recoveryMessage:
+                'Run `gormes navivox pair` on your host and try again.',
+          );
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _connecting = false);
+    }
   }
 
   @override

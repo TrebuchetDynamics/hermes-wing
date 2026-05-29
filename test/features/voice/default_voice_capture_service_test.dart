@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/default_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/voice_capture_service.dart';
+import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
+import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
 
 void main() {
   test('creates a speech-to-text voice service for Android devices', () {

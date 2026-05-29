@@ -1,41 +1,12 @@
 // Navivox Full App Playwright E2E — complete coverage
 // Run: node serve_web.mjs && npx playwright test --config=playwright.config.mjs
 import { test, expect } from '@playwright/test';
-const APP = 'http://127.0.0.1:8767/';
-
-async function a11y(p) {
-  await p.evaluate(() => document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', {bubbles:true})));
-  await p.waitForTimeout(2000);
-}
-async function click(p, t) {
-  await p.waitForSelector('flt-semantics[role="button"]', {timeout:8000}).catch(()=>{});
-  await p.evaluate((text) => {
-    for (const r of ['button','menuitem','checkbox','link','switch','tab']) {
-      for (const e of document.querySelectorAll(`flt-semantics[role="${r}"]`)) {
-        if (((e.textContent||'')+'|'+(e.getAttribute('aria-label')||'')).includes(text)) {
-          e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
-          e.dispatchEvent(new PointerEvent('pointerup',{bubbles:true}));
-          e.dispatchEvent(new MouseEvent('click',{bubbles:true}));
-          return;
-        }
-      }
-    }
-  }, t);
-  await p.waitForTimeout(1000);
-}
-async function longPress(p, t) {
-  await p.evaluate((text) => {
-    for (const b of document.querySelectorAll('flt-semantics[role="button"]')) {
-      if (((b.textContent||'')+'|'+(b.getAttribute('aria-label')||'')).includes(text)) {
-        const r = b.getBoundingClientRect();
-        b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,clientX:r.x+r.width/2,clientY:r.y+r.height/2}));
-        return new Promise(resolve => setTimeout(()=>{b.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:r.x+r.width/2,clientY:r.y+r.height/2}));resolve(true);},1200));
-      }
-    }
-    return Promise.resolve(false);
-  }, t);
-  await p.waitForTimeout(1000);
-}
+import {
+  APP_URL as APP,
+  clickSemantic as click,
+  enableFlutterAccessibility as a11y,
+  longPressSemantic as longPress,
+} from '../support/flutter_semantics.mjs';
 
 // ─── 1. Profile Contacts ─────────────────────────────────────────────
 test.describe('1. Profile Contacts', () => {

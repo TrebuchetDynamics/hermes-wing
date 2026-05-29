@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/servers/setup_qr_import_presentation.dart';
-import 'package:navivox/features/servers/setup_screen_presentation.dart';
+import 'package:navivox/features/servers/setup/setup_qr_import_presentation.dart';
+import 'package:navivox/features/servers/setup/setup_screen_presentation.dart';
 
 void main() {
   const presentation = SetupScreenPresentation();

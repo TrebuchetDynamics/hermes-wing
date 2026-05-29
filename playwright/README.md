@@ -30,6 +30,7 @@ kill %1
 ```text
 playwright/
 ├── tests/        # Specs run by playwright.config.mjs
+├── support/      # Shared Flutter semantics helpers for specs and probes
 ├── debug/        # One-off browser/debug scripts
 ├── probes/       # Exploratory route and surface probes
 ├── scripts/      # Runnable helpers

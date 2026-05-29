@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/servers/register_gateway_presentation.dart';
+import 'package:navivox/features/servers/registration/register_gateway_presentation.dart';
 
 void main() {
   test('exposes register gateway field and boundary copy', () {

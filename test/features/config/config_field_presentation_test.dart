@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/config/config_field_presentation.dart';
-import 'package:navivox/features/config/config_form_model.dart';
+import 'package:navivox/features/config/form/config_field_presentation.dart';
+import 'package:navivox/features/config/form/config_form_model.dart';
 
 void main() {
   test('presents text field keys input mode and validation copy', () {

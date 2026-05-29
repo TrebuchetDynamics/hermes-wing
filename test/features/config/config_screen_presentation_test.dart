@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/config/config_draft_session.dart';
-import 'package:navivox/features/config/config_screen_presentation.dart';
+import 'package:navivox/features/config/form/config_draft_session.dart';
+import 'package:navivox/features/config/presentation/config_screen_presentation.dart';
 
 void main() {
   test(

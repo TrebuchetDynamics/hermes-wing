@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/servers/servers_screen_presentation.dart';
+import 'package:navivox/features/servers/overview/servers_screen_presentation.dart';
 
 const _servers = [
   NavivoxServer(id: 'zulu', name: 'Zulu Gateway', status: 'offline'),

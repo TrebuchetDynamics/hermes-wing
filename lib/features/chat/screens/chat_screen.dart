@@ -12,18 +12,18 @@ import '../../../core/protocol/navivox_event.dart';
 import '../../../router/app_routes.dart';
 import '../../profile_contacts/profile_contact_avatar.dart';
 import '../../settings/providers/voice_settings_provider.dart';
-import '../../voice/services/default_voice_capture_service.dart';
-import '../../voice/services/text_to_speech_service.dart';
-import '../../voice/services/voice_capture_service.dart';
+import '../../voice/services/platform/default_voice_capture_service.dart';
+import '../../voice/services/tts/text_to_speech_service.dart';
+import '../../voice/services/capture/voice_capture_service.dart';
 import '../presentation/chat_screen_presentation.dart';
-import '../intents/forward_message_intent.dart';
-import '../controllers/local_command_dispatcher.dart';
-import '../intents/local_command_intent.dart';
-import '../presentation/transcript_message_action_presentation.dart';
-import '../controllers/voice_run_controller.dart';
-import '../widgets/approval_banner.dart';
-import '../widgets/transcript_run_record_sheet.dart';
-import '../widgets/transcript_surface.dart';
+import '../forwarding/forward_message_intent.dart';
+import '../commands/local_command_dispatcher.dart';
+import '../commands/local_command_intent.dart';
+import '../presentation/transcript/transcript_message_action_presentation.dart';
+import '../controllers/voice/voice_run_controller.dart';
+import '../approval/approval_banner.dart';
+import '../widgets/transcript/transcript_run_record_sheet.dart';
+import '../widgets/transcript/transcript_surface.dart';
 
 /// Voice-capture service used by the chat input bar. Override in tests with
 /// [FakeVoiceCaptureService]; Android production uses platform speech-to-text.

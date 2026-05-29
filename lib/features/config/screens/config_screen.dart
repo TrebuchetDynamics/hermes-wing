@@ -6,13 +6,13 @@ import '../../../core/channel/navivox_channel_provider.dart';
 import '../../../core/gateway/navivox_gateway_protocol.dart';
 import '../../profile_contacts/profile_contact_presentation.dart';
 import '../../profiles/profile_voice_profile_card.dart';
-import '../config_apply_dispatcher.dart';
-import '../config_apply_flow_model.dart';
-import '../config_apply_presentation.dart';
-import '../config_draft_session.dart';
-import '../config_field_presentation.dart';
-import '../config_screen_presentation.dart';
-import '../config_section_presentation.dart';
+import '../apply/config_apply_dispatcher.dart';
+import '../apply/config_apply_flow_model.dart';
+import '../apply/config_apply_presentation.dart';
+import '../form/config_draft_session.dart';
+import '../form/config_field_presentation.dart';
+import '../presentation/config_screen_presentation.dart';
+import '../presentation/config_section_presentation.dart';
 
 class ConfigScreen extends ConsumerStatefulWidget {
   const ConfigScreen({this.sectionId, super.key});

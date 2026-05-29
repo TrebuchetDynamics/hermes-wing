@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:navivox/core/channel/navivox_channel_provider.dart';
-import 'package:navivox/features/servers/navivox_connect_intent_source.dart';
-import 'package:navivox/features/servers/navivox_connect_intent_source_provider.dart';
-import 'package:navivox/features/servers/setup_qr_import_presentation.dart';
+import 'package:navivox/features/servers/setup/navivox_connect_intent_source.dart';
+import 'package:navivox/features/servers/setup/navivox_connect_intent_source_provider.dart';
+import 'package:navivox/features/servers/setup/setup_qr_import_presentation.dart';
 import 'package:navivox/router/app_router.dart';
 import 'package:navivox/testing/connect_and_talk_channel.dart';
 

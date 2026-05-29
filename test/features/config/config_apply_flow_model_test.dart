@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/config/config_apply_flow_model.dart';
-import 'package:navivox/features/config/config_form_model.dart';
+import 'package:navivox/features/config/apply/config_apply_flow_model.dart';
+import 'package:navivox/features/config/form/config_form_model.dart';
 
 void main() {
   test('builds redacted pending changes with confirmation metadata', () {

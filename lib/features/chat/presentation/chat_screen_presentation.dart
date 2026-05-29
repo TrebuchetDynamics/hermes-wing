@@ -2,8 +2,8 @@ import '../../../core/channel/navivox_channel.dart';
 import '../../../core/protocol/navivox_event.dart';
 import '../../../core/protocol/navivox_voice_run.dart';
 import '../../settings/providers/voice_settings_provider.dart';
-import '../models/profile_contact_conversation.dart';
-import 'voice_readiness_presentation.dart';
+import '../conversations/profile_contact_conversation.dart';
+import 'voice/voice_readiness_presentation.dart';
 
 class ChatScreenPresentation {
   const ChatScreenPresentation({

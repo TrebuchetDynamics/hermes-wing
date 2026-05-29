@@ -3,28 +3,15 @@
 // 14g (gateway setup), plus mobile transcript slices 11h-k
 //
 import { test, expect } from '@playwright/test';
-
-const APP = 'http://127.0.0.1:8767/';
-
-async function a11y(page) {
-  await page.evaluate(async () => {
-    for (const r of ['button','menuitem','checkbox','link','switch','tab'])
-      for (const e of document.querySelectorAll(`flt-semantics[role="${r}"]`))
-        if (e.getAttribute('aria-label') || e.textContent)
-          e.dispatchEvent(new MouseEvent('click',{bubbles:true}));
-    await new Promise(r => setTimeout(r,200));
-  });
-}
+import {
+  APP_URL as APP,
+  activateVisibleSemantics as a11y,
+  clickSemantic,
+} from '../support/flutter_semantics.mjs';
 
 async function click(page, text) {
   await page.waitForTimeout(800);
-  for (const r of ['button','menuitem','checkbox','link','switch','tab'])
-    for (const e of document.querySelectorAll(`flt-semantics[role="${r}"]`))
-      if (((e.textContent||'')+'|'+(e.getAttribute('aria-label')||'')).includes(text))
-        { e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
-          e.dispatchEvent(new PointerEvent('pointerup',{bubbles:true}));
-          e.dispatchEvent(new MouseEvent('click',{bubbles:true}));
-          return; }
+  await clickSemantic(page, text, { delay: 0, selectorTimeout: 1 });
 }
 
 test.beforeEach(async ({page}) => {

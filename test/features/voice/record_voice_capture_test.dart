@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/audio_recorder.dart';
-import 'package:navivox/features/voice/services/record_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/speech_recognizer.dart';
+import 'package:navivox/features/voice/services/capture/audio_recorder.dart';
+import 'package:navivox/features/voice/services/capture/record_voice_capture_service.dart';
+import 'package:navivox/features/voice/services/speech/speech_recognizer.dart';
 
 void main() {
   group('RecordVoiceCaptureService.captureUntilStopped', () {

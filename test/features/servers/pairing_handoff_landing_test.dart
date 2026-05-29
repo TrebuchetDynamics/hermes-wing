@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/servers/pairing_handoff_landing.dart';
+import 'package:navivox/features/servers/pairing/pairing_handoff_landing.dart';
 import 'package:navivox/router/navigation_intent.dart';
 
 void main() {

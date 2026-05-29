@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:navivox/features/voice/services/speech_to_text_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/voice_capture_service.dart';
+import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
+import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
 
 void main() {
   test('returns a final transcript from the platform speech engine', () async {

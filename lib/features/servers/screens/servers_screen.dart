@@ -6,8 +6,8 @@ import '../../../core/channel/navivox_channel.dart';
 import '../../../core/channel/navivox_channel_provider.dart';
 import '../../../router/app_routes.dart';
 import '../../profile_contacts/profile_contact_avatar.dart';
-import '../register_gateway_presentation.dart';
-import '../servers_screen_presentation.dart';
+import '../registration/register_gateway_presentation.dart';
+import '../overview/servers_screen_presentation.dart';
 
 class ServersScreen extends ConsumerWidget {
   const ServersScreen({super.key});

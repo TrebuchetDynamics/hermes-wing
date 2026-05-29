@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/config/config_apply_flow_model.dart';
-import 'package:navivox/features/config/config_form_model.dart';
-import 'package:navivox/features/config/config_section_presentation.dart';
+import 'package:navivox/features/config/apply/config_apply_flow_model.dart';
+import 'package:navivox/features/config/form/config_form_model.dart';
+import 'package:navivox/features/config/presentation/config_section_presentation.dart';
 
 void main() {
   test('presents section metadata fields validation and editing state', () {

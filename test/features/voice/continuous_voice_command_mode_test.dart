@@ -8,9 +8,9 @@ import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/core/protocol/navivox_voice_run.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
 import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
-import 'package:navivox/features/voice/services/default_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/speech_to_text_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/voice_capture_service.dart';
+import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
+import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
+import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
 import 'package:navivox/router/app_router.dart';
 
 import '../../support/test_navivox_channel.dart';

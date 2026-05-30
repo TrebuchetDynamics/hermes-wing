@@ -7,6 +7,24 @@ const localGormesServer = NavivoxServer(
   status: 'online',
 );
 
+const localReadyServer = NavivoxServer(
+  id: 'local',
+  name: 'Local',
+  status: 'ready',
+);
+
+const officeReadyServer = NavivoxServer(
+  id: 'office',
+  name: 'Office',
+  status: 'ready',
+);
+
+const officeOnlineServer = NavivoxServer(
+  id: 'office',
+  name: 'Office',
+  status: 'online',
+);
+
 const officeServer = NavivoxServer(
   id: 'office',
   name: 'Office',
@@ -27,6 +45,8 @@ const remoteGormesServer = NavivoxServer(
 
 NavivoxProfileContact mineruBuilderProfile({
   String serverId = 'local',
+  String profileId = 'mineru',
+  String displayName = 'Mineru Builder',
   String serverLabel = 'local',
   NavivoxProfileHealth health = NavivoxProfileHealth.online,
   String latestPreview = 'Ready to work on mineru',
@@ -40,8 +60,8 @@ NavivoxProfileContact mineruBuilderProfile({
 }) {
   return NavivoxProfileContact(
     serverId: serverId,
-    profileId: 'mineru',
-    displayName: 'Mineru Builder',
+    profileId: profileId,
+    displayName: displayName,
     serverLabel: serverLabel,
     health: health,
     latestPreview: latestPreview,
@@ -57,6 +77,8 @@ NavivoxProfileContact mineruBuilderProfile({
 
 NavivoxProfileContact supportTriageProfile({
   String serverId = 'office',
+  String profileId = 'support',
+  String displayName = 'Support Triage',
   String serverLabel = 'office',
   NavivoxProfileHealth health = NavivoxProfileHealth.needsAuth,
   String latestPreview = 'Waiting for token',
@@ -66,8 +88,8 @@ NavivoxProfileContact supportTriageProfile({
 }) {
   return NavivoxProfileContact(
     serverId: serverId,
-    profileId: 'support',
-    displayName: 'Support Triage',
+    profileId: profileId,
+    displayName: displayName,
     serverLabel: serverLabel,
     health: health,
     latestPreview: latestPreview,

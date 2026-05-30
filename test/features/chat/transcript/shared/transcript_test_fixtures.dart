@@ -31,6 +31,8 @@ NavivoxChatMessage transcriptChatMessage({
   NavivoxVoiceMessage? voice,
   NavivoxSafetyNotice? safetyNotice,
   String? runRecordReference,
+  String? serverId,
+  String? profileId,
 }) {
   return NavivoxChatMessage(
     id: id,
@@ -42,6 +44,8 @@ NavivoxChatMessage transcriptChatMessage({
     voice: voice,
     safetyNotice: safetyNotice,
     runRecordReference: runRecordReference,
+    serverId: serverId,
+    profileId: profileId,
   );
 }
 
@@ -51,6 +55,8 @@ NavivoxChatMessage transcriptTextMessage({
   NavivoxMessageAuthor author = NavivoxMessageAuthor.assistant,
   DateTime? createdAt,
   String? runRecordReference,
+  String? serverId,
+  String? profileId,
 }) {
   return transcriptChatMessage(
     id: id,
@@ -59,6 +65,8 @@ NavivoxChatMessage transcriptTextMessage({
     createdAt: createdAt,
     text: text,
     runRecordReference: runRecordReference,
+    serverId: serverId,
+    profileId: profileId,
   );
 }
 

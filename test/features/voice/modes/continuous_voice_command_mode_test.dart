@@ -14,31 +14,20 @@ import '../../../support/test_navivox_channel.dart';
 import '../../shared/app/test_material_app.dart';
 import '../../shared/app/test_router_app.dart';
 import '../../shared/fakes/voice_capture_service_fakes.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 
-const _servers = [
-  NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
-  NavivoxServer(id: 'office', name: 'Office', status: 'online'),
-];
+const _servers = [localGormesServer, officeOnlineServer];
 
 final _contacts = [
-  const NavivoxProfileContact(
-    serverId: 'local',
-    profileId: 'mineru',
+  mineruBuilderProfile(
     displayName: 'Mineru',
-    serverLabel: 'local',
-    health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
     workspaceRootCount: 1,
-    micAvailable: true,
   ),
-  const NavivoxProfileContact(
-    serverId: 'office',
-    profileId: 'support',
+  supportTriageProfile(
     displayName: 'Support',
-    serverLabel: 'office',
     health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
-    workspaceRootCount: 1,
     micAvailable: true,
   ),
 ];

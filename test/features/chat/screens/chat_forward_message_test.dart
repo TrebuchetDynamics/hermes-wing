@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../transcript/shared/transcript_test_fixtures.dart';
 import '../../shared/app/test_material_app.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   testWidgets('chat message action forwards text to another profile contact', (
@@ -13,32 +14,20 @@ void main() {
   ) async {
     final channel = TestNavivoxChannel()
       ..seedServers(const [
-        NavivoxServer(id: 'local', name: 'Local', status: 'ready'),
-        NavivoxServer(id: 'office', name: 'Office', status: 'ready'),
+        localReadyServer,
+        officeReadyServer,
       ], activeServerId: 'local')
-      ..seedProfileContacts(const [
-        NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
-          displayName: 'Mineru Builder',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
-          latestPreview: 'building',
-        ),
-        NavivoxProfileContact(
-          serverId: 'office',
-          profileId: 'support',
-          displayName: 'Support Triage',
-          serverLabel: 'office',
+      ..seedProfileContacts([
+        mineruBuilderProfile(latestPreview: 'building'),
+        supportTriageProfile(
           health: NavivoxProfileHealth.online,
           latestPreview: 'watching tickets',
+          micAvailable: true,
         ),
       ], selectedKey: 'local::mineru')
       ..seedMessages([
-        NavivoxChatMessage(
+        transcriptTextMessage(
           id: 'assistant-1',
-          author: NavivoxMessageAuthor.assistant,
-          kind: NavivoxMessageKind.text,
           createdAt: DateTime(2026, 5, 19, 12),
           text: 'send this to support',
           serverId: 'local',

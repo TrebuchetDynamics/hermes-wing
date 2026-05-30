@@ -9,19 +9,17 @@ import 'package:navivox/router/app_routes.dart';
 
 import '../../../support/test_navivox_channel.dart';
 import '../../shared/app/test_material_app.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 import '../../shared/fixtures/seed_fixtures.dart';
 
 const _seedServers = [
   NavivoxServer(id: 'srv1', name: 'Local', status: 'ready'),
 ];
 
-const _seedProfiles = [
-  NavivoxProfileContact(
+final _seedProfiles = [
+  mineruBuilderProfile(
     serverId: 'srv1',
-    profileId: 'mineru',
-    displayName: 'Mineru Builder',
     serverLabel: 'Local',
-    health: NavivoxProfileHealth.online,
     latestPreview: 'Ready for scoped chat',
   ),
 ];

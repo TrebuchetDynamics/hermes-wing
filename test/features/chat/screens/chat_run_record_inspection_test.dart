@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/gateway/navivox_gateway_protocol.dart';
-import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../transcript/shared/transcript_test_fixtures.dart';
 import '../../shared/app/test_material_app.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   testWidgets(
@@ -18,24 +19,13 @@ void main() {
                 runRecordInspectionAvailable: true,
               ),
             )
-            ..seedServers(const [
-              NavivoxServer(id: 'local', name: 'Local', status: 'ready'),
-            ], activeServerId: 'local')
-            ..seedProfileContacts(const [
-              NavivoxProfileContact(
-                serverId: 'local',
-                profileId: 'mineru',
-                displayName: 'Mineru Builder',
-                serverLabel: 'local',
-                health: NavivoxProfileHealth.online,
-                latestPreview: 'building',
-              ),
+            ..seedServers(const [localReadyServer], activeServerId: 'local')
+            ..seedProfileContacts([
+              mineruBuilderProfile(latestPreview: 'building'),
             ], selectedKey: 'local::mineru')
             ..seedMessages([
-              NavivoxChatMessage(
+              transcriptTextMessage(
                 id: 'req-run-record',
-                author: NavivoxMessageAuthor.assistant,
-                kind: NavivoxMessageKind.text,
                 createdAt: DateTime(2026, 5, 23, 10),
                 text: 'assistant final answer',
                 serverId: 'local',
@@ -97,24 +87,13 @@ void main() {
     tester,
   ) async {
     final channel = TestNavivoxChannel()
-      ..seedServers(const [
-        NavivoxServer(id: 'local', name: 'Local', status: 'ready'),
-      ], activeServerId: 'local')
-      ..seedProfileContacts(const [
-        NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
-          displayName: 'Mineru Builder',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
-          latestPreview: 'building',
-        ),
+      ..seedServers(const [localReadyServer], activeServerId: 'local')
+      ..seedProfileContacts([
+        mineruBuilderProfile(latestPreview: 'building'),
       ], selectedKey: 'local::mineru')
       ..seedMessages([
-        NavivoxChatMessage(
+        transcriptTextMessage(
           id: 'assistant-row',
-          author: NavivoxMessageAuthor.assistant,
-          kind: NavivoxMessageKind.text,
           createdAt: DateTime(2026, 5, 23, 10),
           text: 'assistant final answer',
           serverId: 'local',

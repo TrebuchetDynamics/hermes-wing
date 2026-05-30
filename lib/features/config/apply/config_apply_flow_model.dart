@@ -1,4 +1,5 @@
 import '../form/config_form_model.dart';
+import '../form/config_wire_fields.dart';
 
 class ConfigApplyFlowModel {
   const ConfigApplyFlowModel({required this.changes});
@@ -62,7 +63,7 @@ class ConfigDraftChange {
     List<String> validationMessages,
   ) {
     if (row.isSecret) {
-      final secret = draftValue?.toString().trim() ?? '';
+      final secret = configWireString(draftValue) ?? '';
       if (secret.isEmpty) return null;
       return ConfigDraftChange(
         path: row.field,
@@ -139,10 +140,16 @@ class ConfigValidationState {
     if (rawErrors is! List) return;
     for (final raw in rawErrors) {
       if (raw is! Map) continue;
-      final path = _pathFrom(
-        raw['path'] ?? raw['key'] ?? raw['field'] ?? raw['name'],
-      );
-      final message = _messageFrom(raw['message'] ?? raw['error']);
+      final path = configWireStringFromAliases(raw, const [
+        'path',
+        'key',
+        'field',
+        'name',
+      ]);
+      final message = configWireStringFromAliases(raw, const [
+        'message',
+        'error',
+      ]);
       if (path == null || message == null) continue;
       target.putIfAbsent(path, () => []).add(message);
     }
@@ -154,7 +161,7 @@ class ConfigValidationState {
   ) {
     if (rawErrors is! Map) return;
     for (final entry in rawErrors.entries) {
-      final path = _pathFrom(entry.key);
+      final path = configWireString(entry.key);
       if (path == null) continue;
       final messages = _messagesFrom(entry.value);
       if (messages.isEmpty) continue;
@@ -166,17 +173,9 @@ class ConfigValidationState {
     if (raw is List) {
       return raw.map(_messageFrom).nonNulls.toList(growable: false);
     }
-    final message = _messageFrom(raw);
+    final message = configWireString(raw);
     return message == null ? const [] : [message];
   }
 
-  static String? _pathFrom(Object? raw) {
-    final text = raw?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
-  }
-
-  static String? _messageFrom(Object? raw) {
-    final text = raw?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
-  }
+  static String? _messageFrom(Object? raw) => configWireString(raw);
 }

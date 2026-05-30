@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": "lib",
-  "updatedAt": "2026-05-30T15:46:00.460Z",
-  "objective": "Refactor lib toward explicit root entrypoints/facades plus focused shared contracts/helpers. Root keeps app.dart compatibility facade plus main.dart and main_e2e.dart entrypoints; implementation lives under app/, core/, features/, router/, shared/, testing/, theme/. Shared-code objective extracted and reused Navivox wire JSON coercion and field-access contracts across gateway channel, config form schema, profile seed/profile voice UI, and transcript run-record presentation, in addition to previous shared protocol/presentation contracts.",
+  "updatedAt": "2026-05-30T15:48:39.684Z",
+  "objective": "Refactor lib toward explicit root entrypoints/facades plus focused shared contracts/helpers. Root keeps app.dart compatibility facade plus main.dart and main_e2e.dart entrypoints; implementation lives under app/, core/, features/, router/, shared/, testing/, theme/. Shared-code objective extracted and reused Navivox wire JSON coercion and field-access contracts across gateway channel, config schema/apply flow, profile seed/profile voice UI, and transcript run-record presentation, in addition to previous shared protocol/presentation contracts.",
   "completedSlices": [
     "Extracted shared Navivox wire JSON coercion helpers to lib/core/protocol/navivox_json.dart and reused them from gateway and memory protocol decoders.",
     "Moved NavivoxApp implementation from root lib/app.dart to lib/app/navivox_app.dart while keeping lib/app.dart as public compatibility export.",
@@ -16,7 +16,8 @@
     "Extracted shared voice-unavailable presentation policy to lib/shared/presentation/voice_unavailable_presentation.dart and reused canonical reason, recovery/help copy, and voice-settings subtitle policy from voice readiness and transcript composer UI.",
     "Extracted core voice-unavailable reason contract to lib/core/protocol/voice_unavailable_reason.dart and reused constants/canonicalization across core channel state, speech services, voice controllers, and UI presentation while keeping the existing shared presentation export compatible.",
     "Extended lib/core/protocol/navivox_json.dart with navivoxTrimmedStringList and navivoxTrimmedStringFields; reused them in gateway memory URI params, memory action body construction, profile seed workspace roots, and pairing descriptor CSV/optional params.",
-    "Extended lib/core/protocol/navivox_json.dart with navivoxMapFieldFromJson, navivoxListFieldFromJson, navivoxStringFieldFromJson, and navivoxStringListFieldFromJson; reused them in profile seed sheet, profile voice profile card, transcript run-record presentation, config form schema list parsing, and gateway channel string/int/date/list parsing wrappers."
+    "Extended lib/core/protocol/navivox_json.dart with navivoxMapFieldFromJson, navivoxListFieldFromJson, navivoxStringFieldFromJson, and navivoxStringListFieldFromJson; reused them in profile seed sheet, profile voice profile card, transcript run-record presentation, config form schema list parsing, and gateway channel string/int/date/list parsing wrappers.",
+    "Extracted config schema/validation wire string and alias helpers to lib/features/config/form/config_wire_fields.dart; reused them in config form schema rows/sections/secret labels, config field presentation, and config apply validation/secret draft parsing."
   ],
   "nextCandidates": [],
   "validationReceipts": [
@@ -24,6 +25,8 @@
     "flutter test test/features/servers/setup/setup_qr_import_presentation_test.dart test/features/profiles/profile_seed_flow_test.dart test/core/channel/gateway_navivox_channel_test.dart: passed.",
     "flutter analyze: passed (No issues found).",
     "flutter test test/features/chat/transcript/presentation/transcript_run_record_presentation_test.dart test/features/chat/transcript/widgets/transcript_run_record_sheet_test.dart test/core/channel/gateway_navivox_channel_test.dart test/features/config/form/config_form_model_test.dart test/features/profiles/profile_seed_flow_test.dart test/features/config/screens/profile_voice_profile_test.dart: passed.",
+    "flutter analyze: passed (No issues found).",
+    "flutter test test/features/config/form/config_form_model_test.dart test/features/config/form/config_field_presentation_test.dart test/features/config/apply/config_apply_flow_model_test.dart test/features/config/presentation/config_screen_presentation_test.dart: passed.",
     "flutter analyze: passed (No issues found).",
     "folder_refactor_audit target=lib plannedTopologyComplete=true facadeFiles=[app.dart, main.dart, main_e2e.dart] nextCandidateFiles=[]: passed."
   ]

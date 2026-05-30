@@ -1,4 +1,5 @@
 import '../../../core/protocol/navivox_json.dart';
+import 'config_wire_fields.dart';
 
 class ConfigFormModel {
   const ConfigFormModel({required this.rows, required this.sections});
@@ -15,9 +16,11 @@ class ConfigFormModel {
     final rows = <ConfigFormRow>[];
     for (final raw in rawFields) {
       if (raw is! Map) continue;
-      final field = (raw['path'] ?? raw['key'] ?? raw['name'])
-          ?.toString()
-          .trim();
+      final field = configWireStringFromAliases(raw, const [
+        'path',
+        'key',
+        'name',
+      ]);
       if (field == null || field.isEmpty) continue;
       final type = ConfigFormFieldType.fromWire(raw['type']?.toString());
       final secret =
@@ -32,14 +35,14 @@ class ConfigFormModel {
               raw['restart_required'] == true ||
               raw['reload']?.toString().contains('restart') == true,
           riskLevel:
-              raw['risk_level']?.toString().trim().toLowerCase() ?? 'low',
+              configWireString(raw['risk_level'])?.toLowerCase() ?? 'low',
           requiresConfirmation:
               raw['requires_confirmation'] == true ||
-              raw['risk_level']?.toString().trim().toLowerCase() == 'high',
+              configWireString(raw['risk_level'])?.toLowerCase() == 'high',
           rawValue: values[field],
           allowedValues: _stringList(raw['allowed']),
           actions: _stringList(raw['actions']),
-          reloadMode: raw['reload']?.toString().trim() ?? '',
+          reloadMode: configWireString(raw['reload']) ?? '',
         ),
       );
     }
@@ -92,12 +95,13 @@ class ConfigFormModel {
         usedFields.add(row.field);
       }
       if (sectionRows.isEmpty) continue;
-      final id = _sectionText(raw['id']) ?? 'section-${sections.length + 1}';
+      final id =
+          configWireString(raw['id']) ?? 'section-${sections.length + 1}';
       sections.add(
         ConfigFormSection(
           id: id,
-          label: _sectionText(raw['label']) ?? id,
-          description: _sectionText(raw['description']),
+          label: configWireString(raw['label']) ?? id,
+          description: configWireString(raw['description']),
           rows: sectionRows,
         ),
       );
@@ -117,11 +121,8 @@ class ConfigFormModel {
   }
 
   static String _fieldLabel(Map raw, String fallback) {
-    for (final key in const ['label', 'title']) {
-      final text = raw[key]?.toString().trim();
-      if (text != null && text.isNotEmpty) return text;
-    }
-    return fallback;
+    return configWireStringFromAliases(raw, const ['label', 'title']) ??
+        fallback;
   }
 
   static List<String> _stringList(Object? raw) {
@@ -132,16 +133,12 @@ class ConfigFormModel {
     if (rawFields is! List) return const [];
     final refs = <String>[];
     for (final raw in rawFields) {
-      final field = raw is Map ? raw['path'] ?? raw['key'] ?? raw['name'] : raw;
-      final text = field?.toString().trim();
-      if (text != null && text.isNotEmpty) refs.add(text);
+      final text = raw is Map
+          ? configWireStringFromAliases(raw, const ['path', 'key', 'name'])
+          : configWireString(raw);
+      if (text != null) refs.add(text);
     }
     return refs;
-  }
-
-  static String? _sectionText(Object? raw) {
-    final text = raw?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
   }
 }
 
@@ -275,7 +272,7 @@ class ConfigFormRow {
   static String _secretDisplayValue(Object? rawValue) {
     if (rawValue == null) return 'Secret not set';
     if (rawValue is Map) {
-      final status = rawValue['secret_status']?.toString().trim().toLowerCase();
+      final status = configWireString(rawValue['secret_status'])?.toLowerCase();
       return switch (status) {
         'configured' || 'external' || 'set' => _secretConfiguredLabel(rawValue),
         'unset' => 'Secret not set',
@@ -287,8 +284,8 @@ class ConfigFormRow {
   }
 
   static String _secretConfiguredLabel(Map rawValue) {
-    final source = rawValue['source']?.toString().trim();
-    if (source == null || source.isEmpty) return 'Secret configured';
+    final source = configWireString(rawValue['source']);
+    if (source == null) return 'Secret configured';
     return 'Secret configured ($source)';
   }
 }

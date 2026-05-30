@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'config_form_model.dart';
+import 'config_wire_fields.dart';
 
 class ConfigFieldPresentation {
   ConfigFieldPresentation._({
@@ -55,6 +56,6 @@ class ConfigFieldPresentation {
   Object? coerceEditValue(String raw) => _row.coerceEditValue(raw);
 
   bool clearsDraftFor(Object? value) {
-    return _row.isSecret && (value?.toString().trim() ?? '').isEmpty;
+    return _row.isSecret && configWireString(value) == null;
   }
 }

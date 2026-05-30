@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T06:37:48.171Z",
+  "updatedAt": "2026-05-30T06:41:55.694Z",
   "objective": "Align test/ topology with lib responsibility boundaries while preserving behavior. Target topology is complete: root has no test files; tests are grouped under core, features, router, shared, support, theme, tooling, and e2e, with feature subfolders matching domain responsibilities.",
   "completedSlices": [
     "Moved theme test from test/app to test/theme/navivox_theme_test.dart.",
@@ -12,34 +12,14 @@
     "Moved misplaced feature/session persistence test into test/core/session/session_persistence_service_feature_test.dart.",
     "Removed empty obsolete directories.",
     "Completion check found no remaining root files or empty directories; stale old-path grep returned no matches.",
-    "Loop 53 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references. No safe next candidates remain inside test/.",
-    "Loop 54 audit confirmed target folder complete: no root files and no safe next candidates remain inside test/.",
-    "Loop 55 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 56 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 57 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 58 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 59 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 60 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 61 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 62 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/.",
-    "Loop 63 audit confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/."
+    "Loops 53-64 audits confirmed target folder complete: no root files, no empty dirs, no stale old-path references, and no safe next candidates remain inside test/."
   ],
   "nextCandidates": [],
   "validationReceipts": [
     "flutter test targeted moved paths after each slice: passed.",
     "flutter test: passed (504 tests).",
     "rg stale old test paths in test lib: no matches.",
-    "folder_refactor_audit target=test plannedTopologyComplete=true: pass.",
-    "Loop 53: flutter test passed (504 tests); folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 54: flutter test passed (504 tests); folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 55: find test root files returned none; find test empty dirs returned none; stale old-path rg returned no matches; folder_refactor_audit target=test plannedTopologyComplete=true passed; flutter test --concurrency=1 passed.",
-    "Loop 56: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; stale old-path rg returned no matches; folder_refactor_audit target=test plannedTopologyComplete=true passed; flutter test --concurrency=1 passed.",
-    "Loop 57: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; stale old-path rg returned no matches; flutter test --concurrency=1 passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 58: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; stale old-path rg returned no matches; flutter test --concurrency=1 passed (504 tests); folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 59: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 60: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 passed (504 tests); folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 61: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 62: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 63: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 --reporter=compact passed (status 0); folder_refactor_audit target=test plannedTopologyComplete=true passed."
+    "Loops 53-63: repeated folder_refactor_scan/audit and flutter test validations passed.",
+    "Loop 64: folder_refactor_scan saw root dirs core, e2e, features, router, shared, support, theme, tooling and no root files; find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' . returned no matches; flutter test --concurrency=1 --reporter=compact passed (504 tests); folder_refactor_audit target=test plannedTopologyComplete=true passed."
   ]
 }

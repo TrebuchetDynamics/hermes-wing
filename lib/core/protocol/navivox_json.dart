@@ -40,14 +40,36 @@ Map<String, Object?> navivoxMapFromJson(Object? value) {
   return Map<String, Object?>.from(value);
 }
 
+Map<String, Object?> navivoxMapFieldFromJson(
+  Map<String, Object?> json,
+  String key,
+) {
+  return navivoxMapFromJson(json[key]);
+}
+
 List<Object?> navivoxListFromJson(Object? value) {
   if (value is! List) return const [];
   return value.cast<Object?>();
 }
 
+List<Object?> navivoxListFieldFromJson(Map<String, Object?> json, String key) {
+  return navivoxListFromJson(json[key]);
+}
+
 List<String> navivoxStringListFromJson(Object? value) {
   if (value is! List) return const [];
   return navivoxTrimmedStringList(value);
+}
+
+String navivoxStringFieldFromJson(Map<String, Object?> json, String key) {
+  return navivoxStringFromJson(json[key], fallback: '');
+}
+
+List<String> navivoxStringListFieldFromJson(
+  Map<String, Object?> json,
+  String key,
+) {
+  return navivoxStringListFromJson(json[key]);
 }
 
 /// Returns non-empty trimmed string values in their original order.

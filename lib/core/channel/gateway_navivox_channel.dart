@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../gateway/navivox_gateway_client.dart';
 import '../gateway/navivox_gateway_protocol.dart';
 import '../protocol/navivox_event.dart';
+import '../protocol/navivox_json.dart';
 import '../protocol/navivox_memory.dart';
 import '../protocol/navivox_voice_run.dart';
 import '../session/session_persistence_service.dart';
@@ -1120,8 +1121,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   String? _trimmedString(Object? value) {
-    final text = value?.toString().trim();
-    return text == null || text.isEmpty ? null : text;
+    return navivoxOptionalStringFromJson(value);
   }
 
   String _safeMetadataSummary(Map<String, Object?> metadata) {
@@ -1529,20 +1529,15 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   DateTime? _dateFromJson(Object? value) {
-    final text = value?.toString().trim();
-    if (text == null || text.isEmpty) return null;
-    return DateTime.tryParse(text);
+    return navivoxDateTimeFromJson(value);
   }
 
   String _stringFromJson(Object? value, {required String fallback}) {
-    final text = value?.toString().trim();
-    if (text == null || text.isEmpty) return fallback;
-    return text;
+    return navivoxStringFromJson(value, fallback: fallback);
   }
 
   int _intFromJson(Object? value) {
-    if (value is num) return value.toInt();
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+    return navivoxIntFromJson(value);
   }
 
   bool _boolFromJson(Object? value, {bool fallback = false}) {
@@ -1554,10 +1549,6 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   List<String> _stringListFromJson(Object? value) {
-    if (value is! List) return const [];
-    return value
-        .map((item) => item.toString().trim())
-        .where((item) => item.isNotEmpty)
-        .toList(growable: false);
+    return navivoxStringListFromJson(value);
   }
 }

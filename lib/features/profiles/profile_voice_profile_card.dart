@@ -404,9 +404,9 @@ class _VoiceRunEvidence extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final voice = _mapField(record.raw, 'voice');
-    final serverStt = _mapField(voice, 'server_stt');
-    final tts = _mapField(voice, 'tts');
+    final voice = navivoxMapFieldFromJson(record.raw, 'voice');
+    final serverStt = navivoxMapFieldFromJson(voice, 'server_stt');
+    final tts = navivoxMapFieldFromJson(voice, 'tts');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -430,8 +430,8 @@ List<_VoiceField> _voiceProfileFields(NavivoxProfileVoiceProfile voice) {
 }
 
 String _providerStatus(Map<String, Object?> value) {
-  final provider = _stringField(value, 'provider');
-  final status = _stringField(value, 'status');
+  final provider = navivoxStringFieldFromJson(value, 'provider');
+  final status = navivoxStringFieldFromJson(value, 'status');
   return [provider, status].where((part) => part.isNotEmpty).join(' ');
 }
 
@@ -453,12 +453,4 @@ String _listLabel(List<String> values) {
 String _valueOrUnset(String value) {
   final trimmed = value.trim();
   return trimmed.isEmpty ? 'unset' : trimmed;
-}
-
-Map<String, Object?> _mapField(Map<String, Object?> json, String key) {
-  return navivoxMapFromJson(json[key]);
-}
-
-String _stringField(Map<String, Object?> json, String key) {
-  return navivoxStringFromJson(json[key], fallback: '');
 }

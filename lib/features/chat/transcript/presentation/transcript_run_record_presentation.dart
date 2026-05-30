@@ -51,7 +51,7 @@ class TranscriptRunRecordPresentation {
     NavivoxRunRecordSnapshot record,
   ) {
     final raw = record.raw;
-    final voice = _mapField(raw, 'voice');
+    final voice = navivoxMapFieldFromJson(raw, 'voice');
     return TranscriptRunRecordPresentation._(
       runId: _valueOrUnknown(record.runId),
       sessionId: _valueOrUnknown(record.sessionId),
@@ -59,8 +59,12 @@ class TranscriptRunRecordPresentation {
       createdAtLabel: _dateLabel(record.createdAt),
       updatedAtLabel: _dateLabel(record.updatedAt),
       completedAtLabel: _dateLabel(record.completedAt),
-      providerUsageLabel: _usageLabel(_mapField(raw, 'provider_usage')),
-      providerCostLabel: _costLabel(_mapField(raw, 'provider_cost')),
+      providerUsageLabel: _usageLabel(
+        navivoxMapFieldFromJson(raw, 'provider_usage'),
+      ),
+      providerCostLabel: _costLabel(
+        navivoxMapFieldFromJson(raw, 'provider_cost'),
+      ),
       transcriptRows: _transcriptRows(raw),
       voiceRows: _voiceRows(voice),
       toolRows: _toolRows(raw),
@@ -113,8 +117,8 @@ List<TranscriptRunRecordTranscriptRow> _transcriptRows(
   final rows = <TranscriptRunRecordTranscriptRow>[];
   for (final item in value.whereType<Map>()) {
     final row = Map<String, Object?>.from(item);
-    final role = _trimmedString(row['role']);
-    final text = _trimmedString(row['text']);
+    final role = navivoxOptionalStringFromJson(row['role']);
+    final text = navivoxOptionalStringFromJson(row['text']);
     if (role == null && text == null) continue;
     rows.add(
       TranscriptRunRecordTranscriptRow(
@@ -128,18 +132,18 @@ List<TranscriptRunRecordTranscriptRow> _transcriptRows(
 
 List<TranscriptRunRecordInfoRow> _voiceRows(Map<String, Object?> voice) {
   final rows = <TranscriptRunRecordInfoRow>[];
-  final transcript = _trimmedString(voice['device_transcript']);
+  final transcript = navivoxOptionalStringFromJson(voice['device_transcript']);
   if (transcript != null) {
     rows.add(
       TranscriptRunRecordInfoRow(label: 'Device transcript', value: transcript),
     );
   }
 
-  final audio = _mapField(voice, 'audio');
+  final audio = navivoxMapFieldFromJson(voice, 'audio');
   final audioParts = <String>[];
-  final duration = _trimmedString(audio['duration_ms']);
+  final duration = navivoxOptionalStringFromJson(audio['duration_ms']);
   if (duration != null) audioParts.add('$duration ms');
-  final codec = _trimmedString(audio['codec']);
+  final codec = navivoxOptionalStringFromJson(audio['codec']);
   if (codec != null) audioParts.add('codec $codec');
   if (audio.containsKey('raw_audio_stored')) {
     audioParts.add(
@@ -148,7 +152,7 @@ List<TranscriptRunRecordInfoRow> _voiceRows(Map<String, Object?> voice) {
           : 'raw audio not stored',
     );
   }
-  final retention = _trimmedString(audio['retention']);
+  final retention = navivoxOptionalStringFromJson(audio['retention']);
   if (retention != null) audioParts.add('retention $retention');
   if (audioParts.isNotEmpty) {
     rows.add(
@@ -156,11 +160,16 @@ List<TranscriptRunRecordInfoRow> _voiceRows(Map<String, Object?> voice) {
     );
   }
 
-  final serverStt = _providerState(_mapField(voice, 'server_stt'));
+  final serverStt = _providerState(
+    navivoxMapFieldFromJson(voice, 'server_stt'),
+  );
   if (serverStt != null) {
     rows.add(TranscriptRunRecordInfoRow(label: 'Server STT', value: serverStt));
   }
-  final tts = _providerState(_mapField(voice, 'tts'), includeVoice: true);
+  final tts = _providerState(
+    navivoxMapFieldFromJson(voice, 'tts'),
+    includeVoice: true,
+  );
   if (tts != null) {
     rows.add(TranscriptRunRecordInfoRow(label: 'TTS', value: tts));
   }
@@ -182,12 +191,12 @@ String? _providerState(
 }) {
   if (value.isEmpty) return null;
   final parts = <String>[];
-  final provider = _trimmedString(value['provider']);
-  final status = _trimmedString(value['status']);
+  final provider = navivoxOptionalStringFromJson(value['provider']);
+  final status = navivoxOptionalStringFromJson(value['status']);
   if (provider != null) parts.add(provider);
   if (status != null) parts.add(status);
   if (includeVoice) {
-    final voice = _trimmedString(value['voice_id']);
+    final voice = navivoxOptionalStringFromJson(value['voice_id']);
     if (voice != null) parts.add('voice $voice');
   }
   return parts.isEmpty ? null : parts.join(' • ');
@@ -199,10 +208,10 @@ List<TranscriptRunRecordToolRow> _toolRows(Map<String, Object?> raw) {
   final rows = <TranscriptRunRecordToolRow>[];
   for (final item in value.whereType<Map>()) {
     final row = Map<String, Object?>.from(item);
-    final id = _trimmedString(row['tool_call_id']) ?? 'unknown';
-    final name = _trimmedString(row['name']) ?? id;
-    final status = _trimmedString(row['status']) ?? 'unknown';
-    final metadata = _mapField(row, 'metadata');
+    final id = navivoxOptionalStringFromJson(row['tool_call_id']) ?? 'unknown';
+    final name = navivoxOptionalStringFromJson(row['name']) ?? id;
+    final status = navivoxOptionalStringFromJson(row['status']) ?? 'unknown';
+    final metadata = navivoxMapFieldFromJson(row, 'metadata');
     rows.add(
       TranscriptRunRecordToolRow(
         id: id,
@@ -216,20 +225,22 @@ List<TranscriptRunRecordToolRow> _toolRows(Map<String, Object?> raw) {
 }
 
 String _artifactRef(Map<String, Object?> metadata) {
-  return _trimmedString(metadata['artifact_ref']) ??
-      _trimmedString(metadata['ref']) ??
-      _trimmedString(metadata['artifact_id']) ??
+  return navivoxOptionalStringFromJson(metadata['artifact_ref']) ??
+      navivoxOptionalStringFromJson(metadata['ref']) ??
+      navivoxOptionalStringFromJson(metadata['artifact_id']) ??
       'none';
 }
 
 String _usageLabel(Map<String, Object?> value) {
   if (value.isEmpty) return 'unknown';
-  final status = _trimmedString(value['status']);
+  final status = navivoxOptionalStringFromJson(value['status']);
   if (status != null && status != 'available') return status;
-  final total = _trimmedString(value['total_tokens']);
+  final total = navivoxOptionalStringFromJson(value['total_tokens']);
   if (total != null) return '$total tokens';
-  final input = _trimmedString(value['input_tokens'] ?? value['prompt_tokens']);
-  final output = _trimmedString(
+  final input = navivoxOptionalStringFromJson(
+    value['input_tokens'] ?? value['prompt_tokens'],
+  );
+  final output = navivoxOptionalStringFromJson(
     value['output_tokens'] ?? value['completion_tokens'],
   );
   final parts = <String>[];
@@ -241,17 +252,13 @@ String _usageLabel(Map<String, Object?> value) {
 
 String _costLabel(Map<String, Object?> value) {
   if (value.isEmpty) return 'unknown';
-  final status = _trimmedString(value['status']);
+  final status = navivoxOptionalStringFromJson(value['status']);
   if (status != null && status != 'available') return status;
-  final total = _trimmedString(
+  final total = navivoxOptionalStringFromJson(
     value['total_usd'] ?? value['cost_usd'] ?? value['total_cost_usd'],
   );
   if (total != null) return '$total USD';
   return status ?? 'unknown';
-}
-
-Map<String, Object?> _mapField(Map<String, Object?> json, String key) {
-  return navivoxMapFromJson(json[key]);
 }
 
 String _dateLabel(DateTime? date) {
@@ -262,8 +269,4 @@ String _dateLabel(DateTime? date) {
 String _valueOrUnknown(String value) {
   final trimmed = value.trim();
   return trimmed.isEmpty ? 'unknown' : trimmed;
-}
-
-String? _trimmedString(Object? value) {
-  return navivoxOptionalStringFromJson(value);
 }

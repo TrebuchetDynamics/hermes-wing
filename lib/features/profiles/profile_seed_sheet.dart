@@ -288,17 +288,29 @@ class _ProfileSeedSheetState extends State<ProfileSeedSheet> {
   }
 
   void _populateDraft(Map<String, Object?> draft) {
-    final providerState = _mapField(draft, 'provider_model_state');
-    _profileIdController.text = _stringField(draft, 'profile_id');
-    _displayNameController.text = _stringField(draft, 'display_name');
-    _instructionsController.text = _stringField(draft, 'instructions');
-    _providerController.text = _stringField(providerState, 'provider');
-    _modelController.text = _stringField(providerState, 'model');
+    final providerState = navivoxMapFieldFromJson(
+      draft,
+      'provider_model_state',
+    );
+    _profileIdController.text = navivoxStringFieldFromJson(draft, 'profile_id');
+    _displayNameController.text = navivoxStringFieldFromJson(
+      draft,
+      'display_name',
+    );
+    _instructionsController.text = navivoxStringFieldFromJson(
+      draft,
+      'instructions',
+    );
+    _providerController.text = navivoxStringFieldFromJson(
+      providerState,
+      'provider',
+    );
+    _modelController.text = navivoxStringFieldFromJson(providerState, 'model');
     _toolPolicyController.text = _toolPolicyText(
-      _mapField(draft, 'tool_policy'),
+      navivoxMapFieldFromJson(draft, 'tool_policy'),
     );
     _voiceMetadataController.text = _keyValueText(
-      _mapField(draft, 'voice_profile_metadata'),
+      navivoxMapFieldFromJson(draft, 'voice_profile_metadata'),
     );
   }
 }
@@ -310,9 +322,15 @@ class _DraftSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final providerState = _mapField(draft, 'provider_model_state');
-    final generationSource = _stringField(draft, 'generation_source');
-    final evidence = _stringListField(draft, 'evidence');
+    final providerState = navivoxMapFieldFromJson(
+      draft,
+      'provider_model_state',
+    );
+    final generationSource = navivoxStringFieldFromJson(
+      draft,
+      'generation_source',
+    );
+    final evidence = navivoxStringListFieldFromJson(draft, 'evidence');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -320,7 +338,9 @@ class _DraftSummary extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('generation_source=$generationSource'),
-            Text('Provider status: ${_stringField(providerState, 'status')}'),
+            Text(
+              'Provider status: ${navivoxStringFieldFromJson(providerState, 'status')}',
+            ),
             if (evidence.isNotEmpty) Text('Evidence: ${evidence.join(', ')}'),
           ],
         ),
@@ -336,10 +356,11 @@ class _WorkspaceSuggestions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final suggestions = _listField(draft, 'workspace_root_suggestions')
-        .whereType<Map>()
-        .map((item) => Map<String, Object?>.from(item))
-        .toList(growable: false);
+    final suggestions =
+        navivoxListFieldFromJson(draft, 'workspace_root_suggestions')
+            .whereType<Map>()
+            .map((item) => Map<String, Object?>.from(item))
+            .toList(growable: false);
     if (suggestions.isEmpty) {
       return const Text('No workspace suggestions returned by Gormes.');
     }
@@ -350,9 +371,9 @@ class _WorkspaceSuggestions extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.folder_open),
-            title: Text(_stringField(suggestion, 'label')),
+            title: Text(navivoxStringFieldFromJson(suggestion, 'label')),
             subtitle: Text(
-              '${_stringField(suggestion, 'purpose')} (${_boolField(suggestion, 'requires_confirmation') ? 'requires confirmation' : 'informational'})',
+              '${navivoxStringFieldFromJson(suggestion, 'purpose')} (${_boolField(suggestion, 'requires_confirmation') ? 'requires confirmation' : 'informational'})',
             ),
           ),
       ],
@@ -362,11 +383,14 @@ class _WorkspaceSuggestions extends StatelessWidget {
 
 String _toolPolicyText(Map<String, Object?> toolPolicy) {
   final lines = <String>[];
-  final mode = _stringField(toolPolicy, 'mode');
+  final mode = navivoxStringFieldFromJson(toolPolicy, 'mode');
   if (mode.isNotEmpty) lines.add('mode: $mode');
-  final allowed = _stringListField(toolPolicy, 'allowed');
+  final allowed = navivoxStringListFieldFromJson(toolPolicy, 'allowed');
   if (allowed.isNotEmpty) lines.add('allowed: ${allowed.join(', ')}');
-  final requiresApproval = _stringListField(toolPolicy, 'requires_approval');
+  final requiresApproval = navivoxStringListFieldFromJson(
+    toolPolicy,
+    'requires_approval',
+  );
   if (requiresApproval.isNotEmpty) {
     lines.add('requires_approval: ${requiresApproval.join(', ')}');
   }
@@ -385,22 +409,6 @@ String _keyValueText(Map<String, Object?> values) {
     }
   }
   return lines.join('\n');
-}
-
-Map<String, Object?> _mapField(Map<String, Object?> json, String key) {
-  return navivoxMapFromJson(json[key]);
-}
-
-List<Object?> _listField(Map<String, Object?> json, String key) {
-  return navivoxListFromJson(json[key]);
-}
-
-List<String> _stringListField(Map<String, Object?> json, String key) {
-  return navivoxStringListFromJson(json[key]);
-}
-
-String _stringField(Map<String, Object?> json, String key) {
-  return navivoxStringFromJson(json[key], fallback: '');
 }
 
 bool _boolField(Map<String, Object?> json, String key) {

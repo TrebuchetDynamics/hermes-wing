@@ -1,3 +1,5 @@
+import '../../../core/protocol/navivox_json.dart';
+
 class ConfigFormModel {
   const ConfigFormModel({required this.rows, required this.sections});
 
@@ -123,11 +125,7 @@ class ConfigFormModel {
   }
 
   static List<String> _stringList(Object? raw) {
-    if (raw is! List) return const [];
-    return raw
-        .map((item) => item.toString().trim())
-        .where((item) => item.isNotEmpty)
-        .toList(growable: false);
+    return navivoxStringListFromJson(raw);
   }
 
   static List<String> _sectionFieldRefs(Object? rawFields) {

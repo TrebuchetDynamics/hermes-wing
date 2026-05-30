@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../core/channel/navivox_channel.dart';
 import '../../shared/presentation/profile_health_labels.dart';
 
+export '../../shared/presentation/profile_contact_scope_presentation.dart';
+
 const _avatarColorSlots = 18;
 
 class ProfileContactPresentation {
@@ -357,26 +359,4 @@ class ProfileContactDetailActionPresentation {
   final ProfileContactDetailActionKind kind;
   final String title;
   final String subtitle;
-}
-
-class ProfileContactScopePresentation {
-  const ProfileContactScopePresentation({
-    required this.activeServer,
-    required this.activeServerId,
-    required this.activeProfile,
-  });
-
-  final NavivoxServer? activeServer;
-  final String? activeServerId;
-  final NavivoxProfileContact? activeProfile;
-
-  String get serverLabel =>
-      activeServer?.name ??
-      activeProfile?.serverLabel ??
-      activeServerId ??
-      'No server selected';
-
-  String get profileLabel => activeProfile?.displayName ?? 'No active profile';
-
-  String? get profileId => activeProfile?.profileId;
 }

@@ -1,15 +1,17 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T07:48:49.030Z",
+  "updatedAt": "2026-05-30T07:49:35.785Z",
   "objective": "Align test/ topology with lib responsibility boundaries while preserving behavior. Target topology is complete: root has no test files; tests are grouped under core, features, router, shared, support, theme, tooling, and e2e, with feature subfolders matching domain responsibilities.",
   "completedSlices": [
     "Loop 90 audit re-confirmed target folder complete: folder_refactor_scan root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test root files none; find empty dirs none; stale old-path grep returned no matches; flutter test test/router --concurrency=1 --reporter=compact passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
-    "Loop 91 audit re-confirmed target folder complete: folder_refactor_scan root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test root files none; find empty dirs none; stale old-path grep returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates."
+    "Loop 91 audit re-confirmed target folder complete: folder_refactor_scan root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test root files none; find empty dirs none; stale old-path grep returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
+    "Loop 92 audit re-confirmed target folder complete: folder_refactor_scan root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test root files none; find empty dirs none; stale old-path grep returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates."
   ],
   "nextCandidates": [],
   "validationReceipts": [
     "Loop 90: folder_refactor_scan target=test root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test -maxdepth 1 -type f returned none; find test -type d -empty returned none; rg 'test/(app|chat|voice|profile|settings|theme|router|shared|tooling|e2e)/' test lib returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact reported All tests passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 91: folder_refactor_scan target=test root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test -maxdepth 1 -type f returned none; find test -type d -empty returned none; rg 'test/(app|chat|voice|profile|settings|theme|router|shared|tooling|e2e)/' test lib returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact reported All tests passed; folder_refactor_audit target=test plannedTopologyComplete=true passed."
+    "Loop 91: folder_refactor_scan target=test root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test -maxdepth 1 -type f returned none; find test -type d -empty returned none; rg 'test/(app|chat|voice|profile|settings|theme|router|shared|tooling|e2e)/' test lib returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact reported All tests passed; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
+    "Loop 92: folder_refactor_scan target=test root files none/root dirs core,e2e,features,router,shared,support,theme,tooling; find test -maxdepth 1 -type f returned none; find test -type d -empty returned none; rg 'test/(app|chat|voice|profile|settings|theme|router|shared|tooling|e2e)/' test lib returned no matches (exit 1 expected); flutter test test/router --concurrency=1 --reporter=compact reported All tests passed; folder_refactor_audit target=test plannedTopologyComplete=true passed."
   ]
 }

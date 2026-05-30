@@ -1,0 +1,12 @@
+# auto-folder-refactor smart ignores
+# no smart suggestions found yet
+
+# auto-folder-refactor smart ignores
+.dart_tool/
+build/
+android/.gradle/
+test-results/
+android/.kotlin/
+docs/screenshots/
+playwright/screenshots/
+playwright/tests/screenshots/

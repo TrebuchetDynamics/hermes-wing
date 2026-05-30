@@ -1,12 +1,12 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T06:02:24.016Z",
+  "updatedAt": "2026-05-30T06:03:47.656Z",
   "objective": "Refactor test folder into coherent responsibility subfolders mirroring lib/app/core/features/router/shared/support/tooling/e2e topology; target topology is complete with no root test files and no remaining root move candidates.",
   "completedSlices": [
-    "Verified existing completed topology: root test folder contains only app, core, e2e, features, router, shared, support, tooling subdirectories.",
-    "Shared-code pass found reusable support/test doubles already centralized under test/support where appropriate; remaining feature-local helpers are behavior-specific and intentionally left local.",
-    "Ran full validation and completion audit."
+    "Verified completed topology: root test folder contains only app, core, e2e, features, router, shared, support, tooling subdirectories.",
+    "Shared-code pass found reusable support/test doubles centralized under test/support; feature/domain-specific helpers remain local by responsibility.",
+    "Ran full test validation and completion audit after re-scan."
   ],
   "nextCandidates": [],
   "validationReceipts": [

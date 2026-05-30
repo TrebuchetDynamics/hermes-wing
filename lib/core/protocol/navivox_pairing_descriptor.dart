@@ -1,5 +1,6 @@
 import '../gateway/navivox_gateway_config.dart';
 import 'navivox_endpoint_uri.dart';
+import 'navivox_json.dart';
 
 class NavivoxPairingDescriptor {
   const NavivoxPairingDescriptor({
@@ -83,9 +84,7 @@ String _requiredPairingParam(
 }
 
 String? _optionalPairingParam(String? value) {
-  final trimmed = value?.trim();
-  if (trimmed == null || trimmed.isEmpty) return null;
-  return trimmed;
+  return navivoxOptionalStringFromJson(value);
 }
 
 String _baseUrlFromWebSocketUri(Uri uri, String descriptor) {
@@ -104,11 +103,7 @@ bool _boolFromPairingParam(String? value) {
 }
 
 List<String> _csvPairingParam(String? value) {
-  final trimmed = value?.trim();
-  if (trimmed == null || trimmed.isEmpty) return const [];
-  return trimmed
-      .split(',')
-      .map((item) => item.trim())
-      .where((item) => item.isNotEmpty)
-      .toList(growable: false);
+  final trimmed = navivoxOptionalStringFromJson(value);
+  if (trimmed == null) return const [];
+  return navivoxTrimmedStringList(trimmed.split(','));
 }

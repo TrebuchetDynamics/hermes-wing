@@ -231,11 +231,9 @@ class _ProfileSeedSheetState extends State<ProfileSeedSheet> {
   bool get _workspaceConfirmed =>
       _workspaceRoots.isNotEmpty || _confirmNoWorkspace;
 
-  List<String> get _workspaceRoots => _workspacePathController.text
-      .split(RegExp(r'[\n,]'))
-      .map((root) => root.trim())
-      .where((root) => root.isNotEmpty)
-      .toList(growable: false);
+  List<String> get _workspaceRoots => navivoxTrimmedStringList(
+    _workspacePathController.text.split(RegExp(r'[\n,]')),
+  );
 
   void _onWorkspaceChanged() {
     if (mounted) setState(() {});

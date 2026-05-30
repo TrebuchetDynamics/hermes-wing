@@ -47,10 +47,27 @@ List<Object?> navivoxListFromJson(Object? value) {
 
 List<String> navivoxStringListFromJson(Object? value) {
   if (value is! List) return const [];
-  return value
+  return navivoxTrimmedStringList(value);
+}
+
+/// Returns non-empty trimmed string values in their original order.
+List<String> navivoxTrimmedStringList(Iterable<Object?> values) {
+  return values
       .map((item) => item.toString().trim())
       .where((item) => item.isNotEmpty)
       .toList(growable: false);
+}
+
+/// Returns a string map with null/blank values removed and remaining values
+/// trimmed. Useful for query params and wire request bodies that share Navivox
+/// non-empty string field semantics.
+Map<String, String> navivoxTrimmedStringFields(Map<String, Object?> values) {
+  return {
+    for (final entry in values.entries)
+      if (entry.value case final value?)
+        if (value.toString().trim().isNotEmpty)
+          entry.key: value.toString().trim(),
+  };
 }
 
 DateTime? navivoxDateTimeFromJson(Object? value) {

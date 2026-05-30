@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import '../protocol/navivox_json.dart';
 import '../protocol/navivox_memory.dart';
 import 'navivox_gateway_protocol.dart';
 import 'navivox_gateway_transport_stub.dart'
@@ -106,15 +107,14 @@ class NavivoxGatewayClient {
     String? correction,
   }) async {
     final body = <String, Object?>{
-      if (serverId != null && serverId.trim().isNotEmpty)
-        'server_id': serverId.trim(),
-      if (profileId != null && profileId.trim().isNotEmpty)
-        'profile_id': profileId.trim(),
+      ...navivoxTrimmedStringFields({
+        'server_id': serverId,
+        'profile_id': profileId,
+        'correction': correction,
+      }),
       'id': id.trim(),
       'type': type.wireValue,
       'action': action.wireValue,
-      if (correction != null && correction.trim().isNotEmpty)
-        'correction': correction.trim(),
     };
     return NavivoxMemoryActionResult.fromJson(
       await _postJson(config.memoryActionUri, body),
@@ -171,10 +171,7 @@ class NavivoxGatewayClient {
     bool apply = false,
     List<String> workspaceRoots = const [],
   }) async {
-    final trimmedWorkspaceRoots = workspaceRoots
-        .map((root) => root.trim())
-        .where((root) => root.isNotEmpty)
-        .toList(growable: false);
+    final trimmedWorkspaceRoots = navivoxTrimmedStringList(workspaceRoots);
     final body = <String, Object?>{
       'seed': seed.trim(),
       if (apply) 'apply': true,

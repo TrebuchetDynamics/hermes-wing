@@ -1,3 +1,4 @@
+import '../protocol/navivox_json.dart';
 import '../protocol/navivox_memory.dart';
 
 class NavivoxGatewayConfig {
@@ -32,12 +33,10 @@ class NavivoxGatewayConfig {
       _withPath('/v1/navivox/voice-profiles/validate');
   Uri get memoryActionUri => _withPath('/v1/navivox/memory/action');
   Uri memoryOverviewUri({String? serverId, String? profileId}) {
-    final query = <String, String>{
-      if (serverId != null && serverId.trim().isNotEmpty)
-        'server_id': serverId.trim(),
-      if (profileId != null && profileId.trim().isNotEmpty)
-        'profile_id': profileId.trim(),
-    };
+    final query = navivoxTrimmedStringFields({
+      'server_id': serverId,
+      'profile_id': profileId,
+    });
     return _withPath(
       '/v1/navivox/memory/overview',
     ).replace(queryParameters: query.isEmpty ? null : query);
@@ -52,15 +51,14 @@ class NavivoxGatewayConfig {
     String? pageToken,
   }) {
     final params = <String, String>{
-      if (serverId != null && serverId.trim().isNotEmpty)
-        'server_id': serverId.trim(),
-      if (profileId != null && profileId.trim().isNotEmpty)
-        'profile_id': profileId.trim(),
-      if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+      ...navivoxTrimmedStringFields({
+        'server_id': serverId,
+        'profile_id': profileId,
+        'q': query,
+        'page_token': pageToken,
+      }),
       if (type != NavivoxMemoryType.all) 'type': type.wireValue,
       if (limit > 0) 'limit': limit.toString(),
-      if (pageToken != null && pageToken.trim().isNotEmpty)
-        'page_token': pageToken.trim(),
     };
     return _withPath(
       '/v1/navivox/memory/search',
@@ -74,10 +72,10 @@ class NavivoxGatewayConfig {
     required NavivoxMemoryType type,
   }) {
     final params = <String, String>{
-      if (serverId != null && serverId.trim().isNotEmpty)
-        'server_id': serverId.trim(),
-      if (profileId != null && profileId.trim().isNotEmpty)
-        'profile_id': profileId.trim(),
+      ...navivoxTrimmedStringFields({
+        'server_id': serverId,
+        'profile_id': profileId,
+      }),
       'id': id.trim(),
       if (type != NavivoxMemoryType.all) 'type': type.wireValue,
     };

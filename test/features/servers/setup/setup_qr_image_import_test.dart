@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/servers/screens/setup_screen.dart';
 
-import '../shared/test_finders.dart';
+import '../../shared/test_finders.dart';
 
 void main() {
   testWidgets(

@@ -1,11 +1,12 @@
 {
   "version": 1,
   "target": "playwright",
-  "updatedAt": "2026-05-30T05:18:14.560Z",
-  "objective": "Refactor playwright into responsibility subfolders: tests/regression for core app E2E specs, tests/screenshots for screenshot/back-nav specs, shared semantics helpers under support, debug/probes/scripts/screenshots retained as responsibility dirs. Root README remains public guide; results.json is generated reporter output.",
+  "updatedAt": "2026-05-30T05:20:30.334Z",
+  "objective": "Refactor playwright into responsibility subfolders: tests/regression for core app E2E specs, tests/screenshots for screenshot/back-nav specs, support for shared Flutter semantics/browser helpers, debug/probes/scripts/screenshots retained as responsibility dirs. Root README remains public guide; results.json is generated reporter output.",
   "completedSlices": [
     "Move playwright/tests/navivox-e2e.spec.mjs to playwright/tests/regression/navivox-e2e.spec.mjs and update support import.",
     "Move playwright/tests/e2e-screenshots.spec.mjs to playwright/tests/screenshots/e2e-screenshots.spec.mjs and update support import.",
+    "Verified no remaining root move candidates in playwright; shared support helpers are already centralized and used by tests/probes/debug.",
     "Validated Playwright test discovery with npm run web:e2e -- --list (83 tests in 2 files)."
   ],
   "nextCandidates": [],

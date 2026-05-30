@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/settings/screens/settings_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/test_material_app.dart';
 
 void main() {
   testWidgets('renders continuous voice controls for the active server', (
@@ -17,10 +16,7 @@ void main() {
       ], activeServerId: 'local');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: SettingsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const SettingsScreen()),
     );
 
     expect(find.text('Voice settings'), findsOneWidget);
@@ -54,10 +50,7 @@ void main() {
       ], activeServerId: 'local');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: SettingsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const SettingsScreen()),
     );
 
     expect(find.text('Global app settings'), findsOneWidget);
@@ -124,10 +117,7 @@ void main() {
       ], selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: SettingsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const SettingsScreen()),
     );
 
     await tester.scrollUntilVisible(find.text('Management overview'), 200);
@@ -160,10 +150,7 @@ void main() {
       ], selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: SettingsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const SettingsScreen()),
     );
 
     await tester.scrollUntilVisible(find.text('Current session scope'), 200);

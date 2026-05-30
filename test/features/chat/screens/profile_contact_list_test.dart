@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
-import 'package:navivox/router/app_router.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/test_router_app.dart';
 
 const _servers = [
   NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
@@ -62,7 +62,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -117,7 +117,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -143,7 +143,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -178,7 +178,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -206,7 +206,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -234,7 +234,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -267,7 +267,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -301,7 +301,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -329,7 +329,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -363,7 +363,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -402,7 +402,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -436,7 +436,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -493,7 +493,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -535,7 +535,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -578,7 +578,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -655,7 +655,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -726,13 +726,4 @@ TextSpan? _spanFor(InlineSpan root, String text) {
     }
   }
   return null;
-}
-
-class _RouterTestApp extends ConsumerWidget {
-  const _RouterTestApp();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(routerConfig: ref.watch(routerProvider));
-  }
 }

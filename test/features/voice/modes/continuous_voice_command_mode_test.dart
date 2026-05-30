@@ -11,9 +11,8 @@ import 'package:navivox/features/settings/providers/voice_settings_provider.dart
 import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
 import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
 import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
-import 'package:navivox/router/app_router.dart';
-
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/test_router_app.dart';
 
 const _servers = [
   NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
@@ -958,7 +957,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -993,7 +992,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -1051,7 +1050,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -1529,7 +1528,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -1647,14 +1646,5 @@ class _QueueVoiceCaptureService implements VoiceCaptureService {
       throw StateError('No queued voice capture');
     }
     return _captures.removeAt(0);
-  }
-}
-
-class _RouterTestApp extends ConsumerWidget {
-  const _RouterTestApp();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(routerConfig: ref.watch(routerProvider));
   }
 }

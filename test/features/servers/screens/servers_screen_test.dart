@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/servers/screens/servers_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/test_material_app.dart';
 
 class RecordingConnectChannel extends TestNavivoxChannel {
   final connectCalls =
@@ -77,10 +76,7 @@ void main() {
         ]);
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(home: ServersScreen()),
-        ),
+        TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
       );
       await tester.pumpAndSettle();
 
@@ -123,10 +119,7 @@ void main() {
       ], activeServerId: 'local');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ServersScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
     );
     await tester.pumpAndSettle();
 
@@ -143,10 +136,7 @@ void main() {
       ], activeServerId: 'local');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ServersScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
     );
     await tester.pumpAndSettle();
 
@@ -164,10 +154,7 @@ void main() {
     final channel = RecordingConnectChannel();
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ServersScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
     );
     await tester.pumpAndSettle();
 
@@ -212,10 +199,7 @@ void main() {
       ], activeServerId: 'local');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ServersScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
     );
     await tester.pumpAndSettle();
 
@@ -258,10 +242,7 @@ void main() {
       ], selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ServersScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const ServersScreen()),
     );
     await tester.pumpAndSettle();
 

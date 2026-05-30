@@ -7,10 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/servers/setup/navivox_connect_intent_source.dart';
 import 'package:navivox/features/servers/screens/setup_screen.dart';
-import 'package:navivox/router/app_router.dart';
 import 'package:navivox/testing/connect_and_talk_channel.dart';
 
 import '../../shared/test_finders.dart';
+import '../../shared/test_router_app.dart';
 
 void main() {
   testWidgets('connect-info lands on chat and sends a text turn', (
@@ -22,7 +22,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -81,7 +81,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const _RouterTestApp(),
+          child: const TestRouterApp(),
         ),
       );
       await tester.pumpAndSettle();
@@ -105,7 +105,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -130,7 +130,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -156,7 +156,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -182,7 +182,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -362,7 +362,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -389,7 +389,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -438,7 +438,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const _RouterTestApp(),
+        child: const TestRouterApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -500,7 +500,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const _RouterTestApp(),
+          child: const TestRouterApp(),
         ),
       );
       await tester.pumpAndSettle();
@@ -532,7 +532,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const _RouterTestApp(),
+          child: const TestRouterApp(),
         ),
       );
       await tester.pumpAndSettle();
@@ -577,13 +577,4 @@ class _FakeConnectIntentSource extends NavivoxConnectIntentSource {
 
   @override
   Stream<SetupQrImageImport> get imports => _imports;
-}
-
-class _RouterTestApp extends ConsumerWidget {
-  const _RouterTestApp();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(routerConfig: ref.watch(routerProvider));
-  }
 }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/agents/screens/agents_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
 import '../../shared/seed_fixtures.dart';
+import '../../shared/test_material_app.dart';
 
 const _seedServers = [
   NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
@@ -45,10 +44,7 @@ void main() {
       final channel = TestNavivoxChannel();
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(home: AgentsScreen()),
-        ),
+        TestNavivoxMaterialApp(channel: channel, home: const AgentsScreen()),
       );
 
       expect(find.text('No profiles found on this server'), findsOneWidget);
@@ -75,10 +71,7 @@ void main() {
         ..seedProfileContacts(_seedProfiles);
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(home: AgentsScreen()),
-        ),
+        TestNavivoxMaterialApp(channel: channel, home: const AgentsScreen()),
       );
 
       expect(find.text('No agents loaded'), findsNothing);
@@ -109,10 +102,7 @@ void main() {
     final channel = TestNavivoxChannel();
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: AgentsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const AgentsScreen()),
     );
 
     await tester.tap(find.text('Add profile'));
@@ -138,10 +128,7 @@ void main() {
     final channel = TestNavivoxChannel()..seedAgents(defaultSeedAgents);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: AgentsScreen()),
-      ),
+      TestNavivoxMaterialApp(channel: channel, home: const AgentsScreen()),
     );
 
     expect(find.text('Default'), findsOneWidget);

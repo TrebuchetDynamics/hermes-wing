@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/core/protocol/navivox_memory.dart';
 import 'package:navivox/features/memory/screens/memory_dashboard_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/test_material_app.dart';
 
 void main() {
   testWidgets(
@@ -44,9 +43,9 @@ void main() {
         );
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(home: MemoryDashboardScreen()),
+        TestNavivoxMaterialApp(
+          channel: channel,
+          home: const MemoryDashboardScreen(),
         ),
       );
       await tester.pumpAndSettle();
@@ -124,9 +123,9 @@ void main() {
       );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: MemoryDashboardScreen()),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const MemoryDashboardScreen(),
       ),
     );
     await tester.pumpAndSettle();
@@ -218,9 +217,9 @@ void main() {
         );
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(home: MemoryDashboardScreen()),
+        TestNavivoxMaterialApp(
+          channel: channel,
+          home: const MemoryDashboardScreen(),
         ),
       );
       await tester.pumpAndSettle();
@@ -314,9 +313,9 @@ void main() {
       );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: MemoryDashboardScreen()),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const MemoryDashboardScreen(),
       ),
     );
     await tester.pumpAndSettle();
@@ -383,9 +382,9 @@ void main() {
       );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: MemoryDashboardScreen()),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const MemoryDashboardScreen(),
       ),
     );
     await tester.pumpAndSettle();

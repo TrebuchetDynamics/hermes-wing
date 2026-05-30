@@ -1,5 +1,5 @@
 // Test keyboard text entry on chat textarea
-import { enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
+import { a11y, openDebugPage } from '../support/browser.mjs';
 import { clickSemanticButtonContaining } from '../support/semantic_actions.mjs';
 
 const { browser, page } = await openDebugPage({
@@ -9,10 +9,6 @@ const { browser, page } = await openDebugPage({
   enableAccessibility: true,
   accessibilitySettleMs: 2000,
 });
-
-async function a11y(p) {
-  await enableFlutterAccessibility(p, { settleMs: 2000 });
-}
 
 // Navigate to Support Triage chat
 await clickSemanticButtonContaining(page, 'Support Triage');

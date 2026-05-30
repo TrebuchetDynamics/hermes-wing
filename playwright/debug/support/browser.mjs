@@ -51,3 +51,8 @@ export async function openDebugPage({
 export async function enableFlutterAccessibility(page, { settleMs = 3000 } = {}) {
   await enableSharedFlutterAccessibility(page, { delay: settleMs });
 }
+
+// Convenience: enable a11y with the shorter 2s settle used by most debug scripts.
+export async function a11y(page) {
+  await enableFlutterAccessibility(page, { settleMs: 2000 });
+}

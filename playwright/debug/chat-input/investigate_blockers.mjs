@@ -1,5 +1,5 @@
 // Investigate: 1) Nav rail semantics 2) Long-press via gesture 3) Keyboard text entry
-import { DEFAULT_APP_URL, enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
+import { DEFAULT_APP_URL, a11y, openDebugPage } from '../support/browser.mjs';
 import { clickSemanticButtonContaining } from '../support/semantic_actions.mjs';
 
 const { browser, page } = await openDebugPage({
@@ -8,10 +8,6 @@ const { browser, page } = await openDebugPage({
   enableAccessibility: true,
   accessibilitySettleMs: 2000,
 });
-
-async function a11y(p) {
-  await enableFlutterAccessibility(p, { settleMs: 2000 });
-}
 
 // 1. DEEP NAV RAIL PROBE: check for ANY elements with nav-related text at left
 console.log('=== 1. NAV RAIL INVESTIGATION ===');

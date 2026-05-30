@@ -4,15 +4,9 @@ import 'package:navivox/features/servers/models/connection_import.dart';
 import 'package:navivox/features/servers/pairing/pairing_handoff_flow.dart';
 import 'package:navivox/router/navigation_intent.dart';
 
+import '../shared/test_constants.dart';
+
 void main() {
-  const mineru = NavivoxProfileContact(
-    serverId: 'local',
-    profileId: 'mineru',
-    displayName: 'Mineru',
-    serverLabel: 'Local',
-    health: NavivoxProfileHealth.online,
-    latestPreview: 'Ready',
-  );
 
   test('carries imported Profile contact target through connect success', () {
     final flow = PairingHandoffFlow.fromImport(

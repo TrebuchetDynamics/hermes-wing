@@ -10,6 +10,8 @@ import 'package:navivox/features/servers/screens/setup_screen.dart';
 import 'package:navivox/router/app_router.dart';
 import 'package:navivox/testing/connect_and_talk_channel.dart';
 
+import '../shared/test_finders.dart';
+
 void main() {
   testWidgets('connect-info lands on chat and sends a text turn', (
     tester,
@@ -31,8 +33,8 @@ void main() {
     expect(find.textContaining('Android emulator'), findsOneWidget);
     expect(find.textContaining('10.0.2.2'), findsOneWidget);
     expect(find.textContaining('physical Android device'), findsOneWidget);
-    expect(_caseInsensitiveText('telephony'), findsNothing);
-    expect(_caseInsensitiveText('fake'), findsNothing);
+    expect(caseInsensitiveText('telephony'), findsNothing);
+    expect(caseInsensitiveText('fake'), findsNothing);
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Gateway address'),
@@ -64,7 +66,7 @@ void main() {
     expect(channel.sentTexts, ['hello gateway']);
     expect(find.text('hello gateway'), findsOneWidget);
     expect(find.text('hello from gateway'), findsOneWidget);
-    expect(_caseInsensitiveText('telephony'), findsNothing);
+    expect(caseInsensitiveText('telephony'), findsNothing);
   });
 
   testWidgets(
@@ -405,7 +407,7 @@ void main() {
     expect(find.text('Copy fix instructions'), findsWidgets);
     expect(find.text('Advanced Termux commands'), findsNothing);
     expect(find.text('Copy Termux download links'), findsNothing);
-    expect(_caseInsensitiveText('curl | sh'), findsNothing);
+    expect(caseInsensitiveText('curl | sh'), findsNothing);
   });
 
   testWidgets('copy one-paste bootstrap stays safe and inspect-first', (
@@ -552,21 +554,12 @@ void main() {
       expect(find.textContaining('gormes navivox pair'), findsWidgets);
       expect(find.textContaining('connect-info'), findsWidgets);
       expect(
-        _caseInsensitiveText('nvbx_secret_should_not_render'),
+        caseInsensitiveText('nvbx_secret_should_not_render'),
         findsNothing,
       );
-      expect(_caseInsensitiveText('telephony'), findsNothing);
+      expect(caseInsensitiveText('telephony'), findsNothing);
     },
   );
-}
-
-Finder _caseInsensitiveText(String needle) {
-  return find.byWidgetPredicate((widget) {
-    if (widget is! Text) return false;
-    final data = widget.data;
-    if (data == null) return false;
-    return data.toLowerCase().contains(needle.toLowerCase());
-  });
 }
 
 class _FakeConnectIntentSource extends NavivoxConnectIntentSource {

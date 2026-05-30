@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/servers/screens/setup_screen.dart';
 
+import '../shared/test_finders.dart';
+
 void main() {
   testWidgets(
     'QR image import fills setup fields without rendering the token',
@@ -40,7 +42,7 @@ void main() {
       expect(tokenField.controller?.text, 'nvbx_from_qr_picture');
       expect(tokenField.obscureText, isTrue);
       expect(find.text('Imported QR connection details.'), findsOneWidget);
-      expect(_visibleTextContaining('nvbx_from_qr_picture'), findsNothing);
+      expect(visibleTextContaining('nvbx_from_qr_picture'), findsNothing);
     },
   );
 
@@ -97,14 +99,5 @@ void main() {
 
     expect(result?.baseUrl, 'http://127.0.0.1:8765');
     expect(result?.token, 'nvbx_pair_json_token');
-  });
-}
-
-Finder _visibleTextContaining(String needle) {
-  return find.byWidgetPredicate((widget) {
-    if (widget is! Text) return false;
-    final data = widget.data;
-    if (data == null) return false;
-    return data.contains(needle);
   });
 }

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,9 +115,9 @@ void main() {
 
   testWidgets('voice command mode accepts one bare command', (tester) async {
     final channel = _seedChannel(selectedKey: 'local::mineru');
-    final voiceService = _QueueVoiceCaptureService([
-      _capture('navi'),
-      _capture('support'),
+    final voiceService = QueueVoiceCaptureService([
+      testVoiceCapture('navi'),
+      testVoiceCapture('support'),
     ]);
 
     await _pumpTrustedChat(
@@ -143,9 +141,9 @@ void main() {
     tester,
   ) async {
     final channel = _seedChannel(selectedKey: 'local::mineru');
-    final voiceService = _QueueVoiceCaptureService([
-      _capture('navi'),
-      _capture('support'),
+    final voiceService = QueueVoiceCaptureService([
+      testVoiceCapture('navi'),
+      testVoiceCapture('support'),
     ]);
 
     await _pumpTrustedChat(
@@ -1525,15 +1523,6 @@ TestNavivoxChannel _seedChannel({required String selectedKey}) {
     ..seedProfileContacts(_contacts, selectedKey: selectedKey);
 }
 
-VoiceCapture _capture(String transcript) {
-  return VoiceCapture(
-    audio: Uint8List.fromList(transcript.codeUnits),
-    transcript: transcript,
-    duration: const Duration(milliseconds: 500),
-    confidence: 0.95,
-  );
-}
-
 void _trustLocalServer(WidgetTester tester) {
   final container = ProviderScope.containerOf(
     tester.element(find.byType(ChatScreen)),
@@ -1590,19 +1579,4 @@ Future<void> _submitText(WidgetTester tester, String text) async {
   );
   await tester.tap(find.byIcon(Icons.send));
   await tester.pump();
-}
-
-class _QueueVoiceCaptureService implements VoiceCaptureService {
-  _QueueVoiceCaptureService(List<VoiceCapture> captures)
-    : _captures = List.of(captures);
-
-  final List<VoiceCapture> _captures;
-
-  @override
-  Future<VoiceCapture> capture({required Duration timeout}) async {
-    if (_captures.isEmpty) {
-      throw StateError('No queued voice capture');
-    }
-    return _captures.removeAt(0);
-  }
 }

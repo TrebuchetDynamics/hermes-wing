@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_voice_run.dart';
@@ -8,6 +6,7 @@ import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capt
 import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
 
 import '../../../../support/test_navivox_channel.dart';
+import '../../../shared/fakes/voice_capture_service_fakes.dart';
 
 void main() {
   test('startCapture records the active Voice run id', () {
@@ -105,7 +104,7 @@ void main() {
 
     final result = controller.captureSucceeded(
       channel,
-      _capture('navi cancel'),
+      testVoiceCapture('navi cancel'),
       handleLocalCommand: (transcript) {
         localCommands.add(transcript);
         return true;
@@ -132,7 +131,7 @@ void main() {
 
       final result = controller.captureSucceeded(
         channel,
-        _capture('summarize workspace'),
+        testVoiceCapture('summarize workspace'),
         handleLocalCommand: (_) => false,
       );
 
@@ -157,7 +156,7 @@ void main() {
     final controller = VoiceRunController();
     final staged = controller.captureSucceeded(
       channel,
-      _capture('summarize workspace'),
+      testVoiceCapture('summarize workspace'),
       handleLocalCommand: (_) => false,
     );
 
@@ -181,7 +180,7 @@ void main() {
     final controller = VoiceRunController();
     final staged = controller.captureSucceeded(
       channel,
-      _capture('check status'),
+      testVoiceCapture('check status'),
       handleLocalCommand: (_) => false,
     );
 
@@ -215,13 +214,4 @@ TestNavivoxChannel _seedChannel() {
         micAvailable: true,
       ),
     ], selectedKey: 'local::mineru');
-}
-
-VoiceCapture _capture(String transcript) {
-  return VoiceCapture(
-    audio: Uint8List.fromList(transcript.codeUnits),
-    transcript: transcript,
-    duration: const Duration(milliseconds: 500),
-    confidence: 0.95,
-  );
 }

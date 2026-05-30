@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/chat/voice/controllers/transcript_voice_capture_flow.dart';
 import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
@@ -127,9 +125,9 @@ class _RecordingVoiceCaptureService implements VoiceCaptureService {
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
     events.add('capture');
-    return VoiceCapture(
-      audio: Uint8List.fromList([1, 2, 3]),
-      transcript: 'hello voice',
+    return testVoiceCapture(
+      'hello voice',
+      audio: [1, 2, 3],
       duration: const Duration(milliseconds: 700),
       confidence: 0.88,
     );

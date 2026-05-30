@@ -1,16 +1,21 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T06:03:47.656Z",
-  "objective": "Refactor test folder into coherent responsibility subfolders mirroring lib/app/core/features/router/shared/support/tooling/e2e topology; target topology is complete with no root test files and no remaining root move candidates.",
+  "updatedAt": "2026-05-30T06:06:27.441Z",
+  "objective": "Align test/ topology with lib responsibility boundaries while preserving behavior: theme tests under test/theme, shared widget tests under test/shared/widgets, chat transcript/voice tests under chat transcript/controller/presentation subfolders, voice service tests under capture/platform/speech subfolders, and misplaced session persistence feature tests under core/session.",
   "completedSlices": [
-    "Verified completed topology: root test folder contains only app, core, e2e, features, router, shared, support, tooling subdirectories.",
-    "Shared-code pass found reusable support/test doubles centralized under test/support; feature/domain-specific helpers remain local by responsibility.",
-    "Ran full test validation and completion audit after re-scan."
+    "Moved theme test from test/app to test/theme/navivox_theme_test.dart.",
+    "Moved shared app shell tests into test/shared/widgets.",
+    "Moved chat voice controller and readiness tests into test/features/chat/voice/controllers and presentation.",
+    "Moved TranscriptSurface voice tests into test/features/chat/transcript/surface.",
+    "Moved voice service tests into test/features/voice/services/{platform,capture,speech}.",
+    "Moved misplaced feature/session persistence test into test/core/session/session_persistence_service_feature_test.dart.",
+    "Removed empty obsolete directories."
   ],
   "nextCandidates": [],
   "validationReceipts": [
-    "flutter test test — passed (504 tests)",
-    "folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] outOfScopeFiles=[] nextCandidateFiles=[] — passed"
+    "flutter test targeted moved paths after each slice: passed.",
+    "flutter test: passed (504 tests).",
+    "folder_refactor_audit target=test plannedTopologyComplete=true: pass."
   ]
 }

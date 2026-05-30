@@ -1,19 +1,16 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T06:01:21.142Z",
-  "objective": "Refactor test folder into coherent responsibility subfolders mirroring lib/app/core/features/router/shared/support/tooling/e2e topology; complete for root test target with feature screen/setup tests moved into matching feature subfolders.",
+  "updatedAt": "2026-05-30T06:02:24.016Z",
+  "objective": "Refactor test folder into coherent responsibility subfolders mirroring lib/app/core/features/router/shared/support/tooling/e2e topology; target topology is complete with no root test files and no remaining root move candidates.",
   "completedSlices": [
-    "Moved setup widget/flow tests from test/features/setup into test/features/servers/setup and removed empty setup directory.",
-    "Moved screen tests into matching screens subfolders for agents, memory, settings, and servers.",
-    "Moved chat screen presentation test into test/features/chat/presentation.",
-    "Ran targeted moved-test validation and full flutter test test; folder_refactor_audit passed with no remaining root files/candidates."
+    "Verified existing completed topology: root test folder contains only app, core, e2e, features, router, shared, support, tooling subdirectories.",
+    "Shared-code pass found reusable support/test doubles already centralized under test/support where appropriate; remaining feature-local helpers are behavior-specific and intentionally left local.",
+    "Ran full validation and completion audit."
   ],
   "nextCandidates": [],
   "validationReceipts": [
-    "flutter test test/features/servers/setup test/features/agents/screens/agents_screen_test.dart test/features/settings/screens/settings_screen_test.dart test/features/memory/screens/memory_dashboard_screen_test.dart — passed",
-    "flutter test test/features/servers/screens/servers_screen_test.dart test/features/chat/presentation/chat_screen_presentation_test.dart — passed",
-    "flutter test test — passed",
-    "folder_refactor_audit target=test plannedTopologyComplete=true — passed"
+    "flutter test test — passed (504 tests)",
+    "folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] outOfScopeFiles=[] nextCandidateFiles=[] — passed"
   ]
 }

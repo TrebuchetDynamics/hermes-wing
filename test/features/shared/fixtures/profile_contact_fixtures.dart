@@ -33,6 +33,8 @@ NavivoxProfileContact mineruBuilderProfile({
   DateTime? latestAt,
   int workspaceRootCount = 2,
   bool workspaceRootsOk = true,
+  int workspaceRootsWarning = 0,
+  int workspaceRootsError = 0,
   bool micAvailable = true,
   String activeTurnState = 'idle',
 }) {
@@ -46,6 +48,8 @@ NavivoxProfileContact mineruBuilderProfile({
     latestAt: latestAt,
     workspaceRootCount: workspaceRootCount,
     workspaceRootsOk: workspaceRootsOk,
+    workspaceRootsWarning: workspaceRootsWarning,
+    workspaceRootsError: workspaceRootsError,
     micAvailable: micAvailable,
     activeTurnState: activeTurnState,
   );
@@ -81,6 +85,7 @@ NavivoxProfileContact personalProfile({
   String latestPreview = 'Gateway unavailable',
   DateTime? latestAt,
   int workspaceRootCount = 0,
+  bool workspaceRootsOk = true,
   bool micAvailable = false,
 }) {
   return NavivoxProfileContact(
@@ -92,6 +97,7 @@ NavivoxProfileContact personalProfile({
     latestPreview: latestPreview,
     latestAt: latestAt,
     workspaceRootCount: workspaceRootCount,
+    workspaceRootsOk: workspaceRootsOk,
     attentionBadges: const ['offline'],
     micAvailable: micAvailable,
   );

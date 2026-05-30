@@ -2,36 +2,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/servers/overview/servers_screen_presentation.dart';
 
+import '../../shared/fixtures/profile_contact_fixtures.dart';
+
 const _servers = [
   NavivoxServer(id: 'zulu', name: 'Zulu Gateway', status: 'offline'),
   NavivoxServer(id: 'alpha', name: 'Alpha Gateway', status: 'online'),
 ];
 
-const _contacts = [
-  NavivoxProfileContact(
-    serverId: 'zulu',
-    profileId: 'support',
-    displayName: 'Support Triage',
-    serverLabel: 'Zulu Gateway',
-    health: NavivoxProfileHealth.needsAuth,
-    latestPreview: 'Waiting for token',
-    attentionBadges: ['auth'],
-  ),
-  NavivoxProfileContact(
+final _contacts = [
+  supportTriageProfile(serverId: 'zulu', serverLabel: 'Zulu Gateway'),
+  mineruBuilderProfile(
     serverId: 'alpha',
-    profileId: 'mineru',
-    displayName: 'Mineru Builder',
     serverLabel: 'Alpha Gateway',
-    health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
-    workspaceRootCount: 2,
-    micAvailable: true,
     activeTurnState: 'streaming',
   ),
-  NavivoxProfileContact(
+  personalProfile(
     serverId: 'alpha',
-    profileId: 'personal',
-    displayName: 'Personal',
     serverLabel: 'Alpha Gateway',
     health: NavivoxProfileHealth.warning,
     latestPreview: 'Workspace warning',
@@ -43,7 +30,7 @@ const _contacts = [
 void main() {
   test('sorts gateways and groups Profile contacts with gateway copy', () {
     final presentation = ServersScreenPresentation.fromState(
-      const NavivoxChannelState(
+      NavivoxChannelState(
         servers: _servers,
         activeServerId: 'alpha',
         profileContacts: _contacts,
@@ -81,7 +68,7 @@ void main() {
 
   test('owns manage gateway sheet and disconnect copy', () {
     final presentation = ServersScreenPresentation.fromState(
-      const NavivoxChannelState(
+      NavivoxChannelState(
         servers: _servers,
         activeServerId: 'alpha',
         profileContacts: _contacts,

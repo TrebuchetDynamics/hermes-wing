@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/profile_contacts/profile_contact_presentation.dart';
 
+import '../shared/fixtures/profile_contact_fixtures.dart';
+
 void main() {
   test('centralizes Profile contact screen and add-sheet copy', () {
     const presentation = ProfileContactsScreenPresentation();
@@ -40,16 +42,10 @@ void main() {
   test(
     'summarizes an online profile contact for list, details, and search',
     () {
-      final contact = NavivoxProfileContact(
-        serverId: 'local',
-        profileId: 'mineru',
-        displayName: 'Mineru Builder',
+      final contact = mineruBuilderProfile(
         serverLabel: 'Local Gormes',
-        health: NavivoxProfileHealth.online,
         latestPreview: 'Goncho memory active',
         latestAt: DateTime(2026, 5, 23, 10, 15),
-        workspaceRootCount: 2,
-        micAvailable: true,
         activeTurnState: 'streaming',
       );
 

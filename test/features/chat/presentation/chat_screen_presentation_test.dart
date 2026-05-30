@@ -5,26 +5,22 @@ import 'package:navivox/core/protocol/navivox_voice_run.dart';
 import 'package:navivox/features/chat/presentation/chat_screen_presentation.dart';
 import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
 
+import '../../shared/fixtures/profile_contact_fixtures.dart';
+
 void main() {
   final now = DateTime.utc(2026, 5, 23, 9);
 
   const local = NavivoxServer(id: 'srv1', name: 'Local', status: 'ready');
-  const activeProfile = NavivoxProfileContact(
+  final activeProfile = mineruBuilderProfile(
     serverId: 'srv1',
-    profileId: 'mineru',
-    displayName: 'Mineru Builder',
     serverLabel: 'Local',
-    health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
     workspaceRootCount: 3,
     workspaceRootsWarning: 1,
-    micAvailable: true,
     activeTurnState: 'streaming',
   );
-  const otherProfile = NavivoxProfileContact(
+  final otherProfile = supportTriageProfile(
     serverId: 'srv1',
-    profileId: 'support',
-    displayName: 'Support Triage',
     serverLabel: 'Local',
     health: NavivoxProfileHealth.online,
     latestPreview: 'Watching tickets',
@@ -40,7 +36,7 @@ void main() {
     final state = NavivoxChannelState(
       servers: const [local],
       activeServerId: 'srv1',
-      profileContacts: const [activeProfile, otherProfile],
+      profileContacts: [activeProfile, otherProfile],
       selectedProfileContactKey: 'srv1::mineru',
       messages: {
         'mineru': NavivoxChatMessage(
@@ -102,7 +98,7 @@ void main() {
       activeServerId: 'srv1',
       agents: const [architect],
       selectedAgentId: 'arch',
-      profileContacts: const [activeProfile, otherProfile],
+      profileContacts: [activeProfile, otherProfile],
       selectedProfileContactKey: 'srv1::mineru',
       messages: {
         'm1': NavivoxChatMessage(
@@ -282,8 +278,8 @@ void main() {
 
   test('separates local recognizer unavailability from gateway STT', () {
     final presentation = ChatScreenPresentation.fromState(
-      state: const NavivoxChannelState(
-        servers: [local],
+      state: NavivoxChannelState(
+        servers: const [local],
         activeServerId: 'srv1',
         profileContacts: [activeProfile],
         selectedProfileContactKey: 'srv1::mineru',
@@ -311,8 +307,8 @@ void main() {
 
   test('offers a trust action for untrusted Profile contact voice mode', () {
     final presentation = ChatScreenPresentation.fromState(
-      state: const NavivoxChannelState(
-        servers: [local],
+      state: NavivoxChannelState(
+        servers: const [local],
         activeServerId: 'srv1',
         profileContacts: [activeProfile],
         selectedProfileContactKey: 'srv1::mineru',

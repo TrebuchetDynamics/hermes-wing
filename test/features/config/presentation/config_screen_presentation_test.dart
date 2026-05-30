@@ -3,6 +3,8 @@ import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/config/form/config_draft_session.dart';
 import 'package:navivox/features/config/presentation/config_screen_presentation.dart';
 
+import '../../shared/fixtures/profile_contact_fixtures.dart';
+
 void main() {
   test(
     'assembles scope, selected sections, validation, and pending apply state',
@@ -12,15 +14,8 @@ void main() {
           NavivoxServer(id: 'local', name: 'Local Gormes', status: 'online'),
         ],
         activeServerId: 'local',
-        profileContacts: const [
-          NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
-            displayName: 'Mineru Builder',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
-            latestPreview: 'Config active',
-          ),
+        profileContacts: [
+          mineruBuilderProfile(latestPreview: 'Config active'),
         ],
         selectedProfileContactKey: 'local::mineru',
         configSchema: const {

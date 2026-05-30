@@ -9,6 +9,7 @@ import '../../../router/navigation_intent.dart';
 import '../../../core/channel/navivox_channel.dart';
 import '../../../core/channel/navivox_channel_provider.dart';
 import '../../../core/protocol/navivox_event.dart';
+import '../../../core/protocol/voice_unavailable_reason.dart';
 import '../../../router/app_routes.dart';
 import '../../profile_contacts/profile_contact_avatar.dart';
 import '../../settings/providers/voice_settings_provider.dart';
@@ -46,8 +47,8 @@ String? _readinessUnavailableReason(
   return readiness.when(
     data: (value) => value.available
         ? null
-        : value.unavailableReason ?? 'device STT unavailable',
-    error: (_, _) => 'device STT unavailable',
+        : value.unavailableReason ?? deviceSttUnavailableReason,
+    error: (_, _) => deviceSttUnavailableReason,
     loading: () => null,
   );
 }

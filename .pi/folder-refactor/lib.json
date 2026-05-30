@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": "lib",
-  "updatedAt": "2026-05-30T15:37:31.105Z",
-  "objective": "Refactor lib toward explicit root entrypoints/facades plus focused shared contracts/helpers. Root keeps app.dart compatibility facade plus main.dart and main_e2e.dart entrypoints; implementation lives under app/, core/, features/, router/, shared/, testing/, theme/. Shared-code objective extracted wire JSON coercion, E2E channel fixture, endpoint URI normalization, gateway config, pairing descriptor contracts, shared profile health labels, count labels, profile contact label/status policy, and shared voice-unavailable presentation policy reused by readiness and transcript composer UI.",
+  "updatedAt": "2026-05-30T15:40:21.987Z",
+  "objective": "Refactor lib toward explicit root entrypoints/facades plus focused shared contracts/helpers. Root keeps app.dart compatibility facade plus main.dart and main_e2e.dart entrypoints; implementation lives under app/, core/, features/, router/, shared/, testing/, theme/. Shared-code objective extracted wire JSON coercion, E2E channel fixture, endpoint URI normalization, gateway config, pairing descriptor contracts, shared profile health labels, count labels, profile contact label/status policy, shared voice-unavailable presentation policy, and now a core voice-unavailable reason contract reused by channel state, speech services, voice controllers, and UI presentation.",
   "completedSlices": [
     "Extracted shared Navivox wire JSON coercion helpers to lib/core/protocol/navivox_json.dart and reused them from gateway and memory protocol decoders.",
     "Moved NavivoxApp implementation from root lib/app.dart to lib/app/navivox_app.dart while keeping lib/app.dart as public compatibility export.",
@@ -13,14 +13,13 @@
     "Extracted shared count-label helper to lib/shared/presentation/count_labels.dart and reused it from settings, servers overview, and chat project status presentation.",
     "Reused existing Navivox JSON coercion helpers from lib/core/protocol/navivox_json.dart in profile seed sheet, profile voice profile card, and transcript run-record presentation instead of local duplicate map/string/list coercion.",
     "Extracted shared profile contact label/status policy to lib/shared/presentation/profile_contact_labels.dart and reused it from memory dashboard scope/error labels and chat screen profile status/project labels.",
-    "Extracted shared voice-unavailable presentation policy to lib/shared/presentation/voice_unavailable_presentation.dart and reused canonical reason, recovery/help copy, and voice-settings subtitle policy from voice readiness and transcript composer presentation code."
+    "Extracted shared voice-unavailable presentation policy to lib/shared/presentation/voice_unavailable_presentation.dart and reused canonical reason, recovery/help copy, and voice-settings subtitle policy from voice readiness and transcript composer UI.",
+    "Extracted core voice-unavailable reason contract to lib/core/protocol/voice_unavailable_reason.dart and reused constants/canonicalization across core channel state, speech-to-text service, default voice readiness, voice-run controller, transcript voice capture flow, chat readiness, and transcript composer presentation while keeping the existing shared presentation export compatible."
   ],
   "nextCandidates": [],
   "validationReceipts": [
-    "flutter test test/shared/presentation/count_labels_test.dart test/shared/presentation/profile_health_labels_test.dart test/features/settings/settings_screen_presentation_test.dart test/features/servers/overview/servers_screen_presentation_test.dart test/features/chat/presentation/chat_screen_presentation_test.dart test/features/chat/voice/presentation/voice_readiness_presentation_test.dart test/features/profile_contacts/profile_contact_presentation_test.dart test/features/profiles/profile_seed_flow_test.dart: passed (36 tests).",
-    "flutter test test/features/config/screens/profile_voice_profile_test.dart: passed (2 tests).",
-    "flutter test test/features/chat/transcript/presentation/transcript_run_record_presentation_test.dart test/features/chat/transcript/widgets/transcript_run_record_sheet_test.dart: passed (3 tests).",
-    "flutter test test/features/chat/voice/presentation/voice_readiness_presentation_test.dart test/features/chat/transcript/presentation/transcript_composer_presentation_test.dart: passed (10 tests).",
+    "flutter test test/core/channel/navivox_voice_capability_test.dart test/features/chat/voice/controllers/voice_run_controller_test.dart test/features/chat/voice/controllers/transcript_voice_capture_flow_test.dart test/features/chat/voice/presentation/voice_readiness_presentation_test.dart test/features/chat/transcript/presentation/transcript_composer_presentation_test.dart test/features/voice/services/speech/speech_to_text_voice_capture_service_test.dart test/features/voice/services/platform/default_voice_capture_service_test.dart: passed (51 tests).",
+    "flutter test test/features/chat/voice/presentation/voice_readiness_presentation_test.dart test/features/chat/transcript/presentation/transcript_composer_presentation_test.dart test/features/chat/presentation/chat_screen_presentation_test.dart test/features/voice/modes/continuous_voice_command_mode_test.dart: passed (55 tests).",
     "flutter analyze: passed (No issues found).",
     "folder_refactor_audit target=lib plannedTopologyComplete=true facadeFiles=[app.dart, main.dart, main_e2e.dart] nextCandidateFiles=[]: passed."
   ]

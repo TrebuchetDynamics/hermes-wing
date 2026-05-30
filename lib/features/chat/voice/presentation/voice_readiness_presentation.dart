@@ -83,7 +83,7 @@ class VoiceReadinessPresentation {
     );
     final localBlockerReason = runtimeReason ?? localReason;
     if (!localVoiceCaptureAvailable || localBlockerReason != null) {
-      final reason = localBlockerReason ?? 'device STT unavailable';
+      final reason = localBlockerReason ?? deviceSttUnavailableReason;
       return _blocked(
         _deviceBlockerKind(reason),
         reason,
@@ -212,7 +212,7 @@ class VoiceReadinessPresentation {
   }
 
   static VoiceReadinessBlockerKind _deviceBlockerKind(String reason) {
-    return reason == 'microphone permission denied'
+    return reason == microphonePermissionDeniedReason
         ? VoiceReadinessBlockerKind.microphonePermissionDenied
         : VoiceReadinessBlockerKind.deviceSpeechUnavailable;
   }
@@ -222,7 +222,7 @@ class VoiceReadinessPresentation {
     String reason,
   ) {
     final recoveryAction = profile.voiceCapability.recoveryAction.trim();
-    if (reason == 'device STT unavailable' && recoveryAction.isNotEmpty) {
+    if (reason == deviceSttUnavailableReason && recoveryAction.isNotEmpty) {
       return recoveryAction;
     }
     return defaultVoiceUnavailableRecoveryAction(reason);

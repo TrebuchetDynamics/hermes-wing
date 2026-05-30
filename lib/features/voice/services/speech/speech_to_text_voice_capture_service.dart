@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../../core/protocol/voice_unavailable_reason.dart';
 import '../capture/voice_capture_service.dart';
 
 const noSpeechDetectedVoiceCaptureMessage =
@@ -37,7 +38,7 @@ class SpeechToTextLocale {
 }
 
 class DeviceSpeechUnavailable implements Exception {
-  const DeviceSpeechUnavailable([this.message = 'device STT unavailable']);
+  const DeviceSpeechUnavailable([this.message = deviceSttUnavailableReason]);
 
   final String message;
 
@@ -209,8 +210,8 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
       if (!available) {
         throw DeviceSpeechUnavailable(
           permissionBeforeInitialize == false
-              ? 'microphone permission denied'
-              : 'device STT unavailable',
+              ? microphonePermissionDeniedReason
+              : deviceSttUnavailableReason,
         );
       }
 
@@ -329,9 +330,9 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
         normalized.contains('denied') ||
         normalized.contains('not_allowed') ||
         normalized.contains('not allowed')) {
-      return 'microphone permission denied';
+      return microphonePermissionDeniedReason;
     }
-    return 'device STT unavailable';
+    return deviceSttUnavailableReason;
   }
 }
 

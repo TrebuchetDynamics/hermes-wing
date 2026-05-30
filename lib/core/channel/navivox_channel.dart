@@ -4,6 +4,7 @@ import '../gateway/navivox_gateway_protocol.dart';
 import '../protocol/navivox_event.dart';
 import '../protocol/navivox_memory.dart';
 import '../protocol/navivox_voice_run.dart';
+import '../protocol/voice_unavailable_reason.dart';
 
 /// A pending approval request issued by the server while a tool call is mid-
 /// flight. The user resolves it via [NavivoxChannel.respondToApproval].
@@ -68,20 +69,12 @@ class NavivoxVoiceCapability {
 
   String? get captureUnavailableReason {
     final reason = disabledReason.trim();
-    if (reason.isNotEmpty) return _canonicalUnavailableReason(reason);
-    if (blocksDeviceCapture) return 'device STT unavailable';
+    if (reason.isNotEmpty) return canonicalVoiceUnavailableReason(reason);
+    if (blocksDeviceCapture) return deviceSttUnavailableReason;
     return null;
   }
 
   bool get blocksDeviceCapture => disabledReason.trim().isNotEmpty;
-
-  static String _canonicalUnavailableReason(String reason) {
-    final trimmed = reason.trim();
-    if (trimmed.toLowerCase() == 'device stt unavailable') {
-      return 'device STT unavailable';
-    }
-    return trimmed;
-  }
 }
 
 class NavivoxProfileContact {

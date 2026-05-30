@@ -133,7 +133,9 @@ class TranscriptComposerPresentation {
 
   String get voiceUnavailableTitle {
     final reason = voiceUnavailableReason;
-    return reason?.isNotEmpty == true ? reason! : 'device STT unavailable';
+    return reason?.isNotEmpty == true
+        ? reason!
+        : voice_unavailable_policy.deviceSttUnavailableReason;
   }
 
   String get voiceUnavailableHelpText {

@@ -1,3 +1,4 @@
+import '../../../../core/protocol/voice_unavailable_reason.dart';
 import '../../../voice/services/speech/speech_to_text_voice_capture_service.dart';
 import '../../../voice/services/capture/voice_capture_service.dart';
 
@@ -75,9 +76,8 @@ class TranscriptVoiceCaptureFlow {
 }
 
 String _deviceSpeechUnavailableMessage(String reason) {
-  final normalized = reason.trim().toLowerCase();
-  if (normalized == 'microphone permission denied') {
-    return microphonePermissionDeniedVoiceCaptureMessage;
-  }
-  return deviceSpeechUnavailableVoiceCaptureMessage;
+  return canonicalVoiceUnavailableReason(reason) ==
+          microphonePermissionDeniedReason
+      ? microphonePermissionDeniedVoiceCaptureMessage
+      : deviceSpeechUnavailableVoiceCaptureMessage;
 }

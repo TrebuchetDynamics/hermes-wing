@@ -1,5 +1,6 @@
 import '../../../../core/channel/navivox_channel.dart';
 import '../../../../core/protocol/navivox_voice_run.dart';
+import '../../../../core/protocol/voice_unavailable_reason.dart';
 import '../../../voice/services/speech/speech_to_text_voice_capture_service.dart';
 import '../../../voice/services/capture/voice_capture_service.dart';
 
@@ -125,22 +126,15 @@ class VoiceRunController {
   String _failureReason(Object error) {
     if (error is VoiceCaptureTimeout) return 'Voice capture timed out.';
     if (error is DeviceSpeechUnavailable) {
-      return _canonicalDeviceSpeechUnavailableReason(error.message);
+      return canonicalVoiceUnavailableReason(
+            error.message,
+            emptyAsNull: true,
+          ) ??
+          deviceSttUnavailableReason;
     }
     if (error is SpeechToTextCaptureFailure && error.isNoTranscript) {
       return noSpeechDetectedVoiceCaptureMessage;
     }
     return 'Voice capture failed.';
-  }
-
-  String _canonicalDeviceSpeechUnavailableReason(String reason) {
-    final trimmed = reason.trim();
-    if (trimmed.isEmpty) return 'device STT unavailable';
-    final normalized = trimmed.toLowerCase();
-    if (normalized == 'device stt unavailable') return 'device STT unavailable';
-    if (normalized == 'microphone permission denied') {
-      return 'microphone permission denied';
-    }
-    return trimmed;
   }
 }

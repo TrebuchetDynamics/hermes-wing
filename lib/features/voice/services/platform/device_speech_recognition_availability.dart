@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 
+import '../../../../core/protocol/voice_unavailable_reason.dart';
 import 'voice_capture_platform.dart';
 
 class DeviceSpeechRecognitionDiagnostics {
@@ -81,7 +82,7 @@ Future<VoiceCaptureReadiness> checkDefaultVoiceCaptureReadiness({
 }) async {
   final effectivePlatform = platform ?? currentVoiceCapturePlatform();
   if (!effectivePlatform.isAndroid) {
-    return const VoiceCaptureReadiness.unavailable('device STT unavailable');
+    return const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
   }
 
   try {
@@ -91,15 +92,15 @@ Future<VoiceCaptureReadiness> checkDefaultVoiceCaptureReadiness({
             .read();
     if (!diagnostics.hasRecognitionService) {
       return VoiceCaptureReadiness.unavailable(
-        'device STT unavailable',
+        deviceSttUnavailableReason,
         diagnostics: diagnostics,
       );
     }
     return VoiceCaptureReadiness.available(diagnostics: diagnostics);
   } on MissingPluginException {
-    return const VoiceCaptureReadiness.unavailable('device STT unavailable');
+    return const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
   } on PlatformException {
-    return const VoiceCaptureReadiness.unavailable('device STT unavailable');
+    return const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
   }
 }
 

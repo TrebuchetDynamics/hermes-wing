@@ -1,14 +1,15 @@
 // Probe all testable but untested features
-import { chromium } from 'playwright';
 import {
   APP_URL as APP,
+  createProbeBrowser,
+  createProbePage,
   enableFlutterAccessibility,
-} from '../../support/flutter_semantics.mjs';
+} from '../support/probe_runtime.mjs';
 
-const b = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+const b = await createProbeBrowser({ launchOptions: { args: ['--no-sandbox'] } });
 
 async function probe(label, url, fn) {
-  const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
+  const p = await createProbePage(b);
   await p.goto(url, { timeout: 15000 });
   await p.waitForTimeout(2000);
   await enableFlutterAccessibility(p);

@@ -1,17 +1,14 @@
-import { chromium } from 'playwright';
+import { DEFAULT_APP_URL, createDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ 
-  headless: true,
-  args: ['--no-sandbox', '--ignore-gpu-blocklist', '--use-gl=angle', '--use-angle=swiftshader'],
+const { browser, page } = await createDebugPage({
+  launchOptions: { args: ['--no-sandbox', '--ignore-gpu-blocklist', '--use-gl=angle', '--use-angle=swiftshader'] },
 });
-
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 const logs = [];
 page.on('console', msg => logs.push(`[${msg.type()}] ${msg.text()}`));
 page.on('pageerror', err => logs.push(`[PAGE_ERROR] ${err.message}`));
 
-await page.goto('http://127.0.0.1:8767/', { waitUntil: 'load', timeout: 30000 });
+await page.goto(DEFAULT_APP_URL, { waitUntil: 'load', timeout: 30000 });
 await page.waitForTimeout(5000);
 
 // Click the Enable accessibility placeholder via JS (it's at -1,-1 so can't be clicked normally)

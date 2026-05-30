@@ -1,17 +1,17 @@
 // Test keyboard text entry on chat textarea
-import { chromium } from 'playwright';
+import { enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openDebugPage({
+  gotoOptions: { timeout: 20000 },
+  launchOptions: { args: ['--no-sandbox'] },
+  settleMs: 2000,
+  enableAccessibility: true,
+  accessibilitySettleMs: 2000,
+});
 
 async function a11y(p) {
-  await p.evaluate(() => document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', {bubbles:true})));
-  await p.waitForTimeout(2000);
+  await enableFlutterAccessibility(p, { settleMs: 2000 });
 }
-
-// 1. Navigate fresh to chat
-await page.goto('http://127.0.0.1:8767/', { timeout: 20000 });
-await page.waitForTimeout(2000); await a11y(page);
 
 // Navigate to Support Triage chat
 await page.evaluate(() => {

@@ -1,13 +1,12 @@
 // Probe: server filter chips, nav rail labels, settings interactions
-import { chromium } from 'playwright';
 import {
   APP_URL,
   clickSemantic as clickTxt,
   enableFlutterAccessibility as acc,
-} from '../../support/flutter_semantics.mjs';
+  openProbePage,
+} from '../support/probe_runtime.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openProbePage();
 
 await page.goto(APP_URL, { waitUntil: 'load', timeout: 20000 });
 await page.waitForTimeout(2000); await acc(page);

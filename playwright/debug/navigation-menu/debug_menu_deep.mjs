@@ -1,15 +1,11 @@
 // Debug: examine popup menu semantics more carefully
-import { chromium } from 'playwright';
+import { openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-
-await page.goto('http://127.0.0.1:8767/', { waitUntil: 'load', timeout: 20000 });
-await page.waitForTimeout(4000);
-await page.evaluate(() => {
-  document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+const { browser, page } = await openDebugPage({
+  gotoOptions: { waitUntil: 'load', timeout: 20000 },
+  settleMs: 4000,
+  enableAccessibility: true,
 });
-await page.waitForTimeout(3000);
 
 // Check all visible elements before opening menu
 console.log('=== Before menu ===');

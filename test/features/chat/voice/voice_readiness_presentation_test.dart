@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/chat/presentation/voice/voice_readiness_presentation.dart';
+import 'package:navivox/features/chat/voice/presentation/voice_readiness_presentation.dart';
 import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
 
 void main() {

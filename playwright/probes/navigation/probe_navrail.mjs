@@ -1,12 +1,11 @@
 // Probe desktop nav rail at left edge
-import { chromium } from 'playwright';
 import {
   APP_URL,
   enableFlutterAccessibility as acc,
-} from '../../support/flutter_semantics.mjs';
+  openProbePage,
+} from '../support/probe_runtime.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openProbePage();
 
 // 1. Profile contacts screen - look for nav rail
 await page.goto(APP_URL, { waitUntil: 'load', timeout: 20000 });

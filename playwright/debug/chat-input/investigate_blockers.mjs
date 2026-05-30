@@ -1,16 +1,16 @@
 // Investigate: 1) Nav rail semantics 2) Long-press via gesture 3) Keyboard text entry
-import { chromium } from 'playwright';
+import { DEFAULT_APP_URL, enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openDebugPage({
+  gotoOptions: { timeout: 20000 },
+  settleMs: 2000,
+  enableAccessibility: true,
+  accessibilitySettleMs: 2000,
+});
 
 async function a11y(p) {
-  await p.evaluate(() => document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', {bubbles:true})));
-  await p.waitForTimeout(2000);
+  await enableFlutterAccessibility(p, { settleMs: 2000 });
 }
-
-await page.goto('http://127.0.0.1:8767/', { timeout: 20000 });
-await page.waitForTimeout(2000); await a11y(page);
 
 // 1. DEEP NAV RAIL PROBE: check for ANY elements with nav-related text at left
 console.log('=== 1. NAV RAIL INVESTIGATION ===');
@@ -52,7 +52,7 @@ for (const r of railEls) console.log(`  <${r.tag}> class="${r.cls}" at ${Math.ro
 // 2. LONG PRESS: try pointerdown hold for 1s then pointerup
 console.log('\n=== 2. LONG PRESS TEST ===');
 // Navigate to profile contacts first
-await page.goto('http://127.0.0.1:8767/', { timeout: 15000 });
+await page.goto(DEFAULT_APP_URL, { timeout: 15000 });
 await page.waitForTimeout(2000); await a11y(page);
 
 const lpResult = await page.evaluate(() => {

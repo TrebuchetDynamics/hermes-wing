@@ -19,11 +19,11 @@ import '../presentation/chat_screen_presentation.dart';
 import '../forwarding/forward_message_intent.dart';
 import '../commands/local_command_dispatcher.dart';
 import '../commands/local_command_intent.dart';
-import '../presentation/transcript/transcript_message_action_presentation.dart';
-import '../controllers/voice/voice_run_controller.dart';
+import '../transcript/presentation/transcript_message_action_presentation.dart';
+import '../voice/controllers/voice_run_controller.dart';
 import '../approval/approval_banner.dart';
-import '../widgets/transcript/transcript_run_record_sheet.dart';
-import '../widgets/transcript/transcript_surface.dart';
+import '../transcript/widgets/transcript_run_record_sheet.dart';
+import '../transcript/widgets/transcript_surface.dart';
 
 /// Voice-capture service used by the chat input bar. Override in tests with
 /// [FakeVoiceCaptureService]; Android production uses platform speech-to-text.
@@ -360,16 +360,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   void _handleChatInfoAction(BuildContext context, ChatInfoActionKind kind) {
     Navigator.of(context).pop();
-    NavigationIntent.go(
-      context,
-      switch (kind) {
-        ChatInfoActionKind.openAgents => const OpenAgents(),
-        ChatInfoActionKind.openWorkspace => const OpenWorkspace(),
-        ChatInfoActionKind.openConfig => const OpenConfig(),
-        ChatInfoActionKind.openSettings => const OpenSettings(),
-        ChatInfoActionKind.manageGateways => const OpenGateways(),
-      },
-    );
+    NavigationIntent.go(context, switch (kind) {
+      ChatInfoActionKind.openAgents => const OpenAgents(),
+      ChatInfoActionKind.openWorkspace => const OpenWorkspace(),
+      ChatInfoActionKind.openConfig => const OpenConfig(),
+      ChatInfoActionKind.openSettings => const OpenSettings(),
+      ChatInfoActionKind.manageGateways => const OpenGateways(),
+    });
   }
 
   IconData _chatInfoActionIcon(ChatInfoActionKind kind) {

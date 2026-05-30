@@ -1,28 +1,15 @@
-import { chromium } from 'playwright';
+import { DEFAULT_APP_URL, createDebugPage, SWIFTSHADER_LAUNCH_ARGS } from '../support/browser.mjs';
 
-// Use system Chromium with proper swiftshader for headless WebGL rendering
-// The key is '--headless=new' (new headless mode) and '--use-gl=angle' with '--use-angle=swiftshader-webgl'
-const browser = await chromium.launch({ 
-  headless: true,
-  args: [
-    '--headless=new',
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--use-gl=angle',
-    '--use-angle=swiftshader-webgl',
-    '--enable-webgl',
-    '--ignore-gpu-blocklist',
-    '--enable-features=Vulkan',
-  ],
+// Use system Chromium with proper swiftshader for headless WebGL rendering.
+const { browser, page } = await createDebugPage({
+  launchOptions: { args: SWIFTSHADER_LAUNCH_ARGS },
 });
-
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 const allLogs = [];
 page.on('console', msg => allLogs.push(`[${msg.type()}] ${msg.text()}`));
 page.on('pageerror', err => allLogs.push(`[PAGE_ERROR] ${err.message}`));
 
-await page.goto('http://127.0.0.1:8767/', { waitUntil: 'load', timeout: 30000 });
+await page.goto(DEFAULT_APP_URL, { waitUntil: 'load', timeout: 30000 });
 
 // Check WebGL immediately
 const wg = await page.evaluate(() => {

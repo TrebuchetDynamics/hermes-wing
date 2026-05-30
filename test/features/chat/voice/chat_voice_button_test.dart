@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import 'package:navivox/features/chat/widgets/transcript/transcript_surface.dart';
+import 'package:navivox/features/chat/transcript/widgets/transcript_surface.dart';
 import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
 
 void main() {

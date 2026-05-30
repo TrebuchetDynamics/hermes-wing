@@ -1,18 +1,13 @@
 // Probe the Navivox Flutter web app to discover what screens/routes are accessible
 // and what the app shell looks like from the semantics tree
 
-import { chromium } from 'playwright';
 import {
   APP_URL,
   enableFlutterAccessibility,
-} from '../../support/flutter_semantics.mjs';
+  openProbePage,
+} from '../support/probe_runtime.mjs';
 
-const browser = await chromium.launch({ 
-  headless: true,
-  args: ['--no-sandbox', '--ignore-gpu-blocklist'],
-});
-
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openProbePage();
 
 // Probe different routes
 const routes = ['/', '/#/', '/#/chats', '/#/setup', '/#/servers', '/#/settings'];

@@ -1,20 +1,11 @@
-import { chromium } from 'playwright';
+import { openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ 
-  headless: true,
-  args: ['--no-sandbox', '--ignore-gpu-blocklist'],
+const { browser, page } = await openDebugPage({
+  gotoOptions: { waitUntil: 'load', timeout: 30000 },
+  settleMs: 5000,
+  enableAccessibility: true,
+  accessibilitySettleMs: 4000,
 });
-
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-
-await page.goto('http://127.0.0.1:8767/', { waitUntil: 'load', timeout: 30000 });
-await page.waitForTimeout(5000);
-
-// Enable accessibility
-await page.evaluate(() => {
-  document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-});
-await page.waitForTimeout(4000);
 
 // 1. Check default values
 console.log('=== Default values ===');

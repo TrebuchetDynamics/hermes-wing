@@ -1,13 +1,12 @@
 // Probe remaining testable features: agents select, search, voice toggles, register gateway
-import { chromium } from 'playwright';
 import {
   APP_URL,
   clickSemantic as click,
   enableFlutterAccessibility as a11y,
-} from '../../support/flutter_semantics.mjs';
+  openProbePage,
+} from '../support/probe_runtime.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox','--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openProbePage();
 
 // 1. AGENTS - profile selection
 console.log('=== 1. AGENTS: profile selection ===');

@@ -1,14 +1,13 @@
 // Deep-dive: gateway management + profile details
-import { chromium } from 'playwright';
 import {
   APP_URL,
   clickSemantic,
   enableFlutterAccessibility,
   longPressSemantic,
-} from '../../support/flutter_semantics.mjs';
+  openProbePage,
+} from '../support/probe_runtime.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openProbePage();
 
 // Navigate to gateway management
 await page.goto(`${APP_URL}#/servers`, { waitUntil: 'load', timeout: 20000 });

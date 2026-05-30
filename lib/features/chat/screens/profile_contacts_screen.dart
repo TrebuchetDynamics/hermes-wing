@@ -211,16 +211,13 @@ class _ProfileContactsScreenState extends ConsumerState<ProfileContactsScreen> {
     BuildContext context,
     ProfileContactsMenuActionKind action,
   ) {
-    NavigationIntent.go(
-      context,
-      switch (action) {
-        ProfileContactsMenuActionKind.manageGateways => const OpenGateways(),
-        ProfileContactsMenuActionKind.manageProfiles => const OpenAgents(),
-        ProfileContactsMenuActionKind.openMemory => const OpenWorkspace(),
-        ProfileContactsMenuActionKind.openConfig => const OpenConfig(),
-        ProfileContactsMenuActionKind.openSettings => const OpenSettings(),
-      },
-    );
+    NavigationIntent.go(context, switch (action) {
+      ProfileContactsMenuActionKind.manageGateways => const OpenGateways(),
+      ProfileContactsMenuActionKind.manageProfiles => const OpenAgents(),
+      ProfileContactsMenuActionKind.openMemory => const OpenWorkspace(),
+      ProfileContactsMenuActionKind.openConfig => const OpenConfig(),
+      ProfileContactsMenuActionKind.openSettings => const OpenSettings(),
+    });
   }
 
   void _handleAddProfileRow(ProfileContactsAddRowKind kind) {

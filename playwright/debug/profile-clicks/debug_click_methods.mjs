@@ -1,20 +1,14 @@
 // Debug: test different click methods on profile tiles
-import { chromium } from 'playwright';
+import { DEFAULT_APP_URL, enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const { browser, page } = await openDebugPage({
+  gotoOptions: { waitUntil: 'load', timeout: 20000 },
+  settleMs: 5000,
+  enableAccessibility: true,
+});
 
 // Track console for errors
 page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
-
-await page.goto('http://127.0.0.1:8767/', { waitUntil: 'load', timeout: 20000 });
-await page.waitForTimeout(5000);
-
-// Enable accessibility
-await page.evaluate(() => {
-  document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-});
-await page.waitForTimeout(3000);
 
 // Method 1: click via evaluate dispatching events
 console.log('=== Method 1: Click via evaluate ===');
@@ -40,12 +34,9 @@ console.log('URL:', page.url());
 
 // Method 2: page.locator.click with force
 console.log('\n=== Method 2: locator.click force ===');
-await page.goto(APP_URL, { waitUntil: 'load', timeout: 20000 });
+await page.goto(DEFAULT_APP_URL, { waitUntil: 'load', timeout: 20000 });
 await page.waitForTimeout(5000);
-await page.evaluate(() => {
-  document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-});
-await page.waitForTimeout(3000);
+await enableFlutterAccessibility(page);
 
 const locator = page.locator('flt-semantics[role="button"]').filter({ hasText: 'Support Triage' });
 console.log('Locator count:', await locator.count());
@@ -62,12 +53,9 @@ if (await locator.count() > 0) {
 
 // Method 3: page.locator.dispatchEvent
 console.log('\n=== Method 3: locator.dispatchEvent ===');
-await page.goto(APP_URL, { waitUntil: 'load', timeout: 20000 });
+await page.goto(DEFAULT_APP_URL, { waitUntil: 'load', timeout: 20000 });
 await page.waitForTimeout(5000);
-await page.evaluate(() => {
-  document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-});
-await page.waitForTimeout(3000);
+await enableFlutterAccessibility(page);
 
 const locator2 = page.locator('flt-semantics[role="button"]').filter({ hasText: 'Support Triage' });
 if (await locator2.count() > 0) {

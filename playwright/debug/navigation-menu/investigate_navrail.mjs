@@ -1,13 +1,12 @@
 // Investigate: nav rail semantics tree + chat text entry
-import { chromium } from 'playwright';
+import { DEFAULT_APP_URL, enableFlutterAccessibility, openDebugPage } from '../support/browser.mjs';
 
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox','--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-
-await page.goto('http://127.0.0.1:8767/', { timeout: 20000 });
-await page.waitForTimeout(2000);
-await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', {bubbles:true})));
-await page.waitForTimeout(2000);
+const { browser, page } = await openDebugPage({
+  gotoOptions: { timeout: 20000 },
+  settleMs: 2000,
+  enableAccessibility: true,
+  accessibilitySettleMs: 2000,
+});
 
 // Build full semantics tree
 const tree = await page.evaluate(() => {
@@ -40,10 +39,9 @@ for (const t of left) {
 
 // Now test: go to a non-chats screen to see if nav rail appears differently
 console.log('\n=== SETTINGS SCREEN TREE ===');
-await page.goto('http://127.0.0.1:8767/#/settings', { timeout: 15000 });
+await page.goto(`${DEFAULT_APP_URL}#/settings`, { timeout: 15000 });
 await page.waitForTimeout(1500);
-await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.dispatchEvent(new MouseEvent('click', {bubbles:true})));
-await page.waitForTimeout(2000);
+await enableFlutterAccessibility(page, { settleMs: 2000 });
 
 const tree2 = await page.evaluate(() => {
   function walk(el, d) {

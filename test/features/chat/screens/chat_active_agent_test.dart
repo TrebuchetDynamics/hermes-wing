@@ -194,10 +194,7 @@ void main() {
     // Helper: open chat info sheet, scroll to reveal actions, tap a labeled
     // action, and assert the GoRouter navigated to [expectedRoute].
     // Returns the GoRouter so the caller can navigate back between actions.
-    Future<void> tapInfoAction(
-      String actionLabel,
-      String expectedRoute,
-    ) async {
+    Future<void> tapInfoAction(String actionLabel, String expectedRoute) async {
       await tester.tap(find.byKey(const ValueKey('chat-context-action')));
       await tester.pumpAndSettle();
 

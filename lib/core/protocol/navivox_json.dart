@@ -15,6 +15,13 @@ String? navivoxOptionalStringFromJson(Object? value) {
   return text;
 }
 
+/// Returns a trimmed string only when [value] is already a literal string.
+String? navivoxOptionalLiteralStringFromJson(Object? value) {
+  if (value is! String) return null;
+  final text = value.trim();
+  return text.isEmpty ? null : text;
+}
+
 int navivoxIntFromJson(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
@@ -76,6 +83,39 @@ List<String> navivoxStringListFromJson(Object? value) {
 String navivoxStringFieldFromJson(Map<String, Object?> json, String key) {
   return navivoxStringFromJson(json[key], fallback: '');
 }
+
+/// Returns the first non-empty literal string field whose key matches [names].
+///
+/// The lookup first honors exact keys, then falls back to a compatibility match
+/// that ignores underscores and case so wire payloads can use either
+/// `snake_case` or `camelCase` aliases without each parser reimplementing that
+/// policy. Non-string values are intentionally ignored to preserve strict wire
+/// semantics for IDs, URLs, and tokens.
+String? navivoxFirstStringFieldFromJson(
+  Map<dynamic, dynamic> json,
+  Iterable<String> names,
+) {
+  for (final name in names) {
+    final exact = navivoxOptionalLiteralStringFromJson(json[name]);
+    if (exact != null) return exact;
+  }
+  final normalizedNames = {
+    for (final name in names) _navivoxNormalizeJsonFieldName(name),
+  };
+  for (final entry in json.entries) {
+    if (!normalizedNames.contains(
+      _navivoxNormalizeJsonFieldName('${entry.key}'),
+    )) {
+      continue;
+    }
+    final value = navivoxOptionalLiteralStringFromJson(entry.value);
+    if (value != null) return value;
+  }
+  return null;
+}
+
+String _navivoxNormalizeJsonFieldName(String value) =>
+    value.toLowerCase().replaceAll('_', '');
 
 List<String> navivoxStringListFieldFromJson(
   Map<String, Object?> json,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../core/protocol/navivox_endpoint_uri.dart';
+import '../../../core/protocol/navivox_json.dart';
 import '../../../core/protocol/navivox_pairing_descriptor.dart';
 
 class SetupQrImportPresentation {
@@ -18,28 +19,15 @@ class SetupQrImportPresentation {
       final coreResult = _parseCorePairingDescriptor(text, uri);
       if (coreResult != null && coreResult.hasValues) return coreResult;
 
-      final token = _firstNonEmpty([
-        uri.queryParameters['token'],
-        uri.queryParameters['pairing_token'],
-        uri.queryParameters['pairingToken'],
-        uri.queryParameters['auth_token'],
-        uri.queryParameters['rest_token'],
-        uri.queryParameters['restToken'],
-      ]);
-      final queryWebSocketUrl = _firstNonEmpty([
-        uri.queryParameters['websocket_url'],
-        uri.queryParameters['websocketUrl'],
-        uri.queryParameters['ws_url'],
-        uri.queryParameters['wsUrl'],
-      ]);
+      final query = uri.queryParameters;
+      final token = navivoxFirstStringFieldFromJson(query, _tokenFieldNames);
+      final queryWebSocketUrl = navivoxFirstStringFieldFromJson(
+        query,
+        _webSocketUrlFieldNames,
+      );
       final queryBaseUrl =
           _normalizeBaseUrl(
-            _firstNonEmpty([
-              uri.queryParameters['base_url'],
-              uri.queryParameters['baseUrl'],
-              uri.queryParameters['gateway_url'],
-              uri.queryParameters['url'],
-            ]),
+            navivoxFirstStringFieldFromJson(query, _baseUrlFieldNames),
           ) ??
           _normalizeWebSocketBaseUrl(queryWebSocketUrl);
 
@@ -48,8 +36,11 @@ class SetupQrImportPresentation {
           baseUrl: queryBaseUrl,
           token: token,
           webSocketUrl: _normalizeWebSocketUrl(queryWebSocketUrl),
-          serverId: _firstNonEmpty([uri.queryParameters['server_id']]),
-          profileId: _firstNonEmpty([uri.queryParameters['profile_id']]),
+          serverId: navivoxFirstStringFieldFromJson(query, _serverIdFieldNames),
+          profileId: navivoxFirstStringFieldFromJson(
+            query,
+            _profileIdFieldNames,
+          ),
         );
       }
       if (uri.scheme == 'http' || uri.scheme == 'https') {
@@ -93,28 +84,17 @@ class SetupQrImportPresentation {
     }
     if (decoded is! Map) return null;
 
-    final topLevelToken = _stringField(decoded, const [
-      'token',
-      'pairing_token',
-      'pairingToken',
-      'auth_token',
-      'rest_token',
-      'restToken',
-    ]);
-    final topLevelWebSocketUrl = _stringField(decoded, const [
-      'websocket_url',
-      'websocketUrl',
-      'ws_url',
-      'wsUrl',
-    ]);
+    final topLevelToken = navivoxFirstStringFieldFromJson(
+      decoded,
+      _tokenFieldNames,
+    );
+    final topLevelWebSocketUrl = navivoxFirstStringFieldFromJson(
+      decoded,
+      _webSocketUrlFieldNames,
+    );
     final topLevelBaseUrl =
         _normalizeBaseUrl(
-          _stringField(decoded, const [
-            'base_url',
-            'baseUrl',
-            'gateway_url',
-            'url',
-          ]),
+          navivoxFirstStringFieldFromJson(decoded, _baseUrlFieldNames),
         ) ??
         _normalizeWebSocketBaseUrl(topLevelWebSocketUrl);
     if (topLevelBaseUrl != null || topLevelToken != null) {
@@ -122,8 +102,11 @@ class SetupQrImportPresentation {
         baseUrl: topLevelBaseUrl,
         token: topLevelToken,
         webSocketUrl: _normalizeWebSocketUrl(topLevelWebSocketUrl),
-        serverId: _stringField(decoded, const ['server_id', 'serverId']),
-        profileId: _stringField(decoded, const ['profile_id', 'profileId']),
+        serverId: navivoxFirstStringFieldFromJson(decoded, _serverIdFieldNames),
+        profileId: navivoxFirstStringFieldFromJson(
+          decoded,
+          _profileIdFieldNames,
+        ),
       );
     }
 
@@ -131,37 +114,29 @@ class SetupQrImportPresentation {
     if (entries is List) {
       for (final entry in entries) {
         if (entry is! Map) continue;
-        final webSocketUrl = _stringField(entry, const [
-          'websocket_url',
-          'websocketUrl',
-          'ws_url',
-          'wsUrl',
-        ]);
+        final webSocketUrl = navivoxFirstStringFieldFromJson(
+          entry,
+          _webSocketUrlFieldNames,
+        );
         final baseUrl =
             _normalizeBaseUrl(
-              _stringField(entry, const [
-                'base_url',
-                'baseUrl',
-                'gateway_url',
-                'url',
-              ]),
+              navivoxFirstStringFieldFromJson(entry, _baseUrlFieldNames),
             ) ??
             _normalizeWebSocketBaseUrl(webSocketUrl);
-        final token = _stringField(entry, const [
-          'token',
-          'pairing_token',
-          'pairingToken',
-          'auth_token',
-          'rest_token',
-          'restToken',
-        ]);
+        final token = navivoxFirstStringFieldFromJson(entry, _tokenFieldNames);
         if (baseUrl != null || token != null) {
           return SetupQrImageImport(
             baseUrl: baseUrl,
             token: token,
             webSocketUrl: _normalizeWebSocketUrl(webSocketUrl),
-            serverId: _stringField(entry, const ['server_id', 'serverId']),
-            profileId: _stringField(entry, const ['profile_id', 'profileId']),
+            serverId: navivoxFirstStringFieldFromJson(
+              entry,
+              _serverIdFieldNames,
+            ),
+            profileId: navivoxFirstStringFieldFromJson(
+              entry,
+              _profileIdFieldNames,
+            ),
           );
         }
       }
@@ -206,35 +181,26 @@ class SetupQrImageImport {
 SetupQrImageImport? parseNavivoxQrPayload(String payload) =>
     const SetupQrImportPresentation().parsePayload(payload);
 
-String? _stringField(Map<dynamic, dynamic> map, List<String> names) {
-  for (final name in names) {
-    final exact = _asNonEmptyString(map[name]);
-    if (exact != null) return exact;
-  }
-  final normalizedNames = {for (final name in names) _normalizeKey(name)};
-  for (final entry in map.entries) {
-    if (!normalizedNames.contains(_normalizeKey('${entry.key}'))) continue;
-    final value = _asNonEmptyString(entry.value);
-    if (value != null) return value;
-  }
-  return null;
-}
+const _tokenFieldNames = [
+  'token',
+  'pairing_token',
+  'pairingToken',
+  'auth_token',
+  'rest_token',
+  'restToken',
+];
+const _webSocketUrlFieldNames = [
+  'websocket_url',
+  'websocketUrl',
+  'ws_url',
+  'wsUrl',
+];
+const _baseUrlFieldNames = ['base_url', 'baseUrl', 'gateway_url', 'url'];
+const _serverIdFieldNames = ['server_id', 'serverId'];
+const _profileIdFieldNames = ['profile_id', 'profileId'];
 
-String _normalizeKey(String value) => value.toLowerCase().replaceAll('_', '');
-
-String? _asNonEmptyString(Object? value) {
-  if (value is! String) return null;
-  final text = value.trim();
-  return text.isEmpty ? null : text;
-}
-
-String? _firstNonEmpty(Iterable<String?> values) {
-  for (final value in values) {
-    final text = _asNonEmptyString(value);
-    if (text != null) return text;
-  }
-  return null;
-}
+String? _asNonEmptyString(Object? value) =>
+    navivoxOptionalLiteralStringFromJson(value);
 
 String? _firstUrl(String text) {
   var value = RegExp(r'https?://\S+').firstMatch(text)?.group(0);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-30T05:27:11.588Z",
+  "generatedAt": "2026-05-30T05:30:00.910Z",
   "cwd": "/home/xel/git/gormes/navivox-app",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app",
@@ -8,15 +8,15 @@
   "candidates": [
     {
       "relative": "playwright",
-      "score": 500,
-      "files": 34,
+      "score": 508,
+      "files": 36,
       "direct": 2,
-      "churn": 140,
+      "churn": 152,
       "callers": 0,
       "importsOut": 0,
       "tests": 1,
       "roles": 4,
-      "duplicates": 59,
+      "duplicates": 60,
       "subdirs": 5,
       "extensions": [
         ".json",
@@ -27,10 +27,10 @@
     },
     {
       "relative": "playwright/debug",
-      "score": 310.5,
-      "files": 16,
+      "score": 312.5,
+      "files": 18,
       "direct": 1,
-      "churn": 47,
+      "churn": 59,
       "callers": 0,
       "importsOut": 2,
       "tests": 0,
@@ -162,12 +162,12 @@
     },
     {
       "relative": "playwright/debug/chat-input",
-      "score": 164.5,
+      "score": 172.5,
       "files": 5,
       "direct": 5,
-      "churn": 10,
+      "churn": 15,
       "callers": 0,
-      "importsOut": 1,
+      "importsOut": 2,
       "tests": 0,
       "roles": 1,
       "duplicates": 21,
@@ -312,22 +312,6 @@
       ]
     },
     {
-      "relative": "playwright/debug/navigation-menu",
-      "score": 105.7,
-      "files": 3,
-      "direct": 3,
-      "churn": 6,
-      "callers": 0,
-      "importsOut": 1,
-      "tests": 0,
-      "roles": 0,
-      "duplicates": 14,
-      "subdirs": 0,
-      "extensions": [
-        ".mjs"
-      ]
-    },
-    {
       "relative": "docs/superpowers",
       "score": 105,
       "files": 4,
@@ -341,6 +325,22 @@
       "subdirs": 2,
       "extensions": [
         ".md"
+      ]
+    },
+    {
+      "relative": "playwright/debug/navigation-menu",
+      "score": 104.1,
+      "files": 3,
+      "direct": 3,
+      "churn": 8,
+      "callers": 0,
+      "importsOut": 2,
+      "tests": 0,
+      "roles": 0,
+      "duplicates": 13,
+      "subdirs": 0,
+      "extensions": [
+        ".mjs"
       ]
     },
     {
@@ -376,6 +376,22 @@
       ]
     },
     {
+      "relative": "playwright/debug/support",
+      "score": 97.5,
+      "files": 3,
+      "direct": 3,
+      "churn": 5,
+      "callers": 14,
+      "importsOut": 2,
+      "tests": 0,
+      "roles": 1,
+      "duplicates": 2,
+      "subdirs": 0,
+      "extensions": [
+        ".mjs"
+      ]
+    },
+    {
       "relative": "test/features/servers",
       "score": 94.5,
       "files": 9,
@@ -403,22 +419,6 @@
       "roles": 3,
       "duplicates": 0,
       "subdirs": 4,
-      "extensions": [
-        ".dart"
-      ]
-    },
-    {
-      "relative": "test/features/config",
-      "score": 93.2,
-      "files": 10,
-      "direct": 10,
-      "churn": 21,
-      "callers": 0,
-      "importsOut": 0,
-      "tests": 0,
-      "roles": 4,
-      "duplicates": 0,
-      "subdirs": 0,
       "extensions": [
         ".dart"
       ]

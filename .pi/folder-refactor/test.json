@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T05:57:28.958Z",
+  "updatedAt": "2026-05-30T05:58:39.225Z",
   "objective": "Refactor test folder so root contains no loose test files; app-level theme/app tests live under test/app while existing responsibility folders remain intact. Topology complete: root contains only responsibility subfolders.",
   "completedSlices": [
     "Moved test/app_theme_test.dart to test/app/app_theme_test.dart (move-only).",
@@ -16,7 +16,8 @@
     "Loop 41 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates.",
     "Loop 42 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates.",
     "Loop 43 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates.",
-    "Loop 44 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates."
+    "Loop 44 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates.",
+    "Loop 45 rechecked topology: folder_refactor_scan shows zero root files and app/core/e2e/features/router/shared/support/tooling subfolders; folder_refactor_audit passed with no candidates."
   ],
   "nextCandidates": [],
   "validationReceipts": [
@@ -40,6 +41,8 @@
     "loop43 flutter test --concurrency=1 test/app/app_theme_test.dart: All tests passed.",
     "loop43 folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] nextCandidateFiles=[]: pass",
     "loop44 flutter test --concurrency=1 test/app/app_theme_test.dart: All tests passed.",
-    "loop44 folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] nextCandidateFiles=[]: pass"
+    "loop44 folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] nextCandidateFiles=[]: pass",
+    "loop45 flutter test --concurrency=1 test/app/app_theme_test.dart: All tests passed.",
+    "loop45 folder_refactor_audit target=test plannedTopologyComplete=true facadeFiles=[] outOfScopeFiles=[] nextCandidateFiles=[]: pass"
   ]
 }

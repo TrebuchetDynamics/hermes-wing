@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": "test",
-  "updatedAt": "2026-05-30T07:15:53.862Z",
+  "updatedAt": "2026-05-30T07:18:37.422Z",
   "objective": "Align test/ topology with lib responsibility boundaries while preserving behavior. Target topology is complete: root has no test files; tests are grouped under core, features, router, shared, support, theme, tooling, and e2e, with feature subfolders matching domain responsibilities.",
   "completedSlices": [
     "Moved theme test from test/app to test/theme/navivox_theme_test.dart.",
@@ -21,7 +21,8 @@
     "Loop 71 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
     "Loop 72 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
     "Loop 73 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; flutter test passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
-    "Loop 74 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; flutter test passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates."
+    "Loop 74 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; flutter test passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates.",
+    "Loop 75 audit confirmed target folder complete: folder_refactor_scan root files none; no empty dirs; no stale old-path refs; flutter test passed; folder_refactor_audit passed with no facade/out-of-scope/next candidates."
   ],
   "nextCandidates": [],
   "validationReceipts": [
@@ -38,6 +39,7 @@
     "Loop 71: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches; flutter test --concurrency=1 --reporter=compact exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
     "Loop 72: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches (exit 1); flutter test --concurrency=1 --reporter=compact exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
     "Loop 73: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches (exit 1); flutter test --concurrency=1 --reporter=compact >/dev/null exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
-    "Loop 74: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches (exit 1); flutter test --concurrency=1 --reporter=compact >/tmp/navivox_flutter_test_loop74.log exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed."
+    "Loop 74: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches (exit 1); flutter test --concurrency=1 --reporter=compact >/tmp/navivox_flutter_test_loop74.log exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed.",
+    "Loop 75: find test root files returned none; find test empty dirs returned none; rg 'test/(app|chat|voice)/' test lib returned no matches (exit 1); flutter test --concurrency=1 --reporter=compact >/tmp/navivox_flutter_test_loop75.log exited 0; folder_refactor_audit target=test plannedTopologyComplete=true passed."
   ]
 }

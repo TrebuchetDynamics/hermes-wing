@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/profile_contacts/profile_contact_avatar.dart';
 
+import '../shared/app/test_material_app.dart';
+
 const _profile = NavivoxProfileContact(
   serverId: 'local',
   profileId: 'mineru',
@@ -19,9 +21,7 @@ void main() {
     final semantics = tester.ensureSemantics();
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(body: ProfileContactAvatar(contact: _profile)),
-      ),
+      const TestMaterialScaffold(body: ProfileContactAvatar(contact: _profile)),
     );
 
     expect(find.text('M'), findsOneWidget);

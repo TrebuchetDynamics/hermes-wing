@@ -174,11 +174,9 @@ void main() {
     final channel = _seedChannel(selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(
-          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-        ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
       ),
     );
     await tester.pumpAndSettle();
@@ -229,11 +227,9 @@ void main() {
       final channel = _seedChannel(selectedKey: 'local::mineru');
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(
-            home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-          ),
+        TestNavivoxMaterialApp(
+          channel: channel,
+          home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
         ),
       );
       await tester.pumpAndSettle();
@@ -263,11 +259,9 @@ void main() {
     final channel = _seedChannel(selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(
-          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-        ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
       ),
     );
     await tester.pumpAndSettle();
@@ -297,9 +291,9 @@ void main() {
       ..seedProfileContacts(_contacts);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ChatScreen(serverId: 'local')),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: ChatScreen(serverId: 'local'),
       ),
     );
     await tester.pumpAndSettle();
@@ -323,9 +317,9 @@ void main() {
       ..seedProfileContacts(_contacts);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: ChatScreen(serverId: 'local')),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: ChatScreen(serverId: 'local'),
       ),
     );
     await tester.pumpAndSettle();
@@ -355,11 +349,9 @@ void main() {
     final channel = _seedChannel(selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(
-          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-        ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
       ),
     );
     await tester.pumpAndSettle();
@@ -389,11 +381,9 @@ void main() {
     final channel = _seedChannel(selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(
-          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-        ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
       ),
     );
     await tester.pumpAndSettle();
@@ -419,11 +409,9 @@ void main() {
     final channel = _seedChannel(selectedKey: 'local::mineru');
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(
-          home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-        ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
       ),
     );
     await tester.pumpAndSettle();
@@ -453,11 +441,9 @@ void main() {
       final channel = _seedChannel(selectedKey: 'local::mineru');
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const MaterialApp(
-            home: ChatScreen(serverId: 'local', profileId: 'mineru'),
-          ),
+        TestNavivoxMaterialApp(
+          channel: channel,
+          home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
         ),
       );
       await tester.pumpAndSettle();

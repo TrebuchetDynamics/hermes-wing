@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/voice/widgets/voice_morph_surface.dart';
 
+import '../../shared/app/test_material_app.dart';
+
 void main() {
   testWidgets('exposes live semantics for each voice state', (tester) async {
     final semantics = tester.ensureSemantics();
 
     for (final state in VoiceMorphState.values) {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: VoiceMorphSurface(state: state, intensity: 0.4)),
+        TestMaterialScaffold(
+          body: VoiceMorphSurface(state: state, intensity: 0.4),
         ),
       );
 
@@ -34,12 +36,10 @@ void main() {
 
   testWidgets('clamps intensity before painting', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: VoiceMorphSurface(
-            state: VoiceMorphState.speaking,
-            intensity: 2.3,
-          ),
+      const TestMaterialScaffold(
+        body: VoiceMorphSurface(
+          state: VoiceMorphState.speaking,
+          intensity: 2.3,
         ),
       ),
     );
@@ -54,13 +54,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: VoiceMorphSurface(
-            state: VoiceMorphState.listening,
-            intensity: 0.8,
-            reducedMotion: true,
-          ),
+      const TestMaterialScaffold(
+        body: VoiceMorphSurface(
+          state: VoiceMorphState.listening,
+          intensity: 0.8,
+          reducedMotion: true,
         ),
       ),
     );

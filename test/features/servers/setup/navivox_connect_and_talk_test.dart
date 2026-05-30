@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/servers/setup/navivox_connect_intent_source.dart';
 import 'package:navivox/features/servers/screens/setup_screen.dart';
 import 'package:navivox/testing/connect_and_talk_channel.dart';
 
-import '../../shared/finders/test_finders.dart';
+import '../../shared/app/test_material_app.dart';
 import '../../shared/app/test_router_app.dart';
+import '../../shared/finders/test_finders.dart';
 
 void main() {
   testWidgets('connect-info lands on chat and sends a text turn', (
@@ -19,12 +18,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     expect(find.text('Connect to Gormes'), findsOneWidget);
@@ -78,12 +72,7 @@ void main() {
       final channel = ConnectAndTalkChannel();
       addTearDown(channel.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const TestRouterApp(),
-        ),
-      );
+      await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
       await tester.pumpAndSettle();
 
       expect(find.bySemanticsLabel('Gateway address field'), findsOneWidget);
@@ -102,12 +91,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -127,12 +111,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -153,12 +132,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -179,12 +153,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -210,15 +179,13 @@ void main() {
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: MaterialApp(
-          home: SetupScreen(
-            qrImageImporter: () async => const SetupQrImageImport(
-              baseUrl: 'https://gateway.example:8765',
-              token: 'nvbx_imported_token',
-              webSocketUrl: 'wss://stream.example:9443/custom/stream',
-            ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: SetupScreen(
+          qrImageImporter: () async => const SetupQrImageImport(
+            baseUrl: 'https://gateway.example:8765',
+            token: 'nvbx_imported_token',
+            webSocketUrl: 'wss://stream.example:9443/custom/stream',
           ),
         ),
       ),
@@ -247,17 +214,15 @@ void main() {
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: MaterialApp(
-          home: SetupScreen(
-            connectIntentSource: _FakeConnectIntentSource(
-              initial: const SetupQrImageImport(
-                baseUrl: 'http://127.0.0.1:8765',
-                token: 'nvbx_deeplink_token',
-                webSocketUrl: 'ws://127.0.0.1:8765/v1/navivox/stream',
-                source: PairingHandoffSource.sharedText,
-              ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: SetupScreen(
+          connectIntentSource: _FakeConnectIntentSource(
+            initial: const SetupQrImageImport(
+              baseUrl: 'http://127.0.0.1:8765',
+              token: 'nvbx_deeplink_token',
+              webSocketUrl: 'ws://127.0.0.1:8765/v1/navivox/stream',
+              source: PairingHandoffSource.sharedText,
             ),
           ),
         ),
@@ -285,17 +250,15 @@ void main() {
       addTearDown(channel.dispose);
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: MaterialApp(
-            home: SetupScreen(
-              connectIntentSource: _FakeConnectIntentSource(
-                initial: const SetupQrImageImport(
-                  baseUrl: 'http://127.0.0.1:8765',
-                  token: 'nvbx_direct_token',
-                  webSocketUrl: 'ws://127.0.0.1:8765/v1/navivox/stream',
-                  source: PairingHandoffSource.directAppOpen,
-                ),
+        TestNavivoxMaterialApp(
+          channel: channel,
+          home: SetupScreen(
+            connectIntentSource: _FakeConnectIntentSource(
+              initial: const SetupQrImageImport(
+                baseUrl: 'http://127.0.0.1:8765',
+                token: 'nvbx_direct_token',
+                webSocketUrl: 'ws://127.0.0.1:8765/v1/navivox/stream',
+                source: PairingHandoffSource.directAppOpen,
               ),
             ),
           ),
@@ -317,13 +280,11 @@ void main() {
     addTearDown(intentStream.close);
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: MaterialApp(
-          home: SetupScreen(
-            connectIntentSource: _FakeConnectIntentSource(
-              imports: intentStream.stream,
-            ),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: SetupScreen(
+          connectIntentSource: _FakeConnectIntentSource(
+            imports: intentStream.stream,
           ),
         ),
       ),
@@ -359,12 +320,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -386,12 +342,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Same-device setup'), findsOneWidget);
@@ -435,12 +386,7 @@ void main() {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-        child: const TestRouterApp(),
-      ),
-    );
+    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('Copy one-paste bootstrap'));
@@ -497,12 +443,7 @@ void main() {
       final channel = ConnectAndTalkChannel();
       addTearDown(channel.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const TestRouterApp(),
-        ),
-      );
+      await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(find.text('Copy fix instructions').last);
@@ -529,12 +470,7 @@ void main() {
       final channel = FailingConnectChannel();
       addTearDown(channel.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [navivoxChannelProvider.overrideWithValue(channel)],
-          child: const TestRouterApp(),
-        ),
-      );
+      await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
       await tester.pumpAndSettle();
 
       await tester.enterText(

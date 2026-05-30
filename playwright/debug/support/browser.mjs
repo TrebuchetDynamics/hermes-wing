@@ -1,8 +1,12 @@
-import { chromium } from 'playwright';
+import {
+  DEFAULT_BROWSER_LAUNCH_ARGS,
+  DEFAULT_BROWSER_VIEWPORT,
+  createBrowserSession,
+} from '../../support/browser_session.mjs';
 
 export const DEFAULT_APP_URL = process.env.NAVIVOX_DEBUG_URL ?? 'http://127.0.0.1:8767/';
-export const DEFAULT_VIEWPORT = { width: 1280, height: 900 };
-export const DEFAULT_LAUNCH_ARGS = ['--no-sandbox', '--ignore-gpu-blocklist'];
+export const DEFAULT_VIEWPORT = DEFAULT_BROWSER_VIEWPORT;
+export const DEFAULT_LAUNCH_ARGS = DEFAULT_BROWSER_LAUNCH_ARGS;
 export const SWIFTSHADER_LAUNCH_ARGS = [
   '--headless=new',
   '--no-sandbox',
@@ -15,16 +19,12 @@ export const SWIFTSHADER_LAUNCH_ARGS = [
 ];
 
 export async function createDebugPage({ launchOptions = {}, pageOptions = {} } = {}) {
-  const browser = await chromium.launch({
-    headless: true,
-    ...launchOptions,
-    args: launchOptions.args ?? DEFAULT_LAUNCH_ARGS,
+  return createBrowserSession({
+    launchOptions,
+    pageOptions,
+    defaultLaunchArgs: DEFAULT_LAUNCH_ARGS,
+    defaultViewport: DEFAULT_VIEWPORT,
   });
-  const page = await browser.newPage({
-    ...pageOptions,
-    viewport: pageOptions.viewport ?? DEFAULT_VIEWPORT,
-  });
-  return { browser, page };
 }
 
 export async function openDebugPage({

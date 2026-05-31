@@ -3,25 +3,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:navivox/core/session/session_persistence_service.dart';
 
+import '../support/session_persistence_test_support.dart';
+
 void main() {
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    resetSessionPreferences();
   });
 
   group('SessionPersistenceService', () {
     test('saves and loads non-secret gateway metadata', () async {
       final service = SessionPersistenceService();
-      await service.saveConnection(
-        baseUrl: 'http://192.168.1.100:8765',
-        webSocketUrl: 'ws://192.168.1.100:8765/v1/navivox/stream',
-        gatewayId: 'gw-abc-123',
-      );
+      await saveLocalGatewayConnection(service);
 
       final session = await service.loadSession();
       expect(session, isNotNull);
-      expect(session!.baseUrl, 'http://192.168.1.100:8765');
-      expect(session.webSocketUrl, 'ws://192.168.1.100:8765/v1/navivox/stream');
-      expect(session.gatewayId, 'gw-abc-123');
+      expect(session!.baseUrl, localGatewayBaseUrl);
+      expect(session.webSocketUrl, localGatewayWebSocketUrl);
+      expect(session.gatewayId, localGatewayId);
       expect(session.lastConnectedAt, isNotNull);
       expect(session.canAttemptReconnect, isFalse);
       expect(session.isStale, isFalse);
@@ -56,7 +54,7 @@ void main() {
     });
 
     test('isStale detects old sessions', () async {
-      SharedPreferences.setMockInitialValues({
+      resetSessionPreferences({
         'navivox.session.base_url': 'http://localhost:8765',
         'navivox.session.last_connected_at': DateTime.now()
             .toUtc()
@@ -71,11 +69,11 @@ void main() {
     });
 
     test('does not persist pairing tokens or QR payloads', () async {
-      SharedPreferences.setMockInitialValues({
+      resetSessionPreferences({
         'navivox.session.token': 'nvbx_legacy_token',
       });
       final service = SessionPersistenceService();
-      await service.saveConnection(baseUrl: 'http://192.168.1.100:8765');
+      await service.saveConnection(baseUrl: localGatewayBaseUrl);
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('navivox.session.token'), isNull);

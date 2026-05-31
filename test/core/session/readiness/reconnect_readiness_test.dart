@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/gateway/navivox_gateway_protocol.dart';
 import 'package:navivox/core/session/reconnect_readiness.dart';
+
+import '../support/reconnect_capabilities_test_support.dart';
 
 void main() {
   test('reports unknown before capabilities are loaded', () {
@@ -11,7 +12,9 @@ void main() {
   });
 
   test('reports unsupported without durable reconnect capability', () {
-    final readiness = ReconnectReadiness.fromCapabilities(_capabilities({}));
+    final readiness = ReconnectReadiness.fromCapabilities(
+      reconnectCapabilityDocument({}),
+    );
 
     expect(readiness.kind, ReconnectReadinessKind.unsupported);
     expect(
@@ -26,7 +29,7 @@ void main() {
 
   test('reports blocked with gateway-supplied reason', () {
     final readiness = ReconnectReadiness.fromCapabilities(
-      _capabilities({
+      reconnectCapabilityDocument({
         'supported': true,
         'blocked_reason': 'HTTPS or private-network transport required.',
       }),
@@ -43,7 +46,7 @@ void main() {
     'reports available but not saved when durable reconnect is eligible',
     () {
       final readiness = ReconnectReadiness.fromCapabilities(
-        _capabilities({
+        reconnectCapabilityDocument({
           'supported': true,
           'issue_endpoint': '/v1/navivox/device-credentials',
           'auth_methods': ['device_key_challenge'],
@@ -61,11 +64,3 @@ void main() {
   );
 }
 
-NavivoxCapabilityDocument _capabilities(Map<String, Object?> durableReconnect) {
-  return NavivoxCapabilityDocument.fromJson({
-    'object': 'gormes.navivox.capabilities',
-    'protocol_version': 'navivox.v1',
-    'capabilities': <String>[],
-    'durable_reconnect': durableReconnect,
-  });
-}

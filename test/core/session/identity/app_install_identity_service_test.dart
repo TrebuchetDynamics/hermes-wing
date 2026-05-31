@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/session/app_install_identity_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../support/session_shared_preferences_test_support.dart';
 
 void main() {
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    resetSessionPreferences();
   });
 
   test('creates and reuses a non-secret app install identity', () async {
@@ -21,7 +22,7 @@ void main() {
   });
 
   test('normalizes existing app install identity', () async {
-    SharedPreferences.setMockInitialValues({
+    resetSessionPreferences({
       AppInstallIdentityService.identityKey: '  navi-install-existing  ',
     });
     final service = AppInstallIdentityService(random: Random(1));

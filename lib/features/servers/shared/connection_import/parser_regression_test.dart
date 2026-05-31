@@ -14,6 +14,7 @@ void main() {
   parsesUppercaseSchemeUrlEmbeddedInSharedText();
   prefersEmbeddedUrlTokenOverEarlierStaleSharedTextToken();
   prefersTokenAfterSelectedEmbeddedUrlOverEarlierStaleSharedTextToken();
+  prefersNearestLeadingTokenBeforeSelectedEmbeddedUrl();
   readsEarliestLabeledSharedTextTokenAfterSelectedUrl();
   prefersRicherEmbeddedUrlOverEarlierUnrelatedUrl();
   prefersLaterSharedTextUrlWhenTokenBelongsToThatUrl();
@@ -287,6 +288,26 @@ void prefersTokenAfterSelectedEmbeddedUrlOverEarlierStaleSharedTextToken() {
   _expect(
     result.token == 'nvbx_fresh',
     'token after the selected embedded URL should beat earlier stale prose tokens',
+  );
+}
+
+void prefersNearestLeadingTokenBeforeSelectedEmbeddedUrl() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Previous token: nvbx_stale. Use Token: nvbx_fresh with '
+    'https://gateway.example/connect.',
+  );
+
+  _expect(
+    result != null,
+    'shared text with multiple leading tokens should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'embedded connection URL should provide the baseUrl',
+  );
+  _expect(
+    result.token == 'nvbx_fresh',
+    'the closest leading token before the selected URL should win over older stale tokens',
   );
 }
 

@@ -423,7 +423,7 @@ class _SharedTextTokenProvenance {
           start: followingSearchStart,
           end: followingSearchEnd,
         ) ??
-        _firstToken(text, end: leadingSearchEnd);
+        _lastToken(text, end: leadingSearchEnd);
   }
 }
 
@@ -929,25 +929,49 @@ const _attachedTokenLabelPunctuation = [
 ];
 
 String? _firstToken(String text, {int start = 0, int? end}) {
-  final tokenSearchEnd = end ?? text.length;
-  final labeledToken = _firstLabeledToken(
+  return _tokenInWindow(
     text,
     start: start,
-    end: tokenSearchEnd,
+    end: end ?? text.length,
+    preferLatest: false,
   );
-  if (labeledToken != null) return labeledToken;
-
-  final navivoxIndex = text.toLowerCase().indexOf('nvbx_', start);
-  if (navivoxIndex < 0 || navivoxIndex >= tokenSearchEnd) return null;
-  return _readTokenAt(text, navivoxIndex, end: tokenSearchEnd);
 }
 
-String? _firstLabeledToken(
+String? _lastToken(String text, {int start = 0, int? end}) {
+  return _tokenInWindow(
+    text,
+    start: start,
+    end: end ?? text.length,
+    preferLatest: true,
+  );
+}
+
+String? _tokenInWindow(
   String text, {
   required int start,
   required int end,
+  required bool preferLatest,
 }) {
-  _LabeledTokenMatch? earliestMatch;
+  final labeledToken = _labeledTokenInWindow(
+    text,
+    start: start,
+    end: end,
+    preferLatest: preferLatest,
+  );
+  if (labeledToken != null) return labeledToken;
+
+  return preferLatest
+      ? _lastNavivoxToken(text, start: start, end: end)
+      : _firstNavivoxToken(text, start: start, end: end);
+}
+
+String? _labeledTokenInWindow(
+  String text, {
+  required int start,
+  required int end,
+  required bool preferLatest,
+}) {
+  _TokenMatch? selectedMatch;
   for (final label in _tokenLabels) {
     final matches = _tokenLabelPattern(
       label,
@@ -955,21 +979,52 @@ String? _firstLabeledToken(
     for (final match in matches) {
       final token = _readLabeledTokenAt(text, match.end, end: end);
       if (token == null) continue;
-      final candidate = _LabeledTokenMatch(start: match.start, token: token);
-      if (candidate.isBefore(earliestMatch)) earliestMatch = candidate;
+      final candidate = _TokenMatch(start: match.start, token: token);
+      if (candidate.isPreferredOver(
+        selectedMatch,
+        preferLatest: preferLatest,
+      )) {
+        selectedMatch = candidate;
+      }
     }
   }
-  return earliestMatch?.token;
+  return selectedMatch?.token;
 }
 
-class _LabeledTokenMatch {
-  const _LabeledTokenMatch({required this.start, required this.token});
+String? _firstNavivoxToken(
+  String text, {
+  required int start,
+  required int end,
+}) {
+  final navivoxIndex = text.toLowerCase().indexOf('nvbx_', start);
+  if (navivoxIndex < 0 || navivoxIndex >= end) return null;
+  return _readTokenAt(text, navivoxIndex, end: end);
+}
+
+String? _lastNavivoxToken(String text, {required int start, required int end}) {
+  var searchStart = start;
+  var latestIndex = -1;
+  final lower = text.toLowerCase();
+  while (searchStart < end) {
+    final navivoxIndex = lower.indexOf('nvbx_', searchStart);
+    if (navivoxIndex < 0 || navivoxIndex >= end) break;
+    latestIndex = navivoxIndex;
+    searchStart = navivoxIndex + 1;
+  }
+  if (latestIndex < 0) return null;
+  return _readTokenAt(text, latestIndex, end: end);
+}
+
+class _TokenMatch {
+  const _TokenMatch({required this.start, required this.token});
 
   final int start;
   final String token;
 
-  bool isBefore(_LabeledTokenMatch? other) =>
-      other == null || start < other.start;
+  bool isPreferredOver(_TokenMatch? other, {required bool preferLatest}) {
+    if (other == null) return true;
+    return preferLatest ? start > other.start : start < other.start;
+  }
 }
 
 const _tokenLabels = [

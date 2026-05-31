@@ -1,5 +1,6 @@
 import '../../../../../core/gateway/navivox_gateway_protocol.dart';
 import '../../../../../core/protocol/navivox_json.dart';
+import '../shared/transcript_display_text.dart';
 
 class TranscriptRunRecordInfoRow {
   const TranscriptRunRecordInfoRow({required this.label, required this.value});
@@ -105,7 +106,7 @@ class TranscriptRunRecordPresentation {
       for (final row in toolRows) row.status,
       for (final row in toolRows) row.artifactRef,
     ];
-    return parts.where((part) => part.trim().isNotEmpty).join('\n');
+    return parts.where(transcriptHasNonBlankText).join('\n');
   }
 }
 
@@ -277,6 +278,5 @@ String _dateLabel(DateTime? date) {
 }
 
 String _valueOrUnknown(String value) {
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? 'unknown' : trimmed;
+  return transcriptTrimmedTextOrNull(value) ?? 'unknown';
 }

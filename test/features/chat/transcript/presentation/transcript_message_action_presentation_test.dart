@@ -96,9 +96,18 @@ void main() {
       transcriptTextMessage(text: 'ordinary message'),
       runRecordInspectionAvailable: true,
     );
+    final blankReference = TranscriptMessageActionPresentation.fromMessage(
+      transcriptTextMessage(
+        text: 'ordinary message',
+        runRecordReference: '   ',
+      ),
+      runRecordInspectionAvailable: true,
+    );
 
     expect(presentation.runRecordId, isNull);
     expect(presentation.showInspectRunRecord, isFalse);
+    expect(blankReference.runRecordId, isNull);
+    expect(blankReference.showInspectRunRecord, isFalse);
   });
 
   test('exposes forward target rows when forwarding is available', () {

@@ -92,6 +92,7 @@ void main() {
         ),
       );
 
+      expect(presentation.runId, 'req-usage-missing');
       expect(presentation.statusLabel, 'unknown');
       expect(presentation.sessionId, 'unknown');
       expect(presentation.providerUsageLabel, 'unknown');
@@ -101,6 +102,27 @@ void main() {
       expect(presentation.voiceRows.map((row) => '${row.label}:${row.value}'), [
         'Raw audio retention:unknown',
       ]);
+    },
+  );
+
+  test(
+    'trims run record identifiers through shared transcript text policy',
+    () {
+      final presentation = TranscriptRunRecordPresentation.fromRecord(
+        const NavivoxRunRecordSnapshot(
+          runId: '  req-trimmed  ',
+          sessionId: '  ',
+          status: '  completed  ',
+          createdAt: null,
+          updatedAt: null,
+          completedAt: null,
+          raw: {},
+        ),
+      );
+
+      expect(presentation.runId, 'req-trimmed');
+      expect(presentation.sessionId, 'unknown');
+      expect(presentation.statusLabel, 'completed');
     },
   );
 }

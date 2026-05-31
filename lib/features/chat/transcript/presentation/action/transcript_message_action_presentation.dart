@@ -89,8 +89,6 @@ class TranscriptMessageActionPresentation {
   String get forwardTitle => 'Forward to';
 
   static String? runRecordIdForMessage(NavivoxChatMessage message) {
-    final reference = message.runRecordReference?.trim();
-    if (reference == null || reference.isEmpty) return null;
-    return reference;
+    return transcriptTrimmedTextOrNull(message.runRecordReference);
   }
 }

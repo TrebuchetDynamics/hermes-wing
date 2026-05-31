@@ -196,47 +196,86 @@ SetupQrImageImport? _importFromSharedText(String text) {
   if (embeddedUrlCandidate == null && token == null) return null;
 
   return SetupQrImageImport(
-    baseUrl: embeddedUrlCandidate?.baseUrl,
+    baseUrl: embeddedUrlCandidate?.candidate.baseUrl,
     token: token,
-    webSocketUrl: embeddedUrlCandidate?.webSocketUrl,
-    serverId: embeddedUrlCandidate?.serverId,
-    profileId: embeddedUrlCandidate?.profileId,
+    webSocketUrl: embeddedUrlCandidate?.candidate.webSocketUrl,
+    serverId: embeddedUrlCandidate?.candidate.serverId,
+    profileId: embeddedUrlCandidate?.candidate.profileId,
   );
 }
 
 String? _sharedTextImportToken({
   required String text,
-  required _ConnectionImportCandidate? embeddedUrlCandidate,
+  required _SharedTextEndpointCandidate? embeddedUrlCandidate,
 }) {
-  // Keep token provenance aligned with the selected URL candidate. Earlier prose
-  // can contain stale copied tokens; only fall back to prose when the chosen URL
-  // did not carry a token itself.
-  return embeddedUrlCandidate?.token ?? _firstToken(text);
+  final candidateToken = embeddedUrlCandidate?.candidate.token;
+  if (candidateToken != null) return candidateToken;
+
+  // Keep token provenance aligned with the selected URL candidate. Tokens after
+  // the selected URL are more likely to describe that endpoint than stale prose
+  // tokens copied earlier in the share text. Preserve older token-before-URL
+  // imports by falling back to the first token in the whole text.
+  return _firstToken(
+        text,
+        start: embeddedUrlCandidate?.tokenSearchStart ?? 0,
+      ) ??
+      _firstToken(text);
 }
 
-_ConnectionImportCandidate? _bestGenericUrlCandidateFromSharedText(
+_SharedTextEndpointCandidate? _bestGenericUrlCandidateFromSharedText(
   String text,
 ) {
-  _ConnectionImportCandidate? bestCandidate;
-  for (final url in _endpointUrls(text)) {
-    final uri = Uri.tryParse(url);
+  _SharedTextEndpointCandidate? bestCandidate;
+  for (final endpoint in _endpointUrls(text)) {
+    final uri = Uri.tryParse(endpoint.url);
     final candidate = uri != null && uri.hasScheme
         ? _connectionImportCandidateFromGenericUri(uri)
-        : _connectionImportCandidateFromFields({'base_url': url});
+        : _connectionImportCandidateFromFields({'base_url': endpoint.url});
     if (candidate == null) continue;
-    bestCandidate = _richerConnectionImportCandidate(
-      currentBest: bestCandidate,
+    final sharedTextCandidate = _SharedTextEndpointCandidate(
       candidate: candidate,
+      tokenSearchStart: endpoint.tokenSearchStart,
     );
+    bestCandidate = sharedTextCandidate.isRicherThan(bestCandidate)
+        ? sharedTextCandidate
+        : bestCandidate;
   }
   return bestCandidate;
 }
 
-Iterable<String> _endpointUrls(String text) sync* {
+Iterable<_SharedTextEndpoint> _endpointUrls(String text) sync* {
   for (final match in _endpointUrlPattern.allMatches(text)) {
     final url = match.group(0);
-    if (url != null) yield _trimCopiedUrlTrailingPunctuation(url);
+    if (url != null) {
+      yield _SharedTextEndpoint(
+        url: _trimCopiedUrlTrailingPunctuation(url),
+        tokenSearchStart: match.end,
+      );
+    }
   }
+}
+
+class _SharedTextEndpoint {
+  const _SharedTextEndpoint({
+    required this.url,
+    required this.tokenSearchStart,
+  });
+
+  final String url;
+  final int tokenSearchStart;
+}
+
+class _SharedTextEndpointCandidate {
+  const _SharedTextEndpointCandidate({
+    required this.candidate,
+    required this.tokenSearchStart,
+  });
+
+  final _ConnectionImportCandidate candidate;
+  final int tokenSearchStart;
+
+  bool isRicherThan(_SharedTextEndpointCandidate? other) =>
+      candidate.isRicherThan(other?.candidate);
 }
 
 Map<String, String> _genericUriFields(Uri uri) {
@@ -382,22 +421,22 @@ String _trimCopiedUrlTrailingPunctuation(String url) {
 // or part of a query token when the URL carries connection credentials.
 const _copiedUrlTrailingPunctuation = '.,;:!?)]}>"\'`';
 
-String? _firstToken(String text) {
-  final labeledToken = _firstLabeledToken(text);
+String? _firstToken(String text, {int start = 0}) {
+  final labeledToken = _firstLabeledToken(text, start: start);
   if (labeledToken != null) return labeledToken;
 
-  final navivoxIndex = text.toLowerCase().indexOf('nvbx_');
+  final navivoxIndex = text.toLowerCase().indexOf('nvbx_', start);
   return navivoxIndex < 0 ? null : _readTokenAt(text, navivoxIndex);
 }
 
-String? _firstLabeledToken(String text) {
+String? _firstLabeledToken(String text, {required int start}) {
   for (final label in _tokenLabels) {
-    final match = RegExp(
+    final matches = RegExp(
       '${RegExp.escape(label)}\\s*[:=]',
       caseSensitive: false,
-    ).firstMatch(text);
-    if (match == null) continue;
-    final token = _readTokenAt(text, match.end);
+    ).allMatches(text, start);
+    if (matches.isEmpty) continue;
+    final token = _readTokenAt(text, matches.first.end);
     if (token != null) return token;
   }
   return null;

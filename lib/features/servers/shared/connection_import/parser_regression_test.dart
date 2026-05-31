@@ -9,6 +9,7 @@ void main() {
   preservesMetadataFromUrlEmbeddedInSharedText();
   preservesWebSocketUrlEmbeddedInSharedText();
   prefersEmbeddedUrlTokenOverEarlierStaleSharedTextToken();
+  prefersTokenAfterSelectedEmbeddedUrlOverEarlierStaleSharedTextToken();
   prefersRicherEmbeddedUrlOverEarlierUnrelatedUrl();
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
@@ -157,6 +158,26 @@ void prefersEmbeddedUrlTokenOverEarlierStaleSharedTextToken() {
   _expect(
     result.token == 'nvbx_fresh',
     'token from the selected embedded URL should beat earlier stale prose tokens',
+  );
+}
+
+void prefersTokenAfterSelectedEmbeddedUrlOverEarlierStaleSharedTextToken() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Previous token: nvbx_stale should be ignored. Open '
+    'https://gateway.example/connect then use Token: nvbx_fresh.',
+  );
+
+  _expect(
+    result != null,
+    'shared text with stale and fresh prose tokens should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'embedded connection URL should provide the baseUrl',
+  );
+  _expect(
+    result.token == 'nvbx_fresh',
+    'token after the selected embedded URL should beat earlier stale prose tokens',
   );
 }
 

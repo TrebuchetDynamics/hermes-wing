@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
@@ -22,6 +21,7 @@ import 'gateway_message_scope_policy.dart';
 import 'gateway_profile_contact_policy.dart';
 import 'gateway_safety_notice_policy.dart';
 import 'gateway_tool_call_policy.dart';
+import 'gateway_turn_control_policy.dart';
 import 'gateway_turn_metadata_policy.dart';
 import 'gateway_user_turn_policy.dart';
 
@@ -991,26 +991,17 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     final socket = _socket;
     final sessionId = _activeSessionId;
     if (socket == null || sessionId == null || sessionId.trim().isEmpty) {
-      _appendSystemMessage(
-        stop ? 'No active turn to stop.' : 'No active turn to cancel.',
-      );
+      _appendSystemMessage(navivoxGatewayNoActiveTurnMessage(stop: stop));
       return;
     }
     final requestId = _uuid.v4();
-    final message = stop
-        ? NavivoxGatewayMessage.stopTurn(
-            requestId: requestId,
-            sessionId: sessionId,
-          )
-        : NavivoxGatewayMessage.cancelTurn(
-            requestId: requestId,
-            sessionId: sessionId,
-          );
-    socket.add(jsonEncode(message.body));
-    _appendSystemMessage(
-      stop
-          ? 'Stop requested. Started side effects may still exist.'
-          : 'Cancel requested. Started side effects may still exist.',
+    socket.add(
+      navivoxGatewayTurnControlFrame(
+        stop: stop,
+        requestId: requestId,
+        sessionId: sessionId,
+      ),
     );
+    _appendSystemMessage(navivoxGatewayTurnControlSubmittedMessage(stop: stop));
   }
 }

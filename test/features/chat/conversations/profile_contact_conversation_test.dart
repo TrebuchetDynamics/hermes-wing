@@ -17,9 +17,10 @@ void main() {
     health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
   );
-  const support = NavivoxProfileContact(
-    serverId: 'local',
-    profileId: 'support',
+  const supportScope = (serverId: 'local', profileId: 'support');
+  final support = NavivoxProfileContact(
+    serverId: supportScope.serverId,
+    profileId: supportScope.profileId,
     displayName: 'Support',
     serverLabel: 'Local',
     health: NavivoxProfileHealth.online,
@@ -29,7 +30,7 @@ void main() {
   test('projects active Profile contact messages plus system recovery', () {
     final conversation = ProfileContactConversation.fromState(
       NavivoxChannelState(
-        profileContacts: const [mineru, support],
+        profileContacts: [mineru, support],
         selectedProfileContactKey: mineru.key,
         messages: {
           'mineru': chatProfileTextMessage(
@@ -37,13 +38,12 @@ void main() {
             createdAt: now,
             text: 'mineru turn',
           ),
-          'support': chatTextMessage(
+          'support': chatProfileTextMessage(
             id: 'support',
+            scope: supportScope,
             author: NavivoxMessageAuthor.assistant,
             createdAt: now,
             text: 'support turn',
-            serverId: 'local',
-            profileId: 'support',
           ),
           'system': chatTextMessage(
             id: 'system',
@@ -69,12 +69,12 @@ void main() {
   test('projects only the active Profile contact pending Voice run', () {
     final conversation = ProfileContactConversation.fromState(
       NavivoxChannelState(
-        profileContacts: const [mineru, support],
+        profileContacts: [mineru, support],
         selectedProfileContactKey: mineru.key,
         voiceRuns: {
-          'support-voice': chatVoiceRun(
+          'support-voice': chatProfileVoiceRun(
             id: 'support-voice',
-            profileId: 'support',
+            scope: supportScope,
             transcript: 'wrong chat',
             createdAt: now,
           ),

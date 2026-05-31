@@ -31,3 +31,31 @@ NavivoxVoiceRun chatVoiceRun({
     updatedAt: updatedAt ?? timestamp,
   );
 }
+
+/// Shared Voice run fixture scoped through the canonical chat Profile contract.
+NavivoxVoiceRun chatProfileVoiceRun({
+  String id = 'voice-1',
+  ChatProfileScope scope = chatMineruProfileScope,
+  NavivoxVoiceRunStatus status = NavivoxVoiceRunStatus.pendingSend,
+  NavivoxTranscriptSource transcriptSource = NavivoxTranscriptSource.device,
+  NavivoxTtsStatus ttsStatus = NavivoxTtsStatus.unavailable,
+  String transcript = 'ship this safely',
+  Duration? duration,
+  double? confidence,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) {
+  return chatVoiceRun(
+    id: id,
+    serverId: scope.serverId,
+    profileId: scope.profileId,
+    status: status,
+    transcriptSource: transcriptSource,
+    ttsStatus: ttsStatus,
+    transcript: transcript,
+    duration: duration,
+    confidence: confidence,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
+}

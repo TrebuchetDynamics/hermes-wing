@@ -43,18 +43,16 @@ void main() {
       profileContacts: [activeProfile, otherProfile],
       selectedProfileContactKey: chatProfileScopeKey(activeScope),
       messages: {
-        'mineru': chatTextMessage(
+        'mineru': chatProfileTextMessage(
           id: 'mineru',
+          scope: activeScope,
           text: 'mineru turn',
-          serverId: activeScope.serverId,
-          profileId: activeScope.profileId,
           createdAt: now,
         ),
-        'support': chatTextMessage(
+        'support': chatProfileTextMessage(
           id: 'support',
+          scope: (serverId: activeScope.serverId, profileId: 'support'),
           text: 'support turn',
-          serverId: activeScope.serverId,
-          profileId: 'support',
           createdAt: now,
         ),
         'system': chatTextMessage(
@@ -79,9 +77,9 @@ void main() {
   });
 
   test('summarizes active profile scope and transcript surface inputs', () {
-    final pendingRun = chatVoiceRun(
+    final pendingRun = chatProfileVoiceRun(
       id: 'voice-1',
-      serverId: activeScope.serverId,
+      scope: activeScope,
       transcript: 'ship this safely',
       duration: const Duration(seconds: 3),
       confidence: 0.82,
@@ -95,11 +93,10 @@ void main() {
       profileContacts: [activeProfile, otherProfile],
       selectedProfileContactKey: chatProfileScopeKey(activeScope),
       messages: {
-        'm1': chatTextMessage(
+        'm1': chatProfileTextMessage(
           id: 'm1',
+          scope: activeScope,
           text: 'hello',
-          serverId: activeScope.serverId,
-          profileId: activeScope.profileId,
           createdAt: now,
         ),
       },

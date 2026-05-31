@@ -62,13 +62,8 @@ class NavivoxConfigAdminSchemaResponse {
   factory NavivoxConfigAdminSchemaResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminSchemaResponse(
       action: navivoxStringFromJson(json['action'], fallback: ''),
-      fields: navivoxListFromJson(json['fields'])
-          .whereType<Map>()
-          .map(
-            (field) => NavivoxConfigAdminField.fromJson(
-              Map<String, Object?>.from(field),
-            ),
-          )
+      fields: navivoxMapListFromJson(json['fields'])
+          .map(NavivoxConfigAdminField.fromJson)
           .where((field) => field.key.isNotEmpty)
           .toList(growable: false),
     );
@@ -128,13 +123,8 @@ class NavivoxConfigAdminGetResponse {
   factory NavivoxConfigAdminGetResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminGetResponse(
       action: navivoxStringFromJson(json['action'], fallback: ''),
-      values: navivoxListFromJson(json['values'])
-          .whereType<Map>()
-          .map(
-            (value) => NavivoxConfigAdminValue.fromJson(
-              Map<String, Object?>.from(value),
-            ),
-          )
+      values: navivoxMapListFromJson(json['values'])
+          .map(NavivoxConfigAdminValue.fromJson)
           .where((value) => value.key.isNotEmpty)
           .toList(growable: false),
     );
@@ -273,22 +263,12 @@ class NavivoxConfigAdminResponse {
       reloadApplied: json['reload_applied'] == true,
       pendingRestart: json['pending_restart'] == true,
       reloadError: configWireString(json['reload_error']) ?? '',
-      changes: navivoxListFromJson(json['changes'])
-          .whereType<Map>()
-          .map(
-            (change) => NavivoxConfigAdminDiff.fromJson(
-              Map<String, Object?>.from(change),
-            ),
-          )
+      changes: navivoxMapListFromJson(json['changes'])
+          .map(NavivoxConfigAdminDiff.fromJson)
           .where((change) => change.key.isNotEmpty)
           .toList(growable: false),
-      errors: navivoxListFromJson(json['errors'])
-          .whereType<Map>()
-          .map(
-            (error) => NavivoxConfigAdminFieldError.fromJson(
-              Map<String, Object?>.from(error),
-            ),
-          )
+      errors: navivoxMapListFromJson(json['errors'])
+          .map(NavivoxConfigAdminFieldError.fromJson)
           .where((error) => error.key.isNotEmpty || error.message.isNotEmpty)
           .toList(growable: false),
     );

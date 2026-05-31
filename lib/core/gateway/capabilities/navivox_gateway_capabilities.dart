@@ -75,14 +75,9 @@ class NavivoxCapabilityDocument {
       healthAliases: navivoxStringListFromJson(
         navivoxMapFromJson(json['health'])['aliases'],
       ),
-      endpoints: navivoxListFromJson(json['endpoints'])
-          .whereType<Map>()
-          .map(
-            (endpoint) => NavivoxCapabilityEndpoint.fromJson(
-              Map<String, Object?>.from(endpoint),
-            ),
-          )
-          .toList(growable: false),
+      endpoints: navivoxMapListFromJson(
+        json['endpoints'],
+      ).map(NavivoxCapabilityEndpoint.fromJson).toList(growable: false),
       profileManagement: NavivoxProfileManagementCapability.fromJson(
         navivoxMapFromJson(json['profile_management']),
       ),

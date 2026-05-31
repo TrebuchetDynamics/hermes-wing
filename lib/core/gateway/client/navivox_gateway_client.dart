@@ -129,14 +129,7 @@ class NavivoxGatewayClient {
 
   Future<List<Map<String, Object?>>> profileContacts() async {
     final body = await _getJson(config.profileContactsUri);
-    final contacts = body['contacts'];
-    if (contacts is! List) {
-      return const [];
-    }
-    return contacts
-        .whereType<Map>()
-        .map((contact) => Map<String, Object?>.from(contact))
-        .toList(growable: false);
+    return navivoxMapListFromJson(body['contacts']);
   }
 
   Future<NavivoxProfileRoutingReport> profileRouting() async {
@@ -147,15 +140,8 @@ class NavivoxGatewayClient {
 
   Future<List<NavivoxGatewaySessionSnapshot>> sessions() async {
     final body = await _getJson(config.sessionsUri);
-    final sessions = body['sessions'];
-    if (sessions is! List) return const [];
-    return sessions
-        .whereType<Map>()
-        .map(
-          (session) => NavivoxGatewaySessionSnapshot.fromJson(
-            Map<String, Object?>.from(session),
-          ),
-        )
+    return navivoxMapListFromJson(body['sessions'])
+        .map(NavivoxGatewaySessionSnapshot.fromJson)
         .where((session) => session.sessionId.isNotEmpty)
         .toList(growable: false);
   }

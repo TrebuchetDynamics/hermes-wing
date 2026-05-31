@@ -116,19 +116,11 @@ class NavivoxProfileRoutingReport {
   const NavivoxProfileRoutingReport({this.profiles = const []});
 
   factory NavivoxProfileRoutingReport.fromJson(Map<String, Object?> json) {
-    final profiles = json['profiles'];
     return NavivoxProfileRoutingReport(
-      profiles: profiles is List
-          ? profiles
-                .whereType<Map>()
-                .map(
-                  (profile) => NavivoxProfileRoute.fromJson(
-                    Map<String, Object?>.from(profile),
-                  ),
-                )
-                .where((profile) => profile.profileId.isNotEmpty)
-                .toList(growable: false)
-          : const [],
+      profiles: navivoxMapListFromJson(json['profiles'])
+          .map(NavivoxProfileRoute.fromJson)
+          .where((profile) => profile.profileId.isNotEmpty)
+          .toList(growable: false),
     );
   }
 

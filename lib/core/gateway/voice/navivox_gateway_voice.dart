@@ -184,14 +184,9 @@ class NavivoxVoiceProfilesResponse {
       providerMatrix: NavivoxVoiceProviderMatrix.fromJson(
         navivoxMapFromJson(json['provider_matrix']),
       ),
-      profiles: navivoxListFromJson(json['profiles'])
-          .whereType<Map>()
-          .map(
-            (profile) => NavivoxVoiceProfileView.fromJson(
-              Map<String, Object?>.from(profile),
-            ),
-          )
-          .toList(growable: false),
+      profiles: navivoxMapListFromJson(
+        json['profiles'],
+      ).map(NavivoxVoiceProfileView.fromJson).toList(growable: false),
     );
   }
 
@@ -251,12 +246,7 @@ Map<String, NavivoxVoiceCredentialStatus> _voiceCredentialRefsFromJson(
 }
 
 List<NavivoxVoiceProfileFieldError> _voiceProfileErrorsFromJson(Object? value) {
-  return navivoxListFromJson(value)
-      .whereType<Map>()
-      .map(
-        (error) => NavivoxVoiceProfileFieldError.fromJson(
-          Map<String, Object?>.from(error),
-        ),
-      )
-      .toList(growable: false);
+  return navivoxMapListFromJson(
+    value,
+  ).map(NavivoxVoiceProfileFieldError.fromJson).toList(growable: false);
 }

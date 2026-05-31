@@ -1,7 +1,7 @@
 import '../../../../../core/gateway/navivox_gateway_protocol.dart';
 import '../../../../../core/protocol/navivox_json.dart';
-import '../shared/text/transcript_display_text.dart';
-import '../shared/text/transcript_info_text.dart';
+import '../shared/transcript_display_text.dart';
+import '../shared/transcript_info_text.dart';
 
 class TranscriptRunRecordInfoRow {
   const TranscriptRunRecordInfoRow({required this.label, required this.value});

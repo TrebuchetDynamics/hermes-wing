@@ -6,6 +6,8 @@ export 'package:navivox/core/protocol/voice_unavailable_reason.dart'
         deviceSttUnavailableReason,
         microphonePermissionDeniedReason;
 
+const selectProfileContactVoiceUnavailableReason = 'select a profile contact';
+
 /// Shared presentation policy for local voice-capture unavailable states.
 ///
 /// Keep these labels centralized because the chat composer and readiness UI both
@@ -23,7 +25,7 @@ String? defaultVoiceUnavailableRecoveryAction(String reason) {
 
 String voiceUnavailableHelpText(String? reason) {
   return defaultVoiceUnavailableRecoveryAction(reason ?? '') ??
-      (reason == 'select a profile contact'
+      (reason == selectProfileContactVoiceUnavailableReason
           ? 'Select a profile contact before using continuous voice.'
           : 'Check microphone permissions and Settings.');
 }
@@ -33,7 +35,7 @@ String voiceSettingsSubtitleForUnavailableReason(String? reason) {
       ? 'Review continuous voice after enabling device speech recognition.'
       : reason == microphonePermissionDeniedReason
       ? 'Review continuous voice after granting microphone permission.'
-      : reason == 'select a profile contact'
+      : reason == selectProfileContactVoiceUnavailableReason
       ? 'Select a profile contact before reviewing continuous voice settings.'
       : 'Review continuous voice and trust settings';
 }

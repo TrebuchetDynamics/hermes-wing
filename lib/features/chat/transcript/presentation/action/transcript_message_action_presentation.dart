@@ -1,7 +1,7 @@
 import '../../../../../core/channel/navivox_channel.dart';
 import '../../../../../core/protocol/navivox_event.dart';
-import '../shared/message/transcript_message_plain_text.dart';
-import '../shared/text/transcript_display_text.dart';
+import '../shared/transcript_message_plain_text.dart';
+import '../shared/transcript_display_text.dart';
 
 class TranscriptMessageForwardTargetPresentation {
   const TranscriptMessageForwardTargetPresentation({

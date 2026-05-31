@@ -1,12 +1,19 @@
+abstract final class RouteParameters {
+  static const serverId = 'serverId';
+  static const profileId = 'profileId';
+  static const configSection = 'section';
+}
+
 abstract final class AppRoutes {
   static const setup = '/setup';
   static const chats = '/chats';
-  static const chatThread = '/chats/:serverId/:profileId';
+  static const chatThread =
+      '/chats/:${RouteParameters.serverId}/:${RouteParameters.profileId}';
   static const servers = '/servers';
   static const memory = '/memory';
   static const agents = '/agents';
   static const config = '/config';
-  static const configSection = '/config/:section';
+  static const configSection = '/config/:${RouteParameters.configSection}';
   static const settings = '/settings';
 
   static String chatLocation({
@@ -27,5 +34,13 @@ abstract final class AppRoutes {
 
   static bool isChatThreadLocation(String location) {
     return location.startsWith('$chats/');
+  }
+
+  static bool isNavigationDestinationLocation({
+    required String location,
+    required String destinationPath,
+  }) {
+    return location == destinationPath ||
+        location.startsWith('$destinationPath/');
   }
 }

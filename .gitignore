@@ -11,6 +11,7 @@ coverage/
 
 # Pi agent artifacts
 .pi/**
+**/.pi/candidates-folder-refactor/
 .understand-anything/**
 
 # Node / Playwright

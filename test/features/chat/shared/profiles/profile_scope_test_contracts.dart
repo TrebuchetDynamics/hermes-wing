@@ -39,6 +39,14 @@ String chatProfileVoiceKey(ChatProfileScope scope) {
   return 'profile-contact-voice-${scope.serverId}-${scope.profileId}';
 }
 
+String chatProfilePresenceKey(ChatProfileScope scope) {
+  return 'profile-presence-${scope.serverId}-${scope.profileId}';
+}
+
+String chatProfileVoiceReadyKey(ChatProfileScope scope) {
+  return 'profile-voice-ready-${scope.serverId}-${scope.profileId}';
+}
+
 String chatProfileActiveTurnKey(ChatProfileScope scope) {
   return 'profile-active-turn-${scope.serverId}-${scope.profileId}';
 }

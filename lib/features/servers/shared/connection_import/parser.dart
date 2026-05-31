@@ -18,10 +18,11 @@ class ConnectionImportParser {
     final copiedUriPayload = _copiedUriPayload(text);
     if (copiedUriPayload != null) {
       if (_isCorePairingDescriptorUri(copiedUriPayload.uri)) {
-        return _parseCorePairingDescriptor(
+        final coreImport = _parseCorePairingDescriptor(
           copiedUriPayload.text,
           copiedUriPayload.uri,
         );
+        if (coreImport != null) return coreImport;
       }
 
       final uriImport = _importFromGenericUri(copiedUriPayload.uri);

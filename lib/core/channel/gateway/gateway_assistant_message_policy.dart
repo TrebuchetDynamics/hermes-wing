@@ -27,6 +27,11 @@ NavivoxChatMessage navivoxGatewayAssistantTextMessage({
   final text = appendText
       ? '${existing?.text ?? ''}$incomingText'
       : incomingText;
+  final messageScope = navivoxMessageScopeWithFallback(
+    serverId: existing?.serverId,
+    profileId: existing?.profileId,
+    fallback: scope,
+  );
   return NavivoxChatMessage(
     id: id,
     author: existing?.author ?? NavivoxMessageAuthor.assistant,
@@ -35,7 +40,7 @@ NavivoxChatMessage navivoxGatewayAssistantTextMessage({
     text: text,
     runRecordReference:
         event.runRecordReference ?? existing?.runRecordReference,
-    serverId: existing?.serverId ?? scope.serverId,
-    profileId: existing?.profileId ?? scope.profileId,
+    serverId: messageScope.serverId,
+    profileId: messageScope.profileId,
   );
 }

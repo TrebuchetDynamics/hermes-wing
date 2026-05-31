@@ -1,6 +1,7 @@
 import '../../protocol/navivox_event.dart';
 import '../../protocol/navivox_voice_run.dart';
 import '../contracts/navivox_channel.dart';
+import '../contracts/navivox_profile_scope.dart';
 
 /// Gateway voice-run lifecycle policy.
 ///
@@ -14,8 +15,8 @@ NavivoxVoiceRun navivoxGatewayRecordingVoiceRun({
 }) {
   return NavivoxVoiceRun.recording(
     id: id,
-    serverId: profile?.serverId ?? 'navivox-gateway',
-    profileId: profile?.profileId ?? 'default',
+    serverId: profile?.serverId ?? navivoxDefaultGatewayServerId,
+    profileId: profile?.profileId ?? navivoxDefaultProfileId,
     createdAt: createdAt,
   );
 }

@@ -1,4 +1,5 @@
 import 'navivox_channel.dart';
+import 'navivox_profile_scope.dart';
 
 /// Profile/server scope used by memory API requests.
 ///
@@ -18,6 +19,6 @@ NavivoxMemoryScope navivoxMemoryScopeFor({
 }) {
   return NavivoxMemoryScope(
     serverId: serverId ?? activeProfile?.serverId,
-    profileId: profileId ?? activeProfile?.profileId ?? 'default',
+    profileId: profileId ?? activeProfile?.profileId ?? navivoxDefaultProfileId,
   );
 }

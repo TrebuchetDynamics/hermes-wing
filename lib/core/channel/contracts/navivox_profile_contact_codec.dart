@@ -1,5 +1,6 @@
 import '../../protocol/navivox_json.dart';
 import 'navivox_channel.dart';
+import 'navivox_profile_scope.dart';
 
 /// Gateway/test-facing decoder for the profile contact payload used by channel
 /// state. Keeping it beside the channel contract avoids each channel adapter
@@ -7,15 +8,15 @@ import 'navivox_channel.dart';
 NavivoxProfileContact navivoxProfileContactFromJson(Map<String, Object?> json) {
   final serverId = navivoxStringFromJson(
     json['server_id'],
-    fallback: 'navivox-gateway',
+    fallback: navivoxDefaultGatewayServerId,
   );
   final profileId = navivoxStringFromJson(
     json['profile_id'],
-    fallback: 'default',
+    fallback: navivoxDefaultProfileId,
   );
   final serverLabel = navivoxStringFromJson(
     json['server_label'],
-    fallback: 'Gormes Gateway',
+    fallback: navivoxDefaultGatewayServerLabel,
   );
   final micAvailable = navivoxStrictBoolFromJson(json['mic_available']);
   return NavivoxProfileContact(
@@ -23,7 +24,9 @@ NavivoxProfileContact navivoxProfileContactFromJson(Map<String, Object?> json) {
     profileId: profileId,
     displayName: navivoxStringFromJson(
       json['display_name'],
-      fallback: profileId == 'default' ? 'Default profile' : profileId,
+      fallback: profileId == navivoxDefaultProfileId
+          ? 'Default profile'
+          : profileId,
     ),
     serverLabel: serverLabel,
     health: navivoxProfileHealthFromJson(json['health']),

@@ -18,6 +18,11 @@ NavivoxChatMessage navivoxGatewayToolCallMessage({
   required NavivoxMessageScope scope,
 }) {
   final prior = priorMessage?.toolCall;
+  final messageScope = navivoxMessageScopeWithFallback(
+    serverId: priorMessage?.serverId,
+    profileId: priorMessage?.profileId,
+    fallback: scope,
+  );
   return NavivoxChatMessage(
     id: id,
     author: NavivoxMessageAuthor.assistant,
@@ -38,8 +43,8 @@ NavivoxChatMessage navivoxGatewayToolCallMessage({
     ),
     runRecordReference:
         event.runRecordReference ?? priorMessage?.runRecordReference,
-    serverId: priorMessage?.serverId ?? scope.serverId,
-    profileId: priorMessage?.profileId ?? scope.profileId,
+    serverId: messageScope.serverId,
+    profileId: messageScope.profileId,
   );
 }
 
@@ -53,6 +58,11 @@ NavivoxChatMessage? navivoxGatewayToolApprovalMessage({
 }) {
   final priorTool = priorMessage?.toolCall;
   if (priorTool == null) return null;
+  final messageScope = navivoxMessageScopeWithFallback(
+    serverId: priorMessage?.serverId,
+    profileId: priorMessage?.profileId,
+    fallback: scope,
+  );
   return NavivoxChatMessage(
     id: id,
     author: NavivoxMessageAuthor.assistant,
@@ -63,8 +73,8 @@ NavivoxChatMessage? navivoxGatewayToolApprovalMessage({
     ),
     runRecordReference:
         event.runRecordReference ?? priorMessage?.runRecordReference,
-    serverId: priorMessage?.serverId ?? scope.serverId,
-    profileId: priorMessage?.profileId ?? scope.profileId,
+    serverId: messageScope.serverId,
+    profileId: messageScope.profileId,
   );
 }
 

@@ -1,6 +1,7 @@
 import '../../gateway/navivox_gateway_protocol.dart';
 import '../contracts/navivox_channel.dart';
 import '../contracts/navivox_profile_contact_codec.dart';
+import '../contracts/navivox_profile_scope.dart';
 
 /// Gateway profile-contact fallback and server-list policy.
 ///
@@ -9,10 +10,10 @@ import '../contracts/navivox_profile_contact_codec.dart';
 /// server/profile defaults.
 NavivoxProfileContact navivoxClosedCapabilityProfileContact(String status) {
   return NavivoxProfileContact(
-    serverId: 'navivox-gateway',
-    profileId: 'default',
+    serverId: navivoxDefaultGatewayServerId,
+    profileId: navivoxDefaultProfileId,
     displayName: 'Default profile',
-    serverLabel: 'Gormes Gateway',
+    serverLabel: navivoxDefaultGatewayServerLabel,
     health: NavivoxProfileHealth.warning,
     latestPreview: status,
     latestPreviewKind: 'status',
@@ -28,10 +29,10 @@ NavivoxProfileContact navivoxClosedCapabilityProfileContact(String status) {
 
 NavivoxProfileContact navivoxFallbackProfileContact() {
   return const NavivoxProfileContact(
-    serverId: 'navivox-gateway',
-    profileId: 'default',
+    serverId: navivoxDefaultGatewayServerId,
+    profileId: navivoxDefaultProfileId,
     displayName: 'Default profile',
-    serverLabel: 'Gormes Gateway',
+    serverLabel: navivoxDefaultGatewayServerLabel,
     health: NavivoxProfileHealth.online,
     latestPreview: 'Gateway online',
     latestPreviewKind: 'status',
@@ -135,7 +136,7 @@ String _serverStatus(
   NavivoxProfileContact contact,
   NavivoxGatewayConfig config,
 ) {
-  if (contact.serverId == 'navivox-gateway') {
+  if (contact.serverId == navivoxDefaultGatewayServerId) {
     return 'Gateway online - ${config.baseUri.host}:${config.baseUri.port}';
   }
   return _profileHealthStatus(contact);

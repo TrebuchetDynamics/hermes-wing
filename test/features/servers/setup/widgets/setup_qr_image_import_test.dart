@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/servers/screens/setup_screen.dart';
 
-import '../../shared/app/test_material_app.dart';
-import '../../shared/finders/test_finders.dart';
+import '../../../shared/app/test_material_app.dart';
+import '../../../shared/finders/test_finders.dart';
+import '../shared/setup_screen_test_contracts.dart';
 
 void main() {
   testWidgets(
@@ -20,20 +20,14 @@ void main() {
         ),
       );
 
-      final importButton = find.bySemanticsLabel('Import QR image');
+      final importButton = setupImportQrAction();
       await tester.ensureVisible(importButton);
       await tester.tap(importButton);
       await tester.pumpAndSettle();
 
-      final addressField = tester.widget<TextField>(
-        find.widgetWithText(TextField, 'Gateway address'),
-      );
-      final portField = tester.widget<TextField>(
-        find.widgetWithText(TextField, 'Port'),
-      );
-      final tokenField = tester.widget<TextField>(
-        find.widgetWithText(TextField, 'Pairing token'),
-      );
+      final addressField = setupAddressTextField(tester);
+      final portField = setupPortTextField(tester);
+      final tokenField = setupTokenTextField(tester);
 
       expect(addressField.controller?.text, '10.0.2.2');
       expect(portField.controller?.text, '8765');

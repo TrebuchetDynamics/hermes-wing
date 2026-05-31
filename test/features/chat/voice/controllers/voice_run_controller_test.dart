@@ -6,6 +6,7 @@ import 'package:navivox/shared/voice/voice_capture_service.dart';
 
 import '../../../shared/fakes/voice_capture_service_fakes.dart';
 import '../../shared/profile_contact_chat_test_fixtures.dart';
+import '../../shared/voice_recovery_test_fixtures.dart';
 
 void main() {
   test('startCapture records the active Voice run id', () {
@@ -52,21 +53,21 @@ void main() {
 
     final result = controller.captureFailed(
       channel,
-      const DeviceSpeechUnavailable('microphone permission denied'),
+      const DeviceSpeechUnavailable(microphonePermissionDeniedReason),
     );
 
-    expect(result.reason, 'microphone permission denied');
-    expect(result.runtimeVoiceDisabledReason, 'microphone permission denied');
+    expect(result.reason, microphonePermissionDeniedReason);
+    expect(result.runtimeVoiceDisabledReason, microphonePermissionDeniedReason);
     expect(
       controller.runtimeVoiceDisabledReason,
-      'microphone permission denied',
+      microphonePermissionDeniedReason,
     );
     expect(channel.state.activeVoiceRun?.status, NavivoxVoiceRunStatus.failed);
   });
 
   test('clearRuntimeVoiceDisabledReason resets session voice blocker', () {
     final controller = VoiceRunController()
-      ..runtimeVoiceDisabledReason = 'device STT unavailable';
+      ..runtimeVoiceDisabledReason = deviceSttUnavailableReason;
 
     controller.clearRuntimeVoiceDisabledReason();
 

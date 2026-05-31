@@ -4,6 +4,7 @@ import 'package:navivox/features/chat/voice/presentation/voice_readiness_present
 import 'package:navivox/shared/voice/voice_settings.dart';
 
 import '../../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../shared/voice_recovery_test_fixtures.dart';
 
 void main() {
   final profile = mineruBuilderProfile(
@@ -37,19 +38,19 @@ void main() {
       ),
       activeProfile: profile,
       localVoiceCaptureAvailable: false,
-      localVoiceCaptureUnavailableReason: 'device STT unavailable',
+      localVoiceCaptureUnavailableReason: deviceSttUnavailableReason,
     );
     final noProfile = VoiceReadinessPresentation.fromState(
       settings: trusted,
       activeProfile: null,
       localVoiceCaptureAvailable: false,
-      localVoiceCaptureUnavailableReason: 'device STT unavailable',
+      localVoiceCaptureUnavailableReason: deviceSttUnavailableReason,
     );
     final untrusted = VoiceReadinessPresentation.fromState(
       settings: const NavivoxVoiceSettings(),
       activeProfile: profile,
       localVoiceCaptureAvailable: false,
-      localVoiceCaptureUnavailableReason: 'device STT unavailable',
+      localVoiceCaptureUnavailableReason: deviceSttUnavailableReason,
     );
 
     expect(disabled.blockerKind, VoiceReadinessBlockerKind.disabledInSettings);
@@ -86,7 +87,7 @@ void main() {
       settings: trusted,
       activeProfile: profile,
       localVoiceCaptureAvailable: false,
-      localVoiceCaptureUnavailableReason: 'device STT unavailable',
+      localVoiceCaptureUnavailableReason: deviceSttUnavailableReason,
     );
     final gatewayProfile = VoiceReadinessPresentation.fromState(
       settings: trusted,
@@ -95,7 +96,7 @@ void main() {
         latestPreview: 'Ready',
         workspaceRootCount: 0,
         voiceCapability: const NavivoxVoiceCapability(
-          disabledReason: 'device STT unavailable',
+          disabledReason: deviceSttUnavailableReason,
           recoveryAction: 'Enable profile STT',
         ),
       ),
@@ -144,14 +145,14 @@ void main() {
       settings: trusted,
       activeProfile: profile,
       localVoiceCaptureAvailable: true,
-      runtimeVoiceDisabledReason: 'microphone permission denied',
+      runtimeVoiceDisabledReason: microphonePermissionDeniedReason,
     );
 
     expect(
       readiness.blockerKind,
       VoiceReadinessBlockerKind.microphonePermissionDenied,
     );
-    expect(readiness.disabledReason, 'microphone permission denied');
+    expect(readiness.disabledReason, microphonePermissionDeniedReason);
     expect(
       readiness.recoveryAction,
       'Grant microphone permission in Android App info, then return to Navivox.',

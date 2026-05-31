@@ -5,6 +5,7 @@ void main() {
   parsesGenericTokenUrlOutsideCoreDescriptorProtocol();
   preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin();
   preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts();
+  preservesMetadataFromUrlEmbeddedInSharedText();
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
   prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate();
@@ -78,6 +79,26 @@ void preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts() {
   );
   _expect(result!.token == 'nvbx_ok', 'first nonblank repeated token wins');
   _expect(result.serverId == 'srv', 'metadata beside repeated fields is kept');
+}
+
+void preservesMetadataFromUrlEmbeddedInSharedText() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Open https://gateway.example/connect?server_id=srv&profile_id=profile to finish setup.',
+  );
+
+  _expect(result != null, 'embedded generic URL import should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'embedded generic URL origin should provide baseUrl',
+  );
+  _expect(
+    result.serverId == 'srv',
+    'embedded generic URL server_id should be preserved',
+  );
+  _expect(
+    result.profileId == 'profile',
+    'embedded generic URL profile_id should be preserved',
+  );
 }
 
 void preservesGenericWebSocketUrlImports() {

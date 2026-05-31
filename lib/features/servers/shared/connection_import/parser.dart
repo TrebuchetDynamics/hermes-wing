@@ -25,12 +25,7 @@ class ConnectionImportParser {
       if (uriImport != null) return uriImport;
     }
 
-    final baseUrl = _normalizeBaseUrl(_firstUrl(text));
-    final token = _firstToken(text);
-    if (baseUrl != null || token != null) {
-      return SetupQrImageImport(baseUrl: baseUrl, token: token);
-    }
-    return null;
+    return _importFromSharedText(text);
   }
 
   SetupQrImageImport? _parseCorePairingDescriptor(String text, Uri uri) {
@@ -196,6 +191,31 @@ SetupQrImageImport? _importFromGenericUri(Uri uri) {
     );
   }
   return null;
+}
+
+SetupQrImageImport? _importFromSharedText(String text) {
+  final embeddedUrlImport = _importFromFirstGenericUrl(text);
+  final token = _firstToken(text) ?? embeddedUrlImport?.token;
+  if (embeddedUrlImport == null && token == null) return null;
+
+  return SetupQrImageImport(
+    baseUrl: embeddedUrlImport?.baseUrl,
+    token: token,
+    webSocketUrl: embeddedUrlImport?.webSocketUrl,
+    serverId: embeddedUrlImport?.serverId,
+    profileId: embeddedUrlImport?.profileId,
+  );
+}
+
+SetupQrImageImport? _importFromFirstGenericUrl(String text) {
+  final url = _firstUrl(text);
+  if (url == null) return null;
+
+  final uri = Uri.tryParse(url);
+  if (uri != null && uri.hasScheme) return _importFromGenericUri(uri);
+
+  final baseUrl = _normalizeBaseUrl(url);
+  return baseUrl == null ? null : SetupQrImageImport(baseUrl: baseUrl);
 }
 
 Map<String, String> _genericUriFields(Uri uri) {

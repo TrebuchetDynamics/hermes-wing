@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T10:23:45.864Z",
+  "generatedAt": "2026-05-31T10:25:18.373Z",
   "cwd": "/home/xel/git/gormes/navivox-app/lib",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app/lib",
@@ -315,7 +315,7 @@
       "score": 30.8,
       "files": 8,
       "direct": 3,
-      "churn": 41,
+      "churn": 43,
       "callers": 5,
       "importsOut": 5,
       "tests": 0,

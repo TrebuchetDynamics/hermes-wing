@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T10:23:32.326Z",
+  "updatedAt": "2026-05-31T10:27:35.835Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND: visibility refactors under lib to expose hidden import/provenance/endpoint assumptions without changing public behavior except proven regressions.",
   "completedSlices": [
     "Added replayable regression in features/servers/shared/connection_import/parser_regression_test.dart for generic URL metadata with origin fallback.",
@@ -33,7 +33,10 @@
     "Fixed setup_screen port edits to clear imported handoff target/provenance just like address edits, preventing stale direct-app-open profile selection after manually changing the endpoint port.",
     "Added preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because Uri.queryParameters kept the final blank duplicate token and dropped the earlier nonblank value.",
     "Extracted _firstNonBlankQueryParameterValues/_firstNonBlankQueryParameterValue in features/servers/shared/connection_import/parser.dart to make repeated-query data flow explicit.",
-    "Fixed generic URI connection imports to scan queryParametersAll and preserve the first nonblank value for repeated fields instead of letting a later blank duplicate erase credentials."
+    "Fixed generic URI connection imports to scan queryParametersAll and preserve the first nonblank value for repeated fields instead of letting a later blank duplicate erase credentials.",
+    "Added preservesMetadataFromUrlEmbeddedInSharedText regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because embedded generic URLs in prose were downgraded to baseUrl-only shared-text imports.",
+    "Extracted _importFromSharedText and _importFromFirstGenericUrl in features/servers/shared/connection_import/parser.dart to make the shared-text fallback's embedded-URL candidate flow explicit.",
+    "Fixed shared-text connection imports to preserve server_id/profile_id metadata from the first embedded generic HTTP(S) URL while retaining existing labeled/free-token fallback behavior."
   ],
   "nextCandidates": [
     "features/servers/shared/connection_import parser ranking tie-breaks for partial candidates with equal scores",
@@ -46,6 +49,10 @@
     "dart analyze features/servers/pairing/pairing_handoff_flow.dart features/servers/screens/setup_screen.dart (passes)",
     "flutter test features/servers/pairing/pairing_handoff_flow_regression_test.dart (blocked by pre-existing missing lib/core/gateway/shared/contracts/navivox_gateway_text.dart import from navivox_gateway_message.dart; removed that attempted heavier test and kept pure Dart regression)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: repeated token query with later blank duplicate dropped earlier nonblank token)",
+    "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: embedded generic URL server_id/profile_id in shared text was dropped)",
     "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
     "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)"

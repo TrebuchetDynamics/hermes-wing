@@ -1,7 +1,7 @@
 import '../../../../../core/channel/navivox_channel.dart';
 import '../../../../../core/protocol/navivox_event.dart';
 import '../shared/transcript_display_text.dart';
-import '../shared/transcript_message_plain_text_presentation.dart';
+import '../shared/transcript_message_plain_text.dart';
 
 class TranscriptMessageForwardTargetPresentation {
   const TranscriptMessageForwardTargetPresentation({
@@ -34,7 +34,7 @@ class TranscriptMessageActionPresentation {
     bool runRecordInspectionAvailable = false,
   }) {
     return TranscriptMessageActionPresentation._(
-      text: TranscriptMessagePlainTextPresentation.fromMessage(message).text,
+      text: transcriptPlainTextForMessage(message),
       runRecordId: runRecordInspectionAvailable
           ? runRecordIdForMessage(message)
           : null,

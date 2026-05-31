@@ -5,6 +5,8 @@ import 'package:navivox/features/chat/forwarding/forward_message_intent.dart';
 
 import '../transcript/shared/transcript_test_fixtures.dart';
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 
 const _target = NavivoxProfileContact(
   serverId: 'office team',
@@ -145,20 +147,14 @@ void main() {
 }
 
 TestNavivoxChannel _seedChannel() {
-  return TestNavivoxChannel()
-    ..seedServers(const [
+  return profileContactChannel(
+    servers: const [
       NavivoxServer(id: 'local', name: 'local', status: 'connected'),
       NavivoxServer(id: 'office team', name: 'office', status: 'connected'),
-    ], activeServerId: 'local')
-    ..seedProfileContacts(const [
-      NavivoxProfileContact(
-        serverId: 'local',
-        profileId: 'mineru',
-        displayName: 'Mineru',
-        serverLabel: 'local',
-        health: NavivoxProfileHealth.online,
-        latestPreview: 'Ready',
-      ),
+    ],
+    contacts: [
+      mineruBuilderProfile(displayName: 'Mineru', latestPreview: 'Ready'),
       _target,
-    ], selectedKey: 'local::mineru');
+    ],
+  );
 }

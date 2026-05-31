@@ -4,6 +4,7 @@ import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/agents/screens/agents_screen.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
 import '../../shared/fixtures/profile_contact_fixtures.dart';
 import '../../shared/fixtures/seed_fixtures.dart';
 import '../../shared/app/test_material_app.dart';
@@ -46,9 +47,10 @@ void main() {
   testWidgets(
     'shows Gormes profiles from the active server when agent list is empty',
     (tester) async {
-      final channel = TestNavivoxChannel()
-        ..seedServers(_seedServers, activeServerId: 'local')
-        ..seedProfileContacts(_seedProfiles);
+      final channel = profileContactChannel(
+        servers: _seedServers,
+        contacts: _seedProfiles,
+      );
 
       await tester.pumpWidget(
         TestNavivoxMaterialApp(channel: channel, home: const AgentsScreen()),

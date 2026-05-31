@@ -6,6 +6,8 @@ import 'package:navivox/features/chat/commands/local_command_intent.dart';
 import 'package:navivox/router/app_routes.dart';
 
 import '../../../support/test_navivox_channel.dart';
+import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
+import '../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   const dispatcher = LocalCommandDispatcher();
@@ -150,20 +152,16 @@ void main() {
 }
 
 TestNavivoxChannel _seedChannel() {
-  return TestNavivoxChannel()
-    ..seedServers(const [
+  return profileContactChannel(
+    servers: const [
       NavivoxServer(id: 'local', name: 'local', status: 'connected'),
-    ], activeServerId: 'local')
-    ..seedProfileContacts(const [
-      NavivoxProfileContact(
-        serverId: 'local',
-        profileId: 'mineru',
+    ],
+    contacts: [
+      mineruBuilderProfile(
         displayName: 'Mineru',
-        serverLabel: 'local',
-        health: NavivoxProfileHealth.online,
         latestPreview: 'Ready',
         workspaceRootCount: 1,
-        micAvailable: true,
       ),
-    ], selectedKey: 'local::mineru');
+    ],
+  );
 }

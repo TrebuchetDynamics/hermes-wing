@@ -3,29 +3,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
 
-import '../../../support/test_navivox_channel.dart';
 import '../transcript/shared/transcript_test_fixtures.dart';
 import '../../shared/app/test_material_app.dart';
+import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
 import '../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   testWidgets('chat message action forwards text to another profile contact', (
     tester,
   ) async {
-    final channel = TestNavivoxChannel()
-      ..seedServers(const [
-        localReadyServer,
-        officeReadyServer,
-      ], activeServerId: 'local')
-      ..seedProfileContacts([
+    final channel = profileContactChannel(
+      servers: const [localReadyServer, officeReadyServer],
+      contacts: [
         mineruBuilderProfile(latestPreview: 'building'),
         supportTriageProfile(
           health: NavivoxProfileHealth.online,
           latestPreview: 'watching tickets',
           micAvailable: true,
         ),
-      ], selectedKey: 'local::mineru')
-      ..seedMessages([
+      ],
+    )..seedMessages([
         transcriptTextMessage(
           id: 'assistant-1',
           createdAt: DateTime(2026, 5, 19, 12),

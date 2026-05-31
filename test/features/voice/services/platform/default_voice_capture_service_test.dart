@@ -1,13 +1,12 @@
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
-import 'package:navivox/features/voice/services/capture/voice_capture_service.dart';
+
+import '../../../shared/fakes/voice_capture_service_fakes.dart';
 
 void main() {
   test('creates a speech-to-text voice service for Android devices', () {
-    final fake = _FakeVoiceCaptureService();
+    final fake = successfulVoiceCaptureService();
     var factoryCalls = 0;
 
     final service = createDefaultVoiceCaptureService(
@@ -29,7 +28,7 @@ void main() {
       platform: const VoiceCapturePlatform(isAndroid: false),
       speechToTextServiceFactory: () {
         factoryCalls++;
-        return _FakeVoiceCaptureService();
+        return successfulVoiceCaptureService();
       },
     );
 
@@ -103,17 +102,5 @@ class _ThrowingSpeechDiagnosticsProbe
   @override
   Future<DeviceSpeechRecognitionDiagnostics> read() async {
     throw error;
-  }
-}
-
-class _FakeVoiceCaptureService implements VoiceCaptureService {
-  @override
-  Future<VoiceCapture> capture({required Duration timeout}) async {
-    return VoiceCapture(
-      audio: Uint8List(0),
-      transcript: 'hello',
-      duration: Duration.zero,
-      confidence: 1,
-    );
   }
 }

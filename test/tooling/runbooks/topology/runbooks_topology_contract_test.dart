@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import '../shared/file_contract_helpers.dart';
+import '../../shared/file_contract_helpers.dart';
 
 void main() {
   test('runbook index, moved runbooks, and root compatibility facades stay valid', () {

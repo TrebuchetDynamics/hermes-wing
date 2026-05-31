@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/transcript/presentation/transcript_thread_presentation.dart';
 
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   test('derives empty Transcript surface display state', () {

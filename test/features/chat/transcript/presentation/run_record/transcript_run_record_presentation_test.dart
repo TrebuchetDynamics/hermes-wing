@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/gateway/navivox_gateway_protocol.dart';
 import 'package:navivox/features/chat/transcript/presentation/transcript_run_record_presentation.dart';
 
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   test(

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/chat/transcript/presentation/transcript_safety_notice_presentation.dart';
 
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   test('derives safety warning display state', () {

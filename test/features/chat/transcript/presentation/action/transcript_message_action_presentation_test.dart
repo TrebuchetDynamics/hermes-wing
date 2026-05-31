@@ -1,48 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/transcript/presentation/transcript_message_action_presentation.dart';
 
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_test_fixtures.dart';
+import '../shared/transcript_message_text_projection_cases.dart';
 
 void main() {
   test(
     'derives action text for text, voice, tool, safety, and approval messages',
     () {
-      final text = TranscriptMessageActionPresentation.fromMessage(
-        transcriptTextMessage(text: 'copy this'),
-      );
-      final voice = TranscriptMessageActionPresentation.fromMessage(
-        transcriptVoiceMessage(transcript: 'captured voice'),
-      );
-      final tool = TranscriptMessageActionPresentation.fromMessage(
-        transcriptToolMessage(toolCall: transcriptToolCall()),
-      );
-      final safety = TranscriptMessageActionPresentation.fromMessage(
-        transcriptNoticeMessage(
-          kind: NavivoxMessageKind.safetyWarning,
-          notice: transcriptSafetyNotice(
-            id: 'safety-1',
-            message: 'Unsafe exposure',
-            risk: 'Public gateway',
-          ),
-        ),
-      );
-      final approval = TranscriptMessageActionPresentation.fromMessage(
-        transcriptNoticeMessage(
-          kind: NavivoxMessageKind.approvalRequest,
-          notice: transcriptApprovalNotice(
-            id: 'approval-1',
-            message: 'Approve restart?',
-            risk: 'Interrupts active run',
-          ),
-        ),
-      );
+      for (final testCase in transcriptMessageTextProjectionCases()) {
+        final presentation = TranscriptMessageActionPresentation.fromMessage(
+          testCase.message,
+        );
 
-      expect(text.text, 'copy this');
-      expect(voice.text, 'captured voice');
-      expect(tool.text, 'grep\nfinished\nMatched 2 files');
-      expect(safety.text, 'Unsafe exposure\nPublic gateway');
-      expect(approval.text, 'Approve restart?\nInterrupts active run');
+        expect(
+          presentation.text,
+          testCase.expectedText,
+          reason: testCase.description,
+        );
+      }
     },
   );
 

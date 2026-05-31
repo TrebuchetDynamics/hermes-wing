@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/chat/transcript/presentation/transcript_voice_message_presentation.dart';
 
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   test('derives Voice run bubble display state with transcript', () {

@@ -9,9 +9,32 @@ import 'navivox_gateway_event.dart';
 /// JSON strings from real sockets. Invalid payloads are normalized to the same
 /// typed error event so clients do not duplicate wire-shape checks.
 NavivoxGatewayEvent navivoxGatewayEventFromWire(Object? event) {
+  final candidate = navivoxGatewayEventCandidateFromWire(event);
+  if (!candidate.isValid) return navivoxInvalidGatewayEvent();
+  return NavivoxGatewayEvent.fromJson(candidate.object!);
+}
+
+/// Validated decoded event candidate before typed event construction.
+///
+/// The candidate makes the wire invariant explicit: a gateway event must decode
+/// to a JSON object and its `type` field must be a non-empty literal string.
+class NavivoxGatewayEventCandidate {
+  const NavivoxGatewayEventCandidate({required this.object, this.eventType});
+
+  final Map<String, Object?>? object;
+  final String? eventType;
+
+  bool get isValid => object != null && eventType != null;
+}
+
+NavivoxGatewayEventCandidate navivoxGatewayEventCandidateFromWire(
+  Object? event,
+) {
   final object = navivoxGatewayObjectFromWireEvent(event);
-  if (!_isValidGatewayEventObject(object)) return navivoxInvalidGatewayEvent();
-  return NavivoxGatewayEvent.fromJson(object!);
+  return NavivoxGatewayEventCandidate(
+    object: object,
+    eventType: _gatewayEventTypeFromObject(object),
+  );
 }
 
 /// Converts one loose WebSocket payload into a decoded event object.
@@ -24,8 +47,10 @@ Map<String, Object?>? navivoxGatewayObjectFromWireEvent(Object? event) {
   return navivoxGatewayOptionalObjectFromJson(decoded);
 }
 
-bool _isValidGatewayEventObject(Map<String, Object?>? object) {
-  return object != null && navivoxGatewayHasText(object['type']);
+String? _gatewayEventTypeFromObject(Map<String, Object?>? object) {
+  final type = object?['type'];
+  if (type is! String || !navivoxGatewayHasText(type)) return null;
+  return type;
 }
 
 NavivoxGatewayEvent navivoxInvalidGatewayEvent() {

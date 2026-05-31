@@ -6,6 +6,7 @@ void main() {
   decodedObjectEventStillParses();
   decodedObjectMissingEventTypeBecomesBadResponseEvent();
   decodedObjectWithBlankEventTypeBecomesBadResponseEvent();
+  decodedObjectWithNonStringEventTypeBecomesBadResponseEvent();
   decodedMapWithNonStringKeyBecomesBadResponseEvent();
 }
 
@@ -66,6 +67,19 @@ void decodedObjectWithBlankEventTypeBecomesBadResponseEvent() {
   _expect(
     event.code == 'bad_response',
     'blank event type should be bad_response',
+  );
+}
+
+void decodedObjectWithNonStringEventTypeBecomesBadResponseEvent() {
+  final event = navivoxGatewayEventFromWire({'type': 42, 'text': 'hello'});
+
+  _expect(
+    event.isError,
+    'decoded object with a non-string event type should decode to error event',
+  );
+  _expect(
+    event.code == 'bad_response',
+    'non-string event type should be bad_response',
   );
 }
 

@@ -27,12 +27,7 @@ void main() {
           ),
         ]);
 
-    await pumpChatScreen(
-      tester,
-      channel: channel,
-      serverId: 'local',
-      profileId: 'mineru',
-    );
+    await pumpChatProfileScopeScreen(tester, channel: channel);
     await tester.pumpAndSettle();
 
     await tester.longPress(find.text('send this to support'));

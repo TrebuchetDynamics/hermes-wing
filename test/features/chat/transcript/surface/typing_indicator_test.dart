@@ -14,12 +14,7 @@ void main() {
   ) async {
     final channel = _streamingMineruChannel();
 
-    await pumpChatScreen(
-      tester,
-      channel: channel,
-      serverId: 'local',
-      profileId: 'mineru',
-    );
+    await pumpChatProfileScopeScreen(tester, channel: channel);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -43,12 +38,7 @@ void main() {
         ),
       ]);
 
-    await pumpChatScreen(
-      tester,
-      channel: channel,
-      serverId: 'local',
-      profileId: 'mineru',
-    );
+    await pumpChatProfileScopeScreen(tester, channel: channel);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 

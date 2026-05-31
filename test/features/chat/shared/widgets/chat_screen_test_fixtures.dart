@@ -4,6 +4,7 @@ import 'package:navivox/features/chat/screens/chat_screen.dart';
 
 import '../../../../support/test_navivox_channel.dart';
 import '../../../shared/app/test_material_app.dart';
+import '../profiles/profile_scope_test_contracts.dart';
 
 /// Pumps the chat screen in the standard chat feature material app harness.
 Future<void> pumpChatScreen(
@@ -17,6 +18,20 @@ Future<void> pumpChatScreen(
       channel: channel,
       home: ChatScreen(serverId: serverId, profileId: profileId),
     ),
+  );
+}
+
+/// Pumps the chat screen routed to a canonical chat Profile scope.
+Future<void> pumpChatProfileScopeScreen(
+  WidgetTester tester, {
+  required TestNavivoxChannel channel,
+  ChatProfileScope scope = chatMineruProfileScope,
+}) {
+  return pumpChatScreen(
+    tester,
+    channel: channel,
+    serverId: scope.serverId,
+    profileId: scope.profileId,
   );
 }
 

@@ -517,11 +517,10 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await pumpChatScreen(
+    await pumpChatProfileScopeScreen(
       tester,
       channel: channel,
-      serverId: chatSupportServerId,
-      profileId: chatSupportProfileId,
+      scope: chatSupportProfileScope,
     );
     await tester.pumpAndSettle();
 

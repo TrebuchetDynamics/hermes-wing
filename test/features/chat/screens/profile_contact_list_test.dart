@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import '../../../support/test_navivox_channel.dart';
-import '../../shared/app/test_router_app.dart';
 import '../shared/inline_span_test_helpers.dart';
 import '../shared/chat_screen_test_fixtures.dart';
 import 'shared/profile_contact_screen_test_fixtures.dart';
@@ -13,8 +12,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     expect(find.text('Navivox'), findsOneWidget);
     expect(find.byKey(const ValueKey('profile-search-field')), findsOneWidget);
@@ -61,8 +59,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel(selectedKey: 'local::mineru');
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     final selectedTile = tester.widget<ListTile>(
       find.byKey(const ValueKey('profile-contact-local-mineru')),
@@ -80,8 +77,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     expect(
       find.byKey(const ValueKey('profile-contact-presence-local-mineru')),
@@ -108,8 +104,7 @@ void main() {
   testWidgets('server filter chips narrow contacts by gateway', (tester) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     expect(find.byKey(const ValueKey('server-filter-all')), findsOneWidget);
     expect(find.byKey(const ValueKey('server-filter-local')), findsOneWidget);
@@ -129,8 +124,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.tap(find.byTooltip('Open profile list menu'));
     await tester.pumpAndSettle();
@@ -150,8 +144,7 @@ void main() {
   testWidgets('add profile menu rows are plugged into actions', (tester) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.tap(find.byTooltip('Add profile'));
     await tester.pumpAndSettle();
@@ -176,8 +169,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
       find.byKey(const ValueKey('profile-search-field')),
@@ -206,8 +198,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     expect(find.byKey(const ValueKey('profile-search-field')), findsOneWidget);
 
@@ -227,8 +218,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
       find.byKey(const ValueKey('profile-search-field')),
@@ -254,8 +244,7 @@ void main() {
   testWidgets('search shows a no results state', (tester) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
       find.byKey(const ValueKey('profile-search-field')),
@@ -288,8 +277,7 @@ void main() {
         ...chatProfileListContacts.skip(1),
       ]);
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     expect(find.text('typing… · online · 2 roots'), findsOneWidget);
     expect(
@@ -315,8 +303,7 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.tap(
       find.byKey(const ValueKey('profile-contact-office-support')),
@@ -367,8 +354,7 @@ void main() {
         ),
       ]);
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.tap(
       find.byKey(const ValueKey('profile-contact-office team-support/desk')),
@@ -402,8 +388,7 @@ void main() {
 
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.tap(
       find.byKey(const ValueKey('profile-contact-office-support')),
@@ -438,8 +423,7 @@ void main() {
 
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.longPress(
       find.byKey(const ValueKey('profile-contact-local-mineru')),
@@ -508,8 +492,7 @@ void main() {
 
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
-    await tester.pumpAndSettle();
+    await pumpProfileContactList(tester, channel: channel);
 
     await tester.longPress(
       find.byKey(const ValueKey('profile-contact-office-support')),

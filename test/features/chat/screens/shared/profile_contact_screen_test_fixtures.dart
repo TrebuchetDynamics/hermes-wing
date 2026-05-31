@@ -1,6 +1,8 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 
 import '../../../../support/test_navivox_channel.dart';
+import '../../../shared/app/test_router_app.dart';
 import '../../../shared/fixtures/profile_contact_fixtures.dart';
 
 /// Shared server list for chat Profile contact screen tests.
@@ -18,4 +20,13 @@ TestNavivoxChannel profileContactListChannel({String? selectedKey}) {
   return TestNavivoxChannel()
     ..seedServers(chatProfileListServers, activeServerId: 'local')
     ..seedProfileContacts(chatProfileListContacts, selectedKey: selectedKey);
+}
+
+/// Pumps the profile contact list through the shared router app harness.
+Future<void> pumpProfileContactList(
+  WidgetTester tester, {
+  required TestNavivoxChannel channel,
+}) async {
+  await tester.pumpWidget(TestNavivoxRouterApp(channel: channel));
+  await tester.pumpAndSettle();
 }

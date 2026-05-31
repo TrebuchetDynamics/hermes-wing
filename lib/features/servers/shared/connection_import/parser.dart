@@ -617,8 +617,11 @@ String _trimTokenTrailingPunctuation(String token) {
   return token.substring(0, end);
 }
 
-const _tokenLeadingDelimiters = '"\'';
-const _tokenTrailingPunctuation = '.,;:!?)]}"\'';
+// Shared-text tokens may be copied from prose, quoted strings, or markdown
+// code spans. Keep leading/trailing delimiters explicit so broad human-entered
+// token support does not silently diverge between delimiter styles.
+const _tokenLeadingDelimiters = '"\'`';
+const _tokenTrailingPunctuation = '.,;:!?)]}"\'`';
 
 bool _isTokenChar(int codeUnit) {
   return (codeUnit >= 0x30 && codeUnit <= 0x39) ||

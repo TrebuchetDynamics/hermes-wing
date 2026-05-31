@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T10:56:12.826Z",
+  "updatedAt": "2026-05-31T10:58:20.205Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND: visibility refactors under lib to expose hidden import/provenance/endpoint assumptions without changing public behavior except proven regressions.",
   "completedSlices": [
     "Added preservesCorePairingDescriptorRepeatedQueryValuesAfterBlankCopyArtifacts regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because NavivoxPairingDescriptor.parse used Uri.queryParameters and blank duplicate params erased earlier websocket/token values.",
@@ -20,7 +20,9 @@
     "Added doesNotLetLabelBeforeLaterSharedTextUrlConsumeThatUrlAsToken regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because a dangling label in one endpoint segment could skip across the next URL and make the earlier endpoint appear to have that later token.",
     "Made shared-text token segment bounds explicit by carrying tokenSearchEnd on _SharedTextEndpointCandidate and passing it through _sharedTextImportToken/_firstToken/_readTokenAt so labels cannot consume token text outside the selected endpoint segment.",
     "Added doesNotUseUrlAfterSharedTextTokenLabelAsToken regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because broad labeled-token grammar accepted a following https:// URL as a pairing token.",
-    "Extracted _readLabeledTokenAt/_looksLikeUrlToken in features/servers/shared/connection_import/parser.dart so labeled-token parsing rejects URL-shaped prose/navigation values while leaving generic nvbx_ fallback token scanning unchanged."
+    "Extracted _readLabeledTokenAt/_looksLikeUrlToken in features/servers/shared/connection_import/parser.dart so labeled-token parsing rejects URL-shaped prose/navigation values while leaving generic nvbx_ fallback token scanning unchanged.",
+    "Added parsesSharedTextTokenWrappedInBackticks regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because labeled broad tokens skipped quotes but not markdown code-span delimiters.",
+    "Made shared-text token delimiter handling explicit in features/servers/shared/connection_import/parser.dart by documenting token delimiter policy and adding backtick to leading/trailing delimiter sets."
   ],
   "nextCandidates": [
     "features/servers/pairing token edit provenance policy at widget level if product decides credential edits should also clear pairing-link failure copy",
@@ -50,6 +52,10 @@
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
     "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: labeled token parser accepted a following https://docs.example/reset URL as token)",
+    "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: backtick-wrapped labeled token parsed as null)",
     "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
     "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)"

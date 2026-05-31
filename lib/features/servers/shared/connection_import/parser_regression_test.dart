@@ -25,6 +25,7 @@ void main() {
   doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry();
   parsesSharedTextTokenWithSpacedSeparator();
   parsesSharedTextTokenWrappedInQuotes();
+  parsesSharedTextTokenWrappedInBackticks();
   stripsSentenceTrailingPeriodFromSharedTextUrl();
   stripsAngleBracketFromSharedTextUrl();
   stripsBacktickFromSharedTextUrl();
@@ -430,6 +431,22 @@ void parsesSharedTextTokenWrappedInQuotes() {
   _expect(
     result.token == 'shared_secret',
     'token labels should allow copied quote delimiters around tokens',
+  );
+}
+
+void parsesSharedTextTokenWrappedInBackticks() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Server: https://gateway.example/connect\nToken: `shared_secret`',
+  );
+
+  _expect(result != null, 'backtick-wrapped shared text token should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'backtick-wrapped token shared text URL origin should provide baseUrl',
+  );
+  _expect(
+    result.token == 'shared_secret',
+    'token labels should allow markdown code delimiters around tokens',
   );
 }
 

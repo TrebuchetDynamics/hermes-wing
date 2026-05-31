@@ -1,4 +1,4 @@
-import '../../../core/protocol/config_wire_fields.dart';
+import 'config_secret_wire_contract.dart';
 
 const configBlankDisplayValue = '—';
 const configSecretNotSetLabel = 'Secret not set';
@@ -15,7 +15,7 @@ String configDisplayValue(Object? value) {
 String configSecretDisplayValue(Object? rawValue) {
   if (rawValue == null) return configSecretNotSetLabel;
   if (rawValue is Map) {
-    final status = configWireString(rawValue['secret_status'])?.toLowerCase();
+    final status = configSecretStatusFromWire(rawValue)?.toLowerCase();
     return switch (status) {
       'configured' || 'external' || 'set' => _secretConfiguredLabel(rawValue),
       'unset' => configSecretNotSetLabel,
@@ -27,7 +27,7 @@ String configSecretDisplayValue(Object? rawValue) {
 }
 
 String _secretConfiguredLabel(Map rawValue) {
-  final source = configWireString(rawValue['source']);
+  final source = configSecretSourceFromWire(rawValue);
   if (source == null) return configSecretConfiguredLabel;
   return '$configSecretConfiguredLabel ($source)';
 }

@@ -1,19 +1,18 @@
 {
   "version": 1,
   "target": "playwright/probes",
-  "updatedAt": "2026-05-30T05:31:23.857Z",
-  "objective": "Refactor playwright/probes into coherent responsibility subfolders while preserving exploratory probe behavior. Planned topology: screens/ for broad route and screen inventory probes; navigation/ for nav rail, gateway/profile detail, and navigation surface probes; features/ for targeted feature/regression-discovery probes; support/ for probe-local runtime helpers; README.md as root documentation/facade.",
+  "updatedAt": "2026-05-31T06:40:38.229Z",
+  "objective": "Refactor playwright/probes around existing responsibility folders (screens/, navigation/, features/, support/) while making shared-code reuse the main objective. Current topology keeps README.md as root documentation and support/ as the contract/helper package for probe-local runtime plus shared semantics snapshot helpers.",
   "completedSlices": [
-    "Root probe scripts have been organized under screens/, navigation/, and features/ by responsibility.",
-    "Probe runtime helpers live under support/probe_runtime.mjs and re-export stable Playwright/Flutter semantics helpers from playwright/support.",
-    "Root README.md documents the probes topology and compatibility guidance.",
-    "Shared-code pass found repeated inline DOM semantics collection snippets, but no behavior-test seam for these exploratory scripts; extraction intentionally deferred to avoid changing probe output shape without coverage.",
-    "Completion audit passed with README.md as the only intentional root file."
+    "Created support/semantics_snapshot.mjs with focused probe contracts: visibleSemanticItems, visibleSemanticTextLines, visibleSemanticButtons, and logQuotedLines.",
+    "Re-exported those contracts from support/probe_runtime.mjs.",
+    "Reused the new contracts across screens probes (probe_all_screens.mjs, probe_e2e.mjs, probe_routes.mjs), navigation probes (probe_deep.mjs, probe_detail.mjs, probe_navrail.mjs), and feature probes (probe_features.mjs, probe_remaining.mjs, probe_remaining2.mjs, probe_untested.mjs)."
   ],
-  "nextCandidates": [],
+  "nextCandidates": [
+    "Remaining inline DOM queries in probes are interaction-specific selectors/counters (click coordinates, switches, tabs, element counts) rather than identical shared snapshot behavior; no safe generic extraction candidate remains inside playwright/probes."
+  ],
   "validationReceipts": [
     "folder_refactor_scan playwright/probes: root files README.md; root dirs features, navigation, screens, support.",
-    "for f in playwright/probes/**/*.mjs; do node --check \"$f\" || exit 1; done: passed.",
-    "folder_refactor_audit playwright/probes plannedTopologyComplete=true facadeFiles=[README.md] outOfScopeFiles=[] nextCandidateFiles=[]: passed."
+    "node --check for every playwright/probes/**/*.mjs completed successfully."
   ]
 }

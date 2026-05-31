@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { clickSemanticButtonContaining, setNativeInputValue } from './semantic_actions.mjs';
+import { clickSemanticButtonContaining, setNativeInputValue } from '../semantic_actions.mjs';
+import { NATIVE_INPUT_VALUE_EVENT_TYPES, SEMANTIC_CLICK_EVENT_TYPES } from './contracts.mjs';
 
 function withGlobals(globals, run) {
   const previous = new Map(Object.keys(globals).map(key => [key, globalThis[key]]));
@@ -40,7 +41,7 @@ test('clickSemanticButtonContaining dispatches pointer and mouse events on the m
   }, () => clickSemanticButtonContaining(fakePage(), 'Support Triage'));
 
   assert.equal(clicked, true);
-  assert.deepEqual(events, ['pointerdown', 'pointerup', 'click']);
+  assert.deepEqual(events, SEMANTIC_CLICK_EVENT_TYPES);
 });
 
 test('setNativeInputValue uses the native input setter and dispatches input/change events', async () => {
@@ -62,5 +63,5 @@ test('setNativeInputValue uses the native input setter and dispatches input/chan
 
   assert.equal(updated, true);
   assert.equal(input.value, '10.0.0.1');
-  assert.deepEqual(events, ['input', 'change']);
+  assert.deepEqual(events, NATIVE_INPUT_VALUE_EVENT_TYPES);
 });

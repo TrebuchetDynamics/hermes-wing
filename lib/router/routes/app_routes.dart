@@ -1,3 +1,5 @@
+import 'app_route_location_patterns.dart';
+
 abstract final class RouteParameters {
   static const serverId = 'serverId';
   static const profileId = 'profileId';
@@ -33,7 +35,10 @@ abstract final class AppRoutes {
   }
 
   static bool isChatThreadLocation(String location) {
-    return location.startsWith('$chats/');
+    return AppRouteLocationPattern.hasExactPathSegments(
+      location: location,
+      expectedSegments: ['chats', '', ''],
+    );
   }
 
   static bool isNavigationDestinationLocation({

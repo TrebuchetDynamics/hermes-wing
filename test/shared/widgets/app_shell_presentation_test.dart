@@ -70,6 +70,10 @@ void main() {
       isTrue,
     );
     expect(
+      presentation.stateForLocation('/chats/local').showNavigationMenu,
+      isTrue,
+    );
+    expect(
       presentation.stateForLocation(AppRoutes.servers).showNavigationMenu,
       isTrue,
     );

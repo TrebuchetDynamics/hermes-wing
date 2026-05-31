@@ -37,6 +37,11 @@ void main() {
       isTrue,
     );
     expect(AppRoutes.isChatThreadLocation('/chats'), isFalse);
+    expect(AppRoutes.isChatThreadLocation('/chats/local'), isFalse);
+    expect(
+      AppRoutes.isChatThreadLocation('/chats/local/mineru/extra'),
+      isFalse,
+    );
     expect(AppRoutes.isChatThreadLocation('/servers'), isFalse);
   });
 }

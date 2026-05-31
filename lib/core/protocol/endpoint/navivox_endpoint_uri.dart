@@ -42,16 +42,18 @@ String _navivoxOrigin({
 }
 
 String navivoxHttpBaseUrlFromEndpointUri(Uri uri, {String? descriptor}) {
+  _validateNavivoxEndpointUri(
+    uri,
+    descriptor: descriptor,
+    allowedSchemes: navivoxEndpointSchemes,
+    missingHostMessage: 'Navivox endpoint URI must include a host',
+    invalidSchemeMessage:
+        'Navivox endpoint URI must use ws, wss, http, or https',
+  );
   final scheme = navivoxHttpSchemeFromEndpointScheme(
     uri.scheme,
     descriptor: descriptor,
   );
-  if (uri.host.isEmpty) {
-    throw FormatException(
-      'Navivox endpoint URI must include a host',
-      descriptor,
-    );
-  }
   return _navivoxOrigin(
     scheme: scheme,
     host: uri.host,
@@ -71,20 +73,35 @@ String? navivoxHttpOriginOrOriginalFromString(String? raw) {
 
 Uri navivoxWebSocketUriFromEndpointString(String raw, {String? descriptor}) {
   final uri = Uri.parse(raw);
-  if (uri.host.isEmpty) {
+  _validateNavivoxEndpointUri(
+    uri,
+    descriptor: descriptor,
+    allowedSchemes: const {'ws', 'wss'},
+    missingHostMessage: 'Navivox websocket URI must include a host',
+    invalidSchemeMessage: 'Navivox websocket URI must use ws or wss',
+  );
+  if (uri.hasFragment) {
     throw FormatException(
-      'Navivox websocket URI must include a host',
-      descriptor,
-    );
-  }
-  final scheme = uri.scheme.toLowerCase();
-  if (scheme != 'ws' && scheme != 'wss') {
-    throw FormatException(
-      'Navivox websocket URI must use ws or wss',
+      'Navivox websocket URI must not include a fragment',
       descriptor,
     );
   }
   return uri;
+}
+
+void _validateNavivoxEndpointUri(
+  Uri uri, {
+  required String? descriptor,
+  required Set<String> allowedSchemes,
+  required String missingHostMessage,
+  required String invalidSchemeMessage,
+}) {
+  if (uri.host.isEmpty) {
+    throw FormatException(missingHostMessage, descriptor);
+  }
+  if (!allowedSchemes.contains(uri.scheme.toLowerCase())) {
+    throw FormatException(invalidSchemeMessage, descriptor);
+  }
 }
 
 String? navivoxWebSocketUrlFromEndpointString(String? raw) {

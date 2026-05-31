@@ -35,4 +35,22 @@ void main() {
       'http://127.0.0.1:7319',
     );
   });
+
+  test(
+    'rejects websocket fragments before they become dropped client state',
+    () {
+      expect(
+        () => navivoxWebSocketUriFromEndpointString(
+          'wss://gateway.example/socket#pairing-token',
+        ),
+        throwsFormatException,
+      );
+      expect(
+        navivoxWebSocketUrlFromEndpointString(
+          'wss://gateway.example/socket#pairing-token',
+        ),
+        isNull,
+      );
+    },
+  );
 }

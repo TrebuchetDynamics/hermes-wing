@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T03:11:55.462Z",
+  "generatedAt": "2026-05-31T03:13:32.536Z",
   "cwd": "/home/xel/git/gormes/navivox-app",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app",
@@ -121,9 +121,9 @@
     {
       "relative": "test/features",
       "score": 187,
-      "files": 83,
+      "files": 84,
       "direct": 0,
-      "churn": 537,
+      "churn": 540,
       "callers": 0,
       "importsOut": 1,
       "tests": 0,
@@ -137,9 +137,9 @@
     {
       "relative": "test",
       "score": 186,
-      "files": 121,
+      "files": 122,
       "direct": 0,
-      "churn": 645,
+      "churn": 648,
       "callers": 0,
       "importsOut": 0,
       "tests": 0,
@@ -200,16 +200,16 @@
     },
     {
       "relative": "test/features/chat",
-      "score": 151.3,
-      "files": 41,
+      "score": 159.6,
+      "files": 42,
       "direct": 0,
-      "churn": 262,
+      "churn": 265,
       "callers": 0,
       "importsOut": 7,
       "tests": 0,
       "roles": 4,
       "duplicates": 23,
-      "subdirs": 8,
+      "subdirs": 9,
       "extensions": [
         ".dart"
       ]

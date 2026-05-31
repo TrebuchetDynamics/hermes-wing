@@ -16,11 +16,7 @@ void main() {
           servers: const [localReadyServer, officeReadyServer],
           contacts: [
             mineruBuilderProfile(latestPreview: 'building'),
-            supportTriageProfile(
-              health: NavivoxProfileHealth.online,
-              latestPreview: 'watching tickets',
-              micAvailable: true,
-            ),
+            transcriptSupportContact,
           ],
         )..seedMessages([
           transcriptTextMessage(

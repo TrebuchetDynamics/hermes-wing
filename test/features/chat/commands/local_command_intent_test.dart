@@ -2,25 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/chat/commands/local_command_intent.dart';
 
+import '../shared/profile_contact_chat_test_fixtures.dart';
+
 void main() {
-  const contacts = [
-    NavivoxProfileContact(
-      serverId: 'local',
-      profileId: 'mineru',
-      displayName: 'Mineru Builder',
-      serverLabel: 'local',
-      health: NavivoxProfileHealth.online,
-      latestPreview: 'Ready',
-    ),
-    NavivoxProfileContact(
-      serverId: 'office',
-      profileId: 'support',
-      displayName: 'Support Triage',
-      serverLabel: 'office',
-      health: NavivoxProfileHealth.online,
-      latestPreview: 'Watching tickets',
-    ),
-  ];
+  const contacts = [chatMineruBuilderContact, chatSupportTriageContact];
 
   const resolver = LocalCommandResolver();
 

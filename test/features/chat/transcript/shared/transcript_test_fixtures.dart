@@ -1,15 +1,10 @@
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
 
+import '../../shared/profile_contact_chat_test_fixtures.dart';
+
 /// Shared Profile contact target used by transcript forwarding/action tests.
-const transcriptSupportContact = NavivoxProfileContact(
-  serverId: 'office',
-  profileId: 'support',
-  displayName: 'Support Triage',
-  serverLabel: 'office',
-  health: NavivoxProfileHealth.online,
-  latestPreview: 'Watching tickets',
-);
+const transcriptSupportContact = chatSupportTriageContact;
 
 /// Secondary Profile contact target used when tests need multiple destinations.
 const transcriptOpsContact = NavivoxProfileContact(

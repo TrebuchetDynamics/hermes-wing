@@ -122,16 +122,6 @@ SetupQrImageImport? _bestImportFromCandidateMaps(
   return bestCandidate?.toImport();
 }
 
-SetupQrImageImport? _importFromFields(
-  Map<dynamic, dynamic> fields, {
-  String? fallbackBaseUrl,
-}) {
-  return _connectionImportCandidateFromFields(
-    fields,
-    fallbackBaseUrl: fallbackBaseUrl,
-  )?.toImport();
-}
-
 _ConnectionImportCandidate? _connectionImportCandidateFromFields(
   Map<dynamic, dynamic> fields, {
   String? fallbackBaseUrl,
@@ -176,16 +166,20 @@ class _ConnectionImportEndpointFields {
 }
 
 SetupQrImageImport? _importFromGenericUri(Uri uri) {
-  final import = _importFromFields(
+  return _connectionImportCandidateFromGenericUri(uri)?.toImport();
+}
+
+_ConnectionImportCandidate? _connectionImportCandidateFromGenericUri(Uri uri) {
+  final candidate = _connectionImportCandidateFromFields(
     _genericUriFields(uri),
     fallbackBaseUrl: _baseUrlFromGenericUri(uri),
   );
-  if (import != null) return import;
+  if (candidate != null) return candidate;
   if (uri.scheme == 'http' || uri.scheme == 'https') {
-    return SetupQrImageImport(baseUrl: navivoxOriginFromUri(uri));
+    return _ConnectionImportCandidate(baseUrl: navivoxOriginFromUri(uri));
   }
   if (_isWebSocketUri(uri)) {
-    return SetupQrImageImport(
+    return _ConnectionImportCandidate(
       baseUrl: _webSocketUriBaseUrl(uri),
       webSocketUrl: uri.toString(),
     );
@@ -194,28 +188,42 @@ SetupQrImageImport? _importFromGenericUri(Uri uri) {
 }
 
 SetupQrImageImport? _importFromSharedText(String text) {
-  final embeddedUrlImport = _importFromFirstGenericUrl(text);
-  final token = _firstToken(text) ?? embeddedUrlImport?.token;
-  if (embeddedUrlImport == null && token == null) return null;
+  final embeddedUrlCandidate = _bestGenericUrlCandidateFromSharedText(text);
+  final token = _firstToken(text) ?? embeddedUrlCandidate?.token;
+  if (embeddedUrlCandidate == null && token == null) return null;
 
   return SetupQrImageImport(
-    baseUrl: embeddedUrlImport?.baseUrl,
+    baseUrl: embeddedUrlCandidate?.baseUrl,
     token: token,
-    webSocketUrl: embeddedUrlImport?.webSocketUrl,
-    serverId: embeddedUrlImport?.serverId,
-    profileId: embeddedUrlImport?.profileId,
+    webSocketUrl: embeddedUrlCandidate?.webSocketUrl,
+    serverId: embeddedUrlCandidate?.serverId,
+    profileId: embeddedUrlCandidate?.profileId,
   );
 }
 
-SetupQrImageImport? _importFromFirstGenericUrl(String text) {
-  final url = _firstEndpointUrl(text);
-  if (url == null) return null;
+_ConnectionImportCandidate? _bestGenericUrlCandidateFromSharedText(
+  String text,
+) {
+  _ConnectionImportCandidate? bestCandidate;
+  for (final url in _endpointUrls(text)) {
+    final uri = Uri.tryParse(url);
+    final candidate = uri != null && uri.hasScheme
+        ? _connectionImportCandidateFromGenericUri(uri)
+        : _connectionImportCandidateFromFields({'base_url': url});
+    if (candidate == null) continue;
+    bestCandidate = _richerConnectionImportCandidate(
+      currentBest: bestCandidate,
+      candidate: candidate,
+    );
+  }
+  return bestCandidate;
+}
 
-  final uri = Uri.tryParse(url);
-  if (uri != null && uri.hasScheme) return _importFromGenericUri(uri);
-
-  final baseUrl = _normalizeBaseUrl(url);
-  return baseUrl == null ? null : SetupQrImageImport(baseUrl: baseUrl);
+Iterable<String> _endpointUrls(String text) sync* {
+  for (final match in _endpointUrlPattern.allMatches(text)) {
+    final url = match.group(0);
+    if (url != null) yield _trimCopiedUrlTrailingPunctuation(url);
+  }
 }
 
 Map<String, String> _genericUriFields(Uri uri) {
@@ -358,12 +366,6 @@ const _webSocketUrlFieldNames = [
 const _baseUrlFieldNames = ['base_url', 'baseUrl', 'gateway_url', 'url'];
 const _serverIdFieldNames = ['server_id', 'serverId'];
 const _profileIdFieldNames = ['profile_id', 'profileId'];
-
-String? _firstEndpointUrl(String text) {
-  final value = _endpointUrlPattern.firstMatch(text)?.group(0);
-  if (value == null) return null;
-  return _trimCopiedUrlTrailingPunctuation(value);
-}
 
 // Shared-text imports accept the same generic endpoint schemes as direct URL
 // imports. Keeping the regex explicit prevents HTTP-only drift from silently

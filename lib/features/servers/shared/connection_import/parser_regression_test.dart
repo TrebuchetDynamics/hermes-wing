@@ -7,6 +7,7 @@ void main() {
   preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts();
   preservesMetadataFromUrlEmbeddedInSharedText();
   preservesWebSocketUrlEmbeddedInSharedText();
+  prefersRicherEmbeddedUrlOverEarlierUnrelatedUrl();
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
   prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate();
@@ -113,11 +114,25 @@ void preservesWebSocketUrlEmbeddedInSharedText() {
     'embedded websocket URL should derive HTTP baseUrl',
   );
   _expect(
-    result.webSocketUrl ==
-        'wss://gateway.example/navivox/ws?token=nvbx_shared',
+    result.webSocketUrl == 'wss://gateway.example/navivox/ws?token=nvbx_shared',
     'embedded websocket URL should be preserved',
   );
   _expect(result.token == 'nvbx_shared', 'embedded websocket token preserved');
+}
+
+void prefersRicherEmbeddedUrlOverEarlierUnrelatedUrl() {
+  final result = parseNavivoxConnectionImportPayload(
+    'See https://docs.example/help first, then open '
+    'https://gateway.example/connect?token=nvbx_embedded&server_id=srv.',
+  );
+
+  _expect(result != null, 'shared text with multiple URLs should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'richer embedded connection URL should beat earlier unrelated URL',
+  );
+  _expect(result.token == 'nvbx_embedded', 'embedded URL token is preserved');
+  _expect(result.serverId == 'srv', 'embedded URL metadata is preserved');
 }
 
 void preservesGenericWebSocketUrlImports() {

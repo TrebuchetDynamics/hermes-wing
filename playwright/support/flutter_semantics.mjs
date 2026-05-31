@@ -1,13 +1,12 @@
+import {
+  INTERACTIVE_SEMANTIC_ROLES,
+  INTERACTIVE_SEMANTIC_SELECTORS,
+  SEMANTIC_BUTTON_SELECTOR,
+} from '../debug/support/semantics/contracts/index.mjs';
+
 export const APP_URL = process.env.NAVIVOX_APP_URL ?? 'http://127.0.0.1:8767/';
 
-export const INTERACTIVE_SEMANTIC_ROLES = [
-  'button',
-  'menuitem',
-  'checkbox',
-  'link',
-  'switch',
-  'tab',
-];
+export { INTERACTIVE_SEMANTIC_ROLES };
 
 export async function enableFlutterAccessibility(page, { delay = 2000 } = {}) {
   await page.evaluate(() => {
@@ -19,27 +18,27 @@ export async function enableFlutterAccessibility(page, { delay = 2000 } = {}) {
 }
 
 export async function activateVisibleSemantics(page, { delay = 200 } = {}) {
-  await page.evaluate(async (roles) => {
-    for (const role of roles) {
-      for (const element of document.querySelectorAll(`flt-semantics[role="${role}"]`)) {
+  await page.evaluate(async (selectors) => {
+    for (const selector of selectors) {
+      for (const element of document.querySelectorAll(selector)) {
         if (element.getAttribute('aria-label') || element.textContent) {
           element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         }
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 200));
-  }, INTERACTIVE_SEMANTIC_ROLES);
+  }, INTERACTIVE_SEMANTIC_SELECTORS);
   if (delay > 0) await page.waitForTimeout(delay);
 }
 
 export async function clickSemantic(page, text, { delay = 1000, selectorTimeout = 8000 } = {}) {
   await page
-    .waitForSelector('flt-semantics[role="button"]', { timeout: selectorTimeout })
+    .waitForSelector(SEMANTIC_BUTTON_SELECTOR, { timeout: selectorTimeout })
     .catch(() => {});
   await page.evaluate(
-    ({ roles, text }) => {
-      for (const role of roles) {
-        for (const element of document.querySelectorAll(`flt-semantics[role="${role}"]`)) {
+    ({ selectors, text }) => {
+      for (const selector of selectors) {
+        for (const element of document.querySelectorAll(selector)) {
           const content = `${element.textContent || ''}|${element.getAttribute('aria-label') || ''}`;
           if (content.includes(text)) {
             element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
@@ -50,15 +49,15 @@ export async function clickSemantic(page, text, { delay = 1000, selectorTimeout 
         }
       }
     },
-    { roles: INTERACTIVE_SEMANTIC_ROLES, text },
+    { selectors: INTERACTIVE_SEMANTIC_SELECTORS, text },
   );
   if (delay > 0) await page.waitForTimeout(delay);
 }
 
 export async function longPressSemantic(page, text, { duration = 1200, delay = 1000 } = {}) {
   await page.evaluate(
-    ({ text, duration }) => {
-      for (const button of document.querySelectorAll('flt-semantics[role="button"]')) {
+    ({ text, duration, selector }) => {
+      for (const button of document.querySelectorAll(selector)) {
         const content = `${button.textContent || ''}|${button.getAttribute('aria-label') || ''}`;
         if (content.includes(text)) {
           const rect = button.getBoundingClientRect();
@@ -75,7 +74,7 @@ export async function longPressSemantic(page, text, { duration = 1200, delay = 1
       }
       return Promise.resolve(false);
     },
-    { text, duration },
+    { text, duration, selector: SEMANTIC_BUTTON_SELECTOR },
   );
   if (delay > 0) await page.waitForTimeout(delay);
 }

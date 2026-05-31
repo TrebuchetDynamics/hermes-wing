@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T06:56:23.303Z",
+  "generatedAt": "2026-05-31T07:04:18.784Z",
   "cwd": "/home/xel/git/gormes/navivox-app",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app",
@@ -300,6 +300,25 @@
       ]
     },
     {
+      "relative": "playwright",
+      "score": 136.9,
+      "files": 43,
+      "direct": 2,
+      "churn": 169,
+      "callers": 0,
+      "importsOut": 0,
+      "tests": 1,
+      "roles": 4,
+      "duplicates": 64,
+      "subdirs": 5,
+      "extensions": [
+        ".json",
+        ".md",
+        ".mjs",
+        ".sh"
+      ]
+    },
+    {
       "relative": "test/features/chat/transcript",
       "score": 136,
       "files": 53,
@@ -313,25 +332,6 @@
       "subdirs": 5,
       "extensions": [
         ".dart"
-      ]
-    },
-    {
-      "relative": "playwright",
-      "score": 133.7,
-      "files": 39,
-      "direct": 2,
-      "churn": 162,
-      "callers": 0,
-      "importsOut": 0,
-      "tests": 1,
-      "roles": 4,
-      "duplicates": 62,
-      "subdirs": 5,
-      "extensions": [
-        ".json",
-        ".md",
-        ".mjs",
-        ".sh"
       ]
     },
     {
@@ -352,15 +352,15 @@
     },
     {
       "relative": "playwright/debug",
-      "score": 119.3,
-      "files": 21,
+      "score": 125.5,
+      "files": 25,
       "direct": 1,
-      "churn": 69,
-      "callers": 0,
+      "churn": 76,
+      "callers": 1,
       "importsOut": 2,
       "tests": 0,
       "roles": 2,
-      "duplicates": 31,
+      "duplicates": 32,
       "subdirs": 6,
       "extensions": [
         ".md",
@@ -400,19 +400,18 @@
       ]
     },
     {
-      "relative": "playwright/probes",
-      "score": 105.6,
-      "files": 12,
-      "direct": 1,
-      "churn": 34,
-      "callers": 0,
+      "relative": "playwright/debug/support",
+      "score": 106,
+      "files": 10,
+      "direct": 2,
+      "churn": 19,
+      "callers": 15,
       "importsOut": 2,
       "tests": 0,
-      "roles": 3,
-      "duplicates": 26,
-      "subdirs": 4,
+      "roles": 1,
+      "duplicates": 3,
+      "subdirs": 2,
       "extensions": [
-        ".md",
         ".mjs"
       ]
     }

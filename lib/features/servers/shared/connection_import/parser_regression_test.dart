@@ -4,6 +4,7 @@ void main() {
   parsesValidCorePairingDescriptor();
   parsesGenericTokenUrlOutsideCoreDescriptorProtocol();
   preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin();
+  parsesSharedTextTokenWithSpacedSeparator();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
 }
 
@@ -51,6 +52,22 @@ void preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin() {
   );
   _expect(result.serverId == 'srv', 'server_id should be preserved');
   _expect(result.profileId == 'profile', 'profile_id should be preserved');
+}
+
+void parsesSharedTextTokenWithSpacedSeparator() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Server: https://gateway.example/connect\nToken = shared_secret',
+  );
+
+  _expect(result != null, 'shared text import should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'shared text URL origin should provide baseUrl',
+  );
+  _expect(
+    result.token == 'shared_secret',
+    'token labels should allow spaces before separators',
+  );
 }
 
 void rejectsMalformedCorePairingDescriptorBeforeGenericFallback() {

@@ -175,29 +175,35 @@ String? _firstUrl(String text) {
 }
 
 String? _firstToken(String text) {
-  final lower = text.toLowerCase();
-  const labels = [
-    'pairing token',
-    'pairing_token',
-    'pairing-token',
-    'auth token',
-    'auth_token',
-    'auth-token',
-    'token',
-  ];
-  for (final label in labels) {
-    for (final separator in const [':', '=']) {
-      final needle = '$label$separator';
-      final index = lower.indexOf(needle);
-      if (index < 0) continue;
-      final token = _readTokenAt(text, index + needle.length);
-      if (token != null) return token;
-    }
-  }
+  final labeledToken = _firstLabeledToken(text);
+  if (labeledToken != null) return labeledToken;
 
-  final navivoxIndex = lower.indexOf('nvbx_');
+  final navivoxIndex = text.toLowerCase().indexOf('nvbx_');
   return navivoxIndex < 0 ? null : _readTokenAt(text, navivoxIndex);
 }
+
+String? _firstLabeledToken(String text) {
+  for (final label in _tokenLabels) {
+    final match = RegExp(
+      '${RegExp.escape(label)}\\s*[:=]',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (match == null) continue;
+    final token = _readTokenAt(text, match.end);
+    if (token != null) return token;
+  }
+  return null;
+}
+
+const _tokenLabels = [
+  'pairing token',
+  'pairing_token',
+  'pairing-token',
+  'auth token',
+  'auth_token',
+  'auth-token',
+  'token',
+];
 
 String? _readTokenAt(String text, int start) {
   var index = start;

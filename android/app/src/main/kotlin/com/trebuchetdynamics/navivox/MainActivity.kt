@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionService
+import com.trebuchetdynamics.navivox.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.navivox.durablekeys.DurableKeyStoreChannel
 import com.trebuchetdynamics.navivox.pairing.PairingHandoffIntentParser
 import io.flutter.embedding.android.FlutterActivity
@@ -74,14 +75,13 @@ class MainActivity : FlutterActivity() {
 
     private fun deviceSpeechDiagnostics(): Map<String, Any?> {
         val services = querySpeechRecognitionServices()
-        return mapOf(
-            "recognitionServiceCount" to services.size,
-            "recognitionServices" to services.mapNotNull { service ->
+        return DeviceSpeechDiagnostics(
+            recognitionServices = services.mapNotNull { service ->
                 val info = service.serviceInfo ?: return@mapNotNull null
                 "${info.packageName}/${info.name}"
-            }.take(10),
-            "microphonePermissionGranted" to isMicrophonePermissionGranted(),
-        )
+            },
+            microphonePermissionGranted = isMicrophonePermissionGranted(),
+        ).toMethodChannelMap()
     }
 
     private fun querySpeechRecognitionServices(): List<android.content.pm.ResolveInfo> {
@@ -112,7 +112,7 @@ class MainActivity : FlutterActivity() {
             type = intent.type,
             data = intent.data?.toString(),
             text = intent.getStringExtra(Intent.EXTRA_TEXT),
-        )
+        )?.toMethodChannelMap()
     }
 
     companion object {

@@ -16,10 +16,10 @@ class DurableKeyStoreChannel : MethodChannel.MethodCallHandler {
         try {
             when (call.method) {
                 "isAvailable" -> result.success(isAvailable())
-                "createEs256KeyPair" -> result.success(createEs256KeyPair(requireAlias(call)))
-                "signEs256" -> result.success(signEs256(requireAlias(call), requirePayload(call)))
+                "createEs256KeyPair" -> result.success(createEs256KeyPair(requireAlias(call).value))
+                "signEs256" -> result.success(signEs256(requireAlias(call).value, requirePayload(call)))
                 "deleteKey" -> {
-                    deleteKey(requireAlias(call))
+                    deleteKey(requireAlias(call).value)
                     result.success(null)
                 }
                 else -> result.notImplemented()
@@ -89,12 +89,8 @@ class DurableKeyStoreChannel : MethodChannel.MethodCallHandler {
         return KeyStore.getInstance(ANDROID_KEY_STORE).apply { load(null) }
     }
 
-    private fun requireAlias(call: MethodCall): String {
-        val alias = call.argument<String>("alias")?.trim().orEmpty()
-        if (!alias.startsWith("navivox_durable_") || alias.length < "navivox_durable_".length + 32) {
-            throw IllegalArgumentException("A durable key alias is required")
-        }
-        return alias
+    private fun requireAlias(call: MethodCall): DurableKeyAlias {
+        return DurableKeyAlias.parse(call.argument<String>("alias"))
     }
 
     private fun requirePayload(call: MethodCall): ByteArray {

@@ -1,6 +1,5 @@
-package com.trebuchetdynamics.navivox
+package com.trebuchetdynamics.navivox.devicespeech
 
-import com.trebuchetdynamics.navivox.devicespeech.DeviceSpeechDiagnostics
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

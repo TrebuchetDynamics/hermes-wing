@@ -1,6 +1,5 @@
-package com.trebuchetdynamics.navivox
+package com.trebuchetdynamics.navivox.durablekeys
 
-import com.trebuchetdynamics.navivox.durablekeys.DurableKeyAlias
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

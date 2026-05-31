@@ -1,7 +1,5 @@
-package com.trebuchetdynamics.navivox
+package com.trebuchetdynamics.navivox.pairing
 
-import com.trebuchetdynamics.navivox.pairing.PairingHandoffIntentParser
-import com.trebuchetdynamics.navivox.pairing.PairingHandoffPayload
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

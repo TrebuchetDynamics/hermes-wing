@@ -12,7 +12,7 @@ object PairingHandoffIntentParser {
         type: String?,
         data: String?,
         text: String?,
-    ): Map<String, String>? {
+    ): PairingHandoffPayload? {
         return when (action) {
             ACTION_VIEW -> parseDirectAppOpen(data)
             ACTION_SEND -> parseSharedText(type, text)
@@ -20,16 +20,22 @@ object PairingHandoffIntentParser {
         }
     }
 
-    private fun parseDirectAppOpen(data: String?): Map<String, String>? {
+    private fun parseDirectAppOpen(data: String?): PairingHandoffPayload? {
         val payload = data?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         val uri = runCatching { URI(payload) }.getOrNull() ?: return null
         if (uri.scheme != "navivox" || uri.host != "connect") return null
-        return mapOf("payload" to payload, "source" to "direct_app_open")
+        return PairingHandoffPayload(
+            payload = payload,
+            source = PairingHandoffPayload.Source.DirectAppOpen,
+        )
     }
 
-    private fun parseSharedText(type: String?, text: String?): Map<String, String>? {
+    private fun parseSharedText(type: String?, text: String?): PairingHandoffPayload? {
         if (!type.orEmpty().startsWith("text/")) return null
         val payload = text?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-        return mapOf("payload" to payload, "source" to "shared_text")
+        return PairingHandoffPayload(
+            payload = payload,
+            source = PairingHandoffPayload.Source.SharedText,
+        )
     }
 }

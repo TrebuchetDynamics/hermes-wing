@@ -1,3 +1,5 @@
+import '../shared/navivox_gateway_json.dart';
+
 /// Typed WebSocket message sent to the Navivox gateway.
 class NavivoxGatewayMessage {
   const NavivoxGatewayMessage._(this.body);
@@ -18,8 +20,7 @@ class NavivoxGatewayMessage {
     return NavivoxGatewayMessage._({
       'type': 'start_turn',
       'request_id': requestId,
-      if (sessionId != null && sessionId.trim().isNotEmpty)
-        'session_id': sessionId,
+      if (navivoxGatewayHasText(sessionId)) 'session_id': sessionId,
       'text': text,
       'metadata': metadata,
     });

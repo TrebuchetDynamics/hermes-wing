@@ -38,6 +38,15 @@ String? navivoxGatewayOptionalRawStringField(
   return json[key]?.toString();
 }
 
+/// Returns whether a loose gateway value contains non-empty text after trim.
+///
+/// Request builders and readiness checks intentionally share the same tolerant
+/// string-presence contract: null and whitespace-only values are absent, while
+/// non-string compatibility values are checked through their wire text form.
+bool navivoxGatewayHasText(Object? value) {
+  return value?.toString().trim().isNotEmpty ?? false;
+}
+
 /// Reads a literal boolean field from a decoded gateway response.
 ///
 /// Gateway feature flags intentionally preserve strict wire semantics: only the

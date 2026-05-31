@@ -252,9 +252,7 @@ class NavivoxGatewayClient {
     return {
       'changes': changes
           .map((change) => change.toJson())
-          .where(
-            (change) => (change['key']?.toString().trim() ?? '').isNotEmpty,
-          )
+          .where((change) => navivoxGatewayHasText(change['key']))
           .toList(growable: false),
     };
   }

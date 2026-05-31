@@ -42,8 +42,7 @@ class NavivoxGatewayStatus {
   final String? capabilitiesUrl;
   final String? gatewayId;
 
-  bool get hasGatewayIdentity =>
-      gatewayId != null && gatewayId!.trim().isNotEmpty;
+  bool get hasGatewayIdentity => navivoxGatewayHasText(gatewayId);
 
   bool supports(String capability) => capabilities.contains(capability);
 }
@@ -150,7 +149,9 @@ class NavivoxDurableReconnectCapability {
 
   ReconnectReadinessKind get readinessKind {
     if (!supported) return ReconnectReadinessKind.unsupported;
-    if (blockedReason.trim().isNotEmpty) return ReconnectReadinessKind.blocked;
+    if (navivoxGatewayHasText(blockedReason)) {
+      return ReconnectReadinessKind.blocked;
+    }
     return ReconnectReadinessKind.available;
   }
 }

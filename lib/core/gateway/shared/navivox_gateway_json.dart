@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../../protocol/navivox_json.dart' show navivoxMapListFromJson;
+
 /// Decodes a gateway response body that must contain a JSON object.
 Map<String, Object?> navivoxGatewayDecodeObject(String body) {
   final decoded = jsonDecode(body);
@@ -25,6 +27,20 @@ Map<String, Object?> navivoxGatewayObjectField(
     throw FormatException('expected JSON object field $key');
   }
   return object;
+}
+
+/// Parses a loose gateway JSON list into typed values.
+///
+/// Non-map values are ignored, matching the gateway wire contract used by the
+/// protocol helpers, while the optional predicate keeps repeated non-empty ID
+/// filtering close to the typed model being decoded.
+List<T> navivoxGatewayObjectListFromJson<T>(
+  Object? value,
+  T Function(Map<String, Object?> json) fromJson, {
+  bool Function(T item)? where,
+}) {
+  final items = navivoxMapListFromJson(value).map(fromJson);
+  return (where == null ? items : items.where(where)).toList(growable: false);
 }
 
 /// Parses a loose gateway JSON object whose values are nested objects.

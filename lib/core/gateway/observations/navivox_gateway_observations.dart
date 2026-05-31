@@ -1,4 +1,5 @@
 import '../../protocol/navivox_json.dart';
+import '../shared/navivox_gateway_json.dart';
 
 /// Snapshot of a gateway session.
 class NavivoxGatewaySessionSnapshot {
@@ -117,10 +118,11 @@ class NavivoxProfileRoutingReport {
 
   factory NavivoxProfileRoutingReport.fromJson(Map<String, Object?> json) {
     return NavivoxProfileRoutingReport(
-      profiles: navivoxMapListFromJson(json['profiles'])
-          .map(NavivoxProfileRoute.fromJson)
-          .where((profile) => profile.profileId.isNotEmpty)
-          .toList(growable: false),
+      profiles: navivoxGatewayObjectListFromJson(
+        json['profiles'],
+        NavivoxProfileRoute.fromJson,
+        where: (profile) => profile.profileId.isNotEmpty,
+      ),
     );
   }
 

@@ -141,10 +141,11 @@ class NavivoxGatewayClient {
 
   Future<List<NavivoxGatewaySessionSnapshot>> sessions() async {
     final body = await _getJson(config.sessionsUri);
-    return navivoxMapListFromJson(body['sessions'])
-        .map(NavivoxGatewaySessionSnapshot.fromJson)
-        .where((session) => session.sessionId.isNotEmpty)
-        .toList(growable: false);
+    return navivoxGatewayObjectListFromJson(
+      body['sessions'],
+      NavivoxGatewaySessionSnapshot.fromJson,
+      where: (session) => session.sessionId.isNotEmpty,
+    );
   }
 
   Future<NavivoxGatewaySessionSnapshot> session(String sessionId) async {

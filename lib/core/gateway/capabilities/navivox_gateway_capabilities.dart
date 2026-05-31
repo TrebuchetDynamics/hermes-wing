@@ -1,5 +1,6 @@
 import '../../protocol/navivox_json.dart';
 import '../shared/navivox_gateway_constants.dart';
+import '../shared/navivox_gateway_json.dart';
 
 /// Status response from the Navivox gateway health/status endpoint.
 class NavivoxGatewayStatus {
@@ -75,9 +76,10 @@ class NavivoxCapabilityDocument {
       healthAliases: navivoxStringListFromJson(
         navivoxMapFromJson(json['health'])['aliases'],
       ),
-      endpoints: navivoxMapListFromJson(
+      endpoints: navivoxGatewayObjectListFromJson(
         json['endpoints'],
-      ).map(NavivoxCapabilityEndpoint.fromJson).toList(growable: false),
+        NavivoxCapabilityEndpoint.fromJson,
+      ),
       profileManagement: NavivoxProfileManagementCapability.fromJson(
         navivoxMapFromJson(json['profile_management']),
       ),

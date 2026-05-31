@@ -1,5 +1,6 @@
 import '../../protocol/config_wire_fields.dart';
 import '../../protocol/navivox_json.dart';
+import '../shared/navivox_gateway_json.dart';
 
 class NavivoxConfigAdminField {
   const NavivoxConfigAdminField({
@@ -62,10 +63,11 @@ class NavivoxConfigAdminSchemaResponse {
   factory NavivoxConfigAdminSchemaResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminSchemaResponse(
       action: navivoxStringFromJson(json['action'], fallback: ''),
-      fields: navivoxMapListFromJson(json['fields'])
-          .map(NavivoxConfigAdminField.fromJson)
-          .where((field) => field.key.isNotEmpty)
-          .toList(growable: false),
+      fields: navivoxGatewayObjectListFromJson(
+        json['fields'],
+        NavivoxConfigAdminField.fromJson,
+        where: (field) => field.key.isNotEmpty,
+      ),
     );
   }
 
@@ -123,10 +125,11 @@ class NavivoxConfigAdminGetResponse {
   factory NavivoxConfigAdminGetResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminGetResponse(
       action: navivoxStringFromJson(json['action'], fallback: ''),
-      values: navivoxMapListFromJson(json['values'])
-          .map(NavivoxConfigAdminValue.fromJson)
-          .where((value) => value.key.isNotEmpty)
-          .toList(growable: false),
+      values: navivoxGatewayObjectListFromJson(
+        json['values'],
+        NavivoxConfigAdminValue.fromJson,
+        where: (value) => value.key.isNotEmpty,
+      ),
     );
   }
 
@@ -263,14 +266,16 @@ class NavivoxConfigAdminResponse {
       reloadApplied: json['reload_applied'] == true,
       pendingRestart: json['pending_restart'] == true,
       reloadError: configWireString(json['reload_error']) ?? '',
-      changes: navivoxMapListFromJson(json['changes'])
-          .map(NavivoxConfigAdminDiff.fromJson)
-          .where((change) => change.key.isNotEmpty)
-          .toList(growable: false),
-      errors: navivoxMapListFromJson(json['errors'])
-          .map(NavivoxConfigAdminFieldError.fromJson)
-          .where((error) => error.key.isNotEmpty || error.message.isNotEmpty)
-          .toList(growable: false),
+      changes: navivoxGatewayObjectListFromJson(
+        json['changes'],
+        NavivoxConfigAdminDiff.fromJson,
+        where: (change) => change.key.isNotEmpty,
+      ),
+      errors: navivoxGatewayObjectListFromJson(
+        json['errors'],
+        NavivoxConfigAdminFieldError.fromJson,
+        where: (error) => error.key.isNotEmpty || error.message.isNotEmpty,
+      ),
     );
   }
 

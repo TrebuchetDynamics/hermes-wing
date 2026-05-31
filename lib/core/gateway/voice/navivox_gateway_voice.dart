@@ -185,9 +185,10 @@ class NavivoxVoiceProfilesResponse {
       providerMatrix: NavivoxVoiceProviderMatrix.fromJson(
         navivoxMapFromJson(json['provider_matrix']),
       ),
-      profiles: navivoxMapListFromJson(
+      profiles: navivoxGatewayObjectListFromJson(
         json['profiles'],
-      ).map(NavivoxVoiceProfileView.fromJson).toList(growable: false),
+        NavivoxVoiceProfileView.fromJson,
+      ),
     );
   }
 
@@ -232,7 +233,8 @@ class NavivoxVoiceProfileValidationResponse {
 }
 
 List<NavivoxVoiceProfileFieldError> _voiceProfileErrorsFromJson(Object? value) {
-  return navivoxMapListFromJson(
+  return navivoxGatewayObjectListFromJson(
     value,
-  ).map(NavivoxVoiceProfileFieldError.fromJson).toList(growable: false);
+    NavivoxVoiceProfileFieldError.fromJson,
+  );
 }

@@ -3,12 +3,8 @@ import 'package:intl/intl.dart';
 String conversationLatestTimeLabel(DateTime? latestAt, {DateTime? now}) {
   if (latestAt == null) return '';
   final comparisonNow = now ?? DateTime.now();
-  final latestDay = DateTime(latestAt.year, latestAt.month, latestAt.day);
-  final today = DateTime(
-    comparisonNow.year,
-    comparisonNow.month,
-    comparisonNow.day,
-  );
+  final latestDay = conversationDay(latestAt);
+  final today = conversationDay(comparisonNow);
   if (latestDay == today) return DateFormat.Hm().format(latestAt);
   if (latestAt.year == comparisonNow.year) {
     return DateFormat.MMMd().format(latestAt);
@@ -17,10 +13,19 @@ String conversationLatestTimeLabel(DateTime? latestAt, {DateTime? now}) {
 }
 
 String conversationDateSeparatorLabel(DateTime date, DateTime now) {
-  final localDate = DateTime(date.year, date.month, date.day);
-  final localNow = DateTime(now.year, now.month, now.day);
+  final localDate = conversationDay(date);
+  final localNow = conversationDay(now);
   final yesterday = localNow.subtract(const Duration(days: 1));
   if (localDate == localNow) return 'Today';
   if (localDate == yesterday) return 'Yesterday';
   return DateFormat.MMMd().format(date);
 }
+
+String conversationMessageTimeLabel(DateTime createdAt) =>
+    DateFormat.Hm().format(createdAt);
+
+DateTime conversationDay(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
+
+bool isSameConversationDay(DateTime a, DateTime b) =>
+    conversationDay(a) == conversationDay(b);

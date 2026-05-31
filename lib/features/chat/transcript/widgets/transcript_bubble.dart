@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/channel/navivox_channel.dart';
 import '../../../../core/protocol/navivox_event.dart';
 import '../../../../shared/voice/text_to_speech_service.dart';
+import '../../../shared/presentation/conversation_time_labels.dart';
 import '../../../voice/widgets/voice_morph_surface.dart';
 import '../../transcript/presentation/action/transcript_message_action_presentation.dart';
 import '../../transcript/presentation/message/transcript_safety_notice_presentation.dart';
@@ -107,7 +107,9 @@ class TranscriptBubble extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  DateFormat.Hm().format(message.createdAt),
+                                  conversationMessageTimeLabel(
+                                    message.createdAt,
+                                  ),
                                   style: TextStyle(
                                     color: timeColor,
                                     fontSize: 11,

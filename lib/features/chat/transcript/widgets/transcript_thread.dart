@@ -77,7 +77,10 @@ class TranscriptThread extends StatelessWidget {
             : null;
         final showDateSeparator =
             previousMessage == null ||
-            !_sameCalendarDay(previousMessage.createdAt, row.message.createdAt);
+            !isSameConversationDay(
+              previousMessage.createdAt,
+              row.message.createdAt,
+            );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -108,16 +111,9 @@ class TranscriptThread extends StatelessWidget {
   }
 }
 
-bool _sameCalendarDay(DateTime a, DateTime b) {
-  return a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
 bool _isSystemText(NavivoxChatMessage message) =>
     message.author == NavivoxMessageAuthor.system &&
     message.kind == NavivoxMessageKind.text;
-
-String _formatDateSeparatorLabel(DateTime date, DateTime now) =>
-    conversationDateSeparatorLabel(date, now);
 
 class _DateSeparator extends StatelessWidget {
   const _DateSeparator({required this.date, required this.now});
@@ -142,7 +138,7 @@ class _DateSeparator extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
-          _formatDateSeparatorLabel(date, now),
+          conversationDateSeparatorLabel(date, now),
           style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w600,

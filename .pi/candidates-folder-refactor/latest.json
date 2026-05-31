@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T03:09:58.386Z",
+  "generatedAt": "2026-05-31T03:11:55.462Z",
   "cwd": "/home/xel/git/gormes/navivox-app",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app",
@@ -73,14 +73,14 @@
     {
       "relative": "lib/features",
       "score": 211,
-      "files": 106,
+      "files": 107,
       "direct": 0,
-      "churn": 545,
+      "churn": 551,
       "callers": 1,
       "importsOut": 27,
       "tests": 0,
       "roles": 6,
-      "duplicates": 239,
+      "duplicates": 240,
       "subdirs": 10,
       "extensions": [
         ".dart"
@@ -89,14 +89,14 @@
     {
       "relative": "lib",
       "score": 195,
-      "files": 212,
+      "files": 213,
       "direct": 3,
-      "churn": 902,
+      "churn": 908,
       "callers": 0,
       "importsOut": 0,
       "tests": 0,
       "roles": 9,
-      "duplicates": 352,
+      "duplicates": 353,
       "subdirs": 7,
       "extensions": [
         ".dart"
@@ -199,22 +199,6 @@
       ]
     },
     {
-      "relative": "lib/features/servers",
-      "score": 152.4,
-      "files": 18,
-      "direct": 0,
-      "churn": 103,
-      "callers": 1,
-      "importsOut": 12,
-      "tests": 0,
-      "roles": 4,
-      "duplicates": 35,
-      "subdirs": 8,
-      "extensions": [
-        ".dart"
-      ]
-    },
-    {
       "relative": "test/features/chat",
       "score": 151.3,
       "files": 41,
@@ -226,6 +210,22 @@
       "roles": 4,
       "duplicates": 23,
       "subdirs": 8,
+      "extensions": [
+        ".dart"
+      ]
+    },
+    {
+      "relative": "lib/features/servers",
+      "score": 144.7,
+      "files": 19,
+      "direct": 0,
+      "churn": 109,
+      "callers": 1,
+      "importsOut": 12,
+      "tests": 0,
+      "roles": 4,
+      "duplicates": 36,
+      "subdirs": 7,
       "extensions": [
         ".dart"
       ]

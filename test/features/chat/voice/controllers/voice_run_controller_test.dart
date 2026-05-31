@@ -1,18 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_voice_run.dart';
 import 'package:navivox/features/chat/voice/controllers/voice_run_controller.dart';
 import 'package:navivox/shared/voice/voice_capture_failures.dart';
 import 'package:navivox/shared/voice/voice_capture_service.dart';
 
-import '../../../../support/test_navivox_channel.dart';
 import '../../../shared/fakes/voice_capture_service_fakes.dart';
-import '../../../shared/fixtures/profile_contact_channel_fixtures.dart';
-import '../../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../shared/profile_contact_chat_test_fixtures.dart';
 
 void main() {
   test('startCapture records the active Voice run id', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
 
     final voiceRunId = controller.startCapture(channel);
@@ -26,7 +23,7 @@ void main() {
   });
 
   test('captureFailed maps timeout copy, fails run, and clears pending id', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
     final voiceRunId = controller.startCapture(channel);
 
@@ -50,7 +47,7 @@ void main() {
   });
 
   test('captureFailed canonicalizes runtime device STT failures', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController()..startCapture(channel);
 
     final result = controller.captureFailed(
@@ -77,7 +74,7 @@ void main() {
   });
 
   test('captureFailed maps no transcript to actionable recovery copy', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
     final voiceRunId = controller.startCapture(channel);
 
@@ -99,7 +96,7 @@ void main() {
   });
 
   test('captureSucceeded cancels a started Voice run for Local commands', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
     final voiceRunId = controller.startCapture(channel);
     final localCommands = <String>[];
@@ -128,7 +125,7 @@ void main() {
   test(
     'captureSucceeded stages transcript and requests auto-send scheduling',
     () {
-      final channel = _seedChannel();
+      final channel = mineruReadyProfileChannel(micAvailable: true);
       final controller = VoiceRunController();
 
       final result = controller.captureSucceeded(
@@ -154,7 +151,7 @@ void main() {
   );
 
   test('autoSendIfPending submits the matching pending Voice run', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
     final staged = controller.captureSucceeded(
       channel,
@@ -178,7 +175,7 @@ void main() {
   });
 
   test('cancelPending cancels active pending Voice run with operator copy', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel(micAvailable: true);
     final controller = VoiceRunController();
     final staged = controller.captureSucceeded(
       channel,
@@ -197,20 +194,4 @@ void main() {
       NavivoxVoiceRunStatus.cancelled,
     );
   });
-}
-
-TestNavivoxChannel _seedChannel() {
-  return profileContactChannel(
-    servers: const [
-      NavivoxServer(id: 'local', name: 'local', status: 'connected'),
-    ],
-    contacts: [
-      mineruBuilderProfile(
-        displayName: 'Mineru',
-        latestPreview: 'Ready',
-        workspaceRootCount: 1,
-        micAvailable: true,
-      ),
-    ],
-  );
 }

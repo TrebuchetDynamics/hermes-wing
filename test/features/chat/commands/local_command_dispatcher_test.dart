@@ -5,15 +5,13 @@ import 'package:navivox/features/chat/commands/local_command_dispatcher.dart';
 import 'package:navivox/features/chat/commands/local_command_intent.dart';
 import 'package:navivox/router/app_routes.dart';
 
-import '../../../support/test_navivox_channel.dart';
-import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
-import '../../shared/fixtures/profile_contact_fixtures.dart';
+import '../shared/profile_contact_chat_test_fixtures.dart';
 
 void main() {
   const dispatcher = LocalCommandDispatcher();
 
   test('returns not consumed for no-op intents', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
 
     final result = dispatcher.dispatch(
       channel,
@@ -28,7 +26,7 @@ void main() {
   });
 
   test('requests command mode without mutating channel state', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
 
     final result = dispatcher.dispatch(
       channel,
@@ -43,7 +41,7 @@ void main() {
   });
 
   test('cancel command requests pending Voice run cancellation first', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
     final voiceRunId = channel.startVoiceRun();
     channel.stageVoiceRunTranscript(
       voiceRunId: voiceRunId,
@@ -68,7 +66,7 @@ void main() {
   });
 
   test('cancel and stop commands dispatch active Gormes turn actions', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
 
     final cancel = dispatcher.dispatch(
       channel,
@@ -89,7 +87,7 @@ void main() {
   });
 
   test('settings command returns the local settings route', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
 
     final result = dispatcher.dispatch(
       channel,
@@ -104,7 +102,7 @@ void main() {
   test(
     'switch profile command selects contact and returns chat route plus copy',
     () {
-      final channel = _seedChannel();
+      final channel = mineruReadyProfileChannel();
       const contact = NavivoxProfileContact(
         serverId: 'office',
         profileId: 'support desk',
@@ -129,7 +127,7 @@ void main() {
   );
 
   test('message-only command intents return snackbar copy', () {
-    final channel = _seedChannel();
+    final channel = mineruReadyProfileChannel();
 
     final disabled = dispatcher.dispatch(
       channel,
@@ -149,19 +147,4 @@ void main() {
     expect(unknown.message, 'Voice command not recognized: nope.');
     expect(channel.sentTexts, isEmpty);
   });
-}
-
-TestNavivoxChannel _seedChannel() {
-  return profileContactChannel(
-    servers: const [
-      NavivoxServer(id: 'local', name: 'local', status: 'connected'),
-    ],
-    contacts: [
-      mineruBuilderProfile(
-        displayName: 'Mineru',
-        latestPreview: 'Ready',
-        workspaceRootCount: 1,
-      ),
-    ],
-  );
 }

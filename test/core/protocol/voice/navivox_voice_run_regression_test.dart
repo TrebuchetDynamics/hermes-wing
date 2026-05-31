@@ -1,4 +1,4 @@
-import 'navivox_voice_run.dart';
+import 'package:navivox/core/protocol/navivox_voice_run.dart';
 
 void main() {
   markSubmittedDoesNotCarryStaleFailureReason();

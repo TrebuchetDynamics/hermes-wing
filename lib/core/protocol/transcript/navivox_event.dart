@@ -1,5 +1,5 @@
 import '../identity/navivox_profile_contact_key.dart';
-import '../voice/navivox_voice_status.dart';
+import '../voice/contracts/navivox_voice_status.dart';
 
 enum NavivoxMessageKind {
   text,

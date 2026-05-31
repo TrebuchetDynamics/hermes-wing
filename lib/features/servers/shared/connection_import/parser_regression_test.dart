@@ -5,6 +5,7 @@ void main() {
   parsesGenericTokenUrlOutsideCoreDescriptorProtocol();
   preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin();
   preservesGenericWebSocketUrlImports();
+  prefersCompleteJsonEntryOverEarlierPartialCandidate();
   parsesSharedTextTokenWithSpacedSeparator();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
   rejectsCorePairingDescriptorWithHttpWebSocketUrl();
@@ -73,6 +74,23 @@ void preservesGenericWebSocketUrlImports() {
     'generic websocket URL should be preserved',
   );
   _expect(result.token == 'nvbx_generic', 'generic websocket token preserved');
+}
+
+void prefersCompleteJsonEntryOverEarlierPartialCandidate() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"entries":[{"token":"nvbx_token_only"},{"base_url":"https://gateway.example","token":"nvbx_complete","server_id":"srv"}]}',
+  );
+
+  _expect(result != null, 'JSON entries should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'later complete entries should not be hidden by earlier partial candidates',
+  );
+  _expect(
+    result.token == 'nvbx_complete',
+    'complete entry token should be preserved',
+  );
+  _expect(result.serverId == 'srv', 'complete entry metadata should be kept');
 }
 
 void parsesSharedTextTokenWithSpacedSeparator() {

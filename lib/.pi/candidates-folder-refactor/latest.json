@@ -1,11 +1,27 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T09:54:19.522Z",
+  "generatedAt": "2026-05-31T09:57:20.132Z",
   "cwd": "/home/xel/git/gormes/navivox-app/lib",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app/lib",
   "command": "node ../../../pi-package-development-goal/skills/candidates-folder-refactor/scripts/find-candidates.mjs /home/xel/git/gormes/navivox-app/lib --top 25",
   "candidates": [
+    {
+      "relative": "features/servers/setup",
+      "score": 111.2,
+      "files": 12,
+      "direct": 11,
+      "churn": 28,
+      "callers": 1,
+      "importsOut": 4,
+      "tests": 0,
+      "roles": 2,
+      "duplicates": 8,
+      "subdirs": 1,
+      "extensions": [
+        ".dart"
+      ]
+    },
     {
       "relative": "features/chat/transcript/presentation",
       "score": 92.2,
@@ -50,22 +66,6 @@
       "roles": 1,
       "duplicates": 53,
       "subdirs": 5,
-      "extensions": [
-        ".dart"
-      ]
-    },
-    {
-      "relative": "features/servers/setup",
-      "score": 80.9,
-      "files": 9,
-      "direct": 8,
-      "churn": 23,
-      "callers": 1,
-      "importsOut": 4,
-      "tests": 0,
-      "roles": 2,
-      "duplicates": 8,
-      "subdirs": 1,
       "extensions": [
         ".dart"
       ]

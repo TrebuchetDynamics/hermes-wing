@@ -58,18 +58,10 @@ class ConnectionImportParser {
     }
     if (decoded is! Map) return null;
 
-    final topLevelImport = _importFromFields(decoded);
-    if (topLevelImport != null) return topLevelImport;
-
-    final entries = decoded['entries'];
-    if (entries is List) {
-      for (final entry in entries) {
-        if (entry is! Map) continue;
-        final import = _importFromFields(entry);
-        if (import != null) return import;
-      }
-    }
-    return null;
+    return _bestImportFromCandidateMaps([
+      decoded,
+      ..._entryCandidateMaps(decoded['entries']),
+    ]);
   }
 }
 
@@ -79,7 +71,39 @@ SetupQrImageImport? parseNavivoxConnectionImportPayload(String payload) =>
 bool _isCorePairingDescriptorUri(Uri uri) =>
     uri.scheme == 'navivox' && uri.host == 'connect';
 
+Iterable<Map<dynamic, dynamic>> _entryCandidateMaps(Object? entries) sync* {
+  if (entries is! List) return;
+  for (final entry in entries) {
+    if (entry is Map) yield entry;
+  }
+}
+
+SetupQrImageImport? _bestImportFromCandidateMaps(
+  Iterable<Map<dynamic, dynamic>> candidateMaps,
+) {
+  _ConnectionImportCandidate? bestCandidate;
+  for (final fields in candidateMaps) {
+    final candidate = _connectionImportCandidateFromFields(fields);
+    if (candidate == null) continue;
+    if (bestCandidate == null || candidate.score > bestCandidate.score) {
+      bestCandidate = candidate;
+    }
+    if (candidate.isComplete) break;
+  }
+  return bestCandidate?.toImport();
+}
+
 SetupQrImageImport? _importFromFields(
+  Map<dynamic, dynamic> fields, {
+  String? fallbackBaseUrl,
+}) {
+  return _connectionImportCandidateFromFields(
+    fields,
+    fallbackBaseUrl: fallbackBaseUrl,
+  )?.toImport();
+}
+
+_ConnectionImportCandidate? _connectionImportCandidateFromFields(
   Map<dynamic, dynamic> fields, {
   String? fallbackBaseUrl,
 }) {
@@ -102,7 +126,7 @@ SetupQrImageImport? _importFromFields(
   );
   if (!candidate.hasImportValues) return null;
 
-  return candidate.toImport();
+  return candidate;
 }
 
 SetupQrImageImport? _importFromGenericUri(Uri uri) {
@@ -167,6 +191,18 @@ class _ConnectionImportCandidate {
   final String? profileId;
 
   bool get hasImportValues => baseUrl != null || token != null;
+
+  bool get isComplete => baseUrl != null && token != null;
+
+  int get score {
+    var result = 0;
+    if (baseUrl != null) result += 2;
+    if (token != null) result += 2;
+    if (webSocketUrl != null) result += 1;
+    if (serverId != null) result += 1;
+    if (profileId != null) result += 1;
+    return result;
+  }
 
   SetupQrImageImport toImport() {
     return SetupQrImageImport(

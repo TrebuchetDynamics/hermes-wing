@@ -1,10 +1,12 @@
 import 'package:navivox/core/protocol/navivox_voice_run.dart';
 
+import '../profiles/profile_scope_test_contracts.dart';
+
 /// Shared Voice run value fixture for chat presentation/conversation tests.
 NavivoxVoiceRun chatVoiceRun({
   String id = 'voice-1',
-  String serverId = 'local',
-  String profileId = 'mineru',
+  String serverId = chatMineruServerId,
+  String profileId = chatMineruProfileId,
   NavivoxVoiceRunStatus status = NavivoxVoiceRunStatus.pendingSend,
   NavivoxTranscriptSource transcriptSource = NavivoxTranscriptSource.device,
   NavivoxTtsStatus ttsStatus = NavivoxTtsStatus.unavailable,

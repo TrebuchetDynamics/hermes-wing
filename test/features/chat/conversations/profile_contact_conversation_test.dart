@@ -32,12 +32,10 @@ void main() {
         profileContacts: const [mineru, support],
         selectedProfileContactKey: mineru.key,
         messages: {
-          'mineru': chatTextMessage(
+          'mineru': chatProfileTextMessage(
             id: 'mineru',
             createdAt: now,
             text: 'mineru turn',
-            serverId: 'local',
-            profileId: 'mineru',
           ),
           'support': chatTextMessage(
             id: 'support',

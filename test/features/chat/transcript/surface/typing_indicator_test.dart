@@ -35,13 +35,11 @@ void main() {
   ) async {
     final channel = _streamingMineruChannel()
       ..seedMessages([
-        chatTextMessage(
+        chatProfileTextMessage(
           id: 'assistant-1',
           author: NavivoxMessageAuthor.assistant,
           createdAt: DateTime(2026, 5, 21, 10),
           text: 'Drafting the deployment plan.',
-          serverId: 'local',
-          profileId: 'mineru',
         ),
       ]);
 

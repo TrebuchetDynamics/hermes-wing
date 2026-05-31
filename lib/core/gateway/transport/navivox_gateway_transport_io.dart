@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../shared/navivox_gateway_http.dart';
+
 class NavivoxGatewaySocket {
   NavivoxGatewaySocket(this._socket);
 
@@ -44,7 +46,7 @@ Future<String> _readResponse(HttpClientResponse response, Uri uri) async {
   final body = await utf8.decoder.bind(response).join();
   if (response.statusCode < 200 || response.statusCode >= 300) {
     throw HttpException(
-      'Navivox gateway returned HTTP ${response.statusCode}',
+      navivoxGatewayHttpStatusMessage(response.statusCode),
       uri: uri,
     );
   }

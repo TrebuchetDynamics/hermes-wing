@@ -95,6 +95,12 @@ void main() {
     expect(navivoxGatewayWebSocketProtocols(const {}), [
       navivoxWebSocketProtocol,
     ]);
+    expect(navivoxGatewayContentTypeHeader, 'Content-Type');
+    expect(navivoxGatewayJsonContentType, 'application/json');
+    expect(
+      navivoxGatewayHttpStatusMessage(503),
+      'Navivox gateway returned HTTP 503',
+    );
   });
 
   test('parses Gormes pairing descriptor into gateway config', () {

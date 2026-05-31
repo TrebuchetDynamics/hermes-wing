@@ -5,6 +5,7 @@ import 'dart:js_interop_unsafe';
 import 'package:web/web.dart' as web;
 
 import '../shared/navivox_gateway_auth.dart';
+import '../shared/navivox_gateway_http.dart';
 
 class NavivoxGatewaySocket {
   NavivoxGatewaySocket._(this._socket) {
@@ -62,7 +63,7 @@ Future<String> defaultPost(
 
 Future<String> _readResponse(web.Response response) async {
   if (!response.ok) {
-    throw StateError('Navivox gateway returned HTTP ${response.status}');
+    throw StateError(navivoxGatewayHttpStatusMessage(response.status));
   }
   final jsText = await response.text().toDart;
   return jsText.toDart;

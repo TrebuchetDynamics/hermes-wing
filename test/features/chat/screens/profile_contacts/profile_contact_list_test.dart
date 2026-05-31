@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import '../../../support/test_navivox_channel.dart';
-import '../shared/widgets/inline_span_test_helpers.dart';
-import '../shared/widgets/chat_screen_test_fixtures.dart';
-import '../shared/profiles/profile_scope_test_helpers.dart';
+import '../../../../support/test_navivox_channel.dart';
+import '../../shared/widgets/inline_span_test_helpers.dart';
+import '../../shared/widgets/chat_screen_test_fixtures.dart';
+import '../../shared/profiles/profile_scope_test_helpers.dart';
 import 'shared/profile_contact_screen_test_fixtures.dart';
+
+const _chatProfileSearchFieldKey = 'chat-profile-search-field';
+const _chatAllServersFilterKey = 'chat-all-servers-filter';
+const _chatActiveProfileKey = 'chat-active-profile';
+const _chatContextActionKey = 'chat-context-action';
+
+String _chatServerFilterKey(String serverId) => 'chat-server-filter-$serverId';
 
 void main() {
   testWidgets('renders profiles as a flat multi-server contact list', (
@@ -16,7 +23,10 @@ void main() {
     await pumpProfileContactList(tester, channel: channel);
 
     expect(find.text('Navivox'), findsOneWidget);
-    expect(find.byKey(const ValueKey(chatProfileSearchFieldKey)), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
+      findsOneWidget,
+    );
     expect(find.text('Mineru Builder'), findsOneWidget);
     expect(find.text('Support Triage'), findsOneWidget);
     expect(find.text('Personal'), findsOneWidget);
@@ -109,18 +119,21 @@ void main() {
 
     await pumpProfileContactList(tester, channel: channel);
 
-    expect(find.byKey(const ValueKey(chatAllServersFilterKey)), findsOneWidget);
     expect(
-      find.byKey(ValueKey(chatServerFilterKey(chatMineruServerId))),
+      find.byKey(const ValueKey(_chatAllServersFilterKey)),
       findsOneWidget,
     );
     expect(
-      find.byKey(ValueKey(chatServerFilterKey(chatSupportServerId))),
+      find.byKey(ValueKey(_chatServerFilterKey(chatMineruServerId))),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(ValueKey(_chatServerFilterKey(chatSupportServerId))),
       findsOneWidget,
     );
 
     await tester.tap(
-      find.byKey(ValueKey(chatServerFilterKey(chatSupportServerId))),
+      find.byKey(ValueKey(_chatServerFilterKey(chatSupportServerId))),
     );
     await tester.pumpAndSettle();
 
@@ -183,7 +196,7 @@ void main() {
     await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
-      find.byKey(const ValueKey(chatProfileSearchFieldKey)),
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
       'mineru',
     );
     await tester.pumpAndSettle();
@@ -213,10 +226,13 @@ void main() {
 
     await pumpProfileContactList(tester, channel: channel);
 
-    expect(find.byKey(const ValueKey(chatProfileSearchFieldKey)), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
+      findsOneWidget,
+    );
 
     await tester.enterText(
-      find.byKey(const ValueKey(chatProfileSearchFieldKey)),
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
       'support',
     );
     await tester.pumpAndSettle();
@@ -234,7 +250,7 @@ void main() {
     await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
-      find.byKey(const ValueKey(chatProfileSearchFieldKey)),
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
       'auth required',
     );
     await tester.pumpAndSettle();
@@ -244,7 +260,7 @@ void main() {
     expect(find.text('Personal'), findsNothing);
 
     await tester.enterText(
-      find.byKey(const ValueKey(chatProfileSearchFieldKey)),
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
       'mic unavailable',
     );
     await tester.pumpAndSettle();
@@ -260,7 +276,7 @@ void main() {
     await pumpProfileContactList(tester, channel: channel);
 
     await tester.enterText(
-      find.byKey(const ValueKey(chatProfileSearchFieldKey)),
+      find.byKey(const ValueKey(_chatProfileSearchFieldKey)),
       'missing',
     );
     await tester.pumpAndSettle();
@@ -325,8 +341,8 @@ void main() {
 
     expectSelectedProfileContactScope(channel, chatProfileListContacts[1]);
     expect(find.text('Support Triage'), findsOneWidget);
-    expect(find.byKey(const ValueKey(chatActiveProfileKey)), findsNothing);
-    expect(find.byKey(const ValueKey(chatContextActionKey)), findsOneWidget);
+    expect(find.byKey(const ValueKey(_chatActiveProfileKey)), findsNothing);
+    expect(find.byKey(const ValueKey(_chatContextActionKey)), findsOneWidget);
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Message Gormes'),
@@ -543,8 +559,8 @@ void main() {
 
     expectSelectedProfileContactScope(channel, chatProfileListContacts[1]);
     expect(find.text('Support Triage'), findsOneWidget);
-    expect(find.byKey(const ValueKey(chatActiveProfileKey)), findsNothing);
-    expect(find.byKey(const ValueKey(chatContextActionKey)), findsOneWidget);
+    expect(find.byKey(const ValueKey(_chatActiveProfileKey)), findsNothing);
+    expect(find.byKey(const ValueKey(_chatContextActionKey)), findsOneWidget);
 
     await openChatInfoSheet(tester);
 

@@ -7,10 +7,13 @@ import 'package:navivox/core/channel/navivox_channel_provider.dart';
 import 'package:navivox/features/chat/screens/chat_screen.dart';
 import 'package:navivox/router/app_routes.dart';
 
-import '../../../support/test_navivox_channel.dart';
-import '../../shared/fixtures/profile_contact_fixtures.dart';
-import '../../shared/fixtures/seed_fixtures.dart';
-import '../shared/widgets/chat_screen_test_fixtures.dart';
+import '../../../../support/test_navivox_channel.dart';
+import '../../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../../shared/fixtures/seed_fixtures.dart';
+import '../../shared/widgets/chat_screen_test_fixtures.dart';
+
+const _chatContextActionKey = 'chat-context-action';
+const _chatActiveProfileAvatarKey = 'chat-active-profile-avatar';
 
 const _seedServers = [
   NavivoxServer(id: 'srv1', name: 'Local', status: 'ready'),
@@ -48,7 +51,7 @@ void main() {
     await pumpChatScreen(tester, channel: channel);
 
     expect(find.byKey(const ValueKey('chat-active-agent')), findsNothing);
-    expect(find.byKey(const ValueKey(chatContextActionKey)), findsOneWidget);
+    expect(find.byKey(const ValueKey(_chatContextActionKey)), findsOneWidget);
 
     await openChatInfoSheet(tester);
     expect(find.text('Agent'), findsOneWidget);
@@ -65,12 +68,12 @@ void main() {
     await pumpChatScreen(tester, channel: channel);
 
     expect(
-      find.byKey(const ValueKey(chatActiveProfileAvatarKey)),
+      find.byKey(const ValueKey(_chatActiveProfileAvatarKey)),
       findsOneWidget,
     );
     expect(
       find.descendant(
-        of: find.byKey(const ValueKey(chatActiveProfileAvatarKey)),
+        of: find.byKey(const ValueKey(_chatActiveProfileAvatarKey)),
         matching: find.text('M'),
       ),
       findsOneWidget,

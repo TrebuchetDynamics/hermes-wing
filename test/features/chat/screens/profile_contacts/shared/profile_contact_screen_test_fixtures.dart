@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 
-import '../../../../support/test_navivox_channel.dart';
-import '../../../shared/app/test_router_app.dart';
-import '../../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../../../../support/test_navivox_channel.dart';
+import '../../../../shared/app/test_router_app.dart';
+import '../../../../shared/fixtures/profile_contact_fixtures.dart';
 
 /// Shared server list for chat Profile contact screen tests.
 final chatProfileListServers = localOfficeServers();

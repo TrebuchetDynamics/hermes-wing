@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import '../transcript/shared/transcript_test_fixtures.dart';
-import '../shared/protocol/chat_message_test_fixtures.dart';
-import '../shared/widgets/chat_screen_test_fixtures.dart';
-import '../shared/profiles/profile_scope_test_helpers.dart';
-import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
-import '../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../transcript/shared/transcript_test_fixtures.dart';
+import '../../shared/protocol/chat_message_test_fixtures.dart';
+import '../../shared/widgets/chat_screen_test_fixtures.dart';
+import '../../shared/profiles/profile_scope_test_helpers.dart';
+import '../../../shared/fixtures/profile_contact_channel_fixtures.dart';
+import '../../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   testWidgets('chat message action forwards text to another profile contact', (

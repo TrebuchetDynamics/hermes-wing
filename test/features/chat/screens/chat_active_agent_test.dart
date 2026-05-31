@@ -8,9 +8,9 @@ import 'package:navivox/features/chat/screens/chat_screen.dart';
 import 'package:navivox/router/app_routes.dart';
 
 import '../../../support/test_navivox_channel.dart';
-import '../../shared/app/test_material_app.dart';
 import '../../shared/fixtures/profile_contact_fixtures.dart';
 import '../../shared/fixtures/seed_fixtures.dart';
+import '../shared/chat_screen_test_fixtures.dart';
 
 const _seedServers = [
   NavivoxServer(id: 'srv1', name: 'Local', status: 'ready'),
@@ -32,9 +32,7 @@ void main() {
         ..seedServers(_seedServers, activeServerId: 'srv1')
         ..seedAgents(defaultSeedAgents);
 
-      await tester.pumpWidget(
-        TestNavivoxMaterialApp(channel: channel, home: const ChatScreen()),
-      );
+      await pumpChatScreen(tester, channel: channel);
 
       expect(find.byKey(const ValueKey('chat-active-agent')), findsNothing);
     },
@@ -47,9 +45,7 @@ void main() {
       ..seedServers(_seedServers, activeServerId: 'srv1')
       ..seedAgents(defaultSeedAgents, selectedAgentId: 'arch');
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(channel: channel, home: const ChatScreen()),
-    );
+    await pumpChatScreen(tester, channel: channel);
 
     expect(find.byKey(const ValueKey('chat-active-agent')), findsNothing);
     expect(find.byKey(const ValueKey('chat-context-action')), findsOneWidget);
@@ -70,9 +66,7 @@ void main() {
       ..seedServers(_seedServers, activeServerId: 'srv1')
       ..seedProfileContacts(_seedProfiles, selectedKey: 'srv1::mineru');
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(channel: channel, home: const ChatScreen()),
-    );
+    await pumpChatScreen(tester, channel: channel);
 
     expect(
       find.byKey(const ValueKey('chat-active-profile-avatar')),
@@ -95,9 +89,7 @@ void main() {
       ..seedServers(_seedServers, activeServerId: 'srv1')
       ..seedProfileContacts(_seedProfiles, selectedKey: 'srv1::mineru');
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(channel: channel, home: const ChatScreen()),
-    );
+    await pumpChatScreen(tester, channel: channel);
 
     await tester.tap(find.byKey(const ValueKey('chat-context-action')));
     await tester.pumpAndSettle();

@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/chat/screens/chat_screen.dart';
-
 import '../transcript/shared/transcript_test_fixtures.dart';
-import '../../shared/app/test_material_app.dart';
+import '../shared/chat_screen_test_fixtures.dart';
 import '../../shared/fixtures/profile_contact_channel_fixtures.dart';
 import '../../shared/fixtures/profile_contact_fixtures.dart';
 
@@ -28,11 +26,11 @@ void main() {
           ),
         ]);
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(
-        channel: channel,
-        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
-      ),
+    await pumpChatScreen(
+      tester,
+      channel: channel,
+      serverId: 'local',
+      profileId: 'mineru',
     );
     await tester.pumpAndSettle();
 

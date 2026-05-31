@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import 'package:navivox/features/chat/screens/chat_screen.dart';
-
 import '../../../../support/test_navivox_channel.dart';
-import '../../../shared/app/test_material_app.dart';
+import '../../shared/chat_screen_test_fixtures.dart';
 import '../../../shared/fixtures/profile_contact_channel_fixtures.dart';
 import '../../../shared/fixtures/profile_contact_fixtures.dart';
 
@@ -15,11 +13,11 @@ void main() {
   ) async {
     final channel = _streamingMineruChannel();
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(
-        channel: channel,
-        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
-      ),
+    await pumpChatScreen(
+      tester,
+      channel: channel,
+      serverId: 'local',
+      profileId: 'mineru',
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -47,11 +45,11 @@ void main() {
         ),
       ]);
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(
-        channel: channel,
-        home: const ChatScreen(serverId: 'local', profileId: 'mineru'),
-      ),
+    await pumpChatScreen(
+      tester,
+      channel: channel,
+      serverId: 'local',
+      profileId: 'mineru',
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));

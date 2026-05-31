@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
-import 'package:navivox/features/chat/screens/chat_screen.dart';
-
 import '../../../support/test_navivox_channel.dart';
-import '../../shared/app/test_material_app.dart';
 import '../../shared/app/test_router_app.dart';
 import '../shared/inline_span_test_helpers.dart';
+import '../shared/chat_screen_test_fixtures.dart';
 import 'shared/profile_contact_screen_test_fixtures.dart';
 
 void main() {
@@ -540,11 +538,11 @@ void main() {
   ) async {
     final channel = profileContactListChannel();
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(
-        channel: channel,
-        home: const ChatScreen(serverId: 'office', profileId: 'support'),
-      ),
+    await pumpChatScreen(
+      tester,
+      channel: channel,
+      serverId: 'office',
+      profileId: 'support',
     );
     await tester.pumpAndSettle();
 

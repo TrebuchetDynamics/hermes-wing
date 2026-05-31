@@ -144,9 +144,10 @@ class NavivoxVoiceProfileView {
     final profileId = navivoxStringFieldFromJson(json, 'profile_id');
     return NavivoxVoiceProfileView(
       profileId: profileId,
-      displayName: navivoxStringFromJson(
-        json['display_name'],
-        fallback: profileId,
+      displayName: navivoxGatewayStringFieldWithFallbackField(
+        json,
+        'display_name',
+        'profile_id',
       ),
       voiceProfile: navivoxGatewayObjectFromField(
         json,

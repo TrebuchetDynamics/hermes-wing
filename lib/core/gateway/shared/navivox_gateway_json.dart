@@ -1,7 +1,11 @@
 import 'dart:convert';
 
 import '../../protocol/navivox_json.dart'
-    show navivoxMapFieldFromJson, navivoxMapListFromJson;
+    show
+        navivoxMapFieldFromJson,
+        navivoxMapListFromJson,
+        navivoxStringFieldFromJson,
+        navivoxStringFromJson;
 
 /// Decodes a gateway response body that must contain a JSON object.
 Map<String, Object?> navivoxGatewayDecodeObject(String body) {
@@ -54,6 +58,23 @@ bool navivoxGatewayHasText(Object? value) {
 /// JSON boolean `true` is truthy, while strings or numeric aliases remain false.
 bool navivoxGatewayBoolField(Map<String, Object?> json, String key) {
   return json[key] == true;
+}
+
+/// Reads a display string with a stable same-object fallback field.
+///
+/// Gateway profile-shaped responses often expose an optional display label that
+/// falls back to the identity field when absent or blank. Centralizing that
+/// contract keeps routing and voice views aligned without changing the tolerant
+/// protocol string parsing semantics.
+String navivoxGatewayStringFieldWithFallbackField(
+  Map<String, Object?> json,
+  String key,
+  String fallbackKey,
+) {
+  return navivoxStringFromJson(
+    json[key],
+    fallback: navivoxStringFieldFromJson(json, fallbackKey),
+  );
 }
 
 /// Reads a required JSON object field from a decoded gateway response.

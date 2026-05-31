@@ -137,9 +137,10 @@ class NavivoxProfileRoute {
     final profileId = navivoxStringFieldFromJson(json, 'profile_id');
     return NavivoxProfileRoute(
       profileId: profileId,
-      displayName: navivoxStringFromJson(
-        json['display_name'],
-        fallback: profileId,
+      displayName: navivoxGatewayStringFieldWithFallbackField(
+        json,
+        'display_name',
+        'profile_id',
       ),
       workspaces: navivoxStringListFromJson(json['workspaces']),
       providers: navivoxStringListFromJson(json['providers']),

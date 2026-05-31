@@ -6,3 +6,7 @@ typedef TranscriptSendCallback = ValueChanged<String>;
 
 /// Shared callback contract for Transcript tests that receive captured voice.
 typedef TranscriptVoiceCaptureCallback = ValueChanged<VoiceCapture>;
+
+/// Shared no-op text-send handler for Transcript test apps that only need the
+/// composer contract wired, not observed.
+void transcriptNoopSend(String text) {}

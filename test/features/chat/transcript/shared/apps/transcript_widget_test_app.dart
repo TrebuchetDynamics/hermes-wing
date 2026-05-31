@@ -95,7 +95,7 @@ Widget transcriptSurfaceFrameTestApp({
 }) {
   final frame = TranscriptSurfaceFrame(
     messages: messages,
-    onSend: onSend ?? (_) {},
+    onSend: onSend ?? transcriptNoopSend,
   );
 
   return transcriptTestScaffold(

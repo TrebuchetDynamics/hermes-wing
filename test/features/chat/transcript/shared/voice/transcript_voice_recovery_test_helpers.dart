@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
+import 'package:navivox/shared/voice/voice_capture_service.dart'
+    show VoiceCaptureService;
 
 import '../../../shared/voice/voice_recovery_test_fixtures.dart';
+import '../apps/transcript_interaction_contracts.dart';
 import '../apps/transcript_surface_test_app.dart';
 
 export '../../../shared/voice/voice_recovery_test_fixtures.dart';
@@ -14,12 +16,12 @@ Future<void> pumpUnavailableTranscriptSurface(
   String? voiceRecoveryAction,
   VoidCallback? onOpenVoiceSettings,
   VoiceCaptureService? voiceCaptureService,
-  ValueChanged<VoiceCapture>? onVoice,
+  TranscriptVoiceCaptureCallback? onVoice,
 }) async {
   await tester.pumpWidget(
     transcriptSurfaceTestApp(
       messages: const <NavivoxChatMessage>[],
-      onSend: (_) {},
+      onSend: transcriptNoopSend,
       voiceUnavailableReason: voiceUnavailableReason,
       voiceRecoveryAction: voiceRecoveryAction,
       onOpenVoiceSettings: onOpenVoiceSettings,

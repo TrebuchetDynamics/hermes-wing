@@ -15,6 +15,8 @@ import '../contracts/navivox_channel.dart';
 import '../contracts/navivox_memory_scope.dart';
 import '../contracts/navivox_profile_contact_codec.dart';
 import 'gateway_capability_policy.dart';
+import 'gateway_profile_contact_policy.dart';
+import 'gateway_tool_artifact_codec.dart';
 
 class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   GatewayNavivoxChannel({Uuid? uuid, DateTime Function()? clock})
@@ -86,7 +88,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
 
     final contacts = navivoxProfileContactsAvailable(capabilities)
         ? await _loadProfileContacts(client)
-        : [_fallbackProfileContact()];
+        : [navivoxFallbackProfileContact()];
     final profileRouting = navivoxProfileRoutingAvailable(capabilities)
         ? await client.profileRouting()
         : const NavivoxProfileRoutingReport();
@@ -106,7 +108,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
           );
     }
     _state = _state.copyWith(
-      servers: _serversFromProfileContacts(contacts, config),
+      servers: navivoxServersFromProfileContacts(contacts, config),
       activeServerId: contacts.first.serverId,
       profileContacts: contacts,
       selectedProfileContactKey: contacts.first.key,
@@ -190,7 +192,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
         .map(navivoxProfileContactFromJson)
         .toList(growable: false);
     return profileContacts.isEmpty
-        ? [_fallbackProfileContact()]
+        ? [navivoxFallbackProfileContact()]
         : profileContacts;
   }
 
@@ -198,7 +200,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     NavivoxGatewayConfig config, {
     required String status,
   }) {
-    final contact = _closedCapabilityProfileContact(status);
+    final contact = navivoxClosedCapabilityProfileContact(status);
     _state = _state.copyWith(
       servers: [
         NavivoxServer(
@@ -503,7 +505,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
           .map(navivoxProfileContactFromJson)
           .toList(growable: false);
       final contacts = profileContacts.isEmpty
-          ? [_fallbackProfileContact()]
+          ? [navivoxFallbackProfileContact()]
           : profileContacts;
       final selectedKey =
           contacts.any(
@@ -512,7 +514,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
           ? _state.selectedProfileContactKey
           : contacts.first.key;
       _state = _state.copyWith(
-        servers: _serversFromProfileContacts(contacts, client.config),
+        servers: navivoxServersFromProfileContacts(contacts, client.config),
         activeServerId: contacts.first.serverId,
         profileContacts: contacts,
         selectedProfileContactKey: selectedKey,
@@ -916,7 +918,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     final priorMessage = _state.messages[toolCallId];
     final prior = priorMessage?.toolCall;
     final scope = _messageScopeFromEvent(event);
-    final summary = _boundedToolText(
+    final summary = navivoxBoundedGatewayToolText(
       event.message ?? event.text ?? prior?.summary ?? '',
     );
     _putMessage(
@@ -998,88 +1000,10 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     Map<String, Object?> metadata,
     String toolCallId,
   ) {
-    if (metadata.isEmpty) return const [];
-    final artifacts = <NavivoxToolArtifact>[];
-    final artifactList = metadata['artifacts'];
-    if (artifactList is List) {
-      for (final artifact in artifactList.whereType<Map>()) {
-        final parsed = _toolArtifactFromMap(
-          Map<String, Object?>.from(artifact),
-        );
-        if (parsed != null) artifacts.add(parsed);
-      }
-    }
-    final single = _toolArtifactFromFlatMetadata(metadata);
-    if (single != null) artifacts.add(single);
-    if (artifacts.isNotEmpty) return artifacts;
-    return [
-      NavivoxToolArtifact(
-        id: 'metadata-$toolCallId',
-        kind: 'metadata',
-        title: 'Tool metadata',
-        summary: _boundedToolText(_safeMetadataSummary(metadata)),
-      ),
-    ];
-  }
-
-  NavivoxToolArtifact? _toolArtifactFromMap(Map<String, Object?> json) {
-    final id = navivoxOptionalStringFromJson(json['id']);
-    final kind = navivoxOptionalStringFromJson(json['kind']);
-    final title = navivoxOptionalStringFromJson(json['title']);
-    if (id == null || kind == null || title == null) return null;
-    return NavivoxToolArtifact(
-      id: id,
-      kind: kind,
-      title: title,
-      summary: navivoxOptionalStringFromJson(json['summary']),
-      ref: navivoxOptionalStringFromJson(json['ref']),
+    return navivoxToolArtifactsFromGatewayMetadata(
+      metadata,
+      toolCallId: toolCallId,
     );
-  }
-
-  NavivoxToolArtifact? _toolArtifactFromFlatMetadata(
-    Map<String, Object?> metadata,
-  ) {
-    final id = navivoxOptionalStringFromJson(metadata['artifact_id']);
-    final kind = navivoxOptionalStringFromJson(metadata['artifact_kind']);
-    final title = navivoxOptionalStringFromJson(metadata['artifact_title']);
-    if (id == null || kind == null || title == null) return null;
-    return NavivoxToolArtifact(
-      id: id,
-      kind: kind,
-      title: title,
-      summary: navivoxOptionalStringFromJson(metadata['artifact_summary']),
-      ref: navivoxOptionalStringFromJson(metadata['artifact_ref']),
-    );
-  }
-
-  String _safeMetadataSummary(Map<String, Object?> metadata) {
-    final parts = <String>[];
-    for (final entry in metadata.entries) {
-      if (_isSensitiveMetadataKey(entry.key)) continue;
-      parts.add('${entry.key}: ${_safeMetadataValue(entry.value)}');
-    }
-    return parts.isEmpty ? 'Metadata unavailable' : parts.join('; ');
-  }
-
-  String _safeMetadataValue(Object? value) {
-    if (value is Map) return '[object]';
-    if (value is List) return '[list]';
-    return value?.toString() ?? '';
-  }
-
-  bool _isSensitiveMetadataKey(String key) {
-    final lower = key.toLowerCase();
-    return lower.contains('token') ||
-        lower.contains('secret') ||
-        lower.contains('password') ||
-        lower.contains('api_key') ||
-        lower.contains('apikey');
-  }
-
-  String _boundedToolText(String text) {
-    final trimmed = text.trim();
-    if (trimmed.length <= 240) return trimmed;
-    return '${trimmed.substring(0, 237)}...';
   }
 
   void _putSafetyWarning(NavivoxGatewayEvent event) {
@@ -1203,7 +1127,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     } else {
       contacts.add(contact);
     }
-    final servers = _upsertServer(_state.servers, contact);
+    final servers = navivoxUpsertProfileServer(_state.servers, contact);
     _state = _state.copyWith(
       servers: servers,
       activeServerId: _state.activeServerId ?? contact.serverId,
@@ -1270,93 +1194,6 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       if (routing?.workspace != null) 'workspace': routing!.workspace,
       if (routing?.provider != null) 'provider_id': routing!.provider,
       if (routing?.channel != null) 'channel_id': routing!.channel,
-    };
-  }
-
-  NavivoxProfileContact _closedCapabilityProfileContact(String status) {
-    return NavivoxProfileContact(
-      serverId: 'navivox-gateway',
-      profileId: 'default',
-      displayName: 'Default profile',
-      serverLabel: 'Gormes Gateway',
-      health: NavivoxProfileHealth.warning,
-      latestPreview: status,
-      latestPreviewKind: 'status',
-      workspaceRootCount: 0,
-      workspaceRootsOk: false,
-      micAvailable: false,
-      voiceCapability: const NavivoxVoiceCapability(
-        disabledReason: 'Navivox capabilities unavailable',
-        isReported: true,
-      ),
-    );
-  }
-
-  NavivoxProfileContact _fallbackProfileContact() {
-    return NavivoxProfileContact(
-      serverId: 'navivox-gateway',
-      profileId: 'default',
-      displayName: 'Default profile',
-      serverLabel: 'Gormes Gateway',
-      health: NavivoxProfileHealth.online,
-      latestPreview: 'Gateway online',
-      latestPreviewKind: 'status',
-      workspaceRootCount: 1,
-      workspaceRootsOk: true,
-      micAvailable: true,
-    );
-  }
-
-  List<NavivoxServer> _serversFromProfileContacts(
-    List<NavivoxProfileContact> contacts,
-    NavivoxGatewayConfig config,
-  ) {
-    final servers = <String, NavivoxServer>{};
-    for (final contact in contacts) {
-      servers.putIfAbsent(
-        contact.serverId,
-        () => NavivoxServer(
-          id: contact.serverId,
-          name: contact.serverLabel,
-          status: _serverStatus(contact, config),
-        ),
-      );
-    }
-    return servers.values.toList(growable: false);
-  }
-
-  List<NavivoxServer> _upsertServer(
-    List<NavivoxServer> servers,
-    NavivoxProfileContact contact,
-  ) {
-    final index = servers.indexWhere((server) => server.id == contact.serverId);
-    if (index >= 0) return servers;
-    return [
-      ...servers,
-      NavivoxServer(
-        id: contact.serverId,
-        name: contact.serverLabel,
-        status: _profileHealthStatus(contact),
-      ),
-    ];
-  }
-
-  String _serverStatus(
-    NavivoxProfileContact contact,
-    NavivoxGatewayConfig config,
-  ) {
-    if (contact.serverId == 'navivox-gateway') {
-      return 'Gateway online - ${config.baseUri.host}:${config.baseUri.port}';
-    }
-    return _profileHealthStatus(contact);
-  }
-
-  String _profileHealthStatus(NavivoxProfileContact contact) {
-    return switch (contact.health) {
-      NavivoxProfileHealth.online => 'Gateway online',
-      NavivoxProfileHealth.offline => 'Gateway offline',
-      NavivoxProfileHealth.needsAuth => 'Provider auth required',
-      NavivoxProfileHealth.warning => 'Profile warning',
     };
   }
 }

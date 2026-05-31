@@ -199,13 +199,32 @@ SetupQrImageImport? _importFromGenericUri(Uri uri) {
 }
 
 Map<String, String> _genericUriFields(Uri uri) {
-  final fields = Map<String, String>.of(uri.queryParameters);
+  final fields = _firstNonBlankQueryParameterValues(uri.queryParametersAll);
   if (_isWebSocketUri(uri) &&
       navivoxFirstStringFieldFromJson(fields, _webSocketUrlFieldNames) ==
           null) {
     fields['websocket_url'] = uri.toString();
   }
   return fields;
+}
+
+Map<String, String> _firstNonBlankQueryParameterValues(
+  Map<String, List<String>> queryParametersAll,
+) {
+  final result = <String, String>{};
+  for (final entry in queryParametersAll.entries) {
+    final value = _firstNonBlankQueryParameterValue(entry.value);
+    if (value != null) result[entry.key] = value;
+  }
+  return result;
+}
+
+String? _firstNonBlankQueryParameterValue(List<String> values) {
+  for (final value in values) {
+    final text = navivoxOptionalLiteralStringFromJson(value);
+    if (text != null) return text;
+  }
+  return null;
 }
 
 String? _baseUrlFromGenericUri(Uri uri) {

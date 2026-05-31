@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../shared/voice/voice_recovery_test_fixtures.dart';
 import '../shared/transcript_attachment_test_helpers.dart';
 import '../shared/transcript_controller_test_helpers.dart';
+import '../shared/transcript_voice_recovery_test_helpers.dart';
 import '../shared/transcript_widget_test_app.dart';
 
 void main() {
@@ -83,17 +83,13 @@ void main() {
     );
 
     expect(find.byIcon(Icons.mic_off), findsOneWidget);
-    expect(
-      find.byTooltip('Voice unavailable: $deviceSttUnavailableReason'),
-      findsOneWidget,
-    );
+    expectVoiceUnavailableTooltip(deviceSttUnavailableReason);
 
     await tester.tap(find.byIcon(Icons.mic_off));
     await tester.pumpAndSettle();
 
-    expect(find.text('Voice unavailable'), findsOneWidget);
-    expect(find.text(deviceSttUnavailableReason), findsOneWidget);
-    expect(find.text('Device STT unavailable'), findsNothing);
+    expectVoiceUnavailableSheetTitle();
+    expectCanonicalDeviceSttRecoverySheet();
     expect(find.text('Recovery action'), findsOneWidget);
     expect(find.text(deviceSttRecoveryAction), findsOneWidget);
     expect(find.text('Open voice settings'), findsOneWidget);

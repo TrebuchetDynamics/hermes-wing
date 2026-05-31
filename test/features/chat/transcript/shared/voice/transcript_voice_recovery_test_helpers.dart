@@ -40,9 +40,24 @@ void expectVoiceUnavailableTooltip(String reason) {
   expect(find.byTooltip('Voice unavailable: $reason'), findsOneWidget);
 }
 
+void expectVoiceUnavailableSheetTitle() {
+  expect(find.text('Voice unavailable'), findsOneWidget);
+}
+
 void expectDeviceSttRecoveryCopy() {
   expect(find.text(deviceSttUnavailableReason), findsOneWidget);
   expect(find.text(deviceSttRecoveryCopy), findsOneWidget);
+}
+
+void expectDeviceSttRecoverySheet() {
+  expectVoiceUnavailableSheetTitle();
+  expectDeviceSttRecoveryCopy();
+}
+
+void expectCanonicalDeviceSttRecoverySheet() {
+  expect(find.text(deviceSttUnavailableReason), findsOneWidget);
+  expect(find.text(rawDeviceSttUnavailableReason), findsNothing);
+  expectDeviceSttRecoveryCopy();
 }
 
 void expectMicrophonePermissionRecoveryCopy() {

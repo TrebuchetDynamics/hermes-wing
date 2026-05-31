@@ -19,8 +19,7 @@ void main() {
 
     await openVoiceUnavailableSheet(tester);
 
-    expect(find.text('Voice unavailable'), findsOneWidget);
-    expectDeviceSttRecoveryCopy();
+    expectDeviceSttRecoverySheet();
   });
 
   testWidgets('permission-denied mic explains Android permission recovery', (
@@ -52,9 +51,7 @@ void main() {
 
     await openVoiceUnavailableSheet(tester);
 
-    expect(find.text(deviceSttUnavailableReason), findsOneWidget);
-    expect(find.text('Device STT unavailable'), findsNothing);
-    expectDeviceSttRecoveryCopy();
+    expectCanonicalDeviceSttRecoverySheet();
   });
 
   testWidgets('disabled STT mic shows supplied recovery action', (
@@ -115,7 +112,7 @@ void main() {
 
     await openVoiceUnavailableSheet(tester);
 
-    expect(find.text('Voice unavailable'), findsOneWidget);
+    expectVoiceUnavailableSheetTitle();
     expect(captured, isNull);
   });
 }

@@ -15,6 +15,31 @@ void main() {
     expect(metadata.appInstallIdentity, 'navi-install-abc');
   });
 
+  test('gateway credential metadata requires non-blank identity fields', () {
+    final missingGateway = GatewayCredentialMetadata(
+      gatewayId: ' ',
+      appInstallIdentity: 'navi-install-abc',
+      credentialLabel: 'Navivox Android',
+      createdAt: DateTime.utc(2026),
+    );
+    final missingInstall = GatewayCredentialMetadata(
+      gatewayId: 'gw_123',
+      appInstallIdentity: '',
+      credentialLabel: 'Navivox Android',
+      createdAt: DateTime.utc(2026),
+    );
+    final missingLabel = GatewayCredentialMetadata(
+      gatewayId: 'gw_123',
+      appInstallIdentity: 'navi-install-abc',
+      credentialLabel: '\t',
+      createdAt: DateTime.utc(2026),
+    );
+
+    expect(missingGateway.isUsableMetadata, isFalse);
+    expect(missingInstall.isUsableMetadata, isFalse);
+    expect(missingLabel.isUsableMetadata, isFalse);
+  });
+
   test(
     'empty durable credential store never enables reconnect material',
     () async {

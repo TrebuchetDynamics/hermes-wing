@@ -32,6 +32,23 @@ void main() {
     expect(alias.value, isNot(contains('navi-install-abc')));
   });
 
+  test('rejects blank alias identity fields', () {
+    expect(
+      () => DurableCredentialKeyAlias.forGatewayInstall(
+        gatewayId: ' ',
+        appInstallIdentity: 'navi-install-abc',
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => DurableCredentialKeyAlias.forGatewayInstall(
+        gatewayId: 'gateway-public-id',
+        appInstallIdentity: ' ',
+      ),
+      throwsArgumentError,
+    );
+  });
+
   test('availability returns false when native adapter is absent', () async {
     final store = MethodChannelDurableCredentialKeyStore(
       channel: durableKeysTestChannel,

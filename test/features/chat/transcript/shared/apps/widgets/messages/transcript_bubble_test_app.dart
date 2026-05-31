@@ -4,7 +4,7 @@ import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/features/chat/transcript/widgets/transcript_bubble.dart';
 
 import '../../../contracts/transcript_forwarding_contracts.dart';
-import '../../scaffold/transcript_test_scaffold.dart';
+import '../shared/transcript_widget_test_host.dart';
 
 /// Mounts [TranscriptBubble] under the shared Material feature-test shell.
 Widget transcriptBubbleTestApp({
@@ -25,5 +25,5 @@ Widget transcriptBubbleTestApp({
     onCancelActiveTurn: onCancelActiveTurn,
   );
 
-  return transcriptTestScaffold(wrapBubble?.call(bubble) ?? bubble);
+  return transcriptWidgetTestHost(wrapBubble?.call(bubble) ?? bubble);
 }

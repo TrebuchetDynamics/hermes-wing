@@ -1,19 +1,20 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T11:31:20.647Z",
+  "updatedAt": "2026-05-31T11:35:37.885Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND visibility refactors under lib: expose hidden config wire-schema assumptions with focused characterization tests before fixes, preserving public behavior and compatibility.",
   "completedSlices": [
     "Added focused regression for nested field_errors validation messages in ConfigApplyFlowModel.fromDraft and fixed shared validation message extraction.",
-    "Added focused regression for camelCase reloadMode schema alias in ConfigFormModel.fromSchema; extracted reload-mode parsing/restart inference helpers and fixed presentation/restart flow to use the alias-aware value."
+    "Added focused regression for camelCase reloadMode schema alias in ConfigFormModel.fromSchema; extracted reload-mode parsing/restart inference helpers and fixed presentation/restart flow to use the alias-aware value.",
+    "Added focused regressions for config schema list aliases (allowedValues/supportedActions) across ConfigFormModel and gateway schema normalization; extracted configWireStringListFromAliases and routed form/gateway parsing through the shared alias contract."
   ],
   "nextCandidates": [
     "features/config/apply/config_apply_flow_model.dart validation snapshots with multiple aliases for the same field: characterize duplicate/provenance ordering if server sends both validation_errors and field_errors.",
-    "features/config/form/config_form_model.dart section field references and allowed/actions wire aliases: characterize whether singular/plural or options/choices drift drops candidates."
+    "features/config/form/config_form_model.dart section field references and allowed/actions wire aliases: remaining seam is singular action/choice tokens or blank exact aliases hiding later non-empty normalized aliases."
   ],
   "validationReceipts": [
-    "dart features/config/form/config_form_model_regression_test.dart: failed before fix on camelCase reloadMode not retained for presentation, passed after fix",
-    "dart analyze features/config/form/config_form_model.dart features/config/form/config_form_model_regression_test.dart: No issues found",
-    "for test in features/config/apply/config_apply_flow_model_regression_test.dart features/config/form/config_draft_session_regression_test.dart features/config/form/config_form_model_regression_test.dart features/config/shared/config_value_display_regression_test.dart; do dart \"$test\" || exit $?; done: passed"
+    "dart features/config/form/config_form_model_regression_test.dart: failed before fix on camelCase allowedValues not retained; passed after fix",
+    "dart features/config/form/config_form_model_regression_test.dart && dart core/gateway/config_admin/navivox_gateway_config_admin_regression_test.dart && dart analyze features/config/form/config_form_model.dart features/config/form/config_form_model_regression_test.dart core/protocol/config/config_wire_fields.dart core/gateway/config_admin/navivox_gateway_config_admin.dart core/gateway/config_admin/navivox_gateway_config_admin_regression_test.dart: No issues found",
+    "for test in features/config/apply/config_apply_flow_model_regression_test.dart features/config/form/config_draft_session_regression_test.dart features/config/form/config_form_model_regression_test.dart features/config/shared/config_value_display_regression_test.dart core/gateway/config_admin/navivox_gateway_config_admin_regression_test.dart; do dart \"$test\" || exit $?; done: passed"
   ]
 }

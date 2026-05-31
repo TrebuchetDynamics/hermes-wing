@@ -35,6 +35,14 @@ String? configWireStringFromAliases(Map raw, Iterable<String> aliases) {
   return null;
 }
 
+List<String> configWireStringListFromAliases(Map raw, Iterable<String> aliases) {
+  for (final value in _configWireAliasCandidates(raw, aliases)) {
+    final list = navivoxStringListFromJson(value);
+    if (list.isNotEmpty) return list;
+  }
+  return const [];
+}
+
 Iterable<Object?> _configWireAliasCandidates(
   Map raw,
   Iterable<String> aliases,

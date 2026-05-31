@@ -6,6 +6,7 @@ void main() {
   preservesFractionalIntegerEditTextForValidation();
   readsCamelCaseSchemaRiskAndConfirmationFields();
   readsReloadModeAliasesForDisplayAndRestartInference();
+  readsAllowedValuesAndActionsWireAliases();
   fallsBackAcrossBlankStringSchemaAliases();
 }
 
@@ -97,6 +98,33 @@ void readsReloadModeAliasesForDisplayAndRestartInference() {
   _expect(
     row.restartRequired,
     'camelCase reloadMode containing restart should infer restartRequired',
+  );
+}
+
+void readsAllowedValuesAndActionsWireAliases() {
+  final form = ConfigFormModel.fromSchema(
+    schema: {
+      'fields': [
+        {
+          'path': 'voice.capture_mode',
+          'type': 'string',
+          'allowedValues': ['push-to-talk', 'wake-word'],
+          'supportedActions': ['restart-audio'],
+        },
+      ],
+    },
+    values: {'voice.capture_mode': 'push-to-talk'},
+  );
+
+  final row = form.rows.single;
+
+  _expect(
+    row.allowedValues.join(',') == 'push-to-talk,wake-word',
+    'camelCase allowedValues schema alias should populate allowed values',
+  );
+  _expect(
+    row.actions.join(',') == 'restart-audio',
+    'camelCase supportedActions schema alias should populate actions',
   );
 }
 

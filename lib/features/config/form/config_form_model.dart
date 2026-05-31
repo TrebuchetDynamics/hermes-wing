@@ -1,4 +1,3 @@
-import '../../../core/protocol/navivox_json.dart';
 import '../shared/config_value_display.dart';
 import 'config_edit_value_coercion.dart';
 import 'config_form_field_type.dart';
@@ -46,8 +45,8 @@ class ConfigFormModel {
               _fieldBool(raw, const ['requires_confirmation']) ||
               riskLevel == 'high',
           rawValue: values[field],
-          allowedValues: _stringList(raw['allowed']),
-          actions: _stringList(raw['actions']),
+          allowedValues: _fieldAllowedValues(raw),
+          actions: _fieldActions(raw),
           reloadMode: reloadMode,
         ),
       );
@@ -150,8 +149,20 @@ class ConfigFormModel {
     return reloadMode.toLowerCase().contains('restart');
   }
 
-  static List<String> _stringList(Object? raw) {
-    return navivoxStringListFromJson(raw);
+  static List<String> _fieldAllowedValues(Map raw) {
+    return configWireStringListFromAliases(raw, const [
+      'allowed',
+      'allowed_values',
+      'choices',
+      'options',
+    ]);
+  }
+
+  static List<String> _fieldActions(Map raw) {
+    return configWireStringListFromAliases(raw, const [
+      'actions',
+      'supported_actions',
+    ]);
   }
 
   static List<String> _sectionFieldRefs(Object? rawFields) {

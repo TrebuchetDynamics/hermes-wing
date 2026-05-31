@@ -23,8 +23,16 @@ class NavivoxConfigAdminField {
           '',
       description: configWireString(json['description']) ?? '',
       secret: navivoxGatewayBoolField(json, 'secret'),
-      allowed: navivoxStringListFromJson(json['allowed']),
-      actions: navivoxStringListFromJson(json['actions']),
+      allowed: configWireStringListFromAliases(json, const [
+        'allowed',
+        'allowed_values',
+        'choices',
+        'options',
+      ]),
+      actions: configWireStringListFromAliases(json, const [
+        'actions',
+        'supported_actions',
+      ]),
       reload: configWireString(json['reload']) ?? '',
     );
   }

@@ -1,15 +1,17 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../models/connection_import.dart';
+import 'connect_intents/navivox_connect_intent_channels.dart';
 import 'navivox_connect_intent_source.dart';
+import 'navivox_platform_connect_intent_payload.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const methodChannel = MethodChannel(
-    'com.trebuchetdynamics.navivox/connect_intents',
-  );
+  const methodChannel = MethodChannel(navivoxConnectIntentMethodChannelName);
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -22,11 +24,11 @@ void main() {
       var calls = 0;
       final payload = {
         'payload': 'https://gateway.example/connect?token=nvbx_token',
-        'source': 'shared_text',
+        'source': sharedTextPairingHandoffPlatformSource,
       };
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(methodChannel, (call) async {
-            expect(call.method, 'initialConnectIntent');
+            expect(call.method, initialNavivoxConnectIntentMethod);
             calls += 1;
             return calls == 1 ? payload : null;
           });
@@ -56,11 +58,11 @@ void main() {
       var calls = 0;
       final payload = {
         'payload': 'https://gateway.example/connect?token=nvbx_token',
-        'source': 'direct_app_open',
+        'source': directAppOpenPairingHandoffPlatformSource,
       };
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(methodChannel, (call) async {
-            expect(call.method, 'initialConnectIntent');
+            expect(call.method, initialNavivoxConnectIntentMethod);
             calls += 1;
             return calls == 1 ? payload : null;
           });

@@ -27,7 +27,7 @@ void normalizesPlainStringPayloadAsManualSource() {
 void normalizesStructuredPayloadAndSourceToken() {
   final result = NavivoxPlatformConnectIntentPayload.from({
     'payload': ' https://gateway.example/connect?token=nvbx_token ',
-    'source': ' DIRECT_APP_OPEN ',
+    'source': directAppOpenPairingHandoffPlatformSource.toUpperCase(),
   });
 
   _expect(result != null, 'structured payload should normalize');

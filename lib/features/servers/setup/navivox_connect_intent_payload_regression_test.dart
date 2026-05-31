@@ -1,5 +1,6 @@
 import '../models/connection_import.dart';
 import 'navivox_connect_intent_payload.dart';
+import 'navivox_platform_connect_intent_payload.dart';
 
 void main() {
   parsesPlainStringPayloadAsManualImport();
@@ -30,7 +31,7 @@ void parsesPlainStringPayloadAsManualImport() {
 void preservesMapPayloadSourceProvenance() {
   final result = parseNavivoxConnectIntentPayload({
     'payload': 'https://gateway.example/connect?token=nvbx_token',
-    'source': 'shared_text',
+    'source': sharedTextPairingHandoffPlatformSource,
   });
 
   _expect(result != null, 'map payload should parse');
@@ -43,7 +44,7 @@ void preservesMapPayloadSourceProvenance() {
 void trimsPlatformSourceTokenBeforeMappingProvenance() {
   final result = parseNavivoxConnectIntentPayload({
     'payload': 'https://gateway.example/connect?token=nvbx_token',
-    'source': ' shared_text ',
+    'source': ' $sharedTextPairingHandoffPlatformSource ',
   });
 
   _expect(result != null, 'map payload with padded source should parse');
@@ -56,7 +57,7 @@ void trimsPlatformSourceTokenBeforeMappingProvenance() {
 void mapsPlatformSourceTokenCaseInsensitively() {
   final result = parseNavivoxConnectIntentPayload({
     'payload': 'https://gateway.example/connect?token=nvbx_token',
-    'source': ' SHARED_TEXT ',
+    'source': ' ${sharedTextPairingHandoffPlatformSource.toUpperCase()} ',
   });
 
   _expect(result != null, 'map payload with uppercase source should parse');
@@ -69,7 +70,7 @@ void mapsPlatformSourceTokenCaseInsensitively() {
 void rejectsStructuredMapPayloadValuesInsteadOfParsingObjectStrings() {
   final result = parseNavivoxConnectIntentPayload({
     'payload': {'url': 'https://gateway.example/connect?token=nvbx_token'},
-    'source': 'shared_text',
+    'source': sharedTextPairingHandoffPlatformSource,
   });
 
   _expect(
@@ -93,7 +94,7 @@ void rejectsStructuredSourceValuesInsteadOfParsingObjectStrings() {
 
 class _StringLikePlatformSource {
   @override
-  String toString() => 'shared_text';
+  String toString() => sharedTextPairingHandoffPlatformSource;
 }
 
 void _expect(bool condition, String message) {

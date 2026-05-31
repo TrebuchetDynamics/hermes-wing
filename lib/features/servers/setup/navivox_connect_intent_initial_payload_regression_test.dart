@@ -1,4 +1,5 @@
 import 'navivox_connect_intent_initial_payload.dart';
+import 'navivox_platform_connect_intent_payload.dart';
 
 void main() {
   preservesPayloadObservedDuringAvailabilityProbe();
@@ -10,7 +11,7 @@ void preservesPayloadObservedDuringAvailabilityProbe() {
   final cache = NavivoxInitialConnectIntentPayloadCache();
   final payload = {
     'payload': 'https://gateway.example/connect?token=nvbx_token',
-    'source': 'shared_text',
+    'source': sharedTextPairingHandoffPlatformSource,
   };
 
   cache.remember(payload);
@@ -49,7 +50,7 @@ void keepsFirstUnconsumedProbePayloadAcrossRepeatedAvailabilityChecks() {
   final cache = NavivoxInitialConnectIntentPayloadCache();
   final firstPayload = {
     'payload': 'https://gateway.example/connect?token=nvbx_token',
-    'source': 'direct_app_open',
+    'source': directAppOpenPairingHandoffPlatformSource,
   };
 
   cache.remember(firstPayload);

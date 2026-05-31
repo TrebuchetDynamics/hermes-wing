@@ -26,6 +26,7 @@ void main() {
   parsesSharedTextTokenWithSpacedSeparator();
   parsesSharedTextTokenWrappedInQuotes();
   parsesSharedTextTokenWrappedInBackticks();
+  parsesSharedTextTokenWrappedInAngleBrackets();
   stripsSentenceTrailingPeriodFromSharedTextUrl();
   stripsTrailingPunctuationFromPlainCopiedUrl();
   stripsAngleBracketFromSharedTextUrl();
@@ -448,6 +449,22 @@ void parsesSharedTextTokenWrappedInBackticks() {
   _expect(
     result.token == 'shared_secret',
     'token labels should allow markdown code delimiters around tokens',
+  );
+}
+
+void parsesSharedTextTokenWrappedInAngleBrackets() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Server: https://gateway.example/connect\nToken: <shared_secret>',
+  );
+
+  _expect(result != null, 'angle-bracketed shared text token should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'angle-bracketed token shared text URL origin should provide baseUrl',
+  );
+  _expect(
+    result.token == 'shared_secret',
+    'token labels should allow copied angle delimiters around tokens',
   );
 }
 

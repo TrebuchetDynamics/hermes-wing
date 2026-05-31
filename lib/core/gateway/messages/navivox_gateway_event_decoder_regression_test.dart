@@ -4,6 +4,8 @@ void main() {
   invalidJsonStringBecomesBadResponseEvent();
   nonObjectJsonStringBecomesBadResponseEvent();
   decodedObjectEventStillParses();
+  decodedObjectMissingEventTypeBecomesBadResponseEvent();
+  decodedObjectWithBlankEventTypeBecomesBadResponseEvent();
   decodedMapWithNonStringKeyBecomesBadResponseEvent();
 }
 
@@ -39,6 +41,32 @@ void decodedObjectEventStillParses() {
 
   _expect(event.type == 'message', 'decoded map event type should parse');
   _expect(event.text == 'hello', 'decoded map event text should parse');
+}
+
+void decodedObjectMissingEventTypeBecomesBadResponseEvent() {
+  final event = navivoxGatewayEventFromWire({'text': 'hello'});
+
+  _expect(
+    event.isError,
+    'decoded object without an event type should decode to error event',
+  );
+  _expect(
+    event.code == 'bad_response',
+    'missing event type should be bad_response',
+  );
+}
+
+void decodedObjectWithBlankEventTypeBecomesBadResponseEvent() {
+  final event = navivoxGatewayEventFromWire({'type': ' ', 'text': 'hello'});
+
+  _expect(
+    event.isError,
+    'decoded object with a blank event type should decode to error event',
+  );
+  _expect(
+    event.code == 'bad_response',
+    'blank event type should be bad_response',
+  );
 }
 
 void decodedMapWithNonStringKeyBecomesBadResponseEvent() {

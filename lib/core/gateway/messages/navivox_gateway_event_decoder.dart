@@ -10,8 +10,8 @@ import 'navivox_gateway_event.dart';
 /// typed error event so clients do not duplicate wire-shape checks.
 NavivoxGatewayEvent navivoxGatewayEventFromWire(Object? event) {
   final object = navivoxGatewayObjectFromWireEvent(event);
-  if (object == null) return navivoxInvalidGatewayEvent();
-  return NavivoxGatewayEvent.fromJson(object);
+  if (!_isValidGatewayEventObject(object)) return navivoxInvalidGatewayEvent();
+  return NavivoxGatewayEvent.fromJson(object!);
 }
 
 /// Converts one loose WebSocket payload into a decoded event object.
@@ -22,6 +22,10 @@ NavivoxGatewayEvent navivoxGatewayEventFromWire(Object? event) {
 Map<String, Object?>? navivoxGatewayObjectFromWireEvent(Object? event) {
   final decoded = _navivoxDecodedWireEvent(event);
   return navivoxGatewayOptionalObjectFromJson(decoded);
+}
+
+bool _isValidGatewayEventObject(Map<String, Object?>? object) {
+  return object != null && navivoxGatewayHasText(object['type']);
 }
 
 NavivoxGatewayEvent navivoxInvalidGatewayEvent() {

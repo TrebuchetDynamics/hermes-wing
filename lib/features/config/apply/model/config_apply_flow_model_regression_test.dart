@@ -1,4 +1,4 @@
-import '../form/config_form_model.dart';
+import '../../form/config_form_model.dart';
 import 'config_apply_flow_model.dart';
 
 void main() {

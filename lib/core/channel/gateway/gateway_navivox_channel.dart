@@ -12,6 +12,7 @@ import '../../protocol/navivox_profile_contact_key.dart';
 import '../../protocol/navivox_voice_run.dart';
 import '../../session/session_persistence_service.dart';
 import '../contracts/navivox_channel.dart';
+import '../contracts/navivox_profile_contact_codec.dart';
 
 class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   GatewayNavivoxChannel({Uuid? uuid, DateTime Function()? clock})
@@ -248,7 +249,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   ) async {
     final contactPayloads = await client.profileContacts();
     final profileContacts = contactPayloads
-        .map(_profileContactFromJson)
+        .map(navivoxProfileContactFromJson)
         .toList(growable: false);
     return profileContacts.isEmpty
         ? [_fallbackProfileContact()]
@@ -493,7 +494,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     if (result.isApplied) {
       final contactPayload = result.contact;
       if (contactPayload.isNotEmpty) {
-        final contact = _profileContactFromJson(contactPayload);
+        final contact = navivoxProfileContactFromJson(contactPayload);
         _upsertProfileContact(contact);
         selectProfileContact(
           serverId: contact.serverId,
@@ -583,7 +584,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     try {
       final contactPayloads = await client.profileContacts();
       final profileContacts = contactPayloads
-          .map(_profileContactFromJson)
+          .map(navivoxProfileContactFromJson)
           .toList(growable: false);
       final contacts = profileContacts.isEmpty
           ? [_fallbackProfileContact()]
@@ -921,7 +922,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       case 'profile_contact_update':
         final contact = event.contact;
         if (contact != null) {
-          _upsertProfileContact(_profileContactFromJson(contact));
+          _upsertProfileContact(navivoxProfileContactFromJson(contact));
         }
       case 'error':
         _appendSystemMessage(event.message ?? 'Gateway error');
@@ -1433,98 +1434,5 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       NavivoxProfileHealth.needsAuth => 'Provider auth required',
       NavivoxProfileHealth.warning => 'Profile warning',
     };
-  }
-
-  NavivoxProfileContact _profileContactFromJson(Map<String, Object?> json) {
-    final serverId = navivoxStringFromJson(
-      json['server_id'],
-      fallback: 'navivox-gateway',
-    );
-    final profileId = navivoxStringFromJson(
-      json['profile_id'],
-      fallback: 'default',
-    );
-    final serverLabel = navivoxStringFromJson(
-      json['server_label'],
-      fallback: 'Gormes Gateway',
-    );
-    final micAvailable = navivoxStrictBoolFromJson(json['mic_available']);
-    return NavivoxProfileContact(
-      serverId: serverId,
-      profileId: profileId,
-      displayName: navivoxStringFromJson(
-        json['display_name'],
-        fallback: profileId == 'default' ? 'Default profile' : profileId,
-      ),
-      serverLabel: serverLabel,
-      health: navivoxProfileHealthFromJson(json['health']),
-      latestPreview: navivoxStringFromJson(
-        json['latest_preview'],
-        fallback: 'Profile ready',
-      ),
-      latestPreviewKind: navivoxStringFromJson(
-        json['latest_preview_kind'],
-        fallback: 'status',
-      ),
-      latestAt: navivoxDateTimeFromJson(json['latest_preview_at']),
-      workspaceRootCount: navivoxIntFromJson(json['workspace_root_count']),
-      workspaceRootsOk: navivoxStrictBoolFromJson(
-        json['workspace_roots_ok'],
-        fallback: true,
-      ),
-      workspaceRootsWarning: navivoxIntFromJson(
-        json['workspace_roots_warning'],
-      ),
-      workspaceRootsError: navivoxIntFromJson(json['workspace_roots_error']),
-      attentionBadges: navivoxStringListFromJson(json['attention_badges']),
-      micAvailable: micAvailable,
-      voiceCapability: _voiceCapabilityFromJson(
-        json['voice_capability'],
-        micAvailable: micAvailable,
-      ),
-      activeTurnState: navivoxStringFromJson(
-        json['active_turn_state'],
-        fallback: 'idle',
-      ),
-      avatarSeed: navivoxStringFromJson(
-        json['avatar_seed'],
-        fallback: '$serverId:$profileId',
-      ),
-    );
-  }
-
-  NavivoxVoiceCapability _voiceCapabilityFromJson(
-    Object? value, {
-    required bool micAvailable,
-  }) {
-    if (value is Map) {
-      return NavivoxVoiceCapability(
-        deviceStt: navivoxStringFromJson(
-          value['device_stt'],
-          fallback: micAvailable ? 'available' : 'unavailable',
-        ),
-        serverStt: navivoxStringFromJson(
-          value['server_stt'],
-          fallback: 'unavailable',
-        ),
-        serverTts: navivoxStringFromJson(
-          value['server_tts'],
-          fallback: 'unavailable',
-        ),
-        disabledReason: navivoxStringFromJson(
-          value['disabled_reason'],
-          fallback: micAvailable ? '' : 'mic unavailable',
-        ),
-        recoveryAction: navivoxStringFromJson(
-          value['recovery_action'],
-          fallback: '',
-        ),
-        isReported: true,
-      );
-    }
-    return NavivoxVoiceCapability(
-      deviceStt: micAvailable ? 'available' : 'unavailable',
-      disabledReason: micAvailable ? '' : 'mic unavailable',
-    );
   }
 }

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "target": "features/chat/transcript/presentation/message",
+  "updatedAt": "2026-05-31T09:09:01.296Z",
+  "objective": "Split message presentation models into responsibility subfolders with root compatibility facades and focused shared copy constants for duplicated message presentation labels.",
+  "completedSlices": [
+    "Moved safety/text/tool/voice presentation implementations into matching subfolders and replaced target-root files with export facades.",
+    "Extracted duplicated message copy into message/shared/transcript_message_copy.dart and reused transcriptApprovalRequiredTitle across safety and tool presentations."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart format features/chat/transcript/presentation/message: Formatted 9 files (0 changed).",
+    "dart analyze features/chat/transcript/presentation/message: No issues found.",
+    "folder_refactor_audit: pass, no unclassified root files or next candidates."
+  ]
+}

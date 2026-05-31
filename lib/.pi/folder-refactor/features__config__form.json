@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "target": "features/config/form",
+  "updatedAt": "2026-05-31T09:14:00.096Z",
+  "objective": "Split features/config/form into focused editing, model, presentation, and wire contract subfolders while keeping root compatibility facades. Shared-code objective: extract reusable form row/section value contracts and wire alias helpers used across form/apply code.",
+  "completedSlices": [
+    "Extracted ConfigFormRow, ConfigFormFieldType, and plainConfigFormValue into model/config_form_row.dart and re-exported from config_form_model facade.",
+    "Extracted ConfigFormSection and ConfigSectionSelection into model/config_form_section.dart and re-exported.",
+    "Moved ConfigFieldPresentation implementation to presentation/config_field_presentation.dart with root export wrapper.",
+    "Moved ConfigDraftSession implementation to editing/config_draft_session.dart with root export wrapper.",
+    "Moved ConfigFormModel implementation to model/config_form_model.dart with root export wrapper.",
+    "Extracted wire alias/helper contract into wire/config_form_wire_contract.dart and reused it from form model plus apply validation parsing."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze features/config/form: No issues found (after each structural slice).",
+    "dart analyze features/config: No issues found.",
+    "folder_refactor_audit(features/config/form): pass; root files all classified as compatibility facades."
+  ]
+}

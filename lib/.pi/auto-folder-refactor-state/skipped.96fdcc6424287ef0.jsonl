@@ -16,3 +16,7 @@
 {"ts":"2026-05-31T02:58:03-06:00","candidate":"core/channel/gateway/messages","reason":"no metric progress rollback","scope":"candidate","temporary":false}
 {"ts":"2026-05-31T03:02:28-06:00","candidate":"core/channel/contracts","reason":"no metric progress rollback","scope":"candidate","temporary":false}
 {"ts":"2026-05-31T03:04:59-06:00","candidate":"features/servers/setup","reason":"no metric progress rollback","scope":"candidate","temporary":false}
+{"ts":"2026-05-31T03:07:27-06:00","candidate":"core/session","reason":"no metric progress rollback","scope":"candidate","temporary":false}
+{"ts":"2026-05-31T03:09:16-06:00","candidate":"features/chat/transcript/presentation/message","reason":"no metric progress rollback","scope":"candidate","temporary":false}
+{"ts":"2026-05-31T03:10:43-06:00","candidate":"features/chat/transcript/presentation/shared","reason":"no metric progress rollback","scope":"candidate","temporary":false}
+{"ts":"2026-05-31T03:14:17-06:00","candidate":"features/config/form","reason":"no metric progress rollback","scope":"candidate","temporary":false}

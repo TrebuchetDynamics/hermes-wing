@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "target": "core/session",
+  "updatedAt": "2026-05-31T09:07:11.829Z",
+  "objective": "Refactor core/session into focused subfolders with compatibility facades and extract shared contracts/helpers where duplicated behavior exists.",
+  "completedSlices": [
+    "Split durable credential key contracts from MethodChannel adapter under credentials/ with root compatibility export.",
+    "Moved durable reconnect credential metadata/store into credentials/ with root compatibility export.",
+    "Moved app install identity, session persistence, and reconnect readiness into identity/, persistence/, and readiness/ with root compatibility exports.",
+    "Extracted shared/session_text.dart for repeated trim/non-empty session text normalization across credentials and persistence."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze core/session: No issues found (after each slice).",
+    "dart analyze .: failed due pre-existing unrelated errors outside core/session: missing core/gateway shared contract, missing transcript presentation shared imports, undefined voice readiness symbol."
+  ]
+}

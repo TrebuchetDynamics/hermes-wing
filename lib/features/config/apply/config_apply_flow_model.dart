@@ -1,5 +1,6 @@
 import '../form/config_form_model.dart';
 import '../form/config_wire_fields.dart';
+import '../form/wire/config_form_wire_contract.dart';
 import '../shared/config_value_display.dart';
 
 class ConfigApplyFlowModel {
@@ -141,16 +142,8 @@ class ConfigValidationState {
     if (rawErrors is! List) return;
     for (final raw in rawErrors) {
       if (raw is! Map) continue;
-      final path = configWireStringFromAliases(raw, const [
-        'path',
-        'key',
-        'field',
-        'name',
-      ]);
-      final message = configWireStringFromAliases(raw, const [
-        'message',
-        'error',
-      ]);
+      final path = configFormValidationPathFromWire(raw);
+      final message = configFormValidationMessageFromWire(raw);
       if (path == null || message == null) continue;
       target.putIfAbsent(path, () => []).add(message);
     }

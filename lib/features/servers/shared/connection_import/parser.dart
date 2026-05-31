@@ -17,16 +17,11 @@ class ConnectionImportParser {
 
     final copiedUriPayload = _copiedUriPayload(text);
     if (copiedUriPayload != null) {
-      if (_isCorePairingDescriptorUri(copiedUriPayload.uri)) {
-        final coreImport = _parseCorePairingDescriptor(
-          copiedUriPayload.text,
-          copiedUriPayload.uri,
-        );
-        if (coreImport != null) return coreImport;
+      final copiedUriImport = _importFromCopiedUriPayload(copiedUriPayload);
+      if (copiedUriImport != null ||
+          _isCorePairingDescriptorUri(copiedUriPayload.uri)) {
+        return copiedUriImport;
       }
-
-      final uriImport = _importFromGenericUri(copiedUriPayload.uri);
-      if (uriImport != null) return uriImport;
     }
 
     return _importFromSharedText(text);
@@ -37,11 +32,6 @@ class ConnectionImportParser {
     final uri = Uri.tryParse(copiedUrl);
     if (uri == null || !uri.hasScheme) return null;
     return _CopiedUriPayload(text: copiedUrl, uri: uri);
-  }
-
-  SetupQrImageImport? _parseCorePairingDescriptor(String text, Uri uri) {
-    if (!_isCorePairingDescriptorUri(uri)) return null;
-    return _parseCorePairingDescriptorPayload(text);
   }
 
   SetupQrImageImport? _parseQrJsonPayload(String text) {
@@ -59,6 +49,36 @@ class ConnectionImportParser {
 
 SetupQrImageImport? parseNavivoxConnectionImportPayload(String payload) =>
     const ConnectionImportParser().parsePayload(payload);
+
+SetupQrImageImport? _importFromCopiedUriPayload(_CopiedUriPayload payload) {
+  // A navivox://connect URI is a closed protocol contract: if it is malformed,
+  // do not reinterpret its query params as a generic token-only import.
+  if (_isCorePairingDescriptorUri(payload.uri)) {
+    return _parseCorePairingDescriptorPayload(payload.text) ??
+        (_isLegacyNavivoxConnectCompatibilityUri(payload.uri)
+            ? _importFromGenericUri(payload.uri)
+            : null);
+  }
+  return _importFromGenericUri(payload.uri);
+}
+
+bool _isLegacyNavivoxConnectCompatibilityUri(Uri uri) {
+  final query = navivoxFirstNonBlankQueryParameterValues(
+    uri.queryParametersAll,
+  );
+  if (navivoxFirstStringFieldFromJson(query, _webSocketUrlFieldNames) != null) {
+    return false;
+  }
+  if (navivoxFirstStringFieldFromJson(query, const [
+        'rest_token',
+        'restToken',
+      ]) !=
+      null) {
+    return false;
+  }
+  return navivoxFirstStringFieldFromJson(query, _baseUrlFieldNames) != null ||
+      navivoxFirstStringFieldFromJson(query, const ['token']) != null;
+}
 
 class _CopiedUriPayload {
   const _CopiedUriPayload({required this.text, required this.uri});

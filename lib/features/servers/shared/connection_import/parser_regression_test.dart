@@ -3,6 +3,7 @@ import '../connection_import_parser.dart';
 void main() {
   parsesValidCorePairingDescriptor();
   preservesRepeatedCorePairingQueryValues();
+  preservesLegacyNavivoxConnectCompatibilityPayload();
   parsesGenericTokenUrlOutsideCoreDescriptorProtocol();
   preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin();
   preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts();
@@ -38,6 +39,7 @@ void main() {
   stripsBacktickFromPlainCopiedUrl();
   stripsAngleBracketFromSharedTextUrl();
   stripsBacktickFromSharedTextUrl();
+  preservesBalancedParenthesesInSharedTextUrlPath();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
   parsesValidCorePairingDescriptorEmbeddedInSharedText();
   parsesLaterValidCorePairingDescriptorAfterMalformedSharedTextDescriptor();
@@ -82,6 +84,22 @@ void preservesRepeatedCorePairingQueryValues() {
     'first nonblank repeated websocket_url wins',
   );
   _expect(result.token == 'nvbx_ok', 'first nonblank repeated rest_token wins');
+}
+
+void preservesLegacyNavivoxConnectCompatibilityPayload() {
+  final result = parseNavivoxConnectionImportPayload(
+    'navivox://connect?base_url=http%3A%2F%2F10.0.2.2%3A8765&token=nvbx_uri_token',
+  );
+
+  _expect(
+    result != null,
+    'legacy navivox://connect compatibility payload should parse',
+  );
+  _expect(
+    result!.baseUrl == 'http://10.0.2.2:8765',
+    'legacy base_url should be preserved',
+  );
+  _expect(result.token == 'nvbx_uri_token', 'legacy token should be preserved');
 }
 
 void parsesGenericTokenUrlOutsideCoreDescriptorProtocol() {
@@ -660,6 +678,22 @@ void stripsBacktickFromSharedTextUrl() {
   _expect(
     result.token == 'nvbx_shared',
     'backtick after copied URL should not become part of the token',
+  );
+}
+
+void preservesBalancedParenthesesInSharedTextUrlPath() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Open https://gateway.example/connect(invite)?token=nvbx_shared to finish setup.',
+  );
+
+  _expect(result != null, 'shared URL with balanced parentheses should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'balanced URL parentheses should not make the URL candidate malformed',
+  );
+  _expect(
+    result.token == 'nvbx_shared',
+    'balanced URL parentheses should not truncate the query token',
   );
 }
 

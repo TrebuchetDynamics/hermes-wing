@@ -6,6 +6,7 @@ void main() {
   preservesGenericUrlMetadataWhenBaseUrlComesFromUrlOrigin();
   preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts();
   preservesMetadataFromUrlEmbeddedInSharedText();
+  preservesWebSocketUrlEmbeddedInSharedText();
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
   prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate();
@@ -99,6 +100,24 @@ void preservesMetadataFromUrlEmbeddedInSharedText() {
     result.profileId == 'profile',
     'embedded generic URL profile_id should be preserved',
   );
+}
+
+void preservesWebSocketUrlEmbeddedInSharedText() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Open wss://gateway.example/navivox/ws?token=nvbx_shared to finish setup.',
+  );
+
+  _expect(result != null, 'embedded websocket URL import should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'embedded websocket URL should derive HTTP baseUrl',
+  );
+  _expect(
+    result.webSocketUrl ==
+        'wss://gateway.example/navivox/ws?token=nvbx_shared',
+    'embedded websocket URL should be preserved',
+  );
+  _expect(result.token == 'nvbx_shared', 'embedded websocket token preserved');
 }
 
 void preservesGenericWebSocketUrlImports() {

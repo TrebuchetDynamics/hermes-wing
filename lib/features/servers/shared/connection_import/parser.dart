@@ -208,7 +208,7 @@ SetupQrImageImport? _importFromSharedText(String text) {
 }
 
 SetupQrImageImport? _importFromFirstGenericUrl(String text) {
-  final url = _firstUrl(text);
+  final url = _firstEndpointUrl(text);
   if (url == null) return null;
 
   final uri = Uri.tryParse(url);
@@ -359,11 +359,16 @@ const _baseUrlFieldNames = ['base_url', 'baseUrl', 'gateway_url', 'url'];
 const _serverIdFieldNames = ['server_id', 'serverId'];
 const _profileIdFieldNames = ['profile_id', 'profileId'];
 
-String? _firstUrl(String text) {
-  final value = RegExp(r'https?://\S+').firstMatch(text)?.group(0);
+String? _firstEndpointUrl(String text) {
+  final value = _endpointUrlPattern.firstMatch(text)?.group(0);
   if (value == null) return null;
   return _trimCopiedUrlTrailingPunctuation(value);
 }
+
+// Shared-text imports accept the same generic endpoint schemes as direct URL
+// imports. Keeping the regex explicit prevents HTTP-only drift from silently
+// dropping websocket endpoints embedded in prose.
+final _endpointUrlPattern = RegExp(r'(?:https?|wss?)://\S+');
 
 String _trimCopiedUrlTrailingPunctuation(String url) {
   var end = url.length;

@@ -1,23 +1,6 @@
-enum NavivoxVoiceRunStatus {
-  idle,
-  recording,
-  transcribing,
-  pendingSend,
-  submitted,
-  serverProcessing,
-  serverSttComplete,
-  agentTurnRunning,
-  ttsQueued,
-  ttsReady,
-  playing,
-  completed,
-  cancelled,
-  failed,
-}
+export 'navivox_voice_status.dart';
 
-enum NavivoxTranscriptSource { device, manual, server }
-
-enum NavivoxTtsStatus { unavailable, queued, ready, playing, stopped, failed }
+import 'navivox_voice_status.dart';
 
 class NavivoxVoiceRun {
   const NavivoxVoiceRun({
@@ -72,12 +55,7 @@ class NavivoxVoiceRun {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  bool get isTerminal => switch (status) {
-    NavivoxVoiceRunStatus.completed ||
-    NavivoxVoiceRunStatus.cancelled ||
-    NavivoxVoiceRunStatus.failed => true,
-    _ => false,
-  };
+  bool get isTerminal => navivoxVoiceRunStatusIsTerminal(status);
 
   NavivoxVoiceRun withDeviceTranscript({
     required String transcript,

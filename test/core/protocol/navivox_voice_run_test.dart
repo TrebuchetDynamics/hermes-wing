@@ -60,6 +60,10 @@ void main() {
       expect(base.markCompleted().isTerminal, isTrue);
       expect(base.markCancelled('cancelled before send').isTerminal, isTrue);
       expect(base.markFailed('microphone denied').isTerminal, isTrue);
+      expect(
+        navivoxVoiceRunStatusIsTerminal(NavivoxVoiceRunStatus.failed),
+        isTrue,
+      );
     },
   );
 }

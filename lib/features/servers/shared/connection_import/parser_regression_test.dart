@@ -40,6 +40,8 @@ void main() {
   stripsAngleBracketFromSharedTextUrl();
   stripsBacktickFromSharedTextUrl();
   preservesBalancedParenthesesInSharedTextUrlPath();
+  preservesBalancedParenthesesAtCopiedWebSocketUrlEnd();
+  trimsOnlyUnmatchedTrailingParenthesisFromCopiedWebSocketUrl();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
   parsesValidCorePairingDescriptorEmbeddedInSharedText();
   parsesLaterValidCorePairingDescriptorAfterMalformedSharedTextDescriptor();
@@ -694,6 +696,36 @@ void preservesBalancedParenthesesInSharedTextUrlPath() {
   _expect(
     result.token == 'nvbx_shared',
     'balanced URL parentheses should not truncate the query token',
+  );
+}
+
+void preservesBalancedParenthesesAtCopiedWebSocketUrlEnd() {
+  final result = parseNavivoxConnectionImportPayload(
+    'wss://gateway.example/navivox/ws(invite)',
+  );
+
+  _expect(
+    result != null,
+    'copied websocket URLs ending in balanced parentheses should parse',
+  );
+  _expect(
+    result!.webSocketUrl == 'wss://gateway.example/navivox/ws(invite)',
+    'balanced URL path parentheses at the end are part of the copied endpoint, not wrapper punctuation',
+  );
+}
+
+void trimsOnlyUnmatchedTrailingParenthesisFromCopiedWebSocketUrl() {
+  final result = parseNavivoxConnectionImportPayload(
+    'wss://gateway.example/navivox/ws(invite))',
+  );
+
+  _expect(
+    result != null,
+    'copied websocket URLs with one extra wrapper parenthesis should parse',
+  );
+  _expect(
+    result!.webSocketUrl == 'wss://gateway.example/navivox/ws(invite)',
+    'only the unmatched trailing wrapper parenthesis should be trimmed',
   );
 }
 

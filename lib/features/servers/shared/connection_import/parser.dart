@@ -700,10 +700,56 @@ int _copiedEndpointUrlStart(String url) {
 
 int _copiedEndpointUrlEnd(String url, {required int start}) {
   var end = url.length;
-  while (end > start && _copiedUrlTrailingPunctuation.contains(url[end - 1])) {
+  while (end > start &&
+      _shouldTrimCopiedEndpointTrailingChar(url, start, end)) {
     end--;
   }
   return end;
+}
+
+bool _shouldTrimCopiedEndpointTrailingChar(String url, int start, int end) {
+  final char = url[end - 1];
+  if (!_copiedUrlTrailingPunctuation.contains(char)) return false;
+  return switch (char) {
+    ')' => _hasUnmatchedClosingDelimiterAtEnd(
+      url,
+      start: start,
+      end: end,
+      open: '(',
+      close: ')',
+    ),
+    ']' => _hasUnmatchedClosingDelimiterAtEnd(
+      url,
+      start: start,
+      end: end,
+      open: '[',
+      close: ']',
+    ),
+    '}' => _hasUnmatchedClosingDelimiterAtEnd(
+      url,
+      start: start,
+      end: end,
+      open: '{',
+      close: '}',
+    ),
+    _ => true,
+  };
+}
+
+bool _hasUnmatchedClosingDelimiterAtEnd(
+  String text, {
+  required int start,
+  required int end,
+  required String open,
+  required String close,
+}) {
+  var balance = 0;
+  for (var index = start; index < end; index++) {
+    final char = text[index];
+    if (char == open) balance++;
+    if (char == close) balance--;
+  }
+  return balance < 0;
 }
 
 // Plain-text shares often wrap or end a copied URL with sentence/list

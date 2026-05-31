@@ -1,19 +1,20 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T11:45:36.612Z",
-  "objective": "AUTO_FOLDER_REFACTOR_BUGFIND visibility refactor under features/servers/setup: make platform connect-intent source coercion explicit and add regression coverage for structured source payloads.",
+  "updatedAt": "2026-05-31T11:49:55.367Z",
+  "objective": "AUTO_FOLDER_REFACTOR_BUGFIND visibility refactor under features/servers/shared/connection_import: expose shared-text endpoint/source/token windows and fix token provenance leakage across later URL windows.",
   "completedSlices": [
-    "Added focused regression for structured platform source values with deceptive toString() in features/servers/setup/navivox_connect_intent_payload_regression_test.dart.",
-    "Extracted _platformSourceTokenFromPayload in features/servers/setup/navivox_connect_intent_payload.dart so source provenance accepts only string tokens before trimming/mapping."
+    "Added focused regression doesNotBorrowTokenFromLaterSharedTextUrlWindow in features/servers/shared/connection_import/parser_regression_test.dart (failed before fix).",
+    "Extracted _sharedTextEndpointCandidate and explicit _TextWindow/sourceWindow/tokenWindow contracts in features/servers/shared/connection_import/parser.dart.",
+    "Fixed _sharedTextImportToken fallback to search only before the selected endpoint, preserving token-before-URL compatibility while preventing tokens after later URLs from being borrowed."
   ],
   "nextCandidates": [
-    "features/servers/shared/connection_import/parser.dart candidate ranking/token-window data flow: expose endpoint candidate windows as a value type and characterize malformed/ambiguous shared text provenance."
+    "features/servers/shared/connection_import/parser.dart JSON entries/default inheritance: expose candidate default provenance and characterize mixed metadata/default entries with blank alias overrides."
   ],
   "validationReceipts": [
-    "FAIL (expected red): dart /home/xel/git/gormes/navivox-app/lib/features/servers/setup/navivox_connect_intent_payload_regression_test.dart -> platform source field must be a string, not Object.toString() text",
-    "PASS: dart /home/xel/git/gormes/navivox-app/lib/features/servers/setup/navivox_connect_intent_payload_regression_test.dart",
-    "PASS: dart /home/xel/git/gormes/navivox-app/lib/features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart",
-    "PASS: dart /home/xel/git/gormes/navivox-app/lib/features/servers/shared/connection_import/parser_regression_test.dart"
+    "FAIL (expected red): dart features/servers/shared/connection_import/parser_regression_test.dart -> a token after a different later URL must not be borrowed by the selected endpoint",
+    "PASS: dart features/servers/shared/connection_import/parser_regression_test.dart",
+    "PASS: dart features/servers/shared/connection_gateway/presentation_regression_test.dart",
+    "PASS: dart features/servers/setup/navivox_connect_intent_payload_regression_test.dart && dart features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart"
   ]
 }

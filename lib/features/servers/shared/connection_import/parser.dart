@@ -297,13 +297,15 @@ String? _sharedTextImportToken({
   // Keep token provenance aligned with the selected URL candidate. Tokens after
   // the selected URL are more likely to describe that endpoint than stale prose
   // tokens copied earlier in the share text. Preserve older token-before-URL
-  // imports by falling back to the first token in the whole text.
+  // imports without borrowing tokens from later URL windows.
+  if (embeddedUrlCandidate == null) return _firstToken(text);
+
   return _firstToken(
         text,
-        start: embeddedUrlCandidate?.tokenSearchStart ?? 0,
-        end: embeddedUrlCandidate?.tokenSearchEnd,
+        start: embeddedUrlCandidate.tokenSearchStart,
+        end: embeddedUrlCandidate.tokenSearchEnd,
       ) ??
-      _firstToken(text);
+      _firstToken(text, end: embeddedUrlCandidate.leadingTokenSearchEnd);
 }
 
 _SharedTextEndpointCandidate? _bestGenericUrlCandidateFromSharedText(
@@ -311,29 +313,39 @@ _SharedTextEndpointCandidate? _bestGenericUrlCandidateFromSharedText(
 ) {
   _SharedTextEndpointCandidate? bestCandidate;
   for (final endpoint in _endpointUrls(text)) {
-    final uri = Uri.tryParse(endpoint.url);
-    final candidate = uri != null && uri.hasScheme
-        ? _connectionImportCandidateFromGenericUri(uri)
-        : _connectionImportCandidateFromFields({'base_url': endpoint.url});
+    final candidate = _sharedTextEndpointCandidate(text, endpoint);
     if (candidate == null) continue;
-    final sharedTextCandidate = _SharedTextEndpointCandidate(
-      candidate: candidate,
-      tokenSearchStart: endpoint.tokenSearchStart,
-      tokenSearchEnd: endpoint.tokenSearchEnd,
-      hasFollowingToken:
-          _firstToken(
-            text,
-            start: endpoint.tokenSearchStart,
-            end: endpoint.tokenSearchEnd,
-          ) !=
-          null,
-      hasConnectionPath: uri != null && _hasConnectionPath(uri),
-    );
-    bestCandidate = sharedTextCandidate.isRicherThan(bestCandidate)
-        ? sharedTextCandidate
+    bestCandidate = candidate.isRicherThan(bestCandidate)
+        ? candidate
         : bestCandidate;
   }
   return bestCandidate;
+}
+
+_SharedTextEndpointCandidate? _sharedTextEndpointCandidate(
+  String text,
+  _SharedTextEndpoint endpoint,
+) {
+  final uri = Uri.tryParse(endpoint.url);
+  final candidate = uri != null && uri.hasScheme
+      ? _connectionImportCandidateFromGenericUri(uri)
+      : _connectionImportCandidateFromFields({'base_url': endpoint.url});
+  if (candidate == null) return null;
+
+  return _SharedTextEndpointCandidate(
+    candidate: candidate,
+    tokenSearchStart: endpoint.tokenWindow.start,
+    tokenSearchEnd: endpoint.tokenWindow.end,
+    leadingTokenSearchEnd: endpoint.sourceWindow.start,
+    hasFollowingToken:
+        _firstToken(
+          text,
+          start: endpoint.tokenWindow.start,
+          end: endpoint.tokenWindow.end,
+        ) !=
+        null,
+    hasConnectionPath: uri != null && _hasConnectionPath(uri),
+  );
 }
 
 Iterable<_SharedTextEndpoint> _endpointUrls(String text) sync* {
@@ -347,8 +359,8 @@ Iterable<_SharedTextEndpoint> _endpointUrls(String text) sync* {
         : text.length;
     yield _SharedTextEndpoint(
       url: _trimCopiedEndpointUrl(url),
-      tokenSearchStart: match.end,
-      tokenSearchEnd: nextEndpointStart,
+      sourceWindow: _TextWindow(start: match.start, end: match.end),
+      tokenWindow: _TextWindow(start: match.end, end: nextEndpointStart),
     );
   }
 }
@@ -356,13 +368,22 @@ Iterable<_SharedTextEndpoint> _endpointUrls(String text) sync* {
 class _SharedTextEndpoint {
   const _SharedTextEndpoint({
     required this.url,
-    required this.tokenSearchStart,
-    required this.tokenSearchEnd,
+    required this.sourceWindow,
+    required this.tokenWindow,
   });
 
   final String url;
-  final int tokenSearchStart;
-  final int tokenSearchEnd;
+  final _TextWindow sourceWindow;
+  final _TextWindow tokenWindow;
+}
+
+class _TextWindow {
+  const _TextWindow({required this.start, required this.end})
+    : assert(start >= 0),
+      assert(end >= start);
+
+  final int start;
+  final int end;
 }
 
 class _SharedTextEndpointCandidate {
@@ -370,6 +391,7 @@ class _SharedTextEndpointCandidate {
     required this.candidate,
     required this.tokenSearchStart,
     required this.tokenSearchEnd,
+    required this.leadingTokenSearchEnd,
     required this.hasFollowingToken,
     required this.hasConnectionPath,
   });
@@ -377,6 +399,7 @@ class _SharedTextEndpointCandidate {
   final _ConnectionImportCandidate candidate;
   final int tokenSearchStart;
   final int tokenSearchEnd;
+  final int leadingTokenSearchEnd;
   final bool hasFollowingToken;
   final bool hasConnectionPath;
 

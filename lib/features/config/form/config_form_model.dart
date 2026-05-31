@@ -247,18 +247,8 @@ class ConfigFormRow {
     return value == null ? '' : '$value';
   }
 
-  Object? coerceEditValue(String raw) {
-    final text = raw.trim();
-    if (isSecret) return text;
-    return switch (type) {
-      ConfigFormFieldType.number => num.tryParse(text) ?? raw,
-      ConfigFormFieldType.integer =>
-        int.tryParse(text) ?? num.tryParse(text) ?? raw,
-      ConfigFormFieldType.boolean => text.toLowerCase() == 'true',
-      ConfigFormFieldType.string => raw,
-      ConfigFormFieldType.secret => text,
-    };
-  }
+  Object? coerceEditValue(String raw) =>
+      _coerceConfigEditValue(raw: raw, type: type, isSecret: isSecret);
 
   static Object? _plainValue(Object? rawValue) {
     if (rawValue is Map && rawValue.containsKey('value')) {
@@ -266,4 +256,29 @@ class ConfigFormRow {
     }
     return rawValue;
   }
+}
+
+Object? _coerceConfigEditValue({
+  required String raw,
+  required ConfigFormFieldType type,
+  required bool isSecret,
+}) {
+  final text = raw.trim();
+  if (isSecret) return text;
+  return switch (type) {
+    ConfigFormFieldType.number => num.tryParse(text) ?? raw,
+    ConfigFormFieldType.integer =>
+      int.tryParse(text) ?? num.tryParse(text) ?? raw,
+    ConfigFormFieldType.boolean => _coerceBooleanEditValue(text) ?? raw,
+    ConfigFormFieldType.string => raw,
+    ConfigFormFieldType.secret => text,
+  };
+}
+
+bool? _coerceBooleanEditValue(String text) {
+  return switch (text.toLowerCase()) {
+    'true' => true,
+    'false' => false,
+    _ => null,
+  };
 }

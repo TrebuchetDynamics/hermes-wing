@@ -11,12 +11,12 @@ import '../messages/navivox_gateway_event_decoder.dart';
 import '../observations/navivox_gateway_observations.dart';
 import '../shared/navivox_gateway_http.dart';
 import '../shared/navivox_gateway_json.dart';
-import '../transport/navivox_gateway_socket_contract.dart';
-import '../transport/navivox_gateway_transport_contracts.dart';
+import '../transport/contracts/navivox_gateway_socket_contract.dart';
+import '../transport/contracts/navivox_gateway_transport_contracts.dart';
 import '../voice/navivox_gateway_voice.dart';
-import '../transport/navivox_gateway_transport_stub.dart'
-    if (dart.library.io) '../transport/navivox_gateway_transport_io.dart'
-    if (dart.library.html) '../transport/navivox_gateway_transport_web.dart'
+import '../transport/platform/navivox_gateway_transport_stub.dart'
+    if (dart.library.io) '../transport/platform/navivox_gateway_transport_io.dart'
+    if (dart.library.html) '../transport/platform/navivox_gateway_transport_web.dart'
     as transport;
 
 /// Compatibility socket type exposed by the gateway client.

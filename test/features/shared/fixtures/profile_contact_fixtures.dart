@@ -56,6 +56,7 @@ NavivoxProfileContact mineruBuilderProfile({
   int workspaceRootsWarning = 0,
   int workspaceRootsError = 0,
   bool micAvailable = true,
+  NavivoxVoiceCapability voiceCapability = const NavivoxVoiceCapability(),
   String activeTurnState = 'idle',
 }) {
   return NavivoxProfileContact(
@@ -71,6 +72,7 @@ NavivoxProfileContact mineruBuilderProfile({
     workspaceRootsWarning: workspaceRootsWarning,
     workspaceRootsError: workspaceRootsError,
     micAvailable: micAvailable,
+    voiceCapability: voiceCapability,
     activeTurnState: activeTurnState,
   );
 }

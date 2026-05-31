@@ -465,16 +465,11 @@ void main() {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')
       ..seedProfileContacts([
-        const NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
+        mineruBuilderProfile(
           displayName: 'Mineru',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
           latestPreview: 'Ready',
           workspaceRootCount: 1,
-          micAvailable: true,
-          voiceCapability: NavivoxVoiceCapability(
+          voiceCapability: const NavivoxVoiceCapability(
             deviceStt: 'unavailable',
             disabledReason: 'device STT unavailable',
           ),
@@ -512,16 +507,11 @@ void main() {
       final channel = TestNavivoxChannel()
         ..seedServers(_servers, activeServerId: 'local')
         ..seedProfileContacts([
-          const NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
+          mineruBuilderProfile(
             displayName: 'Mineru',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
             latestPreview: 'Ready',
             workspaceRootCount: 1,
-            micAvailable: true,
-            voiceCapability: NavivoxVoiceCapability(
+            voiceCapability: const NavivoxVoiceCapability(
               deviceStt: 'unavailable',
               disabledReason: 'device STT unavailable',
             ),
@@ -584,16 +574,11 @@ void main() {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')
       ..seedProfileContacts([
-        const NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
+        mineruBuilderProfile(
           displayName: 'Mineru',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
           latestPreview: 'Ready',
           workspaceRootCount: 1,
-          micAvailable: true,
-          voiceCapability: NavivoxVoiceCapability(
+          voiceCapability: const NavivoxVoiceCapability(
             deviceStt: 'unavailable',
             disabledReason: ' Device STT unavailable ',
             recoveryAction: 'Enable device speech recognition',
@@ -631,16 +616,11 @@ void main() {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')
       ..seedProfileContacts([
-        const NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
+        mineruBuilderProfile(
           displayName: 'Mineru',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
           latestPreview: 'Ready',
           workspaceRootCount: 1,
-          micAvailable: true,
-          voiceCapability: NavivoxVoiceCapability(
+          voiceCapability: const NavivoxVoiceCapability(
             deviceStt: 'available',
             disabledReason: ' Device STT unavailable ',
             recoveryAction: 'Enable device speech recognition',
@@ -679,16 +659,11 @@ void main() {
       final channel = TestNavivoxChannel()
         ..seedServers(_servers, activeServerId: 'local')
         ..seedProfileContacts([
-          const NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
+          mineruBuilderProfile(
             displayName: 'Mineru',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
             latestPreview: 'Ready',
             workspaceRootCount: 1,
-            micAvailable: true,
-            voiceCapability: NavivoxVoiceCapability(
+            voiceCapability: const NavivoxVoiceCapability(
               deviceStt: 'unavailable',
               recoveryAction: 'Enable device speech recognition',
             ),
@@ -733,16 +708,11 @@ void main() {
       final channel = TestNavivoxChannel()
         ..seedServers(_servers, activeServerId: 'local')
         ..seedProfileContacts([
-          const NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
+          mineruBuilderProfile(
             displayName: 'Mineru',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
             latestPreview: 'Ready',
             workspaceRootCount: 1,
-            micAvailable: true,
-            voiceCapability: NavivoxVoiceCapability(
+            voiceCapability: const NavivoxVoiceCapability(
               deviceStt: 'unavailable',
               isReported: true,
             ),
@@ -777,16 +747,11 @@ void main() {
       final channel = TestNavivoxChannel()
         ..seedServers(_servers, activeServerId: 'local')
         ..seedProfileContacts([
-          const NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
+          mineruBuilderProfile(
             displayName: 'Mineru',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
             latestPreview: 'Ready',
             workspaceRootCount: 1,
-            micAvailable: true,
-            voiceCapability: NavivoxVoiceCapability(
+            voiceCapability: const NavivoxVoiceCapability(
               deviceStt: 'unavailable',
               recoveryAction: 'Enable device speech recognition',
             ),
@@ -833,16 +798,11 @@ void main() {
       final channel = TestNavivoxChannel()
         ..seedServers(_servers, activeServerId: 'local')
         ..seedProfileContacts([
-          const NavivoxProfileContact(
-            serverId: 'local',
-            profileId: 'mineru',
+          mineruBuilderProfile(
             displayName: 'Mineru',
-            serverLabel: 'local',
-            health: NavivoxProfileHealth.online,
             latestPreview: 'Ready',
             workspaceRootCount: 1,
-            micAvailable: true,
-            voiceCapability: NavivoxVoiceCapability(
+            voiceCapability: const NavivoxVoiceCapability(
               deviceStt: 'unavailable',
               recoveryAction: 'Enable device speech recognition',
             ),
@@ -876,16 +836,11 @@ void main() {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')
       ..seedProfileContacts([
-        const NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
+        mineruBuilderProfile(
           displayName: 'Mineru',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
           latestPreview: 'Ready',
           workspaceRootCount: 1,
-          micAvailable: true,
-          voiceCapability: NavivoxVoiceCapability(
+          voiceCapability: const NavivoxVoiceCapability(
             deviceStt: 'unavailable',
             disabledReason: 'device STT unavailable',
             recoveryAction: 'Enable device speech recognition',
@@ -994,16 +949,11 @@ void main() {
     final channel = TestNavivoxChannel()
       ..seedServers(_servers, activeServerId: 'local')
       ..seedProfileContacts([
-        const NavivoxProfileContact(
-          serverId: 'local',
-          profileId: 'mineru',
+        mineruBuilderProfile(
           displayName: 'Mineru',
-          serverLabel: 'local',
-          health: NavivoxProfileHealth.online,
           latestPreview: 'Ready',
           workspaceRootCount: 1,
-          micAvailable: true,
-          voiceCapability: NavivoxVoiceCapability(
+          voiceCapability: const NavivoxVoiceCapability(
             deviceStt: 'unavailable',
             recoveryAction: 'Enable device speech recognition',
           ),

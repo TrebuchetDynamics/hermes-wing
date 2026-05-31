@@ -3,15 +3,13 @@ import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/chat/voice/presentation/voice_readiness_presentation.dart';
 import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
 
+import '../../../shared/fixtures/profile_contact_fixtures.dart';
+
 void main() {
-  const profile = NavivoxProfileContact(
-    serverId: 'local',
-    profileId: 'mineru',
+  final profile = mineruBuilderProfile(
     displayName: 'Mineru',
-    serverLabel: 'local',
-    health: NavivoxProfileHealth.online,
     latestPreview: 'Ready',
-    micAvailable: true,
+    workspaceRootCount: 0,
   );
   const trusted = NavivoxVoiceSettings(trustedServerIds: {'local'});
 
@@ -92,15 +90,11 @@ void main() {
     );
     final gatewayProfile = VoiceReadinessPresentation.fromState(
       settings: trusted,
-      activeProfile: const NavivoxProfileContact(
-        serverId: 'local',
-        profileId: 'mineru',
+      activeProfile: mineruBuilderProfile(
         displayName: 'Mineru',
-        serverLabel: 'local',
-        health: NavivoxProfileHealth.online,
         latestPreview: 'Ready',
-        micAvailable: true,
-        voiceCapability: NavivoxVoiceCapability(
+        workspaceRootCount: 0,
+        voiceCapability: const NavivoxVoiceCapability(
           disabledReason: 'device STT unavailable',
           recoveryAction: 'Enable profile STT',
         ),

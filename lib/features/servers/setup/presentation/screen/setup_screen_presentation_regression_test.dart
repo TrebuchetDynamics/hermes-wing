@@ -1,4 +1,4 @@
-import '../test_support/regression_expect.dart';
+import '../../test_support/regression_expect.dart';
 import 'setup_screen_presentation.dart';
 
 void main() {

@@ -20,6 +20,19 @@ String profileContactServerLabel(
   return fallback;
 }
 
+String profileContactIdentityLabel(
+  NavivoxProfileContact contact, {
+  required String fallback,
+}) {
+  final displayName = contact.displayName.trim();
+  if (displayName.isNotEmpty) return displayName;
+  final profileId = contact.profileId.trim();
+  if (profileId.isNotEmpty) return profileId;
+  final serverId = contact.serverId.trim();
+  if (serverId.isNotEmpty) return serverId;
+  return fallback;
+}
+
 List<String> profileContactProjectStatusSegments(
   NavivoxProfileContact profile,
 ) {

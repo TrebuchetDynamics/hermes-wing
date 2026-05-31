@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../core/channel/navivox_channel.dart';
+import '../../shared/presentation/profile_contact_labels.dart';
 import '../../shared/presentation/profile_health_labels.dart';
 
 export '../../shared/presentation/profile_contact_scope_presentation.dart';
@@ -207,15 +208,8 @@ class ProfileContactPresentation {
     return lines;
   }
 
-  String get _avatarLabel {
-    final displayName = contact.displayName.trim();
-    if (displayName.isNotEmpty) return displayName;
-    final profileId = contact.profileId.trim();
-    if (profileId.isNotEmpty) return profileId;
-    final serverId = contact.serverId.trim();
-    if (serverId.isNotEmpty) return serverId;
-    return 'profile';
-  }
+  String get _avatarLabel =>
+      profileContactIdentityLabel(contact, fallback: 'profile');
 
   List<String> get searchTerms => [
     contact.displayName,

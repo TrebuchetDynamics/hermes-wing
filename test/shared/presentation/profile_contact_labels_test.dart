@@ -37,6 +37,58 @@ void main() {
     expect(profileContactServerLabel(null, fallback: 'default'), 'default');
   });
 
+  test(
+    'uses display, profile, server, then caller fallback for identity labels',
+    () {
+      expect(
+        profileContactIdentityLabel(profile, fallback: 'profile'),
+        'Mineru Builder',
+      );
+      expect(
+        profileContactIdentityLabel(
+          const NavivoxProfileContact(
+            serverId: 'srv1',
+            profileId: 'mineru',
+            displayName: ' ',
+            serverLabel: 'Local',
+            health: NavivoxProfileHealth.online,
+            latestPreview: 'Ready',
+          ),
+          fallback: 'profile',
+        ),
+        'mineru',
+      );
+      expect(
+        profileContactIdentityLabel(
+          const NavivoxProfileContact(
+            serverId: 'srv1',
+            profileId: ' ',
+            displayName: ' ',
+            serverLabel: 'Local',
+            health: NavivoxProfileHealth.online,
+            latestPreview: 'Ready',
+          ),
+          fallback: 'profile',
+        ),
+        'srv1',
+      );
+      expect(
+        profileContactIdentityLabel(
+          const NavivoxProfileContact(
+            serverId: ' ',
+            profileId: ' ',
+            displayName: ' ',
+            serverLabel: 'Local',
+            health: NavivoxProfileHealth.online,
+            latestPreview: 'Ready',
+          ),
+          fallback: 'profile',
+        ),
+        'profile',
+      );
+    },
+  );
+
   test('formats project status segments and full status bar labels', () {
     expect(profileContactProjectStatusSegments(profile), [
       '4 projects',

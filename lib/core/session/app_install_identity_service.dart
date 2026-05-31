@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../protocol/navivox_json.dart';
+
 class AppInstallIdentityService {
   AppInstallIdentityService({Random? random})
     : _random = random ?? Random.secure();
@@ -14,7 +16,7 @@ class AppInstallIdentityService {
   Future<String> getOrCreate() async {
     final preferences = await _prefs();
     final existing = preferences.getString(identityKey);
-    final normalized = _normalize(existing);
+    final normalized = navivoxOptionalStringFromJson(existing);
     if (normalized != null) return normalized;
 
     final created = _newIdentity();
@@ -37,11 +39,5 @@ class AppInstallIdentityService {
         .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
         .join();
     return 'navi-install-$hex';
-  }
-
-  static String? _normalize(String? value) {
-    final trimmed = value?.trim();
-    if (trimmed == null || trimmed.isEmpty) return null;
-    return trimmed;
   }
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": "lib",
-  "updatedAt": "2026-05-31T00:28:36.218Z",
+  "updatedAt": "2026-05-31T00:30:50.252Z",
   "objective": "Small compile-preserving lib refactor focused on shared-code reuse/contracts: keep existing root topology (app/core/features/router/shared/testing/theme plus root entrypoints), and replace duplicated presentation/json policy with existing shared/core contracts instead of broad package moves.",
   "completedSlices": [
     "Reused navivoxOptionalLiteralStringFromJson in PublicJsonWebKey parsing to preserve literal-string JWK semantics without local duplicate trim/null logic.",
@@ -9,12 +9,17 @@
     "Reused navivoxOptionalStringFromJson in ReconnectReadiness blocked recovery messages.",
     "Reused compactProfileHealthLabel in servers overview presentation, removing cross-feature dependency on ProfileContactPresentation for compact health policy.",
     "Reused navivoxOptionalStringFromJson for pairing handoff target IDs and setup QR failure detail normalization; removed local _nonEmpty duplicate and covered trimmed target matching.",
-    "Removed setup QR import _asNonEmptyString wrapper and called navivoxOptionalLiteralStringFromJson directly at endpoint normalization seams."
+    "Removed setup QR import _asNonEmptyString wrapper and called navivoxOptionalLiteralStringFromJson directly at endpoint normalization seams.",
+    "Added shared profileContactIdentityLabel and reused it for profile avatar identity fallback; covered display/profile/server/fallback ordering.",
+    "Reused navivoxOptionalStringFromJson for app install identity normalization.",
+    "Reused navivoxOptionalStringFromJson for gateway connection token/websocket request normalization."
   ],
   "nextCandidates": [],
   "validationReceipts": [
     "flutter test test/core/session/durable_credential_key_store_test.dart test/core/session/session_persistence_service_test.dart test/core/session/reconnect_readiness_test.dart — passed (14 tests).",
     "flutter test test/features/servers/overview/servers_screen_presentation_test.dart test/shared/presentation/profile_health_labels_test.dart — passed (4 tests).",
-    "flutter test test/features/servers/setup/setup_qr_import_presentation_test.dart test/features/servers/setup/setup_screen_presentation_test.dart test/features/servers/pairing/pairing_handoff_landing_test.dart — passed (12 tests)."
+    "flutter test test/features/servers/setup/setup_qr_import_presentation_test.dart test/features/servers/setup/setup_screen_presentation_test.dart test/features/servers/pairing/pairing_handoff_landing_test.dart — passed (12 tests).",
+    "flutter test test/shared/presentation/profile_contact_labels_test.dart test/features/profile_contacts/profile_contact_presentation_test.dart test/core/session/app_install_identity_service_test.dart test/features/servers/registration/gateway_connection_presentation_test.dart test/core/protocol/navivox_json_test.dart — passed (19 tests).",
+    "folder_refactor_audit lib — passed; root files classified as app.dart facade, main.dart/main_e2e.dart out-of-scope entrypoints."
   ]
 }

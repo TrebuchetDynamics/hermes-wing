@@ -1,4 +1,5 @@
 import '../../../core/protocol/navivox_endpoint_uri.dart';
+import '../../../core/protocol/navivox_json.dart';
 import '../models/connection_gateway.dart';
 
 class GatewayConnectionPresentation {
@@ -89,14 +90,10 @@ class GatewayConnectionPresentation {
     required String token,
     String? webSocketUrl,
   }) {
-    final trimmedToken = token.trim();
-    final trimmedWebSocketUrl = webSocketUrl?.trim();
     return GatewayConnectionRequest(
       baseUrl: baseUrl.trim(),
-      token: trimmedToken.isEmpty ? null : trimmedToken,
-      webSocketUrl: trimmedWebSocketUrl == null || trimmedWebSocketUrl.isEmpty
-          ? null
-          : trimmedWebSocketUrl,
+      token: navivoxOptionalStringFromJson(token),
+      webSocketUrl: navivoxOptionalStringFromJson(webSocketUrl),
     );
   }
 

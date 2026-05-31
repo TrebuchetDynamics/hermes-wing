@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T09:56:58.626Z",
+  "updatedAt": "2026-05-31T10:02:35.927Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND: visibility refactors under lib to expose hidden import/provenance/endpoint assumptions without changing public behavior except proven regressions.",
   "completedSlices": [
     "Added replayable regression in features/servers/shared/connection_import/parser_regression_test.dart for generic URL metadata with origin fallback.",
@@ -21,32 +21,19 @@
     "Fixed active-gateway confirmation summaries to bracket bare IPv6 hosts before appending a port.",
     "Added features/servers/setup/navivox_connect_intent_source_regression_test.dart; it failed before the fix because isAvailable consumed a one-shot initialConnectIntent payload and initialImport invoked the platform method a second time.",
     "Extracted NavivoxInitialConnectIntentPayloadCache in features/servers/setup/navivox_connect_intent_initial_payload.dart to make availability-probe replay explicit and independently characterized.",
-    "Fixed NavivoxConnectIntentSource so isAvailable caches the initialConnectIntent payload (including null) and initialImport consumes it once instead of re-querying a potentially one-shot platform intent."
+    "Fixed NavivoxConnectIntentSource so isAvailable caches the initialConnectIntent payload (including null) and initialImport consumes it once instead of re-querying a potentially one-shot platform intent.",
+    "Added appliesTopLevelJsonConnectionDefaultsToEntries regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because JSON entry candidates dropped top-level base_url defaults.",
+    "Extracted _jsonCandidateMaps and _entryFieldsWithJsonDefaults in features/servers/shared/connection_import/parser.dart to make JSON top-level defaults -> entry candidate data flow explicit.",
+    "Fixed JSON connection imports so entries inherit non-blank top-level defaults while preserving entry field overrides."
   ],
   "nextCandidates": [
     "features/servers/pairing PairingHandoffFlow state transitions around active gateway confirmation vs auto-connect source provenance",
-    "features/servers/shared/connection_import parser entry selection/ranking when top-level and entries contain partial candidates"
+    "features/servers/shared/connection_import parser ranking tie-breaks for partial candidates with equal scores"
   ],
   "validationReceipts": [
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
-    "dart run features/servers/setup/navivox_connect_intent_payload_regression_test.dart (failed before fix: platform source token should be trimmed before source mapping)",
     "dart run features/servers/setup/navivox_connect_intent_payload_regression_test.dart (passes)",
-    "dart analyze features/servers/setup (passes)",
-    "dart run core/protocol/endpoint/navivox_endpoint_uri_regression_test.dart (failed before fix: explicit default websocket port was dropped during HTTP base URL derivation)",
-    "dart run core/protocol/endpoint/navivox_endpoint_uri_regression_test.dart (passes)",
-    "dart run features/servers/shared/connection_gateway/presentation_regression_test.dart (failed before fix: bare IPv6 gateway addresses should parse; after first fix failed again: explicit default websocket port dropped)",
-    "dart run features/servers/shared/connection_gateway/presentation_regression_test.dart (passes)",
-    "dart analyze features/servers/shared/connection_gateway/presentation.dart features/servers/shared/connection_gateway/presentation_regression_test.dart (passes)",
-    "dart run features/servers/setup/setup_screen_presentation_regression_test.dart (failed before fix: bare IPv6 handoff host should be bracketed before adding a port)",
-    "dart run features/servers/setup/setup_screen_presentation_regression_test.dart (passes)",
-    "dart analyze features/servers/setup/presentation/setup_screen_presentation.dart features/servers/setup/setup_screen_presentation_regression_test.dart features/servers/screens/setup_screen.dart (passes)",
-    "dart run features/servers/shared/connection_gateway/presentation_regression_test.dart (passes)",
-    "dart run features/servers/setup/navivox_connect_intent_payload_regression_test.dart (passes)",
-    "flutter test features/servers/setup/navivox_connect_intent_source_regression_test.dart (failed before fix: expected one initialConnectIntent call, actual two; initial import dropped one-shot payload)",
     "dart run features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart (passes)",
-    "flutter test features/servers/setup/navivox_connect_intent_source_regression_test.dart (passes)",
-    "dart analyze features/servers/setup/navivox_connect_intent_source.dart features/servers/setup/navivox_connect_intent_source_provider.dart features/servers/setup/navivox_connect_intent_initial_payload.dart features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart (passes)",
-    "dart run features/servers/setup/navivox_connect_intent_payload_regression_test.dart (passes)",
-    "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)"
+    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)"
   ]
 }

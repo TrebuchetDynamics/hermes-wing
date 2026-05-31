@@ -7,6 +7,7 @@ void main() {
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
   prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate();
+  appliesTopLevelJsonConnectionDefaultsToEntries();
   parsesSharedTextTokenWithSpacedSeparator();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
   rejectsCorePairingDescriptorWithHttpWebSocketUrl();
@@ -108,6 +109,24 @@ void prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate() {
   _expect(
     result.profileId == 'profile',
     'richer profile_id should be preserved',
+  );
+}
+
+void appliesTopLevelJsonConnectionDefaultsToEntries() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"base_url":"https://gateway.example","entries":[{"token":"nvbx_entry","server_id":"srv","profile_id":"profile"}]}',
+  );
+
+  _expect(result != null, 'JSON entries should parse with top-level defaults');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'entry import should inherit top-level base_url',
+  );
+  _expect(result.token == 'nvbx_entry', 'entry token should be preserved');
+  _expect(result.serverId == 'srv', 'entry server_id should be preserved');
+  _expect(
+    result.profileId == 'profile',
+    'entry profile_id should be preserved',
   );
 }
 

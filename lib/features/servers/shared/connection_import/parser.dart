@@ -58,10 +58,7 @@ class ConnectionImportParser {
     }
     if (decoded is! Map) return null;
 
-    return _bestImportFromCandidateMaps([
-      decoded,
-      ..._entryCandidateMaps(decoded['entries']),
-    ]);
+    return _bestImportFromCandidateMaps(_jsonCandidateMaps(decoded));
   }
 }
 
@@ -71,11 +68,33 @@ SetupQrImageImport? parseNavivoxConnectionImportPayload(String payload) =>
 bool _isCorePairingDescriptorUri(Uri uri) =>
     uri.scheme == 'navivox' && uri.host == 'connect';
 
-Iterable<Map<dynamic, dynamic>> _entryCandidateMaps(Object? entries) sync* {
+Iterable<Map<dynamic, dynamic>> _jsonCandidateMaps(
+  Map<dynamic, dynamic> decoded,
+) sync* {
+  yield decoded;
+  final entries = decoded['entries'];
   if (entries is! List) return;
   for (final entry in entries) {
-    if (entry is Map) yield entry;
+    if (entry is Map) yield _entryFieldsWithJsonDefaults(decoded, entry);
   }
+}
+
+Map<dynamic, dynamic> _entryFieldsWithJsonDefaults(
+  Map<dynamic, dynamic> defaults,
+  Map<dynamic, dynamic> entry,
+) {
+  final fields = Map<dynamic, dynamic>.of(defaults)..remove('entries');
+  for (final entryField in entry.entries) {
+    if (_isBlankJsonValue(entryField.value)) continue;
+    fields[entryField.key] = entryField.value;
+  }
+  return fields;
+}
+
+bool _isBlankJsonValue(Object? value) {
+  if (value == null) return true;
+  if (value is String && value.trim().isEmpty) return true;
+  return false;
 }
 
 SetupQrImageImport? _bestImportFromCandidateMaps(

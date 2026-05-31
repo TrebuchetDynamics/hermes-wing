@@ -5,6 +5,7 @@ void main() {
   parsesPlainStringPayloadAsManualImport();
   preservesMapPayloadSourceProvenance();
   trimsPlatformSourceTokenBeforeMappingProvenance();
+  mapsPlatformSourceTokenCaseInsensitively();
   rejectsStructuredMapPayloadValuesInsteadOfParsingObjectStrings();
   rejectsStructuredSourceValuesInsteadOfParsingObjectStrings();
 }
@@ -49,6 +50,19 @@ void trimsPlatformSourceTokenBeforeMappingProvenance() {
   _expect(
     result!.source == PairingHandoffSource.sharedText,
     'platform source token should be trimmed before source mapping',
+  );
+}
+
+void mapsPlatformSourceTokenCaseInsensitively() {
+  final result = parseNavivoxConnectIntentPayload({
+    'payload': 'https://gateway.example/connect?token=nvbx_token',
+    'source': ' SHARED_TEXT ',
+  });
+
+  _expect(result != null, 'map payload with uppercase source should parse');
+  _expect(
+    result!.source == PairingHandoffSource.sharedText,
+    'platform source tokens should be case-insensitive after trimming',
   );
 }
 

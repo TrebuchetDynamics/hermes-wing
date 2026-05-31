@@ -60,7 +60,11 @@ PairingHandoffSource pairingHandoffSourceFromPlatformPayload(Object? value) {
 
 String? _platformSourceTokenFromPayload(Object? value) {
   if (value is! String) return null;
-  final token = value.trim();
+  return _normalizedPlatformSourceToken(value);
+}
+
+String? _normalizedPlatformSourceToken(String value) {
+  final token = value.trim().toLowerCase();
   if (token.isEmpty) return null;
   return token;
 }

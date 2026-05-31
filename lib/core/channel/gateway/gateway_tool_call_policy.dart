@@ -46,9 +46,7 @@ NavivoxChatMessage? navivoxGatewayToolApprovalMessage({
   required String id,
   required NavivoxGatewayEvent event,
   required NavivoxChatMessage? priorMessage,
-  required String approvalId,
-  required String prompt,
-  required String? risk,
+  required NavivoxGatewayApprovalNotice notice,
   required DateTime createdAt,
   required ({String? serverId, String? profileId}) scope,
 }) {
@@ -60,11 +58,7 @@ NavivoxChatMessage? navivoxGatewayToolApprovalMessage({
     kind: NavivoxMessageKind.toolCall,
     createdAt: priorMessage?.createdAt ?? createdAt,
     toolCall: priorTool.copyWith(
-      approval: navivoxGatewayToolApproval(
-        id: approvalId,
-        prompt: prompt,
-        risk: risk,
-      ),
+      approval: navivoxGatewayToolApproval(notice: notice),
     ),
     runRecordReference:
         event.runRecordReference ?? priorMessage?.runRecordReference,

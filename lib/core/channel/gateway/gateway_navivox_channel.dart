@@ -852,19 +852,17 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   void _putApprovalRequest(NavivoxGatewayEvent event) {
-    final id = event.approvalId ?? 'approval-${_uuid.v4()}';
-    final toolCallId = event.toolCallId ?? '';
-    final prompt = event.message ?? 'Approval required';
-    final risk = event.risk;
+    final notice = navivoxGatewayApprovalNotice(
+      event: event,
+      fallbackApprovalId: () => 'approval-${_uuid.v4()}',
+    );
     final scope = _messageScopeFromEvent(event);
-    final priorMessage = _state.messages[toolCallId];
+    final priorMessage = _state.messages[notice.toolCallId];
     final toolApprovalMessage = navivoxGatewayToolApprovalMessage(
-      id: toolCallId,
+      id: notice.toolCallId,
       event: event,
       priorMessage: priorMessage,
-      approvalId: id,
-      prompt: prompt,
-      risk: risk,
+      notice: notice,
       createdAt: _clock(),
       scope: scope,
     );
@@ -872,22 +870,12 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     _putMessage(
       navivoxGatewayApprovalRequestMessage(
         event: event,
-        id: id,
-        toolCallId: toolCallId,
-        prompt: prompt,
-        risk: risk,
+        notice: notice,
         createdAt: _clock(),
         scope: scope,
       ),
     );
-    _approvals.add(
-      NavivoxApprovalRequest(
-        id: id,
-        toolCallId: toolCallId,
-        prompt: prompt,
-        risk: risk,
-      ),
-    );
+    _approvals.add(notice.toChannelRequest());
   }
 
   void _appendSystemMessage(String text) {

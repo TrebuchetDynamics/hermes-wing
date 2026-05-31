@@ -50,6 +50,17 @@ List<NavivoxProfileContact> navivoxProfileContactsFromGatewayPayloads(
   return contacts.isEmpty ? [navivoxFallbackProfileContact()] : contacts;
 }
 
+String navivoxSelectedProfileContactKey(
+  List<NavivoxProfileContact> contacts, {
+  String? preferredKey,
+}) {
+  if (preferredKey != null &&
+      contacts.any((contact) => contact.key == preferredKey)) {
+    return preferredKey;
+  }
+  return contacts.first.key;
+}
+
 List<NavivoxServer> navivoxServersFromProfileContacts(
   List<NavivoxProfileContact> contacts,
   NavivoxGatewayConfig config,

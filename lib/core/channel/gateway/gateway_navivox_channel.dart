@@ -19,6 +19,7 @@ import 'gateway_memory_request_policy.dart';
 import 'gateway_message_scope_policy.dart';
 import 'gateway_profile_contact_policy.dart';
 import 'gateway_tool_artifact_codec.dart';
+import 'gateway_turn_metadata_policy.dart';
 
 class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   GatewayNavivoxChannel({Uuid? uuid, DateTime Function()? clock})
@@ -113,7 +114,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       servers: navivoxServersFromProfileContacts(contacts, config),
       activeServerId: contacts.first.serverId,
       profileContacts: contacts,
-      selectedProfileContactKey: contacts.first.key,
+      selectedProfileContactKey: navivoxSelectedProfileContactKey(contacts),
       profileRouting: profileRouting,
       runRecordInspectionAvailable: navivoxRunRecordsSupported(capabilities),
       configSchema: configAdminState?.schema ?? const {},
@@ -496,12 +497,10 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       final contacts = navivoxProfileContactsFromGatewayPayloads(
         contactPayloads,
       );
-      final selectedKey =
-          contacts.any(
-            (contact) => contact.key == _state.selectedProfileContactKey,
-          )
-          ? _state.selectedProfileContactKey
-          : contacts.first.key;
+      final selectedKey = navivoxSelectedProfileContactKey(
+        contacts,
+        preferredKey: _state.selectedProfileContactKey,
+      );
       _state = _state.copyWith(
         servers: navivoxServersFromProfileContacts(contacts, client.config),
         activeServerId: contacts.first.serverId,
@@ -1124,17 +1123,9 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }
 
   Map<String, Object?> _turnMetadata(NavivoxProfileContact? profile) {
-    final routing = _state.activeProfileRoutingSelection;
-    return {
-      'client': 'navivox',
-      'platform': 'flutter',
-      if (profile != null) ...{
-        'server_id': profile.serverId,
-        'profile_id': profile.profileId,
-      },
-      if (routing?.workspace != null) 'workspace': routing!.workspace,
-      if (routing?.provider != null) 'provider_id': routing!.provider,
-      if (routing?.channel != null) 'channel_id': routing!.channel,
-    };
+    return navivoxGatewayTurnMetadata(
+      profile: profile,
+      routing: _state.activeProfileRoutingSelection,
+    );
   }
 }

@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/shared/voice/text_to_speech_service.dart';
 
-import '../shared/transcript_surface_test_app.dart';
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_surface_test_app.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   testWidgets('long press text message opens selectable copy actions', (

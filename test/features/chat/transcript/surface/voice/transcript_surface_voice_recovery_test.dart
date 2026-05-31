@@ -1,50 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../shared/transcript_voice_recovery_test_helpers.dart';
+import '../../shared/transcript_voice_recovery_test_helpers.dart';
 
 void main() {
   testWidgets('disabled STT mic explains recovery in Transcript surface', (
     tester,
   ) async {
-    await pumpUnavailableTranscriptSurface(
-      tester,
-      voiceUnavailableReason: deviceSttUnavailableReason,
-    );
-
-    expectVoiceUnavailableMic(deviceSttUnavailableReason);
-
-    await openVoiceUnavailableSheet(tester);
-
-    expectDeviceSttRecoverySheet();
+    await expectDeviceSttUnavailableRecovery(tester);
   });
 
   testWidgets('permission-denied mic explains Android permission recovery', (
     tester,
   ) async {
-    await pumpUnavailableTranscriptSurface(
-      tester,
-      voiceUnavailableReason: microphonePermissionDeniedReason,
-    );
-
-    expectVoiceUnavailableTooltip(microphonePermissionDeniedReason);
-
-    await openVoiceUnavailableSheet(tester);
-
-    expectMicrophonePermissionRecoveryCopy();
+    await expectMicrophonePermissionRecovery(tester);
   });
 
   testWidgets('disabled STT mic canonicalizes recovery copy', (tester) async {
-    await pumpUnavailableTranscriptSurface(
-      tester,
-      voiceUnavailableReason: rawDeviceSttUnavailableReason,
-    );
-
-    expectVoiceUnavailableTooltip(deviceSttUnavailableReason);
-    expectNoRawDeviceSttUnavailableTooltip();
-
-    await openVoiceUnavailableSheet(tester);
-
-    expectCanonicalDeviceSttRecoverySheet();
+    await expectCanonicalDeviceSttRecovery(tester);
   });
 
   testWidgets('disabled STT mic shows supplied recovery action', (

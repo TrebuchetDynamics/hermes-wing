@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import '../shared/transcript_surface_test_app.dart';
-import '../shared/transcript_test_fixtures.dart';
+import '../../shared/transcript_surface_test_app.dart';
+import '../../shared/transcript_test_fixtures.dart';
 
 void main() {
   testWidgets(

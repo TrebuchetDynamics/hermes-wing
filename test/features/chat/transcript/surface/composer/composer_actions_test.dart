@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import '../shared/transcript_attachment_test_helpers.dart';
-import '../shared/transcript_surface_test_app.dart';
+import '../../shared/transcript_attachment_test_helpers.dart';
+import '../../shared/transcript_surface_test_app.dart';
 
 void main() {
   testWidgets('composer attachment button opens Telegram-style upload sheet', (

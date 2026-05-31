@@ -57,6 +57,46 @@ void expectVoiceCaptureReadyIndicator() {
   expect(find.byIcon(Icons.stop), findsNothing);
 }
 
+Future<void> expectDeviceSttUnavailableRecovery(WidgetTester tester) async {
+  await pumpUnavailableTranscriptSurface(
+    tester,
+    voiceUnavailableReason: deviceSttUnavailableReason,
+  );
+
+  expectVoiceUnavailableMic(deviceSttUnavailableReason);
+
+  await openVoiceUnavailableSheet(tester);
+
+  expectDeviceSttRecoverySheet();
+}
+
+Future<void> expectMicrophonePermissionRecovery(WidgetTester tester) async {
+  await pumpUnavailableTranscriptSurface(
+    tester,
+    voiceUnavailableReason: microphonePermissionDeniedReason,
+  );
+
+  expectVoiceUnavailableTooltip(microphonePermissionDeniedReason);
+
+  await openVoiceUnavailableSheet(tester);
+
+  expectMicrophonePermissionRecoveryCopy();
+}
+
+Future<void> expectCanonicalDeviceSttRecovery(WidgetTester tester) async {
+  await pumpUnavailableTranscriptSurface(
+    tester,
+    voiceUnavailableReason: rawDeviceSttUnavailableReason,
+  );
+
+  expectVoiceUnavailableTooltip(deviceSttUnavailableReason);
+  expectNoRawDeviceSttUnavailableTooltip();
+
+  await openVoiceUnavailableSheet(tester);
+
+  expectCanonicalDeviceSttRecoverySheet();
+}
+
 Future<void> expectUnavailableVoiceServiceDoesNotCapture(
   WidgetTester tester,
 ) async {

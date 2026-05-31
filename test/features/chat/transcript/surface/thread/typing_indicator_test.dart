@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
-import '../../../../support/test_navivox_channel.dart';
-import '../../shared/protocol/chat_message_test_fixtures.dart';
-import '../../shared/widgets/chat_screen_test_fixtures.dart';
-import '../../../shared/fixtures/profile_contact_channel_fixtures.dart';
-import '../../../shared/fixtures/profile_contact_fixtures.dart';
+import '../../../../../support/test_navivox_channel.dart';
+import '../../../shared/protocol/chat_message_test_fixtures.dart';
+import '../../../shared/widgets/chat_screen_test_fixtures.dart';
+import '../../../../shared/fixtures/profile_contact_channel_fixtures.dart';
+import '../../../../shared/fixtures/profile_contact_fixtures.dart';
 
 void main() {
   testWidgets('chat thread shows assistant typing indicator while streaming', (

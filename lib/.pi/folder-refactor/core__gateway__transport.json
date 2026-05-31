@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "target": "core/gateway/transport",
+  "updatedAt": "2026-05-31T08:55:55.902Z",
+  "objective": "Split transport into compatibility facades at root, focused shared contracts in contracts/, and platform implementations in platforms/. Preserve existing public import paths via root facades while moving concrete code behind focused contracts.",
+  "completedSlices": [
+    "Moved socket/transport/error contract code into core/gateway/transport/contracts with root compatibility facades.",
+    "Updated transport implementations to import socket/error contracts from contracts/.",
+    "Moved IO/stub/web concrete transport implementations into core/gateway/transport/platforms with root compatibility facades.",
+    "Updated moved platform implementations to use relative imports for existing gateway shared auth/http helpers and local contracts.",
+    "Ran shared-code pass: reused existing core/gateway/shared/navivox_gateway_http.dart and navivox_gateway_auth.dart; kept platform-specific response/socket behavior separate."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart --disable-analytics analyze core/gateway/transport: passed (No issues found).",
+    "dart --disable-analytics analyze core/gateway: failed on pre-existing/unrelated messages/navivox_gateway_message.dart missing ../shared/contracts/navivox_gateway_text.dart and undefined navivoxGatewayHasText; no transport issues reported before this unrelated blocker.",
+    "folder_refactor_audit core/gateway/transport: pass with all six root files classified as facades and no next candidates."
+  ]
+}

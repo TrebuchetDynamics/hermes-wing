@@ -17,7 +17,7 @@ import '../setup/navivox_connect_intent_source.dart';
 import '../setup/navivox_connect_intent_source_provider.dart';
 import '../setup/setup_guide_presentation.dart';
 import '../setup/setup_qr_import_presentation.dart';
-import '../setup/presentation/setup_screen_presentation.dart';
+import '../setup/setup_screen_presentation.dart';
 
 export '../models/connection_import.dart'
     show PairingHandoffSource, SetupQrImageImport;

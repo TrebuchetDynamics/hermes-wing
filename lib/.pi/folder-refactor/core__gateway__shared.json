@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "target": "core/gateway/shared",
+  "updatedAt": "2026-05-31T08:54:12.745Z",
+  "objective": "Split core/gateway/shared into focused contract/helper subpackages while preserving existing public root import files as compatibility facades. Main objective was shared-code reuse/contracts: extracted text-presence, bearer auth, websocket protocol constants, HTTP contract, URI helpers, advertised-token membership, and JSON value/object/collection contracts.",
+  "completedSlices": [
+    "Created shared/contracts/navivox_gateway_text.dart and re-exported it from navivox_gateway_json.dart; fixed existing messages import and decoupled message builder from JSON helpers.",
+    "Moved bearer auth implementation behind navivox_gateway_auth.dart facade into shared/auth/navivox_gateway_bearer_auth.dart.",
+    "Moved websocket protocol constants behind navivox_gateway_constants.dart facade into shared/protocol/navivox_gateway_websocket_protocol.dart.",
+    "Moved HTTP status/header contract behind navivox_gateway_http.dart facade into shared/http/navivox_gateway_http_contract.dart.",
+    "Moved endpoint URI helpers behind navivox_gateway_uri.dart facade into shared/uri/navivox_gateway_endpoint_uri.dart.",
+    "Moved advertised token membership helper behind navivox_gateway_membership.dart facade into shared/capabilities/navivox_gateway_advertised_tokens.dart.",
+    "Split JSON helpers behind navivox_gateway_json.dart facade into shared/json/navivox_gateway_json_values.dart, navivox_gateway_json_objects.dart, and navivox_gateway_json_collections.dart."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze core/gateway: initially failed due missing shared/contracts/navivox_gateway_text.dart import in core/gateway/messages/navivox_gateway_message.dart; fixed by creating the contract.",
+    "dart analyze core/gateway: pass after each slice and final pass.",
+    "dart analyze .: fails on pre-existing unrelated files under features/chat/transcript and features/chat/voice; not caused by core/gateway/shared refactor.",
+    "folder_refactor_audit core/gateway/shared: pass with all six root files classified as compatibility facades and no next candidates."
+  ]
+}

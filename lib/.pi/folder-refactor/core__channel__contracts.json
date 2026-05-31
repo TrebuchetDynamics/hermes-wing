@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "target": "core/channel/contracts",
+  "updatedAt": "2026-05-31T09:02:18.200Z",
+  "objective": "Refactor core/channel/contracts into focused contract subfolders while keeping root compatibility facades. Completed topology: interface/ for NavivoxChannel, profile/ for profile contact value types and codec, scopes/ for profile/memory/message scopes, state/ for channel state/entities. Root files are compatibility facades.",
+  "completedSlices": [
+    "Extracted NavivoxProfileContact, NavivoxProfileHealth, NavivoxVoiceCapability into profile/navivox_profile_contact.dart and re-exported from navivox_channel.dart.",
+    "Extracted NavivoxApprovalRequest, NavivoxServer, NavivoxAgent into state/navivox_channel_entities.dart and NavivoxChannelState/routing selection into state/navivox_channel_state.dart.",
+    "Moved profile contact codec implementation into profile/navivox_profile_contact_codec.dart with root facade kept.",
+    "Moved profile, memory, and message scope implementations into scopes/ with root facades kept.",
+    "Moved NavivoxChannel interface into interface/navivox_channel.dart with root navivox_channel.dart as facade.",
+    "Shared-code pass extracted duplicated mic unavailable fallback string into _micUnavailableReason in profile codec."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze core/channel/contracts: passed",
+    "dart analyze core/channel: passed",
+    "dart analyze .: failed with pre-existing-looking missing imports/undefined symbols outside core/channel/contracts (core/gateway/messages/navivox_gateway_message.dart; features/chat/transcript/...; features/chat/voice/presentation/voice_readiness_presentation.dart)"
+  ]
+}

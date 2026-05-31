@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "target": "core/channel/gateway/messages",
+  "updatedAt": "2026-05-31T08:57:38.662Z",
+  "objective": "Split gateway message policies into builder and scope responsibilities while preserving existing root imports through compatibility exports; extract repeated existing-message scope merge helper into scope contract.",
+  "completedSlices": [
+    "Moved gateway_message_scope_policy.dart into scope/ with root export facade and fixed relative imports; dart analyze core/channel/gateway/messages passed.",
+    "Moved assistant/safety/tool/user-turn message policies into builders/ with root export facades and fixed relative imports; dart analyze core/channel/gateway/messages passed.",
+    "Extracted navivoxGatewayMessageScopeWithExisting into scope/gateway_message_scope_merge.dart and reused it from assistant/tool builders; dart analyze core/channel/gateway and messages passed."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze core/channel/gateway/messages: No issues found",
+    "dart analyze core/channel/gateway: No issues found"
+  ]
+}

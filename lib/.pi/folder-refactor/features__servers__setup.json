@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "target": "features/servers/setup",
+  "updatedAt": "2026-05-31T09:04:42.244Z",
+  "objective": "Refactor setup into intent adapters, presentation models, and setup-local shared payload helpers while preserving root compatibility facades.",
+  "completedSlices": [
+    "Moved setup guide and QR import presentation implementations into presentation/ with root export facades.",
+    "Moved Navivox connect intent source/provider into intents/ with root export facades.",
+    "Created shared/setup_connection_import_payloads.dart to reuse setup connection import payload parsing between QR import and native connect-intent ingestion.",
+    "Updated setup_screen.dart to import setup_screen_presentation through the root facade."
+  ],
+  "nextCandidates": [],
+  "validationReceipts": [
+    "dart analyze features/servers/setup features/servers/screens/setup_screen.dart — No issues found",
+    "folder_refactor_audit features/servers/setup — pass"
+  ]
+}

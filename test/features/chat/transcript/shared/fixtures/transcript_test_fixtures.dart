@@ -4,6 +4,7 @@ import 'package:navivox/core/protocol/navivox_event.dart';
 
 import '../../../shared/profiles/profile_contact_chat_test_fixtures.dart';
 import '../../../shared/protocol/chat_message_test_fixtures.dart';
+import 'transcript_fixture_defaults.dart';
 
 /// Shared Profile contact target used by transcript forwarding/action tests.
 const transcriptSupportContact = chatSupportTriageContact;
@@ -35,7 +36,7 @@ NavivoxChatMessage transcriptChatMessage({
     id: id,
     author: author,
     kind: kind,
-    createdAt: createdAt ?? DateTime.utc(2026, 5, 23, 11, 15),
+    createdAt: createdAt ?? transcriptDefaultCreatedAt,
     text: text,
     toolCall: toolCall,
     voice: voice,
@@ -58,7 +59,7 @@ NavivoxChatMessage transcriptTextMessage({
   return chatTextMessage(
     id: id,
     author: author,
-    createdAt: createdAt ?? DateTime.utc(2026, 5, 23, 11, 15),
+    createdAt: createdAt ?? transcriptDefaultCreatedAt,
     text: text,
     runRecordReference: runRecordReference,
     serverId: serverId,
@@ -90,7 +91,7 @@ NavivoxChatMessage transcriptVoiceMessage({
     id: id,
     author: author,
     kind: NavivoxMessageKind.voice,
-    createdAt: createdAt ?? DateTime.utc(2026, 5, 23, 11, 15),
+    createdAt: createdAt ?? transcriptDefaultCreatedAt,
     voice: transcriptVoice(
       duration: duration,
       transcript: transcript,
@@ -171,7 +172,7 @@ NavivoxChatMessage transcriptToolMessage({
     id: id,
     author: author,
     kind: NavivoxMessageKind.toolCall,
-    createdAt: createdAt ?? DateTime.utc(2026, 5, 23, 11, 15),
+    createdAt: createdAt ?? transcriptDefaultCreatedAt,
     toolCall: toolCall,
   );
 }
@@ -187,7 +188,7 @@ NavivoxChatMessage transcriptNoticeMessage({
     id: id,
     author: author,
     kind: kind,
-    createdAt: createdAt ?? DateTime.utc(2026, 5, 23, 11, 15),
+    createdAt: createdAt ?? transcriptDefaultCreatedAt,
     safetyNotice: notice,
   );
 }

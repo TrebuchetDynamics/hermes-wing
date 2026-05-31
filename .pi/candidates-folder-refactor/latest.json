@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-31T04:37:16.722Z",
+  "generatedAt": "2026-05-31T04:38:37.864Z",
   "cwd": "/home/xel/git/gormes/navivox-app",
   "target": ".",
   "targetAbsolute": "/home/xel/git/gormes/navivox-app",
@@ -103,33 +103,33 @@
       ]
     },
     {
-      "relative": "test/features",
-      "score": 189,
-      "files": 114,
-      "direct": 0,
-      "churn": 710,
-      "callers": 0,
-      "importsOut": 1,
-      "tests": 0,
-      "roles": 7,
-      "duplicates": 69,
-      "subdirs": 10,
-      "extensions": [
-        ".dart"
-      ]
-    },
-    {
       "relative": "test/features/chat/transcript/shared",
-      "score": 188.9,
-      "files": 13,
+      "score": 189.2,
+      "files": 14,
       "direct": 7,
-      "churn": 40,
+      "churn": 43,
       "callers": 23,
       "importsOut": 4,
       "tests": 0,
       "roles": 3,
       "duplicates": 6,
       "subdirs": 4,
+      "extensions": [
+        ".dart"
+      ]
+    },
+    {
+      "relative": "test/features",
+      "score": 189,
+      "files": 115,
+      "direct": 0,
+      "churn": 713,
+      "callers": 0,
+      "importsOut": 1,
+      "tests": 0,
+      "roles": 7,
+      "duplicates": 69,
+      "subdirs": 10,
       "extensions": [
         ".dart"
       ]
@@ -153,9 +153,9 @@
     {
       "relative": "test",
       "score": 188,
-      "files": 152,
+      "files": 153,
       "direct": 0,
-      "churn": 818,
+      "churn": 821,
       "callers": 0,
       "importsOut": 0,
       "tests": 0,
@@ -233,9 +233,9 @@
     {
       "relative": "test/features/chat",
       "score": 164,
-      "files": 72,
+      "files": 73,
       "direct": 0,
-      "churn": 435,
+      "churn": 438,
       "callers": 0,
       "importsOut": 7,
       "tests": 0,
@@ -336,10 +336,10 @@
     },
     {
       "relative": "test/features/chat/transcript",
-      "score": 123.8,
-      "files": 36,
+      "score": 124.1,
+      "files": 37,
       "direct": 0,
-      "churn": 156,
+      "churn": 159,
       "callers": 3,
       "importsOut": 10,
       "tests": 0,

@@ -170,8 +170,18 @@ bool _jsonEntryMentionsAlias(
   Map<dynamic, dynamic> entry,
   Iterable<String> aliases,
 ) {
-  return aliases.any(entry.containsKey);
+  final normalizedAliases = {
+    for (final alias in aliases) _normalizeJsonConnectionImportFieldName(alias),
+  };
+  return entry.keys.any(
+    (key) => normalizedAliases.contains(
+      _normalizeJsonConnectionImportFieldName('$key'),
+    ),
+  );
 }
+
+String _normalizeJsonConnectionImportFieldName(String value) =>
+    value.toLowerCase().replaceAll('_', '');
 
 bool _hasNonBlankJsonConnectionField(Map<dynamic, dynamic> fields) {
   return navivoxFirstStringFieldFromJson(fields, _tokenFieldNames) != null ||

@@ -31,6 +31,7 @@ void main() {
   prefersEntryOverrideWhenTopLevelJsonDefaultIsAlsoImportable();
   prefersEntryAliasOverrideOverTopLevelJsonDefaultAlias();
   doesNotLetBlankJsonEntryAliasInheritTopLevelDefaultAlias();
+  doesNotLetCaseVariantBlankJsonEntryAliasInheritTopLevelDefaultAlias();
   doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry();
   parsesSharedTextTokenWithSpacedSeparator();
   doesNotTreatTokenSuffixInDifferentLabelAsSharedTextToken();
@@ -574,6 +575,25 @@ void doesNotLetBlankJsonEntryAliasInheritTopLevelDefaultAlias() {
   _expect(
     result.token == 'nvbx_fallback',
     'later explicit credentials should beat an entry whose token alias is blank',
+  );
+}
+
+void doesNotLetCaseVariantBlankJsonEntryAliasInheritTopLevelDefaultAlias() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"rest_token":"nvbx_default","entries":[{"base_url":"https://gateway.example","REST_TOKEN":""},{"base_url":"https://fallback.example","token":"nvbx_fallback"}]}',
+  );
+
+  _expect(
+    result != null,
+    'JSON entries with case-variant blank aliases should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://fallback.example',
+    'a case-variant blank entry token alias must block inherited top-level token provenance instead of manufacturing a complete connection',
+  );
+  _expect(
+    result.token == 'nvbx_fallback',
+    'later explicit credentials should beat an entry whose case-variant token alias is blank',
   );
 }
 

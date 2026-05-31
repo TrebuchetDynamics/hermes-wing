@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 import '../../../../core/channel/navivox_channel.dart';
 import '../../../../core/protocol/navivox_event.dart';
 import '../../../../shared/voice/text_to_speech_service.dart';
+import '../../../shared/presentation/conversation_time_labels.dart';
 import '../../transcript/presentation/thread/transcript_thread_presentation.dart';
 import 'transcript_bubble.dart';
 
@@ -117,14 +116,8 @@ bool _isSystemText(NavivoxChatMessage message) =>
     message.author == NavivoxMessageAuthor.system &&
     message.kind == NavivoxMessageKind.text;
 
-String _formatDateSeparatorLabel(DateTime date, DateTime now) {
-  final localDate = DateTime(date.year, date.month, date.day);
-  final localNow = DateTime(now.year, now.month, now.day);
-  final yesterday = localNow.subtract(const Duration(days: 1));
-  if (localDate == localNow) return 'Today';
-  if (localDate == yesterday) return 'Yesterday';
-  return DateFormat.MMMd().format(date);
-}
+String _formatDateSeparatorLabel(DateTime date, DateTime now) =>
+    conversationDateSeparatorLabel(date, now);
 
 class _DateSeparator extends StatelessWidget {
   const _DateSeparator({required this.date, required this.now});

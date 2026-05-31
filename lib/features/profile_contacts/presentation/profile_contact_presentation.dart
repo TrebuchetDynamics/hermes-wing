@@ -1,9 +1,8 @@
-import 'package:intl/intl.dart';
-
 import '../../../core/channel/navivox_channel.dart';
 import '../../../shared/presentation/profile_contact_avatar_presentation.dart';
 import '../../../shared/presentation/profile_contact_labels.dart';
 import '../../../shared/presentation/profile_health_labels.dart';
+import '../../shared/presentation/conversation_time_labels.dart';
 
 export '../../../shared/presentation/profile_contact_scope_presentation.dart';
 
@@ -31,16 +30,7 @@ class ProfileContactPresentation {
   String get chatListPreviewLabel =>
       profileContactChatListPreviewLabel(contact);
 
-  String get latestTimeLabel {
-    final latestAt = contact.latestAt;
-    if (latestAt == null) return '';
-    final now = DateTime.now();
-    final latestDay = DateTime(latestAt.year, latestAt.month, latestAt.day);
-    final today = DateTime(now.year, now.month, now.day);
-    if (latestDay == today) return DateFormat.Hm().format(latestAt);
-    if (latestAt.year == now.year) return DateFormat.MMMd().format(latestAt);
-    return DateFormat.yMd().format(latestAt);
-  }
+  String get latestTimeLabel => conversationLatestTimeLabel(contact.latestAt);
 
   int get attentionCount => contact.attentionBadges.length;
 

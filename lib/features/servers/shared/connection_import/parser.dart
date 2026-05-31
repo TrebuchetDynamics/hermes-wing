@@ -346,18 +346,59 @@ String? _sharedTextImportToken({
   final candidateToken = embeddedUrlCandidate?.candidate.token;
   if (candidateToken != null) return candidateToken;
 
-  // Keep token provenance aligned with the selected URL candidate. Tokens after
-  // the selected URL are more likely to describe that endpoint than stale prose
-  // tokens copied earlier in the share text. Preserve older token-before-URL
-  // imports without borrowing tokens from later URL windows.
-  if (embeddedUrlCandidate == null) return _firstToken(text);
+  return _SharedTextTokenProvenance.fromSelectedEndpoint(
+    embeddedUrlCandidate,
+  ).firstToken(text);
+}
 
-  return _firstToken(
-        text,
-        start: embeddedUrlCandidate.tokenSearchStart,
-        end: embeddedUrlCandidate.tokenSearchEnd,
-      ) ??
-      _firstToken(text, end: embeddedUrlCandidate.leadingTokenSearchEnd);
+class _SharedTextTokenProvenance {
+  const _SharedTextTokenProvenance({
+    required this.hasSelectedEndpoint,
+    required this.followingSearchStart,
+    required this.followingSearchEnd,
+    required this.leadingSearchEnd,
+  }) : assert(followingSearchStart >= 0),
+       assert(followingSearchEnd >= followingSearchStart),
+       assert(leadingSearchEnd >= 0);
+
+  factory _SharedTextTokenProvenance.fromSelectedEndpoint(
+    _SharedTextEndpointCandidate? selectedEndpoint,
+  ) {
+    if (selectedEndpoint == null) {
+      return const _SharedTextTokenProvenance(
+        hasSelectedEndpoint: false,
+        followingSearchStart: 0,
+        followingSearchEnd: 0,
+        leadingSearchEnd: 0,
+      );
+    }
+    return _SharedTextTokenProvenance(
+      hasSelectedEndpoint: true,
+      followingSearchStart: selectedEndpoint.tokenSearchStart,
+      followingSearchEnd: selectedEndpoint.tokenSearchEnd,
+      leadingSearchEnd: selectedEndpoint.leadingTokenSearchEnd,
+    );
+  }
+
+  final bool hasSelectedEndpoint;
+  final int followingSearchStart;
+  final int followingSearchEnd;
+  final int leadingSearchEnd;
+
+  String? firstToken(String text) {
+    if (!hasSelectedEndpoint) return _firstToken(text);
+
+    // Keep token provenance aligned with the selected URL candidate. Tokens
+    // after the selected URL are more likely to describe that endpoint than
+    // stale prose tokens copied earlier in the share text. Preserve older
+    // token-before-URL imports without borrowing tokens from later URL windows.
+    return _firstToken(
+          text,
+          start: followingSearchStart,
+          end: followingSearchEnd,
+        ) ??
+        _firstToken(text, end: leadingSearchEnd);
+  }
 }
 
 _SharedTextEndpointCandidate? _bestGenericUrlCandidateFromSharedText(

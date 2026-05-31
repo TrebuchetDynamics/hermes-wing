@@ -20,6 +20,7 @@ void main() {
   doesNotBorrowTokenFromLaterSharedTextUrlWindow();
   doesNotLetLabelBeforeLaterSharedTextUrlConsumeThatUrlAsToken();
   doesNotUseUrlAfterSharedTextTokenLabelAsToken();
+  doesNotTreatSingleUrlAfterSharedTextTokenLabelAsToken();
   preservesGenericWebSocketUrlImports();
   prefersCompleteJsonEntryOverEarlierPartialCandidate();
   prefersRicherJsonEntryOverEarlierMinimallyCompleteCandidate();
@@ -395,6 +396,25 @@ void doesNotUseUrlAfterSharedTextTokenLabelAsToken() {
   _expect(
     result.token == null,
     'a URL after a token label is prose/navigation, not a pairing token',
+  );
+}
+
+void doesNotTreatSingleUrlAfterSharedTextTokenLabelAsToken() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Token:\nhttps://gateway.example/connect has setup steps.',
+  );
+
+  _expect(
+    result != null,
+    'shared text with a URL after a dangling token label should still parse the endpoint',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'the URL after a dangling token label should provide only the baseUrl',
+  );
+  _expect(
+    result.token == null,
+    'a single URL after a token label is prose/navigation, not a pairing token',
   );
 }
 

@@ -17,8 +17,13 @@ NavivoxMemoryScope navivoxMemoryScopeFor({
   String? serverId,
   String? profileId,
 }) {
+  final scope = navivoxProfileScopeFor(
+    activeProfile: activeProfile,
+    serverId: serverId,
+    profileId: profileId,
+  );
   return NavivoxMemoryScope(
-    serverId: serverId ?? activeProfile?.serverId,
-    profileId: profileId ?? activeProfile?.profileId ?? navivoxDefaultProfileId,
+    serverId: scope.serverId,
+    profileId: scope.profileId,
   );
 }

@@ -13,10 +13,14 @@ NavivoxVoiceRun navivoxGatewayRecordingVoiceRun({
   required NavivoxProfileContact? profile,
   required DateTime createdAt,
 }) {
+  final scope = navivoxProfileScopeFor(
+    activeProfile: profile,
+    fallbackServerId: navivoxDefaultGatewayServerId,
+  );
   return NavivoxVoiceRun.recording(
     id: id,
-    serverId: profile?.serverId ?? navivoxDefaultGatewayServerId,
-    profileId: profile?.profileId ?? navivoxDefaultProfileId,
+    serverId: scope.serverId ?? navivoxDefaultGatewayServerId,
+    profileId: scope.profileId,
     createdAt: createdAt,
   );
 }

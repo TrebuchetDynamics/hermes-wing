@@ -96,6 +96,19 @@ class SetupScreenPresentation {
     return 'Navivox is already connected. Connect to $hostSummary instead?';
   }
 
+  String handoffHostSummary({
+    required String scheme,
+    required String address,
+    required String port,
+  }) {
+    final normalizedScheme = scheme.trim().isEmpty ? 'http' : scheme.trim();
+    final host = _hostForAuthority(address.trim());
+    final normalizedPort = port.trim();
+    if (host.isEmpty) return 'the new gateway';
+    if (normalizedPort.isEmpty) return '$normalizedScheme://$host';
+    return '$normalizedScheme://$host:$normalizedPort';
+  }
+
   String get activeGatewayConfirmButtonLabel => 'Connect to new gateway';
 
   String get activeGatewayCancelButtonLabel => 'Keep current gateway';
@@ -108,6 +121,16 @@ class SetupScreenPresentation {
       'or QR code. Scan the QR with Navivox to pair, or copy the connection '
       'URL shown in your terminal. Pairing starts this app session; durable '
       'reconnect will require a future secure credential.';
+}
+
+String _hostForAuthority(String host) {
+  if (_looksLikeBareIpv6Address(host)) return '[$host]';
+  return host;
+}
+
+bool _looksLikeBareIpv6Address(String value) {
+  if (value.startsWith('[') || value.endsWith(']')) return false;
+  return ':'.allMatches(value).length > 1;
 }
 
 String _safeDetailOrFallback(String? detail, String fallback) {

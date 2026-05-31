@@ -486,12 +486,11 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
   }
 
   String _safeHandoffHostSummary() {
-    final scheme = _scheme.trim().isEmpty ? 'http' : _scheme.trim();
-    final host = _addressController.text.trim();
-    final port = _portController.text.trim();
-    if (host.isEmpty) return 'the new gateway';
-    if (port.isEmpty) return '$scheme://$host';
-    return '$scheme://$host:$port';
+    return _setupScreenPresentation.handoffHostSummary(
+      scheme: _scheme,
+      address: _addressController.text,
+      port: _portController.text,
+    );
   }
 
   Future<void> _connectGateway({bool autoConnect = false}) async {

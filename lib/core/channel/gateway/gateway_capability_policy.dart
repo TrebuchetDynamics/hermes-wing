@@ -1,4 +1,5 @@
 import '../../gateway/navivox_gateway_protocol.dart';
+import 'gateway_client_guard.dart';
 
 /// Gateway-facing capability policy for channel features.
 ///
@@ -30,13 +31,14 @@ NavivoxGatewayClient navivoxRequireGatewayCapability({
   required String connectMessage,
   required String unavailableMessage,
 }) {
-  if (client == null) {
-    throw StateError(connectMessage);
-  }
+  final connectedClient = navivoxRequireConnectedGatewayClient(
+    client: client,
+    message: connectMessage,
+  );
   if (capabilities == null || !isAvailable(capabilities)) {
     throw StateError(unavailableMessage);
   }
-  return client;
+  return connectedClient;
 }
 
 bool navivoxProfileContactsAvailable(NavivoxCapabilityDocument capabilities) {

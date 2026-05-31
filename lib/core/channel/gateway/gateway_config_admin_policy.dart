@@ -1,6 +1,7 @@
 import '../../gateway/navivox_gateway_protocol.dart';
 import '../contracts/navivox_channel.dart';
 import 'gateway_capability_policy.dart';
+import 'gateway_client_guard.dart';
 
 /// Gateway config-admin request guard.
 ///
@@ -12,10 +13,14 @@ NavivoxGatewayClient navivoxRequireGatewayConfigAdminClient({
   required bool available,
   required String action,
 }) {
-  if (client == null || !available) {
+  final connectedClient = navivoxRequireConnectedGatewayClient(
+    client: client,
+    message: 'Connect to Gormes to $action.',
+  );
+  if (!available) {
     throw StateError('Connect to Gormes to $action.');
   }
-  return client;
+  return connectedClient;
 }
 
 /// Best-effort load of the advertised config-admin schema and current values.

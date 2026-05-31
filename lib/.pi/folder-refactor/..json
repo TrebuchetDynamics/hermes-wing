@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T10:58:20.205Z",
+  "updatedAt": "2026-05-31T11:02:51.958Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND: visibility refactors under lib to expose hidden import/provenance/endpoint assumptions without changing public behavior except proven regressions.",
   "completedSlices": [
     "Added preservesCorePairingDescriptorRepeatedQueryValuesAfterBlankCopyArtifacts regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because NavivoxPairingDescriptor.parse used Uri.queryParameters and blank duplicate params erased earlier websocket/token values.",
@@ -19,14 +19,16 @@
     "Extracted _LabeledTokenMatch in features/servers/shared/connection_import/parser.dart; labeled shared-text token selection now compares candidate match offsets so the earliest token mention wins independent of label alias order.",
     "Added doesNotLetLabelBeforeLaterSharedTextUrlConsumeThatUrlAsToken regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because a dangling label in one endpoint segment could skip across the next URL and make the earlier endpoint appear to have that later token.",
     "Made shared-text token segment bounds explicit by carrying tokenSearchEnd on _SharedTextEndpointCandidate and passing it through _sharedTextImportToken/_firstToken/_readTokenAt so labels cannot consume token text outside the selected endpoint segment.",
-    "Added doesNotUseUrlAfterSharedTextTokenLabelAsToken regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because broad labeled-token grammar accepted a following https:// URL as a pairing token.",
+    "Added doesNotUseUrlAfterSharedTextTokenLabelAsToken regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because broad labeled-token grammar accepted a following https:// URL as token.",
     "Extracted _readLabeledTokenAt/_looksLikeUrlToken in features/servers/shared/connection_import/parser.dart so labeled-token parsing rejects URL-shaped prose/navigation values while leaving generic nvbx_ fallback token scanning unchanged.",
     "Added parsesSharedTextTokenWrappedInBackticks regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because labeled broad tokens skipped quotes but not markdown code-span delimiters.",
-    "Made shared-text token delimiter handling explicit in features/servers/shared/connection_import/parser.dart by documenting token delimiter policy and adding backtick to leading/trailing delimiter sets."
+    "Made shared-text token delimiter handling explicit in features/servers/shared/connection_import/parser.dart by documenting token delimiter policy and adding backtick to leading/trailing delimiter sets.",
+    "Added repeated availability regression coverage in features/servers/setup/navivox_connect_intent_source_regression_test.dart and features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart; it failed before the fix because a second availability probe overwrote the one-shot initial direct-app-open payload with null before initialImport could replay it.",
+    "Made NavivoxInitialConnectIntentPayloadCache an explicit first-unconsumed replay buffer in features/servers/setup/navivox_connect_intent_initial_payload.dart so repeated availability probes cannot drop the earliest cached payload before take()."
   ],
   "nextCandidates": [
     "features/servers/pairing token edit provenance policy at widget level if product decides credential edits should also clear pairing-link failure copy",
-    "features/servers/setup connect-intent payload source precedence and stale direct-app-open payload replay",
+    "features/servers/setup connect-intent event/initial ordering: ensure stream imports cannot be overwritten by stale initial replay if native emits both",
     "features/servers/shared/connection_import shared-text URL/token provenance around equal-rank candidates with metadata-only URLs",
     "features/servers/shared/connection_import token grammar visibility: distinguish broad human-entered tokens from accidental prose labels beyond URL-shaped values"
   ],
@@ -58,6 +60,11 @@
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: backtick-wrapped labeled token parsed as null)",
     "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
-    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)"
+    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "flutter test features/servers/setup/navivox_connect_intent_source_regression_test.dart (failed before fix: repeated availability checks dropped cached direct_app_open payload, result null)",
+    "dart format features/servers/setup/navivox_connect_intent_initial_payload.dart features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart features/servers/setup/navivox_connect_intent_source_regression_test.dart (formatted)",
+    "dart run features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart (passes)",
+    "flutter test features/servers/setup/navivox_connect_intent_source_regression_test.dart (passes)",
+    "dart analyze features/servers/setup/navivox_connect_intent_initial_payload.dart features/servers/setup/navivox_connect_intent_source.dart (passes)"
   ]
 }

@@ -138,7 +138,7 @@ Uri _httpBaseUriFromPairingParam(String value, String descriptor) {
       descriptor,
     );
   }
-  return uri;
+  return Uri.parse(navivoxOriginFromUri(uri));
 }
 
 String _baseUrlFromWebSocketUri(Uri uri, String descriptor) {

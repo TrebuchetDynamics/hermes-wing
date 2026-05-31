@@ -226,6 +226,23 @@ void main() {
     expect(config.headers, {'Authorization': 'Bearer setup-secret-token'});
   });
 
+  test('normalizes explicit pairing base_url to HTTP origin only', () {
+    final descriptor = NavivoxPairingDescriptor.parse(
+      'navivox://connect?'
+      'base_url=https%3A%2F%2Fgateway.example%3A9443%2Fconnect%3Ftoken%3Dstale&'
+      'websocket_url=wss%3A%2F%2Fgateway.example%3A9443%2Fv1%2Fnavivox%2Fstream&'
+      'auth_mode=pairing_token&'
+      'token_required=true&'
+      'rest_token=setup-secret-token',
+    );
+
+    expect(descriptor.baseUri.toString(), 'https://gateway.example:9443');
+    expect(
+      descriptor.toGatewayConfig().healthUri.toString(),
+      'https://gateway.example:9443/healthz',
+    );
+  });
+
   test('parses optional Gormes routing defaults from pairing descriptor', () {
     final descriptor = NavivoxPairingDescriptor.parse(
       'navivox://connect?'

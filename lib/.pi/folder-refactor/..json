@@ -1,7 +1,7 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T10:46:12.459Z",
+  "updatedAt": "2026-05-31T10:48:41.024Z",
   "objective": "AUTO_FOLDER_REFACTOR_BUGFIND: visibility refactors under lib to expose hidden import/provenance/endpoint assumptions without changing public behavior except proven regressions.",
   "completedSlices": [
     "Added preservesCorePairingDescriptorRepeatedQueryValuesAfterBlankCopyArtifacts regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because NavivoxPairingDescriptor.parse used Uri.queryParameters and blank duplicate params erased earlier websocket/token values.",
@@ -10,15 +10,21 @@
     "Updated features/servers/shared/connection_import/parser.dart to use the shared query helper instead of its private duplicate.",
     "Added stripsAngleBracketFromSharedTextUrl characterization in parser_regression_test.dart; current parser already preserves this behavior.",
     "Added prefersLaterSharedTextUrlWhenTokenBelongsToThatUrl regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because equal-rank bare shared-text URLs kept the first URL, pairing a later setup token with an earlier docs URL.",
-    "Made shared-text endpoint candidate ranking explicit about per-endpoint token segments in features/servers/shared/connection_import/parser.dart; equal-rank candidates now prefer the URL whose following segment contains the token before the next URL."
+    "Made shared-text endpoint candidate ranking explicit about per-endpoint token segments in features/servers/shared/connection_import/parser.dart; equal-rank candidates now prefer the URL whose following segment contains the token before the next URL.",
+    "Added doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry regression in features/servers/shared/connection_import/parser_regression_test.dart; it failed before the fix because a metadata-only entry inherited top-level credentials and outranked a concrete entry by field score, mixing provenance.",
+    "Extracted _JsonConnectionImportFields with hasExplicitConnectionFields in features/servers/shared/connection_import/parser.dart; JSON candidate ranking now prefers complete entries that carry explicit endpoint/token provenance before richer metadata-only inherited candidates."
   ],
   "nextCandidates": [
-    "features/servers/shared/connection_import JSON default provenance ambiguity when top-level credentials are inherited by multiple entries",
     "features/servers/pairing token edit provenance policy at widget level if product decides credential edits should also clear pairing-link failure copy",
-    "features/servers/setup connect-intent payload source precedence and stale direct-app-open payload replay"
+    "features/servers/setup connect-intent payload source precedence and stale direct-app-open payload replay",
+    "features/servers/shared/connection_import JSON entry alias/canonical field precedence when defaults and entries use different spellings"
   ],
   "validationReceipts": [
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: later setup token bound to earlier docs URL for equal-rank shared-text URL candidates)",
+    "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)",
+    "dart run features/servers/shared/connection_import/parser_regression_test.dart (failed before fix: metadata-only JSON entry inherited top-level credentials and outranked an explicit connection entry)",
     "dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (formatted)",
     "dart run features/servers/shared/connection_import/parser_regression_test.dart (passes)",
     "dart analyze features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart (passes)"

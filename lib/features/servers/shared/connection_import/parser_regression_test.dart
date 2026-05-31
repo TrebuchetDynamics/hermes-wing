@@ -18,6 +18,7 @@ void main() {
   doesNotPreferIncompleteMetadataEntryOverCompleteConnectionEntry();
   appliesTopLevelJsonConnectionDefaultsToEntries();
   prefersEntryOverrideWhenTopLevelJsonDefaultIsAlsoImportable();
+  doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry();
   parsesSharedTextTokenWithSpacedSeparator();
   parsesSharedTextTokenWrappedInQuotes();
   stripsSentenceTrailingPeriodFromSharedTextUrl();
@@ -305,6 +306,22 @@ void prefersEntryOverrideWhenTopLevelJsonDefaultIsAlsoImportable() {
   _expect(
     result!.token == 'nvbx_fresh_entry',
     'nonblank entry fields should override equally complete top-level defaults',
+  );
+}
+
+void doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"base_url":"https://default.example","token":"nvbx_default","entries":[{"base_url":"https://gateway.example","token":"nvbx_entry"},{"server_id":"srv","profile_id":"profile"}]}',
+  );
+
+  _expect(result != null, 'JSON entries with top-level defaults should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'metadata-only entries must not pair inherited default credentials ahead of an explicit connection entry',
+  );
+  _expect(
+    result.token == 'nvbx_entry',
+    'explicit entry credentials should keep their token provenance',
   );
 }
 

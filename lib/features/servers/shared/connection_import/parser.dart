@@ -63,12 +63,15 @@ SetupQrImageImport? parseNavivoxConnectionImportPayload(String payload) =>
 bool _isCorePairingDescriptorUri(Uri uri) =>
     uri.scheme == 'navivox' && uri.host == 'connect';
 
-Iterable<Map<dynamic, dynamic>> _jsonCandidateMaps(
+Iterable<_JsonConnectionImportFields> _jsonCandidateMaps(
   Map<dynamic, dynamic> decoded,
 ) sync* {
   final entries = decoded['entries'];
   if (entries is! List) {
-    yield decoded;
+    yield _JsonConnectionImportFields(
+      fields: decoded,
+      hasExplicitConnectionFields: true,
+    );
     return;
   }
 
@@ -77,16 +80,38 @@ Iterable<Map<dynamic, dynamic>> _jsonCandidateMaps(
     yieldedEntry = true;
     yield fields;
   }
-  if (!yieldedEntry) yield decoded;
+  if (!yieldedEntry) {
+    yield _JsonConnectionImportFields(
+      fields: decoded,
+      hasExplicitConnectionFields: true,
+    );
+  }
 }
 
-Iterable<Map<dynamic, dynamic>> _entryCandidateMaps(
+Iterable<_JsonConnectionImportFields> _entryCandidateMaps(
   Map<dynamic, dynamic> decoded,
   List<dynamic> entries,
 ) sync* {
   for (final entry in entries) {
-    if (entry is Map) yield _entryFieldsWithJsonDefaults(decoded, entry);
+    if (entry is! Map) continue;
+    yield _JsonConnectionImportFields(
+      fields: _entryFieldsWithJsonDefaults(decoded, entry),
+      hasExplicitConnectionFields: _hasNonBlankJsonConnectionField(entry),
+    );
   }
+}
+
+class _JsonConnectionImportFields {
+  const _JsonConnectionImportFields({
+    required this.fields,
+    required this.hasExplicitConnectionFields,
+  });
+
+  final Map<dynamic, dynamic> fields;
+
+  // Entries may inherit top-level credentials, but metadata-only entries should
+  // not outrank entries that carry their own endpoint/token provenance.
+  final bool hasExplicitConnectionFields;
 }
 
 Map<dynamic, dynamic> _entryFieldsWithJsonDefaults(
@@ -101,6 +126,12 @@ Map<dynamic, dynamic> _entryFieldsWithJsonDefaults(
   return fields;
 }
 
+bool _hasNonBlankJsonConnectionField(Map<dynamic, dynamic> fields) {
+  return navivoxFirstStringFieldFromJson(fields, _tokenFieldNames) != null ||
+      navivoxFirstStringFieldFromJson(fields, _baseUrlFieldNames) != null ||
+      navivoxFirstStringFieldFromJson(fields, _webSocketUrlFieldNames) != null;
+}
+
 bool _isBlankJsonValue(Object? value) {
   if (value == null) return true;
   if (value is String && value.trim().isEmpty) return true;
@@ -108,11 +139,14 @@ bool _isBlankJsonValue(Object? value) {
 }
 
 SetupQrImageImport? _bestImportFromCandidateMaps(
-  Iterable<Map<dynamic, dynamic>> candidateMaps,
+  Iterable<_JsonConnectionImportFields> candidateMaps,
 ) {
   _ConnectionImportCandidate? bestCandidate;
-  for (final fields in candidateMaps) {
-    final candidate = _connectionImportCandidateFromFields(fields);
+  for (final candidateFields in candidateMaps) {
+    final candidate = _connectionImportCandidateFromFields(
+      candidateFields.fields,
+      hasExplicitConnectionFields: candidateFields.hasExplicitConnectionFields,
+    );
     if (candidate == null) continue;
     bestCandidate = _richerConnectionImportCandidate(
       currentBest: bestCandidate,
@@ -125,6 +159,7 @@ SetupQrImageImport? _bestImportFromCandidateMaps(
 _ConnectionImportCandidate? _connectionImportCandidateFromFields(
   Map<dynamic, dynamic> fields, {
   String? fallbackBaseUrl,
+  bool hasExplicitConnectionFields = true,
 }) {
   final token = navivoxFirstStringFieldFromJson(fields, _tokenFieldNames);
   final endpointFields = _connectionImportEndpointFields(fields);
@@ -134,6 +169,7 @@ _ConnectionImportCandidate? _connectionImportCandidateFromFields(
     webSocketUrl: endpointFields.webSocketUrl,
     serverId: navivoxFirstStringFieldFromJson(fields, _serverIdFieldNames),
     profileId: navivoxFirstStringFieldFromJson(fields, _profileIdFieldNames),
+    hasExplicitConnectionFields: hasExplicitConnectionFields,
   );
   if (!candidate.hasImportValues) return null;
 
@@ -343,6 +379,7 @@ class _ConnectionImportCandidate {
     this.webSocketUrl,
     this.serverId,
     this.profileId,
+    this.hasExplicitConnectionFields = true,
   });
 
   final String? baseUrl;
@@ -350,6 +387,7 @@ class _ConnectionImportCandidate {
   final String? webSocketUrl;
   final String? serverId;
   final String? profileId;
+  final bool hasExplicitConnectionFields;
 
   bool get hasImportValues => baseUrl != null || token != null;
 
@@ -357,6 +395,7 @@ class _ConnectionImportCandidate {
 
   _ConnectionImportCandidateRank get rank => _ConnectionImportCandidateRank(
     isCompleteConnection: hasCompleteConnection,
+    hasExplicitConnectionFields: hasExplicitConnectionFields,
     fieldScore: _fieldScore,
   );
 
@@ -388,15 +427,20 @@ class _ConnectionImportCandidate {
 class _ConnectionImportCandidateRank {
   const _ConnectionImportCandidateRank({
     required this.isCompleteConnection,
+    required this.hasExplicitConnectionFields,
     required this.fieldScore,
   });
 
   final bool isCompleteConnection;
+  final bool hasExplicitConnectionFields;
   final int fieldScore;
 
   bool isRicherThan(_ConnectionImportCandidateRank other) {
     if (isCompleteConnection != other.isCompleteConnection) {
       return isCompleteConnection;
+    }
+    if (hasExplicitConnectionFields != other.hasExplicitConnectionFields) {
+      return hasExplicitConnectionFields;
     }
     return fieldScore > other.fieldScore;
   }

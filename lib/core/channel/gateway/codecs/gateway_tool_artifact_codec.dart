@@ -85,10 +85,16 @@ String _safeMetadataValue(Object? value) {
 }
 
 bool _isSensitiveMetadataKey(String key) {
-  final lower = key.toLowerCase();
-  return lower.contains('token') ||
-      lower.contains('secret') ||
-      lower.contains('password') ||
-      lower.contains('api_key') ||
-      lower.contains('apikey');
+  final normalized = key.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  return _sensitiveMetadataKeyFragments.any(normalized.contains);
 }
+
+const _sensitiveMetadataKeyFragments = <String>[
+  'token',
+  'secret',
+  'password',
+  'apikey',
+  'authorization',
+  'credential',
+  'bearer',
+];

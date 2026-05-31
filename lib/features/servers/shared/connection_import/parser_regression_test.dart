@@ -42,6 +42,7 @@ void main() {
   parsesValidCorePairingDescriptorEmbeddedInSharedText();
   parsesLaterValidCorePairingDescriptorAfterMalformedSharedTextDescriptor();
   rejectsSharedTextMalformedCoreDescriptorBeforeTokenFallback();
+  doesNotBorrowTokenFromMalformedCoreDescriptorBeforeGenericSharedTextUrl();
   rejectsCorePairingDescriptorWithHttpWebSocketUrl();
   rejectsCorePairingDescriptorWithNonHttpBaseUrl();
   doesNotTreatInvalidJsonWebSocketUrlAsBaseUrl();
@@ -720,6 +721,26 @@ void rejectsSharedTextMalformedCoreDescriptorBeforeTokenFallback() {
   _expect(
     result == null,
     'malformed navivox://connect descriptors embedded in shared text must be rejected instead of falling back to a token-only prose import',
+  );
+}
+
+void doesNotBorrowTokenFromMalformedCoreDescriptorBeforeGenericSharedTextUrl() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Ignore stale navivox://connect?rest_token=nvbx_stale and open '
+    'https://gateway.example/connect to pair.',
+  );
+
+  _expect(
+    result != null,
+    'a generic shared-text URL should still parse beside a malformed core descriptor',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'the generic shared-text URL should provide the baseUrl',
+  );
+  _expect(
+    result.token == null,
+    'tokens from a malformed navivox://connect descriptor must not be borrowed by a generic shared-text URL',
   );
 }
 

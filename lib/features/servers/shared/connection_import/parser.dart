@@ -265,24 +265,27 @@ _ConnectionImportCandidate? _connectionImportCandidateFromGenericUri(Uri uri) {
 }
 
 SetupQrImageImport? _importFromSharedText(String text) {
-  final embeddedCoreDescriptorPayloads =
-      _corePairingDescriptorPayloadsFromSharedText(
+  final coreDescriptorCandidates =
+      _corePairingDescriptorCandidatesFromSharedText(
         text,
       ).toList(growable: false);
-  for (final embeddedCoreDescriptor in embeddedCoreDescriptorPayloads) {
+  for (final coreDescriptor in coreDescriptorCandidates) {
     final coreImport = _parseCorePairingDescriptorPayload(
-      embeddedCoreDescriptor,
+      coreDescriptor.payload,
     );
     if (coreImport != null) return coreImport;
   }
 
   final embeddedUrlCandidate = _bestGenericUrlCandidateFromSharedText(text);
-  if (embeddedUrlCandidate == null &&
-      embeddedCoreDescriptorPayloads.isNotEmpty) {
+  if (embeddedUrlCandidate == null && coreDescriptorCandidates.isNotEmpty) {
     return null;
   }
+  final tokenSourceText = _sharedTextWithoutMalformedCoreDescriptors(
+    text,
+    coreDescriptorCandidates,
+  );
   final token = _sharedTextImportToken(
-    text: text,
+    text: tokenSourceText,
     embeddedUrlCandidate: embeddedUrlCandidate,
   );
   if (embeddedUrlCandidate == null && token == null) return null;
@@ -459,14 +462,46 @@ SetupQrImageImport? _parseCorePairingDescriptorPayload(String text) {
   }
 }
 
-Iterable<String> _corePairingDescriptorPayloadsFromSharedText(
-  String text,
-) sync* {
+Iterable<_SharedTextCoreDescriptorCandidate>
+_corePairingDescriptorCandidatesFromSharedText(String text) sync* {
   for (final match in _corePairingDescriptorUriPattern.allMatches(text)) {
     final matchedText = match.group(0);
     if (matchedText == null) continue;
-    yield _trimCopiedEndpointUrl(matchedText);
+    yield _SharedTextCoreDescriptorCandidate(
+      payload: _trimCopiedEndpointUrl(matchedText),
+      sourceWindow: _TextWindow(start: match.start, end: match.end),
+    );
   }
+}
+
+class _SharedTextCoreDescriptorCandidate {
+  const _SharedTextCoreDescriptorCandidate({
+    required this.payload,
+    required this.sourceWindow,
+  });
+
+  final String payload;
+  final _TextWindow sourceWindow;
+}
+
+String _sharedTextWithoutMalformedCoreDescriptors(
+  String text,
+  Iterable<_SharedTextCoreDescriptorCandidate> coreDescriptors,
+) {
+  final characters = text.split('');
+  for (final descriptor in coreDescriptors) {
+    if (_parseCorePairingDescriptorPayload(descriptor.payload) != null) {
+      continue;
+    }
+    for (
+      var index = descriptor.sourceWindow.start;
+      index < descriptor.sourceWindow.end;
+      index++
+    ) {
+      characters[index] = ' ';
+    }
+  }
+  return characters.join();
 }
 
 final _corePairingDescriptorUriPattern = RegExp(

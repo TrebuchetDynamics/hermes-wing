@@ -1,22 +1,24 @@
 {
   "version": 1,
   "target": ".",
-  "updatedAt": "2026-05-31T11:51:19.858Z",
-  "objective": "AUTO_FOLDER_REFACTOR_BUGFIND visibility refactor under features/servers/shared/connection_import: expose JSON entry alias provenance and fix blank alias default leakage.",
+  "updatedAt": "2026-05-31T11:58:53.953Z",
+  "objective": "AUTO_FOLDER_REFACTOR_BUGFIND visibility refactor under features/servers/shared/connection_import: make shared-text core descriptor provenance explicit and prevent malformed navivox://connect tokens from leaking into generic URL imports.",
   "completedSlices": [
-    "Added focused regression doesNotLetBlankJsonEntryAliasInheritTopLevelDefaultAlias in features/servers/shared/connection_import/parser_regression_test.dart (failed before fix).",
-    "Extracted _jsonEntryMentionsAlias pure helper in features/servers/shared/connection_import/parser.dart to make entry/default alias override provenance explicit.",
-    "Fixed _removeDefaultJsonAliasesOverriddenByEntry to remove inherited alias groups whenever an entry mentions an alias, including blank values, preventing stale top-level token defaults from manufacturing complete entry credentials."
+    "Added focused regression doesNotBorrowTokenFromMalformedCoreDescriptorBeforeGenericSharedTextUrl in features/servers/shared/connection_import/parser_regression_test.dart (failed before fix).",
+    "Replaced raw embedded core descriptor payload strings with _SharedTextCoreDescriptorCandidate carrying payload plus source window in features/servers/shared/connection_import/parser.dart.",
+    "Added _sharedTextWithoutMalformedCoreDescriptors token-source helper so malformed core descriptor ranges are blanked before shared-text token discovery, preserving generic URL parsing while blocking stale malformed descriptor token provenance."
   ],
   "nextCandidates": [
-    "features/servers/shared/connection_import/parser.dart shared-text/core descriptor fallback: characterize malformed embedded core descriptor plus generic URL coexistence; currently malformed core descriptor short-circuits all shared-text parsing."
+    "features/servers/shared/connection_import/parser.dart token-window visibility: characterize whether malformed core descriptor ranges after a selected generic URL should also prevent following-token binding across multiple generic URL windows.",
+    "features/servers/shared/connection_import/parser.dart core descriptor parsing efficiency/contract: avoid reparsing core descriptors by carrying parse result on _SharedTextCoreDescriptorCandidate if further provenance bugs appear."
   ],
   "validationReceipts": [
-    "FAIL (expected red): dart features/servers/shared/connection_import/parser_regression_test.dart -> a blank entry token alias must block inherited top-level token provenance instead of manufacturing a complete connection",
-    "PASS: dart format lib/features/servers/shared/connection_import/parser.dart lib/features/servers/shared/connection_import/parser_regression_test.dart",
-    "PASS: dart lib/features/servers/shared/connection_import/parser_regression_test.dart",
-    "PASS: dart lib/features/servers/shared/connection_gateway/presentation_regression_test.dart",
-    "PASS: dart lib/features/servers/setup/navivox_connect_intent_payload_regression_test.dart",
-    "PASS: dart lib/features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart"
+    "FAIL (expected red): dart features/servers/shared/connection_import/parser_regression_test.dart -> tokens from a malformed navivox://connect descriptor must not be borrowed by a generic shared-text URL",
+    "PASS: dart format features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart",
+    "PASS: dart features/servers/shared/connection_import/parser_regression_test.dart",
+    "PASS: dart features/servers/shared/connection_gateway/presentation_regression_test.dart",
+    "PASS: dart features/servers/setup/navivox_connect_intent_payload_regression_test.dart",
+    "PASS: dart features/servers/setup/navivox_connect_intent_initial_payload_regression_test.dart",
+    "PASS: git diff --check -- features/servers/shared/connection_import/parser.dart features/servers/shared/connection_import/parser_regression_test.dart"
   ]
 }

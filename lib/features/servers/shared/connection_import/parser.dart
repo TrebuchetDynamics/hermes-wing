@@ -39,19 +39,8 @@ class ConnectionImportParser {
   }
 
   SetupQrImageImport? _parseCorePairingDescriptor(String text, Uri uri) {
-    if (uri.scheme != 'navivox' || uri.host != 'connect') return null;
-    try {
-      final descriptor = NavivoxPairingDescriptor.parse(text);
-      return SetupQrImageImport(
-        baseUrl: descriptor.baseUri.toString(),
-        token: descriptor.token,
-        webSocketUrl: descriptor.webSocketUri.toString(),
-        serverId: descriptor.serverId,
-        profileId: descriptor.profileId,
-      );
-    } on FormatException {
-      return null;
-    }
+    if (!_isCorePairingDescriptorUri(uri)) return null;
+    return _parseCorePairingDescriptorPayload(text);
   }
 
   SetupQrImageImport? _parseQrJsonPayload(String text) {
@@ -269,8 +258,18 @@ _ConnectionImportCandidate? _connectionImportCandidateFromGenericUri(Uri uri) {
 }
 
 SetupQrImageImport? _importFromSharedText(String text) {
+  final embeddedCoreDescriptor = _corePairingDescriptorPayloadFromSharedText(
+    text,
+  );
+  if (embeddedCoreDescriptor != null) {
+    final coreImport = _parseCorePairingDescriptorPayload(
+      embeddedCoreDescriptor,
+    );
+    if (coreImport != null) return coreImport;
+  }
+
   final embeddedUrlCandidate = _bestGenericUrlCandidateFromSharedText(text);
-  if (embeddedUrlCandidate == null && _containsCorePairingDescriptorUri(text)) {
+  if (embeddedUrlCandidate == null && embeddedCoreDescriptor != null) {
     return null;
   }
   final token = _sharedTextImportToken(
@@ -411,8 +410,29 @@ bool _hasConnectionPath(Uri uri) {
 
 const _connectionPathSegments = {'connect', 'connection', 'pair', 'pairing'};
 
-bool _containsCorePairingDescriptorUri(String text) =>
-    _corePairingDescriptorUriPattern.hasMatch(text);
+SetupQrImageImport? _parseCorePairingDescriptorPayload(String text) {
+  final uri = Uri.tryParse(text);
+  if (uri == null || !_isCorePairingDescriptorUri(uri)) return null;
+  try {
+    final descriptor = NavivoxPairingDescriptor.parse(text);
+    return SetupQrImageImport(
+      baseUrl: descriptor.baseUri.toString(),
+      token: descriptor.token,
+      webSocketUrl: descriptor.webSocketUri.toString(),
+      serverId: descriptor.serverId,
+      profileId: descriptor.profileId,
+    );
+  } on FormatException {
+    return null;
+  }
+}
+
+String? _corePairingDescriptorPayloadFromSharedText(String text) {
+  final match = _corePairingDescriptorUriPattern.firstMatch(text);
+  final matchedText = match?.group(0);
+  if (matchedText == null) return null;
+  return _trimCopiedEndpointUrl(matchedText);
+}
 
 final _corePairingDescriptorUriPattern = RegExp(
   r'\bnavivox://connect(?:\?\S*)?',

@@ -36,6 +36,7 @@ void main() {
   stripsAngleBracketFromSharedTextUrl();
   stripsBacktickFromSharedTextUrl();
   rejectsMalformedCorePairingDescriptorBeforeGenericFallback();
+  parsesValidCorePairingDescriptorEmbeddedInSharedText();
   rejectsSharedTextMalformedCoreDescriptorBeforeTokenFallback();
   rejectsCorePairingDescriptorWithHttpWebSocketUrl();
   rejectsCorePairingDescriptorWithNonHttpBaseUrl();
@@ -608,6 +609,23 @@ void rejectsMalformedCorePairingDescriptorBeforeGenericFallback() {
     'malformed navivox://connect descriptors must be rejected instead of '
     'falling back to a token-only generic import',
   );
+}
+
+void parsesValidCorePairingDescriptorEmbeddedInSharedText() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Open navivox://connect?websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fws&rest_token=nvbx_shared&server_id=srv to pair.',
+  );
+
+  _expect(
+    result != null,
+    'valid navivox://connect descriptors embedded in shared text should parse',
+  );
+  _expect(
+    result!.baseUrl == 'http://127.0.0.1:8765',
+    'embedded descriptor baseUrl should derive from websocket_url',
+  );
+  _expect(result.token == 'nvbx_shared', 'embedded descriptor token preserved');
+  _expect(result.serverId == 'srv', 'embedded descriptor metadata preserved');
 }
 
 void rejectsSharedTextMalformedCoreDescriptorBeforeTokenFallback() {

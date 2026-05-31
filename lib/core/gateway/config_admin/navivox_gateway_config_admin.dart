@@ -22,7 +22,7 @@ class NavivoxConfigAdminField {
           configWireStringFromAliases(json, const ['title', 'label', 'key']) ??
           '',
       description: configWireString(json['description']) ?? '',
-      secret: json['secret'] == true,
+      secret: navivoxGatewayBoolField(json, 'secret'),
       allowed: navivoxStringListFromJson(json['allowed']),
       actions: navivoxStringListFromJson(json['actions']),
       reload: configWireString(json['reload']) ?? '',
@@ -62,7 +62,7 @@ class NavivoxConfigAdminSchemaResponse {
 
   factory NavivoxConfigAdminSchemaResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminSchemaResponse(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
+      action: navivoxStringFieldFromJson(json, 'action'),
       fields: navivoxGatewayObjectListFromJson(
         json['fields'],
         NavivoxConfigAdminField.fromJson,
@@ -94,7 +94,7 @@ class NavivoxConfigAdminValue {
       key: configWireStringFromAliases(json, const ['key', 'path']) ?? '',
       type: configWireString(json['type']) ?? 'string',
       value: json['value'],
-      secret: json['secret'] == true,
+      secret: navivoxGatewayBoolField(json, 'secret'),
       secretStatus: configWireString(json['secret_status']) ?? '',
       source: configWireString(json['source']) ?? '',
     );
@@ -124,7 +124,7 @@ class NavivoxConfigAdminGetResponse {
 
   factory NavivoxConfigAdminGetResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminGetResponse(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
+      action: navivoxStringFieldFromJson(json, 'action'),
       values: navivoxGatewayObjectListFromJson(
         json['values'],
         NavivoxConfigAdminValue.fromJson,
@@ -178,11 +178,11 @@ class NavivoxConfigAdminDiff {
     return NavivoxConfigAdminDiff(
       key: configWireStringFromAliases(json, const ['key', 'path']) ?? '',
       type: configWireString(json['type']) ?? 'string',
-      secret: json['secret'] == true,
+      secret: navivoxGatewayBoolField(json, 'secret'),
       before: json['before'],
       after: json['after'],
-      beforeRedacted: json['before_redacted'] == true,
-      afterRedacted: json['after_redacted'] == true,
+      beforeRedacted: navivoxGatewayBoolField(json, 'before_redacted'),
+      afterRedacted: navivoxGatewayBoolField(json, 'after_redacted'),
       secretStatus: configWireString(json['secret_status']) ?? '',
     );
   }
@@ -260,11 +260,11 @@ class NavivoxConfigAdminResponse {
 
   factory NavivoxConfigAdminResponse.fromJson(Map<String, Object?> json) {
     return NavivoxConfigAdminResponse(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
-      valid: json['valid'] == true,
-      applied: json['applied'] == true,
-      reloadApplied: json['reload_applied'] == true,
-      pendingRestart: json['pending_restart'] == true,
+      action: navivoxStringFieldFromJson(json, 'action'),
+      valid: navivoxGatewayBoolField(json, 'valid'),
+      applied: navivoxGatewayBoolField(json, 'applied'),
+      reloadApplied: navivoxGatewayBoolField(json, 'reload_applied'),
+      pendingRestart: navivoxGatewayBoolField(json, 'pending_restart'),
       reloadError: configWireString(json['reload_error']) ?? '',
       changes: navivoxGatewayObjectListFromJson(
         json['changes'],

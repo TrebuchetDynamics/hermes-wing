@@ -17,7 +17,7 @@ class NavivoxGatewayStatus {
 
   factory NavivoxGatewayStatus.fromJson(Map<String, Object?> json) {
     return NavivoxGatewayStatus(
-      enabled: json['enabled'] == true,
+      enabled: navivoxGatewayBoolField(json, 'enabled'),
       protocolVersion: navivoxStringFromJson(
         json['protocol_version'],
         fallback: navivoxWebSocketProtocol,
@@ -66,11 +66,8 @@ class NavivoxCapabilityDocument {
 
   factory NavivoxCapabilityDocument.fromJson(Map<String, Object?> json) {
     return NavivoxCapabilityDocument(
-      object: navivoxStringFromJson(json['object'], fallback: ''),
-      protocolVersion: navivoxStringFromJson(
-        json['protocol_version'],
-        fallback: '',
-      ),
+      object: navivoxStringFieldFromJson(json, 'object'),
+      protocolVersion: navivoxStringFieldFromJson(json, 'protocol_version'),
       capabilities: navivoxStringListFromJson(json['capabilities']),
       auth: NavivoxCapabilityAuth.fromJson(navivoxMapFromJson(json['auth'])),
       healthAliases: navivoxStringListFromJson(
@@ -133,21 +130,12 @@ class NavivoxDurableReconnectCapability {
     Map<String, Object?> json,
   ) {
     return NavivoxDurableReconnectCapability(
-      supported: json['supported'] == true,
-      issueEndpoint: navivoxStringFromJson(
-        json['issue_endpoint'],
-        fallback: '',
-      ),
+      supported: navivoxGatewayBoolField(json, 'supported'),
+      issueEndpoint: navivoxStringFieldFromJson(json, 'issue_endpoint'),
       authMethods: navivoxStringListFromJson(json['auth_methods']),
       platforms: navivoxStringListFromJson(json['platforms']),
-      effectiveSecurity: navivoxStringFromJson(
-        json['effective_security'],
-        fallback: '',
-      ),
-      blockedReason: navivoxStringFromJson(
-        json['blocked_reason'],
-        fallback: '',
-      ),
+      effectiveSecurity: navivoxStringFieldFromJson(json, 'effective_security'),
+      blockedReason: navivoxStringFieldFromJson(json, 'blocked_reason'),
     );
   }
 
@@ -176,7 +164,7 @@ class NavivoxCapabilityAuth {
 
   factory NavivoxCapabilityAuth.fromJson(Map<String, Object?> json) {
     return NavivoxCapabilityAuth(
-      mode: navivoxStringFromJson(json['mode'], fallback: ''),
+      mode: navivoxStringFieldFromJson(json, 'mode'),
       headers: navivoxStringListFromJson(json['headers']),
       webSocketProtocols: navivoxStringListFromJson(
         json['websocket_protocols'],
@@ -200,11 +188,11 @@ class NavivoxCapabilityEndpoint {
 
   factory NavivoxCapabilityEndpoint.fromJson(Map<String, Object?> json) {
     return NavivoxCapabilityEndpoint(
-      method: navivoxStringFromJson(json['method'], fallback: ''),
-      path: navivoxStringFromJson(json['path'], fallback: ''),
-      auth: navivoxStringFromJson(json['auth'], fallback: ''),
-      stability: navivoxStringFromJson(json['stability'], fallback: ''),
-      description: navivoxStringFromJson(json['description'], fallback: ''),
+      method: navivoxStringFieldFromJson(json, 'method'),
+      path: navivoxStringFieldFromJson(json, 'path'),
+      auth: navivoxStringFieldFromJson(json, 'auth'),
+      stability: navivoxStringFieldFromJson(json, 'stability'),
+      description: navivoxStringFieldFromJson(json, 'description'),
     );
   }
 
@@ -225,13 +213,10 @@ class NavivoxStreamCapability {
 
   factory NavivoxStreamCapability.fromJson(Map<String, Object?> json) {
     return NavivoxStreamCapability(
-      canonicalEndpoint: navivoxStringFromJson(
-        json['canonical_endpoint'],
-        fallback: '',
-      ),
-      transport: navivoxStringFromJson(json['transport'], fallback: ''),
+      canonicalEndpoint: navivoxStringFieldFromJson(json, 'canonical_endpoint'),
+      transport: navivoxStringFieldFromJson(json, 'transport'),
       eventKinds: navivoxStringListFromJson(json['event_kinds']),
-      openAiRunsBridge: json['openai_runs_bridge'] == true,
+      openAiRunsBridge: navivoxGatewayBoolField(json, 'openai_runs_bridge'),
     );
   }
 
@@ -256,19 +241,16 @@ class NavivoxProfileManagementCapability {
     Map<String, Object?> json,
   ) {
     return NavivoxProfileManagementCapability(
-      contactsEndpoint: navivoxStringFromJson(
-        json['contacts_endpoint'],
-        fallback: '',
+      contactsEndpoint: navivoxStringFieldFromJson(json, 'contacts_endpoint'),
+      routingEndpoint: navivoxStringFieldFromJson(json, 'routing_endpoint'),
+      createFromSeedEndpoint: navivoxStringFieldFromJson(
+        json,
+        'create_from_seed_endpoint',
       ),
-      routingEndpoint: navivoxStringFromJson(
-        json['routing_endpoint'],
-        fallback: '',
+      dashboardApiExposed: navivoxGatewayBoolField(
+        json,
+        'dashboard_api_exposed',
       ),
-      createFromSeedEndpoint: navivoxStringFromJson(
-        json['create_from_seed_endpoint'],
-        fallback: '',
-      ),
-      dashboardApiExposed: json['dashboard_api_exposed'] == true,
       supportedActions: navivoxStringListFromJson(json['supported_actions']),
       unsupportedActions: navivoxStringListFromJson(
         json['unsupported_actions'],
@@ -303,11 +285,17 @@ class NavivoxAttachmentCapability {
   factory NavivoxAttachmentCapability.fromJson(Map<String, Object?> json) {
     return NavivoxAttachmentCapability(
       maxRequestBytes: navivoxIntFromJson(json['max_request_bytes']),
-      opaqueUploadIds: json['opaque_upload_ids'] == true,
-      rawLocalPathsAccepted: json['raw_local_paths_accepted'] == true,
-      workspaceFileAttach: json['workspace_file_attach'] == true,
+      opaqueUploadIds: navivoxGatewayBoolField(json, 'opaque_upload_ids'),
+      rawLocalPathsAccepted: navivoxGatewayBoolField(
+        json,
+        'raw_local_paths_accepted',
+      ),
+      workspaceFileAttach: navivoxGatewayBoolField(
+        json,
+        'workspace_file_attach',
+      ),
       mimeAllowlist: navivoxStringListFromJson(json['mime_allowlist']),
-      retention: navivoxStringFromJson(json['retention'], fallback: ''),
+      retention: navivoxStringFieldFromJson(json, 'retention'),
     );
   }
 
@@ -334,15 +322,18 @@ class NavivoxVoiceProtocolCapability {
 
   factory NavivoxVoiceProtocolCapability.fromJson(Map<String, Object?> json) {
     return NavivoxVoiceProtocolCapability(
-      deviceTranscribedTextTurns: json['device_transcribed_text_turns'] == true,
-      rawAudioUpload: json['raw_audio_upload'] == true,
-      voiceProfilesEndpoint: navivoxStringFromJson(
-        json['voice_profiles_endpoint'],
-        fallback: '',
+      deviceTranscribedTextTurns: navivoxGatewayBoolField(
+        json,
+        'device_transcribed_text_turns',
       ),
-      runRecordsEndpoint: navivoxStringFromJson(
-        json['run_records_endpoint'],
-        fallback: '',
+      rawAudioUpload: navivoxGatewayBoolField(json, 'raw_audio_upload'),
+      voiceProfilesEndpoint: navivoxStringFieldFromJson(
+        json,
+        'voice_profiles_endpoint',
+      ),
+      runRecordsEndpoint: navivoxStringFieldFromJson(
+        json,
+        'run_records_endpoint',
       ),
       sttProviders: navivoxStringListFromJson(json['stt_providers']),
       ttsProviders: navivoxStringListFromJson(json['tts_providers']),

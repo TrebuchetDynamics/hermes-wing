@@ -2,4 +2,5 @@
 ///
 /// Import the transport file directly from `transport/` subpackage.
 library;
+
 export 'transport/navivox_gateway_transport_stub.dart';

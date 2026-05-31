@@ -17,6 +17,14 @@ Map<String, Object?>? navivoxGatewayOptionalObjectFromJson(Object? value) {
   return Map<String, Object?>.from(value);
 }
 
+/// Reads a literal boolean field from a decoded gateway response.
+///
+/// Gateway feature flags intentionally preserve strict wire semantics: only the
+/// JSON boolean `true` is truthy, while strings or numeric aliases remain false.
+bool navivoxGatewayBoolField(Map<String, Object?> json, String key) {
+  return json[key] == true;
+}
+
 /// Reads a required JSON object field from a decoded gateway response.
 Map<String, Object?> navivoxGatewayObjectField(
   Map<String, Object?> body,

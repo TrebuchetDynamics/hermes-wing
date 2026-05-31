@@ -15,16 +15,10 @@ class NavivoxGatewaySessionSnapshot {
 
   factory NavivoxGatewaySessionSnapshot.fromJson(Map<String, Object?> json) {
     return NavivoxGatewaySessionSnapshot(
-      sessionId: navivoxStringFromJson(json['session_id'], fallback: ''),
-      lastRequestId: navivoxStringFromJson(
-        json['last_request_id'],
-        fallback: '',
-      ),
-      profileServer: navivoxStringFromJson(
-        json['profile_server'],
-        fallback: '',
-      ),
-      profileId: navivoxStringFromJson(json['profile_id'], fallback: ''),
+      sessionId: navivoxStringFieldFromJson(json, 'session_id'),
+      lastRequestId: navivoxStringFieldFromJson(json, 'last_request_id'),
+      profileServer: navivoxStringFieldFromJson(json, 'profile_server'),
+      profileId: navivoxStringFieldFromJson(json, 'profile_id'),
       createdAt: navivoxDateTimeFromJson(json['created_at']),
       updatedAt: navivoxDateTimeFromJson(json['updated_at']),
       subscribers: navivoxIntFromJson(json['subscribers']),
@@ -54,9 +48,9 @@ class NavivoxRunRecordSnapshot {
 
   factory NavivoxRunRecordSnapshot.fromJson(Map<String, Object?> json) {
     return NavivoxRunRecordSnapshot(
-      runId: navivoxStringFromJson(json['run_id'], fallback: ''),
-      sessionId: navivoxStringFromJson(json['session_id'], fallback: ''),
-      status: navivoxStringFromJson(json['status'], fallback: ''),
+      runId: navivoxStringFieldFromJson(json, 'run_id'),
+      sessionId: navivoxStringFieldFromJson(json, 'session_id'),
+      status: navivoxStringFieldFromJson(json, 'status'),
       createdAt: navivoxDateTimeFromJson(json['created_at']),
       updatedAt: navivoxDateTimeFromJson(json['updated_at']),
       completedAt: navivoxDateTimeFromJson(json['completed_at']),
@@ -88,11 +82,11 @@ class NavivoxProfileSeedResult {
 
   factory NavivoxProfileSeedResult.fromJson(Map<String, Object?> json) {
     return NavivoxProfileSeedResult(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
-      status: navivoxStringFromJson(json['status'], fallback: ''),
-      applied: json['applied'] == true,
-      profileId: navivoxStringFromJson(json['profile_id'], fallback: ''),
-      root: navivoxStringFromJson(json['root'], fallback: ''),
+      action: navivoxStringFieldFromJson(json, 'action'),
+      status: navivoxStringFieldFromJson(json, 'status'),
+      applied: navivoxGatewayBoolField(json, 'applied'),
+      profileId: navivoxStringFieldFromJson(json, 'profile_id'),
+      root: navivoxStringFieldFromJson(json, 'root'),
       workspaceCount: navivoxIntFromJson(json['workspace_count']),
       draft: navivoxMapFromJson(json['draft']),
       contact: navivoxMapFromJson(json['contact']),
@@ -140,7 +134,7 @@ class NavivoxProfileRoute {
   });
 
   factory NavivoxProfileRoute.fromJson(Map<String, Object?> json) {
-    final profileId = navivoxStringFromJson(json['profile_id'], fallback: '');
+    final profileId = navivoxStringFieldFromJson(json, 'profile_id');
     return NavivoxProfileRoute(
       profileId: profileId,
       displayName: navivoxStringFromJson(

@@ -12,17 +12,11 @@ class NavivoxProfileVoiceProfile {
 
   factory NavivoxProfileVoiceProfile.fromJson(Map<String, Object?> json) {
     return NavivoxProfileVoiceProfile(
-      sttProvider: navivoxStringFromJson(json['stt_provider'], fallback: ''),
-      ttsProvider: navivoxStringFromJson(json['tts_provider'], fallback: ''),
-      voiceId: navivoxStringFromJson(json['voice_id'], fallback: ''),
-      languagePolicy: navivoxStringFromJson(
-        json['language_policy'],
-        fallback: '',
-      ),
-      fallbackVoice: navivoxStringFromJson(
-        json['fallback_voice'],
-        fallback: '',
-      ),
+      sttProvider: navivoxStringFieldFromJson(json, 'stt_provider'),
+      ttsProvider: navivoxStringFieldFromJson(json, 'tts_provider'),
+      voiceId: navivoxStringFieldFromJson(json, 'voice_id'),
+      languagePolicy: navivoxStringFieldFromJson(json, 'language_policy'),
+      fallbackVoice: navivoxStringFieldFromJson(json, 'fallback_voice'),
     );
   }
 
@@ -70,10 +64,10 @@ class NavivoxVoiceCredentialStatus {
 
   factory NavivoxVoiceCredentialStatus.fromJson(Map<String, Object?> json) {
     return NavivoxVoiceCredentialStatus(
-      configured: json['configured'] == true,
-      required: json['required'] == true,
-      status: navivoxStringFromJson(json['status'], fallback: ''),
-      source: navivoxStringFromJson(json['source'], fallback: ''),
+      configured: navivoxGatewayBoolField(json, 'configured'),
+      required: navivoxGatewayBoolField(json, 'required'),
+      status: navivoxStringFieldFromJson(json, 'status'),
+      source: navivoxStringFieldFromJson(json, 'source'),
     );
   }
 
@@ -92,9 +86,9 @@ class NavivoxVoiceProfileFieldError {
 
   factory NavivoxVoiceProfileFieldError.fromJson(Map<String, Object?> json) {
     return NavivoxVoiceProfileFieldError(
-      field: navivoxStringFromJson(json['field'], fallback: ''),
-      code: navivoxStringFromJson(json['code'], fallback: ''),
-      message: navivoxStringFromJson(json['message'], fallback: ''),
+      field: navivoxStringFieldFromJson(json, 'field'),
+      code: navivoxStringFieldFromJson(json, 'code'),
+      message: navivoxStringFieldFromJson(json, 'message'),
     );
   }
 
@@ -114,11 +108,11 @@ class NavivoxVoiceProfileValidation {
 
   factory NavivoxVoiceProfileValidation.fromJson(Map<String, Object?> json) {
     return NavivoxVoiceProfileValidation(
-      profileId: navivoxStringFromJson(json['profile_id'], fallback: ''),
+      profileId: navivoxStringFieldFromJson(json, 'profile_id'),
       voiceProfile: NavivoxProfileVoiceProfile.fromJson(
         navivoxMapFromJson(json['voice_profile']),
       ),
-      valid: json['valid'] == true,
+      valid: navivoxGatewayBoolField(json, 'valid'),
       errors: _voiceProfileErrorsFromJson(json['errors']),
       credentialStatusRefs: navivoxGatewayObjectValueMapFromJson(
         json['credential_status_refs'],
@@ -145,7 +139,7 @@ class NavivoxVoiceProfileView {
   });
 
   factory NavivoxVoiceProfileView.fromJson(Map<String, Object?> json) {
-    final profileId = navivoxStringFromJson(json['profile_id'], fallback: '');
+    final profileId = navivoxStringFieldFromJson(json, 'profile_id');
     return NavivoxVoiceProfileView(
       profileId: profileId,
       displayName: navivoxStringFromJson(
@@ -159,7 +153,7 @@ class NavivoxVoiceProfileView {
         json['credential_status_refs'],
         NavivoxVoiceCredentialStatus.fromJson,
       ),
-      valid: json['valid'] == true,
+      valid: navivoxGatewayBoolField(json, 'valid'),
       errors: _voiceProfileErrorsFromJson(json['errors']),
     );
   }
@@ -181,7 +175,7 @@ class NavivoxVoiceProfilesResponse {
 
   factory NavivoxVoiceProfilesResponse.fromJson(Map<String, Object?> json) {
     return NavivoxVoiceProfilesResponse(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
+      action: navivoxStringFieldFromJson(json, 'action'),
       providerMatrix: NavivoxVoiceProviderMatrix.fromJson(
         navivoxMapFromJson(json['provider_matrix']),
       ),
@@ -215,12 +209,13 @@ class NavivoxVoiceProfileValidationResponse {
         : NavivoxVoiceProfileValidation.fromJson(validationJson);
     final topErrors = _voiceProfileErrorsFromJson(json['errors']);
     return NavivoxVoiceProfileValidationResponse(
-      action: navivoxStringFromJson(json['action'], fallback: ''),
+      action: navivoxStringFieldFromJson(json, 'action'),
       providerMatrix: NavivoxVoiceProviderMatrix.fromJson(
         navivoxMapFromJson(json['provider_matrix']),
       ),
       validation: validation,
-      valid: json['valid'] == true || validation?.valid == true,
+      valid:
+          navivoxGatewayBoolField(json, 'valid') || validation?.valid == true,
       errors: topErrors.isNotEmpty ? topErrors : validation?.errors ?? const [],
     );
   }

@@ -3,10 +3,7 @@ class NavivoxGatewayMessage {
   const NavivoxGatewayMessage._(this.body);
 
   factory NavivoxGatewayMessage.ping({required String requestId}) {
-    return NavivoxGatewayMessage._({
-      'type': 'ping',
-      'request_id': requestId,
-    });
+    return NavivoxGatewayMessage._({'type': 'ping', 'request_id': requestId});
   }
 
   factory NavivoxGatewayMessage.startTurn({

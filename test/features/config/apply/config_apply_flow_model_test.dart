@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/config/apply/config_apply_flow_model.dart';
+import 'package:navivox/features/config/apply/model/flow/config_draft_change_plan.dart';
 import 'package:navivox/features/config/apply/validation/config_validation_issues.dart';
+import 'package:navivox/features/config/apply/validation/config_validation_state.dart';
 import 'package:navivox/features/config/form/config_form_model.dart';
 
 void main() {
@@ -333,6 +335,30 @@ void main() {
 
     expect(flow.hasPendingChanges, isFalse);
     expect(flow.changes, isEmpty);
+  });
+
+  test('draft change plan exposes draft paths outside the current schema', () {
+    final form = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'providers.default', 'label': 'Default provider'},
+        ],
+      },
+      values: const {'providers.default': 'openai'},
+    );
+
+    final plan = ConfigDraftChangePlan.fromRows(
+      rows: form.rows,
+      draftValues: const {
+        'providers.default': 'local',
+        'providers.removed': 'stale',
+      },
+      validation: ConfigValidationState.fromSnapshot(null),
+    );
+
+    expect(plan.changes.map((change) => change.path), ['providers.default']);
+    expect(plan.droppedDraftPaths, ['providers.removed']);
+    expect(() => plan.droppedDraftPaths.clear(), throwsUnsupportedError);
   });
 
   test('freezes draft change snapshots after construction', () {

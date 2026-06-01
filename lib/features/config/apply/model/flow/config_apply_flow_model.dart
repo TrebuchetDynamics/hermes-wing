@@ -1,6 +1,7 @@
 import '../../../form/config_form_model.dart';
 import '../../validation/config_validation_state.dart';
 import '../change/config_draft_change.dart';
+import 'config_draft_change_plan.dart';
 
 class ConfigApplyFlowModel {
   ConfigApplyFlowModel({
@@ -22,12 +23,13 @@ class ConfigApplyFlowModel {
     Map<String, Object?>? validationSnapshot,
   }) {
     final validation = ConfigValidationState.fromSnapshot(validationSnapshot);
+    final changePlan = ConfigDraftChangePlan.fromRows(
+      rows: form.rows,
+      draftValues: draftValues,
+      validation: validation,
+    );
     return ConfigApplyFlowModel(
-      changes: _draftChangesFromRows(
-        rows: form.rows,
-        draftValues: draftValues,
-        validation: validation,
-      ),
+      changes: changePlan.changes,
       globalValidationMessages: validation.globalMessages,
       validation: validation,
       hasVisibleFieldErrors: _hasValidationMessagesForRows(
@@ -69,22 +71,4 @@ bool _hasValidationMessagesForRows({
   required ConfigValidationState validation,
 }) {
   return rows.any((row) => validation.messagesFor(row.field).isNotEmpty);
-}
-
-List<ConfigDraftChange> _draftChangesFromRows({
-  required Iterable<ConfigFormRow> rows,
-  required Map<String, Object?> draftValues,
-  required ConfigValidationState validation,
-}) {
-  final changes = <ConfigDraftChange>[];
-  for (final row in rows) {
-    if (!draftValues.containsKey(row.field)) continue;
-    final change = ConfigDraftChange.fromRow(
-      row,
-      draftValues[row.field],
-      validation.messagesFor(row.field),
-    );
-    if (change != null) changes.add(change);
-  }
-  return changes;
 }

@@ -76,12 +76,20 @@ bool _hasUnmatchedClosingDelimiterAtEnd(
 // credentials.
 const _copiedUrlLeadingDelimiters = '<"\'`';
 const _copiedUrlTrailingPunctuation = '.,;:!?)]}>"\'`';
+// Token labels can be glued to copied URLs by punctuation from prose,
+// markdown, or wrapper delimiters, e.g. `connect:Token:x` or
+// `connect(Token: x)`. Treat both closing and opening wrappers as label
+// boundaries so the URL candidate keeps its real path while the following token
+// remains in the endpoint-local search window.
 const _attachedTokenLabelPunctuation = [
   ',',
   ';',
   '.',
   '!',
   ':',
+  '(',
+  '[',
+  '{',
   ')',
   ']',
   '}',

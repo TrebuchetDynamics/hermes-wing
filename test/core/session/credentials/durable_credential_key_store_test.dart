@@ -91,6 +91,57 @@ void main() {
     expect(calls.single.method, 'createEs256KeyPair');
   });
 
+  test(
+    'rejects native public JWKs with private or incompatible fields',
+    () async {
+      final invalidJwks = [
+        {
+          'kty': 'EC',
+          'crv': 'P-256',
+          'x': 'public-x',
+          'y': 'public-y',
+          'alg': 'ES256',
+          'd': 'private-key-material',
+        },
+        {
+          'kty': 'RSA',
+          'crv': 'P-256',
+          'x': 'public-x',
+          'y': 'public-y',
+          'alg': 'ES256',
+        },
+        {
+          'kty': 'EC',
+          'crv': 'P-384',
+          'x': 'public-x',
+          'y': 'public-y',
+          'alg': 'ES256',
+        },
+        {
+          'kty': 'EC',
+          'crv': 'P-256',
+          'x': 'public-x',
+          'y': 'public-y',
+          'alg': 'ES384',
+        },
+      ];
+
+      for (final jwk in invalidJwks) {
+        setDurableKeysMockHandler((call) async => jwk);
+        final store = MethodChannelDurableCredentialKeyStore(
+          channel: durableKeysTestChannel,
+        );
+
+        await expectLater(
+          store.createEs256KeyPair(
+            alias: const DurableCredentialKeyAlias.native(durableTestAlias),
+          ),
+          throwsFormatException,
+        );
+      }
+    },
+  );
+
   test('signs canonical bytes and deletes local key alias', () async {
     final signature = Uint8List.fromList([9, 8, 7]);
     setDurableKeysMockHandler((call) async {

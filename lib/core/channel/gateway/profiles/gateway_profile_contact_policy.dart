@@ -1,7 +1,7 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
-import '../../contracts/profiles/navivox_profile_contact_codec.dart';
-import '../../contracts/profiles/navivox_profile_scope.dart';
+import '../../contracts/navivox_channel.dart';
+import '../../contracts/navivox_profile_contact_codec.dart';
+import '../../contracts/navivox_profile_scope.dart';
 
 /// Gateway profile-contact fallback and server-list policy.
 ///

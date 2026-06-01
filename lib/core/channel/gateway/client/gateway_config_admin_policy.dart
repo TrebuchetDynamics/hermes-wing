@@ -1,5 +1,5 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
+import '../../contracts/navivox_channel.dart';
 import 'gateway_capability_policy.dart';
 import 'gateway_client_guard.dart';
 

@@ -1,7 +1,7 @@
 import '../../../protocol/navivox_event.dart';
 import '../../../protocol/navivox_voice_run.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
-import '../../contracts/profiles/navivox_profile_scope.dart';
+import '../../contracts/navivox_channel.dart';
+import '../../contracts/navivox_profile_scope.dart';
 
 /// Gateway voice-run lifecycle policy.
 ///

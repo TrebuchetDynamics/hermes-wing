@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../contracts/channel/navivox_channel_contract.dart';
+import '../contracts/navivox_channel.dart';
 import '../gateway/gateway_navivox_channel.dart';
 
 final navivoxChannelProvider = Provider<NavivoxChannel>((ref) {

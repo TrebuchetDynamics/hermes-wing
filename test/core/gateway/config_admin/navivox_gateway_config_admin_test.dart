@@ -119,10 +119,12 @@ void main() {
       key: 'providers.openai.api_key',
       type: 'secret',
       secret: true,
+      value: 'constructed-leaked-api-key',
       secretStatus: ' set ',
       source: ' env:GORMES_OPENAI_API_KEY ',
     );
 
+    expect(value.value, isNull);
     expect(value.formValue, {
       'secret_status': 'set',
       'source': 'env:GORMES_OPENAI_API_KEY',

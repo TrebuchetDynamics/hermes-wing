@@ -1,6 +1,6 @@
 import '../../../protocol/navivox_event.dart';
 import '../../../protocol/navivox_voice_run.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
+import '../../contracts/navivox_channel.dart';
 
 /// Shared state update policy for gateway transcript and voice-run maps.
 ///

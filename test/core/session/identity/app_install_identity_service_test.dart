@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/session/app_install_identity_service.dart';
 
-import '../support/storage/session_shared_preferences_test_support.dart';
+import '../support/session_shared_preferences_test_support.dart';
 
 void main() {
   setUp(() {

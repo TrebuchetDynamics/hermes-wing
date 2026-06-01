@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:navivox/core/session/session_persistence_service.dart';
 
-import '../../support/persistence/session_persistence_test_support.dart';
+import '../../support/session_persistence_test_support.dart';
 
 void expectLocalGatewaySession(SavedSession session) {
   expect(session.baseUrl, localGatewayBaseUrl);

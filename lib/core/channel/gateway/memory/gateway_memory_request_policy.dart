@@ -1,6 +1,6 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
-import '../../contracts/memory/navivox_memory_scope.dart';
+import '../../contracts/navivox_channel.dart';
+import '../../contracts/navivox_memory_scope.dart';
 
 /// Shared request policy for gateway-backed memory operations.
 ///

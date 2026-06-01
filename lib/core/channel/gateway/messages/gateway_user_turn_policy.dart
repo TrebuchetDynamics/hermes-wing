@@ -1,6 +1,6 @@
 import '../../../protocol/navivox_event.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
-import '../../contracts/messages/navivox_message_scope.dart';
+import '../../contracts/navivox_channel.dart';
+import '../../contracts/navivox_message_scope.dart';
 import '../turns/gateway_turn_metadata_policy.dart';
 
 /// Builds local user transcript messages for turns sent to the gateway.

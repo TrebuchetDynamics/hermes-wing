@@ -1,6 +1,6 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
 import '../../../protocol/navivox_event.dart';
-import '../../contracts/channel/navivox_channel_contract.dart';
+import '../../contracts/navivox_channel.dart';
 
 /// Gateway approval payload shared by stream notifications, tool-call cards,
 /// and durable approval-request messages.

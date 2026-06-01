@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:navivox/core/session/session_persistence_service.dart';
 import 'package:navivox/core/session/persistence/storage/session_preference_keys.dart';
 
-import '../../support/persistence/session_persistence_test_support.dart';
+import '../../support/session_persistence_test_support.dart';
 import '../support/session_persistence_expectations.dart';
 
 void main() {

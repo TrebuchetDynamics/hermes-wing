@@ -8,11 +8,11 @@ class NavivoxConfigAdminValue {
   const NavivoxConfigAdminValue({
     required this.key,
     required this.type,
-    this.value,
+    Object? value,
     this.secret = false,
     this.secretStatus = '',
     this.source = '',
-  });
+  }) : _value = value;
 
   factory NavivoxConfigAdminValue.fromJson(Map<String, Object?> json) {
     final secret = configAdminIsSecret(json);
@@ -31,13 +31,19 @@ class NavivoxConfigAdminValue {
 
   final String key;
   final String type;
-  final Object? value;
+  final Object? _value;
   final bool secret;
   final String secretStatus;
   final String source;
 
+  bool get _isSecret => secret || configAdminTypeIsSecret(type);
+
+  Object? get value {
+    return configAdminStoredValue(value: _value, secret: _isSecret);
+  }
+
   Object? get formValue {
-    if (!secret) return value;
+    if (!_isSecret) return value;
     return configAdminSecretFormValue(
       secretStatus: secretStatus,
       source: source,

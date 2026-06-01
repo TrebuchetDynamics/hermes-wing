@@ -1,6 +1,6 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
 import '../../../protocol/navivox_event.dart';
-import '../../contracts/messages/navivox_message_scope.dart';
+import '../../contracts/navivox_message_scope.dart';
 import '../approvals/gateway_approval_notice.dart';
 
 /// Builds safety and approval messages from gateway events.

@@ -42,4 +42,26 @@ void main() {
 
     expect(result, isNull);
   });
+
+  test('binds a trailing token only to the selected endpoint window', () {
+    final result = parseNavivoxConnectionImportPayload(
+      'Token: nvbx_old https://docs.example/help. Then open '
+      'https://gateway.example/connect. Token: nvbx_pairing',
+    );
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://gateway.example');
+    expect(result.token, 'nvbx_pairing');
+  });
+
+  test('does not borrow a leading token for later endpoints', () {
+    final result = parseNavivoxConnectionImportPayload(
+      'Token: nvbx_old https://docs.example/help. Then open '
+      'https://gateway.example/connect.',
+    );
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://gateway.example');
+    expect(result.token, isNull);
+  });
 }

@@ -7,6 +7,7 @@ import '../../models/connection_import.dart';
 
 part 'candidate.dart';
 part 'candidate_rank.dart';
+part 'shared_text_endpoint.dart';
 
 class ConnectionImportParser {
   const ConnectionImportParser();
@@ -477,24 +478,8 @@ _SharedTextEndpointCandidate? _sharedTextEndpointCandidate(
   );
 }
 
-Iterable<_SharedTextEndpoint> _endpointUrls(String text) sync* {
-  final matches = _endpointUrlMatches(text).toList(growable: false);
-  for (var index = 0; index < matches.length; index++) {
-    final match = matches[index];
-    final nextEndpointStart = index + 1 < matches.length
-        ? matches[index + 1].sourceWindow.start
-        : text.length;
-    yield _SharedTextEndpoint(
-      url: match.url,
-      sourceWindow: match.sourceWindow,
-      tokenWindow: _TextWindow(
-        start: match.trailingPunctuationWindow.start,
-        end: nextEndpointStart,
-      ),
-      hasPriorEndpoint: index > 0,
-    );
-  }
-}
+Iterable<_SharedTextEndpoint> _endpointUrls(String text) =>
+    _sharedTextEndpoints(text);
 
 Iterable<_SharedTextEndpointMatch> _endpointUrlMatches(String text) sync* {
   for (final match in _endpointUrlPattern.allMatches(text)) {
@@ -544,41 +529,6 @@ int _matchedEndpointUrlEndBeforeAttachedTokenLabel(
     }
   }
   return earliestTokenLabelStart ?? matchedText.length;
-}
-
-class _SharedTextEndpointMatch {
-  const _SharedTextEndpointMatch({
-    required this.url,
-    required this.sourceWindow,
-    required this.trailingPunctuationWindow,
-  }) : assert(url.length > 0);
-
-  final String url;
-  final _TextWindow sourceWindow;
-  final _TextWindow trailingPunctuationWindow;
-}
-
-class _SharedTextEndpoint {
-  const _SharedTextEndpoint({
-    required this.url,
-    required this.sourceWindow,
-    required this.tokenWindow,
-    required this.hasPriorEndpoint,
-  });
-
-  final String url;
-  final _TextWindow sourceWindow;
-  final _TextWindow tokenWindow;
-  final bool hasPriorEndpoint;
-}
-
-class _TextWindow {
-  const _TextWindow({required this.start, required this.end})
-    : assert(start >= 0),
-      assert(end >= start);
-
-  final int start;
-  final int end;
 }
 
 class _SharedTextEndpointCandidate {

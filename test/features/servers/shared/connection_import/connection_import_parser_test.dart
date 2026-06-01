@@ -319,6 +319,16 @@ void main() {
     expect(result.token, 'shared_secret');
   });
 
+  test('parses copied URL token after rich-text non-breaking space', () {
+    final result = parseNavivoxConnectionImportPayload(
+      'https://gateway.example/connect\u00A0Token: shared_secret',
+    );
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://gateway.example');
+    expect(result.token, 'shared_secret');
+  });
+
   test('does not split tokens at an embedded endpoint boundary', () {
     final result = parseNavivoxConnectionImportPayload(
       'Token: nvbx_stalehttps://gateway.example/connect has setup steps.',

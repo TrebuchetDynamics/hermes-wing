@@ -42,7 +42,7 @@ class ConnectionImportParser {
 
   _CopiedUriPayload? _copiedUriPayload(String text) {
     final copiedUrl = _trimCopiedEndpointUrl(text);
-    if (_containsWhitespace(copiedUrl)) return null;
+    if (_containsCopiedTextSeparator(copiedUrl)) return null;
     if (_hasAttachedTokenLabelAfterCopiedEndpoint(copiedUrl)) return null;
     final uri = Uri.tryParse(copiedUrl);
     if (uri == null || !uri.hasScheme) return null;
@@ -126,8 +126,8 @@ class _CopiedUriPayload {
 bool _isCorePairingDescriptorUri(Uri uri) =>
     uri.scheme == 'navivox' && uri.host == 'connect';
 
-bool _containsWhitespace(String value) =>
-    value.codeUnits.any((unit) => unit <= 32);
+bool _containsCopiedTextSeparator(String value) =>
+    value.codeUnits.any(_isCopiedTextSeparatorCodeUnit);
 
 SetupQrImageImport? _importFromGenericUri(Uri uri) {
   return _connectionImportCandidateFromGenericUri(uri)?.toImport();

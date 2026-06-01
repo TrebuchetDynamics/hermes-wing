@@ -49,6 +49,7 @@ void main() {
   stripsSentenceTrailingPeriodFromSharedTextUrl();
   parsesSharedTextTokenAfterAttachedUrlPunctuation();
   parsesSharedTextTokenAfterAttachedUrlColonPunctuation();
+  parsesCopiedUrlTokenAfterNonBreakingSpaceSeparator();
   stripsTrailingPunctuationFromPlainCopiedUrl();
   stripsAngleBracketFromPlainCopiedUrl();
   stripsBacktickFromPlainCopiedUrl();
@@ -917,6 +918,25 @@ void parsesSharedTextTokenAfterAttachedUrlColonPunctuation() {
   _expect(
     result.token == 'shared_secret',
     'token labels immediately after URL colon punctuation should keep their provenance window',
+  );
+}
+
+void parsesCopiedUrlTokenAfterNonBreakingSpaceSeparator() {
+  final result = parseNavivoxConnectionImportPayload(
+    'https://gateway.example/connect\u00A0Token: shared_secret',
+  );
+
+  _expect(
+    result != null,
+    'plain copied URL plus token label with copied NBSP should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'copied NBSP after URL should route through shared-text endpoint parsing',
+  );
+  _expect(
+    result.token == 'shared_secret',
+    'token label after copied NBSP should stay attached to selected endpoint',
   );
 }
 

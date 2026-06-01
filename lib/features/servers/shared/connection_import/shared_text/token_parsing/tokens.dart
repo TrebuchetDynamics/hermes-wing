@@ -207,10 +207,14 @@ bool _isTokenLeadingIgnoredChar(String text, int index) {
       _tokenLeadingDelimiters.contains(text[index]);
 }
 
-bool _isTokenSeparatorCodeUnit(int codeUnit) {
+bool _isTokenSeparatorCodeUnit(int codeUnit) =>
+    _isCopiedTextSeparatorCodeUnit(codeUnit);
+
+bool _isCopiedTextSeparatorCodeUnit(int codeUnit) {
   // Copied setup guides often carry non-ASCII spacing from rich text. Keep the
-  // accepted separator set explicit so token parsing does not depend on regex
-  // engine whitespace tables or silently treat format characters as spaces.
+  // accepted separator set explicit so token and URL-boundary parsing do not
+  // depend on regex engine whitespace tables or silently treat format
+  // characters as spaces.
   return codeUnit <= 0x20 || _unicodeTokenSeparatorCodeUnits.contains(codeUnit);
 }
 

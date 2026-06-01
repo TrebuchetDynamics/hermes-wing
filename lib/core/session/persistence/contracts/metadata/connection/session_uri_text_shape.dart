@@ -19,13 +19,13 @@ enum SavedSessionUriTextShape {
 }
 
 SavedSessionUriTextShape classifySavedSessionUriTextShape(String value) {
-  final text = value.trim();
-  if (text.isEmpty) return SavedSessionUriTextShape.none;
+  final syntax = SavedSessionUriTextSyntax.parse(value);
+  if (syntax.isBlank) return SavedSessionUriTextShape.none;
 
   // Dart's URI parser treats bracketed IPv6 host literals such as
   // `[::1]:8765/stream` as scheme-shaped because the first colon appears inside
   // the address. They are legacy host metadata, not bootstrap-token URLs.
-  if (_startsWithBracketedHostLiteral(text)) {
+  if (syntax.startsWithBracketedHostLiteral) {
     return SavedSessionUriTextShape.bracketedHostLiteral;
   }
 
@@ -33,49 +33,77 @@ SavedSessionUriTextShape classifySavedSessionUriTextShape(String value) {
   // authority URLs such as `wss://host:bad/path` may not parse, but they are
   // still unsafe to preserve as legacy text because query/fragment/userinfo
   // could carry bootstrap credentials.
-  if (_hasAuthoritySchemeSeparator(text)) {
+  if (syntax.hasAuthoritySchemeSeparator) {
     return SavedSessionUriTextShape.authorityUrl;
   }
 
-  final uri = Uri.tryParse(text);
+  final uri = Uri.tryParse(syntax.text);
   if (uri == null || !uri.hasScheme) return SavedSessionUriTextShape.none;
 
   // Dart's URI parser treats `host:8765/path` as a URI with scheme `host`.
   // Saved-session metadata also accepts legacy non-URL text, so only discard
   // values that are visibly URL/scheme-shaped rather than host-port-shaped.
-  if (_hasPortLikeSchemeSeparator(text)) {
+  if (syntax.hasPortLikeSchemeSeparator) {
     return SavedSessionUriTextShape.hostPortLike;
   }
-  return _hasNonPortSchemeSeparator(text)
+  return syntax.hasNonPortSchemeSeparator
       ? SavedSessionUriTextShape.namedScheme
       : SavedSessionUriTextShape.none;
 }
 
-bool _startsWithBracketedHostLiteral(String value) {
-  if (!value.startsWith('[')) return false;
-  final closingBracket = value.indexOf(']');
-  if (closingBracket <= 1) return false;
-  if (closingBracket == value.length - 1) return true;
+/// Replayable syntax facts used by saved-session URI text classification.
+///
+/// These facts intentionally avoid deciding whether text is safe to persist.
+/// They only expose the separators that drive the classifier so tests can pin
+/// Dart URI parser quirks separately from reconnect-safety policy.
+class SavedSessionUriTextSyntax {
+  const SavedSessionUriTextSyntax._({
+    required this.text,
+    required int firstColonIndex,
+  }) : _firstColonIndex = firstColonIndex;
 
-  final nextCodeUnit = value.codeUnitAt(closingBracket + 1);
-  return nextCodeUnit == 0x2f || nextCodeUnit == 0x3a; // `/` or `:`.
+  factory SavedSessionUriTextSyntax.parse(String value) {
+    final text = value.trim();
+    return SavedSessionUriTextSyntax._(
+      text: text,
+      firstColonIndex: text.indexOf(':'),
+    );
+  }
+
+  final String text;
+  final int _firstColonIndex;
+
+  bool get isBlank => text.isEmpty;
+
+  bool get startsWithBracketedHostLiteral {
+    if (!text.startsWith('[')) return false;
+    final closingBracket = text.indexOf(']');
+    if (closingBracket <= 1) return false;
+    if (closingBracket == text.length - 1) return true;
+
+    final nextCodeUnit = text.codeUnitAt(closingBracket + 1);
+    return nextCodeUnit == _slash || nextCodeUnit == _colon;
+  }
+
+  bool get hasAuthoritySchemeSeparator => text.indexOf('://') > 0;
+
+  bool get hasPortLikeSchemeSeparator {
+    if (_firstColonIndex <= 0 || _firstColonIndex == text.length - 1) {
+      return false;
+    }
+    return _startsWithAsciiDigit(text, _firstColonIndex + 1);
+  }
+
+  bool get hasNonPortSchemeSeparator {
+    if (_firstColonIndex <= 0 || _firstColonIndex == text.length - 1) {
+      return false;
+    }
+    return !_startsWithAsciiDigit(text, _firstColonIndex + 1);
+  }
 }
 
-bool _hasAuthoritySchemeSeparator(String value) {
-  return value.indexOf('://') > 0;
-}
-
-bool _hasPortLikeSchemeSeparator(String value) {
-  final separator = value.indexOf(':');
-  if (separator <= 0 || separator == value.length - 1) return false;
-  return _startsWithAsciiDigit(value, separator + 1);
-}
-
-bool _hasNonPortSchemeSeparator(String value) {
-  final separator = value.indexOf(':');
-  if (separator <= 0 || separator == value.length - 1) return false;
-  return !_startsWithAsciiDigit(value, separator + 1);
-}
+const int _colon = 0x3a;
+const int _slash = 0x2f;
 
 bool _startsWithAsciiDigit(String value, int index) {
   final codeUnit = value.codeUnitAt(index);

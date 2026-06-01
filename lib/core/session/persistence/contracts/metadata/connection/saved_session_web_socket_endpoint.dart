@@ -1,6 +1,7 @@
 import '../../../../../protocol/navivox_json.dart';
 
 import 'saved_session_metadata_projection.dart';
+import 'saved_session_metadata_value_projection.dart';
 import 'session_uri_text_shape.dart';
 
 /// Reconnect-safe projection for a saved websocket endpoint.
@@ -83,24 +84,20 @@ String? durableSavedSessionWebSocketUrlFromMetadata(Object? value) {
 }
 
 SavedSessionMetadataProjection _projectSavedSessionWebSocket(String text) {
-  final endpoint = SavedSessionWebSocketEndpoint.tryParse(text);
-  if (endpoint != null) {
-    return SavedSessionMetadataProjection.durable(endpoint.durableUrl);
-  }
-  if (_hasExplicitUriScheme(text) || _hasNonDurableLegacyUriState(text)) {
-    return const SavedSessionMetadataProjection.rejectedUrl();
-  }
-  return SavedSessionMetadataProjection.legacy(text);
+  return projectSavedSessionMetadataValue(
+    text: text,
+    durableValueFromText: _durableWebSocketUrlFromText,
+    isUnsafeUriShape: _isUnsafeSavedSessionWebSocketShape,
+  );
 }
 
-bool _hasExplicitUriScheme(String value) {
-  return classifySavedSessionWebSocketTextShape(
-    value.trim(),
-  ).isExplicitUriScheme;
+String? _durableWebSocketUrlFromText(String text) {
+  return SavedSessionWebSocketEndpoint.tryParse(text)?.durableUrl;
 }
 
-bool _hasNonDurableLegacyUriState(String value) {
-  return SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
+bool _isUnsafeSavedSessionWebSocketShape(String value) {
+  return classifySavedSessionWebSocketTextShape(value).isExplicitUriScheme ||
+      SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
 }
 
 /// Replayable shape classification for saved websocket metadata text.

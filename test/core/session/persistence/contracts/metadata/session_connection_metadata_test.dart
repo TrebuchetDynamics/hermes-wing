@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:navivox/core/session/persistence/contracts/metadata/connection/saved_session_base_url.dart';
 import 'package:navivox/core/session/persistence/contracts/metadata/connection/saved_session_metadata_projection.dart';
+import 'package:navivox/core/session/persistence/contracts/metadata/connection/saved_session_metadata_value_projection.dart';
 import 'package:navivox/core/session/persistence/contracts/metadata/connection/saved_session_web_socket_endpoint.dart';
 import 'package:navivox/core/session/persistence/contracts/metadata/connection/session_connection_metadata.dart';
 
@@ -16,6 +17,44 @@ void main() {
         () => SavedSessionMetadataProjection.legacy(''),
         throwsA(isA<AssertionError>()),
       );
+    });
+  });
+
+  group('projectSavedSessionMetadataValue', () {
+    test('prefers durable projection before unsafe-shape rejection', () {
+      final projection = projectSavedSessionMetadataValue(
+        text: 'https://gateway.example/setup?pairing_token=secret',
+        durableValueFromText: (_) => 'https://gateway.example',
+        isUnsafeUriShape: (_) => true,
+      );
+
+      expect(projection.durableValue, 'https://gateway.example');
+      expect(projection.isRejectedUrl, isFalse);
+      expect(projection.isLegacyText, isFalse);
+    });
+
+    test('rejects unsafe non-durable text before legacy compatibility', () {
+      final projection = projectSavedSessionMetadataValue(
+        text: 'gateway.example:8765/setup?pairing_token=secret',
+        durableValueFromText: (_) => null,
+        isUnsafeUriShape: (_) => true,
+      );
+
+      expect(projection.durableValue, isNull);
+      expect(projection.isRejectedUrl, isTrue);
+      expect(projection.isLegacyText, isFalse);
+    });
+
+    test('preserves non-durable safe text as legacy compatibility', () {
+      final projection = projectSavedSessionMetadataValue(
+        text: 'gateway.example:8765/setup',
+        durableValueFromText: (_) => null,
+        isUnsafeUriShape: (_) => false,
+      );
+
+      expect(projection.durableValue, 'gateway.example:8765/setup');
+      expect(projection.isLegacyText, isTrue);
+      expect(projection.isRejectedUrl, isFalse);
     });
   });
 

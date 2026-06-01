@@ -2,6 +2,7 @@ import '../../../../../protocol/navivox_endpoint_uri.dart';
 import '../../../../../protocol/navivox_json.dart';
 
 import 'saved_session_metadata_projection.dart';
+import 'saved_session_metadata_value_projection.dart';
 import 'session_uri_text_shape.dart';
 
 /// Reconnect-safe projection for saved HTTP base URL metadata.
@@ -46,12 +47,11 @@ String? durableSavedSessionBaseUrlFromMetadata(Object? value) {
 }
 
 SavedSessionMetadataProjection _projectSavedSessionBaseUrl(String text) {
-  final baseUrl = _httpBaseUrlFromEndpointText(text);
-  if (baseUrl != null) return SavedSessionMetadataProjection.durable(baseUrl);
-  if (_looksLikeEndpointUrl(text) || _hasNonDurableLegacyUriState(text)) {
-    return const SavedSessionMetadataProjection.rejectedUrl();
-  }
-  return SavedSessionMetadataProjection.legacy(text);
+  return projectSavedSessionMetadataValue(
+    text: text,
+    durableValueFromText: _httpBaseUrlFromEndpointText,
+    isUnsafeUriShape: _isUnsafeSavedSessionBaseUrlShape,
+  );
 }
 
 String? _httpBaseUrlFromEndpointText(String value) {
@@ -62,10 +62,7 @@ String? _httpBaseUrlFromEndpointText(String value) {
   }
 }
 
-bool _looksLikeEndpointUrl(String value) {
-  return classifySavedSessionUriTextShape(value).isExplicitUriScheme;
-}
-
-bool _hasNonDurableLegacyUriState(String value) {
-  return SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
+bool _isUnsafeSavedSessionBaseUrlShape(String value) {
+  return classifySavedSessionUriTextShape(value).isExplicitUriScheme ||
+      SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
 }

@@ -10,7 +10,10 @@ class ConfigValidationSnapshotWire {
     const ['validation_errors'],
   );
 
-  Object? get genericErrors => snapshot['errors'];
+  Object? get genericErrors => configWirePopulatedValueFromAliases(
+    snapshot,
+    const ['errors', 'generic_errors'],
+  );
 
   Object? get fieldErrors =>
       configWirePopulatedValueFromAliases(snapshot, const ['field_errors']);

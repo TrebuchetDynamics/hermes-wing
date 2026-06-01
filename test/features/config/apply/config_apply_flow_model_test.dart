@@ -460,14 +460,33 @@ void main() {
           'fieldErrors': {
             'feature.enabled': ['Still not a boolean.'],
           },
+          'genericErrors': ['Gateway validation failed.'],
         },
       );
 
       expect(flow.hasInvalidChanges, isTrue);
+      expect(flow.globalValidationMessages, ['Gateway validation failed.']);
       expect(flow.validationMessagesFor('feature.enabled'), [
         'Expected a boolean.',
         'Still not a boolean.',
       ]);
+    });
+
+    test('falls through empty generic error snapshot aliases', () {
+      final form = _singleBooleanFieldForm();
+
+      final flow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'errors': [],
+          'genericErrors': ['Gateway validation failed.'],
+        },
+      );
+
+      expect(flow.hasInvalidChanges, isTrue);
+      expect(flow.canApply, isFalse);
+      expect(flow.globalValidationMessages, ['Gateway validation failed.']);
     });
 
     test('falls through null and empty snapshot aliases', () {

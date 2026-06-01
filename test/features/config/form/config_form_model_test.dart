@@ -33,6 +33,33 @@ void main() {
     expect(model.rows[2].coerceEditValue('false'), false);
   });
 
+  test('deduplicates duplicate schema field paths before section grouping', () {
+    final model = ConfigFormModel.fromSchema(
+      schema: const {
+        'sections': [
+          {
+            'id': 'provider',
+            'fields': ['providers.default'],
+          },
+        ],
+        'fields': [
+          {'path': 'providers.default', 'label': 'Default provider'},
+          {'path': 'providers.default', 'label': 'Duplicate provider'},
+          {'path': 'model.temperature', 'type': 'number'},
+        ],
+      },
+      values: const {'providers.default': 'openai', 'model.temperature': 0.4},
+    );
+
+    expect(model.rows.map((row) => row.field), [
+      'providers.default',
+      'model.temperature',
+    ]);
+    expect(model.rows.first.label, 'Default provider');
+    expect(model.sections.first.rows.single.label, 'Default provider');
+    expect(model.sections.last.rows.single.field, 'model.temperature');
+  });
+
   test('groups fields into server-provided schema sections', () {
     final model = ConfigFormModel.fromSchema(
       schema: const {

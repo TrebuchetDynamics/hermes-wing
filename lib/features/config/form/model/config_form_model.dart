@@ -25,15 +25,10 @@ class ConfigFormModel {
       return ConfigFormModel(rows: const [], sections: const []);
     }
 
-    final rows = <ConfigFormRow>[];
-    for (final raw in rawFields) {
-      final candidate = ConfigFormSchemaRowCandidate.fromRaw(
-        raw: raw,
-        values: values,
-      );
-      if (candidate == null) continue;
-      rows.add(ConfigFormRow.fromSchemaCandidate(candidate));
-    }
+    final rows = _buildRowsFromSchemaFields(
+      rawFields: rawFields,
+      values: values,
+    );
     return ConfigFormModel(
       rows: rows,
       sections: buildConfigFormSections(
@@ -62,6 +57,23 @@ class ConfigFormModel {
       missingId: id,
     );
   }
+}
+
+List<ConfigFormRow> _buildRowsFromSchemaFields({
+  required List rawFields,
+  required Map<String, Object?> values,
+}) {
+  final rows = <ConfigFormRow>[];
+  final seenFields = <String>{};
+  for (final raw in rawFields) {
+    final candidate = ConfigFormSchemaRowCandidate.fromRaw(
+      raw: raw,
+      values: values,
+    );
+    if (candidate == null || !seenFields.add(candidate.field)) continue;
+    rows.add(ConfigFormRow.fromSchemaCandidate(candidate));
+  }
+  return rows;
 }
 
 class ConfigFormRow {

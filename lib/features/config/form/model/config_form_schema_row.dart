@@ -68,5 +68,16 @@ class ConfigFormSchemaRowCandidate {
 }
 
 bool configFormReloadModeRequiresRestart(String reloadMode) {
-  return reloadMode.toLowerCase().contains('restart');
+  final tokens = configFormReloadModeTokens(reloadMode);
+  if (tokens.isEmpty) return false;
+  if (tokens.contains('no') || tokens.contains('without')) return false;
+  return tokens.contains('restart');
+}
+
+List<String> configFormReloadModeTokens(String reloadMode) {
+  return reloadMode
+      .toLowerCase()
+      .split(RegExp(r'[^a-z0-9]+'))
+      .where((token) => token.isNotEmpty)
+      .toList(growable: false);
 }

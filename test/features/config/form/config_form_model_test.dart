@@ -225,6 +225,24 @@ void main() {
     ]);
   });
 
+  test('does not infer restart from negative reload modes', () {
+    final model = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'audio.input_device', 'reload': 'no_restart'},
+          {'path': 'audio.output_device', 'reload': 'reload_without_restart'},
+          {'path': 'model.provider', 'reload': 'restart_or_reload'},
+        ],
+      },
+      values: const {},
+    );
+
+    expect(model.rows[0].reloadMode, 'no_restart');
+    expect(model.rows[0].restartRequired, isFalse);
+    expect(model.rows[1].restartRequired, isFalse);
+    expect(model.rows[2].restartRequired, isTrue);
+  });
+
   test('selects one config section by route id and reports misses', () {
     final model = ConfigFormModel.fromSchema(
       schema: const {

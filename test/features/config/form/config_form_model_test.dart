@@ -300,6 +300,23 @@ void main() {
     ]);
   });
 
+  test('schema alias replay shares exact then normalized wire ordering', () {
+    final candidates = configFormSchemaValueCandidates(
+      const {
+        'fieldRefs': ['camel.ref'],
+        'field_paths': ['snake.ref'],
+        'fieldPaths': ['camel-path.ref'],
+      },
+      const ['field_refs', 'field_paths'],
+    ).toList();
+
+    expect(candidates, [
+      ['snake.ref'],
+      ['camel.ref'],
+      ['camel-path.ref'],
+    ]);
+  });
+
   test('deduplicates repeated field refs inside one section', () {
     final model = ConfigFormModel.fromSchema(
       schema: const {

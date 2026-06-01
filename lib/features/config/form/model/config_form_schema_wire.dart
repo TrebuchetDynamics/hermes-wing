@@ -99,37 +99,15 @@ bool? _configFormStrictBoolFromAliases(Map raw, Iterable<String> aliases) {
 
 /// Replays schema alias lookup in the same order used by form parsing.
 ///
-/// Exact aliases win before canonical camelCase/snake_case compatibility
-/// matches. Exact-key entries are yielded only once so diagnostics can count
-/// candidate provenance without double-counting canonical schema fields.
+/// Keep form-schema diagnostics on the shared config wire alias contract so
+/// exact aliases, camelCase/snake_case compatibility, and duplicate exact-key
+/// suppression cannot drift from the production parsers.
 Iterable<Object?> configFormSchemaValueCandidates(
   Map raw,
   Iterable<String> aliases,
-) sync* {
-  final exactAliases = aliases.toSet();
-  final yieldedKeys = <Object?>{};
-  for (final alias in exactAliases) {
-    if (!raw.containsKey(alias)) continue;
-    yieldedKeys.add(alias);
-    yield raw[alias];
-  }
-
-  final normalizedAliases = {
-    for (final alias in exactAliases)
-      _configFormNormalizeSchemaFieldName(alias),
-  };
-  for (final entry in raw.entries) {
-    if (yieldedKeys.contains(entry.key)) continue;
-    if (normalizedAliases.contains(
-      _configFormNormalizeSchemaFieldName('${entry.key}'),
-    )) {
-      yield entry.value;
-    }
-  }
+) {
+  return configWireAliasCandidates(raw, aliases);
 }
-
-String _configFormNormalizeSchemaFieldName(String value) =>
-    value.toLowerCase().replaceAll('_', '');
 
 bool? _configFormStrictBool(Object? value) {
   if (value is bool) return value;

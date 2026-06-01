@@ -59,6 +59,10 @@ Map<dynamic, dynamic> _entryFieldsWithJsonDefaults(
   _removeDefaultJsonAliasesOverriddenByEntry(fields, entry);
   for (final entryField in entry.entries) {
     if (_isBlankJsonValue(entryField.value)) continue;
+    if (_isJsonConnectionImportFieldName('${entryField.key}') &&
+        !_isNonBlankJsonString(entryField.value)) {
+      continue;
+    }
     fields[entryField.key] = entryField.value;
   }
   return fields;
@@ -68,8 +72,13 @@ void _removeDefaultJsonAliasesOverriddenByEntry(
   Map<dynamic, dynamic> fields,
   Map<dynamic, dynamic> entry,
 ) {
+  final hasUsableConnectionField = _hasNonBlankJsonConnectionField(entry);
   for (final aliases in _jsonConnectionImportFieldAliasGroups) {
-    if (!_jsonEntryOverridesAlias(entry, aliases)) continue;
+    if (!_jsonEntryOverridesAlias(entry, aliases) &&
+        !(hasUsableConnectionField &&
+            _jsonEntryHasUnusableAlias(entry, aliases))) {
+      continue;
+    }
     for (final alias in aliases) {
       fields.remove(alias);
     }
@@ -80,15 +89,40 @@ bool _jsonEntryOverridesAlias(
   Map<dynamic, dynamic> entry,
   Iterable<String> aliases,
 ) {
+  return entry.entries.any(
+    (entry) =>
+        _isNonBlankJsonString(entry.value) &&
+        _jsonEntryKeyMatchesAliases(entry.key, aliases),
+  );
+}
+
+bool _jsonEntryHasUnusableAlias(
+  Map<dynamic, dynamic> entry,
+  Iterable<String> aliases,
+) {
+  return entry.entries.any(
+    (entry) =>
+        !_isNonBlankJsonString(entry.value) &&
+        _jsonEntryKeyMatchesAliases(entry.key, aliases),
+  );
+}
+
+bool _jsonEntryKeyMatchesAliases(Object? key, Iterable<String> aliases) {
   final normalizedAliases = {
     for (final alias in aliases) _normalizeJsonConnectionImportFieldName(alias),
   };
-  return entry.entries.any(
-    (entry) =>
-        !_isBlankJsonValue(entry.value) &&
-        normalizedAliases.contains(
-          _normalizeJsonConnectionImportFieldName('${entry.key}'),
-        ),
+  return normalizedAliases.contains(
+    _normalizeJsonConnectionImportFieldName('$key'),
+  );
+}
+
+bool _isJsonConnectionImportFieldName(String name) {
+  final normalizedName = _normalizeJsonConnectionImportFieldName(name);
+  return _jsonConnectionImportFieldAliasGroups.any(
+    (aliases) => aliases.any(
+      (alias) =>
+          _normalizeJsonConnectionImportFieldName(alias) == normalizedName,
+    ),
   );
 }
 
@@ -106,3 +140,6 @@ bool _isBlankJsonValue(Object? value) {
   if (value is String && value.trim().isEmpty) return true;
   return false;
 }
+
+bool _isNonBlankJsonString(Object? value) =>
+    value is String && value.trim().isNotEmpty;

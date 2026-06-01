@@ -3,7 +3,8 @@ import '../../validation/config_validation_state.dart';
 import '../change/config_draft_change.dart';
 
 class ConfigApplyFlowModel {
-  const ConfigApplyFlowModel({required this.changes});
+  ConfigApplyFlowModel({required List<ConfigDraftChange> changes})
+    : changes = List.unmodifiable(changes);
 
   factory ConfigApplyFlowModel.fromDraft({
     required ConfigFormModel form,
@@ -11,17 +12,13 @@ class ConfigApplyFlowModel {
     Map<String, Object?>? validationSnapshot,
   }) {
     final validation = ConfigValidationState.fromSnapshot(validationSnapshot);
-    final changes = <ConfigDraftChange>[];
-    for (final row in form.rows) {
-      if (!draftValues.containsKey(row.field)) continue;
-      final change = ConfigDraftChange.fromRow(
-        row,
-        draftValues[row.field],
-        validation.messagesFor(row.field),
-      );
-      if (change != null) changes.add(change);
-    }
-    return ConfigApplyFlowModel(changes: changes);
+    return ConfigApplyFlowModel(
+      changes: _draftChangesFromRows(
+        rows: form.rows,
+        draftValues: draftValues,
+        validation: validation,
+      ),
+    );
   }
 
   final List<ConfigDraftChange> changes;
@@ -41,4 +38,22 @@ class ConfigApplyFlowModel {
         .expand((change) => change.validationMessages)
         .toList(growable: false);
   }
+}
+
+List<ConfigDraftChange> _draftChangesFromRows({
+  required Iterable<ConfigFormRow> rows,
+  required Map<String, Object?> draftValues,
+  required ConfigValidationState validation,
+}) {
+  final changes = <ConfigDraftChange>[];
+  for (final row in rows) {
+    if (!draftValues.containsKey(row.field)) continue;
+    final change = ConfigDraftChange.fromRow(
+      row,
+      draftValues[row.field],
+      validation.messagesFor(row.field),
+    );
+    if (change != null) changes.add(change);
+  }
+  return changes;
 }

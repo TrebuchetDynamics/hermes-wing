@@ -212,4 +212,24 @@ void main() {
     expect(flow.hasPendingChanges, isFalse);
     expect(flow.changes, isEmpty);
   });
+
+  test('freezes draft change snapshots after construction', () {
+    final form = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'providers.default', 'label': 'Default provider'},
+        ],
+      },
+      values: const {'providers.default': 'openai'},
+    );
+
+    final flow = ConfigApplyFlowModel.fromDraft(
+      form: form,
+      draftValues: const {'providers.default': 'local'},
+    );
+
+    expect(flow.changes, hasLength(1));
+    expect(() => flow.changes.clear(), throwsUnsupportedError);
+    expect(flow.changes.single.path, 'providers.default');
+  });
 }

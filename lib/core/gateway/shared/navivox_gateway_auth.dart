@@ -6,10 +6,30 @@ import 'navivox_gateway_constants.dart';
 const navivoxGatewayAuthorizationHeader = 'Authorization';
 
 const _bearerPrefix = 'Bearer ';
+const _bearerScheme = 'bearer';
 
 /// Builds the gateway's bearer authorization header value from a raw token.
 String navivoxGatewayBearerAuthorization(String token) {
   return '$_bearerPrefix${token.trim()}';
+}
+
+/// Replayable parse result for gateway Authorization header values.
+class NavivoxGatewayBearerAuth {
+  const NavivoxGatewayBearerAuth._(this.token);
+
+  static NavivoxGatewayBearerAuth? tryParse(String value) {
+    final auth = value.trim();
+    final separator = auth.indexOf(' ');
+    if (separator <= 0) return null;
+
+    final scheme = auth.substring(0, separator).toLowerCase();
+    if (scheme != _bearerScheme) return null;
+
+    final token = auth.substring(separator + 1).trim();
+    return token.isEmpty ? null : NavivoxGatewayBearerAuth._(token);
+  }
+
+  final String token;
 }
 
 /// Extracts a bearer token from gateway headers using case-insensitive names.
@@ -20,10 +40,10 @@ String? navivoxGatewayBearerToken(Map<String, String> headers) {
             entry.key.toLowerCase() ==
             navivoxGatewayAuthorizationHeader.toLowerCase(),
       )
-      .map((entry) => entry.value.trim())
+      .map((entry) => NavivoxGatewayBearerAuth.tryParse(entry.value))
+      .whereType<NavivoxGatewayBearerAuth>()
       .firstOrNull;
-  if (auth == null || !auth.startsWith(_bearerPrefix)) return null;
-  return auth.substring(_bearerPrefix.length).trim();
+  return auth?.token;
 }
 
 /// Builds WebSocket subprotocols accepted by the gateway.

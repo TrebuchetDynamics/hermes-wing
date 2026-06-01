@@ -85,12 +85,27 @@ List<ConfigFormSection> buildConfigFormSections({
       .toList(growable: false);
   if (otherRows.isNotEmpty) {
     sections.add(
-      sections.isEmpty
-          ? ConfigFormSection.general(rows: otherRows)
-          : ConfigFormSection.other(rows: otherRows),
+      _unsectionedRowsSection(
+        rows: otherRows,
+        hasServerSections: sections.isNotEmpty,
+        usedSectionIds: usedSectionIds,
+      ),
     );
   }
   return sections;
+}
+
+ConfigFormSection _unsectionedRowsSection({
+  required List<ConfigFormRow> rows,
+  required bool hasServerSections,
+  required Set<String> usedSectionIds,
+}) {
+  final fallbackId = hasServerSections ? 'other' : 'general';
+  return ConfigFormSection(
+    id: _uniqueSectionId(fallbackId, usedSectionIds),
+    label: hasServerSections ? 'Other config' : 'General config',
+    rows: rows,
+  );
 }
 
 String _uniqueSectionId(String requestedId, Set<String> usedSectionIds) {

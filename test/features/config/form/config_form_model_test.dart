@@ -319,6 +319,31 @@ void main() {
     },
   );
 
+  test('deduplicates unsectioned fallback ids against server section ids', () {
+    final model = ConfigFormModel.fromSchema(
+      schema: const {
+        'sections': [
+          {
+            'id': 'other',
+            'label': 'Server Other',
+            'fields': ['providers.default'],
+          },
+        ],
+        'fields': [
+          {'path': 'providers.default'},
+          {'path': 'model.temperature'},
+        ],
+      },
+      values: const {},
+    );
+
+    expect(model.sections.map((section) => section.id), ['other', 'other-2']);
+    expect(
+      model.selectSection('other-2').sections.single.rows.single.field,
+      'model.temperature',
+    );
+  });
+
   test('selects one config section by route id and reports misses', () {
     final model = ConfigFormModel.fromSchema(
       schema: const {

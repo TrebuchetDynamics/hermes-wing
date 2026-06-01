@@ -72,58 +72,87 @@ void _removeDefaultJsonAliasesOverriddenByEntry(
   Map<dynamic, dynamic> fields,
   Map<dynamic, dynamic> entry,
 ) {
-  final hasUsableConnectionField = _hasNonBlankJsonConnectionField(entry);
-  for (final aliases in _jsonConnectionImportFieldAliasGroups) {
-    if (!_jsonEntryOverridesAlias(entry, aliases) &&
-        !(hasUsableConnectionField &&
-            _jsonEntryHasUnusableAlias(entry, aliases))) {
-      continue;
-    }
+  final overridePolicy = _JsonEntryDefaultOverridePolicy.fromEntry(entry);
+  for (final aliasGroup in _jsonConnectionImportFieldAliasGroups.map(
+    _JsonConnectionImportAliasGroup.new,
+  )) {
+    if (!overridePolicy.shouldRemoveDefaultsFor(aliasGroup)) continue;
+    aliasGroup.removeAliasesFrom(fields);
+  }
+}
+
+class _JsonEntryDefaultOverridePolicy {
+  const _JsonEntryDefaultOverridePolicy({
+    required this.entry,
+    required this.hasUsableConnectionField,
+  });
+
+  factory _JsonEntryDefaultOverridePolicy.fromEntry(
+    Map<dynamic, dynamic> entry,
+  ) {
+    return _JsonEntryDefaultOverridePolicy(
+      entry: entry,
+      hasUsableConnectionField: _hasNonBlankJsonConnectionField(entry),
+    );
+  }
+
+  final Map<dynamic, dynamic> entry;
+
+  // Blank or non-string entry aliases are only treated as intentional blockers
+  // when the entry also carries a concrete connection field. This keeps
+  // metadata-only entries from erasing inherited connection defaults, while
+  // still preventing explicit-but-unusable aliases from manufacturing complete
+  // imports with stale defaults.
+  final bool hasUsableConnectionField;
+
+  bool shouldRemoveDefaultsFor(_JsonConnectionImportAliasGroup aliasGroup) {
+    if (aliasGroup.hasNonBlankOverrideIn(entry)) return true;
+    return hasUsableConnectionField && aliasGroup.hasUnusableOverrideIn(entry);
+  }
+}
+
+class _JsonConnectionImportAliasGroup {
+  _JsonConnectionImportAliasGroup(Iterable<String> aliases)
+    : aliases = List.unmodifiable(aliases),
+      _normalizedAliases = Set.unmodifiable(
+        aliases.map(_normalizeJsonConnectionImportFieldName),
+      ) {
+    assert(this.aliases.isNotEmpty);
+    assert(_normalizedAliases.isNotEmpty);
+  }
+
+  final List<String> aliases;
+  final Set<String> _normalizedAliases;
+
+  bool matchesKey(Object? key) {
+    return _normalizedAliases.contains(
+      _normalizeJsonConnectionImportFieldName('$key'),
+    );
+  }
+
+  bool hasNonBlankOverrideIn(Map<dynamic, dynamic> entry) {
+    return entry.entries.any(
+      (entry) => _isNonBlankJsonString(entry.value) && matchesKey(entry.key),
+    );
+  }
+
+  bool hasUnusableOverrideIn(Map<dynamic, dynamic> entry) {
+    return entry.entries.any(
+      (entry) => !_isNonBlankJsonString(entry.value) && matchesKey(entry.key),
+    );
+  }
+
+  void removeAliasesFrom(Map<dynamic, dynamic> fields) {
     for (final alias in aliases) {
       fields.remove(alias);
     }
   }
 }
 
-bool _jsonEntryOverridesAlias(
-  Map<dynamic, dynamic> entry,
-  Iterable<String> aliases,
-) {
-  return entry.entries.any(
-    (entry) =>
-        _isNonBlankJsonString(entry.value) &&
-        _jsonEntryKeyMatchesAliases(entry.key, aliases),
-  );
-}
-
-bool _jsonEntryHasUnusableAlias(
-  Map<dynamic, dynamic> entry,
-  Iterable<String> aliases,
-) {
-  return entry.entries.any(
-    (entry) =>
-        !_isNonBlankJsonString(entry.value) &&
-        _jsonEntryKeyMatchesAliases(entry.key, aliases),
-  );
-}
-
-bool _jsonEntryKeyMatchesAliases(Object? key, Iterable<String> aliases) {
-  final normalizedAliases = {
-    for (final alias in aliases) _normalizeJsonConnectionImportFieldName(alias),
-  };
-  return normalizedAliases.contains(
-    _normalizeJsonConnectionImportFieldName('$key'),
-  );
-}
-
 bool _isJsonConnectionImportFieldName(String name) {
-  final normalizedName = _normalizeJsonConnectionImportFieldName(name);
-  return _jsonConnectionImportFieldAliasGroups.any(
-    (aliases) => aliases.any(
-      (alias) =>
-          _normalizeJsonConnectionImportFieldName(alias) == normalizedName,
-    ),
-  );
+  return _jsonConnectionImportFieldAliasGroups
+      .map(_JsonConnectionImportAliasGroup.new)
+      .any((aliases) => aliases.matchesKey(name));
 }
 
 String _normalizeJsonConnectionImportFieldName(String value) =>

@@ -37,6 +37,8 @@ void main() {
   prefersEntryAliasOverrideOverTopLevelJsonDefaultAlias();
   doesNotLetBlankJsonEntryAliasInheritTopLevelDefaultAlias();
   doesNotLetCaseVariantBlankJsonEntryAliasInheritTopLevelDefaultAlias();
+  letsMetadataOnlyBlankJsonEntryAliasInheritTopLevelDefaults();
+  letsMetadataOnlyNonStringJsonEntryAliasInheritTopLevelDefaults();
   doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry();
   parsesSharedTextTokenWithSpacedSeparator();
   doesNotTreatTokenSuffixInDifferentLabelAsSharedTextToken();
@@ -705,6 +707,54 @@ void doesNotLetCaseVariantBlankJsonEntryAliasInheritTopLevelDefaultAlias() {
   _expect(
     result.token == 'nvbx_fallback',
     'later explicit credentials should beat an entry whose case-variant token alias is blank',
+  );
+}
+
+void letsMetadataOnlyBlankJsonEntryAliasInheritTopLevelDefaults() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"base_url":"https://default.example/connect?token=nvbx_default","entries":[{"baseUrl":" ","server_id":"local","profile_id":"mineru"}]}',
+  );
+
+  _expect(
+    result != null,
+    'metadata-only entries with blank aliases should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://default.example',
+    'blank aliases in metadata-only entries should not erase inherited base_url defaults',
+  );
+  _expect(
+    result.token == 'nvbx_default',
+    'metadata-only blank aliases should keep inherited query token defaults',
+  );
+  _expect(result.serverId == 'local', 'metadata should still be preserved');
+  _expect(
+    result.profileId == 'mineru',
+    'profile metadata should still be preserved',
+  );
+}
+
+void letsMetadataOnlyNonStringJsonEntryAliasInheritTopLevelDefaults() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"base_url":"https://default.example/connect?token=nvbx_default","entries":[{"baseUrl":404,"server_id":"local","profile_id":"mineru"}]}',
+  );
+
+  _expect(
+    result != null,
+    'metadata-only entries with non-string aliases should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://default.example',
+    'non-string aliases in metadata-only entries should not erase inherited base_url defaults',
+  );
+  _expect(
+    result.token == 'nvbx_default',
+    'metadata-only non-string aliases should keep inherited query token defaults',
+  );
+  _expect(result.serverId == 'local', 'metadata should still be preserved');
+  _expect(
+    result.profileId == 'mineru',
+    'profile metadata should still be preserved',
   );
 }
 

@@ -87,7 +87,7 @@ SavedSessionMetadataProjection _projectSavedSessionWebSocket(String text) {
   if (endpoint != null) {
     return SavedSessionMetadataProjection.durable(endpoint.durableUrl);
   }
-  if (_hasExplicitUriScheme(text)) {
+  if (_hasExplicitUriScheme(text) || _hasNonDurableLegacyUriState(text)) {
     return const SavedSessionMetadataProjection.rejectedUrl();
   }
   return SavedSessionMetadataProjection.legacy(text);
@@ -97,6 +97,10 @@ bool _hasExplicitUriScheme(String value) {
   return classifySavedSessionWebSocketTextShape(
     value.trim(),
   ).isExplicitUriScheme;
+}
+
+bool _hasNonDurableLegacyUriState(String value) {
+  return SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
 }
 
 /// Replayable shape classification for saved websocket metadata text.

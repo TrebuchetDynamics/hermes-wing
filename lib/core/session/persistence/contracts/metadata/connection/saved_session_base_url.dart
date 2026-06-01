@@ -48,7 +48,7 @@ String? durableSavedSessionBaseUrlFromMetadata(Object? value) {
 SavedSessionMetadataProjection _projectSavedSessionBaseUrl(String text) {
   final baseUrl = _httpBaseUrlFromEndpointText(text);
   if (baseUrl != null) return SavedSessionMetadataProjection.durable(baseUrl);
-  if (_looksLikeEndpointUrl(text)) {
+  if (_looksLikeEndpointUrl(text) || _hasNonDurableLegacyUriState(text)) {
     return const SavedSessionMetadataProjection.rejectedUrl();
   }
   return SavedSessionMetadataProjection.legacy(text);
@@ -64,4 +64,8 @@ String? _httpBaseUrlFromEndpointText(String value) {
 
 bool _looksLikeEndpointUrl(String value) {
   return classifySavedSessionUriTextShape(value).isExplicitUriScheme;
+}
+
+bool _hasNonDurableLegacyUriState(String value) {
+  return SavedSessionUriTextSyntax.parse(value).hasNonDurableUriStateDelimiter;
 }

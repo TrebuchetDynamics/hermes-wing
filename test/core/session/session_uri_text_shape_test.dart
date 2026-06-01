@@ -36,6 +36,33 @@ void main() {
         isTrue,
       );
     });
+
+    test('exposes URI state delimiters in legacy-shaped metadata', () {
+      expect(
+        SavedSessionUriTextSyntax.parse(
+          'gateway.example:8765/stream?token=secret',
+        ).hasNonDurableUriStateDelimiter,
+        isTrue,
+      );
+      expect(
+        SavedSessionUriTextSyntax.parse(
+          'gateway.example:8765/stream#handoff',
+        ).hasNonDurableUriStateDelimiter,
+        isTrue,
+      );
+      expect(
+        SavedSessionUriTextSyntax.parse(
+          'pairing-token@gateway.example:8765/stream',
+        ).hasNonDurableUriStateDelimiter,
+        isTrue,
+      );
+      expect(
+        SavedSessionUriTextSyntax.parse(
+          'gateway.example:8765/stream',
+        ).hasNonDurableUriStateDelimiter,
+        isFalse,
+      );
+    });
   });
 
   group('saved session URI text classification', () {

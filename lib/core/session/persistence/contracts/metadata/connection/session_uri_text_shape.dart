@@ -106,6 +106,12 @@ class SavedSessionUriTextSyntax {
     }
     return !_startsWithAsciiDigit(text, _firstColonIndex + 1);
   }
+
+  /// True when legacy-shaped metadata still contains URI subfields that can
+  /// carry one-time pairing state and should not be preserved verbatim.
+  bool get hasNonDurableUriStateDelimiter {
+    return text.contains('?') || text.contains('#') || text.contains('@');
+  }
 }
 
 const int _colon = 0x3a;

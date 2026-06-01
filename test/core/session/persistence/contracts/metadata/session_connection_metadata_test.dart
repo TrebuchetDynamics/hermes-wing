@@ -36,6 +36,15 @@ void main() {
       );
     });
 
+    test('rejects legacy-shaped base metadata with bootstrap state', () {
+      expect(
+        sanitizedSavedSessionBaseUrl(
+          ' gateway.local:8765/custom/setup?pairing_token=secret#handoff ',
+        ),
+        isNull,
+      );
+    });
+
     test(
       'rejects malformed endpoint URLs instead of throwing or leaking state',
       () {
@@ -124,6 +133,15 @@ void main() {
       expect(
         sanitizedSavedSessionWebSocketUrl(' gateway.local:8765/custom/stream '),
         'gateway.local:8765/custom/stream',
+      );
+    });
+
+    test('rejects legacy-shaped websocket metadata with bootstrap state', () {
+      expect(
+        sanitizedSavedSessionWebSocketUrl(
+          ' pairing-token@gateway.local:8765/custom/stream?token=secret#frag ',
+        ),
+        isNull,
       );
     });
 

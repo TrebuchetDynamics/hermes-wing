@@ -7,7 +7,8 @@ class PairingDescriptorEnvelope {
 
   factory PairingDescriptorEnvelope.parse(String descriptor) {
     final uri = Uri.parse(descriptor.trim());
-    if (uri.scheme != 'navivox' || uri.host != 'connect') {
+    final address = PairingDescriptorEnvelopeAddress.fromUri(uri);
+    if (!address.isConnectDescriptor) {
       throw FormatException(
         'Expected navivox://connect descriptor',
         descriptor,
@@ -33,4 +34,29 @@ class PairingDescriptorEnvelope {
   Map<String, List<String>> get queryParametersAll => uri.queryParametersAll;
 
   String get rawQuery => uri.query;
+}
+
+/// Case-normalized descriptor envelope address.
+///
+/// URI scheme and host casing are transport syntax, not pairing state. Keeping
+/// that normalization replayable prevents the envelope gate from drifting into
+/// case-sensitive string checks while path, fragment, and userinfo remain hard
+/// failures because they can hide non-query connection state.
+class PairingDescriptorEnvelopeAddress {
+  const PairingDescriptorEnvelopeAddress({
+    required this.scheme,
+    required this.host,
+  });
+
+  factory PairingDescriptorEnvelopeAddress.fromUri(Uri uri) {
+    return PairingDescriptorEnvelopeAddress(
+      scheme: uri.scheme.toLowerCase(),
+      host: uri.host.toLowerCase(),
+    );
+  }
+
+  final String scheme;
+  final String host;
+
+  bool get isConnectDescriptor => scheme == 'navivox' && host == 'connect';
 }

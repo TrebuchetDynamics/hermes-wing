@@ -1,7 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/pairing/navivox_pairing_descriptor.dart';
+import 'package:navivox/core/protocol/pairing/pairing_descriptor_envelope.dart';
 
 void main() {
+  test('descriptor envelope address exposes case-insensitive URI identity', () {
+    final address = PairingDescriptorEnvelopeAddress.fromUri(
+      Uri.parse('NAVIVOX://CONNECT?websocket_url=ws://gateway.example/ws'),
+    );
+
+    expect(address.scheme, 'navivox');
+    expect(address.host, 'connect');
+    expect(address.isConnectDescriptor, isTrue);
+  });
+
+  test('accepts URI-case drift for the descriptor envelope only', () {
+    final descriptor = NavivoxPairingDescriptor.parse(
+      'NAVIVOX://CONNECT?'
+      'websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fstream',
+    );
+
+    expect(descriptor.webSocketUri.host, '127.0.0.1');
+  });
+
   test('rejects descriptor path or fragment instead of dropping hidden state', () {
     for (final value in [
       'navivox://connect/legacy?websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fstream',

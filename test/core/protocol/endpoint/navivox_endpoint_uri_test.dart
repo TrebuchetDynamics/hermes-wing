@@ -53,4 +53,16 @@ void main() {
       );
     },
   );
+
+  test('trims direct websocket endpoint parsing like optional URL parsing', () {
+    final uri = navivoxWebSocketUriFromEndpointString(
+      ' wss://gateway.example/socket ',
+    );
+
+    expect(uri.toString(), 'wss://gateway.example/socket');
+    expect(
+      navivoxWebSocketUrlFromEndpointString(' wss://gateway.example/socket '),
+      'wss://gateway.example/socket',
+    );
+  });
 }

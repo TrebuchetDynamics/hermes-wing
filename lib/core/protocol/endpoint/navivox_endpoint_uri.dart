@@ -72,7 +72,7 @@ String? navivoxHttpOriginOrOriginalFromString(String? raw) {
 }
 
 Uri navivoxWebSocketUriFromEndpointString(String raw, {String? descriptor}) {
-  final uri = Uri.parse(raw);
+  final uri = _requiredEndpointUriFromString(raw);
   _validateNavivoxEndpointUri(
     uri,
     descriptor: descriptor,
@@ -118,6 +118,11 @@ String? navivoxHttpBaseUrlFromEndpointString(String? raw) {
   final uri = _endpointUriFromString(raw);
   if (uri == null || !navivoxIsEndpointScheme(uri.scheme)) return null;
   return navivoxHttpBaseUrlFromEndpointUri(uri);
+}
+
+Uri _requiredEndpointUriFromString(String raw) {
+  final value = raw.trim();
+  return Uri.parse(value);
 }
 
 Uri? _endpointUriFromString(String? raw) {

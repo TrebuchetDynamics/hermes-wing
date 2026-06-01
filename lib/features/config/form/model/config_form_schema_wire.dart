@@ -58,7 +58,7 @@ List<String> configFormSectionFieldRefsFromSchemaMap(Map raw) {
 }
 
 Iterable<Object?> configFormSectionFieldRefAliasCandidates(Map raw) {
-  return _configFormSchemaValueCandidates(raw, const [
+  return configFormSchemaValueCandidates(raw, const [
     'fields',
     'field_refs',
     'field_paths',
@@ -87,25 +87,36 @@ String? _configFormSectionFieldRefFromSchema(Map raw) {
 }
 
 bool? _configFormStrictBoolFromAliases(Map raw, Iterable<String> aliases) {
-  for (final value in _configFormSchemaValueCandidates(raw, aliases)) {
+  for (final value in configFormSchemaValueCandidates(raw, aliases)) {
     final parsed = _configFormStrictBool(value);
     if (parsed != null) return parsed;
   }
   return null;
 }
 
-Iterable<Object?> _configFormSchemaValueCandidates(
+/// Replays schema alias lookup in the same order used by form parsing.
+///
+/// Exact aliases win before canonical camelCase/snake_case compatibility
+/// matches. Exact-key entries are yielded only once so diagnostics can count
+/// candidate provenance without double-counting canonical schema fields.
+Iterable<Object?> configFormSchemaValueCandidates(
   Map raw,
   Iterable<String> aliases,
 ) sync* {
-  for (final alias in aliases) {
-    if (raw.containsKey(alias)) yield raw[alias];
+  final exactAliases = aliases.toSet();
+  final yieldedKeys = <Object?>{};
+  for (final alias in exactAliases) {
+    if (!raw.containsKey(alias)) continue;
+    yieldedKeys.add(alias);
+    yield raw[alias];
   }
 
   final normalizedAliases = {
-    for (final alias in aliases) _configFormNormalizeSchemaFieldName(alias),
+    for (final alias in exactAliases)
+      _configFormNormalizeSchemaFieldName(alias),
   };
   for (final entry in raw.entries) {
+    if (yieldedKeys.contains(entry.key)) continue;
     if (normalizedAliases.contains(
       _configFormNormalizeSchemaFieldName('${entry.key}'),
     )) {

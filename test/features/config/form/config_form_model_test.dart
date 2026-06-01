@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/config/form/config_form_model.dart';
 import 'package:navivox/features/config/form/model/config_form_schema_candidates.dart';
+import 'package:navivox/features/config/form/model/config_form_schema_wire.dart';
 
 void main() {
   test('parses schema fields with labels values and typed edit coercion', () {
@@ -281,6 +282,21 @@ void main() {
 
     expect(model.rows.single.restartRequired, isTrue);
     expect(model.rows.single.requiresConfirmation, isTrue);
+  });
+
+  test('schema alias candidate replay does not duplicate exact keys', () {
+    final candidates = configFormSchemaValueCandidates(
+      const {
+        'fields': ['providers.default'],
+        'fieldRefs': ['model.temperature'],
+      },
+      const ['fields', 'field_refs', 'field_paths'],
+    ).toList();
+
+    expect(candidates, [
+      ['providers.default'],
+      ['model.temperature'],
+    ]);
   });
 
   test('falls back across section field reference aliases', () {

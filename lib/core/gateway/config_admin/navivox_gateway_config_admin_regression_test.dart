@@ -21,8 +21,7 @@ void schemaFieldListAliasesSurviveGatewayNormalization() {
   final field = formField.single as Map<String, Object?>;
 
   _expect(
-    (field['allowed'] as List<String>).join(',') ==
-        'push-to-talk,wake-word',
+    (field['allowed'] as List<String>).join(',') == 'push-to-talk,wake-word',
     'gateway schema normalization should preserve camelCase allowedValues',
   );
   _expect(

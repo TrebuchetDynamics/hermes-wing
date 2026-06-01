@@ -1,6 +1,7 @@
 import '../../protocol/config_wire_fields.dart';
 import '../../protocol/navivox_json.dart';
 import '../shared/navivox_gateway_json.dart';
+import 'config_admin_value_codec.dart';
 
 class NavivoxConfigAdminField {
   const NavivoxConfigAdminField({
@@ -159,10 +160,9 @@ class NavivoxConfigAdminChange {
   final bool delete;
 
   Map<String, Object?> toJson() {
-    final trimmedKey = key.trim();
     return {
-      'key': trimmedKey,
-      'value': _configAdminWireValue(value),
+      'key': configAdminRequiredKey(key),
+      'value': configAdminWireValue(value),
       if (delete) 'delete': true,
     };
   }
@@ -203,7 +203,7 @@ class NavivoxConfigAdminDiff {
   final String secretStatus;
 
   String get summaryLabel {
-    return '$key: ${_configAdminDisplayValue(before, redacted: beforeRedacted)} -> ${_configAdminDisplayValue(after, redacted: afterRedacted, secretStatus: secretStatus)}';
+    return '$key: ${configAdminDisplayValue(before, redacted: beforeRedacted)} -> ${configAdminDisplayValue(after, redacted: afterRedacted, secretStatus: secretStatus)}';
   }
 
   Map<String, Object?> toJson() {
@@ -310,26 +310,4 @@ class NavivoxConfigAdminResponse {
         'errors': errors.map((error) => error.toJson()).toList(),
     };
   }
-}
-
-String _configAdminWireValue(Object? value) {
-  if (value == null) return '';
-  if (value is Iterable) {
-    return value.map((item) => item.toString().trim()).join(',');
-  }
-  return value.toString().trim();
-}
-
-String _configAdminDisplayValue(
-  Object? value, {
-  bool redacted = false,
-  String secretStatus = '',
-}) {
-  if (redacted) {
-    final status = secretStatus.trim();
-    return status.isEmpty ? '[redacted]' : '[redacted:$status]';
-  }
-  if (value == null) return '—';
-  if (value is Iterable) return value.join(', ');
-  return '$value';
 }

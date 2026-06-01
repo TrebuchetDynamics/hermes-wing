@@ -56,7 +56,10 @@ bool navivoxStrictBoolFromJson(Object? value, {bool fallback = false}) {
 
 Map<String, Object?> navivoxMapFromJson(Object? value) {
   if (value is! Map) return const {};
-  return Map<String, Object?>.from(value);
+  return {
+    for (final entry in value.entries)
+      if (entry.key is String) entry.key as String: entry.value,
+  };
 }
 
 Map<String, Object?> navivoxMapFieldFromJson(

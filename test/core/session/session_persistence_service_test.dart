@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:navivox/core/session/persistence/contracts/metadata/connection/saved_session_web_socket_endpoint.dart';
 import 'package:navivox/core/session/persistence/contracts/saved_session.dart';
 import 'package:navivox/core/session/persistence/service/session_persistence_service.dart';
 import 'package:navivox/core/session/persistence/storage/session_preference_keys.dart';
@@ -67,6 +68,29 @@ void main() {
     expect(
       _writeMap(writes),
       isNot(contains(SessionPreferenceKeys.webSocketUrl)),
+    );
+  });
+
+  test('websocket metadata shape exposes legacy versus unsafe URL text', () {
+    expect(
+      classifySavedSessionWebSocketTextShape(
+        'gateway.example.test:8765/stream',
+      ),
+      SavedSessionWebSocketTextShape.hostPortLike,
+    );
+    expect(
+      classifySavedSessionWebSocketTextShape('[::1]:8765/stream'),
+      SavedSessionWebSocketTextShape.bracketedHostLiteral,
+    );
+    expect(
+      classifySavedSessionWebSocketTextShape(
+        'https://gateway.example.test/stream?token=secret',
+      ),
+      SavedSessionWebSocketTextShape.authorityUrl,
+    );
+    expect(
+      classifySavedSessionWebSocketTextShape('mailto:secret-token'),
+      SavedSessionWebSocketTextShape.namedScheme,
     );
   });
 

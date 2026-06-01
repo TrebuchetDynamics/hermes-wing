@@ -123,27 +123,50 @@ String? navivoxFirstStringFieldFromJson(
   Map<dynamic, dynamic> json,
   Iterable<String> names,
 ) {
-  for (final name in names) {
-    final exact = navivoxOptionalLiteralStringFromJson(json[name]);
-    if (exact != null) return exact;
-  }
-  final normalizedNames = {
-    for (final name in names) _navivoxNormalizeJsonFieldName(name),
-  };
-  for (final entry in json.entries) {
-    if (!normalizedNames.contains(
-      _navivoxNormalizeJsonFieldName('${entry.key}'),
-    )) {
-      continue;
-    }
-    final value = navivoxOptionalLiteralStringFromJson(entry.value);
-    if (value != null) return value;
+  for (final value in navivoxWireFieldValuesFromAliases(json, names)) {
+    final text = navivoxOptionalLiteralStringFromJson(value);
+    if (text != null) return text;
   }
   return null;
 }
 
-String _navivoxNormalizeJsonFieldName(String value) =>
+/// Canonical field-name form used for loose Navivox wire aliases.
+///
+/// This makes the snake_case/camelCase compatibility rule explicit and shared
+/// across JSON objects and query-derived maps.
+String navivoxCanonicalWireFieldName(String value) =>
     value.toLowerCase().replaceAll('_', '');
+
+/// Yields values for [names], preferring exact keys before canonical aliases.
+///
+/// Exact-key precedence keeps a producer's canonical field from being shadowed
+/// by an older compatibility alias while still accepting case/underscore drift
+/// such as `serverId` for `server_id`.
+Iterable<Object?> navivoxWireFieldValuesFromAliases(
+  Map<dynamic, dynamic> json,
+  Iterable<String> names,
+) sync* {
+  final exactNames = names.toSet();
+  final yieldedKeys = <dynamic>{};
+  for (final name in exactNames) {
+    if (!json.containsKey(name)) continue;
+    yieldedKeys.add(name);
+    yield json[name];
+  }
+
+  final canonicalNames = {
+    for (final name in exactNames) navivoxCanonicalWireFieldName(name),
+  };
+  for (final entry in json.entries) {
+    if (yieldedKeys.contains(entry.key)) continue;
+    if (!canonicalNames.contains(
+      navivoxCanonicalWireFieldName('${entry.key}'),
+    )) {
+      continue;
+    }
+    yield entry.value;
+  }
+}
 
 List<String> navivoxStringListFieldFromJson(
   Map<String, Object?> json,

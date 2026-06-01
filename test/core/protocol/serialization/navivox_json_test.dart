@@ -40,6 +40,16 @@ void main() {
       navivoxFirstStringFieldFromJson(json, const ['server_id']),
       'server-1',
     );
+    expect(
+      navivoxFirstStringFieldFromJson(
+        <dynamic, dynamic>{
+          'rest_token': ' ',
+          'restToken': 'nvbx_alias_fallback',
+        },
+        const ['rest_token'],
+      ),
+      'nvbx_alias_fallback',
+    );
     expect(navivoxFirstStringFieldFromJson(json, const ['profile_id']), isNull);
   });
 

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/features/chat/commands/local_command_intent.dart';
+import 'package:navivox/features/chat/commands/local_command_profile_matcher.dart';
 
 import '../shared/profiles/profile_contact_chat_test_fixtures.dart';
 
@@ -141,6 +142,57 @@ void main() {
       help.message,
       'Voice commands: hey <profile>, cancel, stop, settings, help.',
     );
+  });
+
+  test('profile command aliases expose server-qualified contacts', () {
+    final names = localCommandContactNames(
+      const NavivoxProfileContact(
+        serverId: 'office-1',
+        profileId: 'mineru',
+        displayName: 'Mineru',
+        serverLabel: 'Office Gateway',
+        health: NavivoxProfileHealth.online,
+        latestPreview: 'Ready',
+      ),
+      normalize: resolver.normalize,
+    );
+
+    expect(
+      names,
+      containsAll(['mineru', 'office 1 mineru', 'office gateway mineru']),
+    );
+  });
+
+  test('server-qualified profile commands select one duplicate contact', () {
+    final intent = resolver.resolve(
+      raw: 'navi office mineru',
+      commandWord: 'navi',
+      commandMode: false,
+      fromVoice: false,
+      profileSwitchingEnabled: true,
+      contacts: const [
+        NavivoxProfileContact(
+          serverId: 'home',
+          profileId: 'mineru',
+          displayName: 'Mineru',
+          serverLabel: 'home',
+          health: NavivoxProfileHealth.online,
+          latestPreview: 'Ready',
+        ),
+        NavivoxProfileContact(
+          serverId: 'office',
+          profileId: 'mineru',
+          displayName: 'Mineru',
+          serverLabel: 'office',
+          health: NavivoxProfileHealth.online,
+          latestPreview: 'Ready',
+        ),
+      ],
+    );
+
+    expect(intent.action, LocalCommandAction.switchProfile);
+    expect(intent.target?.serverId, 'office');
+    expect(intent.target?.profileId, 'mineru');
   });
 
   test(

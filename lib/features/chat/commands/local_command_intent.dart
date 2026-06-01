@@ -1,4 +1,5 @@
 import '../../../core/channel/navivox_channel.dart';
+import 'local_command_profile_matcher.dart';
 
 enum LocalCommandAction {
   none,
@@ -229,16 +230,11 @@ class LocalCommandResolver {
     required String normalized,
     required List<NavivoxProfileContact> contacts,
   }) {
-    return contacts
-        .where((contact) => _contactCommandNames(contact).contains(normalized))
-        .toList(growable: false);
-  }
-
-  Set<String> _contactCommandNames(NavivoxProfileContact contact) {
-    return {
-      normalize(contact.profileId),
-      normalize(contact.displayName),
-    }.where((name) => name.isNotEmpty).toSet();
+    return matchingLocalCommandContacts(
+      normalized: normalized,
+      contacts: contacts,
+      normalize: normalize,
+    );
   }
 
   String normalize(String value) {

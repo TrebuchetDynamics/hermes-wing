@@ -116,6 +116,37 @@ void main() {
     expect(provider.validationMessages, ['Provider is not available.']);
   });
 
+  test('config admin errors with keys attach to draft fields', () {
+    final form = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'navivox.exposure_mode', 'label': 'Exposure mode'},
+        ],
+      },
+      values: const {'navivox.exposure_mode': 'local'},
+    );
+
+    final flow = ConfigApplyFlowModel.fromDraft(
+      form: form,
+      draftValues: const {'navivox.exposure_mode': 'public'},
+      validationSnapshot: const {
+        'errors': [
+          {
+            'key': 'navivox.exposure_mode',
+            'code': 'invalid_runtime',
+            'message': 'Public exposure requires explicit server confirmation.',
+          },
+        ],
+      },
+    );
+
+    expect(flow.hasInvalidChanges, isTrue);
+    expect(flow.globalValidationMessages, isEmpty);
+    expect(flow.validationMessagesFor('navivox.exposure_mode'), [
+      'Public exposure requires explicit server confirmation.',
+    ]);
+  });
+
   test('generic validation errors block apply without field drift', () {
     final form = ConfigFormModel.fromSchema(
       schema: const {

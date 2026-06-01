@@ -55,9 +55,13 @@ class _ConfigValidationIssuesBuilder {
   }
 
   void addGenericErrors(Object? rawErrors) {
-    for (final message in _messagesFrom(rawErrors)) {
-      _appendGlobalMessage(message);
+    if (rawErrors is List) {
+      for (final raw in rawErrors) {
+        _appendGenericError(raw);
+      }
+      return;
     }
+    _appendGenericError(rawErrors);
   }
 
   void addFieldErrorMap(Object? rawErrors) {
@@ -89,6 +93,23 @@ class _ConfigValidationIssuesBuilder {
   void _appendGlobalMessage(String message) {
     if (_globalMessages.contains(message)) return;
     _globalMessages.add(message);
+  }
+
+  void _appendGenericError(Object? raw) {
+    if (raw is Map) {
+      final message = configFormValidationMessageFromWire(raw);
+      if (message == null) return;
+      final path = configFormValidationPathFromWire(raw);
+      if (path == null) {
+        _appendGlobalMessage(message);
+      } else {
+        _appendPathMessage(path: path, message: message);
+      }
+      return;
+    }
+
+    final message = _messageFrom(raw);
+    if (message != null) _appendGlobalMessage(message);
   }
 
   static List<String> _messagesFrom(Object? raw) {

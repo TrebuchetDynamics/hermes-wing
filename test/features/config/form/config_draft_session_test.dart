@@ -61,6 +61,38 @@ void main() {
     expect(cleared.draftValues, isEmpty);
   });
 
+  test('staging another field keeps the active edit session open', () {
+    final form = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'providers.default', 'label': 'Default provider'},
+          {
+            'path': 'model.temperature',
+            'label': 'Temperature',
+            'type': 'number',
+          },
+        ],
+      },
+      values: const {'providers.default': 'openai', 'model.temperature': 0.4},
+    );
+    final providerField = ConfigFieldPresentation.fromRow(form.rows.first);
+    final temperatureField = ConfigFieldPresentation.fromRow(form.rows.last);
+
+    final session = ConfigDraftSession(
+      draftValues: const {'model.temperature': 0.7},
+      editingField: 'model.temperature',
+    );
+
+    final staged = session.stageEdit(providerField, 'local');
+
+    expect(staged.editingField, 'model.temperature');
+    expect(staged.draftValues, {
+      'model.temperature': 0.7,
+      'providers.default': 'local',
+    });
+    expect(staged.isEditing(temperatureField), isTrue);
+  });
+
   test('clears only applied draft values after apply flow succeeds', () {
     final form = ConfigFormModel.fromSchema(
       schema: const {

@@ -2,6 +2,7 @@ import '../../apply/config_apply_flow_model.dart';
 import '../../apply/model/config_draft_value_equality.dart';
 import '../presentation/config_field_presentation.dart';
 import 'config_draft_edit_value.dart';
+import 'config_draft_stage_decision.dart';
 import 'config_draft_values.dart';
 
 class ConfigDraftSession {
@@ -35,13 +36,17 @@ class ConfigDraftSession {
 
   ConfigDraftSession stageEdit(ConfigFieldPresentation field, String rawText) {
     final value = field.coerceEditValue(rawText);
-    final nextDraft = Map<String, Object?>.from(draftValues);
-    if (field.clearsDraftFor(value)) {
-      nextDraft.remove(field.path);
-    } else {
-      nextDraft[field.path] = value;
-    }
-    return ConfigDraftSession(draftValues: nextDraft);
+    final decision = stageConfigDraftEdit(
+      draftValues: draftValues,
+      editingField: editingField,
+      fieldPath: field.path,
+      value: value,
+      clearsDraft: field.clearsDraftFor(value),
+    );
+    return ConfigDraftSession(
+      draftValues: decision.draftValues,
+      editingField: decision.editingField,
+    );
   }
 
   ConfigDraftSession clearApplied(ConfigApplyFlowModel flow) {

@@ -10,7 +10,10 @@ class SavedSessionWebSocketEndpoint {
   const SavedSessionWebSocketEndpoint._(this.uri);
 
   static SavedSessionWebSocketEndpoint? tryParse(String value) {
-    final uri = Uri.tryParse(value);
+    final text = value.trim();
+    if (text.isEmpty) return null;
+
+    final uri = Uri.tryParse(text);
     if (uri == null || uri.host.isEmpty) return null;
     final scheme = uri.scheme.toLowerCase();
     if (scheme != 'ws' && scheme != 'wss') return null;
@@ -29,6 +32,58 @@ class SavedSessionWebSocketEndpoint {
   String get durableUrl => uri.toString();
 }
 
+/// Classification for websocket-shaped metadata loaded from saved sessions.
+///
+/// This makes the persistence decision replayable: callers can see whether a
+/// value became a durable endpoint, a compatibility legacy value, or a removal
+/// because the text looked like an unsafe URL carrying bootstrap-only state.
+class SavedSessionWebSocketMetadata {
+  const SavedSessionWebSocketMetadata._({
+    required this.durableUrl,
+    required this.isLegacyText,
+    required this.isRejectedUrl,
+  });
+
+  factory SavedSessionWebSocketMetadata.fromStoredValue(Object? value) {
+    final text = navivoxOptionalStringFromJson(value);
+    if (text == null) return const SavedSessionWebSocketMetadata.absent();
+
+    final endpoint = SavedSessionWebSocketEndpoint.tryParse(text);
+    if (endpoint != null) {
+      return SavedSessionWebSocketMetadata.durableEndpoint(endpoint);
+    }
+
+    if (_hasExplicitUriScheme(text)) {
+      return const SavedSessionWebSocketMetadata.rejectedUrl();
+    }
+
+    return SavedSessionWebSocketMetadata.legacyText(text);
+  }
+
+  const SavedSessionWebSocketMetadata.absent()
+    : this._(durableUrl: null, isLegacyText: false, isRejectedUrl: false);
+
+  SavedSessionWebSocketMetadata.durableEndpoint(
+    SavedSessionWebSocketEndpoint endpoint,
+  ) : this._(
+        durableUrl: endpoint.durableUrl,
+        isLegacyText: false,
+        isRejectedUrl: false,
+      );
+
+  const SavedSessionWebSocketMetadata.legacyText(String value)
+    : this._(durableUrl: value, isLegacyText: true, isRejectedUrl: false);
+
+  const SavedSessionWebSocketMetadata.rejectedUrl()
+    : this._(durableUrl: null, isLegacyText: false, isRejectedUrl: true);
+
+  final String? durableUrl;
+  final bool isLegacyText;
+  final bool isRejectedUrl;
+
+  bool get isAbsent => durableUrl == null && !isRejectedUrl;
+}
+
 /// Returns websocket metadata that is safe to persist for reconnect.
 ///
 /// Blank values are absent. Valid `ws`/`wss` endpoints are reduced to durable
@@ -36,13 +91,7 @@ class SavedSessionWebSocketEndpoint {
 /// rather than preserved as legacy text because URL-shaped metadata can carry
 /// bootstrap credentials in query strings or fragments.
 String? durableSavedSessionWebSocketUrlFromMetadata(Object? value) {
-  final text = navivoxOptionalStringFromJson(value);
-  if (text == null) return null;
-
-  final endpoint = SavedSessionWebSocketEndpoint.tryParse(text);
-  if (endpoint != null) return endpoint.durableUrl;
-
-  return _hasExplicitUriScheme(text) ? null : text;
+  return SavedSessionWebSocketMetadata.fromStoredValue(value).durableUrl;
 }
 
 bool _hasExplicitUriScheme(String value) {

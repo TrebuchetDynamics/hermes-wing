@@ -46,6 +46,14 @@ void main() {
       );
     });
 
+    test('trims direct parser input before URI classification', () {
+      final endpoint = SavedSessionWebSocketEndpoint.tryParse(
+        ' wss://gateway.example/navivox/stream ',
+      );
+
+      expect(endpoint?.durableUrl, 'wss://gateway.example/navivox/stream');
+    });
+
     test('rejects non-websocket and hostless values', () {
       expect(
         SavedSessionWebSocketEndpoint.tryParse('https://gateway.example'),
@@ -55,6 +63,35 @@ void main() {
         SavedSessionWebSocketEndpoint.tryParse('wss:/missing-host'),
         isNull,
       );
+    });
+  });
+
+  group('SavedSessionWebSocketMetadata', () {
+    test('classifies absent, durable, rejected, and legacy inputs', () {
+      expect(
+        SavedSessionWebSocketMetadata.fromStoredValue(' ').isAbsent,
+        isTrue,
+      );
+
+      final durable = SavedSessionWebSocketMetadata.fromStoredValue(
+        'wss://user:secret@gateway.example/stream?token=secret#frag',
+      );
+      expect(durable.durableUrl, 'wss://gateway.example/stream');
+      expect(durable.isLegacyText, isFalse);
+      expect(durable.isRejectedUrl, isFalse);
+
+      final rejected = SavedSessionWebSocketMetadata.fromStoredValue(
+        'https://gateway.example/stream?token=secret',
+      );
+      expect(rejected.durableUrl, isNull);
+      expect(rejected.isRejectedUrl, isTrue);
+      expect(rejected.isAbsent, isFalse);
+
+      final legacy = SavedSessionWebSocketMetadata.fromStoredValue(
+        ' gateway.local:8765/custom/stream ',
+      );
+      expect(legacy.durableUrl, 'gateway.local:8765/custom/stream');
+      expect(legacy.isLegacyText, isTrue);
     });
   });
 }

@@ -66,6 +66,34 @@ void main() {
     );
   });
 
+  test('optional endpoint helpers reject malformed explicit ports', () {
+    expect(
+      navivoxHttpBaseUrlFromEndpointString('https://gateway.example:bad/api'),
+      isNull,
+    );
+    expect(
+      navivoxWebSocketUrlFromEndpointString(
+        'wss://gateway.example:bad/socket',
+      ),
+      isNull,
+    );
+  });
+
+  test('optional endpoint helpers reject userinfo before origin stripping', () {
+    expect(
+      navivoxHttpBaseUrlFromEndpointString(
+        'https://operator:secret@gateway.example/setup',
+      ),
+      isNull,
+    );
+    expect(
+      navivoxWebSocketUrlFromEndpointString(
+        'wss://operator:secret@gateway.example/socket',
+      ),
+      isNull,
+    );
+  });
+
   group('base URL derivation invariants', () {
     test(
       'derives HTTP origin from websocket endpoint without dropping explicit port',

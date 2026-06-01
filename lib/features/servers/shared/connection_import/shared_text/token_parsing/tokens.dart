@@ -1,4 +1,4 @@
-part of '../parser.dart';
+part of '../../parser.dart';
 
 String? _firstToken(String text, {int start = 0, int? end}) {
   return _tokenInWindow(

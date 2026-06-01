@@ -13,13 +13,13 @@ part 'endpoints/normalized_endpoint_fields.dart';
 part 'endpoints/endpoint_uri_identity.dart';
 part 'endpoints/copied_endpoint_url.dart';
 part 'endpoints/generic_endpoint.dart';
-part 'shared_text/tokens.dart';
-part 'shared_text/endpoint_matches.dart';
+part 'shared_text/token_parsing/tokens.dart';
+part 'shared_text/endpoints/endpoint_matches.dart';
 part 'shared_text/import.dart';
-part 'shared_text/core_pairing_descriptor.dart';
+part 'shared_text/descriptors/core_pairing_descriptor.dart';
 part 'json/candidate_maps.dart';
-part 'shared_text/endpoint.dart';
-part 'shared_text/endpoint_selection.dart';
+part 'shared_text/endpoints/endpoint.dart';
+part 'shared_text/endpoints/endpoint_selection.dart';
 
 class ConnectionImportParser {
   const ConnectionImportParser();

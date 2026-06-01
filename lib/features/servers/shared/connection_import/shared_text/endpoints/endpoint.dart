@@ -1,4 +1,4 @@
-part of '../parser.dart';
+part of '../../parser.dart';
 
 List<_SharedTextEndpoint> _sharedTextEndpoints(String text) {
   final matches = _endpointUrlMatches(text).toList(growable: false);

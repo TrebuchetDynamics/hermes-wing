@@ -1,4 +1,4 @@
-part of '../parser.dart';
+part of '../../parser.dart';
 
 Iterable<_SharedTextEndpoint> _endpointUrls(String text) =>
     _sharedTextEndpoints(text);

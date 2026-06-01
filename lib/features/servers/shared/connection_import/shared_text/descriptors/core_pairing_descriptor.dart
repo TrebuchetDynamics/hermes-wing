@@ -1,4 +1,4 @@
-part of '../parser.dart';
+part of '../../parser.dart';
 
 SetupQrImageImport? _bestCorePairingDescriptorImport(
   Iterable<_SharedTextCoreDescriptorCandidate> coreDescriptors,

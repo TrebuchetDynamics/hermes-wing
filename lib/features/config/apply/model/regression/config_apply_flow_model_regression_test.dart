@@ -8,6 +8,7 @@ void main() {
   fallsBackAcrossEmptyValidationSnapshotAliases();
   fallsBackAcrossBlankStringValidationAliases();
   attachesNestedFieldErrorMessageObjectsToDraftChanges();
+  treatsSetDraftValuesAsUnorderedStructuredValues();
 }
 
 void attachesValidationErrorListMessagesToDraftChanges() {
@@ -175,6 +176,31 @@ void attachesNestedFieldErrorMessageObjectsToDraftChanges() {
     flow.validationMessagesFor('feature.enabled').single ==
         'Expected a boolean.',
     'field_errors map values with nested detail/message/error objects should attach to their field path',
+  );
+}
+
+void treatsSetDraftValuesAsUnorderedStructuredValues() {
+  final form = ConfigFormModel.fromSchema(
+    schema: {
+      'fields': [
+        {'path': 'tools.enabled', 'type': 'array'},
+      ],
+    },
+    values: {
+      'tools.enabled': {'shell', 'memory'},
+    },
+  );
+
+  final flow = ConfigApplyFlowModel.fromDraft(
+    form: form,
+    draftValues: {
+      'tools.enabled': {'memory', 'shell'},
+    },
+  );
+
+  _expect(
+    !flow.hasPendingChanges,
+    'set-shaped structured draft values should compare by membership, not insertion order',
   );
 }
 

@@ -21,7 +21,16 @@ String? _gormesPathSuffix(String value) {
   const gormesMarker = '/.gormes/';
   final markerIndex = normalized.indexOf(gormesMarker);
   if (markerIndex < 0) return null;
-  return normalized.substring(markerIndex + gormesMarker.length);
+
+  final suffix = normalized.substring(markerIndex + gormesMarker.length);
+  if (!_isSafeGormesSuffix(suffix)) return null;
+  return suffix;
+}
+
+bool _isSafeGormesSuffix(String suffix) {
+  final parts = suffix.split('/');
+  if (parts.isEmpty) return false;
+  return parts.every((part) => part.isNotEmpty && part != '.' && part != '..');
 }
 
 bool _hasDirectoryProvenance(String value) {

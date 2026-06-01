@@ -39,6 +39,16 @@ void main() {
       expect(overview.databaseLabel, isNot(contains(r'C:\Users\xel')));
     });
 
+    test('rejects gormes suffixes with traversal provenance', () {
+      final overview = NavivoxMemoryOverview.fromJson({
+        'database_path': '/home/xel/.gormes/../secrets/memory.db',
+      });
+
+      expect(overview.databaseLabel, 'redacted/memory.db');
+      expect(overview.databaseLabel, isNot(contains('..')));
+      expect(overview.databaseLabel, isNot(contains('secrets')));
+    });
+
     test('redacts relative database paths with directory provenance', () {
       final overview = NavivoxMemoryOverview.fromJson({
         'database_path': 'profiles/mineru/memory.db',

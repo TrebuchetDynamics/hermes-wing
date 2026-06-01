@@ -40,6 +40,17 @@ void main() {
     });
   });
 
+  group('durableSavedSessionWebSocketUri', () {
+    test('rejects non-websocket URI instead of returning unsafe original', () {
+      expect(
+        () => durableSavedSessionWebSocketUri(
+          Uri.parse('https://gateway.example/stream?token=secret'),
+        ),
+        throwsFormatException,
+      );
+    });
+  });
+
   group('SavedSessionWebSocketEndpoint', () {
     test('projects only durable websocket identity fields', () {
       final endpoint = SavedSessionWebSocketEndpoint.tryParse(

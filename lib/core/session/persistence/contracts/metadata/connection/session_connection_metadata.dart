@@ -82,7 +82,12 @@ String? sanitizedSavedSessionWebSocketUrl(Object? value) {
 
 /// Projects a websocket URI onto the durable saved-session identity fields.
 Uri durableSavedSessionWebSocketUri(Uri uri) {
-  assert(uri.scheme.toLowerCase() == 'ws' || uri.scheme.toLowerCase() == 'wss');
-  assert(uri.host.isNotEmpty);
-  return SavedSessionWebSocketEndpoint.tryParse(uri.toString())?.uri ?? uri;
+  final endpoint = SavedSessionWebSocketEndpoint.tryParse(uri.toString());
+  if (endpoint == null) {
+    throw FormatException(
+      'Saved session websocket URI must use ws or wss and include a host',
+      uri.toString(),
+    );
+  }
+  return endpoint.uri;
 }

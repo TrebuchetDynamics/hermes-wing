@@ -71,6 +71,26 @@ void main() {
     expect(result.token, 'nvbx_pairing');
   });
 
+  test('chooses the richest core pairing descriptor from shared text', () {
+    final result = parseNavivoxConnectionImportPayload(
+      'Example navivox://connect?'
+      'websocket_url=wss%3A%2F%2Fdocs.example%2Fstream&'
+      'token_required=true&'
+      'rest_token=nvbx_docs. Actual navivox://connect?'
+      'websocket_url=wss%3A%2F%2Fgateway.example%2Fv1%2Fnavivox%2Fstream&'
+      'token_required=true&'
+      'rest_token=nvbx_pairing&'
+      'server_id=local&'
+      'profile_id=mineru',
+    );
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://gateway.example');
+    expect(result.token, 'nvbx_pairing');
+    expect(result.serverId, 'local');
+    expect(result.profileId, 'mineru');
+  });
+
   test('parses copied core pairing descriptor scheme case-insensitively', () {
     final result = parseNavivoxConnectionImportPayload(
       'NaviVox://CONNECT?'

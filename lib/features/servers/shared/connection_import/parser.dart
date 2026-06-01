@@ -256,12 +256,8 @@ SetupQrImageImport? _importFromSharedText(String text) {
       _corePairingDescriptorCandidatesFromSharedText(
         text,
       ).toList(growable: false);
-  for (final coreDescriptor in coreDescriptorCandidates) {
-    final coreImport = _parseCorePairingDescriptorPayload(
-      coreDescriptor.payload,
-    );
-    if (coreImport != null) return coreImport;
-  }
+  final coreImport = _bestCorePairingDescriptorImport(coreDescriptorCandidates);
+  if (coreImport != null) return coreImport;
 
   final genericEndpoints = _endpointUrls(text).toList(growable: false);
   final embeddedUrlCandidate = _bestGenericUrlCandidateFromSharedText(
@@ -401,12 +397,32 @@ bool _hasConnectionPath(Uri uri) {
 
 const _connectionPathSegments = {'connect', 'connection', 'pair', 'pairing'};
 
+SetupQrImageImport? _bestCorePairingDescriptorImport(
+  Iterable<_SharedTextCoreDescriptorCandidate> coreDescriptors,
+) {
+  return _bestConnectionImportCandidate(
+    coreDescriptors
+        .map(
+          (coreDescriptor) => _connectionImportCandidateFromCoreDescriptor(
+            coreDescriptor.payload,
+          ),
+        )
+        .whereType<_ConnectionImportCandidate>(),
+  )?.toImport();
+}
+
 SetupQrImageImport? _parseCorePairingDescriptorPayload(String text) {
+  return _connectionImportCandidateFromCoreDescriptor(text)?.toImport();
+}
+
+_ConnectionImportCandidate? _connectionImportCandidateFromCoreDescriptor(
+  String text,
+) {
   final uri = Uri.tryParse(text);
   if (uri == null || !_isCorePairingDescriptorUri(uri)) return null;
   try {
     final descriptor = NavivoxPairingDescriptor.parse(text);
-    return SetupQrImageImport(
+    return _ConnectionImportCandidate(
       baseUrl: descriptor.baseUri.toString(),
       token: descriptor.token,
       webSocketUrl: descriptor.webSocketUri.toString(),

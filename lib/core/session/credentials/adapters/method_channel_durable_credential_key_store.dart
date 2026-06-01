@@ -30,7 +30,7 @@ class MethodChannelDurableCredentialKeyStore
     required DurableCredentialKeyAlias alias,
   }) async {
     final result = await _channel.invokeMethod<Object?>('createEs256KeyPair', {
-      'alias': alias.value,
+      'alias': alias.platformValue,
     });
     if (result is! Map) {
       throw const FormatException(
@@ -46,7 +46,7 @@ class MethodChannelDurableCredentialKeyStore
     required Uint8List canonicalPayload,
   }) async {
     final result = await _channel.invokeMethod<Uint8List>('signEs256', {
-      'alias': alias.value,
+      'alias': alias.platformValue,
       'canonicalPayload': canonicalPayload,
     });
     if (result == null || result.isEmpty) {
@@ -59,6 +59,8 @@ class MethodChannelDurableCredentialKeyStore
 
   @override
   Future<void> deleteKey({required DurableCredentialKeyAlias alias}) async {
-    await _channel.invokeMethod<void>('deleteKey', {'alias': alias.value});
+    await _channel.invokeMethod<void>('deleteKey', {
+      'alias': alias.platformValue,
+    });
   }
 }

@@ -57,6 +57,28 @@ void main() {
     expect(await store.isAvailable(), isFalse);
   });
 
+  test('rejects blank native aliases before platform calls', () async {
+    setDurableKeysMockHandler((call) async {
+      calls.add(call);
+      fail('blank aliases must not cross the platform channel');
+    });
+    final store = MethodChannelDurableCredentialKeyStore(
+      channel: durableKeysTestChannel,
+    );
+    const blankAlias = DurableCredentialKeyAlias.native(' ');
+
+    await expectLater(
+      store.createEs256KeyPair(alias: blankAlias),
+      throwsArgumentError,
+    );
+    await expectLater(
+      store.sign(alias: blankAlias, canonicalPayload: Uint8List.fromList([1])),
+      throwsArgumentError,
+    );
+    await expectLater(store.deleteKey(alias: blankAlias), throwsArgumentError);
+    expect(calls, isEmpty);
+  });
+
   test('creates ES256 key pair and returns public JWK only', () async {
     setDurableKeysMockHandler((call) async {
       calls.add(call);

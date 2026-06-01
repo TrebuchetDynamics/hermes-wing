@@ -22,6 +22,12 @@ class DurableCredentialKeyAlias {
 
   final String value;
 
+  /// Non-blank alias value safe to pass across the platform channel.
+  ///
+  /// The `native` constructor stays `const` for existing call sites, so adapter
+  /// boundaries must read this getter instead of trusting [value] directly.
+  String get platformValue => requiredSessionText(value, fieldName: 'alias');
+
   @override
   String toString() => value;
 }

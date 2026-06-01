@@ -11,15 +11,45 @@ class _ConnectionImportCandidateRank {
   final bool hasExplicitConnectionFields;
   final _ConnectionImportFieldCoverage fieldCoverage;
 
-  bool isRicherThan(_ConnectionImportCandidateRank other) {
+  _ConnectionImportCandidateRankSignal preferredSignalOver(
+    _ConnectionImportCandidateRank other,
+  ) {
     if (isCompleteConnection != other.isCompleteConnection) {
-      return isCompleteConnection;
+      return isCompleteConnection
+          ? _ConnectionImportCandidateRankSignal.completeConnection
+          : _ConnectionImportCandidateRankSignal.incumbent;
     }
     if (hasExplicitConnectionFields != other.hasExplicitConnectionFields) {
-      return hasExplicitConnectionFields;
+      return hasExplicitConnectionFields
+          ? _ConnectionImportCandidateRankSignal.explicitConnectionFields
+          : _ConnectionImportCandidateRankSignal.incumbent;
     }
-    return fieldCoverage.score > other.fieldCoverage.score;
+    if (fieldCoverage.score > other.fieldCoverage.score) {
+      return _ConnectionImportCandidateRankSignal.fieldCoverage;
+    }
+    if (fieldCoverage.score < other.fieldCoverage.score) {
+      return _ConnectionImportCandidateRankSignal.incumbent;
+    }
+    return _ConnectionImportCandidateRankSignal.tie;
   }
+
+  bool isRicherThan(_ConnectionImportCandidateRank other) {
+    return switch (preferredSignalOver(other)) {
+      _ConnectionImportCandidateRankSignal.completeConnection ||
+      _ConnectionImportCandidateRankSignal.explicitConnectionFields ||
+      _ConnectionImportCandidateRankSignal.fieldCoverage => true,
+      _ConnectionImportCandidateRankSignal.incumbent ||
+      _ConnectionImportCandidateRankSignal.tie => false,
+    };
+  }
+}
+
+enum _ConnectionImportCandidateRankSignal {
+  completeConnection,
+  explicitConnectionFields,
+  fieldCoverage,
+  incumbent,
+  tie,
 }
 
 class _ConnectionImportFieldCoverage {

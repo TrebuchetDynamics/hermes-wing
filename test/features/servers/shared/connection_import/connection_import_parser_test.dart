@@ -306,6 +306,21 @@ void main() {
     expect(result.token, 'nvbx_fresh');
   });
 
+  test('keeps first JSON entry when candidate rank signals tie', () {
+    final result = parseNavivoxConnectionImportPayload('''
+{
+  "entries": [
+    {"base_url": "https://primary.example", "token": "nvbx_primary"},
+    {"base_url": "https://fallback.example", "token": "nvbx_fallback"}
+  ]
+}
+''');
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://primary.example');
+    expect(result.token, 'nvbx_primary');
+  });
+
   test('keeps first shared-text endpoint when candidates tie', () {
     final result = parseNavivoxConnectionImportPayload(
       'Try https://primary.example/setup or https://fallback.example/setup.',

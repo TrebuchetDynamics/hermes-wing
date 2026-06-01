@@ -498,6 +498,54 @@ void main() {
     expect(model.sections.last.rows.single.field, 'tools.allow_shell');
   });
 
+  test('section build plan exposes skipped section candidates', () {
+    final rows = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'providers.default'},
+          {'path': 'model.temperature'},
+          {'path': 'tools.allow_shell'},
+        ],
+      },
+      values: const {},
+    ).rows;
+
+    final plan = configFormSectionBuildPlan(
+      rawSections: const [
+        'not-a-section',
+        {'id': 'empty', 'fields': []},
+        {
+          'id': 'stale',
+          'fields': ['providers.removed'],
+        },
+        {
+          'id': 'providers',
+          'fields': ['providers.default', 'model.temperature'],
+        },
+      ],
+      rows: rows,
+    );
+
+    expect(plan.sections.map((section) => section.id), ['providers', 'other']);
+    expect(plan.sections.first.rows.map((row) => row.field), [
+      'providers.default',
+      'model.temperature',
+    ]);
+    expect(plan.sections.last.rows.single.field, 'tools.allow_shell');
+    expect(plan.skippedInvalidSections, 1);
+    expect(plan.skippedEmptySections, 2);
+    expect(
+      plan.rejections.map((rejection) => (rejection.index, rejection.reason)),
+      [
+        (0, ConfigFormSectionRejectionReason.invalid),
+        (1, ConfigFormSectionRejectionReason.empty),
+        (2, ConfigFormSectionRejectionReason.empty),
+      ],
+    );
+    expect(() => plan.sections.clear(), throwsUnsupportedError);
+    expect(() => plan.rejections.clear(), throwsUnsupportedError);
+  });
+
   test('does not infer restart from negative reload modes', () {
     final model = ConfigFormModel.fromSchema(
       schema: const {

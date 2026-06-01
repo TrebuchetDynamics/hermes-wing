@@ -47,24 +47,94 @@ List<ConfigFormSection> buildConfigFormSections({
   required Object? rawSections,
   required List<ConfigFormRow> rows,
 }) {
-  if (rows.isEmpty) return const [];
+  return configFormSectionBuildPlan(
+    rawSections: rawSections,
+    rows: rows,
+  ).sections;
+}
+
+enum ConfigFormSectionRejectionReason { invalid, empty }
+
+class ConfigFormSectionRejection {
+  const ConfigFormSectionRejection({required this.index, required this.reason});
+
+  final int index;
+  final ConfigFormSectionRejectionReason reason;
+}
+
+class ConfigFormSectionBuildPlan {
+  ConfigFormSectionBuildPlan({
+    required List<ConfigFormSection> sections,
+    required List<ConfigFormSectionRejection> rejections,
+  }) : sections = List.unmodifiable(sections),
+       rejections = List.unmodifiable(rejections);
+
+  final List<ConfigFormSection> sections;
+  final List<ConfigFormSectionRejection> rejections;
+
+  int get skippedInvalidSections =>
+      _skippedSections(ConfigFormSectionRejectionReason.invalid);
+
+  int get skippedEmptySections =>
+      _skippedSections(ConfigFormSectionRejectionReason.empty);
+
+  int _skippedSections(ConfigFormSectionRejectionReason reason) {
+    return rejections.where((rejection) => rejection.reason == reason).length;
+  }
+}
+
+/// Builds sections with visibility into server-provided section candidates that
+/// were ignored before the unsectioned fallback is appended.
+///
+/// Production callers consume only [ConfigFormSectionBuildPlan.sections], while
+/// tests and diagnostics can replay invalid section maps and section maps whose
+/// field references were empty, stale, duplicated, or otherwise unusable.
+ConfigFormSectionBuildPlan configFormSectionBuildPlan({
+  required Object? rawSections,
+  required List<ConfigFormRow> rows,
+}) {
+  if (rows.isEmpty) {
+    return ConfigFormSectionBuildPlan(sections: const [], rejections: const []);
+  }
   if (rawSections is! List) {
-    return [ConfigFormSection.general(rows: rows)];
+    return ConfigFormSectionBuildPlan(
+      sections: [ConfigFormSection.general(rows: rows)],
+      rejections: const [],
+    );
   }
 
   final rowsByField = {for (final row in rows) row.field: row};
   final usedFields = <String>{};
   final usedSectionIds = <String>{};
   final sections = <ConfigFormSection>[];
+  final rejections = <ConfigFormSectionRejection>[];
 
-  for (final raw in rawSections) {
-    if (raw is! Map) continue;
+  for (final indexedRaw in rawSections.indexed) {
+    final index = indexedRaw.$1;
+    final raw = indexedRaw.$2;
+    if (raw is! Map) {
+      rejections.add(
+        ConfigFormSectionRejection(
+          index: index,
+          reason: ConfigFormSectionRejectionReason.invalid,
+        ),
+      );
+      continue;
+    }
     final sectionRows = _sectionRowsFromFirstUsefulFieldRefCandidate(
       rawSection: raw,
       rowsByField: rowsByField,
       usedFields: usedFields,
     );
-    if (sectionRows.isEmpty) continue;
+    if (sectionRows.isEmpty) {
+      rejections.add(
+        ConfigFormSectionRejection(
+          index: index,
+          reason: ConfigFormSectionRejectionReason.empty,
+        ),
+      );
+      continue;
+    }
     final fallbackId = 'section-${sections.length + 1}';
     final requestedId = configFormSectionIdFromSchema(raw, fallbackId);
     final id = _uniqueSectionId(requestedId, usedSectionIds);
@@ -90,7 +160,7 @@ List<ConfigFormSection> buildConfigFormSections({
       ),
     );
   }
-  return sections;
+  return ConfigFormSectionBuildPlan(sections: sections, rejections: rejections);
 }
 
 List<ConfigFormRow> _sectionRowsFromFirstUsefulFieldRefCandidate({

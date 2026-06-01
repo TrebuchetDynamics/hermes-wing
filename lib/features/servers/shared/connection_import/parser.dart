@@ -20,7 +20,7 @@ class ConnectionImportParser {
     if (text.isEmpty) return null;
 
     final jsonResult = _parseQrJsonPayload(text);
-    if (jsonResult != null && jsonResult.hasValues) return jsonResult;
+    if (jsonResult.isJsonObject) return jsonResult.importValue;
 
     final copiedUriPayload = _copiedUriPayload(text);
     if (copiedUriPayload != null) {
@@ -38,17 +38,34 @@ class ConnectionImportParser {
     return _CopiedUriPayload(text: copiedUrl, uri: uri);
   }
 
-  SetupQrImageImport? _parseQrJsonPayload(String text) {
+  _JsonPayloadParseResult _parseQrJsonPayload(String text) {
     Object? decoded;
     try {
       decoded = jsonDecode(text);
     } catch (_) {
-      return null;
+      return const _JsonPayloadParseResult.notJsonObject();
     }
-    if (decoded is! Map) return null;
+    if (decoded is! Map) return const _JsonPayloadParseResult.notJsonObject();
 
-    return _bestImportFromCandidateMaps(_jsonCandidateMaps(decoded));
+    // JSON object payloads are a structured import contract. If the object does
+    // not expose connection fields, do not reinterpret arbitrary JSON string
+    // values as prose tokens or copied URLs.
+    return _JsonPayloadParseResult.jsonObject(
+      _bestImportFromCandidateMaps(_jsonCandidateMaps(decoded)),
+    );
   }
+}
+
+class _JsonPayloadParseResult {
+  const _JsonPayloadParseResult.jsonObject(this.importValue)
+    : isJsonObject = true;
+
+  const _JsonPayloadParseResult.notJsonObject()
+    : isJsonObject = false,
+      importValue = null;
+
+  final bool isJsonObject;
+  final SetupQrImageImport? importValue;
 }
 
 SetupQrImageImport? parseNavivoxConnectionImportPayload(String payload) =>

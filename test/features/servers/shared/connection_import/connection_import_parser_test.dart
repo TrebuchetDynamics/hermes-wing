@@ -177,4 +177,12 @@ void main() {
     expect(result!.baseUrl, 'https://gateway.example');
     expect(result.token, isNull);
   });
+
+  test('does not reinterpret metadata-only JSON as shared-text tokens', () {
+    final result = parseNavivoxConnectionImportPayload(
+      '{"profile_id":"nvbx_profile_id","server_id":"srv"}',
+    );
+
+    expect(result, isNull);
+  });
 }

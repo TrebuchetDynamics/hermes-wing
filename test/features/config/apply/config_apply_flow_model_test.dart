@@ -345,4 +345,147 @@ void main() {
     expect(change.validationMessages, ['Provider is not available.']);
     expect(() => change.validationMessages.clear(), throwsUnsupportedError);
   });
+
+  group('validation snapshot wire compatibility', () {
+    test('accepts camelCase validation snapshot aliases', () {
+      final form = _singleBooleanFieldForm();
+
+      final flow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'validationErrors': [
+            {'field': 'feature.enabled', 'detail': 'Expected a boolean.'},
+          ],
+          'fieldErrors': {
+            'feature.enabled': ['Still not a boolean.'],
+          },
+        },
+      );
+
+      expect(flow.hasInvalidChanges, isTrue);
+      expect(flow.validationMessagesFor('feature.enabled'), [
+        'Expected a boolean.',
+        'Still not a boolean.',
+      ]);
+    });
+
+    test('falls through null and empty snapshot aliases', () {
+      final form = _singleBooleanFieldForm();
+
+      final nullAliasFlow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'validation_errors': null,
+          'validationErrors': [
+            {'field': 'feature.enabled', 'detail': 'Expected a boolean.'},
+          ],
+          'field_errors': null,
+          'fieldErrors': {
+            'feature.enabled': ['Still not a boolean.'],
+          },
+        },
+      );
+      final emptyAliasFlow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'validation_errors': [],
+          'validationErrors': [
+            {'field': 'feature.enabled', 'detail': 'Expected a boolean.'},
+          ],
+          'field_errors': {},
+          'fieldErrors': {
+            'feature.enabled': ['Still not a boolean.'],
+          },
+        },
+      );
+
+      for (final flow in [nullAliasFlow, emptyAliasFlow]) {
+        expect(flow.validationMessagesFor('feature.enabled'), [
+          'Expected a boolean.',
+          'Still not a boolean.',
+        ]);
+      }
+    });
+
+    test('falls through blank aliases in validation error objects', () {
+      final form = _singleBooleanFieldForm();
+
+      final flow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'validation_errors': [
+            {
+              'path': ' ',
+              'field': 'feature.enabled',
+              'message': ' ',
+              'detail': 'Expected a boolean.',
+            },
+          ],
+        },
+      );
+
+      expect(flow.validationMessagesFor('feature.enabled'), [
+        'Expected a boolean.',
+      ]);
+    });
+
+    test('accepts nested field error message objects', () {
+      final form = _singleBooleanFieldForm();
+
+      final flow = ConfigApplyFlowModel.fromDraft(
+        form: form,
+        draftValues: const {'feature.enabled': 'maybe'},
+        validationSnapshot: const {
+          'field_errors': {
+            'feature.enabled': {'detail': 'Expected a boolean.'},
+          },
+        },
+      );
+
+      expect(flow.validationMessagesFor('feature.enabled'), [
+        'Expected a boolean.',
+      ]);
+    });
+  });
+
+  test('treats set-shaped draft values as unordered structured values', () {
+    final form = ConfigFormModel.fromSchema(
+      schema: const {
+        'fields': [
+          {'path': 'tools.enabled', 'type': 'array'},
+        ],
+      },
+      values: const {
+        'tools.enabled': {'shell', 'memory'},
+      },
+    );
+
+    final flow = ConfigApplyFlowModel.fromDraft(
+      form: form,
+      draftValues: const {
+        'tools.enabled': {'memory', 'shell'},
+      },
+    );
+
+    expect(flow.hasPendingChanges, isFalse);
+  });
+}
+
+ConfigFormModel _singleBooleanFieldForm() {
+  return ConfigFormModel.fromSchema(
+    schema: const {
+      'fields': [
+        {
+          'path': 'feature.enabled',
+          'type': 'boolean',
+          'label': 'Feature enabled',
+        },
+      ],
+    },
+    values: const {'feature.enabled': false},
+  );
 }

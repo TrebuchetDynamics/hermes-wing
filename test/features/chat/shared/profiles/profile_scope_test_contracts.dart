@@ -19,6 +19,14 @@ const chatSupportProfileScope = (
   profileId: chatSupportProfileId,
 );
 
+const chatActiveAgentKey = 'chat-active-agent';
+const chatActiveProfileAvatarKey = 'chat-active-profile-avatar';
+const chatContextActionKey = 'chat-context-action';
+const chatProfileSearchFieldKey = 'profile-search-field';
+const chatAllServersFilterKey = 'server-filter-all';
+
+String chatServerFilterKey(String serverId) => 'server-filter-$serverId';
+
 String chatProfileScopeKey(ChatProfileScope scope) {
   return '${scope.serverId}::${scope.profileId}';
 }

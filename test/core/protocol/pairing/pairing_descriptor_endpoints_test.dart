@@ -61,4 +61,15 @@ void main() {
       );
     },
   );
+
+  test('rejects base_url userinfo before origin stripping', () {
+    expect(
+      () => PairingDescriptorEndpoints.fromWireFields(
+        webSocketUrl: 'ws://127.0.0.1:8765/v1/navivox/stream',
+        explicitBaseUrl: 'https://operator:secret@gateway.example/setup',
+        descriptor: descriptor,
+      ),
+      throwsFormatException,
+    );
+  });
 }

@@ -66,8 +66,16 @@ Uri _validatedHttpBaseUri(String value, String descriptor) {
       descriptor,
     );
   }
+  if (_pairingDescriptorUriHasUserInfo(uri)) {
+    throw FormatException(
+      'Pairing descriptor base_url must not include userinfo',
+      descriptor,
+    );
+  }
   return uri;
 }
+
+bool _pairingDescriptorUriHasUserInfo(Uri uri) => uri.userInfo.isNotEmpty;
 
 String _baseUrlFromWebSocketUri(Uri uri, String descriptor) {
   try {

@@ -89,6 +89,11 @@ Uri _baseUriFromPairingParams({
 }
 
 Uri _httpBaseUriFromPairingParam(String value, String descriptor) {
+  final uri = _validatedHttpBaseUri(value, descriptor);
+  return Uri.parse(navivoxOriginFromUri(uri));
+}
+
+Uri _validatedHttpBaseUri(String value, String descriptor) {
   final uri = Uri.parse(value);
   final scheme = uri.scheme.toLowerCase();
   if ((scheme != 'http' && scheme != 'https') || uri.host.isEmpty) {
@@ -97,7 +102,13 @@ Uri _httpBaseUriFromPairingParam(String value, String descriptor) {
       descriptor,
     );
   }
-  return Uri.parse(navivoxOriginFromUri(uri));
+  if (uri.hasFragment) {
+    throw FormatException(
+      'Pairing descriptor base_url must not include a fragment',
+      descriptor,
+    );
+  }
+  return uri;
 }
 
 String _baseUrlFromWebSocketUri(Uri uri, String descriptor) {

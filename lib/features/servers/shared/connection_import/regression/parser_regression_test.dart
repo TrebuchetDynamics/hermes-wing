@@ -41,6 +41,7 @@ void main() {
   letsMetadataOnlyNonStringJsonEntryAliasInheritTopLevelDefaults();
   doesNotLetMetadataOnlyJsonEntryStealDefaultCredentialsFromConcreteEntry();
   parsesSharedTextTokenWithSpacedSeparator();
+  parsesSharedTextTokenAfterNonBreakingSpaceSeparator();
   doesNotTreatTokenSuffixInDifferentLabelAsSharedTextToken();
   parsesSharedTextTokenWrappedInQuotes();
   parsesSharedTextTokenWrappedInBackticks();
@@ -788,6 +789,22 @@ void parsesSharedTextTokenWithSpacedSeparator() {
   _expect(
     result.token == 'shared_secret',
     'token labels should allow spaces before separators',
+  );
+}
+
+void parsesSharedTextTokenAfterNonBreakingSpaceSeparator() {
+  final result = parseNavivoxConnectionImportPayload(
+    'Server: https://gateway.example/connect\nToken:\u00A0shared_secret',
+  );
+
+  _expect(result != null, 'shared text import with copied NBSP should parse');
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'shared text URL origin should provide baseUrl when token label uses NBSP',
+  );
+  _expect(
+    result.token == 'shared_secret',
+    'token labels should treat copied non-breaking spaces as separators',
   );
 }
 

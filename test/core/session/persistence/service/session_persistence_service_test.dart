@@ -23,6 +23,22 @@ void main() {
       expect(session.isStale, isFalse);
     });
 
+    test('uses injected clock for replayable saved-session age', () async {
+      final savedAt = DateTime.utc(2026, 5, 31, 12);
+      final service = SessionPersistenceService(clock: () => savedAt);
+      await service.saveConnection(baseUrl: 'http://localhost:8765');
+
+      final session = await service.loadSession();
+
+      expect(session, isNotNull);
+      expect(session!.lastConnectedAt, savedAt);
+      expect(session.isStaleAt(savedAt.add(const Duration(days: 7))), isFalse);
+      expect(
+        session.isStaleAt(savedAt.add(const Duration(days: 7, seconds: 1))),
+        isTrue,
+      );
+    });
+
     test('loadSession returns null when no session saved', () async {
       final service = SessionPersistenceService();
       await expectNoSavedSession(service);

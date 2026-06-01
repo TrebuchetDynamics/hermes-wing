@@ -12,6 +12,10 @@ import '../storage/session_preference_keys.dart';
 /// Silent reconnect remains disabled until a secure durable credential adapter
 /// exists for the saved Gateway identity.
 class SessionPersistenceService {
+  SessionPersistenceService({DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now;
+
+  final DateTime Function() _clock;
   SharedPreferences? _prefs;
 
   Future<void> ensureInitialized() async {
@@ -54,7 +58,7 @@ class SessionPersistenceService {
     }
     await prefs.setString(
       SessionPreferenceKeys.lastConnectedAt,
-      DateTime.now().toUtc().toIso8601String(),
+      _clock().toUtc().toIso8601String(),
     );
   }
 
@@ -116,10 +120,10 @@ class SavedSession {
   final DateTime? lastConnectedAt;
 
   /// Whether the session is stale (no recent connection).
-  bool get isStale => isSavedSessionStale(
-    lastConnectedAt: lastConnectedAt,
-    now: DateTime.now(),
-  );
+  bool get isStale => isStaleAt(DateTime.now());
+
+  bool isStaleAt(DateTime now) =>
+      isSavedSessionStale(lastConnectedAt: lastConnectedAt, now: now);
 
   /// Whether this metadata can currently perform silent reconnect.
   ///

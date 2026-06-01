@@ -14,6 +14,14 @@ void main() {
 
     expect(
       const NavivoxConfigAdminChange(
+        key: ' navivox.allowed_profiles ',
+        value: [' mineru ', ' ', 'ops', ''],
+      ).toJson(),
+      {'key': 'navivox.allowed_profiles', 'value': 'mineru,ops'},
+    );
+
+    expect(
+      const NavivoxConfigAdminChange(
         key: ' navivox.token ',
         value: null,
         delete: true,

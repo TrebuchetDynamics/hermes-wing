@@ -14,10 +14,15 @@ String configAdminRequiredKey(String key) {
 
 String configAdminWireValue(Object? value) {
   if (value == null) return '';
-  if (value is Iterable) {
-    return value.map((item) => item.toString().trim()).join(',');
-  }
+  if (value is Iterable) return configAdminWireListItems(value).join(',');
   return value.toString().trim();
+}
+
+List<String> configAdminWireListItems(Iterable<Object?> values) {
+  return values
+      .map((item) => item.toString().trim())
+      .where((item) => item.isNotEmpty)
+      .toList(growable: false);
 }
 
 String configAdminDisplayValue(

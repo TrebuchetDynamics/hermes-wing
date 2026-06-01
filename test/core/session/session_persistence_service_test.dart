@@ -51,6 +51,24 @@ void main() {
     );
   });
 
+  test('write plan drops unsafe websocket-shaped metadata', () {
+    final writes = sessionPreferenceWritesForConnection(
+      baseUrl: 'https://gateway.example.test',
+      webSocketUrl: ' https://gateway.example.test/stream?token=secret#frag ',
+      gatewayId: 'gateway-1',
+      connectedAt: DateTime.utc(2026, 5, 31),
+    );
+
+    expect(
+      writes.where((write) => write.isRemove).map((write) => write.key),
+      contains(SessionPreferenceKeys.webSocketUrl),
+    );
+    expect(
+      _writeMap(writes),
+      isNot(contains(SessionPreferenceKeys.webSocketUrl)),
+    );
+  });
+
   test('save, load, and clear apply the same preference write plan', () async {
     SharedPreferences.setMockInitialValues({
       SessionPreferenceKeys.legacyToken: 'bootstrap-secret',

@@ -14,18 +14,15 @@ void main() {
       );
     });
 
-    test('keeps non-websocket legacy values trimmed for compatibility', () {
+    test('drops non-websocket URL-shaped values', () {
       expect(
         sanitizedSavedSessionWebSocketUrl('  https://gateway.example/stream  '),
-        'https://gateway.example/stream',
+        isNull,
       );
     });
 
-    test('keeps invalid websocket-shaped legacy values visible', () {
-      expect(
-        sanitizedSavedSessionWebSocketUrl('wss:/missing-host'),
-        'wss:/missing-host',
-      );
+    test('drops invalid websocket-shaped values', () {
+      expect(sanitizedSavedSessionWebSocketUrl('wss:/missing-host'), isNull);
     });
   });
 

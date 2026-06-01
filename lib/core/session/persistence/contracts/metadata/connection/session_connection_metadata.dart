@@ -77,9 +77,7 @@ String sanitizedSavedSessionBaseUrl(String value) {
 /// outside the default Navivox path, but query params, fragments, and userinfo
 /// are not durable metadata and may contain pairing credentials.
 String? sanitizedSavedSessionWebSocketUrl(Object? value) {
-  final text = navivoxOptionalStringFromJson(value);
-  if (text == null) return null;
-  return SavedSessionWebSocketEndpoint.tryParse(text)?.durableUrl ?? text;
+  return durableSavedSessionWebSocketUrlFromMetadata(value);
 }
 
 /// Projects a websocket URI onto the durable saved-session identity fields.

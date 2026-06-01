@@ -59,6 +59,24 @@ void main() {
     );
   });
 
+  test('secret config values never retain raw gateway value payloads', () {
+    final value = NavivoxConfigAdminValue.fromJson(const {
+      'key': 'providers.openai.api_key',
+      'type': 'secret',
+      'value': 'leaked-api-key',
+      'secret': true,
+      'secretStatus': 'set',
+      'source': 'env:GORMES_OPENAI_API_KEY',
+    });
+
+    expect(value.value, isNull);
+    expect(value.formValue, {
+      'secret_status': 'set',
+      'source': 'env:GORMES_OPENAI_API_KEY',
+    });
+    expect(value.toString(), isNot(contains('leaked-api-key')));
+  });
+
   test('redaction and reload status aliases survive gateway normalization', () {
     final value = NavivoxConfigAdminValue.fromJson(const {
       'key': 'providers.openai.api_key',

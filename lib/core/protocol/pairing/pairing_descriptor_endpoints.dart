@@ -17,7 +17,7 @@ class PairingDescriptorEndpoints {
     required String? explicitBaseUrl,
     required String descriptor,
   }) {
-    final webSocketUri = navivoxWebSocketUriFromEndpointString(
+    final webSocketUri = _validatedPairingWebSocketUri(
       webSocketUrl,
       descriptor: descriptor,
     );
@@ -33,6 +33,20 @@ class PairingDescriptorEndpoints {
 
   final Uri baseUri;
   final Uri webSocketUri;
+}
+
+Uri _validatedPairingWebSocketUri(String value, {required String descriptor}) {
+  final uri = navivoxWebSocketUriFromEndpointString(
+    value,
+    descriptor: descriptor,
+  );
+  if (_pairingDescriptorUriHasUserInfo(uri)) {
+    throw FormatException(
+      'Pairing descriptor websocket_url must not include userinfo',
+      descriptor,
+    );
+  }
+  return uri;
 }
 
 Uri pairingDescriptorBaseUri({

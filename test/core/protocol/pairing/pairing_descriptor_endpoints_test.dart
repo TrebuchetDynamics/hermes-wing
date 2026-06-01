@@ -72,4 +72,15 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('rejects websocket_url userinfo before deriving a base origin', () {
+    expect(
+      () => PairingDescriptorEndpoints.fromWireFields(
+        webSocketUrl: 'wss://operator:secret@gateway.example/stream',
+        explicitBaseUrl: null,
+        descriptor: descriptor,
+      ),
+      throwsFormatException,
+    );
+  });
 }

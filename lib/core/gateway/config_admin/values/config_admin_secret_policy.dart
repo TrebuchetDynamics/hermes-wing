@@ -8,5 +8,14 @@ import '../../shared/navivox_gateway_json.dart';
 /// avoids leaking raw values when one signal is absent.
 bool configAdminIsSecret(Map<String, Object?> json) {
   return navivoxGatewayBoolField(json, 'secret') ||
-      configWireString(json['type']) == 'secret';
+      configAdminTypeIsSecret(json['type']);
+}
+
+/// Returns whether a loose config-admin type token denotes a secret field.
+///
+/// Wire payloads are parsed from JSON, Python dictionaries, and replay
+/// snapshots. Matching the token after the shared string trimming and lowercase
+/// normalization makes redaction independent of producer casing.
+bool configAdminTypeIsSecret(Object? value) {
+  return configWireString(value)?.toLowerCase() == 'secret';
 }

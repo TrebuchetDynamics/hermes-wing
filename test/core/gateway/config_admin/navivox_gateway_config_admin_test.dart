@@ -94,6 +94,29 @@ void main() {
     },
   );
 
+  test('secret type matching is case-insensitive before redaction', () {
+    final value = NavivoxConfigAdminValue.fromJson(const {
+      'key': 'providers.openai.api_key',
+      'type': ' Secret ',
+      'value': 'leaked-api-key',
+      'secretStatus': 'set',
+    });
+
+    expect(value.secret, isTrue);
+    expect(value.value, isNull);
+    expect(value.formValue, {'secret_status': 'set'});
+    expect(value.toString(), isNot(contains('leaked-api-key')));
+
+    final field = NavivoxConfigAdminField.fromJson(const {
+      'path': 'providers.openai.api_key',
+      'type': ' SECRET ',
+      'label': 'OpenAI API key',
+    });
+
+    expect(field.secret, isTrue);
+    expect(field.toFormField()['secret'], isTrue);
+  });
+
   test('type-secret schema fields expose secret form metadata', () {
     final field = NavivoxConfigAdminField.fromJson(const {
       'path': 'providers.openai.api_key',

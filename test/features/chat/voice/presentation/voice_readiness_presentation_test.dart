@@ -161,4 +161,17 @@ void main() {
       'Denied by Android. Grant microphone permission in App info.',
     );
   });
+
+  test('transient runtime voice failures do not disable future readiness', () {
+    final readiness = VoiceReadinessPresentation.fromState(
+      settings: trusted,
+      activeProfile: profile,
+      localVoiceCaptureAvailable: true,
+      runtimeVoiceDisabledReason: 'no speech detected',
+    );
+
+    expect(readiness.status, VoiceReadinessStatus.ready);
+    expect(readiness.canStartVoiceRun, isTrue);
+    expect(readiness.disabledReason, isNull);
+  });
 }

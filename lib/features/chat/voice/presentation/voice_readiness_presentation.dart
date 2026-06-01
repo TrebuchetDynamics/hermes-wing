@@ -73,13 +73,11 @@ class VoiceReadinessPresentation {
       );
     }
 
-    final runtimeReason = canonicalVoiceUnavailableReason(
+    final runtimeReason = _runtimeReadinessBlockerReason(
       runtimeVoiceDisabledReason,
-      emptyAsNull: true,
     );
-    final localReason = canonicalVoiceUnavailableReason(
+    final localReason = _localCaptureReadinessBlockerReason(
       localVoiceCaptureUnavailableReason,
-      emptyAsNull: true,
     );
     final localBlockerReason = runtimeReason ?? localReason;
     if (!localVoiceCaptureAvailable || localBlockerReason != null) {
@@ -209,6 +207,22 @@ class VoiceReadinessPresentation {
       localMicrophonePermissionGranted: localMicrophonePermissionGranted,
       canTrustServer: canTrustServer,
     );
+  }
+
+  static String? _runtimeReadinessBlockerReason(String? reason) {
+    final canonical = canonicalVoiceUnavailableReason(
+      reason,
+      emptyAsNull: true,
+    );
+    return switch (canonical) {
+      deviceSttUnavailableReason ||
+      microphonePermissionDeniedReason => canonical,
+      _ => null,
+    };
+  }
+
+  static String? _localCaptureReadinessBlockerReason(String? reason) {
+    return canonicalVoiceUnavailableReason(reason, emptyAsNull: true);
   }
 
   static VoiceReadinessBlockerKind _deviceBlockerKind(String reason) {

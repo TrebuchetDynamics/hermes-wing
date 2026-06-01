@@ -1,7 +1,10 @@
+export 'durable_reconnect_readiness_contract.dart';
+
 import '../../protocol/navivox_json.dart';
 import '../shared/navivox_gateway_constants.dart';
 import '../shared/navivox_gateway_json.dart';
 import '../shared/navivox_gateway_membership.dart';
+import 'durable_reconnect_readiness_contract.dart';
 import 'navivox_gateway_capability_support.dart';
 
 /// Status response from the Navivox gateway health/status endpoint.
@@ -165,36 +168,23 @@ class NavivoxDurableReconnectCapability {
   final String effectiveSecurity;
   final String blockedReason;
 
-  List<String> get missingIssueContractFields {
-    final missing = <String>[];
-    if (!navivoxGatewayHasText(issueEndpoint)) missing.add('issue endpoint');
-    if (authMethods.isEmpty) missing.add('auth methods');
-    if (platforms.isEmpty) missing.add('platforms');
-    return List.unmodifiable(missing);
-  }
+  DurableReconnectReadinessContract get readinessContract =>
+      DurableReconnectReadinessContract(
+        supported: supported,
+        issueEndpoint: issueEndpoint,
+        authMethods: authMethods,
+        platforms: platforms,
+        effectiveSecurity: effectiveSecurity,
+        blockedReason: blockedReason,
+      );
 
-  String? get readinessRecoveryMessage {
-    final suppliedReason = navivoxOptionalStringFromJson(blockedReason);
-    if (suppliedReason != null) return suppliedReason;
-    final missingFields = missingIssueContractFields;
-    if (missingFields.isEmpty) return null;
-    return 'Durable reconnect is advertised but missing ${_readinessList(missingFields)}.';
-  }
+  List<String> get missingIssueContractFields =>
+      readinessContract.missingIssueContractFields;
 
-  ReconnectReadinessKind get readinessKind {
-    if (!supported) return ReconnectReadinessKind.unsupported;
-    if (readinessRecoveryMessage != null) return ReconnectReadinessKind.blocked;
-    return ReconnectReadinessKind.available;
-  }
+  String? get readinessRecoveryMessage => readinessContract.recoveryMessage;
+
+  ReconnectReadinessKind get readinessKind => readinessContract.kind;
 }
-
-String _readinessList(List<String> items) {
-  if (items.length <= 1) return items.join();
-  if (items.length == 2) return '${items[0]} and ${items[1]}';
-  return '${items.sublist(0, items.length - 1).join(', ')}, and ${items.last}';
-}
-
-enum ReconnectReadinessKind { unknown, unsupported, blocked, available, saved }
 
 class NavivoxCapabilityAuth {
   const NavivoxCapabilityAuth({

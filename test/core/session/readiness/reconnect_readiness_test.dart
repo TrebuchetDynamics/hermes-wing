@@ -57,10 +57,27 @@ void main() {
       expect(readiness.kind, ReconnectReadinessKind.blocked);
       expect(
         readiness.recoveryMessage,
-        'Durable reconnect is advertised but missing issue endpoint.',
+        'Durable reconnect is advertised but missing issue endpoint and effective security.',
       );
     },
   );
+
+  test('blocks supported durable reconnect when security gate is missing', () {
+    final readiness = ReconnectReadiness.fromCapabilities(
+      reconnectCapabilityDocument({
+        'supported': true,
+        'issue_endpoint': '/v1/navivox/device-credentials',
+        'auth_methods': ['device_key_challenge'],
+        'platforms': ['android'],
+      }),
+    );
+
+    expect(readiness.kind, ReconnectReadinessKind.blocked);
+    expect(
+      readiness.recoveryMessage,
+      'Durable reconnect is advertised but missing effective security.',
+    );
+  });
 
   test(
     'reports available but not saved when durable reconnect is eligible',

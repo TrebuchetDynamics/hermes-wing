@@ -95,10 +95,22 @@ String? _normalizeBaseUrl(String? raw) {
   return navivoxOriginFromUri(uri);
 }
 
-String? _normalizeWebSocketUrl(String? raw) =>
-    navivoxWebSocketUrlFromEndpointString(
-      navivoxOptionalLiteralStringFromJson(raw),
-    );
+String? _normalizeWebSocketUrl(String? raw) {
+  final value = navivoxOptionalLiteralStringFromJson(raw);
+  if (value == null) return null;
+
+  final uri = Uri.tryParse(value);
+  if (uri == null || !_isValidConnectionImportWebSocketUri(uri)) return null;
+  return navivoxWebSocketUrlFromEndpointString(value);
+}
+
+bool _isValidConnectionImportWebSocketUri(Uri uri) {
+  if (!uri.hasScheme || uri.host.isEmpty || !_hasValidExplicitPort(uri)) {
+    return false;
+  }
+  final scheme = uri.scheme.toLowerCase();
+  return scheme == 'ws' || scheme == 'wss';
+}
 
 String? _normalizeBaseUrlFromWebSocketUrl(String? normalizedWebSocketUrl) =>
     navivoxHttpBaseUrlFromEndpointString(normalizedWebSocketUrl);

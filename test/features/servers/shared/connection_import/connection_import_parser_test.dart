@@ -349,6 +349,19 @@ void main() {
     expect(result.token, isNull);
   });
 
+  test(
+    'rejects malformed websocket endpoint ports before reading query tokens',
+    () {
+      final result = parseNavivoxConnectionImportPayload('''
+{
+  "websocket_url": "wss://gateway.example:99999/stream?token=nvbx_bad_ws"
+}
+''');
+
+      expect(result, isNull);
+    },
+  );
+
   test('does not reinterpret metadata-only JSON as shared-text tokens', () {
     final result = parseNavivoxConnectionImportPayload(
       '{"profile_id":"nvbx_profile_id","server_id":"srv"}',

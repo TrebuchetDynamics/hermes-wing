@@ -9,6 +9,7 @@ void main() {
   preservesGenericUrlRepeatedQueryValuesAfterBlankCopyArtifacts();
   preservesTokenFromJsonWebSocketUrlQuery();
   preservesTokenFromJsonBaseUrlQuery();
+  prefersJsonBaseUrlQueryTokenOverWebSocketUrlQueryToken();
   preservesMetadataFromUrlEmbeddedInSharedText();
   preservesWebSocketUrlEmbeddedInSharedText();
   parsesUppercaseSchemeUrlEmbeddedInSharedText();
@@ -197,6 +198,30 @@ void preservesTokenFromJsonBaseUrlQuery() {
   _expect(
     result.token == 'nvbx_json_base',
     'JSON base_url query token should not be dropped',
+  );
+}
+
+void prefersJsonBaseUrlQueryTokenOverWebSocketUrlQueryToken() {
+  final result = parseNavivoxConnectionImportPayload(
+    '{"base_url":"https://gateway.example/connect?token=nvbx_base",'
+    '"websocket_url":"wss://gateway.example/ws?token=nvbx_ws"}',
+  );
+
+  _expect(
+    result != null,
+    'JSON import with token-bearing base_url and websocket_url should parse',
+  );
+  _expect(
+    result!.baseUrl == 'https://gateway.example',
+    'base_url origin should remain the selected HTTP origin',
+  );
+  _expect(
+    result.webSocketUrl == 'wss://gateway.example/ws?token=nvbx_ws',
+    'websocket_url should still be preserved as endpoint metadata',
+  );
+  _expect(
+    result.token == 'nvbx_base',
+    'base_url query token should be the first endpoint token source',
   );
 }
 

@@ -177,26 +177,61 @@ _ConnectionImportCandidate? _connectionImportCandidateFromFields(
 _ConnectionImportEndpointFields _connectionImportEndpointFields(
   Map<dynamic, dynamic> fields,
 ) {
-  final rawBaseUrl = navivoxFirstStringFieldFromJson(
-    fields,
-    _baseUrlFieldNames,
-  );
-  final rawWebSocketUrl = navivoxFirstStringFieldFromJson(
-    fields,
-    _webSocketUrlFieldNames,
-  );
-  final normalizedWebSocketUrl = _normalizeWebSocketUrl(rawWebSocketUrl);
-  final normalizedBaseUrl = _normalizeBaseUrl(rawBaseUrl);
-  return _ConnectionImportEndpointFields(
-    baseUrl:
-        normalizedBaseUrl ??
-        _normalizeBaseUrlFromWebSocketUrl(normalizedWebSocketUrl),
-    webSocketUrl: normalizedWebSocketUrl,
-    queryToken: _firstEndpointQueryToken(
-      rawBaseUrl: normalizedBaseUrl == null ? null : rawBaseUrl,
-      normalizedWebSocketUrl: normalizedWebSocketUrl,
-    ),
-  );
+  return _ConnectionImportEndpointFieldSources.fromRawFields(fields).toFields();
+}
+
+class _ConnectionImportEndpointFieldSources {
+  const _ConnectionImportEndpointFieldSources({
+    required this.rawBaseUrl,
+    required this.rawWebSocketUrl,
+    required this.normalizedBaseUrl,
+    required this.normalizedWebSocketUrl,
+  });
+
+  factory _ConnectionImportEndpointFieldSources.fromRawFields(
+    Map<dynamic, dynamic> fields,
+  ) {
+    final rawBaseUrl = navivoxFirstStringFieldFromJson(
+      fields,
+      _baseUrlFieldNames,
+    );
+    final rawWebSocketUrl = navivoxFirstStringFieldFromJson(
+      fields,
+      _webSocketUrlFieldNames,
+    );
+    return _ConnectionImportEndpointFieldSources(
+      rawBaseUrl: rawBaseUrl,
+      rawWebSocketUrl: rawWebSocketUrl,
+      normalizedBaseUrl: _normalizeBaseUrl(rawBaseUrl),
+      normalizedWebSocketUrl: _normalizeWebSocketUrl(rawWebSocketUrl),
+    );
+  }
+
+  final String? rawBaseUrl;
+  final String? rawWebSocketUrl;
+  final String? normalizedBaseUrl;
+  final String? normalizedWebSocketUrl;
+
+  _ConnectionImportEndpointFields toFields() {
+    return _ConnectionImportEndpointFields(
+      baseUrl:
+          normalizedBaseUrl ??
+          _normalizeBaseUrlFromWebSocketUrl(normalizedWebSocketUrl),
+      webSocketUrl: normalizedWebSocketUrl,
+      queryToken: firstQueryToken,
+    );
+  }
+
+  String? get firstQueryToken {
+    // Only trust base_url query credentials if the base URL itself normalized;
+    // otherwise malformed or unsupported base URLs cannot smuggle token-only
+    // imports. A normalized websocket URL remains a valid token source and is
+    // checked second to preserve explicit base_url precedence.
+    return _tokenFromEndpointQuery(
+          normalizedBaseUrl == null ? null : rawBaseUrl,
+        ) ??
+        _tokenFromEndpointQuery(normalizedWebSocketUrl);
+  }
 }
 
 class _ConnectionImportEndpointFields {
@@ -209,14 +244,6 @@ class _ConnectionImportEndpointFields {
   final String? baseUrl;
   final String? webSocketUrl;
   final String? queryToken;
-}
-
-String? _firstEndpointQueryToken({
-  required String? rawBaseUrl,
-  required String? normalizedWebSocketUrl,
-}) {
-  return _tokenFromEndpointQuery(rawBaseUrl) ??
-      _tokenFromEndpointQuery(normalizedWebSocketUrl);
 }
 
 String? _tokenFromEndpointQuery(String? url) {

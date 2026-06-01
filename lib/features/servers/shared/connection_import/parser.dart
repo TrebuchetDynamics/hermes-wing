@@ -12,6 +12,7 @@ part 'candidates/ranking/candidate_selection.dart';
 part 'candidates/fields/field_names.dart';
 part 'candidates/fields/from_fields.dart';
 part 'endpoints/field_normalization/normalized_endpoint_fields.dart';
+part 'endpoints/copied_url/copied_uri_payload.dart';
 part 'endpoints/generic_uri/endpoint_uri_identity.dart';
 part 'endpoints/copied_url/copied_endpoint_url.dart';
 part 'endpoints/generic_uri/generic_endpoint.dart';
@@ -40,15 +41,6 @@ class ConnectionImportParser {
     }
 
     return _importFromSharedText(text);
-  }
-
-  _CopiedUriPayload? _copiedUriPayload(String text) {
-    final copiedUrl = _trimCopiedEndpointUrl(text);
-    if (_containsCopiedTextSeparator(copiedUrl)) return null;
-    if (_hasAttachedTokenLabelAfterCopiedEndpoint(copiedUrl)) return null;
-    final uri = Uri.tryParse(copiedUrl);
-    if (uri == null || !uri.hasScheme) return null;
-    return _CopiedUriPayload(text: copiedUrl, uri: uri);
   }
 
   _JsonPayloadParseResult _parseQrJsonPayload(String text) {
@@ -116,13 +108,6 @@ bool _isLegacyNavivoxConnectCompatibilityUri(Uri uri) {
   }
   return navivoxFirstStringFieldFromJson(query, _baseUrlFieldNames) != null ||
       navivoxFirstStringFieldFromJson(query, const ['token']) != null;
-}
-
-class _CopiedUriPayload {
-  const _CopiedUriPayload({required this.text, required this.uri});
-
-  final String text;
-  final Uri uri;
 }
 
 bool _isCorePairingDescriptorUri(Uri uri) =>

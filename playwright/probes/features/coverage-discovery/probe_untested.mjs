@@ -3,16 +3,15 @@ import {
   APP_URL as APP,
   createProbeBrowser,
   createProbePage,
-  enableFlutterAccessibility,
-} from '../support/probe_runtime.mjs';
+} from '../../support/probe_runtime.mjs';
+import { waitForProbeReady } from '../shared/page_readiness.mjs';
 
 const b = await createProbeBrowser({ launchOptions: { args: ['--no-sandbox'] } });
 
 async function probe(label, url, fn) {
   const p = await createProbePage(b);
   await p.goto(url, { timeout: 15000 });
-  await p.waitForTimeout(2000);
-  await enableFlutterAccessibility(p);
+  await waitForProbeReady(p, { delayMs: 2000 });
   const result = await fn(p);
   console.log(`\n=== ${label} ===`);
   if (Array.isArray(result)) {

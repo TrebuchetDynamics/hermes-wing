@@ -2,14 +2,14 @@
 import {
   APP_URL,
   clickSemantic as clickTxt,
-  enableFlutterAccessibility as acc,
   openProbePage,
-} from '../support/probe_runtime.mjs';
+} from '../../support/probe_runtime.mjs';
+import { waitForProbeReady } from '../shared/page_readiness.mjs';
 
 const { browser, page } = await openProbePage();
 
 await page.goto(APP_URL, { waitUntil: 'load', timeout: 20000 });
-await page.waitForTimeout(2000); await acc(page);
+await waitForProbeReady(page, { delayMs: 2000 });
 
 // 1. Probe ALL semantics elements with their role and position
 console.log('=== COMPLETE SEMANTICS TREE ===');
@@ -61,7 +61,7 @@ for (const l of filterLabels) {
 
 // 4. Check for settings screen interactions
 await page.goto(`${APP_URL}#/settings`, { waitUntil: 'load', timeout: 15000 });
-await page.waitForTimeout(1500); await acc(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 const settings = await page.evaluate(() => {
   const btns = document.querySelectorAll('flt-semantics[role="button"]');

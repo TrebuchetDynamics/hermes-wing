@@ -2,9 +2,9 @@
 import {
   APP_URL,
   clickSemantic as click,
-  enableFlutterAccessibility as a11y,
   openProbePage,
-} from '../support/probe_runtime.mjs';
+} from '../../support/probe_runtime.mjs';
+import { waitForProbeReady } from '../shared/page_readiness.mjs';
 
 const { browser, page } = await openProbePage();
 
@@ -12,7 +12,7 @@ const { browser, page } = await openProbePage();
 console.log('=== 1. MOBILE VIEWPORT (390x844) ===');
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(APP_URL, { timeout: 20000 });
-await page.waitForTimeout(2000); await a11y(page);
+await waitForProbeReady(page, { delayMs: 2000 });
 
 const mobileLayout = await page.evaluate(() => {
   const sems = document.querySelectorAll('flt-semantics');
@@ -35,7 +35,7 @@ await page.screenshot({path:'/tmp/navivox-mobile.png'});
 console.log('\n=== 2. GATEWAY MANAGE MODAL ===');
 await page.setViewportSize({ width: 1280, height: 900 });
 await page.goto(`${APP_URL}#/servers`, { timeout: 15000 });
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 // Click Manage for Local Gormes
 await click(page, 'Manage Local Gormes');
@@ -65,7 +65,7 @@ await page.waitForTimeout(1000);
 // 3. SETTINGS TOGGLES (continuous voice switch)
 console.log('\n=== 3. VOICE SETTINGS TOGGLES ===');
 await page.goto(`${APP_URL}#/settings`, { timeout: 15000 });
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 const switches = await page.evaluate(() => {
   const switches = document.querySelectorAll('flt-semantics[role="switch"], [role="checkbox"]');
@@ -86,7 +86,7 @@ const routes = ['/chats', '/servers', '/agents', '/memory', '/config', '/setting
 const navText = {};
 for (const route of routes) {
   await page.goto(`${APP_URL}#${route}`, { timeout: 15000 }).catch(()=>{});
-  await page.waitForTimeout(1500); await a11y(page);
+  await waitForProbeReady(page, { delayMs: 1500 });
   
   // Look for bottom nav items (mobile) or navigation rail items
   const items = await page.evaluate(() => {

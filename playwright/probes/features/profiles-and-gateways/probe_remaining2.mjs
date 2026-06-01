@@ -2,16 +2,16 @@
 import {
   APP_URL,
   clickSemantic as click,
-  enableFlutterAccessibility as a11y,
   openProbePage,
-} from '../support/probe_runtime.mjs';
+} from '../../support/probe_runtime.mjs';
+import { waitForProbeReady } from '../shared/page_readiness.mjs';
 
 const { browser, page } = await openProbePage();
 
 // 1. AGENTS - profile selection
 console.log('=== 1. AGENTS: profile selection ===');
 await page.goto(`${APP_URL}#/agents`, {timeout:15000});
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 // Click Voice Agent profile
 await click(page, 'Voice Agent'); await page.waitForTimeout(2000);
@@ -33,7 +33,7 @@ for (const a of agentsAfter) console.log('  "'+a+'"');
 // 2. SEARCH - type text in search field
 console.log('\n=== 2. SEARCH field ===');
 await page.goto(APP_URL, {timeout:15000});
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 // The search input has aria-label "Search profiles" - it's a disabled input
 // Try clicking the semantics overlay
@@ -96,7 +96,7 @@ if (searchInfo.found) {
 // 3. VOICE TOGGLES - check switch state
 console.log('\n=== 3. SETTINGS: switches ===');
 await page.goto(`${APP_URL}#/settings`, {timeout:15000});
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 const toggles = await page.evaluate(() => {
   const all = document.querySelectorAll('[role="switch"], [aria-checked], .SwitchListTile');
@@ -124,7 +124,7 @@ for (const t of toggles) {
 // 4. REGISTER GATEWAY - check if clickable
 console.log('\n=== 4. REGISTER GATEWAY ===');
 await page.goto(`${APP_URL}#/servers`, {timeout:15000});
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 await click(page, 'Register gateway');
 await page.waitForTimeout(2000);
@@ -134,7 +134,7 @@ console.log('URL after register:', page.url());
 console.log('\n=== 5. MOBILE TAB CLICK ===');
 await page.setViewportSize({width:390,height:844});
 await page.goto(APP_URL, {timeout:15000});
-await page.waitForTimeout(1500); await a11y(page);
+await waitForProbeReady(page, { delayMs: 1500 });
 
 // Click the Memory tab (3rd tab)
 await click(page, 'tab');

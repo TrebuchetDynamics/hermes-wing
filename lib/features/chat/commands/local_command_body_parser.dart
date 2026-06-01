@@ -1,5 +1,26 @@
 enum LocalCommandBodySource { prefixed, commandModeVoice }
 
+enum LocalCommandPrefixRejectionReason {
+  emptyCommandWord,
+  wordMismatch,
+  missingBoundary,
+}
+
+class LocalCommandPrefixScan {
+  const LocalCommandPrefixScan._({this.body, this.rejectionReason});
+
+  const LocalCommandPrefixScan.matched(String body) : this._(body: body);
+
+  const LocalCommandPrefixScan.rejected(
+    LocalCommandPrefixRejectionReason reason,
+  ) : this._(rejectionReason: reason);
+
+  final String? body;
+  final LocalCommandPrefixRejectionReason? rejectionReason;
+
+  bool get matched => body != null;
+}
+
 class LocalCommandBodyParse {
   const LocalCommandBodyParse({required this.body, required this.source});
 
@@ -19,13 +40,10 @@ class LocalCommandBodyParser {
     final text = raw.trim();
     if (text.isEmpty) return null;
 
-    final word = commandWord.trim().toLowerCase();
-    if (word.isEmpty) return null;
-
-    final prefixed = _matchCommandPrefix(text, word);
-    if (prefixed != null) {
+    final prefix = scanCommandPrefix(text, commandWord: commandWord);
+    if (prefix.matched) {
       return LocalCommandBodyParse(
-        body: prefixed.body,
+        body: prefix.body!,
         source: LocalCommandBodySource.prefixed,
       );
     }
@@ -52,24 +70,36 @@ class LocalCommandBodyParser {
     )?.body;
   }
 
-  _LocalCommandPrefixMatch? _matchCommandPrefix(
-    String text,
-    String commandWord,
-  ) {
-    final lower = text.toLowerCase();
-    if (lower == commandWord) {
-      return const _LocalCommandPrefixMatch(body: '');
-    }
-    if (!lower.startsWith(commandWord)) return null;
-    if (text.length == commandWord.length) {
-      return const _LocalCommandPrefixMatch(body: '');
+  LocalCommandPrefixScan scanCommandPrefix(
+    String text, {
+    required String commandWord,
+  }) {
+    final word = commandWord.trim().toLowerCase();
+    if (word.isEmpty) {
+      return const LocalCommandPrefixScan.rejected(
+        LocalCommandPrefixRejectionReason.emptyCommandWord,
+      );
     }
 
-    final separator = text.substring(commandWord.length);
+    final lower = text.trim().toLowerCase();
+    if (lower == word) {
+      return const LocalCommandPrefixScan.matched('');
+    }
+    if (!lower.startsWith(word)) {
+      return const LocalCommandPrefixScan.rejected(
+        LocalCommandPrefixRejectionReason.wordMismatch,
+      );
+    }
+
+    final separator = text.trim().substring(word.length);
     final bodyStart = _commandBodyStart(separator);
-    if (bodyStart == null) return null;
-    return _LocalCommandPrefixMatch(
-      body: separator.substring(bodyStart).trim(),
+    if (bodyStart == null) {
+      return const LocalCommandPrefixScan.rejected(
+        LocalCommandPrefixRejectionReason.missingBoundary,
+      );
+    }
+    return LocalCommandPrefixScan.matched(
+      separator.substring(bodyStart).trim(),
     );
   }
 
@@ -94,10 +124,4 @@ class LocalCommandBodyParser {
         codeUnit == 0x21 || // exclamation mark
         codeUnit == 0x3f; // question mark
   }
-}
-
-class _LocalCommandPrefixMatch {
-  const _LocalCommandPrefixMatch({required this.body});
-
-  final String body;
 }

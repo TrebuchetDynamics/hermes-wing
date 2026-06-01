@@ -86,6 +86,43 @@ void main() {
     expect(typedCommandMode, isNull);
   });
 
+  test('replays command prefix boundary decisions explicitly', () {
+    const parser = LocalCommandBodyParser();
+
+    final emptyCommandWord = parser.scanCommandPrefix(
+      'navi cancel',
+      commandWord: ' ',
+    );
+    final wordMismatch = parser.scanCommandPrefix(
+      'hello navi',
+      commandWord: 'navi',
+    );
+    final missingBoundary = parser.scanCommandPrefix(
+      'navicancel',
+      commandWord: 'navi',
+    );
+    final punctuationBoundary = parser.scanCommandPrefix(
+      'navi?! cancel',
+      commandWord: 'navi',
+    );
+
+    expect(emptyCommandWord.matched, isFalse);
+    expect(
+      emptyCommandWord.rejectionReason,
+      LocalCommandPrefixRejectionReason.emptyCommandWord,
+    );
+    expect(
+      wordMismatch.rejectionReason,
+      LocalCommandPrefixRejectionReason.wordMismatch,
+    );
+    expect(
+      missingBoundary.rejectionReason,
+      LocalCommandPrefixRejectionReason.missingBoundary,
+    );
+    expect(punctuationBoundary.matched, isTrue);
+    expect(punctuationBoundary.body, 'cancel');
+  });
+
   test('requires an explicit command-word boundary outside voice mode', () {
     final prefixedWord = resolver.resolve(
       raw: 'navicancel',

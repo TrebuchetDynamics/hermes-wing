@@ -2,6 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/protocol/pairing/navivox_pairing_descriptor.dart';
 
 void main() {
+  test('rejects descriptor path or fragment instead of dropping hidden state', () {
+    for (final value in [
+      'navivox://connect/legacy?websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fstream',
+      'navivox://connect?websocket_url=ws%3A%2F%2F127.0.0.1%3A8765%2Fstream#handoff',
+    ]) {
+      expect(
+        () => NavivoxPairingDescriptor.parse(value),
+        throwsFormatException,
+      );
+    }
+  });
+
   test('rejects explicit base_url fragments instead of dropping them', () {
     expect(
       () => NavivoxPairingDescriptor.parse(

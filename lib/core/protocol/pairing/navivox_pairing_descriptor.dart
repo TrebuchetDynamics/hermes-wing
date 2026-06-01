@@ -19,9 +19,7 @@ class NavivoxPairingDescriptor {
 
   factory NavivoxPairingDescriptor.parse(String value) {
     final uri = Uri.parse(value.trim());
-    if (uri.scheme != 'navivox' || uri.host != 'connect') {
-      throw FormatException('Expected navivox://connect descriptor', value);
-    }
+    _validatePairingDescriptorEnvelope(uri, descriptor: value);
     final fields = PairingDescriptorQueryFields(
       descriptor: value,
       queryParametersAll: uri.queryParametersAll,
@@ -69,6 +67,18 @@ class NavivoxPairingDescriptor {
       baseUri: baseUri,
       token: token,
       webSocketUri: webSocketUri,
+    );
+  }
+}
+
+void _validatePairingDescriptorEnvelope(Uri uri, {required String descriptor}) {
+  if (uri.scheme != 'navivox' || uri.host != 'connect') {
+    throw FormatException('Expected navivox://connect descriptor', descriptor);
+  }
+  if (uri.path.isNotEmpty || uri.hasFragment) {
+    throw FormatException(
+      'Pairing descriptor must not include path or fragment state',
+      descriptor,
     );
   }
 }

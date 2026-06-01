@@ -35,6 +35,17 @@ void main() {
     expect(result.token, isNull);
   });
 
+  test('prefers connection-route URL over docs URL with following token', () {
+    final result = parseNavivoxConnectionImportPayload(
+      'Read https://docs.example/setup then token: nvbx_docs. Then open '
+      'https://gateway.example/pair to pair Navivox.',
+    );
+
+    expect(result, isNotNull);
+    expect(result!.baseUrl, 'https://gateway.example');
+    expect(result.token, isNull);
+  });
+
   test('parses copied core pairing descriptor scheme case-insensitively', () {
     final result = parseNavivoxConnectionImportPayload(
       'NaviVox://CONNECT?'

@@ -137,6 +137,10 @@ String? navivoxFirstStringFieldFromJson(
 String navivoxCanonicalWireFieldName(String value) =>
     value.toLowerCase().replaceAll('_', '');
 
+Set<String> navivoxCanonicalWireFieldNames(Iterable<String> values) => {
+  for (final value in values) navivoxCanonicalWireFieldName(value),
+};
+
 /// Yields values for [names], preferring exact keys before canonical aliases.
 ///
 /// Exact-key precedence keeps a producer's canonical field from being shadowed

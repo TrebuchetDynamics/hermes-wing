@@ -10,6 +10,10 @@ void main() {
     };
 
     expect(navivoxCanonicalWireFieldName('server_id'), 'serverid');
+    expect(navivoxCanonicalWireFieldNames(const ['server_id', 'profileId']), {
+      'serverid',
+      'profileid',
+    });
     expect(
       navivoxWireFieldValuesFromAliases(json, const ['server_id']).toList(),
       ['server-snake', 'server-camel'],

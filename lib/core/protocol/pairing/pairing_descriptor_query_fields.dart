@@ -34,7 +34,7 @@ class PairingDescriptorQueryFields {
   }
 
   List<String> csv(String name) {
-    final normalizedName = normalizePairingDescriptorFieldName(name);
+    final normalizedName = navivoxCanonicalWireFieldName(name);
     return _orderedPairs
         .where((pair) => pair.normalizedName == normalizedName)
         .map((pair) => navivoxOptionalStringFromJson(pair.value))
@@ -46,14 +46,11 @@ class PairingDescriptorQueryFields {
   }
 }
 
-String normalizePairingDescriptorFieldName(String value) =>
-    value.toLowerCase().replaceAll('_', '');
-
 String? _pairingDescriptorFirstScalarQueryValue(
   Iterable<_PairingDescriptorQueryPair> pairs,
   String name,
 ) {
-  final normalizedName = normalizePairingDescriptorFieldName(name);
+  final normalizedName = navivoxCanonicalWireFieldName(name);
   for (final pair in pairs) {
     if (pair.normalizedName != normalizedName) continue;
     final value = navivoxOptionalStringFromJson(pair.value);
@@ -77,7 +74,7 @@ List<_PairingDescriptorQueryPair> _orderedQueryPairs(
       .expand(
         (entry) => entry.value.map(
           (value) => _PairingDescriptorQueryPair(
-            normalizedName: normalizePairingDescriptorFieldName(entry.key),
+            normalizedName: navivoxCanonicalWireFieldName(entry.key),
             value: value,
           ),
         ),
@@ -98,7 +95,7 @@ class _PairingDescriptorQueryPair {
         : component.substring(0, separator);
     final rawValue = separator == -1 ? '' : component.substring(separator + 1);
     return _PairingDescriptorQueryPair(
-      normalizedName: normalizePairingDescriptorFieldName(
+      normalizedName: navivoxCanonicalWireFieldName(
         Uri.decodeQueryComponent(rawName),
       ),
       value: Uri.decodeQueryComponent(rawValue),

@@ -45,18 +45,11 @@ Object? navivoxMemoryCountFieldFromJson(
     if (json.containsKey(name)) return json[name];
   }
 
-  final normalizedNames = {
-    for (final name in names) _navivoxNormalizeMemoryCountFieldName(name),
-  };
+  final canonicalNames = navivoxCanonicalWireFieldNames(names);
   for (final entry in json.entries) {
-    if (normalizedNames.contains(
-      _navivoxNormalizeMemoryCountFieldName(entry.key),
-    )) {
+    if (canonicalNames.contains(navivoxCanonicalWireFieldName(entry.key))) {
       return entry.value;
     }
   }
   return null;
 }
-
-String _navivoxNormalizeMemoryCountFieldName(String value) =>
-    value.toLowerCase().replaceAll('_', '');

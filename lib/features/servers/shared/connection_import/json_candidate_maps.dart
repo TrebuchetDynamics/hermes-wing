@@ -7,7 +7,7 @@ Iterable<_JsonConnectionImportFields> _jsonCandidateMaps(
   if (entries is! List) {
     yield _JsonConnectionImportFields(
       fields: decoded,
-      hasExplicitConnectionFields: true,
+      hasExplicitConnectionFields: _hasNonBlankJsonConnectionField(decoded),
     );
     return;
   }
@@ -20,7 +20,7 @@ Iterable<_JsonConnectionImportFields> _jsonCandidateMaps(
   if (!yieldedEntry) {
     yield _JsonConnectionImportFields(
       fields: decoded,
-      hasExplicitConnectionFields: true,
+      hasExplicitConnectionFields: _hasNonBlankJsonConnectionField(decoded),
     );
   }
 }

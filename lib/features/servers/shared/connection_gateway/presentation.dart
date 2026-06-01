@@ -169,14 +169,40 @@ String? _validateEndpointUriText(
   String text, {
   required String invalidMessage,
 }) {
-  if (_containsWhitespace(text)) return invalidMessage;
-  final uri = Uri.tryParse(text);
-  if (uri == null || uri.host.isEmpty) return invalidMessage;
-  if (!navivoxIsEndpointScheme(uri.scheme)) {
-    return 'Use http, https, ws, or wss.';
-  }
-  if (uri.hasPort && !_isValidPort(uri.port)) return invalidMessage;
+  final validation = _GatewayEndpointUriValidation.tryParse(text);
+  if (!validation.isWellFormed) return invalidMessage;
+  if (!validation.hasSupportedScheme) return 'Use http, https, ws, or wss.';
+  if (validation.hasClientOnlyFragment) return invalidMessage;
+  if (!validation.hasValidPort) return invalidMessage;
   return null;
+}
+
+class _GatewayEndpointUriValidation {
+  const _GatewayEndpointUriValidation._({
+    required this.uri,
+    required this.containsWhitespace,
+  });
+
+  factory _GatewayEndpointUriValidation.tryParse(String text) {
+    return _GatewayEndpointUriValidation._(
+      uri: Uri.tryParse(text),
+      containsWhitespace: _containsWhitespace(text),
+    );
+  }
+
+  final Uri? uri;
+  final bool containsWhitespace;
+
+  bool get isWellFormed =>
+      !containsWhitespace && uri != null && uri!.host.isNotEmpty;
+
+  bool get hasSupportedScheme =>
+      uri != null && navivoxIsEndpointScheme(uri!.scheme);
+
+  bool get hasClientOnlyFragment => uri?.hasFragment ?? false;
+
+  bool get hasValidPort =>
+      uri == null || !uri!.hasPort || _isValidPort(uri!.port);
 }
 
 bool _containsWhitespace(String value) => RegExp(r'\s').hasMatch(value);

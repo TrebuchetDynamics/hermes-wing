@@ -22,6 +22,10 @@ void main() {
       'Enter a valid Gormes gateway URL.',
     );
     expect(
+      presentation.validateBaseUrl('http://127.0.0.1:7319#token'),
+      'Enter a valid Gormes gateway URL.',
+    );
+    expect(
       presentation.validateBaseUrl('ftp://example.com'),
       'Use http, https, ws, or wss.',
     );
@@ -50,6 +54,13 @@ void main() {
           port: '8765',
         ),
         'Use http, https, ws, or wss.',
+      );
+      expect(
+        presentation.validateAddressAndPort(
+          address: 'http://127.0.0.1:7319#token',
+          port: '8765',
+        ),
+        'Enter a valid Gormes gateway address.',
       );
       expect(
         presentation.validateAddressAndPort(address: '127.0.0.1', port: '8765'),

@@ -1,17 +1,40 @@
 import 'config_form_schema_row.dart';
 
+enum ConfigFormSchemaRowRejectionReason { invalid, duplicateField }
+
+class ConfigFormSchemaRowRejection {
+  const ConfigFormSchemaRowRejection({
+    required this.index,
+    required this.reason,
+    this.field,
+  });
+
+  final int index;
+  final ConfigFormSchemaRowRejectionReason reason;
+  final String? field;
+}
+
 class ConfigFormSchemaRowCandidatePlan {
   ConfigFormSchemaRowCandidatePlan({
     required List<ConfigFormSchemaRowCandidate> candidates,
-    required this.skippedInvalidRows,
-    required this.skippedDuplicateRows,
-  }) : candidates = List.unmodifiable(candidates);
+    required List<ConfigFormSchemaRowRejection> rejections,
+  }) : candidates = List.unmodifiable(candidates),
+       rejections = List.unmodifiable(rejections);
 
   final List<ConfigFormSchemaRowCandidate> candidates;
-  final int skippedInvalidRows;
-  final int skippedDuplicateRows;
+  final List<ConfigFormSchemaRowRejection> rejections;
 
   int get acceptedRows => candidates.length;
+
+  int get skippedInvalidRows =>
+      _skippedRows(ConfigFormSchemaRowRejectionReason.invalid);
+
+  int get skippedDuplicateRows =>
+      _skippedRows(ConfigFormSchemaRowRejectionReason.duplicateField);
+
+  int _skippedRows(ConfigFormSchemaRowRejectionReason reason) {
+    return rejections.where((rejection) => rejection.reason == reason).length;
+  }
 }
 
 /// Builds validated schema row candidates in the exact order they should appear
@@ -40,21 +63,33 @@ ConfigFormSchemaRowCandidatePlan configFormSchemaRowCandidatePlanFromFields({
   required Map<String, Object?> values,
 }) {
   final candidates = <ConfigFormSchemaRowCandidate>[];
+  final rejections = <ConfigFormSchemaRowRejection>[];
   final seenFields = <String>{};
-  var skippedInvalidRows = 0;
-  var skippedDuplicateRows = 0;
 
-  for (final raw in rawFields) {
+  for (final indexedRaw in rawFields.indexed) {
+    final index = indexedRaw.$1;
+    final raw = indexedRaw.$2;
     final candidate = ConfigFormSchemaRowCandidate.fromRaw(
       raw: raw,
       values: values,
     );
     if (candidate == null) {
-      skippedInvalidRows += 1;
+      rejections.add(
+        ConfigFormSchemaRowRejection(
+          index: index,
+          reason: ConfigFormSchemaRowRejectionReason.invalid,
+        ),
+      );
       continue;
     }
     if (!seenFields.add(candidate.field)) {
-      skippedDuplicateRows += 1;
+      rejections.add(
+        ConfigFormSchemaRowRejection(
+          index: index,
+          reason: ConfigFormSchemaRowRejectionReason.duplicateField,
+          field: candidate.field,
+        ),
+      );
       continue;
     }
     candidates.add(candidate);
@@ -62,7 +97,6 @@ ConfigFormSchemaRowCandidatePlan configFormSchemaRowCandidatePlanFromFields({
 
   return ConfigFormSchemaRowCandidatePlan(
     candidates: candidates,
-    skippedInvalidRows: skippedInvalidRows,
-    skippedDuplicateRows: skippedDuplicateRows,
+    rejections: rejections,
   );
 }

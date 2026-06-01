@@ -50,6 +50,21 @@ void main() {
     expect(plan.acceptedRows, 2);
     expect(plan.skippedInvalidRows, 2);
     expect(plan.skippedDuplicateRows, 1);
+    expect(
+      plan.rejections.map(
+        (rejection) => (rejection.index, rejection.reason, rejection.field),
+      ),
+      [
+        (0, ConfigFormSchemaRowRejectionReason.invalid, null),
+        (1, ConfigFormSchemaRowRejectionReason.invalid, null),
+        (
+          3,
+          ConfigFormSchemaRowRejectionReason.duplicateField,
+          'providers.default',
+        ),
+      ],
+    );
+    expect(() => plan.rejections.clear(), throwsUnsupportedError);
     expect(candidates.map((candidate) => candidate.field), [
       'providers.default',
       'model.temperature',

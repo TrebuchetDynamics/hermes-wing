@@ -1,8 +1,23 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.isFile) {
+        localPropertiesFile.inputStream().use(::load)
+    }
+}
+
+fun releaseSigningValue(propertyName: String, environmentName: String): String? {
+    return (localProperties.getProperty(propertyName) ?: System.getenv(environmentName))
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
 }
 
 android {
@@ -29,11 +44,47 @@ android {
         versionName = flutter.versionName
     }
 
+    val releaseKeystorePath = releaseSigningValue(
+        "navivox.release.storeFile",
+        "NAVIVOX_RELEASE_STORE_FILE",
+    )
+    val releaseKeystorePassword = releaseSigningValue(
+        "navivox.release.storePassword",
+        "NAVIVOX_RELEASE_STORE_PASSWORD",
+    )
+    val releaseKeyAlias = releaseSigningValue(
+        "navivox.release.keyAlias",
+        "NAVIVOX_RELEASE_KEY_ALIAS",
+    )
+    val releaseKeyPassword = releaseSigningValue(
+        "navivox.release.keyPassword",
+        "NAVIVOX_RELEASE_KEY_PASSWORD",
+    )
+
+    if (
+        releaseKeystorePath != null &&
+            releaseKeystorePassword != null &&
+            releaseKeyAlias != null &&
+            releaseKeyPassword != null
+    ) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Keep debug signing for local release smoke runs until a keystore-backed
-            // distribution config is added through local properties or CI secrets.
-            signingConfig = signingConfigs.getByName("debug")
+            // A keystore-backed release signing config is selected when all
+            // navivox.release.* local properties or NAVIVOX_RELEASE_* environment
+            // variables are present. Without them, keep debug signing only for
+            // local release smoke runs; do not distribute that artifact.
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
         }
     }
 }

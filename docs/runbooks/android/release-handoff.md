@@ -28,9 +28,33 @@ Or install the APK with ADB:
 adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
+## Release signing setup
+
+Release builds use a keystore-backed signing config only when all signing values are supplied through ignored local properties or CI environment secrets. Never commit the keystore or passwords.
+
+Local `android/local.properties` example:
+
+```properties
+navivox.release.storeFile=/absolute/path/to/navivox-release.jks
+navivox.release.storePassword=...
+navivox.release.keyAlias=navivox
+navivox.release.keyPassword=...
+```
+
+CI/environment variable equivalents:
+
+```text
+NAVIVOX_RELEASE_STORE_FILE
+NAVIVOX_RELEASE_STORE_PASSWORD
+NAVIVOX_RELEASE_KEY_ALIAS
+NAVIVOX_RELEASE_KEY_PASSWORD
+```
+
+If any value is missing, Gradle falls back to Flutter's debug signing config so local `--release` smoke builds can still run. Do not distribute a release artifact built with that fallback.
+
 ## Release app bundle handoff
 
-Only build a release bundle after signing, versioning, and tester scope are agreed:
+Only build a release bundle after release signing values, versioning, and tester scope are agreed:
 
 ```bash
 flutter build appbundle --release

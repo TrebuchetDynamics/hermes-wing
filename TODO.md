@@ -53,12 +53,12 @@
   owner: Navivox app owner / Gormes gateway owner / security owner
   next check: durable connection credential protocol slice.
 
-[PLANNED] Android release signing config — 2026-05-24
-  problem: Android release builds still use Flutter's debug signing config, which is acceptable for local smoke runs but not for distributable APK/AAB artifacts.
-  evidence: `android/app/build.gradle.kts` keeps `release.signingConfig = signingConfigs.getByName("debug")` so `flutter run --release` remains easy while no release keystore policy is committed.
-  acceptance: add a non-secret release signing configuration that reads keystore path/passwords from local properties or CI secrets, document local setup, verify `flutter build apk --release` or `flutter build appbundle`, and keep keystore material out of git.
+[RESOLVED] Android release signing config — 2026-05-24
+  resolved: 2026-06-07
+  result: Android release builds now select a keystore-backed signing config when ignored local properties or CI environment secrets provide all release signing values, while retaining debug signing only as an explicit local smoke-build fallback.
+  evidence: `android/app/build.gradle.kts` reads `navivox.release.*` local properties or `NAVIVOX_RELEASE_*` environment variables; `docs/runbooks/android/release-handoff.md` documents local/CI signing setup and warns not to distribute fallback debug-signed release artifacts; `android/.gitignore` excludes `local.properties`, `key.properties`, `*.keystore`, and `*.jks`.
+  validation: `./android/gradlew -p android :app:tasks` passed; `flutter build apk --release` passed and produced `build/app/outputs/flutter-apk/app-release.apk`.
   owner: Navivox app owner / release owner
-  next check: first Android distribution slice.
 
 [RESOLVED] Navivox config-admin channel wiring — 2026-05-24
   resolved: 2026-06-07

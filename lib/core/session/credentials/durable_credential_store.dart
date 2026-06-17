@@ -27,9 +27,21 @@ abstract interface class DurableCredentialStore {
 
   Future<GatewayCredentialMetadata?> metadata({required String gatewayId});
 
+  /// Persists a durable reconnect [secret] for a gateway behind platform secure
+  /// storage, alongside its non-secret [metadata]. Implementations must never
+  /// write the secret to shared preferences, logs, or other non-secure storage.
+  Future<void> saveCredential({
+    required GatewayCredentialMetadata metadata,
+    required String secret,
+  });
+
   Future<void> deleteCredential({required String gatewayId});
 }
 
+/// Default store that persists nothing. Production uses this until a platform
+/// secure-storage implementation is injected, so no secret is ever written to
+/// insecure storage; `containsCredential` stays false and reconnect readiness
+/// therefore never claims "saved".
 class EmptyDurableCredentialStore implements DurableCredentialStore {
   const EmptyDurableCredentialStore();
 
@@ -40,6 +52,12 @@ class EmptyDurableCredentialStore implements DurableCredentialStore {
   Future<GatewayCredentialMetadata?> metadata({
     required String gatewayId,
   }) async => null;
+
+  @override
+  Future<void> saveCredential({
+    required GatewayCredentialMetadata metadata,
+    required String secret,
+  }) async {}
 
   @override
   Future<void> deleteCredential({required String gatewayId}) async {}

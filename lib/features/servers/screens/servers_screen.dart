@@ -118,6 +118,19 @@ class ServersScreen extends ConsumerWidget {
               title: Text(gatewayStatus.deferredMetadataTitle),
               subtitle: Text(gatewayStatus.deferredMetadataMessage),
             ),
+            if (gateway.showReconnectStatus)
+              ListTile(
+                key: const ValueKey('server-reconnect-readiness'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.sync_outlined),
+                title: Text(gateway.reconnectStatusTitle),
+                subtitle: Text(
+                  gateway.reconnectRecoveryMessage == null
+                      ? gateway.reconnectStatusMessage
+                      : '${gateway.reconnectStatusMessage}\n${gateway.reconnectRecoveryMessage}',
+                ),
+                isThreeLine: gateway.reconnectRecoveryMessage != null,
+              ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.tag),

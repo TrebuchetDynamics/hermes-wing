@@ -1,11 +1,20 @@
 import '../../gateway/capabilities/navivox_gateway_capabilities.dart';
 
+export '../../gateway/capabilities/durable_reconnect_readiness_contract.dart'
+    show ReconnectReadinessKind;
+
 class ReconnectReadiness {
   const ReconnectReadiness({
     required this.kind,
     required this.message,
     this.recoveryMessage,
   });
+
+  /// Default before a gateway capability document has been loaded.
+  static const unknown = ReconnectReadiness(
+    kind: ReconnectReadinessKind.unknown,
+    message: 'Checking reconnect support…',
+  );
 
   factory ReconnectReadiness.fromCapabilities(
     NavivoxCapabilityDocument? capabilities,

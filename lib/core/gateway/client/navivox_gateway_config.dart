@@ -34,6 +34,9 @@ class NavivoxGatewayConfig {
   Uri get voiceProfilesValidateUri =>
       _withPath('/v1/navivox/voice-profiles/validate');
   Uri get memoryActionUri => _withPath('/v1/navivox/memory/action');
+  Uri get deviceCredentialsUri => _withPath('/v1/navivox/device-credentials');
+  Uri get deviceCredentialsRevokeUri =>
+      _withPath('/v1/navivox/device-credentials/revoke');
   Uri memoryOverviewUri({String? serverId, String? profileId}) {
     final query = navivoxTrimmedStringFields({
       'server_id': serverId,

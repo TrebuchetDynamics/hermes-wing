@@ -6,6 +6,7 @@ import '../../protocol/navivox_memory.dart';
 import 'navivox_gateway_config.dart';
 import '../capabilities/navivox_gateway_capabilities.dart';
 import '../config_admin/navivox_gateway_config_admin.dart';
+import '../credentials/navivox_device_credential_issue_result.dart';
 import '../messages/navivox_gateway_event.dart';
 import '../messages/navivox_gateway_event_decoder.dart';
 import '../observations/navivox_gateway_observations.dart';
@@ -172,6 +173,20 @@ class NavivoxGatewayClient {
     };
     return NavivoxProfileSeedResult.fromJson(
       await _postJson(config.profileSeedUri, body),
+    );
+  }
+
+  Future<NavivoxDeviceCredentialIssueResult> issueDeviceCredential({
+    required String appInstallId,
+    List<String> scopes = const [],
+  }) async {
+    final trimmedScopes = navivoxTrimmedStringList(scopes);
+    final body = <String, Object?>{
+      'app_install_id': appInstallId.trim(),
+      if (trimmedScopes.isNotEmpty) 'scopes': trimmedScopes,
+    };
+    return NavivoxDeviceCredentialIssueResult.fromJson(
+      await _postJson(config.deviceCredentialsUri, body),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
+import 'package:navivox/core/session/readiness/reconnect_readiness.dart';
 import 'package:navivox/features/servers/overview/servers_screen_presentation.dart';
 
 import '../../shared/fixtures/profile_contact_fixtures.dart';
@@ -137,5 +138,56 @@ void main() {
 
     expect(presentation.hasGateways, isFalse);
     expect(presentation.gateways, isEmpty);
+  });
+
+  test('surfaces reconnect readiness only for the active gateway', () {
+    final presentation = ServersScreenPresentation.fromState(
+      NavivoxChannelState(
+        servers: _servers,
+        activeServerId: 'alpha',
+        profileContacts: _contacts,
+        selectedProfileContactKey: 'alpha::mineru',
+        reconnectReadiness: const ReconnectReadiness(
+          kind: ReconnectReadinessKind.available,
+          message: 'Reconnect support is available but not saved yet.',
+        ),
+      ),
+    );
+
+    final active = presentation.gateways.firstWhere((g) => g.server.id == 'alpha');
+    expect(active.showReconnectStatus, isTrue);
+    expect(active.reconnectStatusTitle, 'Reconnect readiness');
+    expect(
+      active.reconnectStatusMessage,
+      'Reconnect support is available but not saved yet.',
+    );
+
+    // The inactive, registered gateway has no live capability document, so it
+    // must not present a reconnect readiness state.
+    final registered = presentation.gateways.firstWhere((g) => g.server.id == 'zulu');
+    expect(registered.showReconnectStatus, isFalse);
+  });
+
+  test('exposes a blocked reconnect recovery message for the active gateway', () {
+    final presentation = ServersScreenPresentation.fromState(
+      NavivoxChannelState(
+        servers: _servers,
+        activeServerId: 'alpha',
+        profileContacts: _contacts,
+        selectedProfileContactKey: 'alpha::mineru',
+        reconnectReadiness: const ReconnectReadiness(
+          kind: ReconnectReadinessKind.blocked,
+          message: 'Reconnect cannot be saved on this connection.',
+          recoveryMessage: 'Durable reconnect is advertised with unsupported effective security.',
+        ),
+      ),
+    );
+
+    final active = presentation.gateways.firstWhere((g) => g.server.id == 'alpha');
+    expect(active.showReconnectStatus, isTrue);
+    expect(
+      active.reconnectRecoveryMessage,
+      'Durable reconnect is advertised with unsupported effective security.',
+    );
   });
 }

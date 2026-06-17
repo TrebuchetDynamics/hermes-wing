@@ -1420,4 +1420,48 @@ void main() {
       expect(client.reconnectDelay(10), const Duration(seconds: 16));
     },
   );
+
+  test('client issues an interim device credential', () async {
+    String? body;
+    Uri? uri;
+    final client = NavivoxGatewayClient(
+      config: NavivoxGatewayConfig.fromBaseUrl(
+        'http://127.0.0.1:8765',
+        token: 'nvbx_test_token',
+      ),
+      post: (postUri, headers, requestBody) async {
+        uri = postUri;
+        body = requestBody;
+        return jsonEncode({
+          'object': 'gormes.navivox.device_credential',
+          'credential_id': 'navivoxcred_abc',
+          'secret': 'nvbxdc_secret',
+          'auth_method': 'device_bearer',
+          'interim': true,
+          'scopes': ['navivox'],
+          'gateway_id': 'gw_test',
+          'app_install_id': 'install-1',
+        });
+      },
+    );
+
+    final result = await client.issueDeviceCredential(
+      appInstallId: ' install-1 ',
+      scopes: [' navivox ', ''],
+    );
+
+    expect(
+      uri.toString(),
+      'http://127.0.0.1:8765/v1/navivox/device-credentials',
+    );
+    expect(jsonDecode(body!), {
+      'app_install_id': 'install-1',
+      'scopes': ['navivox'],
+    });
+    expect(result.credentialId, 'navivoxcred_abc');
+    expect(result.secret, 'nvbxdc_secret');
+    expect(result.authMethod, 'device_bearer');
+    expect(result.interim, isTrue);
+    expect(result.isUsable, isTrue);
+  });
 }

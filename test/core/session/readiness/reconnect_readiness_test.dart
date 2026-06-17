@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/gateway/capabilities/navivox_gateway_capabilities.dart';
 import 'package:navivox/core/session/reconnect_readiness.dart';
 
 import '../support/reconnect_capabilities_test_support.dart';

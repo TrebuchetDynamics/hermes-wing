@@ -1,6 +1,7 @@
 import '../../gateway/navivox_gateway_protocol.dart';
 import '../../protocol/navivox_event.dart';
 import '../../protocol/navivox_voice_run.dart';
+import '../../session/readiness/reconnect_readiness.dart';
 import 'navivox_gateway_summary.dart';
 import 'navivox_profile_contact.dart';
 
@@ -22,6 +23,7 @@ class NavivoxChannelState {
     this.configSchema,
     this.configValues = const {},
     this.configDiff,
+    this.reconnectReadiness = ReconnectReadiness.unknown,
   });
 
   final List<NavivoxServer> servers;
@@ -39,6 +41,10 @@ class NavivoxChannelState {
   final Map<String, Object?>? configSchema;
   final Map<String, Object?> configValues;
   final Map<String, Object?>? configDiff;
+
+  /// Operator-visible durable-reconnect readiness for the active gateway,
+  /// derived from the gateway capability document on connect.
+  final ReconnectReadiness reconnectReadiness;
 
   List<NavivoxChatMessage> get messagesList => messages.values.toList();
   List<NavivoxVoiceRun> get voiceRunsList => voiceRuns.values.toList();
@@ -145,6 +151,7 @@ class NavivoxChannelState {
     Map<String, Object?>? configValues,
     Map<String, Object?>? configDiff,
     bool clearConfigDiff = false,
+    ReconnectReadiness? reconnectReadiness,
   }) {
     assert(
       !clearActiveServerId || activeServerId == null,
@@ -198,6 +205,7 @@ class NavivoxChannelState {
           : configSchema ?? this.configSchema,
       configValues: configValues ?? this.configValues,
       configDiff: clearConfigDiff ? null : configDiff ?? this.configDiff,
+      reconnectReadiness: reconnectReadiness ?? this.reconnectReadiness,
     );
   }
 }

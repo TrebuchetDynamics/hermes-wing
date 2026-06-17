@@ -1,4 +1,5 @@
 import '../../../gateway/navivox_gateway_protocol.dart';
+import '../../../session/readiness/reconnect_readiness.dart';
 import '../../contracts/navivox_channel.dart';
 import '../client/gateway_capability_policy.dart';
 import '../profiles/gateway_profile_contact_policy.dart';
@@ -35,6 +36,7 @@ NavivoxChannelState navivoxClosedCapabilityGatewayState({
     configSchema: const {},
     configValues: const {},
     configDiff: const {},
+    reconnectReadiness: ReconnectReadiness.unknown,
   );
 }
 
@@ -57,6 +59,7 @@ NavivoxChannelState navivoxConnectedGatewayState({
     configSchema: configSchema,
     configValues: configValues,
     configDiff: const {},
+    reconnectReadiness: ReconnectReadiness.fromCapabilities(capabilities),
   );
 }
 
@@ -74,5 +77,6 @@ NavivoxChannelState navivoxFailedSavedSessionReconnectState({
     configSchema: const {},
     configValues: const {},
     configDiff: const {},
+    reconnectReadiness: ReconnectReadiness.unknown,
   );
 }

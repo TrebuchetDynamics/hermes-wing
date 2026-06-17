@@ -1,4 +1,5 @@
 import '../../../../core/channel/navivox_channel.dart';
+import '../../../../core/session/readiness/reconnect_readiness.dart';
 import '../../../../shared/presentation/count_labels.dart';
 import '../../../../shared/presentation/profile_health_labels.dart';
 
@@ -21,14 +22,20 @@ class ServersScreenPresentation {
               activeProfile != null && activeProfile.serverId == server.id
               ? activeProfile
               : null;
+          final active = server.id == state.activeServerId;
           return ServerGatewayPresentation(
             server: server,
             profileContacts: List.unmodifiable(
               (contactsByServer[server.id] ?? const <NavivoxProfileContact>[])
                   .map(GatewayProfileContactPresentation.new),
             ),
-            active: server.id == state.activeServerId,
+            active: active,
             activeProfileContact: activeProfileContact,
+            // Durable reconnect readiness is only meaningful for the gateway
+            // whose live capability document is loaded — the active session.
+            reconnectReadiness: active
+                ? state.reconnectReadiness
+                : ReconnectReadiness.unknown,
           );
         }),
       ),
@@ -46,12 +53,23 @@ class ServerGatewayPresentation {
     required this.profileContacts,
     required this.active,
     required this.activeProfileContact,
+    this.reconnectReadiness = ReconnectReadiness.unknown,
   });
 
   final NavivoxServer server;
   final List<GatewayProfileContactPresentation> profileContacts;
   final bool active;
   final NavivoxProfileContact? activeProfileContact;
+  final ReconnectReadiness reconnectReadiness;
+
+  /// Reconnect readiness is shown only for the active gateway once its
+  /// capability document has resolved (i.e. not the pre-connect unknown state).
+  bool get showReconnectStatus =>
+      active && reconnectReadiness.kind != ReconnectReadinessKind.unknown;
+
+  String get reconnectStatusTitle => 'Reconnect readiness';
+  String get reconnectStatusMessage => reconnectReadiness.message;
+  String? get reconnectRecoveryMessage => reconnectReadiness.recoveryMessage;
 
   String get statusSubtitle =>
       '${active ? 'Active session gateway' : 'Registered gateway'} · ${server.status}';

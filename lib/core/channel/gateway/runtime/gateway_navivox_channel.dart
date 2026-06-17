@@ -9,6 +9,9 @@ import '../../../protocol/navivox_event.dart';
 import '../../../protocol/navivox_memory.dart';
 import '../../../protocol/navivox_profile_contact_key.dart';
 import '../../../protocol/navivox_voice_run.dart';
+import '../../../session/credentials/durable_credential_store.dart';
+import '../../../session/identity/app_install_identity_service.dart';
+import '../../../session/reconnect/durable_reconnect_issuance_coordinator.dart';
 import '../../../session/session_persistence_service.dart';
 import '../../contracts/navivox_channel.dart';
 import '../../contracts/navivox_profile_contact_codec.dart';
@@ -24,12 +27,23 @@ import '../messages/gateway_user_turn_policy.dart';
 import '../turns/gateway_turn_control_policy.dart';
 
 class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
-  GatewayNavivoxChannel({Uuid? uuid, DateTime Function()? clock})
-    : _uuid = uuid ?? const Uuid(),
-      _clock = clock ?? DateTime.now;
+  GatewayNavivoxChannel({
+    Uuid? uuid,
+    DateTime Function()? clock,
+    DurableCredentialStore? credentialStore,
+    AppInstallIdentityService? appInstallIdentity,
+  }) : _uuid = uuid ?? const Uuid(),
+       _clock = clock ?? DateTime.now,
+       _durableReconnect = DurableReconnectIssuanceCoordinator(
+         appInstallIdentity:
+             appInstallIdentity ?? AppInstallIdentityService(),
+         credentialStore: credentialStore ?? const EmptyDurableCredentialStore(),
+         clock: clock ?? DateTime.now,
+       );
 
   final Uuid _uuid;
   final DateTime Function() _clock;
+  final DurableReconnectIssuanceCoordinator _durableReconnect;
   final StreamController<NavivoxApprovalRequest> _approvals =
       StreamController<NavivoxApprovalRequest>.broadcast();
 
@@ -169,6 +183,19 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
         _appendSystemMessage(
           'Navivox stream is not advertised by this gateway.',
         );
+      }
+      // Durable reconnect: when the gateway advertises support, issue and store
+      // an interim credential before any chat turn. The coordinator swallows
+      // its own failures (returning session-only readiness), so this never
+      // breaks the live connection.
+      if (_state.reconnectReadiness.kind == ReconnectReadinessKind.available) {
+        final readiness = await _durableReconnect.persist(
+          client: client,
+          gatewayId: status.gatewayId ?? '',
+          currentReadiness: _state.reconnectReadiness,
+        );
+        _state = _state.copyWith(reconnectReadiness: readiness);
+        notifyListeners();
       }
     } catch (_) {
       await _closeConnection(clearSavedSession: false);

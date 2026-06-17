@@ -7,6 +7,9 @@ import 'package:navivox/core/channel/gateway_navivox_channel.dart';
 import 'package:navivox/core/channel/navivox_channel.dart';
 import 'package:navivox/core/protocol/navivox_event.dart';
 import 'package:navivox/core/protocol/navivox_voice_run.dart';
+import 'package:navivox/core/session/credentials/durable_credential_store.dart';
+import 'package:navivox/core/session/identity/app_install_identity_service.dart';
+import 'package:navivox/core/session/readiness/reconnect_readiness.dart';
 
 import '../../support/gateway_routing_test_support.dart';
 import '../../../session/support/session_persistence_test_support.dart';
@@ -1074,6 +1077,90 @@ void main() {
       );
     },
   );
+
+  test(
+    'connect issues and saves a durable credential when the gateway advertises it',
+    () async {
+      final server = await _FakeGatewayServer.start();
+      addTearDown(server.close);
+
+      final store = _InMemoryCredentialStore();
+      final channel = GatewayNavivoxChannel(
+        credentialStore: store,
+        appInstallIdentity: _FixedInstallIdentity(),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: server.baseUrl, token: gatewayTestToken);
+
+      expect(server.deviceCredentialIssueRequests, 1);
+      expect(
+        channel.state.reconnectReadiness.kind,
+        ReconnectReadinessKind.saved,
+      );
+      expect(
+        await store.containsCredential(gatewayId: 'gw_test_gateway'),
+        isTrue,
+      );
+    },
+  );
+
+  test('connect stays session-only when the credential store cannot persist', () async {
+    final server = await _FakeGatewayServer.start();
+    addTearDown(server.close);
+
+    // Default no-op store: a credential is issued but never persisted, so
+    // readiness must not falsely claim "saved".
+    final channel = GatewayNavivoxChannel(
+      appInstallIdentity: _FixedInstallIdentity(),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(baseUrl: server.baseUrl, token: gatewayTestToken);
+
+    expect(server.deviceCredentialIssueRequests, 1);
+    expect(
+      channel.state.reconnectReadiness.kind,
+      ReconnectReadinessKind.available,
+    );
+    expect(
+      channel.state.reconnectReadiness.message,
+      'Connected for this session; reconnect not saved.',
+    );
+  });
+}
+
+class _FixedInstallIdentity extends AppInstallIdentityService {
+  @override
+  Future<String> getOrCreate() async => 'install-under-test';
+}
+
+class _InMemoryCredentialStore implements DurableCredentialStore {
+  final Map<String, GatewayCredentialMetadata> _saved = {};
+  final Map<String, String> _secrets = {};
+
+  @override
+  Future<bool> containsCredential({required String gatewayId}) async =>
+      _saved.containsKey(gatewayId);
+
+  @override
+  Future<GatewayCredentialMetadata?> metadata({required String gatewayId}) async =>
+      _saved[gatewayId];
+
+  @override
+  Future<void> saveCredential({
+    required GatewayCredentialMetadata metadata,
+    required String secret,
+  }) async {
+    _saved[metadata.gatewayId] = metadata;
+    _secrets[metadata.gatewayId] = secret;
+  }
+
+  @override
+  Future<void> deleteCredential({required String gatewayId}) async {
+    _saved.remove(gatewayId);
+    _secrets.remove(gatewayId);
+  }
 }
 
 class _FakeGatewayServer {
@@ -1107,6 +1194,7 @@ class _FakeGatewayServer {
   var profileContactsRequests = 0;
   var streamRequests = 0;
   var configAdminSchemaRequests = 0;
+  var deviceCredentialIssueRequests = 0;
 
   String get baseUrl => 'http://127.0.0.1:$port';
   Future<Map<String, Object?>> get nextClientMessage =>
@@ -1214,6 +1302,20 @@ class _FakeGatewayServer {
       });
       return;
     }
+    if (request.uri.path == '/v1/navivox/device-credentials') {
+      deviceCredentialIssueRequests++;
+      writeGatewayJson(request.response, {
+        'object': 'gormes.navivox.device_credential',
+        'credential_id': 'navivoxcred_test',
+        'secret': 'nvbxdc_test_secret',
+        'auth_method': 'device_bearer',
+        'interim': true,
+        'scopes': ['navivox'],
+        'gateway_id': 'gw_test_gateway',
+        'app_install_id': 'install-under-test',
+      });
+      return;
+    }
     if (request.uri.path == '/v1/navivox/stream') {
       streamRequests++;
       final socket = await WebSocketTransformer.upgrade(request);
@@ -1307,6 +1409,18 @@ class _FakeGatewayServer {
         'assistant_message',
         'done',
       ],
+    };
+    document['durable_reconnect'] = {
+      'supported': true,
+      'issue_endpoint': '/v1/navivox/device-credentials',
+      'list_endpoint': '/v1/navivox/device-credentials',
+      'revoke_endpoint': '/v1/navivox/device-credentials/revoke',
+      'auth_methods': ['pairing_token', 'device_bearer'],
+      'scopes': ['navivox'],
+      'platforms': ['android'],
+      'interim': true,
+      'effective_security': 'loopback',
+      'blocked_reason': '',
     };
     return document;
   }

@@ -17,6 +17,7 @@ class TranscriptSurfaceFrame extends StatefulWidget {
     this.onVoice,
     this.onVoiceCaptureStarted,
     this.onVoiceCaptureFailed,
+    this.reArmCapture,
     this.voiceCaptureTimeout = const Duration(seconds: 30),
     this.voiceUnavailableReason,
     this.voiceRecoveryAction,
@@ -39,6 +40,7 @@ class TranscriptSurfaceFrame extends StatefulWidget {
   final ValueChanged<VoiceCapture>? onVoice;
   final VoidCallback? onVoiceCaptureStarted;
   final ValueChanged<Object>? onVoiceCaptureFailed;
+  final Listenable? reArmCapture;
   final Duration voiceCaptureTimeout;
   final String? voiceUnavailableReason;
   final String? voiceRecoveryAction;
@@ -174,6 +176,7 @@ class _TranscriptSurfaceFrameState extends State<TranscriptSurfaceFrame> {
           onVoice: widget.onVoice,
           onVoiceCaptureStarted: widget.onVoiceCaptureStarted,
           onVoiceCaptureFailed: widget.onVoiceCaptureFailed,
+          reArmCapture: widget.reArmCapture,
           voiceCaptureTimeout: widget.voiceCaptureTimeout,
           voiceUnavailableReason: widget.voiceUnavailableReason,
           voiceRecoveryAction: widget.voiceRecoveryAction,

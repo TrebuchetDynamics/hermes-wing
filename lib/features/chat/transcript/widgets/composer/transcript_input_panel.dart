@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../../shared/voice/voice_capture_service.dart';
@@ -12,6 +14,7 @@ class TranscriptInputPanel extends StatefulWidget {
     this.onVoice,
     this.onVoiceCaptureStarted,
     this.onVoiceCaptureFailed,
+    this.reArmCapture,
     this.voiceCaptureTimeout = const Duration(seconds: 30),
     this.voiceUnavailableReason,
     this.voiceRecoveryAction,
@@ -28,6 +31,10 @@ class TranscriptInputPanel extends StatefulWidget {
   final ValueChanged<VoiceCapture>? onVoice;
   final VoidCallback? onVoiceCaptureStarted;
   final ValueChanged<Object>? onVoiceCaptureFailed;
+
+  /// When this notifies, the hands-free loop wants the next capture to start
+  /// automatically (after a spoken reply). Null disables re-arming.
+  final Listenable? reArmCapture;
   final Duration voiceCaptureTimeout;
   final String? voiceUnavailableReason;
   final String? voiceRecoveryAction;
@@ -47,11 +54,32 @@ class _TranscriptInputPanelState extends State<TranscriptInputPanel> {
   int _captureGeneration = 0;
 
   @override
+  void initState() {
+    super.initState();
+    widget.reArmCapture?.addListener(_onReArmRequested);
+  }
+
+  @override
   void didUpdateWidget(covariant TranscriptInputPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.reArmCapture != widget.reArmCapture) {
+      oldWidget.reArmCapture?.removeListener(_onReArmRequested);
+      widget.reArmCapture?.addListener(_onReArmRequested);
+    }
     if (oldWidget.voiceCaptureService == widget.voiceCaptureService) return;
     _captureGeneration += 1;
     if (_capturing) _capturing = false;
+  }
+
+  @override
+  void dispose() {
+    widget.reArmCapture?.removeListener(_onReArmRequested);
+    super.dispose();
+  }
+
+  void _onReArmRequested() {
+    if (!mounted || _capturing || widget.voiceCaptureService == null) return;
+    unawaited(_toggleVoiceCapture());
   }
 
   @override

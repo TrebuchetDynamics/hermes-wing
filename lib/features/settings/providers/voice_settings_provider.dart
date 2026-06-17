@@ -8,6 +8,7 @@ export '../../../shared/voice/voice_settings.dart';
 class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
   static const _keyVoiceEnabled = 'navivox.voice.continuous_enabled';
   static const _keyProfileSwitch = 'navivox.voice.profile_switching_enabled';
+  static const _keySpeakReplies = 'navivox.voice.speak_replies_enabled';
   static const _keyCommandWord = 'navivox.voice.command_word';
   static const _keyTrustedServers = 'navivox.voice.trusted_server_ids';
 
@@ -24,11 +25,13 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
       _prefs = await SharedPreferences.getInstance();
       final enabled = _prefs?.getBool(_keyVoiceEnabled) ?? true;
       final profileSwitch = _prefs?.getBool(_keyProfileSwitch) ?? true;
+      final speakReplies = _prefs?.getBool(_keySpeakReplies) ?? false;
       final commandWord = _prefs?.getString(_keyCommandWord) ?? 'navi';
       final trustedList = _prefs?.getStringList(_keyTrustedServers) ?? [];
       state = NavivoxVoiceSettings(
         continuousVoiceEnabled: enabled,
         profileSwitchingEnabled: profileSwitch,
+        speakRepliesEnabled: speakReplies,
         commandWord: commandWord,
         trustedServerIds: trustedList.toSet(),
       );
@@ -42,6 +45,7 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
     if (prefs == null) return;
     await prefs.setBool(_keyVoiceEnabled, state.continuousVoiceEnabled);
     await prefs.setBool(_keyProfileSwitch, state.profileSwitchingEnabled);
+    await prefs.setBool(_keySpeakReplies, state.speakRepliesEnabled);
     await prefs.setString(_keyCommandWord, state.commandWord);
     await prefs.setStringList(
       _keyTrustedServers,
@@ -56,6 +60,11 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
 
   void setProfileSwitchingEnabled(bool enabled) {
     state = state.copyWith(profileSwitchingEnabled: enabled);
+    _save();
+  }
+
+  void setSpeakRepliesEnabled(bool enabled) {
+    state = state.copyWith(speakRepliesEnabled: enabled);
     _save();
   }
 

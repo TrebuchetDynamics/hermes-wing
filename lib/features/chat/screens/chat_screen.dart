@@ -23,6 +23,7 @@ import '../forwarding/forward_message_intent.dart';
 import '../commands/local_command_dispatcher.dart';
 import '../commands/local_command_intent.dart';
 import '../transcript/presentation/transcript_message_action_presentation.dart';
+import '../voice/controllers/continuous_voice_reply_policy.dart';
 import '../voice/controllers/voice_run_controller.dart';
 import '../voice/widgets/continuous_voice_controls.dart';
 import '../approval/widgets/approval_banner.dart';
@@ -105,6 +106,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   bool _routeProfileSynced = false;
   String? _lastRouteProfileKey;
 
+  // Hands-free continuous voice loop state.
+  final ValueNotifier<int> _captureReArm = ValueNotifier<int>(0);
+  String? _lastSpokenReplyId;
+  bool _autoSpeakInFlight = false;
+
   @override
   void initState() {
     super.initState();
@@ -129,6 +135,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _subscribed?.removeListener(_onChannelChanged);
     _pendingVoiceTimer?.cancel();
     _commandModeTimer?.cancel();
+    _captureReArm.dispose();
     super.dispose();
   }
 
@@ -172,6 +179,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       commandMode: _commandMode,
     );
     final activeProfile = presentation.activeProfile;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeAutoSpeakReply(
+        presentation: presentation,
+        voiceSettings: voiceSettings,
+        tts: textToSpeechService,
+        channel: channel,
+      );
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -270,8 +287,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               onCancelActiveTurn: presentation.assistantTypingLabel != null
                   ? () => channel.cancelActiveTurn()
                   : null,
+              reArmCapture: _captureReArm,
               onVoice: (capture) => _handleVoiceCapture(channel, capture),
               onVoiceCaptureStarted: () {
+                // Barge-in: a fresh capture interrupts any reply being spoken.
+                textToSpeechService?.stop();
                 _voiceRunController.startCapture(channel);
               },
               onVoiceCaptureFailed: (error) {
@@ -555,6 +575,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       case RefreshChatUiEffect():
         setState(() {});
     }
+  }
+
+  // Hands-free loop: speak a freshly completed assistant reply aloud, then
+  // re-arm the next capture. Gated on the opt-in setting, continuous-voice
+  // readiness, and an available TTS service so the app never speaks or
+  // re-listens without explicit operator consent.
+  void _maybeAutoSpeakReply({
+    required ChatScreenPresentation presentation,
+    required NavivoxVoiceSettings voiceSettings,
+    required TextToSpeechService? tts,
+    required NavivoxChannel channel,
+  }) {
+    if (_autoSpeakInFlight) return;
+    final enabled =
+        presentation.voiceMode.ready &&
+        voiceSettings.speakRepliesEnabled &&
+        tts != null;
+    final reply = continuousVoiceReplyToSpeak(
+      messages: presentation.transcriptMessages,
+      activeProfileContactKey: channel.state.selectedProfileContactKey,
+      enabled: enabled,
+      turnComplete: presentation.assistantTypingLabel == null,
+      lastSpokenMessageId: _lastSpokenReplyId,
+    );
+    if (reply == null) return;
+    _autoSpeakInFlight = true;
+    _lastSpokenReplyId = reply.id;
+    unawaited(_speakReplyThenReArm(tts!, reply.text ?? ''));
+  }
+
+  Future<void> _speakReplyThenReArm(
+    TextToSpeechService tts,
+    String text,
+  ) async {
+    try {
+      await tts.speak(text);
+    } finally {
+      _autoSpeakInFlight = false;
+    }
+    if (!mounted) return;
+    // Re-arm the next capture for the hands-free loop.
+    _captureReArm.value += 1;
   }
 
   void _scheduleVoiceAutoSend(String voiceRunId) {

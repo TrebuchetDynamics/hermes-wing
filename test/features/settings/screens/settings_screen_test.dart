@@ -43,6 +43,31 @@ void main() {
     expect(tester.widget<SwitchListTile>(trustSwitch).value, isTrue);
   });
 
+  testWidgets('speak-replies toggle defaults off and can be enabled', (
+    tester,
+  ) async {
+    final channel = TestNavivoxChannel()
+      ..seedServers([localGormesServer], activeServerId: 'local');
+
+    await tester.pumpWidget(
+      TestNavivoxMaterialApp(channel: channel, home: const SettingsScreen()),
+    );
+
+    final speakReplies = find.byKey(
+      const ValueKey('voice-speak-replies-enabled'),
+    );
+    await tester.scrollUntilVisible(speakReplies, 200);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Speak replies aloud'), findsOneWidget);
+    expect(tester.widget<SwitchListTile>(speakReplies).value, isFalse);
+
+    await tester.tap(speakReplies);
+    await tester.pump();
+
+    expect(tester.widget<SwitchListTile>(speakReplies).value, isTrue);
+  });
+
   testWidgets('settings explain local scope and link to management tabs', (
     tester,
   ) async {
@@ -66,6 +91,12 @@ void main() {
       ),
       findsOneWidget,
     );
+    final manageGateways = find.byKey(
+      const ValueKey('settings-manage-gateways'),
+    );
+    await tester.scrollUntilVisible(manageGateways, 200);
+    await tester.pumpAndSettle();
+
     expect(find.text('Manage gateways'), findsOneWidget);
     expect(find.text('Manage profile contacts'), findsOneWidget);
 

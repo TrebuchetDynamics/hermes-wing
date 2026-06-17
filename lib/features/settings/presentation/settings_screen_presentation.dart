@@ -41,6 +41,11 @@ class SettingsScreenPresentation {
   String get continuousVoiceSubtitle =>
       'Use local device STT for the active profile';
 
+  String get speakRepliesTitle => 'Speak replies aloud';
+
+  String get speakRepliesSubtitle =>
+      'Hands-free: speak each reply, then listen again';
+
   String get commandWordTitle => 'Command word';
 
   String get profileSwitchingTitle => 'Voice profile switching';

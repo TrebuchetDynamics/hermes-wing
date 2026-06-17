@@ -2,6 +2,7 @@ import '../core/channel/gateway_navivox_channel.dart';
 import '../core/channel/navivox_channel.dart';
 import '../core/protocol/navivox_event.dart';
 import '../core/protocol/navivox_profile_contact_key.dart';
+import '../core/protocol/navivox_voice_run.dart';
 
 class ConnectAndTalkChannel extends GatewayNavivoxChannel {
   NavivoxChannelState _state = const NavivoxChannelState();
@@ -9,6 +10,8 @@ class ConnectAndTalkChannel extends GatewayNavivoxChannel {
   String? connectedToken;
   String? connectedWebSocketUrl;
   final List<String> sentTexts = [];
+  final List<String> sentVoiceTranscripts = [];
+  int _voiceRunCounter = 0;
 
   @override
   NavivoxChannelState get state => _state;
@@ -93,6 +96,113 @@ class ConnectAndTalkChannel extends GatewayNavivoxChannel {
   @override
   void sendVoice({required String transcript}) {
     sendText(transcript);
+  }
+
+  @override
+  String startVoiceRun() {
+    final active = _state.activeProfileContact;
+    final id = 'voice-${++_voiceRunCounter}';
+    final run = NavivoxVoiceRun.recording(
+      id: id,
+      serverId: active?.serverId ?? 'navivox-gateway',
+      profileId: active?.profileId ?? 'default',
+      createdAt: DateTime(2026, 5, 16, 9, 41),
+    );
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns)..[id] = run;
+    _state = _state.copyWith(voiceRuns: runs, activeVoiceRunId: id);
+    notifyListeners();
+    return id;
+  }
+
+  @override
+  void stageVoiceRunTranscript({
+    required String voiceRunId,
+    required String transcript,
+    required Duration duration,
+    required double confidence,
+    NavivoxTranscriptSource transcriptSource = NavivoxTranscriptSource.device,
+  }) {
+    final run = _state.voiceRuns[voiceRunId];
+    if (run == null) return;
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns);
+    runs[voiceRunId] = run.copyWith(
+      status: NavivoxVoiceRunStatus.pendingSend,
+      transcript: transcript,
+      duration: duration,
+      confidence: confidence,
+      transcriptSource: transcriptSource,
+      updatedAt: DateTime(2026, 5, 16, 9, 42),
+    );
+    _state = _state.copyWith(voiceRuns: runs, activeVoiceRunId: voiceRunId);
+    notifyListeners();
+  }
+
+  @override
+  void cancelVoiceRun(
+    String voiceRunId, {
+    String reason = 'cancelled before send',
+  }) {
+    final run = _state.voiceRuns[voiceRunId];
+    if (run == null) return;
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns)
+      ..[voiceRunId] = run.markCancelled(reason);
+    _state = _state.copyWith(voiceRuns: runs, activeVoiceRunId: voiceRunId);
+    notifyListeners();
+  }
+
+  @override
+  void failVoiceRun(String voiceRunId, {required String reason}) {
+    final run = _state.voiceRuns[voiceRunId];
+    if (run == null) return;
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns)
+      ..[voiceRunId] = run.markFailed(reason);
+    _state = _state.copyWith(voiceRuns: runs, activeVoiceRunId: voiceRunId);
+    notifyListeners();
+  }
+
+  @override
+  void submitVoiceRun(String voiceRunId) {
+    final run = _state.voiceRuns[voiceRunId];
+    final transcript = run?.transcript?.trim() ?? '';
+    if (run == null || transcript.isEmpty) return;
+    sentVoiceTranscripts.add(transcript);
+    final now = DateTime(2026, 5, 16, 9, 41);
+    final active = _state.activeProfileContact;
+    final n = sentVoiceTranscripts.length;
+    final messages = Map<String, NavivoxChatMessage>.from(_state.messages);
+    messages['voice-user-$n'] = NavivoxChatMessage(
+      id: 'voice-user-$n',
+      author: NavivoxMessageAuthor.user,
+      kind: NavivoxMessageKind.voice,
+      createdAt: now,
+      text: transcript,
+      serverId: active?.serverId,
+      profileId: active?.profileId,
+      voice: NavivoxVoiceMessage(
+        voiceRunId: voiceRunId,
+        duration: run.duration ?? Duration.zero,
+        transcript: transcript,
+        confidence: run.confidence ?? 1,
+        status: NavivoxVoiceRunStatus.submitted,
+      ),
+    );
+    messages['voice-assistant-$n'] = NavivoxChatMessage(
+      id: 'voice-assistant-$n',
+      author: NavivoxMessageAuthor.assistant,
+      kind: NavivoxMessageKind.text,
+      createdAt: now,
+      text: 'voice reply from gateway',
+      serverId: active?.serverId,
+      profileId: active?.profileId,
+    );
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns);
+    runs[voiceRunId] = run.markSubmitted(requestId: 'voice-request-$voiceRunId');
+    _state = _state.copyWith(
+      messages: messages,
+      voiceRuns: runs,
+      activeVoiceRunId: voiceRunId,
+    );
+    notifyListeners();
   }
 
   @override

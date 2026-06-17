@@ -16,6 +16,7 @@ class TranscriptSurface extends StatelessWidget {
     this.onVoice,
     this.onVoiceCaptureStarted,
     this.onVoiceCaptureFailed,
+    this.reArmCapture,
     this.voiceCaptureTimeout = const Duration(seconds: 30),
     this.voiceUnavailableReason,
     this.voiceRecoveryAction,
@@ -38,6 +39,10 @@ class TranscriptSurface extends StatelessWidget {
   final ValueChanged<VoiceCapture>? onVoice;
   final VoidCallback? onVoiceCaptureStarted;
   final ValueChanged<Object>? onVoiceCaptureFailed;
+
+  /// Bumped by the hands-free loop to auto-start the next voice capture after a
+  /// spoken reply. Null disables programmatic re-arming.
+  final Listenable? reArmCapture;
   final Duration voiceCaptureTimeout;
   final String? voiceUnavailableReason;
   final String? voiceRecoveryAction;
@@ -62,6 +67,7 @@ class TranscriptSurface extends StatelessWidget {
       onVoice: onVoice,
       onVoiceCaptureStarted: onVoiceCaptureStarted,
       onVoiceCaptureFailed: onVoiceCaptureFailed,
+      reArmCapture: reArmCapture,
       voiceCaptureTimeout: voiceCaptureTimeout,
       voiceUnavailableReason: voiceUnavailableReason,
       voiceRecoveryAction: voiceRecoveryAction,

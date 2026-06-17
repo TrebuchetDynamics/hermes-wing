@@ -69,6 +69,15 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged: controller.setContinuousVoiceEnabled,
                 ),
               ),
+              _ConstrainedSettingsTile(
+                child: SwitchListTile(
+                  key: const ValueKey('voice-speak-replies-enabled'),
+                  title: Text(_settingsPresentation.speakRepliesTitle),
+                  subtitle: Text(_settingsPresentation.speakRepliesSubtitle),
+                  value: settings.speakRepliesEnabled,
+                  onChanged: controller.setSpeakRepliesEnabled,
+                ),
+              ),
               ListTile(
                 key: const ValueKey('settings-command-word'),
                 title: Text(_settingsPresentation.commandWordTitle),

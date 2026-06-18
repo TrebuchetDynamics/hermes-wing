@@ -78,6 +78,13 @@
   validation: `test/core/gateway/voice/navivox_gateway_voice_test.dart`, `test/core/gateway/navivox_gateway_protocol_test.dart`, `test/features/profiles/*profile_voice_profile*`, and `test/features/config/screens/profile_voice_profile_test.dart` cover read/validate, invalid provider, missing credential/recovery copy, and UI apply behavior.
   owner: Navivox app owner / Gormes gateway owner
 
+[RESOLVED] Connect screen simplification — 2026-06-17
+  resolved: 2026-06-18
+  result: Setup screen now leads with QR import as the primary full-width action; manual entry (Gateway URL + token + Connect) is behind a collapsed ExpansionTile that auto-expands on import. Separate address and port fields replaced by a single Gateway URL field. Token visibility toggle moved from a standalone TextButton to a suffixIcon IconButton inside the token field. "Copy fix instructions" removed from the main card and moved to the help card. 39/39 tests pass, 0 analyze issues.
+  evidence: `lib/features/servers/screens/setup_screen.dart` (layout + state), `lib/features/servers/setup/presentation/screen/setup_screen_presentation.dart` (urlField labels, enterManuallyLabel), `lib/features/servers/setup/guide/setup_guide_presentation.dart` (visibleEntries includes navivoxPairHandoff); `test/features/servers/setup/` all updated.
+  commits: `c917d98`–`e590b58` (8 commits, plan at `136acd8`).
+  owner: Navivox app owner
+
 [PLANNED] Navivox approval response protocol — 2026-05-24 (real scope traced 2026-06-17)
   problem: Navivox renders approval-required events, but `GatewayNavivoxChannel` cannot resolve approve/deny choices durably; current approval actions still report that tool approvals are unavailable.
   evidence: Gormes Navivox capabilities advertise `approval_required` events and `gormes-agent/internal/adapters/channels/navivox/channel.go` has `SendApprovalRequired`, but no Navivox approve/deny surface is advertised for returning the operator decision.

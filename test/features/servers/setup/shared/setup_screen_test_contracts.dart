@@ -2,27 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const setupAddressLabel = 'Gateway address';
-const setupPortLabel = 'Port';
+const setupUrlLabel = 'Gateway URL';
 const setupTokenLabel = 'Pairing token';
 const setupConnectLabel = 'Connect and talk';
 const setupImportQrLabel = 'Import QR image';
+const setupEnterManuallyLabel = 'Enter manually';
 const setupTokenVisibilityButtonKey = ValueKey('setup-token-visibility-button');
 
-Finder setupAddressField() => find.widgetWithText(TextField, setupAddressLabel);
-Finder setupPortField() => find.widgetWithText(TextField, setupPortLabel);
+Finder setupUrlField() => find.widgetWithText(TextField, setupUrlLabel);
 Finder setupTokenField() => find.widgetWithText(TextField, setupTokenLabel);
 Finder setupConnectAction() => find.text(setupConnectLabel);
 Finder setupImportQrAction() => find.bySemanticsLabel(setupImportQrLabel);
 Finder setupTokenVisibilityButton() =>
     find.byKey(setupTokenVisibilityButtonKey);
 
-Future<void> enterSetupAddress(WidgetTester tester, String address) async {
-  await tester.enterText(setupAddressField(), address);
+/// Expands the "Enter manually" expansion tile so URL/token fields are visible.
+Future<void> expandManualEntry(WidgetTester tester) async {
+  await tester.tap(find.text(setupEnterManuallyLabel));
+  await tester.pumpAndSettle();
 }
 
-Future<void> enterSetupPort(WidgetTester tester, String port) async {
-  await tester.enterText(setupPortField(), port);
+Future<void> enterSetupUrl(WidgetTester tester, String url) async {
+  await tester.enterText(setupUrlField(), url);
 }
 
 Future<void> enterSetupToken(WidgetTester tester, String token) async {
@@ -34,12 +35,8 @@ Future<void> tapSetupConnect(WidgetTester tester) async {
   await tester.tap(setupConnectAction());
 }
 
-TextField setupAddressTextField(WidgetTester tester) {
-  return tester.widget<TextField>(setupAddressField());
-}
-
-TextField setupPortTextField(WidgetTester tester) {
-  return tester.widget<TextField>(setupPortField());
+TextField setupUrlTextField(WidgetTester tester) {
+  return tester.widget<TextField>(setupUrlField());
 }
 
 TextField setupTokenTextField(WidgetTester tester) {

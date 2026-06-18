@@ -8,24 +8,17 @@ void main() {
   test('centralizes first-run setup field and action copy', () {
     expect(presentation.title, 'Connect to Gormes');
     expect(presentation.pairingInstructions, contains('gormes navivox pair'));
-    expect(
-      presentation.pairingInstructions,
-      contains('gormes navivox connect-info'),
-    );
-    expect(presentation.pairingInstructions, contains('open the link'));
-    expect(presentation.pairingInstructions, contains('fallback URLs'));
+    expect(presentation.pairingInstructions, contains('scan the QR'));
+    expect(presentation.pairingInstructions, contains('open the pairing link'));
     expect(presentation.networkHint, contains('10.0.2.2'));
-    expect(presentation.addressFieldLabel, 'Gateway address');
-    expect(presentation.addressFieldSemanticLabel, 'Gateway address field');
-    expect(presentation.addressFieldSemanticHint, contains('Gormes gateway'));
-    expect(presentation.portFieldLabel, 'Port');
-    expect(presentation.portFieldSemanticLabel, 'Gateway port field');
-    expect(presentation.portFieldSemanticHint, contains('Gormes gateway port'));
+    expect(presentation.urlFieldLabel, 'Gateway URL');
+    expect(presentation.urlFieldSemanticLabel, 'Gateway URL field');
+    expect(presentation.urlFieldSemanticHint, contains('127.0.0.1:8765'));
+    expect(presentation.enterManuallyLabel, 'Enter manually');
     expect(presentation.tokenFieldLabel, 'Pairing token');
     expect(presentation.tokenFieldSemanticLabel, 'Pairing token field');
     expect(presentation.tokenFieldSemanticHint, contains('printed by Gormes'));
     expect(presentation.importQrButtonLabel, 'Import QR image');
-    expect(presentation.fixInstructionsButtonLabel, 'Copy fix instructions');
     expect(presentation.connectButtonLabel, 'Connect and talk');
     expect(presentation.connectButtonSemanticHint, contains('open chat'));
     expect(
@@ -50,7 +43,7 @@ void main() {
     );
     expect(manual.status, SetupPairingReadinessStatus.manual);
     expect(manual.statusLabel, 'Ready for pairing details');
-    expect(manual.message, contains('enter gateway address'));
+    expect(manual.message, contains('Enter manually'));
 
     final imported = presentation.pairingReadiness(
       connecting: false,

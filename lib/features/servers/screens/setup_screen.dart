@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/channel/navivox_channel_provider.dart';
+import '../../../core/session/credentials/credential_store_provider.dart';
 import '../../../core/session/session_persistence_service.dart';
 import '../../../router/navigation_intent.dart';
 import '../models/connection_import.dart';
@@ -383,7 +384,16 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     final session = SessionPersistenceService();
     final saved = await session.loadSession();
     if (saved == null || saved.isStale) return;
-    if (!saved.canAttemptReconnect) {
+
+    final gatewayId = saved.gatewayId;
+    final credentialStore = ref.read(durableCredentialStoreProvider);
+
+    // Check whether a device credential was saved for this gateway.
+    final hasCredential =
+        gatewayId != null &&
+        await credentialStore.containsCredential(gatewayId: gatewayId);
+
+    if (!hasCredential) {
       if (!mounted) return;
       setState(() {
         _notice = const SetupScreenNotice.info(
@@ -392,24 +402,41 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
       });
       return;
     }
+
+    // Load the stored credential to form a device-bearer token.
+    final metadata = await credentialStore.metadata(gatewayId: gatewayId);
+    final secret = await credentialStore.loadSecret(gatewayId: gatewayId);
+    if (metadata == null || secret == null || secret.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _notice = const SetupScreenNotice.info(
+          'Known gateway saved. Pair again to reconnect.',
+        );
+      });
+      return;
+    }
+
     if (!mounted) return;
     setState(() {
       _connecting = true;
       _notice = const SetupScreenNotice.info('Reconnecting to saved gateway…');
     });
     try {
-      await ref
-          .read(gatewayNavivoxChannelProvider)
-          .connect(baseUrl: saved.baseUrl, webSocketUrl: saved.webSocketUrl);
+      // Reconnect using the stored device-bearer credential so no QR scan is
+      // needed. The token is formatted as "{credentialId}:{secret}" and sent
+      // as a standard Bearer header; gormes validates the SHA-256 of the secret.
+      final deviceBearerToken = '${metadata.credentialLabel}:$secret';
+      await ref.read(gatewayNavivoxChannelProvider).connect(
+        baseUrl: saved.baseUrl,
+        webSocketUrl: saved.webSocketUrl,
+        token: deviceBearerToken,
+      );
       // Reconnect success: router redirect will handle navigation to chat.
     } catch (_) {
       if (mounted) {
-        final stale = saved.isStale;
         setState(() {
           _notice = SetupScreenNotice.error(
-            stale
-                ? 'Saved session expired. Please pair again with your gateway.'
-                : 'Could not reconnect to saved gateway. Pair again.',
+            'Could not reconnect to saved gateway. Pair again.',
             recoveryMessage:
                 'Run `gormes navivox pair` on your host and try again.',
           );

@@ -35,6 +35,10 @@ abstract interface class DurableCredentialStore {
     required String secret,
   });
 
+  /// Returns the stored secret for [gatewayId], or null if not present.
+  /// The caller must treat the returned value as a secret and never log it.
+  Future<String?> loadSecret({required String gatewayId});
+
   Future<void> deleteCredential({required String gatewayId});
 }
 
@@ -58,6 +62,9 @@ class EmptyDurableCredentialStore implements DurableCredentialStore {
     required GatewayCredentialMetadata metadata,
     required String secret,
   }) async {}
+
+  @override
+  Future<String?> loadSecret({required String gatewayId}) async => null;
 
   @override
   Future<void> deleteCredential({required String gatewayId}) async {}

@@ -36,6 +36,8 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
   }) : _uuid = uuid ?? const Uuid(),
        _clock = clock ?? DateTime.now,
        _maxStreamReconnectAttempts = maxStreamReconnectAttempts,
+       _credentialStore =
+           credentialStore ?? const EmptyDurableCredentialStore(),
        _durableReconnect = DurableReconnectIssuanceCoordinator(
          appInstallIdentity:
              appInstallIdentity ?? AppInstallIdentityService(),
@@ -45,6 +47,7 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
 
   final Uuid _uuid;
   final DateTime Function() _clock;
+  final DurableCredentialStore _credentialStore;
   final DurableReconnectIssuanceCoordinator _durableReconnect;
   final int _maxStreamReconnectAttempts;
   int _streamReconnectAttempts = 0;
@@ -859,28 +862,44 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
     }
   }
 
-  /// Attempt to reconnect using a saved durable reconnect credential.
+  /// Attempt to reconnect using a stored device credential.
   ///
-  /// Saved connection metadata alone is not a session and is not sufficient for
-  /// silent reconnect. It can identify a known gateway, but reconnect remains
-  /// disabled until durable credential auth is available for that gateway.
+  /// Returns true if a reconnect was attempted (success or failure is reported
+  /// via channel state and system messages). Returns false when no usable
+  /// saved session or credential is found.
   Future<bool> tryReconnect() async {
     final session = await _sessionService.loadSession();
     if (session == null || session.isStale) return false;
-    // Saved metadata can identify a known gateway, but durable silent reconnect
-    // needs a device-credential challenge flow that is not implemented yet
-    // (blocked on the Gormes durable-credential protocol; see the [PLANNED]
-    // durable-credential item in TODO.md), so `canAttemptReconnect` stays
-    // false. Surface the known gateway and ask the operator to pair again.
-    //
-    // Deliberately do NOT attempt a token-less `connect()` and do NOT delete a
-    // stored credential here. A reconnect path that authenticates with no token
-    // would always fail against an authenticated gateway and then revoke the
-    // very credential it never used. When durable reconnect lands it must mint
-    // a session token through the challenge flow, not reuse this method's
-    // bootstrap `connect(token:)` seam.
-    _appendSystemMessage('Known gateway saved. Pair again to reconnect.');
-    return false;
+    final gatewayId = session.gatewayId;
+    if (gatewayId == null) {
+      _appendSystemMessage('Known gateway saved. Pair again to reconnect.');
+      return false;
+    }
+    final hasCredential = await _credentialStore.containsCredential(
+      gatewayId: gatewayId,
+    );
+    if (!hasCredential) {
+      _appendSystemMessage('Known gateway saved. Pair again to reconnect.');
+      return false;
+    }
+    final meta = await _credentialStore.metadata(gatewayId: gatewayId);
+    final secret = await _credentialStore.loadSecret(gatewayId: gatewayId);
+    if (meta == null || secret == null || secret.isEmpty) {
+      _appendSystemMessage('Known gateway saved. Pair again to reconnect.');
+      return false;
+    }
+    try {
+      final deviceBearerToken = '${meta.credentialLabel}:$secret';
+      await connect(
+        baseUrl: session.baseUrl,
+        webSocketUrl: session.webSocketUrl,
+        token: deviceBearerToken,
+      );
+      return true;
+    } catch (_) {
+      _appendSystemMessage('Could not reconnect to saved gateway. Pair again.');
+      return false;
+    }
   }
 
   @override

@@ -1157,6 +1157,10 @@ class _InMemoryCredentialStore implements DurableCredentialStore {
   }
 
   @override
+  Future<String?> loadSecret({required String gatewayId}) async =>
+      _secrets[gatewayId];
+
+  @override
   Future<void> deleteCredential({required String gatewayId}) async {
     _saved.remove(gatewayId);
     _secrets.remove(gatewayId);

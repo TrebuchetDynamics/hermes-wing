@@ -128,6 +128,11 @@ GatewayEventReduction navivoxReduceGatewayEvent({
         navivoxProfileContactFromJson(contact),
       );
     case 'error':
+      if (event.code == 'turn_in_progress') {
+        return GatewayEventReduction.appendSystemMessage(
+          event.message ?? 'Another device is in a turn. Try again shortly.',
+        );
+      }
       return GatewayEventReduction.appendSystemMessage(
         event.message ?? 'Gateway error',
       );

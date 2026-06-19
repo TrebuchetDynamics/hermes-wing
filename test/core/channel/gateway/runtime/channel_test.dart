@@ -496,6 +496,82 @@ void main() {
     expect(texts, contains('Gateway is not connected.'));
   });
 
+  test('falls back to device-bearer reconnect when stream reconnect exhausts',
+      () async {
+    // SharedPreferences must be initialised so saveConnection() writes the
+    // session and loadSession() can read it back inside tryReconnect().
+    resetSessionPreferences();
+
+    // The fake server issues this credential during the initial connect();
+    // the DurableReconnectIssuanceCoordinator saves it in the store.
+    const bearerToken = 'navivoxcred_test:nvbxdc_test_secret';
+
+    // Use a real in-memory store so the coordinator can persist the credential.
+    final store = _InMemoryCredentialStore();
+
+    // maxStreamReconnectAttempts: 1 — exactly one stream-reconnect attempt
+    // fires (and fails because the pairing token is rejected after restart),
+    // then the channel falls through to tryReconnect() with the device-bearer.
+    final server = await _FakeGatewayServer.start();
+    addTearDown(server.close);
+
+    final channel = GatewayNavivoxChannel(
+      maxStreamReconnectAttempts: 1,
+      credentialStore: store,
+    );
+    addTearDown(channel.dispose);
+
+    // connect() issues the device credential via the coordinator (awaited)
+    // and saves the session to SharedPreferences (unawaited, but completes
+    // within the same microtask queue before the 2-second reconnect delay).
+    await channel.connect(baseUrl: server.baseUrl, token: gatewayTestToken);
+
+    // Simulate gormes restart: reject the single-use pairing token (consumed
+    // in the old instance) and accept the device-bearer that was persisted on
+    // disk by the old instance.
+    server.rejectPairingToken = true;
+    server.extraTokens.add(bearerToken);
+
+    // Phase-tracking listener — avoids mistaking the pre-close 'Gateway online'
+    // for a post-reconnect one:
+    //   phase 0 → wait for 'Connection lost. Reconnecting…' system message
+    //   phase 1 → wait for 'Gateway online' status again (actual reconnect)
+    var phase = 0;
+    final reconnected = Completer<void>();
+    channel.addListener(() {
+      if (phase == 0) {
+        final hasLostMsg = channel.state.messagesList
+            .any((m) => (m.text ?? '').contains('Connection lost'));
+        if (hasLostMsg) phase = 1;
+      } else if (phase == 1 && !reconnected.isCompleted) {
+        // Wait for the second notifyListeners() (after the coordinator saves
+        // the credential), not just the first, so connect() is fully done
+        // before the test disposes the channel.
+        final status = channel.state.activeServer?.status ?? '';
+        final readiness = channel.state.reconnectReadiness;
+        if (status.contains('Gateway online') &&
+            readiness.kind == ReconnectReadinessKind.saved) {
+          reconnected.complete();
+        }
+      }
+    });
+
+    // Drop the server-side WebSocket — the HTTP server stays up just as gormes
+    // would after a process restart with the same port re-bound.
+    for (final socket in List.of(server.sockets)) {
+      await socket.close();
+    }
+
+    // The stream-reconnect attempt fires after 2 s (1 attempt × 2 s),
+    // then tryReconnect() runs — allow 8 s total.
+    await reconnected.future.timeout(
+      const Duration(seconds: 8),
+      onTimeout: () => fail('channel did not reconnect via device-bearer'),
+    );
+
+    expect(channel.state.activeServer?.status, contains('Gateway online'));
+  });
+
   test(
     'loads profile contacts from snapshot and applies gateway updates',
     () async {
@@ -1201,6 +1277,7 @@ class _FakeGatewayServer {
   var deviceCredentialIssueRequests = 0;
 
   String get baseUrl => 'http://127.0.0.1:$port';
+  List<WebSocket> get sockets => List.unmodifiable(_sockets);
   Future<Map<String, Object?>> get nextClientMessage =>
       _nextClientMessage.future;
 
@@ -1452,8 +1529,33 @@ class _FakeGatewayServer {
         ];
   }
 
+  /// Extra Bearer tokens accepted in addition to [gatewayTestToken].
+  /// Mutable so tests can simulate a gormes restart that loads new credentials.
+  final Set<String> extraTokens = {};
+
+  /// When true, [gatewayTestToken] is rejected — simulates a gormes restart
+  /// where the single-use pairing token is no longer valid.
+  var rejectPairingToken = false;
+
   bool _authorized(HttpRequest request) {
-    return isAuthorizedGatewayRequest(request);
+    if (!rejectPairingToken && isAuthorizedGatewayRequest(request)) return true;
+    final auth = request.headers.value(HttpHeaders.authorizationHeader) ?? '';
+    if (auth.startsWith('Bearer ') &&
+        extraTokens.contains(auth.substring('Bearer '.length))) {
+      return true;
+    }
+    // Also accept extra tokens sent via the WebSocket protocol sub-protocol
+    // header (used by connectStream, which can't set Authorization headers).
+    for (final token in extraTokens) {
+      final encoded =
+          base64Url.encode(utf8.encode(token)).replaceAll('=', '');
+      final protocols = request.headers['sec-websocket-protocol']
+              ?.expand((v) => v.split(','))
+              .map((v) => v.trim()) ??
+          const Iterable.empty();
+      if (protocols.contains('gormes.navivox.token.$encoded')) return true;
+    }
+    return false;
   }
 
   List<Map<String, Object?>> _eventsFor(String requestId) {

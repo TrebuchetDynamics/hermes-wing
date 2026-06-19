@@ -6,6 +6,7 @@ class GatewayCredentialMetadata {
     required this.appInstallIdentity,
     required this.credentialLabel,
     required this.createdAt,
+    this.expiresAt,
     this.lastUsedAt,
   });
 
@@ -13,12 +14,18 @@ class GatewayCredentialMetadata {
   final String appInstallIdentity;
   final String credentialLabel;
   final DateTime createdAt;
+  final DateTime? expiresAt;
   final DateTime? lastUsedAt;
 
   bool get isUsableMetadata {
     return isNonBlankSessionText(gatewayId) &&
         isNonBlankSessionText(appInstallIdentity) &&
         isNonBlankSessionText(credentialLabel);
+  }
+
+  bool get isExpired {
+    final exp = expiresAt;
+    return exp != null && DateTime.now().isAfter(exp);
   }
 }
 

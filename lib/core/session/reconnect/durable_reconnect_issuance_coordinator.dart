@@ -68,6 +68,7 @@ class DurableReconnectIssuanceCoordinator {
             appInstallIdentity: appInstallId,
             credentialLabel: result.credentialId,
             createdAt: _clock(),
+            expiresAt: result.expiresAt,
           ),
           secret: result.secret,
         );

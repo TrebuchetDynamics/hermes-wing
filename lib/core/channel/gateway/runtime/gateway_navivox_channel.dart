@@ -888,6 +888,11 @@ class GatewayNavivoxChannel extends ChangeNotifier implements NavivoxChannel {
       _appendSystemMessage('Known gateway saved. Pair again to reconnect.');
       return false;
     }
+    if (meta.isExpired) {
+      await _credentialStore.deleteCredential(gatewayId: gatewayId);
+      _appendSystemMessage('Saved credential expired. Pair again to reconnect.');
+      return false;
+    }
     try {
       final deviceBearerToken = '${meta.credentialLabel}:$secret';
       await connect(

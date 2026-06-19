@@ -42,6 +42,10 @@ class SecureStorageDurableCredentialStore implements DurableCredentialStore {
         appInstallIdentity: json['app_install_identity'] as String? ?? '',
         credentialLabel: json['credential_label'] as String? ?? '',
         createdAt: DateTime.parse(createdAtRaw),
+        expiresAt:
+            json['expires_at'] != null
+                ? DateTime.tryParse(json['expires_at'] as String)
+                : null,
         lastUsedAt:
             json['last_used_at'] != null
                 ? DateTime.tryParse(json['last_used_at'] as String)
@@ -67,6 +71,8 @@ class SecureStorageDurableCredentialStore implements DurableCredentialStore {
       'app_install_identity': metadata.appInstallIdentity,
       'credential_label': metadata.credentialLabel,
       'created_at': metadata.createdAt.toIso8601String(),
+      if (metadata.expiresAt != null)
+        'expires_at': metadata.expiresAt!.toIso8601String(),
       if (metadata.lastUsedAt != null)
         'last_used_at': metadata.lastUsedAt!.toIso8601String(),
     });

@@ -15,11 +15,13 @@ class NavivoxDeviceCredentialIssueResult {
     required this.gatewayId,
     required this.appInstallId,
     required this.interim,
+    this.expiresAt,
   });
 
   factory NavivoxDeviceCredentialIssueResult.fromJson(
     Map<String, Object?> json,
   ) {
+    final expiresAtRaw = json['expires_at'];
     return NavivoxDeviceCredentialIssueResult(
       credentialId: navivoxStringFieldFromJson(json, 'credential_id'),
       secret: navivoxStringFieldFromJson(json, 'secret'),
@@ -28,6 +30,8 @@ class NavivoxDeviceCredentialIssueResult {
       gatewayId: navivoxStringFieldFromJson(json, 'gateway_id'),
       appInstallId: navivoxStringFieldFromJson(json, 'app_install_id'),
       interim: navivoxGatewayBoolField(json, 'interim'),
+      expiresAt:
+          expiresAtRaw is String ? DateTime.tryParse(expiresAtRaw) : null,
     );
   }
 
@@ -38,6 +42,7 @@ class NavivoxDeviceCredentialIssueResult {
   final String gatewayId;
   final String appInstallId;
   final bool interim;
+  final DateTime? expiresAt;
 
   /// A credential is only usable when the gateway returned both an id and the
   /// one-time secret.

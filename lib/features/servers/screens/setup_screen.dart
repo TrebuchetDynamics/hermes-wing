@@ -416,6 +416,17 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
       return;
     }
 
+    if (metadata.isExpired) {
+      await credentialStore.deleteCredential(gatewayId: gatewayId);
+      if (!mounted) return;
+      setState(() {
+        _notice = const SetupScreenNotice.info(
+          'Saved credential expired. Pair again to reconnect.',
+        );
+      });
+      return;
+    }
+
     if (!mounted) return;
     setState(() {
       _connecting = true;

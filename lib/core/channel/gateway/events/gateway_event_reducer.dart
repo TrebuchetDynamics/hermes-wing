@@ -130,7 +130,7 @@ GatewayEventReduction navivoxReduceGatewayEvent({
     case 'error':
       if (event.code == 'turn_in_progress') {
         return GatewayEventReduction.appendSystemMessage(
-          event.message ?? 'Another device is in a turn. Try again shortly.',
+          event.message ?? 'A turn is already in progress. Try again shortly.',
         );
       }
       return GatewayEventReduction.appendSystemMessage(

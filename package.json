@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "flutter test --concurrency=1",
-    "web:e2e": "./playwright/scripts/run_tests.sh"
+    "web:e2e": "./playwright/scripts/run_tests.sh",
+    "android:send-apk": "./scripts/build_send_apk.sh"
   },
   "repository": {
     "type": "git",

@@ -437,11 +437,13 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
       // needed. The token is formatted as "{credentialId}:{secret}" and sent
       // as a standard Bearer header; gormes validates the SHA-256 of the secret.
       final deviceBearerToken = '${metadata.credentialLabel}:$secret';
-      await ref.read(gatewayNavivoxChannelProvider).connect(
-        baseUrl: saved.baseUrl,
-        webSocketUrl: saved.webSocketUrl,
-        token: deviceBearerToken,
-      );
+      await ref
+          .read(gatewayNavivoxChannelProvider)
+          .connect(
+            baseUrl: saved.baseUrl,
+            webSocketUrl: saved.webSocketUrl,
+            token: deviceBearerToken,
+          );
       // Reconnect success: router redirect will handle navigation to chat.
     } catch (_) {
       if (mounted) {
@@ -523,15 +525,13 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 FilledButton.icon(
-                                  key: const ValueKey(
-                                    'setup-import-qr-button',
-                                  ),
+                                  key: const ValueKey('setup-import-qr-button'),
                                   style: FilledButton.styleFrom(
                                     minimumSize: const Size.fromHeight(52),
                                   ),
                                   onPressed: _connecting || _importingQr
                                       ? null
-                                      : _importQrImage,
+                                      : _chooseQrInputSource,
                                   icon: _importingQr
                                       ? const SizedBox.square(
                                           dimension: 18,
@@ -572,10 +572,12 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                                       child: ExcludeSemantics(
                                         child: FilledButton.icon(
                                           style: FilledButton.styleFrom(
-                                            minimumSize:
-                                                const Size.fromHeight(52),
+                                            minimumSize: const Size.fromHeight(
+                                              52,
+                                            ),
                                             textStyle: theme
-                                                .textTheme.titleMedium
+                                                .textTheme
+                                                .titleMedium
                                                 ?.copyWith(
                                                   fontWeight: FontWeight.w700,
                                                 ),
@@ -668,9 +670,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
             button: true,
             child: IconButton(
               key: const ValueKey('setup-token-visibility-button'),
-              icon: Icon(
-                _showToken ? Icons.visibility_off : Icons.visibility,
-              ),
+              icon: Icon(_showToken ? Icons.visibility_off : Icons.visibility),
               tooltip: _setupScreenPresentation.tokenVisibilityLabel(
                 showToken: _showToken,
               ),
@@ -685,16 +685,44 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     );
   }
 
-  Future<void> _importQrImage() async {
+  Future<void> _chooseQrInputSource() async {
+    if (widget.qrImageImporter != null) return _importQrImage();
+
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Take QR photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Import QR image'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source != null) await _importQrImage(source);
+  }
+
+  Future<void> _importQrImage([
+    ImageSource source = ImageSource.gallery,
+  ]) async {
     setState(() {
       _importingQr = true;
       _notice = null;
     });
     try {
-      final importer = widget.qrImageImporter ?? importNavivoxQrImage;
-      final result = (await importer())?.withSource(
-        PairingHandoffSource.qrImage,
-      );
+      final result =
+          (await (widget.qrImageImporter ??
+                  () => importNavivoxQrImage(source: source))())
+              ?.withSource(PairingHandoffSource.qrImage);
       if (!mounted) return;
       final notice = _setupScreenPresentation.qrImportNotice(result);
       if (result == null || !result.hasValues) {
@@ -939,8 +967,10 @@ IconData _setupGuideIcon(SetupGuideEntryId id) => switch (id) {
   SetupGuideEntryId.navivoxPairHandoff => Icons.qr_code_2,
 };
 
-Future<SetupQrImageImport?> importNavivoxQrImage() async {
-  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+Future<SetupQrImageImport?> importNavivoxQrImage({
+  ImageSource source = ImageSource.gallery,
+}) async {
+  final image = await ImagePicker().pickImage(source: source);
   if (image == null) return null;
 
   final scanner = MobileScannerController(autoStart: false);

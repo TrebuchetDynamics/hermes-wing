@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 const setupUrlLabel = 'Gateway URL';
 const setupTokenLabel = 'Pairing token';
 const setupConnectLabel = 'Connect and talk';
-const setupImportQrLabel = 'Import QR image';
+const setupImportQrLabel = 'Scan or import QR';
 const setupEnterManuallyLabel = 'Enter manually';
 const setupTokenVisibilityButtonKey = ValueKey('setup-token-visibility-button');
 

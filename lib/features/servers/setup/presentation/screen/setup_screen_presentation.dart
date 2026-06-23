@@ -33,7 +33,7 @@ class SetupScreenPresentation {
   String get tokenFieldSemanticHint =>
       'Enter the pairing token printed by Gormes.';
 
-  String get importQrButtonLabel => 'Import QR image';
+  String get importQrButtonLabel => 'Scan or import QR';
 
   String tokenVisibilityLabel({required bool showToken}) {
     return showToken ? 'Hide pairing token' : 'Show pairing token';

@@ -18,7 +18,7 @@ void main() {
     expect(presentation.tokenFieldLabel, 'Pairing token');
     expect(presentation.tokenFieldSemanticLabel, 'Pairing token field');
     expect(presentation.tokenFieldSemanticHint, contains('printed by Gormes'));
-    expect(presentation.importQrButtonLabel, 'Import QR image');
+    expect(presentation.importQrButtonLabel, 'Scan or import QR');
     expect(presentation.connectButtonLabel, 'Connect and talk');
     expect(presentation.connectButtonSemanticHint, contains('open chat'));
     expect(

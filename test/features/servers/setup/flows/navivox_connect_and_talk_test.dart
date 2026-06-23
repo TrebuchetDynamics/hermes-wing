@@ -70,7 +70,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Primary control always visible.
-      expect(find.bySemanticsLabel('Import QR image'), findsOneWidget);
+      expect(find.bySemanticsLabel(setupImportQrLabel), findsOneWidget);
 
       // Expand manual entry to check its accessibility labels.
       await expandManualEntry(tester);
@@ -102,7 +102,9 @@ void main() {
     expect(channel.connectedBaseUrl, 'http://127.0.0.1:8765');
   });
 
-  testWidgets('setup uses a single URL field for gateway address and port', (tester) async {
+  testWidgets('setup uses a single URL field for gateway address and port', (
+    tester,
+  ) async {
     final channel = ConnectAndTalkChannel();
     addTearDown(channel.dispose);
 

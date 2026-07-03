@@ -1,15 +1,15 @@
-# Hermes Desktop Reference For Gormes-First Navivox
+# Hermes Desktop Reference For Navivox
 
-Status: superseded for runtime direction by [ADR 0006](../adr/0006-hermes-agent-first-runtime.md) and [Hermes Agent interface plan](hermes-agent-interface-plan.md). Still useful as historical UX reference.
+Status: superseded for runtime direction by [ADR 0006](../adr/0006-hermes-agent-first-runtime.md), amended by [ADR 0007](../adr/0007-native-hermes-channel-not-navivox-channel-adapter.md), and replaced operationally by the [Hermes Agent interface plan](hermes-agent-interface-plan.md). Still useful as historical UX reference.
 
 Former status: accepted reference direction
 Reference: `fathah/hermes-desktop` cloned at `/tmp/hermes-desktop` during the 2026-06-03 planning session
 
-## Decision
+## Historical decision
 
-Navivox stays Gormes-first. Its main product promise remains the Flutter operator app for trusted local or self-hosted Gormes gateways and Gormes Profile contacts.
+This section records the superseded 2026-06 Gormes-first decision. The active runtime direction is Hermes Agent-first: Navivox now targets Hermes Agent API endpoints through a native `HermesChannel` and `/hermes` UI.
 
-Hermes Desktop is useful reference material for app shape, not a near-term runtime target. Navivox may borrow product patterns from Hermes Desktop while preserving the Gormes `/v1/navivox/*` HTTP/WebSocket boundary, Pairing handoff, Profile contact model, Run record evidence model, config-admin safety model, and Goncho memory console.
+Historical decision: Navivox stayed Gormes-first, with the Flutter operator app targeting trusted local or self-hosted Gormes gateways and Gormes Profile contacts. Hermes Desktop was reference material for app shape, not a near-term runtime target. Navivox could borrow product patterns from Hermes Desktop while preserving the Gormes `/v1/navivox/*` HTTP/WebSocket boundary, Pairing handoff, Profile contact model, Run record evidence model, config-admin safety model, and Goncho memory console.
 
 ## Reference Behaviors Worth Learning From
 
@@ -22,11 +22,11 @@ Hermes Desktop is an Electron/React shell for Hermes Agent. The patterns worth s
 - streaming assistant work rendered as product UI with tool progress and usage evidence;
 - simple navigation that keeps day-to-day chat, memory, tools, and gateway status nearby.
 
-These are product and UX lessons. They do not imply that Navivox should speak Hermes Agent's `/health` or `/v1/chat/completions` protocol in the main plan.
+These are product and UX lessons. The old warning against speaking Hermes Agent protocols is superseded by ADR 0006/0007; current mainline does speak Hermes Agent's API server directly.
 
 ## Navivox Shape
 
-Near-term Navivox route vocabulary should continue to respect Gormes domain terms:
+Historical Gormes-first route vocabulary respected Gormes domain terms:
 
 | Hermes Desktop surface | Gormes-first Navivox interpretation |
 | --- | --- |
@@ -39,19 +39,21 @@ Near-term Navivox route vocabulary should continue to respect Gormes domain term
 | Gateway | Gormes Navivox gateway management, Pairing handoff, durable reconnect readiness |
 | Settings | local app settings plus Gormes capability/config affordances |
 
-## Boundary Rules
+## Historical boundary rules
 
-- Gormes remains the runtime and gateway family for the current Navivox plan.
-- Hermes Desktop may inform navigation, visual hierarchy, and operator surface prioritization.
-- Do not add a Hermes Agent wire-protocol client unless a future ADR explicitly changes the runtime scope.
-- Do not rename Gormes-specific domain concepts to Hermes concepts when the data still comes from Gormes.
-- Keep `Profile contact`, `Pairing handoff`, `Run record`, `Voice readiness`, `Gateway identity`, and Gormes config-admin language stable.
+These boundary rules are superseded for mainline runtime direction. Preserve them only when maintaining the legacy Gormes branch/path.
+
+- Gormes remained the runtime and gateway family for the then-current Navivox plan.
+- Hermes Desktop could inform navigation, visual hierarchy, and operator surface prioritization.
+- Hermes Agent wire-protocol clients were deferred until ADR 0006 changed runtime scope.
+- Gormes-specific domain concepts stayed Gormes-specific when data came from Gormes.
+- `Profile contact`, `Pairing handoff`, `Run record`, `Voice readiness`, `Gateway identity`, and Gormes config-admin language stayed stable for legacy Gormes surfaces.
 
 ## Hermes Protocol Spikes
 
-Hermes protocol experiments should stay out of production Navivox code unless a future ADR explicitly reopens Hermes runtime support. Prefer preserving lessons in docs and tests for Gormes-facing adapters rather than keeping unused Hermes wire clients in `lib/`.
+This section is historical. ADR 0006 explicitly reopened Hermes runtime support and ADR 0007 chose a native Hermes channel, so Hermes protocol code now belongs in `lib/core/hermes/` and `/hermes`.
 
-The 2026-06-03 Hermes runtime spike was removed from production code after the Gormes-first decision was accepted. Future spikes should be clearly marked as exploratory and deleted or quarantined when their learning is captured.
+The 2026-06-03 Hermes runtime spike was removed from production code after the Gormes-first decision was accepted; later Hermes Agent-first work superseded that removal with a production Hermes client/channel.
 
 ## Next Gormes-First Slices Inspired By Hermes Desktop
 

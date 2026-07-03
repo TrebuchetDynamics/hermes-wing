@@ -1,7 +1,23 @@
 # Navivox Testing Plan
 
-Status: planning draft
-Updated: 2026-05-16
+Status: historical Gormes-first planning draft; current Hermes-first smoke gates live in [Hermes platform smoke checklist](../runbooks/hermes-platform-smoke.md) and [Hermes companion readiness audit](../runbooks/hermes-readiness-audit.md).
+Updated: 2026-07-03
+
+## Current Hermes smoke matrix
+
+The active Hermes-first closeout path is source-of-truth in runbooks, not this
+historical Gormes-first plan:
+
+| Gate | Command / receipt path | Completion boundary |
+| --- | --- | --- |
+| Local static + Dart regression | `flutter analyze`; `flutter test --concurrency=1` | Local correctness only; not device/host evidence. |
+| Web e2e bundle + fake Hermes browser smoke | `flutter build web --release -t lib/main_e2e.dart`; `node serve_web.mjs` + focused Playwright Hermes smoke | Covers browser transport against the local fake, not a live provider. |
+| Installed Hermes API connect | `npm run hermes:live-smoke` | Real installed Hermes API connect/session surface, no provider credentials. |
+| Provider-backed text + transcript voice | `npm run hermes:provider-smoke:local` or `npm run hermes:provider-smoke` | Requires configured provider/model credentials; transcript voice only. |
+| Android readiness/prep | `npm run android:voice-smoke`; `npm run android:hermes-voice-loop-smoke`; `npm run android:live-mic-prep` | Prep/readiness/deterministic loop only; physical audio requires `../runbooks/android/live-mic-smoke.md`. Not whole-goal completion evidence by itself; run strict readiness audit before completion claims. |
+| Android durable key readiness | `npm run android:durable-key-smoke` | Keypair readiness only; real Gormes restart reconnect remains manual closeout. Not whole-goal completion evidence by itself; run strict readiness audit before completion claims. |
+| Native host builds | `npm run platform:workflow-smoke` after workflow is visible remotely | Windows/iOS/hosted Android receipts require native runners. |
+| Completion blocker audit | `npm run hermes:readiness-audit`; `NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit` | Informational only; strict mode must fail while blockers remain. The helper must print `Completion verdict: NOT COMPLETE` while live provider/device/native-host/reconnect or deferred-surface blockers remain, and must not promote proxy evidence such as tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output. |
 
 ## 1. Strategy
 

@@ -33,7 +33,11 @@ void main() {
       '## Continuous voice blocker handoff',
       'Run id: `voice-readiness-smoke-2026-05-27`',
       'Latest local debug APK',
-      'sha256 af9ba1fb0b16efc9bb9b31d8e2684dc191f00781e378a2850e4e25cf3b64c8dc',
+      'sha256 453e746d9773b466a7393ec73713943a49276f4bee4465d18a3d083e5cb5ab0a',
+      'docs/runbooks/android/live-mic-smoke.md',
+      'configured Hermes Agent API with real provider/model credentials',
+      'provider-backed reply',
+      'Installing the APK is not a physical-audio receipt',
       'flutter devices` lists only Linux desktop and Chrome',
       '/dev/kvm',
     ]);

@@ -9,12 +9,24 @@ void main() {
     'runbook index, moved runbooks, and root compatibility facades stay valid',
     () {
       final docsIndex = readRequiredFile('docs/README.md');
+      for (final snippet in [
+        'NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit',
+        'Completion verdict: NOT COMPLETE',
+        'do not treat proxy evidence',
+        'tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output',
+      ]) {
+        expect(docsIndex, contains(snippet), reason: snippet);
+      }
+
       final expectedRunbooks = [
+        'docs/runbooks/hermes-platform-smoke.md',
+        'docs/runbooks/hermes-readiness-audit.md',
         'docs/runbooks/termux/gormes-bootstrap.md',
         'docs/runbooks/android/setup-checklist.md',
         'docs/runbooks/android/pairing-handoff-smoke.md',
         'docs/runbooks/android/pairing-handoff-instrumentation.md',
         'docs/runbooks/android/durable-keystore-smoke.md',
+        'docs/runbooks/android/live-mic-smoke.md',
         'docs/runbooks/android/release-handoff.md',
         'docs/runbooks/shared/android-device-and-secret-contracts.md',
         'docs/runbooks/shared/pairing-secret-handling.md',

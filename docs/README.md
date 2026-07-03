@@ -26,11 +26,25 @@ Start with `../CONTEXT.md` for stable product language, then use this index to f
 
 ## Runbooks And Handoffs
 
+Before any Hermes readiness completion claim, run strict readiness audit:
+
+```bash
+NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit
+```
+
+While external/deferred blockers remain, the expected result is exit 3 with
+`Completion verdict: NOT COMPLETE`; do not treat proxy evidence such as passing
+tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output
+as completion.
+
+- [Hermes platform smoke checklist](runbooks/hermes-platform-smoke.md)
+- [Hermes companion readiness audit](runbooks/hermes-readiness-audit.md)
 - [Termux Gormes bootstrap](runbooks/termux/gormes-bootstrap.md)
 - [Android setup checklist](runbooks/android/setup-checklist.md)
 - [Android pairing handoff smoke](runbooks/android/pairing-handoff-smoke.md)
 - [Android pairing handoff instrumentation](runbooks/android/pairing-handoff-instrumentation.md)
 - [Android durable keystore smoke](runbooks/android/durable-keystore-smoke.md)
+- [Android live microphone Hermes smoke](runbooks/android/live-mic-smoke.md)
 - [Android release handoff](runbooks/android/release-handoff.md)
 - [Android device and secret handling contracts](runbooks/shared/android-device-and-secret-contracts.md)
 - [Pairing secret handling contract](runbooks/shared/pairing-secret-handling.md)

@@ -22,14 +22,34 @@ interface, and should lean on `fathah/hermes-desktop`'s own architecture
 (SSE parsing, capability-gated transport, session store shape, chat voice
 input) as the reference. See ADR 0007.
 
-## Verified gate (2026-07-01)
+## Verified gate (refreshed 2026-07-03)
 
 - Navivox: `flutter analyze` — no issues; `flutter test --concurrency=1` —
-  **986 tests pass** (up from 927 on 2026-06-17; +59 new Hermes/platform tests
-  across the slices below).
-- A real `flutter run -d web-server` build (not just `flutter analyze`) was
-  used to verify the Hermes web transport; see honest caveat below for what
-  it did and did not confirm.
+  **1016 tests pass**.
+- `flutter build web --release -t lib/main_e2e.dart` passes and produces
+  `build/web`.
+- Focused Playwright browser regression (`navivox-e2e.spec.mjs` plus
+  `hermes-smoke.spec.mjs`) passes after updating stale memory/mobile-tab
+  assertions.
+- Installed-Hermes live connect smoke (`npm run hermes:live-smoke`) passes.
+- Configured provider-backed Hermes text plus transcript-voice smoke
+  (`NAVIVOX_CONFIGURED_HERMES_HOME=$HOME/.hermes npm run hermes:provider-smoke:local`)
+  passes when a configured local Hermes home is available; latest refresh used
+  `npm run hermes:provider-smoke:local` and Playwright reported 1 pass.
+- Android receipts now cover speech-recognition readiness, deterministic
+  Hermes continuous-voice loop mechanics, durable-key create/sign/delete on an
+  emulator, and a debug APK artifact (`build/app/outputs/flutter-apk/app-debug.apk`,
+  SHA-256 `453e746d9773b466a7393ec73713943a49276f4bee4465d18a3d083e5cb5ab0a`).
+  The APK hash is artifact identity only; physical microphone audio remains
+  unverified. The canonical manual closeout is
+  `docs/runbooks/android/live-mic-smoke.md`.
+- Linux release build is locally repeatable through `npm run linux:release-build`.
+- App-scoped Android native units pass with `cd android && ./gradlew :app:testDebugUnitTest`.
+- Windows/iOS remain native-host gated; the CI workflow path exists but no
+  successful host-runner receipt is present in this checkout.
+
+See `docs/runbooks/hermes-readiness-audit.md` for the current prompt-to-artifact
+readiness checklist and non-completion caveats.
 
 ## Delivered slices (Hermes-first transition)
 
@@ -155,36 +175,231 @@ input) as the reference. See ADR 0007.
    binary and plugin `.so` link the real system library at runtime — the
    local prefix is build-time-only. Full recipe in
    `docs/runbooks/hermes-platform-smoke.md`.
+19. **Read-only Hermes catalog strip** — added the first small read-only
+   Hermes Desktop-style operator catalog surface from API-server endpoints
+   already advertised by `/v1/capabilities`: `HermesApiClient.listModels()`
+   parses `/v1/models`, `listSkills()` parses `/v1/skills`, and
+   `listEnabledToolsets()` parses `/v1/toolsets`. `HermesApiChannel.connect()`
+   loads them only when advertised and treats catalog failures as non-blocking
+   so chat/session connect still works. `HermesChannelState` carries the names,
+   and the connected capability strip shows model names plus skills/toolset
+   counts. The web e2e Hermes fake now advertises/serves the three catalog
+   endpoints, the Playwright smoke asserts the catalog chips through Flutter
+   semantics, and `README.md` lists the catalog surface. Validation: focused Hermes API/channel/screen tests (35 pass),
+   `flutter analyze`, full `flutter test --concurrency=1` (987 pass),
+   `node --check serve_web.mjs`, `node --check playwright/tests/regression/hermes-smoke.spec.mjs`,
+   `flutter build web --release -t lib/main_e2e.dart`, Playwright Hermes smoke
+   (2 pass), `git diff --check`. Onklaud status was operational; the advisory
+   loop passed but surfaced only a pass/fail summary, and final gate passed
+   10/10 with only a generic edge-case note, so implementation details came
+   from source-backed Pi validation.
+20. **Session rename parity** — added capability-gated `PATCH /api/sessions/{session_id}`
+   support for renaming the active Hermes session. `HermesApiClient.updateSessionTitle()`
+   uses a new PATCH transport seam (io/web/stub), `HermesChannel.renameSession()`
+   trims/rejects blank titles and replaces the session row only after the server
+   returns the updated `hermes.session`, and `HermesChatScreen` shows a Rename
+   action only when the active session exists and capabilities advertise
+   `session_update`. Failed renames show a SnackBar and leave local state alone.
+   The web e2e Hermes fake supports CORS/PATCH and Playwright renames a session
+   through the real web bundle. Validation: focused Hermes API/channel/screen
+   tests (39 pass), `flutter analyze`, full `flutter test --concurrency=1`
+   (991 pass), `node --check serve_web.mjs`, `node --check playwright/tests/regression/hermes-smoke.spec.mjs`,
+   `flutter build web --release -t lib/main_e2e.dart`, Playwright Hermes smoke
+   (2 pass), `git diff --check`. Onklaud planning failed on under-specified
+   plan details; useful issues were addressed in the Pi implementation. Final
+   Onklaud gate passed 10/10 with only a generic edge-case note.
+21. **Session delete parity** — added capability-gated `DELETE /api/sessions/{session_id}`
+   support. `HermesApiClient.deleteSession()` uses a new DELETE transport seam
+   (io/web/stub), verifies the server's deletion envelope id plus `deleted: true`,
+   and rejects unconfirmed deletes. `HermesApiChannel.deleteSession()` is
+   pessimistic, guards duplicate in-flight deletes, removes the deleted row and
+   messages only after server confirmation, selects the next remaining session
+   when the active session is deleted, and supports an empty connected session
+   list without a stale active session. `HermesChatScreen` confirms destructive
+   deletion, gates the action on `session_delete`, disables composer/mic/send
+   when no active session remains, and shows an empty-state prompt to create a
+   new session. The web e2e fake supports CORS/DELETE and Playwright deletes a
+   session through the real web bundle. Validation: focused Hermes API/channel/
+   screen tests (44 pass), `flutter analyze`, full `flutter test --concurrency=1`
+   (996 pass), `node --check serve_web.mjs`, `node --check playwright/tests/regression/hermes-smoke.spec.mjs`,
+   `flutter build web --release -t lib/main_e2e.dart`, Playwright Hermes smoke
+   (2 pass), `git diff --check`. Onklaud planning failed on under-specified
+   delete semantics; useful issues were addressed in Pi implementation. Final
+   Onklaud gate passed 10/10 with only a generic edge-case note.
+22. **Session fork parity** — added capability-gated `POST /api/sessions/{session_id}/fork`
+   support. `HermesApiConfig.sessionForkUri()` and `HermesApiClient.forkSession()`
+   post a generated `navi-*` id/title and parse the returned `hermes.session`;
+   `HermesApiChannel.forkSession()` adds/selects the returned child session and
+   loads forked messages only after the server response, leaving local state
+   unchanged on failure. `HermesChatScreen` shows Fork only when capabilities
+   advertise `session_fork` and surfaces failures with a SnackBar. The web e2e
+   fake advertises/serves session fork by copying source messages, and
+   Playwright forks a renamed session through the real web bundle. Validation:
+   focused Hermes API/channel/screen tests (48 pass), `flutter analyze`, full
+   `flutter test --concurrency=1` (1000 pass), `node --check serve_web.mjs`,
+   `node --check playwright/tests/regression/hermes-smoke.spec.mjs`,
+   `flutter build web --release -t lib/main_e2e.dart`, Playwright Hermes smoke
+   (2 pass), `git diff --check`. Onklaud planning timed out during arbitration;
+   first gate failed only on generic edge coverage, then final gate passed 10/10
+   after adding the fork-failure no-local-mutation test.
+23. **Dedicated Sessions panel** — moved Hermes session management out of
+   separate chat app-bar actions into a bottom-sheet Sessions panel. The app bar
+   now keeps Sessions, New session, and Disconnect; the panel lists sessions with
+   active marker, title/id, message count, preview, row-tap selection, a New
+   button, and capability-gated row actions for Rename/Fork/Delete. The old
+   inline dropdown picker was removed. Panel actions close the sheet before
+   invoking row-targeted channel operations, preserving existing confirmation
+   and error SnackBar behavior. Validation: focused Hermes API/channel/screen
+   tests (49 pass), `flutter analyze`, full `flutter test --concurrency=1`
+   (1001 pass), `node --check playwright/tests/regression/hermes-smoke.spec.mjs`,
+   `flutter build web --release -t lib/main_e2e.dart`, Playwright Hermes smoke
+   (2 pass), `git diff --check`. Onklaud planning failed on under-specified
+   panel details; useful issues were addressed in Pi implementation. Final
+   Onklaud gate passed 10/10 with only a generic edge-case note.
+24. **Local installed Hermes Agent smoke** — confirmed `hermes` is installed on
+   this PC (Hermes Agent v0.16.0 under `/home/xel/.hermes/hermes-agent`) and
+   added `scripts/run_live_hermes_smoke.sh` / `npm run hermes:live-smoke`. The
+   script starts installed `hermes gateway` with an isolated temp `HERMES_HOME`,
+   generated test API key, loopback API server, and local CORS; builds the
+   Navivox e2e web bundle; serves it; and runs a gated Playwright live-connect
+   spec against the real Hermes API. `lib/main_e2e.dart` accepts an optional
+   Hermes base URL/API key for e2e tests while preserving the fake default.
+   Validation: manual temp-home Hermes API probe (`/health`, `/v1/capabilities`),
+   package JSON parse, Node syntax checks for the fake/live Hermes Playwright
+   specs and `serve_web.mjs`, `bash -n scripts/run_live_hermes_smoke.sh`,
+   `flutter analyze`, `flutter build web --release -t lib/main_e2e.dart`, fake
+   Hermes Playwright smoke (2 pass), `scripts/run_live_hermes_smoke.sh`
+   (Playwright live Hermes spec 1 pass), full `flutter test --concurrency=1`
+   (1001 pass), and `git diff --check`. Onklaud planning timed out during
+   arbitration and was recorded unusable; final Onklaud gate passed 10/10 with
+   only a generic edge-case note.
+25. **Catalog detail dialogs** — made the read-only Hermes model/skill/toolset
+   catalog chips actionable. The capability strip stays compact, but Models,
+   Skills, and Toolsets chips now open simple dialogs listing loaded catalog
+   names. No new API calls or dependencies. Validation: focused Hermes chat
+   screen tests (18 pass), `flutter analyze`, full `flutter test --concurrency=1`
+   (1001 pass), `flutter build web --release -t lib/main_e2e.dart`, fake Hermes
+   Playwright smoke (2 pass), and Onklaud gate 10/10 with only a generic
+   edge-case note.
+26. **Health detail strip** — added optional `/health/detailed` support.
+   `HermesApiClient.healthDetailed()` uses the existing config URI;
+   `HermesApiChannel.connect()` loads it only when capabilities advertise
+   `health_detailed` and treats failure as non-blocking. `HermesChannelState`
+   carries safe detailed health fields, and the Hermes capability strip shows
+   version, gateway state, and active agent count without raw platform errors,
+   logs, PIDs, or secrets. The fake web Hermes API advertises/serves
+   `/health/detailed`, and the browser smoke asserts the new health chips.
+   Validation: focused Hermes API/channel/screen tests (50 pass),
+   `flutter analyze`, `node --check serve_web.mjs`, `node --check
+   playwright/tests/regression/hermes-smoke.spec.mjs`, full
+   `flutter test --concurrency=1` (1002 pass), `flutter build web --release -t
+   lib/main_e2e.dart`, fake Hermes Playwright smoke (2 pass),
+   `scripts/run_live_hermes_smoke.sh` (live Hermes spec 1 pass), and
+   `git diff --check`. Onklaud planning timed out during arbitration and was
+   recorded unusable; final Onklaud gate passed 10/10.
+27. **Hermes setup presets** — added Hermes Desktop-style setup presets to the
+   connect form. `Local Hermes` fills the loopback default, `Android emulator`
+   fills the host-emulator URL, and `Remote/LAN` clears the field so the user
+   enters a trusted LAN/VPN/Tailscale/TLS endpoint. This keeps the existing
+   URL/API-key form and secure storage behavior; no installer, background
+   service, or secret handling was added. Validation: focused Hermes chat screen
+   tests (19 pass), `flutter analyze`, `node --check
+   playwright/tests/regression/hermes-smoke.spec.mjs`, full
+   `flutter test --concurrency=1` (1003 pass), fake Hermes Playwright smoke
+   (2 pass), `scripts/run_live_hermes_smoke.sh` (live Hermes spec 1 pass), and
+   `git diff --check`. Onklaud planning timed out; follow-up gates failed only
+   on generic `prefer HTTPS` advice even though these presets are documented
+   loopback/emulator local-development URLs, so Pi recorded the advice and used
+   local validation.
+28. **Hermes readiness guardrails and closeout runbooks** — added a read-only
+   readiness audit helper (`scripts/audit_hermes_readiness.sh`, exposed as
+   `npm run hermes:readiness-audit`) that fails closed in strict mode while
+   external/deferred blockers remain. Added the canonical Android physical-audio
+   closeout runbook (`docs/runbooks/android/live-mic-smoke.md`) and linked it
+   from README, docs index, and the platform smoke runbook. Added tooling
+   contracts for package helper scripts, the host-runner workflow shape, the
+   readiness audit helper, testing-plan smoke matrix, runbook topology, and
+   Android live mic/durable reconnect runbooks. In-app Hermes surface readiness now keeps deferred
+   blockers honest, including separate rows for jobs/schedules inventory vs.
+   admin and bounded diagnostics vs. raw diagnostics/log export. Validation:
+   `flutter analyze`, focused Hermes regression (71 pass), full tooling/docs
+   contract suite (27 pass), full `flutter test --concurrency=1` (1016 pass),
+   `npm run hermes:provider-smoke:local` (1 Playwright pass), and
+   `git diff --check`. Strict readiness audit now reports 16 blockers because
+   full live provider-backed chat/voice smoke is an explicit closeout blocker,
+   Windows and iOS/macOS host receipts are split explicitly, and configured
+   Hermes home presence is informational only, not a provider-smoke receipt. External
+   recheck still shows the platform workflow is not visible to `gh`. A later
+   KVM-backed `fractal_test` launch became responsive long enough for
+   `npm run android:voice-smoke`, `npm run android:hermes-voice-loop-smoke`,
+   `npm run android:durable-key-smoke`, and `npm run android:live-mic-prep` to
+   pass, refreshing recognizer/permission readiness, deterministic Android loop
+   mechanics, keypair readiness, and install/launch/mic-grant prep, then the
+   emulator was stopped. That remains readiness,
+   deterministic transcript/TTS loop, and key-storage evidence only; no real
+   spoken-audio/provider reply or real Android durable reconnect closeout has
+   been captured. Latest local closeout rechecks after these receipts: full
+   static analysis still passes with no issues, the E2E web release build still
+   produces `build/web`, the Android debug APK still builds with SHA-256
+   `453e746d9773b466a7393ec73713943a49276f4bee4465d18a3d083e5cb5ab0a`,
+   app-scoped Android native units still pass, the Linux release helper still
+   produces an executable `build/linux/x64/release/bundle/navivox`, durable
+   reconnect unit/readiness contracts and the two targeted fake-gateway
+   reconnect paths still pass, helper shell/JS syntax checks still pass, the
+   full Flutter suite still passes (1016 tests), focused Hermes tests still pass
+   (71 tests), installed-Hermes live API smoke and configured provider smoke
+   still pass with their non-mic/server-audio and not-whole-goal-completion
+   caveats, focused browser
+   regression passes (68 Chromium tests), strict readiness audit still reports
+   16 blockers including the explicit full live provider-backed chat/voice smoke
+   closeout blocker and now prints `Completion verdict: NOT COMPLETE` plus an
+   explicit warning not to promote proxy evidence (tests, APK hashes, configured
+   Hermes home, workflow YAML, or dispatch-only output) to completion,
+   `gh workflow list` still exposes only
+   `pages-build-deployment`, so no hosted Windows/iOS/native-host receipt is
+   available, direct native-host reprobes on this Linux host still fail
+   (`flutter build windows --debug` exits 1 because Windows builds require a
+   Windows host; `flutter build ios --simulator --debug` exits 64 because this
+   toolchain has no `--simulator` option), and a direct Android-target recheck
+   shows `adb devices` has no attached Android devices while `flutter devices`
+   lists only Linux desktop and Chrome web. The Android live-mic and durable
+   reconnect runbooks, plus the Android voice-readiness, deterministic
+   voice-loop, durable-key, and live-mic-prep helpers, now require or point to
+   strict readiness audit after future Android receipts and explicitly warn not
+   to promote a single Android/reconnect/helper receipt or proxy evidence to
+   whole-goal completion while unrelated blockers remain.
 
 ## Remaining work
 
-- A live-browser smoke of `HermesChatScreen` against a real Hermes Agent API
-  server — browser rendering of disconnected and connected Hermes UI is now
-  covered, but live connect/stream/tool/approval behavior still uses the local
-  e2e HTTP/SSE fake or unit/widget fixtures.
-- Android live smoke once a responsive Android target is available (same
-  standing blocker as before): connect from emulator (`10.0.2.2:8642`) and
-  physical device, verify continuous voice end-to-end against a live Hermes
-  Agent API server.
-- Windows and iOS/macOS host-platform builds/smokes still need their own
-  runners (Linux is now unblocked locally, see slice 18). Host CI workflow
-  publishing still needs a credential with GitHub `workflow` scope.
+- Real spoken Android microphone smoke: connect to Hermes on an audio-capable
+  Android device/emulator, tap Speak, verify the spoken phrase becomes a Hermes
+  text turn, enable continuous voice, and verify capture → reply/TTS → re-arm.
+  Existing Android evidence is readiness plus deterministic transcript capture,
+  not physical audio.
+- Windows and iOS/macOS host-platform builds/smokes still need successful native
+  host-runner receipts. The workflow definition exists in
+  `.github/workflows/hermes-platform-smoke.yml`, but this checkout has no
+  successful Windows/iOS run receipt.
+- Real Android + real Gormes durable reconnect still needs end-to-end validation
+  after app/server restart. Android keystore readiness and Dart fake-gateway
+  reconnect are proven separately, but not the full real-device protocol.
+- Hermes realtime/server audio, config editing/admin, Hermes memory UI,
+  jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media,
+  files/context folders, raw log export, and multi-endpoint/profile management
+  remain deferred or read-only by policy.
 
 ## Honest caveat
 
-`HermesApiChannel` and connected `HermesChatScreen` behavior have been
-exercised against fixture-driven fake HTTP/SSE transports and widget tests
-only, never a real Hermes Agent API server. `HermesChatScreen` compiles and
-serves under a real Flutter web build (the earlier `flutter run -d web-server`
-pass caught the JS-interop bug above), and the disconnected `/hermes` connect
-form and connected Hermes session against the local e2e HTTP/SSE fake
-(including approval prompt/response UI, stop control, streamed tool progress,
-new session creation, and a device voice transcript submitted as a Hermes text
-turn through the real web transport) now have Chromium Playwright smoke
-coverage against the e2e web bundle. The concrete `SecureHermesEndpointStore`
-has no dedicated test, matching the existing convention for
-`SecureStorageDurableCredentialStore` (also untested directly) — both are thin
-platform-plugin glue exercised through higher-level tests instead.
+Provider-backed Hermes web text and transcript-voice smoke now passes against a
+configured local Hermes home, and installed-Hermes live connect smoke passes
+against a temp-home API server. That still does not prove physical microphone
+capture or Hermes realtime/server audio: Navivox voice remains local device STT
+(or deterministic transcript capture in tests) submitted as normal Hermes text.
+The Android emulator receipts were collected on a headless/software emulator,
+including one launched with `-no-audio`, so they are not real spoken-audio
+receipts. The concrete `SecureHermesEndpointStore` has no dedicated direct test,
+matching the existing convention for `SecureStorageDurableCredentialStore`; both
+are thin platform-plugin glue exercised through higher-level tests instead.
 
 ## Loose ends
 
@@ -194,8 +409,11 @@ native channel, the Hermes chat/session UI, setup-flow secure storage,
 cards, the Hermes nav-bar entry, cross-platform endpoint hints, the capability
 status strip, the real-browser Hermes e2e smoke, Gormes deprecation notices,
 the iOS/Windows scaffolds plus platform smoke runbook/build receipts, the
-host-platform smoke runbook, Hermes-first startup, and README/package metadata
-refresh are implemented and green locally where the platform is available.
+host-platform smoke runbook, Hermes-first startup, README/package metadata
+refresh, read-only Hermes catalog strip, session rename/delete/fork parity, and
+Dedicated Sessions panel, local installed Hermes API connect smoke, compact
+catalog detail dialogs, health detail strip, and setup presets are implemented
+and green locally where the platform is available.
 The next goal should get a live Hermes Agent/API browser or Android smoke in
 front of `HermesChatScreen`, or continue deeper conversion/hiding of remaining
 Gormes-era internals.

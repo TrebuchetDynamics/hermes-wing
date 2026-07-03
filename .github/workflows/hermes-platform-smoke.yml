@@ -1,0 +1,189 @@
+name: Hermes platform smoke
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_provider_smoke:
+        description: Run provider-backed Hermes web smoke against provider_url
+        required: false
+        type: boolean
+        default: false
+      provider_url:
+        description: Hermes API base URL for provider-backed smoke
+        required: false
+        type: string
+      run_android_emulator_smoke:
+        description: Run Android emulator voice/durable-key integration smoke
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hermes-platform-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-web-android:
+    name: Linux, Web, Android, and Hermes browser smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake libgtk-3-dev libsecret-1-dev ninja-build pkg-config
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Analyze and test
+        run: |
+          flutter analyze
+          flutter test --concurrency=1
+      - name: Build Web e2e app
+        run: flutter build web --release -t lib/main_e2e.dart
+      - name: Hermes browser smoke
+        run: |
+          node serve_web.mjs > /tmp/navivox-serve-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8767/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8767/ >/dev/null
+          npx playwright test --config=playwright.config.mjs playwright/tests/regression/hermes-smoke.spec.mjs --reporter=list
+      - name: Build Android debug APK
+        run: flutter build apk --debug
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: navivox-android-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+      - name: Build Linux release app
+        run: flutter build linux --release
+      - name: Upload Linux release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: navivox-linux-release-bundle
+          path: build/linux/x64/release/bundle/**
+          if-no-files-found: error
+
+  android-emulator-smoke:
+    name: Android emulator voice and durable-key smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_android_emulator_smoke }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Run Android integration smokes
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            export NAVIVOX_ANDROID_DEVICE_ID=emulator-5554
+            export NAVIVOX_ANDROID_TEST_TIMEOUT_SECONDS=900
+            ./scripts/run_android_voice_smoke.sh
+            ./scripts/run_android_hermes_voice_loop_smoke.sh
+            ./scripts/run_android_durable_key_smoke.sh
+
+  provider-hermes-smoke:
+    name: Provider-backed Hermes web smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_provider_smoke && inputs.provider_url != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Run provider-backed Hermes smoke
+        env:
+          NAVIVOX_PROVIDER_HERMES_URL: ${{ inputs.provider_url }}
+          NAVIVOX_PROVIDER_HERMES_API_KEY: ${{ secrets.NAVIVOX_PROVIDER_HERMES_API_KEY }}
+        run: npm run hermes:provider-smoke
+
+  windows-build:
+    name: Windows desktop build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Build Windows app
+        run: |
+          flutter pub get
+          flutter build windows --debug
+      - name: Upload Windows debug bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: navivox-windows-debug-bundle
+          path: build/windows/x64/runner/Debug/**
+          if-no-files-found: error
+
+  ios-simulator-build:
+    name: iOS simulator build
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Build iOS simulator app
+        run: |
+          flutter pub get
+          flutter build ios --simulator --debug
+      - name: Upload iOS simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: navivox-ios-simulator-app
+          path: build/ios/iphonesimulator/Runner.app/**
+          if-no-files-found: error

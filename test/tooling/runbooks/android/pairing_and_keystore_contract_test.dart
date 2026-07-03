@@ -53,12 +53,25 @@ void main() {
 
     expectRunbookContainsAll(text, [
       '# Android Durable Keystore Smoke',
-      'durable reconnect key storage',
+      'separates keypair readiness from full Gormes durable reconnect',
+      'npm run android:durable-key-smoke',
+      'integration_test/durable_key_store_android_smoke_test.dart',
+      'This is key storage readiness only',
+      'does **not** prove durable credential',
+      'Full durable reconnect closeout still required',
       'trusted Android device',
       'durable reconnect',
       'non-secret public key',
       'no pairing token is stored',
+      'silently reconnects with the saved device credential',
       'reconnect readiness remains available',
+      'NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit',
+      'Completion verdict: NOT COMPLETE',
+      'do not promote this reconnect receipt',
+      'key smoke, passing tests, APK hashes, configured Hermes home, workflow YAML,',
+      'dispatch-only output to whole-goal completion',
+      'legacy durable',
+      'reconnect blocker remains open',
       'Do not paste tokens',
     ]);
     expectRunbookHasNoSecretPlaceholders(text);

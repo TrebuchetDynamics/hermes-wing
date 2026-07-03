@@ -29,6 +29,33 @@ void main() {
     expect(readme, contains('http://127.0.0.1:8642'));
     expect(readme, contains('http://10.0.2.2:8642'));
     expect(readme, contains('## Connected Hermes Smoke Test'));
+    expect(readme, contains('npm run hermes:readiness-audit'));
+    expect(
+      readme,
+      contains('NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+    );
+    expect(readme, contains('Completion verdict: NOT COMPLETE'));
+    expect(readme, contains('Do not treat proxy evidence'));
+    expect(readme, contains('tests, APK hashes, configured Hermes home'));
+    expect(readme, contains('workflow YAML, or dispatch-only output'));
+    expect(readme, contains('npm run platform:workflow-smoke'));
+    expect(readme, contains('npm run android:live-mic-prep'));
+    expect(
+      readme,
+      contains('only installs/launches/grants microphone permission'),
+    );
+    expect(readme, contains('not\nwhole-goal completion evidence by itself'));
+    expect(readme, contains('docs/runbooks/android/live-mic-smoke.md'));
+    expect(readme, contains('npm run android:durable-key-smoke'));
+    expect(readme, contains('readiness/deterministic/key-storage evidence'));
+    expect(
+      readme,
+      contains('not whole-goal completion evidence by themselves'),
+    );
+    expect(
+      readme,
+      contains('run strict readiness\naudit before completion claims'),
+    );
     expect(readme, contains('GET /health'));
     expect(readme, contains('GET /v1/capabilities'));
     expect(readme, contains('POST /api/sessions/{session_id}/chat/stream'));

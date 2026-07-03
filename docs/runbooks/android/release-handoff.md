@@ -83,6 +83,7 @@ build/app/outputs/bundle/release/app-release.aab
 ## Continuous voice smoke after install
 
 Use a responsive Android target only. If ADB lists the target but `adb shell true` hangs or times out, the target is not valid for this smoke.
+For the active Hermes companion goal, follow `docs/runbooks/android/live-mic-smoke.md` after install: connect to a configured Hermes Agent API with real provider/model credentials, tap Speak, verify the spoken phrase becomes a Hermes text turn with a provider-backed reply, then verify continuous voice capture → Hermes reply → TTS → re-arm. Installing the APK is not a physical-audio receipt.
 
 Check for an Android speech recognizer before judging Navivox voice behavior:
 
@@ -107,7 +108,7 @@ Latest local debug APK:
 
 ```text
 build/app/outputs/flutter-apk/app-debug.apk
-sha256 af9ba1fb0b16efc9bb9b31d8e2684dc191f00781e378a2850e4e25cf3b64c8dc
+sha256 453e746d9773b466a7393ec73713943a49276f4bee4465d18a3d083e5cb5ab0a
 ```
 
 Current host blocker: ADB lists no Android devices, and `flutter devices` lists only Linux desktop and Chrome. The available `fractal_test` Android emulator cannot boot on this host because x86_64 emulation requires KVM access and the current user does not have `/dev/kvm` permission. Do not treat this host as valid evidence for microphone permission prompts, Android speech recognizer availability, or real STT capture until a responsive Android target is connected or KVM access is fixed.

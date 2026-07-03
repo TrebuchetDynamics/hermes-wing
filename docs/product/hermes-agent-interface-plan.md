@@ -2,7 +2,7 @@
 
 Status: planning note for steering Navivox away from Gormes-only runtime toward Hermes Agent-only operation. The current Gormes-first app state is preserved on the `gormes` branch at `b0b4390`; this plan targets future work on `main` or a new Hermes-focused delivery branch.
 
-**Amendment (see [ADR 0007](../adr/0007-native-hermes-channel-not-navivox-channel-adapter.md)):** the "`HermesNavivoxChannel implements NavivoxChannel`" transition-seam idea below (recommended architecture step 2, delivery slice 3) is superseded. Navivox builds a native `HermesChannel` abstraction sized to Hermes's actual surface instead of implementing the old Gormes-shaped `NavivoxChannel` interface. Old Gormes-only screens (profile contacts, config-admin, memory, profile seed, voice profiles, run-record) are not wired to Hermes; new chat/session/voice screens are built against the native channel. The rest of this document (Hermes surface coverage table, target product model, MVP chat/session/streaming mapping) still holds as the source of truth for *what* Hermes surface to expose and in what order — only the *how* (adapter vs. native) changed.
+**Amendment (see [ADR 0007](../adr/0007-native-hermes-channel-not-navivox-channel-adapter.md)):** the early transition-seam idea that adapted Hermes to the old Gormes-shaped `NavivoxChannel` interface is superseded. Navivox builds a native `HermesChannel` abstraction sized to Hermes's actual surface. Old Gormes-only screens (profile contacts, config-admin, memory, profile seed, voice profiles, run-record) are not wired to Hermes; new chat/session/voice screens are built against the native channel. The rest of this document (Hermes surface coverage table, target product model, MVP chat/session/streaming mapping) still holds as the source of truth for *what* Hermes surface to expose and in what order — only the *how* (adapter vs. native) changed.
 
 ## Decision
 
@@ -102,7 +102,7 @@ The plan must consider every Hermes Desktop/Hermes Agent surface, but not every 
 | Models/providers | Desktop Models/Providers screens; API server `/v1/models`, Desktop config writers | **MVP read-only, edit later** | Show current model/capabilities; editing waits for Hermes config API or explicit CLI-backed design. |
 | Skills/toolsets | API server `/v1/skills`, `/v1/toolsets`; Desktop has Skills/Tools screens | **MVP read-only** | Browse enabled skills/toolsets; enabling/disabling later. |
 | Memory | Desktop Memory screen; Hermes memory providers exist, but current API capabilities report `memory_write_api: False` | **Later** | Hide Goncho memory; add Hermes memory only when read/list/search APIs are explicit. |
-| Schedules/cron | Desktop Schedules screen; API server `/api/jobs` routes exist in current source | **Later** | Consider mobile schedule view/admin after chat/session MVP; require auth and confirmation UX. |
+| Schedules/cron | Desktop Schedules screen; API server `/api/jobs` routes exist in current source | **MVP read-only, admin later** | Show read-only job inventory when `/api/jobs` is advertised; schedule/job mutation waits for explicit safe admin contracts, auth, and confirmation UX. |
 | Messaging gateways | Desktop Gateway screen for Telegram/Discord/etc. | **Later** | Mobile can show status eventually; setup/admin is too broad for first cut. |
 | Profiles/environments | Desktop profiles isolate Hermes homes/config | **Later** | Treat one Hermes endpoint first; multi-profile selection later maps to endpoint/profile config, not old Profile contacts. |
 | Persona/SOUL | Desktop Persona screen edits SOUL.md | **Later** | Needs explicit Hermes API or safe file/CLI flow; do not edit remotely by guessing paths. |
@@ -112,7 +112,7 @@ The plan must consider every Hermes Desktop/Hermes Agent surface, but not every 
 | Local install/update | Desktop installs/updates Hermes locally | **Out of mobile MVP** | Navivox connects to existing Hermes endpoint; Android Termux install can be a runbook later. |
 | Remote/SSH mode | Desktop supports remote URL/SSH tunnel | **MVP remote URL only** | URL + API key first; SSH tunnel is not mobile-native and waits. |
 | Secrets/auth | Desktop stores API keys; Hermes API server uses bearer `API_SERVER_KEY` | **MVP** | API key in secure storage only; no shared-pref leak; no screenshots/log echo. |
-| Logs/debug dump | Desktop Settings surfaces logs/backup/debug | **Later** | Add bounded diagnostics only after core chat is stable. |
+| Logs/debug dump | Desktop Settings surfaces logs/backup/debug | **Bounded diagnostics now, raw logs later** | Export safe status/capability/readiness counts only; raw logs, transcript contents, tool payloads, and secrets stay excluded. |
 | i18n/theme/accessibility | Desktop has i18n/theme; Flutter app has platform accessibility needs | **Always** | Keep basic accessibility and clear mobile copy in every slice. |
 
 Hard default from the grill: **ship mobile chat/session/voice-to-text first, with every other Hermes surface either read-only, hidden, or explicitly deferred.** Consequence: the app becomes useful quickly without reimplementing Hermes Desktop in Flutter; full parity remains a roadmap, not a prerequisite.
@@ -131,20 +131,23 @@ Create `lib/core/hermes/` with:
 
 Do not mutate the existing Gormes client in place; use a parallel client so tests can compare the old preserved branch if needed.
 
-### 2. Implement `HermesNavivoxChannel` behind the existing `NavivoxChannel` interface
+### 2. Implement a native `HermesChannel`
 
-First adapter goal: keep the Flutter screens alive while the data source changes.
+ADR 0007 supersedes the early adapter idea: Hermes should not be squeezed into
+the old Gormes-shaped `NavivoxChannel` contract. Use a parallel native
+`HermesChannel` and Hermes session terminology.
 
 Mapping:
 
 - `connect(baseUrl, token)` -> `GET /health`, `GET /v1/capabilities`, then `GET /api/sessions`.
-- `state.servers` -> one synthetic Hermes endpoint summary.
-- `state.profileContacts` -> Hermes sessions as temporary contact rows, or one default `Hermes Agent` row until the sessions screen lands.
+- `state.sessions` -> Hermes sessions loaded from the endpoint.
 - `sendText(text)` -> start/continue the selected Hermes session.
 - `cancelActiveTurn` / `stopActiveTurn` -> `/v1/runs/{run_id}/stop` when using run transport.
 - `respondToApproval` -> `/v1/runs/{run_id}/approval`.
+- Voice runs -> local device transcript submitted as a normal Hermes text turn.
 
-This is a transition seam only. After MVP, rename `NavivoxChannel`/profile-contact UI to Hermes session terminology.
+Legacy Gormes screens can remain preserved during transition, but new Hermes work
+uses the native channel and `/hermes` surface.
 
 ### 3. Use session chat streaming for MVP, then run streaming for full control
 
@@ -210,9 +213,9 @@ Keep local device STT: voice can still transcribe on-device and submit text into
    - Add typed Dart models for `/health`, `/v1/capabilities`, sessions, messages, and SSE events.
    - Add pure Dart SSE parser tests based on Hermes Desktop `sse-parser.ts` and `run-stream.ts` behavior: multi-line `data:`, named events, malformed chunks skipped, usage extraction, tool events, reasoning events, and `[DONE]`/done close.
 
-3. **Hermes channel adapter**
-   - Add `HermesNavivoxChannel implements NavivoxChannel`.
-   - Keep old UI working with a synthetic endpoint + session/contact mapping.
+3. **Native Hermes channel**
+   - Add a parallel `HermesChannel`/`HermesChannelState` shaped around Hermes sessions/messages, per ADR 0007.
+   - Keep legacy Gormes screens preserved separately while `/hermes` becomes the native Hermes surface.
    - Gate `/v1/runs` use on `/v1/capabilities`; fall back to session chat stream when run transport is missing or not safe.
    - Tests: connect, list/create session, load messages, stream assistant deltas, stream tool events, reconcile final messages, fail boundedly.
 
@@ -256,4 +259,4 @@ Keep local device STT: voice can still transcribe on-device and submit text into
 
 ## First implementation recommendation
 
-Build a thin Hermes client and fixture-tested SSE decoder first. Then swap the provider from `GatewayNavivoxChannel` to `HermesNavivoxChannel` behind the existing `NavivoxChannel` interface. This gives a fast MVP without rewriting every screen at once, while still aiming the product at Hermes sessions and run events rather than the preserved Gormes protocol.
+Build a thin Hermes client and fixture-tested SSE decoder first. Then expose it through a native `HermesChannel` and dedicated `/hermes` UI instead of adapting Hermes to the old `NavivoxChannel` interface. Keep legacy Gormes screens preserved during transition, but new work should use Hermes endpoint/session/run language directly.

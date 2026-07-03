@@ -1,6 +1,6 @@
 # Make Navivox Hermes Agent-first
 
-Status: accepted
+Status: accepted, amended by [ADR 0007 — Build a native Hermes channel instead of a `HermesNavivoxChannel` adapter](0007-native-hermes-channel-not-navivox-channel-adapter.md)
 
 Supersedes: [ADR 0005 — Keep Navivox Gormes-first and use Hermes Desktop as reference](0005-gormes-first-navivox-with-hermes-desktop-as-reference.md)
 
@@ -34,7 +34,7 @@ Navivox mainline will target Hermes Agent's API server directly.
 The first integration path is:
 
 1. Add a typed Hermes API client and SSE decoder in `lib/core/hermes/`.
-2. Add a `HermesNavivoxChannel` transition adapter behind the existing `NavivoxChannel` interface so current Flutter screens can keep running while domain language is renamed.
+2. Add a native `HermesChannel`/`HermesChannelState` surface sized to Hermes sessions/messages, per ADR 0007, instead of adapting Hermes to the old Gormes-shaped `NavivoxChannel` interface.
 3. Use `/api/sessions/{session_id}/chat/stream` for MVP session chat because it is session-history oriented.
 4. Use `/v1/runs` + `/v1/runs/{run_id}/events` for approval and stop/control flows once the persistence behavior is verified.
 5. Replace Gormes pairing/durable credentials with Hermes endpoint setup: base URL in shared preferences, API key only in secure storage.

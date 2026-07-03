@@ -17,18 +17,18 @@ Current Hermes path:
 
 1. Connect to a Hermes Agent API server (`/hermes`).
 2. Save the base URL as non-secret metadata and the optional API key in secure storage.
-3. List/create/select Hermes sessions.
+3. List/create/select/rename/delete/fork Hermes sessions from the Sessions panel.
 4. Stream chat through capability-gated Hermes transports.
-5. Render assistant deltas, tool progress cards, approval prompts, stop controls, and capability status.
+5. Render assistant deltas, tool progress cards, approval prompts, stop controls, capability/health status, read-only model/skill/toolset/job catalog counts/details, surface-readiness notes, and bounded copyable diagnostics.
 6. Use local device speech capture/continuous voice to submit transcripts as Hermes text turns.
 
-Implemented platform coverage includes Flutter web/Android/Linux plus generated iOS and Windows scaffolds. Local validation covers Dart/widget tests, web e2e smoke against a fake Hermes HTTP/SSE server, Android debug APK build, and documented host-runner gates for Linux release, Windows, and iOS in `docs/runbooks/hermes-platform-smoke.md`.
+Implemented platform coverage includes Flutter web/Android/Linux plus generated iOS and Windows scaffolds. Local validation covers Dart/widget tests, focused web e2e smoke against a fake Hermes HTTP/SSE server, live connect smoke against the installed local Hermes Agent API server, provider-backed text plus transcript-voice smoke when a configured Hermes home is available, Android speech/key readiness smokes, deterministic Android continuous-voice loop smoke, Android debug APK build, Linux release build, and documented host-runner gates for Windows and iOS in `docs/runbooks/hermes-platform-smoke.md`.
 
-Still blocked without external hosts/devices:
+Still blocked without external hosts/devices/config:
 
-- Live smoke against a real Hermes Agent API server.
-- Android microphone/continuous-voice smoke on a responsive Android device or emulator.
-- Windows/iOS host builds and Linux release build receipts from a runner with native dependencies.
+- Full Android microphone/continuous-voice loop with real spoken input on a responsive audio-capable Android device or emulator.
+- Windows/iOS host build receipts from native runners.
+- Full real Android saved durable reconnect against Gormes after app/server restart.
 
 ## Screenshots
 
@@ -55,9 +55,16 @@ Navivox targets the Hermes Agent API server, defaulting to port `8642`:
 
 - `GET /health`
 - `GET /v1/capabilities`
+- `GET /v1/models`
+- `GET /v1/skills`
+- `GET /v1/toolsets`
+- `GET /api/jobs` (read-only when advertised)
 - `GET /api/sessions`
 - `POST /api/sessions`
+- `PATCH /api/sessions/{session_id}`
+- `DELETE /api/sessions/{session_id}`
 - `GET /api/sessions/{session_id}/messages`
+- `POST /api/sessions/{session_id}/fork`
 - `POST /api/sessions/{session_id}/chat/stream`
 - `POST /v1/runs`
 - `GET /v1/runs/{run_id}/events`
@@ -121,11 +128,11 @@ Run the app from the repository root, replacing `<device-id>` with one of the li
 flutter run -d <device-id>
 ```
 
-Hermes endpoint URL hints:
+Hermes endpoint URL hints and presets:
 
-- Desktop/Linux/Windows/iOS simulator on the same host: `http://127.0.0.1:8642`
-- Android emulator reaching the host: `http://10.0.2.2:8642`
-- Physical device: use a trusted LAN, VPN, or Tailscale URL for the Hermes host.
+- `Local Hermes`: `http://127.0.0.1:8642` for desktop/Linux/Windows/iOS simulator on the same host.
+- `Android emulator`: `http://10.0.2.2:8642` for emulator-to-host access.
+- `Remote/LAN`: enter a trusted LAN, VPN, Tailscale, or TLS URL for the Hermes host.
 
 ## Connected Hermes Smoke Test
 
@@ -138,7 +145,85 @@ Use this only with a trusted local or self-hosted Hermes Agent API server:
 5. If continuous voice is being validated, enable the voice switch and confirm one spoken phrase appears as a submitted Hermes text turn.
 6. Confirm no API key appears in UI text, logs, screenshots, routes, or transcript state.
 
-For browser fake-server smoke coverage, see `playwright/tests/regression/hermes-smoke.spec.mjs` and `serve_web.mjs`.
+For browser fake-server smoke coverage, see `playwright/tests/regression/hermes-smoke.spec.mjs` and `serve_web.mjs`. For local installed-Hermes connect coverage without provider credentials, run:
+
+```bash
+npm run hermes:live-smoke
+```
+
+For provider-backed text plus device-transcript voice smoke, point the gated smoke at a running Hermes endpoint that already has model/provider credentials configured:
+
+```bash
+NAVIVOX_PROVIDER_HERMES_URL=http://127.0.0.1:8642 \
+NAVIVOX_PROVIDER_HERMES_API_KEY=... \
+npm run hermes:provider-smoke
+```
+
+Or start the installed local Hermes server from an already configured Hermes home and run the same provider smoke:
+
+```bash
+NAVIVOX_CONFIGURED_HERMES_HOME=$HOME/.hermes npm run hermes:provider-smoke:local
+```
+
+For Android speech-recognition readiness on a connected device/emulator, run:
+
+```bash
+npm run android:voice-smoke
+```
+
+For deterministic Android Hermes continuous-voice loop coverage without using a
+physical microphone, run:
+
+```bash
+npm run android:hermes-voice-loop-smoke
+```
+
+For Android durable-key readiness, run:
+
+```bash
+npm run android:durable-key-smoke
+```
+
+These Android helper receipts are readiness/deterministic/key-storage evidence
+only, not whole-goal completion evidence by themselves; run strict readiness
+audit before completion claims.
+
+To print a read-only local readiness/blocker snapshot, run:
+
+```bash
+npm run hermes:readiness-audit
+```
+
+Before any completion claim, run strict mode:
+
+```bash
+NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit
+```
+
+While external/deferred blockers remain, it must exit 3 and print
+`Completion verdict: NOT COMPLETE`. Do not treat proxy evidence such as passing
+tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output
+as completion.
+
+To dispatch the GitHub-hosted platform workflow after it has been published to
+the remote branch, run:
+
+```bash
+npm run platform:workflow-smoke
+```
+
+For a real spoken Android microphone closeout, prepare an audio-capable target
+and launch the app with:
+
+```bash
+npm run android:live-mic-prep
+```
+
+That command only installs/launches/grants microphone permission; it is not
+whole-goal completion evidence by itself. The operator must still perform and
+record the spoken microphone continuous-loop checklist in
+`docs/runbooks/android/live-mic-smoke.md`, then run strict readiness audit before
+any completion claim.
 
 ## Troubleshooting
 
@@ -171,6 +256,8 @@ Start with:
 - `docs/adr/0006-hermes-agent-first-runtime.md`
 - `docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md`
 - `docs/runbooks/hermes-platform-smoke.md`
+- `docs/runbooks/hermes-readiness-audit.md`
+- `docs/runbooks/android/live-mic-smoke.md`
 - `docs/runbooks/termux/gormes-bootstrap.md` (legacy Gormes/Termux path)
 - `docs/README.md`
 - `docs/architecture/architecture.md`

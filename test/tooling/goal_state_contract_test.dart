@@ -35,7 +35,7 @@ void main() {
       'That remains readiness and deterministic\n   transcript/TTS loop evidence only',
       'home presence is informational only, not a provider-smoke receipt',
       'Real spoken Android microphone smoke',
-      'Windows, iOS, and macOS host-platform runner evidence is now captured by\n  successful watched workflow run `28715230991`',
+      'Windows, iOS, and macOS host-platform runner evidence is now captured by\n  `build/receipts/hermes-platform-workflow.json`',
       'The platform workflow is published and visible remotely as `Hermes platform\n  smoke`',
       'Hermes realtime/server audio',
       'not-whole-goal-completion\n   caveats',

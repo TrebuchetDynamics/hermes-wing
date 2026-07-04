@@ -538,7 +538,6 @@ readiness checklist and non-completion caveats.
   Existing Android evidence is readiness plus deterministic transcript capture,
   not physical audio.
 - Windows, iOS, and macOS host-platform runner evidence is now captured by
-  successful watched workflow run `28715230991` and
   `build/receipts/hermes-platform-workflow.json`: Windows desktop, iOS simulator,
   and macOS desktop jobs completed successfully and uploaded non-expired,
   non-empty native artifacts.
@@ -552,11 +551,10 @@ readiness checklist and non-completion caveats.
   `pulseaudio: Failed to initialize PA context`, no spoken-audio/provider/TTS
   receipt was captured, and after shutdown `adb devices` again listed no
   attached Android devices while `flutter devices` listed only Linux desktop and
-  Chrome web. `gh workflow list` now shows `Hermes platform smoke`; watched run
-  `28715230991` completed successfully at head
-  `be9f79744ddb44b3bdbeecc36147ba4915149a09`, and the platform receipt records
-  successful Windows desktop, iOS simulator, and macOS desktop jobs plus valid
-  native artifacts.
+  Chrome web. `gh workflow list` now shows `Hermes platform smoke`; the current
+  platform workflow receipt records a watched successful run for the current
+  checkout plus successful Windows desktop, iOS simulator, and macOS desktop jobs
+  with valid native artifacts.
 - Hermes realtime/server audio, config editing/admin, Hermes memory UI,
   jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media,
   files/context folders, raw log export, and multi-endpoint/profile management

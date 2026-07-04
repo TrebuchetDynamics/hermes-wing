@@ -537,12 +537,11 @@ readiness checklist and non-completion caveats.
   text turn, enable continuous voice, and verify capture → reply/TTS → re-arm.
   Existing Android evidence is readiness plus deterministic transcript capture,
   not physical audio.
-- Windows, iOS, and macOS host-platform builds/smokes still need successful native
-  host-runner receipts. The workflow definition exists in
-  `.github/workflows/hermes-platform-smoke.yml`, but this checkout has no
-  successful Windows/iOS/macOS run receipt.
-- Publish the platform workflow with a GitHub credential that has `workflow`
-  scope, then collect successful native-host artifacts/receipts.
+- Windows, iOS, and macOS host-platform build artifacts now exist on failed
+  workflow run `28714769601`, but the checkout still needs a successful whole
+  platform workflow receipt after the browser-smoke fix lands.
+- The platform workflow is now published and visible remotely as `Hermes platform
+  smoke`; collect a successful watched run receipt with native-host artifacts.
   Latest blocker recheck: attempting `flutter emulators --launch fractal_test`
   exited `-6` during startup, but direct SDK emulator launch with
   `-no-snapshot -no-boot-anim -gpu swiftshader_indirect -no-window` brought
@@ -551,12 +550,11 @@ readiness checklist and non-completion caveats.
   `pulseaudio: Failed to initialize PA context`, no spoken-audio/provider/TTS
   receipt was captured, and after shutdown `adb devices` again listed no
   attached Android devices while `flutter devices` listed only Linux desktop and
-  Chrome web. `gh auth status` still reported token scopes `gist`, `read:org`,
-  and `repo` without `workflow`, `gh workflow list` still showed only
-  `pages-build-deployment`, `npm run platform:workflow-smoke` exited 2
-  because `Hermes platform smoke` is not visible remotely, and a fresh `git push`
-  was remote-rejected with `refusing to allow an OAuth App to create or update
-  workflow .github/workflows/hermes-platform-smoke.yml without workflow scope`.
+  Chrome web. `gh workflow list` now shows `Hermes platform smoke`; watched run
+  `28714769601` proved the Windows, iOS simulator, and macOS jobs could build and
+  upload non-expired artifacts, but the overall run failed because the Hermes
+  browser smoke still expected the old `Runs/tool progress enabled` capability
+  label instead of the current `Runs SSE enabled` chip.
 - Hermes realtime/server audio, config editing/admin, Hermes memory UI,
   jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media,
   files/context folders, raw log export, and multi-endpoint/profile management

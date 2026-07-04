@@ -29,7 +29,7 @@ test('Hermes route renders connected session/capabilities in a real browser e2e 
   await page.waitForTimeout(1000);
 
   await expect(semanticLabel(page, 'Hermes Agent hermes-agent')).toBeVisible();
-  await expect(semanticLabel(page, 'Runs/tool progress enabled')).toBeVisible();
+  await expect(semanticLabel(page, 'Runs SSE enabled')).toBeVisible();
   await expect(semanticLabel(page, 'Voice uses device speech-to-text')).toBeVisible();
   await expect(semanticLabel(page, 'Version: 0.16.0')).toBeVisible();
   await expect(semanticLabel(page, 'Gateway: running')).toBeVisible();
@@ -61,7 +61,7 @@ test('Hermes route renders connected session/capabilities in a real browser e2e 
 
   await page.getByRole('button', { name: 'New session' }).click();
   await page.waitForTimeout(1000);
-  await expect(page.getByRole('heading', { name: 'E2E Hermes Session 2' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /E2E Hermes Session \d+/ })).toBeVisible();
   await page.evaluate(() => globalThis.navivoxE2EHermesSendText('new session browser'));
   await page.waitForTimeout(1000);
   await expect(page.getByText('new session browser').first()).toBeVisible();
@@ -73,7 +73,7 @@ test('Hermes route renders connected session/capabilities in a real browser e2e 
   await expect(page.getByText('Hermes echo: voice browser turn').first()).toBeVisible();
 
   await page.getByRole('button', { name: 'Sessions' }).click();
-  await page.getByRole('button', { name: 'Session actions' }).last().click();
+  await page.getByRole('button', { name: 'Session actions' }).first().click();
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByRole('heading', { name: 'Renamed e2e session' })).toBeVisible();

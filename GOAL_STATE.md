@@ -553,9 +553,10 @@ readiness checklist and non-completion caveats.
   attached Android devices while `flutter devices` listed only Linux desktop and
   Chrome web. `gh auth status` still reported token scopes `gist`, `read:org`,
   and `repo` without `workflow`, `gh workflow list` still showed only
-  `pages-build-deployment`, and `npm run platform:workflow-smoke` exited 2
-  because `Hermes platform smoke` is not visible remotely and the active token
-  cannot publish workflow files.
+  `pages-build-deployment`, `npm run platform:workflow-smoke` exited 2
+  because `Hermes platform smoke` is not visible remotely, and a fresh `git push`
+  was remote-rejected with `refusing to allow an OAuth App to create or update
+  workflow .github/workflows/hermes-platform-smoke.yml without workflow scope`.
 - Hermes realtime/server audio, config editing/admin, Hermes memory UI,
   jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media,
   files/context folders, raw log export, and multi-endpoint/profile management

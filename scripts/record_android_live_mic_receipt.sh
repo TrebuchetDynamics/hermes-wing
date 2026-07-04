@@ -141,9 +141,9 @@ if not package_info['record_audio_granted']:
     raise SystemExit(f'{package_name} does not have RECORD_AUDIO granted on {device}; run npm run android:live-mic-prep first.')
 
 def sanitized_url(raw):
-    parts = urlsplit(raw)
+    parts = urlsplit(raw.strip())
     netloc = parts.netloc.rsplit('@', 1)[-1]
-    return urlunsplit((parts.scheme, netloc, parts.path, '', ''))
+    return urlunsplit((parts.scheme, netloc, '', '', ''))
 
 receipt = {
     'kind': 'android_live_mic_smoke',

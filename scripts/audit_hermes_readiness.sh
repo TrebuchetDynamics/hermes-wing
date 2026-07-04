@@ -91,6 +91,8 @@ hermes_url = str(receipt.get('hermes_url', ''))
 parsed_hermes_url = urlsplit(hermes_url)
 if parsed_hermes_url.username or parsed_hermes_url.password or parsed_hermes_url.query or parsed_hermes_url.fragment:
     missing.append('hermes_url must omit userinfo, query, and fragment')
+if parsed_hermes_url.path not in ('', '/'):
+    missing.append('hermes_url must be an origin without copied route/path state')
 for key in ['spoken_phrase', 'provider_reply_observed', 'second_spoken_phrase']:
     value = str(receipt.get(key, ''))
     if len(value) > 240:

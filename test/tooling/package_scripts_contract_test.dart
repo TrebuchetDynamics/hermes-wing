@@ -131,6 +131,10 @@ void main() {
     expect(androidLiveMicReceipt, contains('ro.build.fingerprint'));
     expect(androidLiveMicReceipt, contains('urlsplit'));
     expect(androidLiveMicReceipt, contains("rsplit('@', 1)[-1]"));
+    expect(
+      androidLiveMicReceipt,
+      contains("urlunsplit((parts.scheme, netloc, '', '', ''))"),
+    );
     expect(androidLiveMicReceipt, contains('SECRET_PATTERN'));
     expect(androidLiveMicReceipt, contains('len(value) > 240'));
     expect(androidLiveMicReceipt, contains('short non-sensitive excerpt'));

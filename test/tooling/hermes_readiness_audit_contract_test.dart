@@ -176,6 +176,10 @@ void main() {
       scriptText,
       contains('hermes_url must omit userinfo, query, and fragment'),
     );
+    expect(
+      scriptText,
+      contains('hermes_url must be an origin without copied route/path state'),
+    );
     expect(scriptText, contains('provider_reply_observed'));
     expect(scriptText, contains('must be 240 characters or less'));
     expect(scriptText, contains('must not contain secret-looking values'));
@@ -227,7 +231,12 @@ void main() {
       ),
     );
     expect(auditText, contains('Covered.'));
-    expect(auditText, contains('Partially covered; remaining surfaces deferred/read-only by policy'));
+    expect(
+      auditText,
+      contains(
+        'Partially covered; remaining surfaces deferred/read-only by policy',
+      ),
+    );
     expect(auditText, contains('not whole-goal completion evidence by itself'));
     expect(auditText, contains('deterministic transcript voice only'));
     expect(auditText, contains('API connect/session rendering only'));
@@ -272,7 +281,10 @@ void main() {
       contains('flutter build web --release -t lib/main_e2e.dart'),
     );
     expect(auditText, contains('produced `build/web`'));
-    expect(auditText, contains('published and visible as `Hermes platform smoke`'));
+    expect(
+      auditText,
+      contains('published and visible as `Hermes platform smoke`'),
+    );
     expect(auditText, contains('build/receipts/hermes-platform-workflow.json'));
     expect(auditText, contains('successful watched receipt'));
     expect(

@@ -575,7 +575,8 @@ readiness checklist and non-completion caveats.
   calls do not collapse into one card. Hermes endpoint setup now strips URL
   userinfo, query strings, fragments, and route paths before connecting,
   loading, or persisting profile metadata, keeping API keys out of shared
-  preferences.
+  preferences. Android live-mic receipts now also record only the sanitized
+  Hermes origin and the readiness audit rejects copied route/path state.
 
 ## Honest caveat
 

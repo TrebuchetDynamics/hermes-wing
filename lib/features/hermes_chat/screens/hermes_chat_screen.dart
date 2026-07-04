@@ -605,7 +605,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
   }
 }
 
-class _HermesSessionsPanel extends StatelessWidget {
+class _HermesSessionsPanel extends StatefulWidget {
   const _HermesSessionsPanel({
     required this.state,
     required this.onCreate,
@@ -622,8 +622,15 @@ class _HermesSessionsPanel extends StatelessWidget {
   final ValueChanged<HermesSession> onFork;
   final ValueChanged<HermesSession> onDelete;
 
+  @override
+  State<_HermesSessionsPanel> createState() => _HermesSessionsPanelState();
+}
+
+class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
+  var _query = '';
+
   bool get _canRename =>
-      state.capabilities?.advertisesEndpoint(
+      widget.state.capabilities?.advertisesEndpoint(
         'session_update',
         'PATCH',
         '/api/sessions/{session_id}',
@@ -631,7 +638,7 @@ class _HermesSessionsPanel extends StatelessWidget {
       false;
 
   bool get _canDelete =>
-      state.capabilities?.advertisesEndpoint(
+      widget.state.capabilities?.advertisesEndpoint(
         'session_delete',
         'DELETE',
         '/api/sessions/{session_id}',
@@ -639,7 +646,7 @@ class _HermesSessionsPanel extends StatelessWidget {
       false;
 
   bool get _canFork =>
-      state.capabilities?.advertisesEndpoint(
+      widget.state.capabilities?.advertisesEndpoint(
         'session_fork',
         'POST',
         '/api/sessions/{session_id}/fork',
@@ -648,7 +655,17 @@ class _HermesSessionsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sessions = state.sessions;
+    final allSessions = widget.state.sessions;
+    final query = _query.trim().toLowerCase();
+    final sessions = query.isEmpty
+        ? allSessions
+        : allSessions
+              .where(
+                (session) => [session.title, session.id, session.preview]
+                    .whereType<String>()
+                    .any((value) => value.toLowerCase().contains(query)),
+              )
+              .toList(growable: false);
     return SafeArea(
       child: SizedBox(
         height: 420,
@@ -661,14 +678,32 @@ class _HermesSessionsPanel extends StatelessWidget {
               ),
               trailing: FilledButton.icon(
                 key: const ValueKey('hermes-sessions-new'),
-                onPressed: onCreate,
+                onPressed: widget.onCreate,
                 icon: const Icon(Icons.add_comment_outlined),
                 label: const Text('New'),
               ),
             ),
-            if (sessions.isEmpty)
+            if (allSessions.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: TextField(
+                  key: const ValueKey('hermes-session-search-field'),
+                  decoration: const InputDecoration(
+                    labelText: 'Search sessions',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+              ),
+            if (allSessions.isEmpty)
               const Expanded(
                 child: Center(child: Text('No Hermes sessions yet.')),
+              )
+            else if (sessions.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Text('No Hermes sessions match “${_query.trim()}”.'),
+                ),
               )
             else
               Expanded(
@@ -677,7 +712,7 @@ class _HermesSessionsPanel extends StatelessWidget {
                   itemCount: sessions.length,
                   itemBuilder: (context, index) {
                     final session = sessions[index];
-                    final active = session.id == state.activeSessionId;
+                    final active = session.id == widget.state.activeSessionId;
                     return ListTile(
                       key: ValueKey('hermes-session-row-${session.id}'),
                       selected: active,
@@ -697,18 +732,18 @@ class _HermesSessionsPanel extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      onTap: () => onSelect(session),
+                      onTap: () => widget.onSelect(session),
                       trailing: PopupMenuButton<String>(
                         key: ValueKey('hermes-session-menu-${session.id}'),
                         tooltip: 'Session actions',
                         onSelected: (value) {
                           switch (value) {
                             case 'rename':
-                              onRename(session);
+                              widget.onRename(session);
                             case 'fork':
-                              onFork(session);
+                              widget.onFork(session);
                             case 'delete':
-                              onDelete(session);
+                              widget.onDelete(session);
                           }
                         },
                         itemBuilder: (context) => [

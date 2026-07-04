@@ -318,6 +318,67 @@ void main() {
     expect(find.text('Two'), findsOneWidget);
   });
 
+  testWidgets('sessions panel filters and selects a matching Hermes session', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilitiesFixture,
+      sessions: const [
+        HermesSession(id: 'sess_1', source: 'fake', title: 'Incident review'),
+        HermesSession(id: 'sess_2', source: 'fake', title: 'Morning check'),
+      ],
+    );
+    await tester.pumpWidget(_wrap(channel));
+
+    await tester.tap(find.byKey(const ValueKey('hermes-sessions-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-session-search-field')),
+      'morning',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-session-row-sess_1')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-session-row-sess_2')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('hermes-session-row-sess_2')));
+    await tester.pumpAndSettle();
+
+    expect(channel.state.activeSessionId, 'sess_2');
+  });
+
+  testWidgets('sessions panel shows no results for unmatched search', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilitiesFixture,
+      sessions: const [
+        HermesSession(id: 'sess_1', source: 'fake', title: 'Incident review'),
+      ],
+    );
+    await tester.pumpWidget(_wrap(channel));
+
+    await tester.tap(find.byKey(const ValueKey('hermes-sessions-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-session-search-field')),
+      'morning',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-session-row-sess_1')),
+      findsNothing,
+    );
+    expect(find.text('No Hermes sessions match “morning”.'), findsOneWidget);
+  });
+
   testWidgets('renames a Hermes session from the sessions panel', (
     tester,
   ) async {

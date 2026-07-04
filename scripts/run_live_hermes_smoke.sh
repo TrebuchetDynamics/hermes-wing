@@ -42,7 +42,7 @@ API_SERVER_HOST="$host" \
 API_SERVER_PORT="$port" \
 API_SERVER_CORS_ORIGINS="http://127.0.0.1:8767,http://localhost:8767" \
 HERMES_HOME="$hermes_home" \
-  hermes gateway >"$hermes_log" 2>&1 &
+  hermes gateway run --force >"$hermes_log" 2>&1 &
 hermes_pid=$!
 
 ready=0

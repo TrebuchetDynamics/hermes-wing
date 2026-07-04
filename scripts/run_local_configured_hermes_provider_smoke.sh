@@ -13,10 +13,23 @@ for cmd in curl python3; do
   fi
 done
 
-hermes_home="${NAVIVOX_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}"
-if [ ! -f "$hermes_home/config.yaml" ]; then
-  echo "No Hermes config.yaml found at ${hermes_home}. Set NAVIVOX_CONFIGURED_HERMES_HOME to a configured Hermes home." >&2
+configured_hermes_home="${NAVIVOX_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}"
+if [ ! -f "$configured_hermes_home/config.yaml" ]; then
+  echo "No Hermes config.yaml found at ${configured_hermes_home}. Set NAVIVOX_CONFIGURED_HERMES_HOME to a configured Hermes home." >&2
   exit 2
+fi
+
+hermes_home="$configured_hermes_home"
+cloned_hermes_home=""
+if [ "${NAVIVOX_CONFIGURED_HERMES_CLONE_HOME:-true}" = "true" ]; then
+  cloned_hermes_home="$(mktemp -d -t navivox-configured-hermes-home.XXXXXX)"
+  chmod 700 "$cloned_hermes_home"
+  hermes_home="$cloned_hermes_home"
+  for file in config.yaml .env auth.json SOUL.md; do
+    if [ -f "$configured_hermes_home/$file" ]; then
+      cp -p "$configured_hermes_home/$file" "$hermes_home/$file"
+    fi
+  done
 fi
 
 port="${NAVIVOX_CONFIGURED_HERMES_PORT:-28642}"
@@ -31,8 +44,12 @@ hermes_log="${NAVIVOX_CONFIGURED_HERMES_LOG:-/tmp/navivox-configured-hermes.log}
 hermes_pid=""
 cleanup() {
   if [ -n "$hermes_pid" ]; then kill "$hermes_pid" 2>/dev/null || true; fi
+  if [ -n "$cloned_hermes_home" ]; then rm -rf "$cloned_hermes_home"; fi
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
+
+gateway_args=(gateway run)
+if [ -n "$cloned_hermes_home" ]; then gateway_args+=(--force); fi
 
 API_SERVER_ENABLED=true \
 API_SERVER_KEY="$api_key" \
@@ -40,7 +57,7 @@ API_SERVER_HOST="$host" \
 API_SERVER_PORT="$port" \
 API_SERVER_CORS_ORIGINS="http://127.0.0.1:8767,http://localhost:8767" \
 HERMES_HOME="$hermes_home" \
-  hermes gateway >"$hermes_log" 2>&1 &
+  hermes "${gateway_args[@]}" >"$hermes_log" 2>&1 &
 hermes_pid=$!
 
 ready=0

@@ -8,6 +8,7 @@ provider_url="${NAVIVOX_PROVIDER_HERMES_URL:-}"
 run_android="${NAVIVOX_RUN_ANDROID_EMULATOR_SMOKE:-false}"
 watch="${NAVIVOX_WATCH_WORKFLOW:-true}"
 receipt_path="${NAVIVOX_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
+existing_run_id="${NAVIVOX_PLATFORM_WORKFLOW_RUN_ID:-}"
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "gh is required to dispatch the Hermes platform workflow." >&2
@@ -47,26 +48,31 @@ if [ "$run_provider" = "true" ] && [ -z "$provider_url" ]; then
   exit 1
 fi
 
-args=(
-  workflow run "$workflow_name"
-  --ref "$ref"
-  -f "run_provider_smoke=$run_provider"
-  -f "provider_url=$provider_url"
-  -f "run_android_emulator_smoke=$run_android"
-)
+if [ -n "$existing_run_id" ]; then
+  run_id="$existing_run_id"
+  printf 'Using existing %s run %s\n' "$workflow_name" "$run_id"
+else
+  args=(
+    workflow run "$workflow_name"
+    --ref "$ref"
+    -f "run_provider_smoke=$run_provider"
+    -f "provider_url=$provider_url"
+    -f "run_android_emulator_smoke=$run_android"
+  )
 
-printf 'Dispatching %s on %s\n' "$workflow_name" "$ref"
-gh "${args[@]}"
+  printf 'Dispatching %s on %s\n' "$workflow_name" "$ref"
+  gh "${args[@]}"
 
-# Give GitHub a moment to create the run, then show the newest matching run.
-sleep "${NAVIVOX_WORKFLOW_RUN_DISCOVERY_DELAY_SECONDS:-5}"
-run_id="$(gh run list --workflow "$workflow_name" --branch "$ref" --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
-if [ -z "$run_id" ]; then
-  cat >&2 <<'EOF'
+  # Give GitHub a moment to create the run, then show the newest matching run.
+  sleep "${NAVIVOX_WORKFLOW_RUN_DISCOVERY_DELAY_SECONDS:-5}"
+  run_id="$(gh run list --workflow "$workflow_name" --branch "$ref" --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+  if [ -z "$run_id" ]; then
+    cat >&2 <<'EOF'
 Workflow dispatched, but no run id was visible yet. This is not a platform receipt.
 Check gh run list/gh run view and collect successful job evidence before claiming readiness.
 EOF
-  exit 4
+    exit 4
+  fi
 fi
 
 echo "Run: $(gh run view "$run_id" --json url --jq '.url')"
@@ -183,8 +189,9 @@ receipt = {
         'whole-goal completion',
     ],
 }
-json.dump(receipt, open(sys.argv[3], 'w', encoding='utf-8'), indent=2)
-open(sys.argv[3], 'a', encoding='utf-8').write('\n')
+receipt_path = sys.argv[4]
+json.dump(receipt, open(receipt_path, 'w', encoding='utf-8'), indent=2)
+open(receipt_path, 'a', encoding='utf-8').write('\n')
 if not passed:
     if missing_required_artifacts:
         print(

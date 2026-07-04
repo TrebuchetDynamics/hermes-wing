@@ -30,7 +30,11 @@ void main() {
       );
       expect(text, contains('exit 2'));
       expect(text, contains('NAVIVOX_PLATFORM_WORKFLOW_RECEIPT'));
+      expect(text, contains('NAVIVOX_PLATFORM_WORKFLOW_RUN_ID'));
+      expect(text, contains('Using existing %s run %s'));
       expect(text, contains('Platform workflow receipt written'));
+      expect(text, contains('receipt_path = sys.argv[4]'));
+      expect(text, contains("open(receipt_path, 'w'"));
       expect(text, contains('missing_required_artifacts'));
       expect(text, contains('invalid_required_artifacts'));
       expect(text, contains('artifact_details'));

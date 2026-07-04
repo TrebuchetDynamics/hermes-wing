@@ -129,7 +129,9 @@ class HermesSseEventDecoder {
     var event = 'message';
     final dataLines = <String>[];
 
-    final normalizedFrame = frame.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    final normalizedFrame = frame
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n');
     for (final line in normalizedFrame.split('\n')) {
       if (line.isEmpty || line.startsWith(':')) continue;
       final colon = line.indexOf(':');

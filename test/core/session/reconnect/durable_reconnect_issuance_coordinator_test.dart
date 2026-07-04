@@ -19,8 +19,9 @@ class _InMemoryStore implements DurableCredentialStore {
       _saved.containsKey(gatewayId);
 
   @override
-  Future<GatewayCredentialMetadata?> metadata({required String gatewayId}) async =>
-      _saved[gatewayId];
+  Future<GatewayCredentialMetadata?> metadata({
+    required String gatewayId,
+  }) async => _saved[gatewayId];
 
   @override
   Future<void> saveCredential({
@@ -106,7 +107,10 @@ void main() {
     );
 
     expect(readiness.kind, ReconnectReadinessKind.available);
-    expect(readiness.message, 'Connected for this session; reconnect not saved.');
+    expect(
+      readiness.message,
+      'Connected for this session; reconnect not saved.',
+    );
   });
 
   test('retries once then stays session-only on transient failure', () async {
@@ -127,31 +131,37 @@ void main() {
 
     expect(calls, 2, reason: 'one bounded retry after the first failure');
     expect(readiness.kind, ReconnectReadinessKind.available);
-    expect(readiness.message, 'Connected for this session; reconnect not saved.');
+    expect(
+      readiness.message,
+      'Connected for this session; reconnect not saved.',
+    );
   });
 
-  test('does not issue when reconnect is not advertised as available', () async {
-    var calls = 0;
-    final coordinator = DurableReconnectIssuanceCoordinator(
-      appInstallIdentity: AppInstallIdentityService(),
-      credentialStore: _InMemoryStore(),
-    );
+  test(
+    'does not issue when reconnect is not advertised as available',
+    () async {
+      var calls = 0;
+      final coordinator = DurableReconnectIssuanceCoordinator(
+        appInstallIdentity: AppInstallIdentityService(),
+        credentialStore: _InMemoryStore(),
+      );
 
-    final readiness = await coordinator.persist(
-      client: _client(() async {
-        calls++;
-        return _usableCredential();
-      }),
-      gatewayId: 'gw_1',
-      currentReadiness: const ReconnectReadiness(
-        kind: ReconnectReadinessKind.unsupported,
-        message: 'Reconnect cannot be saved for this gateway yet.',
-      ),
-    );
+      final readiness = await coordinator.persist(
+        client: _client(() async {
+          calls++;
+          return _usableCredential();
+        }),
+        gatewayId: 'gw_1',
+        currentReadiness: const ReconnectReadiness(
+          kind: ReconnectReadinessKind.unsupported,
+          message: 'Reconnect cannot be saved for this gateway yet.',
+        ),
+      );
 
-    expect(calls, 0);
-    expect(readiness.kind, ReconnectReadinessKind.unsupported);
-  });
+      expect(calls, 0);
+      expect(readiness.kind, ReconnectReadinessKind.unsupported);
+    },
+  );
 
   test('does not issue without an authenticated gateway identity', () async {
     var calls = 0;

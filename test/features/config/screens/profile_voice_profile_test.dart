@@ -94,45 +94,49 @@ void main() {
     expect(find.text('TTS: text_only fallback'), findsOneWidget);
   });
 
-  testWidgets('loads run-record evidence for the latest run once it completes', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(900, 1200));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+  testWidgets(
+    'loads run-record evidence for the latest run once it completes',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final channel = localGormesMineruChannel(
-      contact: mineruBuilderProfile(latestPreview: 'Ready'),
-    )
-      ..seedVoiceRuns([
-        NavivoxVoiceRun.recording(
-          id: 'voice-1',
-          serverId: 'local',
-          profileId: 'mineru',
-          createdAt: DateTime.utc(2026, 5, 24, 10),
-        ).markSubmitted(requestId: 'req-profile-voice').markCompleted(),
-      ])
-      ..seedVoiceProfiles(_voiceProfiles())
-      ..seedVoiceProfileValidation(_validValidation())
-      ..seedRunRecord(_voiceFallbackRecord());
+      final channel =
+          localGormesMineruChannel(
+              contact: mineruBuilderProfile(latestPreview: 'Ready'),
+            )
+            ..seedVoiceRuns([
+              NavivoxVoiceRun.recording(
+                id: 'voice-1',
+                serverId: 'local',
+                profileId: 'mineru',
+                createdAt: DateTime.utc(2026, 5, 24, 10),
+              ).markSubmitted(requestId: 'req-profile-voice').markCompleted(),
+            ])
+            ..seedVoiceProfiles(_voiceProfiles())
+            ..seedVoiceProfileValidation(_validValidation())
+            ..seedRunRecord(_voiceFallbackRecord());
 
-    await tester.pumpWidget(
-      TestNavivoxMaterialApp(channel: channel, home: const ConfigScreen()),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        TestNavivoxMaterialApp(channel: channel, home: const ConfigScreen()),
+      );
+      await tester.pumpAndSettle();
 
-    // The latest run is terminal (completed) so it is not "active", but its
-    // run-record evidence must still be inspectable.
-    expect(channel.state.activeVoiceRun, isNull);
-    expect(
-      channel.state.latestVoiceRun?.status,
-      NavivoxVoiceRunStatus.completed,
-    );
+      // The latest run is terminal (completed) so it is not "active", but its
+      // run-record evidence must still be inspectable.
+      expect(channel.state.activeVoiceRun, isNull);
+      expect(
+        channel.state.latestVoiceRun?.status,
+        NavivoxVoiceRunStatus.completed,
+      );
 
-    await tester.tap(find.byKey(const ValueKey('voice-profile-load-evidence')));
-    await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('voice-profile-load-evidence')),
+      );
+      await tester.pumpAndSettle();
 
-    expect(channel.runRecordCalls.single, 'req-profile-voice');
-  });
+      expect(channel.runRecordCalls.single, 'req-profile-voice');
+    },
+  );
 
   testWidgets('reloads voice profiles when the channel changes', (
     tester,

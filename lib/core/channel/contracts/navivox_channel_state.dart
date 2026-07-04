@@ -48,6 +48,7 @@ class NavivoxChannelState {
 
   List<NavivoxChatMessage> get messagesList => messages.values.toList();
   List<NavivoxVoiceRun> get voiceRunsList => voiceRuns.values.toList();
+
   /// The run currently in flight, or null when nothing is being captured,
   /// staged, submitted, or awaited. A terminal (completed/cancelled/failed)
   /// run is never "active" — this guards on [NavivoxVoiceRun.isTerminal]

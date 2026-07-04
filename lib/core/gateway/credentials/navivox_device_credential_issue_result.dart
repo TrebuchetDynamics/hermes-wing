@@ -30,8 +30,9 @@ class NavivoxDeviceCredentialIssueResult {
       gatewayId: navivoxStringFieldFromJson(json, 'gateway_id'),
       appInstallId: navivoxStringFieldFromJson(json, 'app_install_id'),
       interim: navivoxGatewayBoolField(json, 'interim'),
-      expiresAt:
-          expiresAtRaw is String ? DateTime.tryParse(expiresAtRaw) : null,
+      expiresAt: expiresAtRaw is String
+          ? DateTime.tryParse(expiresAtRaw)
+          : null,
     );
   }
 

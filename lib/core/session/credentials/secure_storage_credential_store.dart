@@ -30,7 +30,9 @@ class SecureStorageDurableCredentialStore implements DurableCredentialStore {
   }
 
   @override
-  Future<GatewayCredentialMetadata?> metadata({required String gatewayId}) async {
+  Future<GatewayCredentialMetadata?> metadata({
+    required String gatewayId,
+  }) async {
     final raw = await _storage.read(key: _metaKey(gatewayId));
     if (raw == null) return null;
     try {
@@ -42,14 +44,12 @@ class SecureStorageDurableCredentialStore implements DurableCredentialStore {
         appInstallIdentity: json['app_install_identity'] as String? ?? '',
         credentialLabel: json['credential_label'] as String? ?? '',
         createdAt: DateTime.parse(createdAtRaw),
-        expiresAt:
-            json['expires_at'] != null
-                ? DateTime.tryParse(json['expires_at'] as String)
-                : null,
-        lastUsedAt:
-            json['last_used_at'] != null
-                ? DateTime.tryParse(json['last_used_at'] as String)
-                : null,
+        expiresAt: json['expires_at'] != null
+            ? DateTime.tryParse(json['expires_at'] as String)
+            : null,
+        lastUsedAt: json['last_used_at'] != null
+            ? DateTime.tryParse(json['last_used_at'] as String)
+            : null,
       );
     } catch (_) {
       return null;
@@ -78,14 +78,8 @@ class SecureStorageDurableCredentialStore implements DurableCredentialStore {
     });
     // Write metadata first so that a crash between the two writes leaves
     // containsCredential returning false (no secret = not usable).
-    await _storage.write(
-      key: _metaKey(metadata.gatewayId),
-      value: metaJson,
-    );
-    await _storage.write(
-      key: _secretKey(metadata.gatewayId),
-      value: secret,
-    );
+    await _storage.write(key: _metaKey(metadata.gatewayId), value: metaJson);
+    await _storage.write(key: _secretKey(metadata.gatewayId), value: secret);
   }
 
   @override

@@ -108,7 +108,8 @@ class ConnectAndTalkChannel extends GatewayNavivoxChannel {
       profileId: active?.profileId ?? 'default',
       createdAt: DateTime(2026, 5, 16, 9, 41),
     );
-    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns)..[id] = run;
+    final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns)
+      ..[id] = run;
     _state = _state.copyWith(voiceRuns: runs, activeVoiceRunId: id);
     notifyListeners();
     return id;
@@ -196,7 +197,9 @@ class ConnectAndTalkChannel extends GatewayNavivoxChannel {
       profileId: active?.profileId,
     );
     final runs = Map<String, NavivoxVoiceRun>.from(_state.voiceRuns);
-    runs[voiceRunId] = run.markSubmitted(requestId: 'voice-request-$voiceRunId');
+    runs[voiceRunId] = run.markSubmitted(
+      requestId: 'voice-request-$voiceRunId',
+    );
     _state = _state.copyWith(
       messages: messages,
       voiceRuns: runs,

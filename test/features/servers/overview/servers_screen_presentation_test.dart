@@ -154,7 +154,9 @@ void main() {
       ),
     );
 
-    final active = presentation.gateways.firstWhere((g) => g.server.id == 'alpha');
+    final active = presentation.gateways.firstWhere(
+      (g) => g.server.id == 'alpha',
+    );
     expect(active.showReconnectStatus, isTrue);
     expect(active.reconnectStatusTitle, 'Reconnect readiness');
     expect(
@@ -164,7 +166,9 @@ void main() {
 
     // The inactive, registered gateway has no live capability document, so it
     // must not present a reconnect readiness state.
-    final registered = presentation.gateways.firstWhere((g) => g.server.id == 'zulu');
+    final registered = presentation.gateways.firstWhere(
+      (g) => g.server.id == 'zulu',
+    );
     expect(registered.showReconnectStatus, isFalse);
   });
 
@@ -178,12 +182,15 @@ void main() {
         reconnectReadiness: const ReconnectReadiness(
           kind: ReconnectReadinessKind.blocked,
           message: 'Reconnect cannot be saved on this connection.',
-          recoveryMessage: 'Durable reconnect is advertised with unsupported effective security.',
+          recoveryMessage:
+              'Durable reconnect is advertised with unsupported effective security.',
         ),
       ),
     );
 
-    final active = presentation.gateways.firstWhere((g) => g.server.id == 'alpha');
+    final active = presentation.gateways.firstWhere(
+      (g) => g.server.id == 'alpha',
+    );
     expect(active.showReconnectStatus, isTrue);
     expect(
       active.reconnectRecoveryMessage,

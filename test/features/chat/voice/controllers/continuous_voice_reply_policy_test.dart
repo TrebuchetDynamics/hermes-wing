@@ -32,22 +32,25 @@ NavivoxChatMessage _user(String id, String text) {
 }
 
 void main() {
-  test('returns the newest unspoken assistant reply when enabled and complete', () {
-    final reply = continuousVoiceReplyToSpeak(
-      messages: [
-        _user('u1', 'question'),
-        _assistant('a1', 'first reply'),
-        _assistant('a2', 'second reply'),
-      ],
-      activeProfileContactKey: 'local::mineru',
-      enabled: true,
-      turnComplete: true,
-      lastSpokenMessageId: null,
-    );
+  test(
+    'returns the newest unspoken assistant reply when enabled and complete',
+    () {
+      final reply = continuousVoiceReplyToSpeak(
+        messages: [
+          _user('u1', 'question'),
+          _assistant('a1', 'first reply'),
+          _assistant('a2', 'second reply'),
+        ],
+        activeProfileContactKey: 'local::mineru',
+        enabled: true,
+        turnComplete: true,
+        lastSpokenMessageId: null,
+      );
 
-    expect(reply?.id, 'a2');
-    expect(reply?.text, 'second reply');
-  });
+      expect(reply?.id, 'a2');
+      expect(reply?.text, 'second reply');
+    },
+  );
 
   test('returns null when auto-speak is disabled', () {
     final reply = continuousVoiceReplyToSpeak(
@@ -87,9 +90,7 @@ void main() {
 
   test('ignores replies scoped to a different profile contact', () {
     final reply = continuousVoiceReplyToSpeak(
-      messages: [
-        _assistant('a1', 'for other', profileId: 'support'),
-      ],
+      messages: [_assistant('a1', 'for other', profileId: 'support')],
       activeProfileContactKey: 'local::mineru',
       enabled: true,
       turnComplete: true,

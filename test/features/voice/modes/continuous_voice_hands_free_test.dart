@@ -62,10 +62,7 @@ Future<void> _pumpChat(
   await tester.pump();
 }
 
-void _configure(
-  WidgetTester tester, {
-  required bool speakReplies,
-}) {
+void _configure(WidgetTester tester, {required bool speakReplies}) {
   final container = ProviderScope.containerOf(
     tester.element(find.byType(ChatScreen)),
   );
@@ -78,7 +75,9 @@ void main() {
   testWidgets(
     'hands-free loop speaks a completed reply and auto-captures the next turn',
     (tester) async {
-      final channel = _channelWithReply(reply: _assistantReply('how can I help'));
+      final channel = _channelWithReply(
+        reply: _assistantReply('how can I help'),
+      );
       final tts = FakeTextToSpeechService();
       final voiceService = QueueVoiceCaptureService([
         testVoiceCapture('next question'),

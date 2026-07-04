@@ -39,10 +39,7 @@ void main() {
     await tester.tap(find.text('Connect and talk'));
     await tester.pumpAndSettle();
 
-    expect(
-      channel.connectedBaseUrl,
-      'http://127.0.0.1:8765',
-    );
+    expect(channel.connectedBaseUrl, 'http://127.0.0.1:8765');
     expect(find.text('Gormes Gateway'), findsOneWidget);
     expect(find.textContaining('Gateway online'), findsOneWidget);
 

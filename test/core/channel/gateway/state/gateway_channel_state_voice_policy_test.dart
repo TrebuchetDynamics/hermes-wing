@@ -51,8 +51,10 @@ void main() {
       isNull,
       reason: 'a terminal run is not the in-flight active run',
     );
-    expect(cancelled.voiceRuns['voice-1']?.status,
-        NavivoxVoiceRunStatus.cancelled);
+    expect(
+      cancelled.voiceRuns['voice-1']?.status,
+      NavivoxVoiceRunStatus.cancelled,
+    );
   });
 
   test('terminal upsert for a non-active run leaves active id intact', () {

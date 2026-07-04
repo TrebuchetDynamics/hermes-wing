@@ -12,7 +12,10 @@ void main() {
     final channel = TestNavivoxChannel();
 
     await tester.pumpWidget(
-      TestNavivoxMaterialApp(channel: channel, home: const ProfileContactsScreen()),
+      TestNavivoxMaterialApp(
+        channel: channel,
+        home: const ProfileContactsScreen(),
+      ),
     );
 
     expect(find.byKey(const ValueKey('gormes-legacy-notice')), findsOneWidget);

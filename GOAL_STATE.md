@@ -430,7 +430,7 @@ readiness checklist and non-completion caveats.
    active metadata with redaction/bounds on last-active text, and hiding row action menus when Hermes does not advertise
    any mutable session endpoints, showing bounded feedback when session
    selection fails, bounding session mutation error details before SnackBar display,
-   keeping a copy action for bounded/redacted session details while hiding mutation
+   keeping copy actions for bounded/redacted session and job details while hiding mutation
    actions when Hermes does not advertise them,
    hiding create-session actions when Hermes does not advertise
    session creation, locally rejecting mutable session calls when Hermes does not
@@ -571,7 +571,8 @@ readiness checklist and non-completion caveats.
   policy. Multi-endpoint/profile management is now available locally through
   saved Hermes endpoint profile chips with per-profile API keys kept in secure
   storage. The Hermes jobs chip also now opens a read-only schedule detail sheet
-  with enabled/state/schedule/next/last/error fields redacted and bounded. Queued
+  with enabled/state/schedule/next/last/error fields redacted and bounded plus a
+  copy action for bounded/redacted job details. Queued
   follow-ups are capped while a turn is streaming so the composer keeps overflow
   text instead of silently growing an unbounded queue. Approval review sheets now
   use bounded/redacted prompt and risk previews with explicit truncation copy for

@@ -1998,6 +1998,23 @@ class _HermesCapabilityStrip extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   subtitle: Text(_jobSummary(job)),
+                  trailing: IconButton(
+                    key: ValueKey('hermes-job-copy-${job.id}'),
+                    tooltip: 'Copy job details',
+                    icon: const Icon(Icons.copy_outlined),
+                    onPressed: () {
+                      unawaited(
+                        Clipboard.setData(
+                          ClipboardData(text: _jobDetailsSummary(job)),
+                        ),
+                      );
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                        const SnackBar(
+                          content: Text('Copied redacted Hermes job details.'),
+                        ),
+                      );
+                    },
+                  ),
                 ),
             ],
           ),
@@ -2027,6 +2044,42 @@ class _HermesCapabilityStrip extends StatelessWidget {
         'Last error: ${_safeHermesUiPreview(job.lastError!, maxLength: 96)}',
     ];
     return parts.join(' • ');
+  }
+
+  String _jobDetailsSummary(HermesJob job) {
+    final buffer = StringBuffer()
+      ..writeln('Hermes job')
+      ..writeln(
+        'Name: ${_safeHermesUiPreview(job.displayName, maxLength: 120)}',
+      )
+      ..writeln('ID: ${_safeHermesUiPreview(job.id, maxLength: 120)}')
+      ..writeln('Enabled: ${job.enabled}');
+    if (job.state?.trim().isNotEmpty ?? false) {
+      buffer.writeln(
+        'State: ${_safeHermesUiPreview(job.state!, maxLength: 80)}',
+      );
+    }
+    if (job.scheduleDisplay?.trim().isNotEmpty ?? false) {
+      buffer.writeln(
+        'Schedule: ${_safeHermesUiPreview(job.scheduleDisplay!, maxLength: 120)}',
+      );
+    }
+    if (job.nextRunAt?.trim().isNotEmpty ?? false) {
+      buffer.writeln(
+        'Next: ${_safeHermesUiPreview(job.nextRunAt!, maxLength: 80)}',
+      );
+    }
+    if (job.lastRunAt?.trim().isNotEmpty ?? false) {
+      buffer.writeln(
+        'Last: ${_safeHermesUiPreview(job.lastRunAt!, maxLength: 80)}',
+      );
+    }
+    if (job.lastError?.trim().isNotEmpty ?? false) {
+      buffer.write(
+        'Last error: ${_safeHermesUiPreview(job.lastError!, maxLength: 240)}',
+      );
+    }
+    return buffer.toString().trimRight();
   }
 
   void _showSurfaceReadiness(BuildContext context) {

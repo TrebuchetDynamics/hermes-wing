@@ -38,7 +38,7 @@ void main() {
       'redacted error details sheet with copy-to-clipboard support for connect and\n   in-chat failures',
       'surface-readiness dialog can copy a bounded summary',
       'copy action for bounded/redacted approval\n   details',
-      'copy action for bounded/redacted session details',
+      'copy actions for bounded/redacted session and job details',
       'require an explicit physical Android device observation',
       'reject emulator targets for the final live-mic receipt',
       'Real spoken Android microphone smoke',

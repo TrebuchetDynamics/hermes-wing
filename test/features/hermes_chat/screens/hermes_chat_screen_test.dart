@@ -612,6 +612,23 @@ void main() {
   testWidgets('jobs dialog stays read-only when jobs admin is advertised', (
     tester,
   ) async {
+    String? copiedText;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedText =
+              (call.arguments as Map<Object?, Object?>)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
     const jobsAdminCapabilities = HermesCapabilityDocument(
       object: 'hermes.api_server.capabilities',
       platform: 'hermes-agent',
@@ -624,7 +641,15 @@ void main() {
     );
     final channel = FakeHermesChannel(
       capabilities: jobsAdminCapabilities,
-      jobs: const [HermesJob(id: 'job_1', name: 'Morning check')],
+      jobs: const [
+        HermesJob(
+          id: 'job_1',
+          name: 'Morning check',
+          state: 'idle',
+          scheduleDisplay: 'Every day at 09:00',
+          lastError: 'token=secret-job-token',
+        ),
+      ],
     );
     await tester.pumpWidget(_wrap(channel));
 
@@ -642,6 +667,16 @@ void main() {
     expect(find.text('Create'), findsNothing);
     expect(find.text('Edit'), findsNothing);
     expect(find.text('Delete'), findsNothing);
+    expect(find.byKey(const ValueKey('hermes-job-copy-job_1')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('hermes-job-copy-job_1')));
+    await tester.pump();
+
+    expect(find.text('Copied redacted Hermes job details.'), findsOneWidget);
+    expect(copiedText, contains('Hermes job'));
+    expect(copiedText, contains('Morning check'));
+    expect(copiedText, contains('token=[redacted]'));
+    expect(copiedText, isNot(contains('secret-job-token')));
   });
 
   testWidgets('capability detail lists redact secret-looking values', (

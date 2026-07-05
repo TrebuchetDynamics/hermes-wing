@@ -253,6 +253,7 @@ void main() {
     expect(scriptText, contains('provider_backed_hermes_text_reply'));
     expect(scriptText, contains('tts_observed_before_rearm'));
     expect(scriptText, contains('hermes_url_sanitized'));
+    expect(scriptText, contains('hermes_url must be a valid http(s) origin'));
     expect(
       scriptText,
       contains('hermes_url must omit userinfo, query, and fragment'),
@@ -262,6 +263,10 @@ void main() {
       contains('hermes_url must be an origin without copied route/path state'),
     );
     expect(scriptText, contains('provider_reply_observed'));
+    expect(
+      scriptText,
+      contains('must contain a short observed non-sensitive excerpt'),
+    );
     expect(scriptText, contains('must be 240 characters or less'));
     expect(scriptText, contains('must not contain secret-looking values'));
     expect(scriptText, contains('basic\\s+\\S+'));

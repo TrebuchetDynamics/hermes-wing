@@ -2460,7 +2460,7 @@ class _ApprovalBanner extends StatelessWidget {
                   key: const ValueKey('hermes-approval-session'),
                   onPressed: responding || !canAnswer
                       ? null
-                      : () => onDecide(HermesApprovalDecision.session),
+                      : () => unawaited(_confirmSessionAllow(context)),
                   child: const Text('Allow for session'),
                 ),
                 OutlinedButton(
@@ -2483,6 +2483,42 @@ class _ApprovalBanner extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmSessionAllow(
+    BuildContext context, {
+    bool closeSheetOnConfirm = false,
+  }) async {
+    final risk = request.risk;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const ValueKey('hermes-approval-session-confirm-dialog'),
+        title: const Text('Allow this for the session?'),
+        content: Text(
+          '${_safeHermesUiPreview(request.prompt, maxLength: 240)}'
+          '${risk == null ? '' : '\nRisk: ${_safeHermesUiPreview(risk, maxLength: 160)}'}\n\n'
+          'This may approve matching requests for the current Hermes session.',
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('hermes-approval-session-cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey('hermes-approval-session-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Allow for session'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (closeSheetOnConfirm && context.mounted) {
+      Navigator.of(context).pop();
+    }
+    onDecide(HermesApprovalDecision.session);
   }
 
   Future<void> _confirmAlwaysAllow(
@@ -2656,10 +2692,12 @@ class _ApprovalBanner extends StatelessWidget {
                       OutlinedButton(
                         key: const ValueKey('hermes-approval-sheet-session'),
                         onPressed: canAnswer
-                            ? () {
-                                Navigator.of(sheetContext).pop();
-                                onDecide(HermesApprovalDecision.session);
-                              }
+                            ? () => unawaited(
+                                _confirmSessionAllow(
+                                  sheetContext,
+                                  closeSheetOnConfirm: true,
+                                ),
+                              )
                             : null,
                         child: const Text('Allow for session'),
                       ),

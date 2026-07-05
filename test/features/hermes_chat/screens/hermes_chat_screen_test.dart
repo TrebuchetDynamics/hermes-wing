@@ -3690,6 +3690,14 @@ void main() {
     await tester.tap(
       find.byKey(const ValueKey('hermes-approval-sheet-session')),
     );
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-approval-session-confirm-dialog')),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-approval-session-confirm')),
+    );
     await tester.pumpAndSettle();
 
     expect(channel.respondToApprovalCalls, [
@@ -3751,7 +3759,7 @@ void main() {
     ]);
   });
 
-  testWidgets('approving for the session answers with the session decision', (
+  testWidgets('approving for the session requires bounded confirmation', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -3761,12 +3769,27 @@ void main() {
       const NavivoxApprovalRequest(
         id: 'appr_1',
         toolCallId: 'call_1',
-        prompt: 'Read files in the workspace?',
+        prompt: 'Read files with Bearer secret-session-token?',
+        risk: 'medium secret-session-risk',
       ),
     );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('hermes-approval-session')));
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-approval-session-confirm-dialog')),
+      findsOneWidget,
+    );
+    expect(channel.respondToApprovalCalls, isEmpty);
+    expect(find.textContaining('Bearer [redacted]'), findsWidgets);
+    expect(find.textContaining('secret-session-token'), findsNothing);
+    expect(find.textContaining('secret-session-risk'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-approval-session-confirm')),
+    );
     await tester.pumpAndSettle();
 
     expect(channel.respondToApprovalCalls, [

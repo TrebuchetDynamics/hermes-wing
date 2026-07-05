@@ -667,6 +667,48 @@ void main() {
     expect(find.text('Hermes attachments/media'), findsNothing);
   });
 
+  testWidgets('files/context control explains deferred mobile files safely', (
+    tester,
+  ) async {
+    const filesCapabilities = HermesCapabilityDocument(
+      object: 'hermes.api_server.capabilities',
+      platform: 'hermes-agent',
+      model: 'hermes-agent',
+      auth: HermesAuthCapability(type: 'bearer', required: true),
+      features: {
+        'session_chat_streaming': true,
+        'files_api': true,
+        'context_folders_api': true,
+      },
+      endpoints: {
+        'session_chat_stream': HermesEndpointCapability(
+          method: 'POST',
+          path: '/api/sessions/{session_id}/chat/stream',
+        ),
+      },
+    );
+    final channel = FakeHermesChannel(capabilities: filesCapabilities);
+    await tester.pumpWidget(_wrap(channel));
+
+    await tester.tap(find.byKey(const ValueKey('hermes-files-context-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes files/context folders'), findsOneWidget);
+    expect(
+      find.textContaining('advertises file or context-folder capabilities'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('No local file paths, folder names, transcripts'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('/Users/'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('hermes-files-context-close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hermes files/context folders'), findsNothing);
+  });
+
   testWidgets('jobs dialog stays read-only when jobs admin is advertised', (
     tester,
   ) async {

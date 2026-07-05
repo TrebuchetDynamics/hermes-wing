@@ -518,7 +518,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
                     icon: const Icon(Icons.stop_circle_outlined),
                     onPressed: () => _stopActiveTurn(channel),
                   ),
-                if (state.capabilities != null)
+                if (state.capabilities != null) ...[
                   IconButton(
                     key: const ValueKey('hermes-attachments-button'),
                     tooltip: 'Attachments/media status',
@@ -526,6 +526,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
                     onPressed: () =>
                         _showAttachmentsDeferred(context, state.capabilities!),
                   ),
+                  IconButton(
+                    key: const ValueKey('hermes-files-context-button'),
+                    tooltip: 'Files/context folders status',
+                    icon: const Icon(Icons.folder_open_outlined),
+                    onPressed: () =>
+                        _showFilesContextDeferred(context, state.capabilities!),
+                  ),
+                ],
                 IconButton(
                   key: const ValueKey('hermes-mic-button'),
                   tooltip: 'Speak — device STT to Hermes text',
@@ -602,6 +610,58 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFilesContextDeferred(
+    BuildContext context,
+    HermesCapabilityDocument capabilities,
+  ) {
+    final advertised =
+        capabilities.supportsFeature('files_api') ||
+        capabilities.supportsFeature('context_folders_api') ||
+        capabilities.supportsFeature('workspace_files');
+    final detail = advertised
+        ? 'Hermes advertises file or context-folder capabilities, but Navivox has not wired mobile-safe file/context controls yet.'
+        : 'Hermes did not advertise a mobile-safe files/context folders API. Navivox keeps workspace paths hidden.';
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hermes files/context folders',
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  detail,
+                  key: const ValueKey('hermes-files-context-detail'),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'No local file paths, folder names, transcripts, or workspace contents are uploaded from this control.',
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    key: const ValueKey('hermes-files-context-close'),
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -118,8 +118,8 @@ Rollback/hide behavior:
 
 ## Phase 2 — mobile voice receipts and audio strategy
 
-Goal: finish mobile voice-path confidence before starting server audio without
-requiring a human speaker in the strict readiness loop.
+Goal: finish mobile voice-path confidence before starting server audio while
+keeping automated loop evidence and required physical-mic evidence separate.
 
 Work:
 
@@ -129,8 +129,8 @@ Work:
   the transcript path.
 - Keep UI copy clear that local STT is the active voice path and that automated
   voice-loop receipts are not physical microphone evidence.
-- Keep the manual live-mic runbook available as optional hardware/audio evidence
-  when an audio-capable target exists.
+- Keep the manual live-mic runbook as the required real spoken
+  physical-audio/provider/TTS/re-arm receipt before active-goal completion.
 - Draft Hermes realtime/server audio API requirements only after Hermes exposes a
   documented API and Navivox has tests against it.
 
@@ -140,8 +140,10 @@ Acceptance gate:
   and validates deterministic Android voice-loop mechanics.
 - Provider smoke validates typed text plus deterministic transcript voice against
   configured model/provider credentials.
-- Readiness audit no longer blocks on a human-spoken Android microphone receipt,
-  and it explicitly refuses to call automated receipts physical mic evidence.
+- Readiness audit blocks on the missing human-spoken Android microphone receipt
+  until `build/receipts/android-live-mic-smoke.json` proves real physical mic,
+  provider reply, TTS, and re-arm; it explicitly refuses to call automated
+  receipts physical mic evidence.
 - Server/realtime audio remains deferred unless Hermes exposes a documented API
   and Navivox has tests against it.
 
@@ -149,7 +151,8 @@ Rollback/hide behavior:
 
 - If device STT or audio target is unavailable, voice controls show unavailable
   state and keep text chat usable. If the automated Android receipt is missing or
-  stale, strict readiness blocks without asking for a human speaker.
+  stale, strict readiness blocks that automated gate; if the physical-mic receipt
+  is missing, strict readiness keeps the real spoken-audio blocker open.
 
 ## Phase 3 — read-only Desktop parity surfaces
 

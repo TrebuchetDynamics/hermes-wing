@@ -325,49 +325,43 @@ readiness checklist and non-completion caveats.
    `flutter analyze`, focused Hermes regression (71 pass), full tooling/docs
    contract suite (27 pass), full `flutter test --concurrency=1` (1016 pass),
    `npm run hermes:provider-smoke:local` (1 Playwright pass), and
-   `git diff --check`. Strict readiness audit now reports 15 blockers because
-   full live provider-backed chat/voice smoke is an explicit closeout blocker,
-   Windows, iOS, and macOS host receipts are split explicitly, and configured
-   Hermes home presence is informational only, not a provider-smoke receipt. External
-   recheck still shows the platform workflow is not visible to `gh`; a later
-   delivery push containing the workflow was rejected because the current OAuth
-   app token lacks GitHub `workflow` scope, so the two local commits remain
-   ahead of `origin/main` and the workflow is still unpublished remotely. A later
-   KVM-backed `fractal_test` launch became responsive long enough for
-   `npm run android:voice-smoke`, `npm run android:hermes-voice-loop-smoke`,
-   and `npm run android:live-mic-prep` to pass, refreshing recognizer/permission
+   `git diff --check`. Strict readiness audit now reports 10 blockers: no Android physical spoken-mic
+   receipt is present, Hermes realtime/server audio remains unwired, and the
+   remaining Desktop-parity admin/mutation surfaces stay deferred by policy.
+   Provider-backed Hermes text plus deterministic transcript voice is covered by
+   a current no-retry provider receipt, and Windows/iOS/macOS host receipts plus
+   workflow publication are covered by the watched `Hermes platform smoke`
+   workflow receipt. Configured Hermes home presence remains informational only,
+   not a provider-smoke receipt. A KVM-backed `fractal_test` launch became
+   responsive long enough for `npm run android:voice-smoke`,
+   `npm run android:hermes-voice-loop-smoke`, and
+   `npm run android:live-mic-prep` to pass, refreshing recognizer/permission
    readiness, deterministic Android loop mechanics, and install/launch/mic-grant
    prep, then the emulator was stopped. That remains readiness and deterministic
    transcript/TTS loop evidence only; no real spoken-audio/provider reply has
    been captured. Latest local closeout rechecks after these receipts: full
    static analysis still passes with no issues, the E2E web release build still
-   produces `build/web`, the Android debug APK still builds with SHA-256
-   `453e746d9773b466a7393ec73713943a49276f4bee4465d18a3d083e5cb5ab0a`,
-   app-scoped Android native units still pass, the Linux release helper still
-   produces an executable `build/linux/x64/release/bundle/navivox`, helper
-   shell/JS syntax checks still pass, the full Flutter suite still passes (1016 tests), focused Hermes tests still pass
-   (71 tests), installed-Hermes live API smoke and configured provider smoke
-   still pass with their non-mic/server-audio and not-whole-goal-completion
-   caveats, focused browser
-   regression passes (68 Chromium tests), strict readiness audit still reports
-   15 blockers including the explicit full live provider-backed chat/voice smoke
-   closeout blocker and now prints `Completion verdict: NOT COMPLETE` plus an
-   explicit warning not to promote proxy evidence (tests, APK hashes, configured
-   Hermes home, workflow YAML, or dispatch-only output) to completion,
-   `gh workflow list` still exposes only
-   `pages-build-deployment`, and the latest `git push` was rejected for missing
-   OAuth `workflow` scope while trying to publish `.github/workflows/hermes-platform-smoke.yml`,
-   so no hosted Windows/iOS/macOS native-host receipt is available, direct native-host reprobes on this Linux host still fail
-   (`flutter build windows --debug` exits 1 because Windows builds require a
-   Windows host; `flutter build ios --simulator --debug` exits 64 because this
-   toolchain has no `--simulator` option; `flutter build macos` exits 64 because this
-   Linux toolchain lacks the macOS build subcommand), and a direct Android-target recheck
-   shows `adb devices` has no attached Android devices while `flutter devices`
-   lists only Linux desktop and Chrome web. The Android live-mic runbook, plus
-   the Android voice-readiness, deterministic voice-loop, and live-mic-prep
-   helpers, now require or point to strict readiness audit after future Android
-   receipts and explicitly warn not to promote a single Android helper receipt
-   or proxy evidence to whole-goal completion while unrelated blockers remain.
+   produces `build/web`, the Android debug APK still builds, app-scoped Android
+   native units still pass, the Linux release helper still produces executable
+   `build/linux/x64/release/bundle/navivox`, helper shell/JS syntax checks still
+   pass, the full Flutter suite still passes (1016 tests), focused Hermes tests
+   still pass (71 tests), installed-Hermes live API smoke and configured
+   provider smoke still pass with their non-mic/server-audio and
+   not-whole-goal-completion caveats, focused browser regression passes (68
+   Chromium tests), and strict readiness audit now prints `Completion verdict:
+   NOT COMPLETE; Android physical-mic, Hermes server-audio, or deferred-surface
+   blockers remain.` plus an explicit warning not to promote proxy evidence
+   (tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only
+   output) to completion. `gh workflow list` shows `Hermes platform smoke`, and
+   `build/receipts/hermes-platform-workflow.json` records a current watched
+   successful run with Windows desktop, iOS simulator, and macOS desktop jobs and
+   artifacts. A direct Android-target recheck still shows `adb devices` has no
+   attached Android devices while `flutter devices` lists only Linux desktop and
+   Chrome web. The Android live-mic runbook, plus the Android voice-readiness,
+   deterministic voice-loop, and live-mic-prep helpers, require or point to
+   strict readiness audit after future Android receipts and explicitly warn not
+   to promote a single Android helper receipt or proxy evidence to whole-goal
+   completion while unrelated blockers remain.
 29. **Hermes chat hardening** — improved multiple polish/hardening edges in the
    native Hermes path: in-flight SSE streams are canceled on disposal,
    disconnect or active-session switches, active-session deletion, and late deltas are ignored,
@@ -527,8 +521,9 @@ readiness checklist and non-completion caveats.
    installed expected Navivox package/version metadata with RECORD_AUDIO granted,
    provider reply excerpts that differ from both spoken phrases, and rejects
    secret-looking or over-240-character manual evidence fields. Readiness remains
-   `Completion verdict: NOT COMPLETE` with 15 blockers when a current no-retry
-   provider receipt is present and no platform receipt exists).
+   `Completion verdict: NOT COMPLETE` with 10 blockers while the Android
+   physical-mic receipt, Hermes server audio, and deferred parity/admin surfaces
+   remain incomplete).
 
 ## Remaining work
 

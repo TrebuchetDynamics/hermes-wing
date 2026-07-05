@@ -112,9 +112,10 @@ non-overlapping categories:
   `build/receipts/hermes-server-audio-smoke.json`; it must match current `HEAD`,
   prove `hermes_realtime_or_audio_api`, `client_audio_to_hermes_server_audio`,
   `hermes_server_audio_to_client_playback`, provider reply, playback, round trip,
-  `device_stt_used=false`, `local_tts_only=false`, safe short prompt/reply
-  excerpts, no secret leaks, and explicit `not_evidence_for` caveats before it
-  can clear only the server-audio blocker.
+  `device_stt_used=false`, `local_tts_only=false`, safe short non-empty
+  prompt/reply excerpts with the provider reply distinct from the prompt, no
+  secret leaks, and explicit `not_evidence_for` caveats before it can clear only
+  the server-audio blocker.
   Do not run that receipt helper until Hermes server audio is actually wired and
   observed; it is a manual evidence recorder, not an implementation.
 - Deferred Hermes surfaces: config editing/admin, memory UI, jobs/schedules

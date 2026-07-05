@@ -510,12 +510,16 @@ for key in ['device_stt_used', 'local_tts_only']:
         missing.append(f'{key}=false')
 for key in ['prompt_excerpt', 'provider_reply_excerpt']:
     value = str(receipt.get(key, ''))
-    if not value:
-        missing.append(key)
+    if not value.strip():
+        missing.append(f'{key} must contain a short observed non-sensitive excerpt')
     if len(value) > 240:
         missing.append(f'{key} must be 240 characters or less')
     if SECRET_PATTERN.search(value):
         missing.append(f'{key} must not contain secret-looking values')
+prompt_excerpt = str(receipt.get('prompt_excerpt', '')).strip().casefold()
+provider_reply_excerpt = str(receipt.get('provider_reply_excerpt', '')).strip().casefold()
+if prompt_excerpt and prompt_excerpt == provider_reply_excerpt:
+    missing.append('provider_reply_excerpt must differ from prompt_excerpt')
 evidence = set(receipt.get('evidence_for') or [])
 for item in [
     'Hermes realtime/server audio input',

@@ -68,10 +68,14 @@ for label, value in {
     'NAVIVOX_HERMES_SERVER_AUDIO_PROMPT': prompt,
     'NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY': reply,
 }.items():
+    if not value:
+        raise SystemExit(f'{label} is required; record a short non-sensitive observed excerpt instead.')
     if len(value) > 240:
         raise SystemExit(f'{label} is too long; record a short non-sensitive excerpt instead.')
     if SECRET_PATTERN.search(value):
         raise SystemExit(f'{label} appears to contain a secret; record a non-sensitive excerpt instead.')
+if prompt.casefold() == reply.casefold():
+    raise SystemExit('NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY must differ from the prompt excerpt.')
 try:
     head_sha = subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], text=True, stderr=subprocess.DEVNULL

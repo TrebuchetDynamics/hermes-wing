@@ -50,6 +50,14 @@ void main() {
     expect(scriptText, contains("'device_stt_used', 'local_tts_only'"));
     expect(scriptText, contains("missing.append(f'{key}=false')"));
     expect(
+      scriptText,
+      contains('must contain a short observed non-sensitive excerpt'),
+    );
+    expect(
+      scriptText,
+      contains('provider_reply_excerpt must differ from prompt_excerpt'),
+    );
+    expect(
       auditText,
       contains('`device_stt_used=false`, `local_tts_only=false`'),
     );

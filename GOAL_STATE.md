@@ -634,6 +634,8 @@ readiness checklist and non-completion caveats.
   token shapes, whitespace-only observed excerpts, and invalid/non-origin
   Hermes URLs such as GitHub tokens, Slack tokens, JWT-like strings,
   diagnostic cookie headers, bare Basic credentials, and URL userinfo. Hermes
+  server-audio receipt recording/audit now also rejects blank observed excerpts
+  and provider reply excerpts that merely repeat the prompt. Hermes
   SSE handling now accepts response-level delta, completed/done, failed,
   cancelled/canceled, and error events with the same bounded/redacted recovery
   behavior as run/message events. Hermes channel stored error messages now share

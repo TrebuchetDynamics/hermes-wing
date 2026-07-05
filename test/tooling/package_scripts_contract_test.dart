@@ -222,6 +222,11 @@ void main() {
     expect(serverAudioReceipt, contains('provider_reply_observed'));
     expect(serverAudioReceipt, contains('server_audio_playback_observed'));
     expect(serverAudioReceipt, contains('round_trip_observed'));
+    expect(serverAudioReceipt, contains('short non-sensitive observed excerpt'));
+    expect(
+      serverAudioReceipt,
+      contains('PROVIDER_REPLY must differ from the prompt excerpt'),
+    );
     expect(serverAudioReceipt, contains('not Android physical-mic'));
     expect(serverAudioReceipt, contains('whole-goal completion evidence'));
     expect(androidLiveMicReceipt, contains('len(value) > 240'));

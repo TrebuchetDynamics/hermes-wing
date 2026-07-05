@@ -600,14 +600,18 @@ void main() {
 
     final events = decoder.decodeJsonEvents([
       'event: error\ndata: upstream closed token=secret-error\n\n',
+      'event: message.error\ndata: message failed token=secret-message-error\n\n',
       'event: assistant.delta\ndata: {not json}\n\n',
     ]);
 
-    expect(events, hasLength(1));
-    expect(events.single.name, 'error');
+    expect(events.map((event) => event.name), ['error', 'message.error']);
     expect(
-      events.single.payload['message'],
+      events.first.payload['message'],
       'upstream closed token=secret-error',
+    );
+    expect(
+      events.last.payload['message'],
+      'message failed token=secret-message-error',
     );
   });
 }

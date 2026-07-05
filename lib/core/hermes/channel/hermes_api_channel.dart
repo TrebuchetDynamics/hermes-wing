@@ -818,7 +818,8 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     return name == 'error' ||
         name == 'stream.error' ||
         name == 'run.error' ||
-        name == 'assistant.error';
+        name == 'assistant.error' ||
+        name == 'message.error';
   }
 
   String _streamErrorMessage(HermesStreamEvent event) {

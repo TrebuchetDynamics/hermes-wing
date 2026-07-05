@@ -46,7 +46,7 @@ explicit external or deferred blocker but is not a completion receipt.
    TTS, or continuous re-arm. A later target recheck found no attached Android
    device in `adb devices`; Flutter listed only Linux desktop and Chrome web.
 2. **Hermes server realtime audio** — not implemented in Navivox; voice remains
-   local STT-to-text.
+   device STT -> Hermes text.
 3. **Deferred product surfaces** — config editing/admin, Hermes memory UI,
    jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media,
    files/context folders, and raw log export remain outside the implemented
@@ -66,7 +66,7 @@ the explicit objective as follows:
 | Real Android spoken mic receipt | `adb devices` currently has no attached Android device; earlier `fractal_test` receipts are readiness/prep/deterministic only. | Blocked: no current Android target for manual spoken-audio closeout. |
 | Windows/iOS/macOS host receipts | `build/receipts/hermes-platform-workflow.json` validates successful watched native-host jobs and artifacts for the current checkout. | Covered. |
 | Publish platform workflow | `gh workflow list` exposes `Hermes platform smoke`, and `npm run platform:workflow-smoke` produced a successful watched receipt. | Covered. |
-| Hermes realtime/server audio | `hermesSurfaceReadiness()` marks advertised `realtime_voice` or `audio_api` as blocked until server audio is wired, and unadvertised server audio as deferred; voice remains local STT-to-text. | Deferred/unimplemented by policy. |
+| Hermes realtime/server audio | `hermesSurfaceReadiness()` marks advertised `realtime_voice` or `audio_api` as blocked until server audio is wired, and unadvertised server audio as deferred; voice remains device STT -> Hermes text. | Deferred/unimplemented by policy. |
 | Deferred Hermes Desktop parity | Multi-endpoint/profile management is available locally; jobs inventory and bounded diagnostics are read-only; config/admin, memory UI, jobs admin, gateways, persona/SOUL, attachments/media, files/context folders, and raw diagnostics/log export are deferred. | Partially covered; remaining surfaces deferred/read-only by policy. |
 | Polish/hardening | Existing tests cover SSE reconnect/drop recovery, offline/auth-expired copy, session search/grouping, queued follow-ups, and mobile approval/error/session sheet behaviors for the implemented Hermes surfaces. Future regressions or newly wired surfaces still need focused coverage. | Covered for current implemented surfaces; not evidence for Android physical mic or server audio. |
 
@@ -97,7 +97,7 @@ non-overlapping categories:
   `emulator -accel-check` output as blocker context only, not Android/audio or
   live-mic receipt evidence.
 - Voice/audio: real Android spoken microphone loop missing; Hermes
-  realtime/server audio not implemented, so voice remains local STT-to-text.
+  realtime/server audio not implemented, so voice remains device STT -> Hermes text.
 - Deferred Hermes surfaces: config editing/admin, memory UI, jobs/schedules
   admin, messaging gateways, persona/SOUL, attachments/media, files/context
   folders, and raw diagnostics/log export. Multi-endpoint/profile management is

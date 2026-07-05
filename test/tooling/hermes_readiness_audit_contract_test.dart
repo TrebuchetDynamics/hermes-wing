@@ -154,7 +154,10 @@ void main() {
       scriptText,
       contains('successful native-host runner jobs/artifacts'),
     );
-    expect(scriptText, contains('current voice path is local STT-to-text'));
+    expect(
+      scriptText,
+      contains('current voice path is device STT -> Hermes text'),
+    );
     expect(scriptText, contains('Deferred Hermes surfaces: config admin'));
     expect(scriptText, contains('Android debug APK sha256'));
     expect(

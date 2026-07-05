@@ -76,7 +76,7 @@ retries, circuit breakers, phone numbers, or human handoff.
 
 - Treating tests, APK hashes, configured Hermes home, local workflow YAML, or
   dispatch-only workflow output as completion/readiness proof.
-- Hermes realtime/server audio in the current MVP; voice is local STT -> text.
+- Hermes realtime/server audio in the current MVP; voice is device STT -> Hermes text.
 - Hermes config editing/admin, memory UI, jobs/schedules admin, messaging
   gateways, persona/SOUL, attachments/media, files/context folders, or raw
   diagnostics/log export in the current MVP.

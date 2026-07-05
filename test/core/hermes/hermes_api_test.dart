@@ -161,6 +161,10 @@ void main() {
         statuses['Server realtime voice/audio'],
         HermesSurfaceStatus.blocked,
       );
+      expect(
+        details['Server realtime voice/audio'],
+        contains('device STT -> Hermes text'),
+      );
       expect(statuses['Config editing/admin'], HermesSurfaceStatus.deferred);
       expect(statuses['Memory UI'], HermesSurfaceStatus.deferred);
       expect(
@@ -214,6 +218,7 @@ void main() {
 
     expect(item.status, HermesSurfaceStatus.blocked);
     expect(item.detail, contains('server audio/realtime voice is advertised'));
+    expect(item.detail, contains('device STT -> Hermes text'));
   });
 
   test(

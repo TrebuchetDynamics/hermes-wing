@@ -16,8 +16,8 @@ implementation evidence lives in `lib/core/hermes/channel/hermes_api_channel.dar
 Active Hermes-first decision: the fresh-install first useful screen is `/hermes`.
 It lets an operator connect to a trusted local, LAN, VPN, or self-hosted Hermes
 Agent API server, create/select a Hermes session, send text, and submit local
-STT voice transcripts without telephony setup. Voice remains local STT -> text;
-Hermes realtime/server audio is not implemented.
+STT voice transcripts without telephony setup. Voice remains device STT ->
+Hermes text; Hermes realtime/server audio is not implemented.
 
 Preserved legacy Gormes decision: the first useful Gormes path lets an operator
 connect to a Gormes host and talk to an agent immediately, without telephony

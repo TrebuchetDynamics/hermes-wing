@@ -83,8 +83,8 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.blocked
           : HermesSurfaceStatus.deferred,
       detail: advertisedServerAudio
-          ? 'Hermes server audio/realtime voice is advertised, but Navivox has not wired server audio; local STT remains the voice path.'
-          : 'Hermes realtime/server audio is not advertised; local STT remains the voice path.',
+          ? 'Hermes server audio/realtime voice is advertised, but Navivox has not wired server audio; device STT -> Hermes text remains the voice path.'
+          : 'Hermes realtime/server audio is not advertised; device STT -> Hermes text remains the voice path.',
     ),
     HermesSurfaceReadiness(
       title: 'Config editing/admin',

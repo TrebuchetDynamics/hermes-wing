@@ -256,7 +256,7 @@ Keep local device STT: voice can still transcribe on-device and submit text into
 - **Hermes API key lifecycle:** Hermes does not appear to expose a Navivox-style pairing/durable credential issue endpoint. First version should require manual API key entry and secure storage.
 - **Domain rename scope:** Keeping `ProfileContact` internally for too long will slow us down. Use it only as a transition seam.
 - **Config/memory parity:** Do not rebuild Gormes config-admin/memory screens until Hermes has explicit APIs for them.
-- **Continuous voice:** Keep it as local repeated STT-to-text turns. Do not imply Hermes realtime voice or server TTS until the API exists.
+- **Continuous voice:** Keep it as repeated device STT -> Hermes text turns. Do not imply Hermes realtime voice or server TTS until the API exists.
 - **Prompt-cache safety:** Hermes treats prompt caching and stable conversation history as core constraints. Navivox must not mutate or resend old context unpredictably; prefer server-owned session history.
 
 ## First implementation recommendation

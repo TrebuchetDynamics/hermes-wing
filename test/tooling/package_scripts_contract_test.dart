@@ -91,8 +91,13 @@ void main() {
     );
     expect(
       androidLiveMicReceipt,
+      contains('NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED=true'),
+    );
+    expect(
+      androidLiveMicReceipt,
       contains('NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED=true'),
     );
+    expect(androidLiveMicReceipt, contains('physical_device_observed'));
     expect(androidLiveMicReceipt, contains('physical_mic_observed'));
     expect(
       androidLiveMicReceipt,
@@ -111,6 +116,9 @@ void main() {
       contains('NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED=false'),
     );
     expect(androidLiveMicReceipt, contains('synthetic_audio_used'));
+    expect(androidLiveMicReceipt, contains('android_target_type'));
+    expect(androidLiveMicReceipt, contains('physical_device'));
+    expect(androidLiveMicReceipt, contains('is_emulator'));
     expect(androidLiveMicReceipt, contains('audio_input_path'));
     expect(androidLiveMicReceipt, contains('physical_android_microphone'));
     expect(androidLiveMicReceipt, contains('local_device_stt_to_hermes_text'));

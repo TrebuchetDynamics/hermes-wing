@@ -198,12 +198,15 @@ void main() {
     expect(scriptText, contains('distinct_rearmed_turn_observed'));
     expect(scriptText, contains('head_sha'));
     expect(scriptText, contains('head_sha must match current git HEAD'));
+    expect(scriptText, contains('device_id must be a physical Android device'));
+    expect(scriptText, contains('android_target_type=physical_device'));
     expect(scriptText, contains('device_properties'));
     expect(
       scriptText,
       contains("'manufacturer', 'model', 'sdk', 'fingerprint'"),
     );
     expect(scriptText, contains("device_properties.{key}"));
+    expect(scriptText, contains('device_properties.is_emulator=false'));
     expect(scriptText, contains('package_info'));
     expect(
       scriptText,
@@ -213,6 +216,7 @@ void main() {
     expect(scriptText, contains('package_info.record_audio_granted=true'));
     expect(scriptText, contains("'version_name', 'version_code'"));
     expect(scriptText, contains("package_info.{key}"));
+    expect(scriptText, contains('physical_device_observed'));
     expect(scriptText, contains('physical_mic_observed'));
     expect(scriptText, contains('synthetic_audio_used=false'));
     expect(scriptText, contains('audio_input_path'));

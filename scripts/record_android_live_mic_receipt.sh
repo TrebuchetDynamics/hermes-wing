@@ -39,9 +39,11 @@ require_env NAVIVOX_ANDROID_HERMES_URL
 require_env NAVIVOX_ANDROID_SPOKEN_PHRASE
 require_env NAVIVOX_ANDROID_PROVIDER_REPLY
 require_env NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE
-# Required manual-observation gates: NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED=true,
-# NAVIVOX_ANDROID_TTS_OBSERVED=true, NAVIVOX_ANDROID_REARM_OBSERVED=true,
-# NAVIVOX_ANDROID_NO_SECRET_LEAKS=true, and NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED=false.
+# Required manual-observation gates: NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED=true,
+# NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED=true, NAVIVOX_ANDROID_TTS_OBSERVED=true,
+# NAVIVOX_ANDROID_REARM_OBSERVED=true, NAVIVOX_ANDROID_NO_SECRET_LEAKS=true, and
+# NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED=false.
+require_true NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED
 require_true NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED
 require_true NAVIVOX_ANDROID_TTS_OBSERVED
 require_true NAVIVOX_ANDROID_REARM_OBSERVED
@@ -65,6 +67,11 @@ if ! adb -s "$device" get-state >/dev/null 2>&1; then
   echo "Android target $device is not reachable via adb; cannot bind receipt to a device." >&2
   exit 2
 fi
+if [[ "$device" == emulator-* ]]; then
+  echo "Android target $device is an emulator; the live-mic receipt requires a physical Android device microphone." >&2
+  exit 2
+fi
+export NAVIVOX_ANDROID_DEVICE_ID="$device"
 
 receipt_path="${NAVIVOX_ANDROID_LIVE_MIC_RECEIPT:-build/receipts/android-live-mic-smoke.json}"
 mkdir -p "$(dirname "$receipt_path")"
@@ -121,11 +128,17 @@ def adb_shell(*args):
 def getprop(name):
     return adb_shell('getprop', name)
 
+is_emulator = device.startswith('emulator-') or getprop('ro.kernel.qemu') == '1' or getprop('ro.boot.qemu') == '1'
+if is_emulator:
+    raise SystemExit(
+        'Android live microphone receipt requires a physical Android device; emulator targets remain prep/regression evidence only.'
+    )
 device_properties = {
     'manufacturer': getprop('ro.product.manufacturer'),
     'model': getprop('ro.product.model'),
     'sdk': getprop('ro.build.version.sdk'),
     'fingerprint': getprop('ro.build.fingerprint'),
+    'is_emulator': is_emulator,
 }
 package_name = os.environ.get('NAVIVOX_ANDROID_PACKAGE', 'com.trebuchetdynamics.navivox')
 pm_path_output = adb_shell('pm', 'path', package_name)
@@ -164,6 +177,7 @@ receipt = {
     'head_sha': head_sha,
     'device_id': device,
     'device_properties': device_properties,
+    'android_target_type': 'physical_device',
     'package_info': package_info,
     'hermes_url': sanitized_url(os.environ['NAVIVOX_ANDROID_HERMES_URL']),
     'hermes_url_sanitized': True,
@@ -174,6 +188,7 @@ receipt = {
     'spoken_phrase': spoken_phrase,
     'provider_reply_observed': provider_reply,
     'second_spoken_phrase': second_spoken_phrase,
+    'physical_device_observed': os.environ['NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED'] == 'true',
     'physical_mic_observed': os.environ['NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED'] == 'true',
     'tts_observed': os.environ['NAVIVOX_ANDROID_TTS_OBSERVED'] == 'true',
     'rearm_observed': os.environ['NAVIVOX_ANDROID_REARM_OBSERVED'] == 'true',
@@ -203,7 +218,7 @@ PY
 cat <<EOF
 Android live microphone receipt written: $receipt_path
 
-This receipt is physical Android mic/provider/TTS/re-arm evidence only when the
+This receipt is physical Android device mic/provider/TTS/re-arm evidence only when
 manual observations are truthful. It is not Hermes realtime/server-audio,
 native-host, platform-workflow, deferred-surface, or whole-goal completion
 evidence by itself; it is not whole-goal completion evidence.

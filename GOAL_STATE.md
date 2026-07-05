@@ -445,8 +445,9 @@ readiness checklist and non-completion caveats.
    strip Hermes URL userinfo, query strings, and fragments before writing JSON,
    record current git `HEAD`, record Android device manufacturer/model/SDK/
    fingerprint properties plus installed Navivox package/version/RECORD_AUDIO
-   grant details, and reject secret-looking or overlong spoken phrases/provider
-   reply excerpts;
+   grant details, require an explicit physical Android device observation,
+   reject emulator targets for the final live-mic receipt, and reject
+   secret-looking or overlong spoken phrases/provider reply excerpts;
    composer, mic, continuous voice, and direct channel sends share the same
    chat-transport policy, direct channel sends reject blank messages before HTTP,
    and are disabled/rejected with bounded recovery copy

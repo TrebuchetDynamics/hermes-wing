@@ -141,10 +141,17 @@ for key in ['timestamp_utc', 'head_sha', 'device_id', 'hermes_url', 'spoken_phra
         missing.append(key)
 if current_head_sha and receipt.get('head_sha') != current_head_sha:
     missing.append('head_sha must match current git HEAD')
+device_id = str(receipt.get('device_id', ''))
+if device_id.startswith('emulator-'):
+    missing.append('device_id must be a physical Android device, not an emulator')
+if receipt.get('android_target_type') != 'physical_device':
+    missing.append('android_target_type=physical_device')
 device_properties = receipt.get('device_properties') or {}
 for key in ['manufacturer', 'model', 'sdk', 'fingerprint']:
     if not device_properties.get(key):
         missing.append(f'device_properties.{key}')
+if device_properties.get('is_emulator') is not False:
+    missing.append('device_properties.is_emulator=false')
 package_info = receipt.get('package_info') or {}
 if package_info.get('package_name') != 'com.trebuchetdynamics.navivox':
     missing.append('package_info.package_name=com.trebuchetdynamics.navivox')
@@ -157,7 +164,7 @@ for key in ['version_name', 'version_code']:
         missing.append(f'package_info.{key}')
 if not package_info.get('paths'):
     missing.append('package_info.paths')
-for key in ['physical_mic_observed', 'tts_observed', 'rearm_observed', 'no_secret_leaks_observed', 'distinct_rearmed_turn_observed', 'hermes_url_sanitized']:
+for key in ['physical_device_observed', 'physical_mic_observed', 'tts_observed', 'rearm_observed', 'no_secret_leaks_observed', 'distinct_rearmed_turn_observed', 'hermes_url_sanitized']:
     if receipt.get(key) is not True:
         missing.append(f'{key}=true')
 if receipt.get('synthetic_audio_used') is not False:

@@ -588,6 +588,10 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('hermes-surfaces-chip')));
       await tester.pumpAndSettle();
       expect(find.text('Hermes surface readiness'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-admin-surfaces-note')),
+        findsOneWidget,
+      );
       expect(find.text('Server realtime voice/audio'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Jobs/schedules admin'),
@@ -595,6 +599,18 @@ void main() {
         scrollable: find.byType(Scrollable).last,
       );
       expect(find.text('Jobs/schedules admin'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Messaging gateways'),
+        240,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Messaging gateways'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Persona/SOUL'),
+        240,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Persona/SOUL'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Raw diagnostics/log export'),
         240,

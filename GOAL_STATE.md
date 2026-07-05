@@ -603,8 +603,9 @@ readiness checklist and non-completion caveats.
   saved Hermes endpoint profile labels/chips with safe select/rename/remove
   controls, endpoint presets clear stale selected profile secrets/labels before
   reuse, and per-profile API keys kept in secure storage. The composer now has
-  safe deferred status sheets for attachments/media and files/context folders,
-  with no upload controls or local path disclosure. The Hermes jobs chip also
+  safe deferred status sheets for admin surfaces, attachments/media, and
+  files/context folders, with no config/memory/schedule/gateway/persona
+  mutation controls, upload controls, or local path disclosure. The Hermes jobs chip also
   now opens a read-only schedule detail sheet
   with enabled/state/schedule/next/last/error fields redacted and bounded plus a
   copy action for bounded/redacted job details. Queued

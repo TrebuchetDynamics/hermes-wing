@@ -227,7 +227,9 @@ void main() {
     expect(scriptText, contains('Completion verdict: NOT COMPLETE'));
     expect(
       scriptText,
-      contains('live provider/device/native-host or deferred-surface blockers'),
+      contains(
+        'Android physical-mic, Hermes server-audio, or deferred-surface blockers',
+      ),
     );
     expect(scriptText, contains('Do not promote proxy evidence'));
     expect(scriptText, contains('tests, APK hashes, configured Hermes home'));

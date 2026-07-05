@@ -392,7 +392,7 @@ block 'Hermes raw diagnostics/log export remains deferred; bounded diagnostics o
 ok 'Hermes multi-endpoint/profile management available locally with secure per-profile API-key storage'
 printf '\nSummary: %s blocker(s), %s warning state.\n' "$blockers" "$status"
 if [ "$blockers" -gt 0 ]; then
-  printf 'Completion verdict: NOT COMPLETE; live provider/device/native-host or deferred-surface blockers remain.\n'
+  printf 'Completion verdict: NOT COMPLETE; Android physical-mic, Hermes server-audio, or deferred-surface blockers remain.\n'
 fi
 printf 'This audit is informational and must not be used as a completion receipt by itself.\n'
 printf 'Do not promote proxy evidence (tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output) to completion.\n'

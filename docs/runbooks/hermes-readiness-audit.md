@@ -68,11 +68,12 @@ the explicit objective as follows:
 | Publish platform workflow | `gh workflow list` exposes `Hermes platform smoke`, and `npm run platform:workflow-smoke` produced a successful watched receipt. | Covered. |
 | Hermes realtime/server audio | `hermesSurfaceReadiness()` marks advertised `realtime_voice` or `audio_api` as blocked until server audio is wired, and unadvertised server audio as deferred; voice remains local STT-to-text. | Deferred/unimplemented by policy. |
 | Deferred Hermes Desktop parity | Multi-endpoint/profile management is available locally; jobs inventory and bounded diagnostics are read-only; config/admin, memory UI, jobs admin, gateways, persona/SOUL, attachments/media, files/context folders, and raw diagnostics/log export are deferred. | Partially covered; remaining surfaces deferred/read-only by policy. |
-| Polish/hardening | Existing tests cover the implemented happy paths and selected edge cases, but the roadmap still calls out SSE reconnect/drop, offline/auth-expired UX, session search/grouping, queued follow-ups, and mobile approval/error/session sheet polish. | Not complete. |
+| Polish/hardening | Existing tests cover SSE reconnect/drop recovery, offline/auth-expired copy, session search/grouping, queued follow-ups, and mobile approval/error/session sheet behaviors for the implemented Hermes surfaces. Future regressions or newly wired surfaces still need focused coverage. | Covered for current implemented surfaces; not evidence for Android physical mic or server audio. |
 
 Do not promote this audit, green tests, APK hashes, configured Hermes home
 presence, workflow YAML, or dispatch-only workflow output to completion evidence
-unless the missing live/provider/device/native-host receipts above are captured.
+unless the missing Android physical-mic receipt, Hermes server-audio work, and
+remaining deferred-surface decisions above are closed.
 
 ## Current blocker detail
 
@@ -101,9 +102,11 @@ non-overlapping categories:
   admin, messaging gateways, persona/SOUL, attachments/media, files/context
   folders, and raw diagnostics/log export. Multi-endpoint/profile management is
   implemented locally with secure per-profile API-key storage.
-- Polish/hardening: SSE reconnect/drop edge cases, offline/auth-expired UX,
-  session search/grouping, queued follow-ups, and mobile approval/error/session
-  sheet polish.
+- Polish/hardening: current implemented Hermes surfaces have focused coverage
+  for SSE reconnect/drop edge cases, offline/auth-expired UX, session
+  search/grouping, queued follow-ups, and mobile approval/error/session sheet
+  polish. Keep adding focused tests when new surfaces are wired or regressions
+  are found.
 
 ## Do not count as completion
 

@@ -1241,6 +1241,41 @@ void main() {
     expect(diagnostics.data, isNot(contains('Authorization')));
   });
 
+  testWidgets('diagnostics dialog copies raw-log deferred status', (
+    tester,
+  ) async {
+    String? copiedText;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedText = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final channel = FakeHermesChannel(capabilities: _capabilitiesFixture);
+    await tester.pumpWidget(_wrap(channel));
+
+    await tester.tap(find.byKey(const ValueKey('hermes-diagnostics-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hermes-raw-logs-status-copy')));
+    await tester.pump();
+
+    expect(copiedText, contains('Raw diagnostics/log export'));
+    expect(copiedText, contains('Status: Deferred'));
+    expect(copiedText, contains('raw log export control'));
+    expect(copiedText, contains('local paths remain excluded'));
+    expect(copiedText, isNot(contains('/Users/')));
+    expect(find.text('Raw-log status copied'), findsOneWidget);
+  });
+
   testWidgets('session selection failures show bounded recovery feedback', (
     tester,
   ) async {

@@ -638,7 +638,10 @@ readiness checklist and non-completion caveats.
   and provider reply excerpts that merely repeat the prompt. Hermes
   SSE handling now accepts response-level delta, completed/done, failed,
   cancelled/canceled, and error events with the same bounded/redacted recovery
-  behavior as run/message events. Hermes channel stored error messages now share
+  behavior as run/message events. The bounded Hermes diagnostics dialog now has
+  a copyable raw-log deferred status summary so users can share why raw logs,
+  transcripts, tool payloads, credentials, and local paths are excluded without
+  exporting those raw artifacts. Hermes channel stored error messages now share
   the broader redaction set and are bounded before entering channel state.
   Mobile approval review redaction now
   also handles equals-style Authorization/Cookie headers. Android live-mic

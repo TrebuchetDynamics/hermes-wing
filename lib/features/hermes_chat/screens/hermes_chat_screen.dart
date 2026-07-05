@@ -942,6 +942,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
 
   void _showDiagnosticsDialog(BuildContext context, HermesChannelState state) {
     final diagnostics = hermesDiagnosticsExport(state);
+    final rawLogsSummary = _rawLogsDeferredSummary();
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -956,6 +957,17 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
           ),
         ),
         actions: [
+          TextButton.icon(
+            key: const ValueKey('hermes-raw-logs-status-copy'),
+            onPressed: () {
+              unawaited(Clipboard.setData(ClipboardData(text: rawLogsSummary)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Raw-log status copied')),
+              );
+            },
+            icon: const Icon(Icons.copy_outlined),
+            label: const Text('Copy raw-log status'),
+          ),
           TextButton(
             key: const ValueKey('hermes-diagnostics-copy'),
             onPressed: () {
@@ -972,6 +984,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  String _rawLogsDeferredSummary() {
+    return _deferredSurfaceSummary(
+      title: 'Raw diagnostics/log export',
+      detail:
+          'Raw logs, transcripts, credentials, tool payloads, and local paths remain excluded from Navivox mobile diagnostics.',
+      exclusion:
+          'No raw log export control is enabled until a safe Hermes redaction contract exists.',
     );
   }
 

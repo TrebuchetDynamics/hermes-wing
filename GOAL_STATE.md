@@ -631,7 +631,8 @@ readiness checklist and non-completion caveats.
   create/edit/delete scheduling support. Queued follow-up auto-send failures now
   keep the message queued while showing bounded/redacted recovery copy. UI,
   diagnostics, and Android live-mic receipt gates redact/reject additional
-  token shapes such as GitHub tokens, Slack tokens, JWT-like strings,
+  token shapes, whitespace-only observed excerpts, and invalid/non-origin
+  Hermes URLs such as GitHub tokens, Slack tokens, JWT-like strings,
   diagnostic cookie headers, bare Basic credentials, and URL userinfo. Hermes
   channel stored error messages now share the broader redaction set and are
   bounded before entering channel state. Mobile approval review redaction now

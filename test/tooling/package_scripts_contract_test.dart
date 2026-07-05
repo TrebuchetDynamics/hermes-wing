@@ -135,6 +135,10 @@ void main() {
     expect(androidLiveMicReceipt, contains('tts_observed_before_rearm'));
     expect(
       androidLiveMicReceipt,
+      contains('must contain a short observed non-sensitive excerpt'),
+    );
+    expect(
+      androidLiveMicReceipt,
       contains('NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE must be a different'),
     );
     expect(
@@ -142,6 +146,10 @@ void main() {
       contains(
         'NAVIVOX_ANDROID_PROVIDER_REPLY must be an observed assistant reply excerpt',
       ),
+    );
+    expect(
+      androidLiveMicReceipt,
+      contains('NAVIVOX_ANDROID_HERMES_URL must be a valid http(s) Hermes origin'),
     );
     expect(androidLiveMicReceipt, contains('distinct_rearmed_turn_observed'));
     expect(androidLiveMicReceipt, contains('hermes_url_sanitized'));

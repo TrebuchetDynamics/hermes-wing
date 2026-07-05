@@ -529,6 +529,15 @@ void main() {
     expect(decoder.decode(['', '\r', 'id: 9\revent: ping\r\r']), isEmpty);
   });
 
+  test('decodes no-data done events as terminal stream events', () {
+    final decoder = HermesSseEventDecoder();
+
+    final events = decoder.decodeJsonEvents(['event: done\n\n']);
+
+    expect(events, hasLength(1));
+    expect(events.single.isDone, isTrue);
+  });
+
   test(
     'live SSE decoder flushes final data frame when the stream closes',
     () async {

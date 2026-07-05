@@ -467,8 +467,9 @@ readiness checklist and non-completion caveats.
    no-cache` headers so intermediaries and Hermes hosts do not downgrade or reuse
    stale stream responses, live SSE decoding flushes a final data frame when the
    stream closes without a trailing blank-line separator instead of silently
-   dropping the last delta/terminal/error payload, default `message` SSE frames
-   can resolve embedded `event`/`type`/`name` payload fields so terminal/delta events are not missed,
+   dropping the last delta/terminal/error payload, no-data `event: done` frames
+   are accepted as terminal events, default `message` SSE frames can resolve
+   embedded `event`/`type`/`name` payload fields so terminal/delta events are not missed,
    nested SSE error payloads are surfaced without leaking secrets,
    and explicit SSE error events (including non-JSON error frames) fail the active
    assistant turn with bounded/redacted recovery copy instead of waiting for stream close;

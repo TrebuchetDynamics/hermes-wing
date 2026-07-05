@@ -179,7 +179,12 @@ class HermesSseEventDecoder {
       }
     }
 
-    if (dataLines.isEmpty) return null;
+    if (dataLines.isEmpty) {
+      if (event == 'done') {
+        return HermesSseEvent(id: id, event: 'done', data: '');
+      }
+      return null;
+    }
     final data = dataLines.join('\n');
     return HermesSseEvent(
       id: id,

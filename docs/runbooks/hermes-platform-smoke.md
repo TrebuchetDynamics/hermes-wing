@@ -93,16 +93,15 @@ instead of hanging:
   wrappers used locally.
 
 The workflow file must be visible to GitHub before this counts as a receipt.
-A local YAML file is not enough: as of 2026-07-03,
-`NAVIVOX_WATCH_WORKFLOW=false npm run platform:workflow-smoke` still exits 2
-and prints visible workflows (`pages-build-deployment` only). A later delivery
-push containing `.github/workflows/hermes-platform-smoke.yml` was rejected by
-GitHub because the current OAuth app token lacks `workflow` scope, so the
-workflow still is not published remotely and no native-host Windows/iOS/macOS/hosted
-Android receipt is present yet.
+A local YAML file is not enough, and dispatch-only output is not enough. The
+workflow is now published remotely as `Hermes platform smoke`; the latest
+current-head watched receipt is `build/receipts/hermes-platform-workflow.json`
+from GitHub run `28731694618`, with successful Windows desktop, iOS simulator,
+and macOS desktop native-host jobs plus artifact metadata. Earlier local-only
+YAML and missing-`workflow`-scope push failures are historical non-receipts, not
+current blockers.
 
-Once the workflow file is published to the remote branch, dispatch and watch the
-host-runner receipt path with:
+Dispatch and watch the host-runner receipt path with:
 
 ```bash
 npm run platform:workflow-smoke

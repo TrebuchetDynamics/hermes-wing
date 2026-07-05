@@ -22,7 +22,7 @@ interface, and should lean on `fathah/hermes-desktop`'s own architecture
 (SSE parsing, capability-gated transport, session store shape, chat voice
 input) as the reference. See ADR 0007.
 
-## Verified gate (refreshed 2026-07-03)
+## Verified gate (refreshed 2026-07-05)
 
 - Navivox: `flutter analyze` — no issues; `flutter test --concurrency=1` —
   **1016 tests pass**.
@@ -45,8 +45,10 @@ input) as the reference. See ADR 0007.
   `docs/runbooks/android/live-mic-smoke.md`.
 - Linux release build is locally repeatable through `npm run linux:release-build`.
 - App-scoped Android native units pass with `cd android && ./gradlew :app:testDebugUnitTest`.
-- Windows/iOS/macOS remain native-host gated; the CI workflow path exists but no
-  successful host-runner receipt is present in this checkout.
+- Windows/iOS/macOS host receipts are covered by the published `Hermes platform
+  smoke` workflow. Latest watched current-head receipt:
+  `build/receipts/hermes-platform-workflow.json`, run `28731694618`, with
+  successful Windows desktop, iOS simulator, and macOS desktop jobs/artifacts.
 
 See `docs/runbooks/hermes-readiness-audit.md` for the current prompt-to-artifact
 readiness checklist and non-completion caveats.
@@ -151,12 +153,13 @@ readiness checklist and non-completion caveats.
    e2e build passes; Android debug APK builds; Linux desktop build is blocked
    in this container by missing `libsecret-1>=0.18.4` for
    `flutter_secure_storage_linux`; Windows/iOS/macOS require host-platform runners.
-16. **Host platform smoke runbook** — documented the unavailable-host gates:
+16. **Host platform smoke runbook** — documented the host gates:
    Ubuntu analyze/tests/web e2e build/Hermes browser smoke/Android debug APK/
    Linux release build with `libsecret-1-dev`, plus Windows desktop, iOS
-   simulator, and macOS desktop builds on their own host runners. A GitHub Actions workflow draft
-   was prepared but not shipped because the current push credential lacks
-   GitHub `workflow` scope; host CI remains an owner follow-up.
+   simulator, and macOS desktop builds on their own host runners. The published
+   `Hermes platform smoke` GitHub Actions workflow now supplies the hosted
+   Windows/iOS/macOS receipt path; local YAML or dispatch-only output remains
+   insufficient without watched successful job/artifact evidence.
 17. **Hermes-first startup and README refresh** — fresh no-Gormes-server
    startup now lands at `AppRoutes.hermes` instead of the legacy Gormes
    setup path, using `AppRoutes.isHermesLocation()` so query/deep links do not

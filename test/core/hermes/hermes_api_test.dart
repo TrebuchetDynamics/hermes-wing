@@ -549,6 +549,23 @@ void main() {
     expect(events.last.isDone, isTrue);
   });
 
+  test('uses embedded event names from default SSE message frames', () {
+    final decoder = HermesSseEventDecoder();
+
+    final events = decoder.decodeJsonEvents([
+      'data: {"event":"message.delta","delta":"Hi"}\n\n',
+      'data: {"type":"run.completed"}\n\n',
+      'data: {"name":"assistant.completed"}\n\n',
+    ]);
+
+    expect(events.map((event) => event.name), [
+      'message.delta',
+      'run.completed',
+      'assistant.completed',
+    ]);
+    expect(events.first.delta, 'Hi');
+  });
+
   test('preserves non-JSON SSE error frames as stream error events', () {
     final decoder = HermesSseEventDecoder();
 

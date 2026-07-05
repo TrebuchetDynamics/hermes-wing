@@ -458,9 +458,10 @@ readiness checklist and non-completion caveats.
    when Hermes advertises no supported chat transport; session-chat and run-event
    SSE streams now send explicit `Accept: text/event-stream` and `Cache-Control:
    no-cache` headers so intermediaries and Hermes hosts do not downgrade or reuse
-   stale stream responses, and explicit SSE error events (including non-JSON
-   error frames) fail the active assistant turn with bounded/redacted recovery
-   copy instead of waiting for stream close;
+   stale stream responses, default `message` SSE frames can resolve embedded
+   `event`/`type`/`name` payload fields so terminal/delta events are not missed,
+   and explicit SSE error events (including non-JSON error frames) fail the active
+   assistant turn with bounded/redacted recovery copy instead of waiting for stream close;
    run SSE chat transport no longer requires optional
    approval/tool-progress/stop capabilities,
    `respondToApproval` rejects locally when Hermes does not advertise approval

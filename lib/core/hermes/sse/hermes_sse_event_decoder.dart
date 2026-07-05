@@ -26,9 +26,13 @@ class HermesStreamEvent {
       if (decoded is! Map) {
         throw const FormatException('Hermes SSE data must be a JSON object');
       }
+      final payload = navivoxMapFromJson(decoded);
+      final embeddedName = event.event == 'message'
+          ? _embeddedEventName(payload)
+          : null;
       return HermesStreamEvent(
-        name: event.event,
-        payload: navivoxMapFromJson(decoded),
+        name: embeddedName ?? event.event,
+        payload: payload,
       );
     } on FormatException {
       if (_isErrorEvent(event.event) && event.data.trim().isNotEmpty) {
@@ -49,6 +53,14 @@ class HermesStreamEvent {
   String? get sessionId => navivoxOptionalStringFromJson(payload['session_id']);
   String? get messageId => navivoxOptionalStringFromJson(payload['message_id']);
   String? get delta => navivoxOptionalStringFromJson(payload['delta']);
+}
+
+String? _embeddedEventName(Map<String, Object?> payload) {
+  for (final key in const ['event', 'type', 'name']) {
+    final value = navivoxOptionalStringFromJson(payload[key])?.trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  return null;
 }
 
 bool _isErrorEvent(String name) =>

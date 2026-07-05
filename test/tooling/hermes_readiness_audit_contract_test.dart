@@ -98,8 +98,12 @@ void main() {
     expect(
       scriptText,
       contains(
-        'publishing .github/workflows/hermes-platform-smoke.yml will remain blocked',
+        'future workflow-file updates may require refreshed credentials',
       ),
+    );
+    expect(
+      scriptText,
+      contains('existing published workflow receipts can still be watched'),
     );
     expect(scriptText, contains('Visible workflows'));
     expect(scriptText, contains('not native-host receipt evidence'));

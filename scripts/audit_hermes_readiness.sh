@@ -259,7 +259,7 @@ if command -v gh >/dev/null 2>&1; then
     printf '%s\n' "$workflow_list" | sed 's/^/INFO:   /'
   fi
   if printf '%s\n' "$gh_auth_status" | grep -Fq "Token scopes:" && ! printf '%s\n' "$gh_auth_status" | grep -Fq "'workflow'"; then
-    info 'active gh token scopes do not include workflow; publishing .github/workflows/hermes-platform-smoke.yml will remain blocked until credentials are refreshed'
+    info 'active gh token scopes do not include workflow; future workflow-file updates may require refreshed credentials even though existing published workflow receipts can still be watched'
   fi
 else
   block 'gh not installed; cannot inspect/dispatch native-host workflow receipts; install gh before running npm run platform:workflow-smoke'

@@ -2008,6 +2008,55 @@ void main() {
     );
   });
 
+  testWidgets('queued follow-up clear confirmation is bounded and redacted', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('current');
+    await tester.pumpWidget(_wrap(channel));
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      'use Bearer secret-clear-token and api_key=secret-clear-key',
+    );
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-cancel')),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-queued-follow-up-clear-dialog')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Bearer [redacted]'), findsWidgets);
+    expect(find.textContaining('api_key=[redacted]'), findsWidgets);
+    expect(find.textContaining('secret-clear-token'), findsNothing);
+    expect(find.textContaining('secret-clear-key'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-clear-keep')),
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-queued-follow-up')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-cancel')),
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-clear-confirm')),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('hermes-queued-follow-up')), findsNothing);
+  });
+
   testWidgets('queued follow-up waits for its original session', (
     tester,
   ) async {
@@ -2412,6 +2461,10 @@ void main() {
       await tester.pump();
       await tester.tap(
         find.byKey(const ValueKey('hermes-queued-follow-up-cancel')),
+      );
+      await tester.pump();
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-queued-follow-up-clear-confirm')),
       );
       await tester.pump();
 

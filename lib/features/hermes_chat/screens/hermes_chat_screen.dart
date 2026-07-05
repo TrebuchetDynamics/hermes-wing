@@ -448,10 +448,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
                 ),
                 TextButton(
                   key: const ValueKey('hermes-queued-follow-up-cancel'),
-                  onPressed: () => setState(() {
-                    _queuedFollowUps.clear();
-                    _queuedFollowUpError = null;
-                  }),
+                  onPressed: () =>
+                      unawaited(_confirmClearQueuedFollowUps(context)),
                   child: const Text('Cancel all'),
                 ),
               ],
@@ -1087,6 +1085,44 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen> {
     }
     buffer.write('Secrets: redacted');
     return buffer.toString();
+  }
+
+  Future<void> _confirmClearQueuedFollowUps(BuildContext context) async {
+    if (_queuedFollowUps.isEmpty) return;
+    final count = _queuedFollowUps.length;
+    final label = count == 1 ? 'follow-up' : 'follow-ups';
+    final preview = _queuedFollowUps
+        .take(3)
+        .map((queued) => _safeHermesUiPreview(queued.text, maxLength: 80))
+        .join('\n');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const ValueKey('hermes-queued-follow-up-clear-dialog'),
+        title: Text('Cancel $count queued $label?'),
+        content: Text(
+          '$preview${count > 3 ? '\n+${count - 3} more' : ''}\n\n'
+          'Queued text is redacted and bounded in this confirmation.',
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('hermes-queued-follow-up-clear-keep'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep'),
+          ),
+          FilledButton(
+            key: const ValueKey('hermes-queued-follow-up-clear-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Cancel all'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      _queuedFollowUps.clear();
+      _queuedFollowUpError = null;
+    });
   }
 
   Future<void> _captureOnce(HermesChannel channel) async {

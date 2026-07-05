@@ -437,8 +437,8 @@ readiness checklist and non-completion caveats.
    advertise create/update/delete/fork endpoints, and surfacing bounded feedback
    when session creation fails, and redacting bearer tokens, API keys, token
    values, and secret-looking values from bounded active-session titles,
-   bounded capability strip model/list/health details, queued-follow-up banner and
-   copyable queue details, bounded session sheet titles/previews/parent ids, bounded delete
+   bounded capability strip model/list/health details, queued-follow-up banner,
+   copyable queue details, and cancel-all confirmation dialog, bounded session sheet titles/previews/parent ids, bounded delete
    confirmation copy, unsafe or overlong rename-dialog defaults, and bounded/redacted
    no-result query echo; session search also uses redacted metadata with
    placeholders stripped so raw secret-looking values and `[redacted]` placeholder

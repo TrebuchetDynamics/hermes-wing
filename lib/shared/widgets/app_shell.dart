@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../theme/navivox_theme.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
@@ -120,11 +121,12 @@ class _MobileShell extends StatelessWidget {
                           icon: Icon(destination.icon),
                           label: destination.label,
                         ),
-                      NavigationDestination(
-                        icon: const Icon(Icons.more_horiz),
-                        label: mobileOverflowLabel,
-                        tooltip: mobileOverflowTooltip,
-                      ),
+                      if (mobileOverflowDestinations.isNotEmpty)
+                        NavigationDestination(
+                          icon: const Icon(Icons.more_horiz),
+                          label: mobileOverflowLabel,
+                          tooltip: mobileOverflowTooltip,
+                        ),
                     ],
                   ),
                 ),
@@ -170,36 +172,107 @@ class _DesktopShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: Row(
-        children: [
-          NavigationRail(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onSelected,
-            extended: true,
-            destinations: [
-              for (final d in destinations)
-                NavigationRailDestination(
-                  icon: Icon(d.icon),
-                  label: Text(d.label),
+    return Theme(
+      data: navivoxHermesDarkTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Scaffold(
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: onSelected,
+                  extended: true,
+                  minExtendedWidth: 256,
+                  leading: const _HermesDesktopBrand(),
+                  destinations: [
+                    for (final d in destinations)
+                      NavigationRailDestination(
+                        icon: Icon(d.icon),
+                        label: Text(d.label),
+                      ),
+                  ],
                 ),
-            ],
-          ),
-          const VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-            child: Container(
-              color: theme.colorScheme.surfaceContainerLowest,
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1180),
-                  child: child,
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(
+                  child: Container(
+                    color: theme.colorScheme.surfaceContainerLowest,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1180),
+                        child: child,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HermesDesktopBrand extends StatelessWidget {
+  const _HermesDesktopBrand();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+      child: SizedBox(
+        width: 224,
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.36),
                 ),
               ),
+              child: Icon(
+                Icons.auto_awesome,
+                color: colorScheme.primary,
+                size: 24,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'HERMES ONE',
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Navivox',
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

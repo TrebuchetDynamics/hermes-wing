@@ -1,12 +1,14 @@
-import {
-  INTERACTIVE_SEMANTIC_ROLES,
-  INTERACTIVE_SEMANTIC_SELECTORS,
-  SEMANTIC_BUTTON_SELECTOR,
-} from '../debug/support/semantics/contracts/index.mjs';
-
 export const APP_URL = process.env.NAVIVOX_APP_URL ?? 'http://127.0.0.1:8767/';
 
-export { INTERACTIVE_SEMANTIC_ROLES };
+export const INTERACTIVE_SEMANTIC_ROLES = ['button', 'checkbox', 'menuitem', 'switch', 'textbox'];
+export const SEMANTIC_BUTTON_SELECTOR = 'flt-semantics[role="button"],flt-semantics[role="menuitem"]';
+export const INTERACTIVE_SEMANTIC_SELECTORS = [
+  'flt-semantics[role="button"]',
+  'flt-semantics[role="checkbox"]',
+  'flt-semantics[role="menuitem"]',
+  'flt-semantics[role="switch"]',
+  'flt-semantics[role="textbox"]',
+];
 
 export async function enableFlutterAccessibility(page, { delay = 2000 } = {}) {
   await page

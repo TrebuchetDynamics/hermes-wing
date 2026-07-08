@@ -19,6 +19,8 @@ class HermesChannelState {
     this.jobs = const [],
     this.sessions = const [],
     this.activeSessionId,
+    this.connectedBaseUrl,
+    this.connectedWithApiKey = false,
     this.messages = const {},
     this.voiceRuns = const {},
     this.activeVoiceRunId,
@@ -34,6 +36,8 @@ class HermesChannelState {
   final List<HermesJob> jobs;
   final List<HermesSession> sessions;
   final String? activeSessionId;
+  final String? connectedBaseUrl;
+  final bool connectedWithApiKey;
 
   /// Turns per session id, in arrival order.
   final Map<String, List<HermesChatTurn>> messages;
@@ -87,6 +91,9 @@ class HermesChannelState {
     List<HermesSession>? sessions,
     String? activeSessionId,
     bool clearActiveSessionId = false,
+    String? connectedBaseUrl,
+    bool clearConnectedBaseUrl = false,
+    bool? connectedWithApiKey,
     Map<String, List<HermesChatTurn>>? messages,
     Map<String, NavivoxVoiceRun>? voiceRuns,
     String? activeVoiceRunId,
@@ -115,6 +122,10 @@ class HermesChannelState {
       activeSessionId: clearActiveSessionId
           ? null
           : activeSessionId ?? this.activeSessionId,
+      connectedBaseUrl: clearConnectedBaseUrl
+          ? null
+          : connectedBaseUrl ?? this.connectedBaseUrl,
+      connectedWithApiKey: connectedWithApiKey ?? this.connectedWithApiKey,
       messages: messages ?? this.messages,
       voiceRuns: voiceRuns ?? this.voiceRuns,
       activeVoiceRunId: clearActiveVoiceRunId

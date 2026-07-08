@@ -21,8 +21,13 @@ test('Hermes route connects to a live installed Hermes Agent API server', async 
     { baseUrl: liveUrl, apiKey: liveKey || null },
   );
 
-  await expect(semanticLabel(page, 'Hermes Agent')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sessions' })).toBeVisible();
+  const title = `Navivox live API ${Date.now()}`;
+  await page.evaluate((sessionTitle) => globalThis.navivoxE2EHermesCreateSession(sessionTitle), title);
+  await expect(page.getByRole('heading', { name: title })).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText('How can Hermes help today?').first()).toBeVisible();
+  await expect(page.locator('[aria-label="Voice ready"]').first()).toBeVisible();
+  await expect(page.locator('[aria-label="Ready"]').first()).toBeVisible();
   await page.getByRole('button', { name: 'Sessions' }).click();
   await expect(page.getByRole('group', { name: 'Hermes sessions' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New' })).toBeVisible();

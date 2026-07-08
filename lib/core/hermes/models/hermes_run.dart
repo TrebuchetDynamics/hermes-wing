@@ -5,7 +5,7 @@ class HermesRun {
 
   factory HermesRun.fromJson(Map<String, Object?> json) {
     return HermesRun(
-      id: navivoxStringFieldFromJson(json, 'id'),
+      id: navivoxStringFromJson(json['id'] ?? json['run_id'], fallback: ''),
       sessionId: navivoxStringFromJson(json['session_id'], fallback: ''),
     );
   }

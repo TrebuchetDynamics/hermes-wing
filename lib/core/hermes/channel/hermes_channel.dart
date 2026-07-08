@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-import '../../channel/contracts/navivox_approval_request.dart';
+import 'hermes_approval_request.dart';
 import '../models/hermes_approval_decision.dart';
 import 'hermes_channel_state.dart';
 
-export '../../channel/contracts/navivox_approval_request.dart';
+export 'hermes_approval_request.dart';
 export '../models/hermes_approval_decision.dart';
 export 'hermes_channel_state.dart';
 
@@ -40,7 +40,7 @@ abstract interface class HermesChannel implements Listenable {
   /// Emits approval requests raised by an active run
   /// (`/v1/runs/{run_id}/events` `approval.request`). Empty when run
   /// transport isn't in use.
-  Stream<NavivoxApprovalRequest> get approvalRequests;
+  Stream<HermesApprovalRequest> get approvalRequests;
 
   Future<void> respondToApproval({
     required String approvalId,

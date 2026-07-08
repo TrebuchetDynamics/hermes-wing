@@ -106,18 +106,33 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
 }
 
 class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
-  SpeechToTextVoiceCaptureService({
+  factory SpeechToTextVoiceCaptureService({
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
     SpeechToTextDiagnosticLog? diagnosticLog,
     SpeechToTextCaptureCoordinator coordinator =
         const SpeechToTextCaptureCoordinator(),
+    String? localeId,
+    Duration pauseFor = const Duration(seconds: 4),
+  }) {
+    return SpeechToTextVoiceCaptureService._(
+      engine: engine ?? PluginSpeechToTextEngine(),
+      clock: clock ?? DateTime.now,
+      diagnosticLog: diagnosticLog ?? _defaultDiagnosticLog,
+      coordinator: coordinator,
+      localeId: localeId,
+      pauseFor: pauseFor,
+    );
+  }
+
+  SpeechToTextVoiceCaptureService._({
+    required this._engine,
+    required this._clock,
+    required this._diagnosticLog,
+    required this._coordinator,
     this.localeId,
-    this.pauseFor = const Duration(seconds: 4),
-  }) : _engine = engine ?? PluginSpeechToTextEngine(),
-       _clock = clock ?? DateTime.now,
-       _diagnosticLog = diagnosticLog ?? _defaultDiagnosticLog,
-       _coordinator = coordinator;
+    required this.pauseFor,
+  });
 
   final SpeechToTextEngine _engine;
   final DateTime Function() _clock;
@@ -191,7 +206,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
         localeId: effectiveLocaleId,
         onResult: (snapshot) {
           log(
-            'result recognizedWords="${snapshot.words}" '
+            'result wordsLength=${snapshot.words.length} '
             'confidence=${snapshot.confidence} finalResult=${snapshot.finalResult}',
           );
           latestTranscript = _coordinator.latestUsableTranscript(

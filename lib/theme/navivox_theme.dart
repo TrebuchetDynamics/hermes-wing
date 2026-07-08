@@ -1,31 +1,61 @@
 import 'package:flutter/material.dart';
 
 const navivoxTelegramBlue = Color(0xff229ed9);
-const _navivoxTelegramDarkBackground = Color(0xff17212b);
-const _navivoxTelegramDarkContainer = Color(0xff202b36);
-const _navivoxTelegramDarkContainerHigh = Color(0xff263544);
-const _navivoxTelegramDarkOutline = Color(0xff2f3d4a);
+const navivoxHermesBlue = Color(0xff3b82f6);
+const navivoxHermesDarkBackground = Color(0xff111214);
+const navivoxHermesDarkPane = Color(0xff1f2023);
+const navivoxHermesDarkRail = Color(0xff15171a);
+const navivoxHermesDarkCard = Color(0xff1b1d21);
+const navivoxHermesDarkCardHigh = Color(0xff24272d);
+const navivoxHermesDarkOutline = Color(0xff30343b);
 
-final navivoxLightTheme = _buildNavivoxTheme(Brightness.light);
-final navivoxDarkTheme = _buildNavivoxTheme(Brightness.dark);
+final navivoxLightTheme = _buildTelegramLightTheme();
+final navivoxHermesDarkTheme = _buildHermesDarkTheme();
 
-ThemeData _buildNavivoxTheme(Brightness brightness) {
-  final seededScheme = ColorScheme.fromSeed(
-    seedColor: navivoxTelegramBlue,
-    brightness: brightness,
+/// Backwards-compatible name used by existing app/tests. This is now the
+/// Hermes Desktop-inspired dark theme, while [navivoxLightTheme] remains the
+/// Telegram-light mobile-friendly variant.
+final navivoxDarkTheme = navivoxHermesDarkTheme;
+
+ThemeData _buildTelegramLightTheme() => _buildNavivoxTheme(
+  ColorScheme.fromSeed(seedColor: navivoxTelegramBlue),
+  selectedTileAlpha: 24,
+  dividerAlpha: 96,
+);
+
+ThemeData _buildHermesDarkTheme() {
+  final seeded = ColorScheme.fromSeed(
+    seedColor: navivoxHermesBlue,
+    brightness: Brightness.dark,
   );
-  final colorScheme = brightness == Brightness.dark
-      ? seededScheme.copyWith(
-          primary: navivoxTelegramBlue,
-          surface: _navivoxTelegramDarkBackground,
-          surfaceContainerLowest: _navivoxTelegramDarkBackground,
-          surfaceContainerLow: _navivoxTelegramDarkContainer,
-          surfaceContainer: _navivoxTelegramDarkContainer,
-          surfaceContainerHigh: _navivoxTelegramDarkContainerHigh,
-          surfaceContainerHighest: _navivoxTelegramDarkContainerHigh,
-          outlineVariant: _navivoxTelegramDarkOutline,
-        )
-      : seededScheme;
+  return _buildNavivoxTheme(
+    seeded.copyWith(
+      primary: navivoxHermesBlue,
+      onPrimary: Colors.white,
+      secondary: const Color(0xff7dd3fc),
+      surface: navivoxHermesDarkBackground,
+      onSurface: const Color(0xfff4f4f5),
+      surfaceContainerLowest: navivoxHermesDarkPane,
+      surfaceContainerLow: navivoxHermesDarkRail,
+      surfaceContainer: navivoxHermesDarkCard,
+      surfaceContainerHigh: navivoxHermesDarkCardHigh,
+      surfaceContainerHighest: const Color(0xff2b2f36),
+      onSurfaceVariant: const Color(0xffc4c8cf),
+      outline: const Color(0xff565b65),
+      outlineVariant: navivoxHermesDarkOutline,
+    ),
+    selectedTileAlpha: 36,
+    dividerAlpha: 92,
+  );
+}
+
+ThemeData _buildNavivoxTheme(
+  ColorScheme colorScheme, {
+  required int selectedTileAlpha,
+  required int dividerAlpha,
+}) {
+  final isDark = colorScheme.brightness == Brightness.dark;
+  final selectedColor = colorScheme.primary.withAlpha(selectedTileAlpha);
 
   return ThemeData(
     colorScheme: colorScheme,
@@ -51,14 +81,12 @@ ThemeData _buildNavivoxTheme(Brightness brightness) {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     ),
     dividerTheme: DividerThemeData(
-      color: colorScheme.outlineVariant.withAlpha(
-        brightness == Brightness.dark ? 48 : 96,
-      ),
+      color: colorScheme.outlineVariant.withAlpha(dividerAlpha),
       thickness: 1,
       space: 1,
     ),
     cardTheme: CardThemeData(
-      color: colorScheme.surface,
+      color: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -66,20 +94,62 @@ ThemeData _buildNavivoxTheme(Brightness brightness) {
         side: BorderSide(color: colorScheme.outlineVariant.withAlpha(96)),
       ),
     ),
+    chipTheme: ChipThemeData(
+      backgroundColor: isDark
+          ? colorScheme.surfaceContainerHigh
+          : colorScheme.surfaceContainerLowest,
+      selectedColor: selectedColor,
+      disabledColor: colorScheme.surfaceContainerHighest.withAlpha(
+        isDark ? 88 : 56,
+      ),
+      side: BorderSide(color: colorScheme.outlineVariant.withAlpha(128)),
+      labelStyle: TextStyle(color: colorScheme.onSurface),
+      secondaryLabelStyle: TextStyle(color: colorScheme.onSurface),
+      iconTheme: IconThemeData(color: colorScheme.primary),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: isDark,
+      fillColor: isDark ? colorScheme.surfaceContainer : null,
+      border: isDark
+          ? OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
+            )
+          : null,
+      enabledBorder: isDark
+          ? OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide(color: colorScheme.outlineVariant),
+            )
+          : null,
+      focusedBorder: isDark
+          ? OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide(color: colorScheme.primary, width: 1.4),
+            )
+          : null,
+    ),
     listTileTheme: ListTileThemeData(
       iconColor: colorScheme.onSurfaceVariant,
       textColor: colorScheme.onSurface,
       selectedColor: colorScheme.primary,
-      selectedTileColor: colorScheme.primary.withAlpha(24),
+      selectedTileColor: selectedColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
       horizontalTitleGap: 20,
       minLeadingWidth: 24,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: colorScheme.surface,
-      indicatorColor: colorScheme.primary.withAlpha(24),
+      indicatorColor: selectedColor,
       selectedIconTheme: IconThemeData(color: colorScheme.primary),
-      selectedLabelTextStyle: TextStyle(color: colorScheme.primary),
+      selectedLabelTextStyle: TextStyle(
+        color: colorScheme.primary,
+        fontWeight: FontWeight.w700,
+      ),
+      unselectedIconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
+      unselectedLabelTextStyle: TextStyle(color: colorScheme.onSurfaceVariant),
     ),
   );
 }

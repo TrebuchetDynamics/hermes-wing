@@ -54,7 +54,9 @@ class MethodChannelDeviceSpeechRecognitionDiagnosticsProbe
     implements DeviceSpeechRecognitionDiagnosticsProbe {
   const MethodChannelDeviceSpeechRecognitionDiagnosticsProbe({
     MethodChannel channel = _defaultChannel,
-  }) : _channel = channel;
+  }) : this._(channel);
+
+  const MethodChannelDeviceSpeechRecognitionDiagnosticsProbe._(this._channel);
 
   static const _defaultChannel = MethodChannel(
     'com.trebuchetdynamics.navivox/device_speech',
@@ -82,7 +84,14 @@ Future<VoiceCaptureReadiness> checkDefaultVoiceCaptureReadiness({
 }) async {
   final effectivePlatform = platform ?? currentVoiceCapturePlatform();
   if (!effectivePlatform.isAndroid) {
-    return const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
+    final supported =
+        effectivePlatform.isIOS ||
+        effectivePlatform.isMacOS ||
+        effectivePlatform.isWindows ||
+        effectivePlatform.isWeb;
+    return supported
+        ? const VoiceCaptureReadiness.available()
+        : const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
   }
 
   try {

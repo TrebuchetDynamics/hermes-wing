@@ -8,8 +8,7 @@ import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/hermes/setup/secure_hermes_endpoint_store.dart';
 
 /// Persists the Hermes endpoint (base URL + API key); see
-/// docs/product/hermes-agent-interface-plan.md "Replace setup/persistence
-/// safely."
+/// docs/adr/0004-hermes-endpoint-and-secret-storage.md.
 final hermesEndpointStoreProvider = Provider<HermesEndpointStore>(
   (ref) => SecureHermesEndpointStore(),
 );

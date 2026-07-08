@@ -176,9 +176,16 @@ class HermesApiClient {
   }) async {
     final response = await _postJson(config.runsUri, {
       'session_id': sessionId,
+      // Hermes Agent 0.18 accepts `input`; older test fixtures accepted
+      // `message`. Send both so the client remains compatible across the
+      // transition while parsing either flat or enveloped run responses below.
+      'input': message,
       'message': message,
     });
-    return HermesRun.fromJson(navivoxMapFieldFromJson(response, 'run'));
+    final run = response['run'] is Map
+        ? navivoxMapFromJson(response['run'])
+        : response;
+    return HermesRun.fromJson(run);
   }
 
   Stream<HermesStreamEvent> runEvents(String runId) {

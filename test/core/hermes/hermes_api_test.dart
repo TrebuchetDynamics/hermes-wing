@@ -454,7 +454,11 @@ void main() {
 
       final run = await client.startRun(sessionId: 'sess_1', message: 'hello');
       expect(run.id, 'run_1');
-      expect(posts['/v1/runs'], {'session_id': 'sess_1', 'message': 'hello'});
+      expect(posts['/v1/runs'], {
+        'session_id': 'sess_1',
+        'input': 'hello',
+        'message': 'hello',
+      });
 
       final events = await client.runEvents(run.id).toList();
       expect(getStreamRequests, ['/v1/runs/run_1/events']);

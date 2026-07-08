@@ -7,11 +7,9 @@ class AppShellPresentation {
 
   List<AppShellDestination> get destinations => _destinations;
 
-  List<AppShellDestination> get mobileNavigationDestinations =>
-      _mobileNavigationDestinations;
+  List<AppShellDestination> get mobileNavigationDestinations => _destinations;
 
-  List<AppShellDestination> get mobileOverflowDestinations =>
-      _mobileOverflowDestinations;
+  List<AppShellDestination> get mobileOverflowDestinations => const [];
 
   String get navigationMenuTooltip => 'Open navigation menu';
 
@@ -36,7 +34,7 @@ class AppShellPresentation {
       mobileNavigationDestinations: mobileNavigationDestinations,
       mobileOverflowDestinations: mobileOverflowDestinations,
       selectedIndex: selected,
-      showNavigationMenu: !AppRoutes.isChatThreadLocation(location),
+      showNavigationMenu: true,
     );
   }
 }
@@ -88,56 +86,10 @@ const _hermesDestination = AppShellDestination(
   icon: Icons.auto_awesome_outlined,
   label: 'Hermes',
 );
-const _chatsDestination = AppShellDestination(
-  path: AppRoutes.chats,
-  icon: Icons.chat_bubble_outlined,
-  label: 'Chats',
-);
-const _serversDestination = AppShellDestination(
-  path: AppRoutes.servers,
-  icon: Icons.dns_outlined,
-  label: 'Gateways',
-);
-const _agentsDestination = AppShellDestination(
-  path: AppRoutes.agents,
-  icon: Icons.people_alt_outlined,
-  label: 'Profiles',
-);
-const _memoryDestination = AppShellDestination(
-  path: AppRoutes.memory,
-  icon: Icons.psychology_alt_outlined,
-  label: 'Memory',
-);
-const _configDestination = AppShellDestination(
-  path: AppRoutes.config,
-  icon: Icons.settings_outlined,
-  label: 'Config',
-);
 const _settingsDestination = AppShellDestination(
   path: AppRoutes.settings,
   icon: Icons.keyboard_voice_outlined,
   label: 'Settings',
 );
 
-const _destinations = [
-  _hermesDestination,
-  _chatsDestination,
-  _serversDestination,
-  _agentsDestination,
-  _memoryDestination,
-  _configDestination,
-  _settingsDestination,
-];
-
-const _mobileNavigationDestinations = [
-  _hermesDestination,
-  _chatsDestination,
-  _agentsDestination,
-  _settingsDestination,
-];
-
-const _mobileOverflowDestinations = [
-  _serversDestination,
-  _memoryDestination,
-  _configDestination,
-];
+const _destinations = [_hermesDestination, _settingsDestination];

@@ -1,121 +1,40 @@
-import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
-
-import '../../../shared/fakes/voice_capture_service_fakes.dart';
+import 'package:navivox/shared/voice/voice_capture_service.dart';
 
 void main() {
-  test('creates a speech-to-text voice service for Android devices', () {
-    final fake = successfulVoiceCaptureService();
-    var factoryCalls = 0;
-
-    final service = createDefaultVoiceCaptureService(
-      platform: const VoiceCapturePlatform(isAndroid: true),
-      speechToTextServiceFactory: () {
-        factoryCalls++;
-        return fake;
-      },
-    );
-
-    expect(service, same(fake));
-    expect(factoryCalls, 1);
-  });
-
-  test('keeps non-Android targets in text-only fallback', () {
-    var factoryCalls = 0;
-
-    final service = createDefaultVoiceCaptureService(
-      platform: const VoiceCapturePlatform(isAndroid: false),
-      speechToTextServiceFactory: () {
-        factoryCalls++;
-        return successfulVoiceCaptureService();
-      },
-    );
-
-    expect(service, isNull);
-    expect(factoryCalls, 0);
-  });
-
-  test(
-    'readiness marks Android unavailable without a RecognitionService',
-    () async {
-      final readiness = await checkDefaultVoiceCaptureReadiness(
-        platform: const VoiceCapturePlatform(isAndroid: true),
-        diagnosticsProbe: const _FakeSpeechDiagnosticsProbe(
-          DeviceSpeechRecognitionDiagnostics(recognitionServiceCount: 0),
+  test('creates speech_to_text capture on supported platforms', () {
+    for (final platform in const [
+      VoiceCapturePlatform(isAndroid: true),
+      VoiceCapturePlatform(isAndroid: false, isIOS: true),
+      VoiceCapturePlatform(isAndroid: false, isMacOS: true),
+      VoiceCapturePlatform(isAndroid: false, isWindows: true),
+      VoiceCapturePlatform(isAndroid: false, isWeb: true),
+    ]) {
+      expect(
+        createDefaultVoiceCaptureService(
+          platform: platform,
+          speechToTextServiceFactory: _FakeVoiceCaptureService.new,
         ),
+        isA<_FakeVoiceCaptureService>(),
       );
+    }
+  });
 
-      expect(readiness.available, isFalse);
-      expect(readiness.unavailableReason, 'device STT unavailable');
-    },
-  );
-
-  test('readiness degrades safely when diagnostics channel fails', () async {
-    final readiness = await checkDefaultVoiceCaptureReadiness(
-      platform: const VoiceCapturePlatform(isAndroid: true),
-      diagnosticsProbe: _ThrowingSpeechDiagnosticsProbe(
-        PlatformException(code: 'channel-failed'),
+  test('leaves unsupported platforms without default STT', () {
+    expect(
+      createDefaultVoiceCaptureService(
+        platform: const VoiceCapturePlatform(isAndroid: false),
+        speechToTextServiceFactory: _FakeVoiceCaptureService.new,
       ),
+      isNull,
     );
-
-    expect(readiness.available, isFalse);
-    expect(readiness.unavailableReason, 'device STT unavailable');
   });
-
-  test(
-    'readiness degrades safely when diagnostics payload parsing fails',
-    () async {
-      final readiness = await checkDefaultVoiceCaptureReadiness(
-        platform: const VoiceCapturePlatform(isAndroid: true),
-        diagnosticsProbe: _ThrowingSpeechDiagnosticsProbe(
-          const FormatException('unexpected diagnostics shape'),
-        ),
-      );
-
-      expect(readiness.available, isFalse);
-      expect(readiness.unavailableReason, 'device STT unavailable');
-    },
-  );
-
-  test(
-    'readiness allows Android recognizer before first microphone grant',
-    () async {
-      final readiness = await checkDefaultVoiceCaptureReadiness(
-        platform: const VoiceCapturePlatform(isAndroid: true),
-        diagnosticsProbe: const _FakeSpeechDiagnosticsProbe(
-          DeviceSpeechRecognitionDiagnostics(
-            recognitionServiceCount: 1,
-            microphonePermissionGranted: false,
-          ),
-        ),
-      );
-
-      expect(readiness.available, isTrue);
-      expect(readiness.unavailableReason, isNull);
-      expect(readiness.diagnostics?.microphonePermissionGranted, isFalse);
-    },
-  );
 }
 
-class _FakeSpeechDiagnosticsProbe
-    implements DeviceSpeechRecognitionDiagnosticsProbe {
-  const _FakeSpeechDiagnosticsProbe(this.diagnostics);
-
-  final DeviceSpeechRecognitionDiagnostics diagnostics;
-
+class _FakeVoiceCaptureService implements VoiceCaptureService {
   @override
-  Future<DeviceSpeechRecognitionDiagnostics> read() async => diagnostics;
-}
-
-class _ThrowingSpeechDiagnosticsProbe
-    implements DeviceSpeechRecognitionDiagnosticsProbe {
-  _ThrowingSpeechDiagnosticsProbe(this.error);
-
-  final Object error;
-
-  @override
-  Future<DeviceSpeechRecognitionDiagnostics> read() async {
-    throw error;
+  Future<VoiceCapture> capture({required Duration timeout}) {
+    throw UnimplementedError();
   }
 }

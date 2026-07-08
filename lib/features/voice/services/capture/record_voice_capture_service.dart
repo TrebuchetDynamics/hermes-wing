@@ -18,20 +18,14 @@ class VoiceCaptureFailure implements Exception {
 /// and stop or cancel on demand.
 class VoiceCaptureSession {
   VoiceCaptureSession._({
-    required AudioRecorder recorder,
-    required SpeechRecognizer recognizer,
-    required DateTime startedAt,
-    required DateTime Function() clock,
-    required Future<void> recorderStarted,
-    required Future<void> recognizerStarted,
-    required RecordVoiceCapturePolicy policy,
-  }) : _recorder = recorder,
-       _recognizer = recognizer,
-       _startedAt = startedAt,
-       _clock = clock,
-       _recorderStarted = recorderStarted,
-       _recognizerStarted = recognizerStarted,
-       _policy = policy;
+    required this._recorder,
+    required this._recognizer,
+    required this._startedAt,
+    required this._clock,
+    required this._recorderStarted,
+    required this._recognizerStarted,
+    required this._policy,
+  });
 
   final AudioRecorder _recorder;
   final SpeechRecognizer _recognizer;
@@ -115,15 +109,26 @@ class VoiceCaptureSession {
 }
 
 class RecordVoiceCaptureService implements VoiceCaptureService {
-  RecordVoiceCaptureService({
+  factory RecordVoiceCaptureService({
     required AudioRecorder recorder,
     required SpeechRecognizer recognizer,
     DateTime Function()? clock,
     RecordVoiceCapturePolicy policy = const RecordVoiceCapturePolicy(),
-  }) : _recorder = recorder,
-       _recognizer = recognizer,
-       _clock = clock ?? DateTime.now,
-       _policy = policy;
+  }) {
+    return RecordVoiceCaptureService._(
+      recorder: recorder,
+      recognizer: recognizer,
+      clock: clock ?? DateTime.now,
+      policy: policy,
+    );
+  }
+
+  RecordVoiceCaptureService._({
+    required this._recorder,
+    required this._recognizer,
+    required this._clock,
+    required this._policy,
+  });
 
   final AudioRecorder _recorder;
   final SpeechRecognizer _recognizer;

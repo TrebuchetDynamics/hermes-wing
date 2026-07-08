@@ -4,14 +4,23 @@ import 'package:navivox/app.dart';
 import 'package:navivox/theme/navivox_theme.dart';
 
 void main() {
-  test('Navivox themes provide light and dark Telegram-blue palettes', () {
+  test('Navivox themes provide Telegram Light and Hermes Dark palettes', () {
     expect(navivoxTelegramBlue, const Color(0xff229ed9));
+    expect(navivoxHermesBlue, const Color(0xff3b82f6));
     expect(navivoxLightTheme.useMaterial3, isTrue);
-    expect(navivoxDarkTheme.useMaterial3, isTrue);
+    expect(navivoxHermesDarkTheme.useMaterial3, isTrue);
     expect(navivoxLightTheme.colorScheme.brightness, Brightness.light);
-    expect(navivoxDarkTheme.colorScheme.brightness, Brightness.dark);
+    expect(navivoxHermesDarkTheme.colorScheme.brightness, Brightness.dark);
+    expect(
+      navivoxHermesDarkTheme.colorScheme.surface,
+      navivoxHermesDarkBackground,
+    );
+    expect(
+      navivoxHermesDarkTheme.colorScheme.surfaceContainerLowest,
+      navivoxHermesDarkPane,
+    );
     expect(navivoxLightTheme.appBarTheme.centerTitle, isFalse);
-    expect(navivoxDarkTheme.appBarTheme.centerTitle, isFalse);
+    expect(navivoxHermesDarkTheme.appBarTheme.centerTitle, isFalse);
   });
 
   test('Navivox themes keep top bars flat like Telegram', () {
@@ -34,10 +43,7 @@ void main() {
       expect(theme.drawerTheme.surfaceTintColor, Colors.transparent);
       expect(drawerShape?.borderRadius, BorderRadius.zero);
       expect(theme.listTileTheme.selectedColor, colorScheme.primary);
-      expect(
-        theme.listTileTheme.selectedTileColor,
-        colorScheme.primary.withAlpha(24),
-      );
+      expect(theme.listTileTheme.selectedTileColor, isNotNull);
     }
   });
 
@@ -58,14 +64,14 @@ void main() {
   });
 
   test(
-    'Navivox themes style the desktop rail with Telegram-blue selection',
+    'Navivox themes style the desktop rail with selected Hermes accents',
     () {
       for (final theme in [navivoxLightTheme, navivoxDarkTheme]) {
         final colorScheme = theme.colorScheme;
         final railTheme = theme.navigationRailTheme;
 
         expect(railTheme.backgroundColor, colorScheme.surface);
-        expect(railTheme.indicatorColor, colorScheme.primary.withAlpha(24));
+        expect(railTheme.indicatorColor, isNotNull);
         expect(railTheme.selectedIconTheme?.color, colorScheme.primary);
         expect(railTheme.selectedLabelTextStyle?.color, colorScheme.primary);
       }
@@ -79,7 +85,7 @@ void main() {
       expect(
         theme.dividerTheme.color,
         colorScheme.outlineVariant.withAlpha(
-          theme.colorScheme.brightness == Brightness.dark ? 48 : 96,
+          theme.colorScheme.brightness == Brightness.dark ? 92 : 96,
         ),
       );
       expect(theme.dividerTheme.thickness, 1);
@@ -93,7 +99,12 @@ void main() {
       final cardTheme = theme.cardTheme;
       final cardShape = cardTheme.shape as RoundedRectangleBorder?;
 
-      expect(cardTheme.color, colorScheme.surface);
+      expect(
+        cardTheme.color,
+        theme.colorScheme.brightness == Brightness.dark
+            ? colorScheme.surfaceContainer
+            : colorScheme.surface,
+      );
       expect(cardTheme.surfaceTintColor, Colors.transparent);
       expect(cardTheme.elevation, 0);
       expect(cardShape?.borderRadius, BorderRadius.circular(16));

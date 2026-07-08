@@ -35,6 +35,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     List<String> enabledToolsets = const [],
     List<HermesJob> jobs = const [],
     List<HermesSession>? sessions,
+    String connectedBaseUrl = 'http://fake-hermes:8642',
+    bool connectedWithApiKey = true,
     this.createSessionFails = false,
     this.selectSessionFails = false,
     this.selectSessionFailureMessage = 'select failed',
@@ -50,6 +52,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                enabledToolsets: enabledToolsets,
                jobs: jobs,
                errorMessage: errorMessage,
+               connectedBaseUrl: connectedBaseUrl,
+               connectedWithApiKey: connectedWithApiKey,
                sessions:
                    sessions ?? [HermesSession(id: sessionId, source: 'fake')],
                activeSessionId:
@@ -82,7 +86,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final Future<void> Function()? approvalResponseGate;
   int stopActiveTurnCalls = 0;
   final _approvalController =
-      StreamController<NavivoxApprovalRequest>.broadcast();
+      StreamController<HermesApprovalRequest>.broadcast();
 
   HermesChannelState _state;
 
@@ -90,7 +94,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   HermesChannelState get state => _state;
 
   @override
-  Stream<NavivoxApprovalRequest> get approvalRequests =>
+  Stream<HermesApprovalRequest> get approvalRequests =>
       _approvalController.stream;
 
   @override
@@ -113,6 +117,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         status: HermesConnectionStatus.connected,
         sessions: [const HermesSession(id: sessionId, source: 'fake')],
         activeSessionId: sessionId,
+        connectedBaseUrl: baseUrl,
+        connectedWithApiKey: apiKey?.trim().isNotEmpty ?? false,
         messages: const {sessionId: []},
       ),
     );
@@ -221,7 +227,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     _appendExchange(text);
   }
 
-  void emitApprovalRequest(NavivoxApprovalRequest request) {
+  void emitApprovalRequest(HermesApprovalRequest request) {
     _approvalController.add(request);
   }
 

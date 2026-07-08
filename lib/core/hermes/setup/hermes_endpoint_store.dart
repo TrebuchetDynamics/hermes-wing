@@ -39,8 +39,8 @@ class HermesEndpointConfig {
 /// Persists Hermes endpoints the operator connected to, so the app does not
 /// require re-entering the base URL/API key on every open. Implementations must
 /// never write [HermesEndpointConfig.apiKey] to shared preferences, logs, or
-/// other non-secure storage — see docs/product/hermes-agent-interface-plan.md
-/// "Replace setup/persistence safely."
+/// other non-secure storage — see
+/// docs/adr/0004-hermes-endpoint-and-secret-storage.md.
 abstract interface class HermesEndpointStore {
   Future<HermesEndpointConfig?> load();
 

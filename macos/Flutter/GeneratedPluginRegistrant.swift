@@ -5,16 +5,18 @@
 import FlutterMacOS
 import Foundation
 
-import file_selector_macos
+import audioplayers_darwin
+import flutter_onnxruntime
 import flutter_secure_storage_macos
-import mobile_scanner
+import flutter_tts
 import shared_preferences_foundation
 import speech_to_text
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
+  AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
+  FlutterOnnxruntimePlugin.register(with: registry.registrar(forPlugin: "FlutterOnnxruntimePlugin"))
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
-  MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
+  FlutterTtsPlugin.register(with: registry.registrar(forPlugin: "FlutterTtsPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
   SpeechToTextPlugin.register(with: registry.registrar(forPlugin: "SpeechToTextPlugin"))
 }

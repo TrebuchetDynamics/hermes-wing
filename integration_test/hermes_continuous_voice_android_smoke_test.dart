@@ -97,13 +97,13 @@ class _AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   final sentVoiceTranscripts = <String>[];
   int _voiceRunCounter = 0;
   HermesChannelState _state;
-  final _approvals = StreamController<NavivoxApprovalRequest>.broadcast();
+  final _approvals = StreamController<HermesApprovalRequest>.broadcast();
 
   @override
   HermesChannelState get state => _state;
 
   @override
-  Stream<NavivoxApprovalRequest> get approvalRequests => _approvals.stream;
+  Stream<HermesApprovalRequest> get approvalRequests => _approvals.stream;
 
   @override
   void dispose() {

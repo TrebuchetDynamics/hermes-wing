@@ -17,9 +17,17 @@ VoiceCaptureService? createDefaultVoiceCaptureService({
   VoiceCaptureServiceFactory? speechToTextServiceFactory,
 }) {
   final effectivePlatform = platform ?? currentVoiceCapturePlatform();
-  if (!effectivePlatform.isAndroid) return null;
+  if (!_supportsSpeechToText(effectivePlatform)) return null;
 
   final factory =
       speechToTextServiceFactory ?? SpeechToTextVoiceCaptureService.new;
   return factory();
+}
+
+bool _supportsSpeechToText(VoiceCapturePlatform platform) {
+  return platform.isAndroid ||
+      platform.isIOS ||
+      platform.isMacOS ||
+      platform.isWindows ||
+      platform.isWeb;
 }

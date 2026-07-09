@@ -37,4 +37,7 @@ class _FakeVoiceCaptureService implements VoiceCaptureService {
   Future<VoiceCapture> capture({required Duration timeout}) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> cancel() async {}
 }

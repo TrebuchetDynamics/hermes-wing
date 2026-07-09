@@ -63,6 +63,9 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         final activeSessionId = channel.state.activeSessionId;
         if (_approvalSessionId != null &&
             _approvalSessionId != activeSessionId) {
+          _voiceInputController.pause(
+            'Hermes session changed. Continuous voice paused.',
+          );
           _pendingApprovals.clear();
           _answeringApprovalId = null;
         }
@@ -76,9 +79,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         _pendingApprovals.clear();
         _answeringApprovalId = null;
         _approvalSessionId = null;
-        _continuousVoiceEnabled = false;
-        _voiceError = null;
-        _stopSpeaking();
+        _voiceInputController.pause();
       }
     }
     if (mounted) _setState(() {});

@@ -142,6 +142,9 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
   final Duration pauseFor;
 
   @override
+  Future<void> cancel() => _engine.cancel();
+
+  @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
     final startedAt = _clock();
     final completion = Completer<SpeechToTextSnapshot>();

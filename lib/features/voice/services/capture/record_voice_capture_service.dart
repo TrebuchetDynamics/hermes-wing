@@ -134,6 +134,7 @@ class RecordVoiceCaptureService implements VoiceCaptureService {
   final SpeechRecognizer _recognizer;
   final DateTime Function() _clock;
   final RecordVoiceCapturePolicy _policy;
+  VoiceCaptureSession? _activeSession;
 
   /// Starts a push-to-talk session. Caller owns stop/cancel.
   VoiceCaptureSession start() {
@@ -169,6 +170,7 @@ class RecordVoiceCaptureService implements VoiceCaptureService {
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
     final session = start();
+    _activeSession = session;
     try {
       await _recognizer.onFinal.timeout(
         timeout,
@@ -185,6 +187,15 @@ class RecordVoiceCaptureService implements VoiceCaptureService {
       await session.cancel();
       if (e is VoiceCaptureFailure) rethrow;
       throw VoiceCaptureFailure(e);
+    } finally {
+      if (identical(_activeSession, session)) _activeSession = null;
     }
+  }
+
+  @override
+  Future<void> cancel() async {
+    final session = _activeSession;
+    _activeSession = null;
+    await session?.cancel();
   }
 }

@@ -233,11 +233,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 onReauthorizeError: () => unawaited(_reauthorize(channel)),
               ),
             ),
-            if (_voiceError != null)
+            if (_voiceInputController.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  _voiceError!,
+                  _voiceInputController.error!,
                   key: const ValueKey('hermes-voice-error'),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
@@ -378,7 +378,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final modelLabel = state.models.isEmpty
         ? state.capabilities?.model ?? 'Hermes model'
         : state.models.first;
-    final voiceLabel = _continuousVoiceEnabled
+    final voiceLabel = _voiceInputController.continuousEnabled
         ? 'Voice loop on'
         : 'Voice ready';
     final canRetry =
@@ -439,7 +439,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         const SizedBox(height: 6),
         Row(
           children: [
-            _buildContinuousVoiceSwitch(channel, canSendTurns),
+            _buildContinuousVoiceSwitch(canSendTurns),
             Expanded(
               child: TextField(
                 key: const ValueKey('hermes-composer-field'),
@@ -503,7 +503,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           const SizedBox(height: 6),
           Row(
             children: [
-              _buildContinuousVoiceSwitch(channel, canSendTurns),
+              _buildContinuousVoiceSwitch(canSendTurns),
               const SizedBox(width: 4),
               Expanded(child: strip),
               const SizedBox(width: 8),
@@ -515,19 +515,23 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
   }
 
-  Widget _buildContinuousVoiceSwitch(HermesChannel channel, bool canSendTurns) {
+  Widget _buildContinuousVoiceSwitch(bool canSendTurns) {
+    final settings = ref.watch(navivoxVoiceSettingsProvider);
+    final voiceEnabled = settings.continuousVoiceEnabled;
     return Semantics(
       label: 'Continuous voice — device STT to Hermes text',
       child: Switch(
         key: const ValueKey('hermes-continuous-voice-switch'),
-        value: _continuousVoiceEnabled,
-        onChanged: canSendTurns
+        value: _voiceInputController.continuousEnabled,
+        onChanged: canSendTurns && voiceEnabled
             ? (value) {
-                _setState(() => _continuousVoiceEnabled = value);
+                ref
+                    .read(navivoxVoiceSettingsProvider.notifier)
+                    .setSpeakRepliesEnabled(value);
                 if (value) {
-                  unawaited(_captureOnce(channel));
+                  unawaited(_voiceInputController.enableContinuous());
                 } else {
-                  _stopSpeaking();
+                  _voiceInputController.pause();
                 }
               }
             : null,
@@ -541,6 +545,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     HermesChannelState state,
     bool canSendTurns,
   ) {
+    final voiceEnabled = ref.watch(
+      navivoxVoiceSettingsProvider.select(
+        (settings) => settings.continuousVoiceEnabled,
+      ),
+    );
     return [
       if (state.capabilities != null)
         IconButton(
@@ -553,16 +562,17 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       IconButton(
         key: const ValueKey('hermes-mic-button'),
         tooltip: 'Speak — device STT to Hermes text',
-        icon: _capturing
+        icon: _voiceInputController.capturing
             ? const SizedBox(
                 height: 18,
                 width: 18,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.mic_none_outlined),
-        onPressed: _capturing || !canSendTurns
+        onPressed:
+            _voiceInputController.capturing || !canSendTurns || !voiceEnabled
             ? null
-            : () => unawaited(_captureOnce(channel)),
+            : () => unawaited(_voiceInputController.captureDraft()),
       ),
       IconButton(
         key: const ValueKey('hermes-send-button'),

@@ -80,6 +80,9 @@ class _QueueVoiceCaptureService implements VoiceCaptureService {
     }
     return _captures.removeAt(0);
   }
+
+  @override
+  Future<void> cancel() async {}
 }
 
 class _AndroidHermesVoiceSmokeChannel extends ChangeNotifier

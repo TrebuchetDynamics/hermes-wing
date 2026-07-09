@@ -15,14 +15,11 @@ import '../../../core/hermes/models/hermes_session.dart';
 import '../../../core/hermes/policy/hermes_surface_readiness.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
-import '../../../core/protocol/voice/models/navivox_voice_run.dart';
 import '../../../shared/voice/voice_capture_service.dart';
-import '../controllers/hermes_voice_capture_flow.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
-import '../controllers/hermes_continuous_voice_reply_policy.dart';
-import '../controllers/hermes_voice_run_controller.dart';
+import '../controllers/hermes_voice_input_controller.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
 
@@ -86,20 +83,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final _apiKeyController = TextEditingController();
   final _composerController = TextEditingController();
   final _transcriptScrollController = ScrollController();
-  final HermesVoiceRunController _voiceRunController =
-      HermesVoiceRunController();
+  late final HermesVoiceInputController _voiceInputController;
 
   HermesChannel? _subscribed;
   StreamSubscription<HermesApprovalRequest>? _approvalSubscription;
-  bool _continuousVoiceEnabled = false;
-  bool _capturing = false;
-  String? _voiceError;
   String? _queuedFollowUpError;
   final Queue<_QueuedFollowUp> _queuedFollowUps = Queue<_QueuedFollowUp>();
   final Queue<HermesApprovalRequest> _pendingApprovals = Queue();
   String? _answeringApprovalId;
   String? _approvalSessionId;
-  String? _lastSpokenTurnId;
   int _connectAttemptId = 0;
   bool _reconnectingOnResume = false;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
@@ -108,12 +100,25 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _voiceInputController = HermesVoiceInputController(
+      channel: () => ref.read(hermesChannelProvider),
+      captureService: () =>
+          widget.voiceCaptureServiceOverride ??
+          ref.read(hermesVoiceCaptureServiceProvider),
+      textToSpeechService: () =>
+          widget.textToSpeechServiceOverride ??
+          ref.read(hermesTextToSpeechServiceProvider),
+      settings: () => ref.read(navivoxVoiceSettingsProvider),
+      onDraft: _appendVoiceDraft,
+    )..addListener(_onVoiceInputChanged);
     _endpointProfilesFuture = _loadEndpointProfiles();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _voiceInputController.removeListener(_onVoiceInputChanged);
+    _voiceInputController.dispose();
     _subscribed?.removeListener(_onChannelChanged);
     _approvalSubscription?.cancel();
     _baseUrlController.dispose();
@@ -127,7 +132,24 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_reconnectAfterResumeIfRecoverable());
+    } else {
+      _voiceInputController.pause(
+        'Continuous voice paused while Navivox is not in the foreground.',
+      );
     }
+  }
+
+  void _onVoiceInputChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _appendVoiceDraft(String transcript) {
+    final existing = _composerController.text.trimRight();
+    final draft = existing.isEmpty ? transcript : '$existing $transcript';
+    _composerController.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
   }
 
   void _setState(VoidCallback fn) => setState(fn);
@@ -151,7 +173,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final activeSession = state.activeSession;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _maybeContinueVoiceLoop(channel);
+      if (mounted) unawaited(_voiceInputController.maybeContinue());
     });
 
     return Scaffold(

@@ -17,6 +17,9 @@ class VoiceCapture {
 
 abstract interface class VoiceCaptureService {
   Future<VoiceCapture> capture({required Duration timeout});
+
+  /// Cancels any active capture and releases the microphone promptly.
+  Future<void> cancel();
 }
 
 class VoiceCaptureTimeout implements Exception {
@@ -68,4 +71,7 @@ class FakeVoiceCaptureService implements VoiceCaptureService {
       timer.cancel();
     }
   }
+
+  @override
+  Future<void> cancel() async {}
 }

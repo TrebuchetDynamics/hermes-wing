@@ -85,6 +85,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     text: _isAndroid ? '' : 'http://127.0.0.1:8642',
   );
   final _apiKeyController = TextEditingController();
+  final _profileLabelController = TextEditingController();
   final _composerController = TextEditingController();
   final _transcriptScrollController = ScrollController();
   late final HermesVoiceInputController _voiceInputController;
@@ -134,6 +135,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _approvalSubscription?.cancel();
     _baseUrlController.dispose();
     _apiKeyController.dispose();
+    _profileLabelController.dispose();
     _composerController.dispose();
     _transcriptScrollController.dispose();
     super.dispose();

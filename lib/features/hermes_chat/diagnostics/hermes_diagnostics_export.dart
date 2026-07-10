@@ -90,7 +90,11 @@ String hermesDiagnosticsExport(HermesChannelState state) {
     ..writeln(
       'Optional inventory failures: ${optionalFailures.isEmpty ? 'none' : optionalFailures}',
     )
-    ..writeln('Secrets: excluded');
+    ..writeln('Secrets: excluded')
+    ..writeln('Raw logs: excluded')
+    ..writeln('Tool payloads: excluded')
+    ..writeln('Transcripts: excluded')
+    ..writeln('Local paths: excluded');
 
   return buffer.toString().trimRight();
 }

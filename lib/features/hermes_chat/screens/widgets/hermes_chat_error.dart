@@ -303,12 +303,14 @@ class _EndpointProfileChips extends StatelessWidget {
     required this.profiles,
     required this.connecting,
     required this.onSelect,
+    required this.onRename,
     required this.onDelete,
   });
 
   final List<HermesEndpointConfig> profiles;
   final bool connecting;
   final ValueChanged<HermesEndpointConfig> onSelect;
+  final ValueChanged<HermesEndpointConfig> onRename;
   final ValueChanged<HermesEndpointConfig> onDelete;
 
   @override
@@ -327,19 +329,48 @@ class _EndpointProfileChips extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final profile in profiles)
-              InputChip(
-                key: ValueKey(
-                  'hermes-endpoint-profile-${profile.id ?? profile.baseUrl}',
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: InputChip(
+                        key: ValueKey(
+                          'hermes-endpoint-profile-${profile.id ?? profile.baseUrl}',
+                        ),
+                        label: Text(
+                          _safeHermesUiPreview(
+                            profile.displayLabel,
+                            maxLength: 48,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onPressed: connecting ? null : () => onSelect(profile),
+                        onDeleted: connecting || profile.id == null
+                            ? null
+                            : () => unawaited(
+                                _confirmDeleteProfile(context, profile),
+                              ),
+                        deleteIcon: const Icon(Icons.close, size: 18),
+                        tooltip: _safeHermesUiPreview(
+                          profile.baseUrl,
+                          maxLength: 96,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey(
+                        'hermes-endpoint-profile-rename-${profile.id ?? profile.baseUrl}',
+                      ),
+                      tooltip: 'Rename Hermes profile',
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      onPressed: connecting || profile.id == null
+                          ? null
+                          : () => onRename(profile),
+                    ),
+                  ],
                 ),
-                label: Text(
-                  _safeHermesUiPreview(profile.displayLabel, maxLength: 48),
-                ),
-                onPressed: connecting ? null : () => onSelect(profile),
-                onDeleted: connecting || profile.id == null
-                    ? null
-                    : () => unawaited(_confirmDeleteProfile(context, profile)),
-                deleteIcon: const Icon(Icons.close, size: 18),
-                tooltip: _safeHermesUiPreview(profile.baseUrl, maxLength: 96),
               ),
           ],
         ),

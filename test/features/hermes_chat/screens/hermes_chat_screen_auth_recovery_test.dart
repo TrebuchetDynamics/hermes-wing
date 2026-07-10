@@ -67,6 +67,64 @@ void main() {
     );
   });
 
+  testWidgets('profile labels persist and presets clear secret fields', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    final store = FakeHermesEndpointStore();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+        ],
+        child: const MaterialApp(home: HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-api-key-field')),
+      'private-key',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-profile-label-field')),
+      'Local agent',
+    );
+    await tester.tap(find.byKey(const ValueKey('hermes-preset-remote')));
+    await tester.pump();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('hermes-api-key-field')))
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('hermes-profile-label-field')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-base-url-field')),
+      'http://127.0.0.1:8642',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-profile-label-field')),
+      'Local agent',
+    );
+    await tester.tap(find.byKey(const ValueKey('hermes-connect-button')));
+    await tester.pumpAndSettle();
+
+    expect(store.saveCalls.single.label, 'Local agent');
+  });
+
   testWidgets('approval failures remain visible to the operator', (
     tester,
   ) async {

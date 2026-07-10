@@ -67,7 +67,9 @@ bool _isErrorEvent(String name) =>
     name == 'error' ||
     name == 'stream.error' ||
     name == 'run.error' ||
-    name == 'assistant.error';
+    name == 'assistant.error' ||
+    name == 'message.error' ||
+    name == 'response.error';
 
 /// Pure Dart server-sent event decoder for Hermes HTTP streams.
 class HermesSseEventDecoder {

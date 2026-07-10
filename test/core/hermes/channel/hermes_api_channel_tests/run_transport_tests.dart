@@ -62,6 +62,74 @@ void _hermesApiChannelRunTransportTests() {
     },
   );
 
+  test('sendText accepts response SSE aliases', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+        post: (uri, headers, body) async => switch (uri.path) {
+          '/v1/runs' =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+          _ => '{}',
+        },
+        getStream: (uri, headers) => Stream.fromIterable([
+          'event: response.output_text.delta\ndata: {"delta":"Alias reply"}\n\n',
+          'event: response.done\ndata: {}\n\n',
+        ]),
+      ),
+    );
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('use aliases');
+
+    expect(channel.state.errorMessage, isNull);
+    expect(channel.state.activeMessages.last.text, 'Alias reply');
+    expect(
+      channel.state.activeMessages.last.status,
+      HermesTurnStatus.completed,
+    );
+  });
+
+  test('sendText accepts approval event-name aliases', () async {
+    final approvals = <HermesApprovalRequest>[];
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async => switch (uri.path) {
+          '/v1/runs' =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+          _ => '{}',
+        },
+        getStream: (uri, headers) => Stream.fromIterable([
+          'event: approval.required\ndata: {"approval_id":"appr_alias","prompt":"Approve alias?"}\n\n',
+          'event: message.completed\ndata: {}\n\n',
+        ]),
+      ),
+    );
+    channel.approvalRequests.listen(approvals.add);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('needs approval');
+
+    expect(approvals.single.id, 'appr_alias');
+    expect(channel.state.errorMessage, isNull);
+  });
+
   test('sendText accepts approval id aliases from run events', () async {
     final approvals = <HermesApprovalRequest>[];
     final channel = HermesApiChannel(

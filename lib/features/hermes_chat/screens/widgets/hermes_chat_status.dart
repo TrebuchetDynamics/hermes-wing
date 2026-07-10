@@ -211,6 +211,13 @@ class _HermesCapabilityStrip extends StatelessWidget {
           child: ListView(
             shrinkWrap: true,
             children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  'No mobile config, memory, schedule, gateway, or persona mutation controls are enabled.',
+                  key: ValueKey('hermes-admin-surfaces-note'),
+                ),
+              ),
               for (final item in items)
                 ListTile(
                   title: Text(item.title),

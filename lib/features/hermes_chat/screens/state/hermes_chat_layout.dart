@@ -28,6 +28,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                     profiles: snapshot.data ?? const [],
                     connecting: connecting,
                     onSelect: _selectEndpointProfile,
+                    onRename: (profile) =>
+                        unawaited(_renameEndpointProfile(context, profile)),
                     onDelete: (profile) =>
                         unawaited(_deleteEndpointProfile(profile)),
                   ),
@@ -43,23 +45,22 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         label: const Text('Local Hermes'),
                         onPressed: connecting
                             ? null
-                            : () => _baseUrlController.text =
-                                  'http://127.0.0.1:8642',
+                            : () =>
+                                  _applyEndpointPreset('http://127.0.0.1:8642'),
                       ),
                     ActionChip(
                       key: const ValueKey('hermes-preset-android'),
                       label: const Text('Android emulator'),
                       onPressed: connecting
                           ? null
-                          : () => _baseUrlController.text =
-                                'http://10.0.2.2:8642',
+                          : () => _applyEndpointPreset('http://10.0.2.2:8642'),
                     ),
                     ActionChip(
                       key: const ValueKey('hermes-preset-remote'),
                       label: const Text('Remote/LAN'),
                       onPressed: connecting
                           ? null
-                          : () => _baseUrlController.clear(),
+                          : () => _applyEndpointPreset(''),
                     ),
                   ],
                 ),
@@ -80,6 +81,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'API key (optional)',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  key: const ValueKey('hermes-profile-label-field'),
+                  controller: _profileLabelController,
+                  decoration: const InputDecoration(
+                    labelText: 'Profile label (optional)',
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -552,7 +561,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       ),
     );
     return [
-      if (state.capabilities != null)
+      if (state.capabilities != null) ...[
         IconButton(
           key: const ValueKey('hermes-attachments-button'),
           tooltip: 'Attachments/media status',
@@ -560,6 +569,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           onPressed: () =>
               _showAttachmentsDeferred(context, state.capabilities!),
         ),
+        IconButton(
+          key: const ValueKey('hermes-files-context-button'),
+          tooltip: 'Files/context folders status',
+          icon: const Icon(Icons.folder_open_outlined),
+          onPressed: () =>
+              _showFilesContextDeferred(context, state.capabilities!),
+        ),
+      ],
       IconButton(
         key: const ValueKey('hermes-mic-button'),
         tooltip: 'Speak — device STT to Hermes text',

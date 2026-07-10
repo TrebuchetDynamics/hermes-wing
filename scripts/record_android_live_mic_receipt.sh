@@ -88,6 +88,13 @@ path = sys.argv[1]
 spoken_phrase = os.environ['NAVIVOX_ANDROID_SPOKEN_PHRASE'].strip()
 second_spoken_phrase = os.environ['NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE'].strip()
 provider_reply = os.environ['NAVIVOX_ANDROID_PROVIDER_REPLY'].strip()
+for label, value in {
+    'NAVIVOX_ANDROID_SPOKEN_PHRASE': spoken_phrase,
+    'NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE': second_spoken_phrase,
+    'NAVIVOX_ANDROID_PROVIDER_REPLY': provider_reply,
+}.items():
+    if not value:
+        raise SystemExit(f'{label} must contain a short observed non-sensitive excerpt, not whitespace.')
 if spoken_phrase.casefold() == second_spoken_phrase.casefold():
     raise SystemExit(
         'NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE must be a different observed turn after re-arm.'
@@ -168,6 +175,8 @@ if not package_info['record_audio_granted']:
 def sanitized_url(raw):
     parts = urlsplit(raw.strip())
     netloc = parts.netloc.rsplit('@', 1)[-1]
+    if parts.scheme not in {'http', 'https'} or not netloc:
+        raise SystemExit('NAVIVOX_ANDROID_HERMES_URL must be a valid http(s) Hermes origin reachable by the physical Android device.')
     return urlunsplit((parts.scheme, netloc, '', '', ''))
 
 receipt = {

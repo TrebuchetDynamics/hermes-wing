@@ -16,6 +16,13 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final detail = advertised
         ? 'Hermes advertises attachments or multimodal chat, but Navivox has not wired mobile-safe upload controls yet.'
         : 'Hermes did not advertise a mobile-safe attachments API. Navivox keeps this chat text-only plus device STT transcripts.';
+    const exclusion =
+        'No files, photos, transcripts, or local paths are uploaded from this control.';
+    final summary = _deferredSurfaceSummary(
+      title: 'Hermes attachments/media',
+      detail: detail,
+      exclusion: exclusion,
+    );
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -33,16 +40,36 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
               const SizedBox(height: 12),
               Text(detail, key: const ValueKey('hermes-attachments-detail')),
               const SizedBox(height: 8),
-              const Text(
-                'No files, photos, transcripts, or local paths are uploaded from this control.',
-              ),
+              const Text(exclusion),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  key: const ValueKey('hermes-attachments-close'),
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: const Text('Close'),
+                child: Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      key: const ValueKey('hermes-attachments-copy'),
+                      onPressed: () {
+                        unawaited(
+                          Clipboard.setData(ClipboardData(text: summary)),
+                        );
+                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Copied Hermes attachments/media status.',
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_outlined),
+                      label: const Text('Copy status'),
+                    ),
+                    TextButton(
+                      key: const ValueKey('hermes-attachments-close'),
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      child: const Text('Close'),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -51,6 +78,91 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       ),
     );
   }
+
+  void _showFilesContextDeferred(
+    BuildContext context,
+    HermesCapabilityDocument capabilities,
+  ) {
+    final advertised =
+        capabilities.supportsFeature('files_api') ||
+        capabilities.supportsFeature('context_folders_api') ||
+        capabilities.supportsFeature('workspace_files');
+    final detail = advertised
+        ? 'Hermes advertises file or context-folder capabilities, but Navivox has not wired mobile-safe file/context controls yet.'
+        : 'Hermes did not advertise a mobile-safe files/context folders API. Navivox keeps workspace paths hidden.';
+    const exclusion =
+        'No local file paths, folder names, transcripts, or workspace contents are uploaded from this control.';
+    final summary = _deferredSurfaceSummary(
+      title: 'Hermes files/context folders',
+      detail: detail,
+      exclusion: exclusion,
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hermes files/context folders',
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  detail,
+                  key: const ValueKey('hermes-files-context-detail'),
+                ),
+                const SizedBox(height: 8),
+                const Text(exclusion),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton.icon(
+                        key: const ValueKey('hermes-files-context-copy'),
+                        onPressed: () {
+                          unawaited(
+                            Clipboard.setData(ClipboardData(text: summary)),
+                          );
+                          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Copied Hermes files/context status.',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_outlined),
+                        label: const Text('Copy status'),
+                      ),
+                      TextButton(
+                        key: const ValueKey('hermes-files-context-close'),
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _deferredSurfaceSummary({
+    required String title,
+    required String detail,
+    required String exclusion,
+  }) => '$title\nStatus: Deferred\n$detail\n$exclusion';
 
   Future<void> _resolveApproval(
     HermesChannel channel,
@@ -108,6 +220,76 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   void _selectEndpointProfile(HermesEndpointConfig profile) {
     _baseUrlController.text = profile.baseUrl;
     _apiKeyController.text = profile.apiKey ?? '';
+    _profileLabelController.text = profile.label ?? '';
+  }
+
+  void _applyEndpointPreset(String baseUrl) {
+    _baseUrlController.text = baseUrl;
+    _apiKeyController.clear();
+    _profileLabelController.clear();
+  }
+
+  Future<void> _renameEndpointProfile(
+    BuildContext context,
+    HermesEndpointConfig profile,
+  ) async {
+    final id = profile.id;
+    if (id == null || id.trim().isEmpty) return;
+    var draftLabel = _safeHermesRenameDefault(profile.label ?? '');
+    final nextLabel = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const ValueKey('hermes-endpoint-profile-rename-dialog'),
+        title: const Text('Rename Hermes profile'),
+        content: TextFormField(
+          key: const ValueKey('hermes-endpoint-profile-rename-field'),
+          initialValue: draftLabel,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Profile label',
+            helperText: 'Leave blank to show the endpoint URL.',
+          ),
+          onChanged: (value) => draftLabel = value,
+          onFieldSubmitted: (value) =>
+              Navigator.of(dialogContext).pop(value.trim()),
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('hermes-endpoint-profile-rename-cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey('hermes-endpoint-profile-rename-save'),
+            onPressed: () => Navigator.of(dialogContext).pop(draftLabel.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (nextLabel == null || nextLabel.trim() == (profile.label ?? '').trim()) {
+      return;
+    }
+    try {
+      await ref
+          .read(hermesEndpointStoreProvider)
+          .save(
+            baseUrl: profile.baseUrl,
+            apiKey: profile.apiKey,
+            label: nextLabel.trim().isEmpty ? null : nextLabel.trim(),
+            profileId: id,
+          );
+      _refreshEndpointProfiles();
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not rename Hermes profile: ${_safeHermesUiError(error)}',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _deleteEndpointProfile(HermesEndpointConfig profile) async {
@@ -117,6 +299,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     if (_baseUrlController.text.trim() == profile.baseUrl) {
       _baseUrlController.clear();
       _apiKeyController.clear();
+      _profileLabelController.clear();
     }
     _refreshEndpointProfiles();
   }
@@ -211,6 +394,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final attemptId = ++_connectAttemptId;
     final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     final normalizedApiKey = apiKey?.trim();
+    final profileLabel = _safeHermesUiText(_profileLabelController.text).trim();
     await channel.connect(
       baseUrl: normalizedBaseUrl,
       apiKey: normalizedApiKey?.isEmpty == true ? null : normalizedApiKey,
@@ -219,6 +403,8 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         hermesPublicEndpointBaseUrl(_baseUrlController.text) !=
             normalizedBaseUrl ||
         _apiKeyController.text.trim() != (normalizedApiKey ?? '') ||
+        _safeHermesUiText(_profileLabelController.text).trim() !=
+            profileLabel ||
         channel.state.status != HermesConnectionStatus.connected) {
       return;
     }
@@ -228,6 +414,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
           .save(
             baseUrl: normalizedBaseUrl,
             apiKey: normalizedApiKey?.isEmpty == true ? null : normalizedApiKey,
+            label: profileLabel.isEmpty ? null : profileLabel,
           );
       _refreshEndpointProfiles();
     }
@@ -272,6 +459,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
 
   void _showDiagnosticsDialog(BuildContext context, HermesChannelState state) {
     final diagnostics = hermesDiagnosticsExport(state);
+    final rawLogsSummary = _rawLogsDeferredSummary();
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -305,6 +493,17 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
           ),
         ),
         actions: [
+          TextButton.icon(
+            key: const ValueKey('hermes-raw-logs-status-copy'),
+            onPressed: () {
+              unawaited(Clipboard.setData(ClipboardData(text: rawLogsSummary)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Raw-log status copied')),
+              );
+            },
+            icon: const Icon(Icons.copy_outlined),
+            label: const Text('Copy raw-log status'),
+          ),
           TextButton(
             key: const ValueKey('hermes-diagnostics-copy'),
             onPressed: () {
@@ -321,6 +520,16 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
           ),
         ],
       ),
+    );
+  }
+
+  String _rawLogsDeferredSummary() {
+    return _deferredSurfaceSummary(
+      title: 'Raw diagnostics/log export',
+      detail:
+          'Raw logs, transcripts, credentials, tool payloads, and local paths remain excluded from Navivox mobile diagnostics.',
+      exclusion:
+          'No raw log export control is enabled until a safe Hermes redaction contract exists.',
     );
   }
 

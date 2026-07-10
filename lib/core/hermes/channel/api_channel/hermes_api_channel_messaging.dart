@@ -167,7 +167,7 @@ extension _MessagingExtension on HermesApiChannel {
           _setTurns(sessionId, List.of(turns));
           return;
         }
-        if (event.name == 'approval.request') {
+        if (_isApprovalRequestEvent(event.name)) {
           final request = _approvalRequestFromEvent(event);
           if (request.id.isEmpty) {
             terminalRunEventReceived = true;
@@ -343,7 +343,10 @@ extension _MessagingExtension on HermesApiChannel {
   bool _isDeltaEvent(String name) {
     return name == 'message' ||
         name == 'message.delta' ||
-        name == 'assistant.delta';
+        name == 'assistant.delta' ||
+        name == 'response.delta' ||
+        name == 'response.text.delta' ||
+        name == 'response.output_text.delta';
   }
 
   bool _serverHistoryDropsStreamedAssistant(
@@ -392,11 +395,19 @@ extension _MessagingExtension on HermesApiChannel {
     return false;
   }
 
+  bool _isApprovalRequestEvent(String name) {
+    return name == 'approval.request' ||
+        name == 'approval.requested' ||
+        name == 'approval.required';
+  }
+
   bool _isStreamErrorEvent(String name) {
     return name == 'error' ||
         name == 'stream.error' ||
         name == 'run.error' ||
-        name == 'assistant.error';
+        name == 'assistant.error' ||
+        name == 'message.error' ||
+        name == 'response.error';
   }
 
   String _streamErrorMessage(HermesStreamEvent event) {
@@ -425,17 +436,27 @@ extension _MessagingExtension on HermesApiChannel {
   }
 
   bool _isSuccessfulTerminalRunEvent(String name) {
-    return name == 'run.completed' || name == 'assistant.completed';
+    return name == 'run.completed' ||
+        name == 'assistant.completed' ||
+        name == 'message.completed' ||
+        name == 'response.completed' ||
+        name == 'response.done';
   }
 
   bool _isFailedTerminalRunEvent(String name) {
     return name == 'run.failed' ||
         name == 'assistant.failed' ||
+        name == 'message.failed' ||
+        name == 'response.failed' ||
         _isCancelledTerminalRunEvent(name);
   }
 
   bool _isCancelledTerminalRunEvent(String name) {
-    return name == 'run.cancelled' || name == 'assistant.cancelled';
+    return name == 'run.cancelled' ||
+        name == 'assistant.cancelled' ||
+        name == 'message.cancelled' ||
+        name == 'response.cancelled' ||
+        name == 'response.canceled';
   }
 
   bool _isToolEvent(String name) {

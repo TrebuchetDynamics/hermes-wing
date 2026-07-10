@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:navivox/core/hermes/channel/hermes_channel.dart';
 import 'package:navivox/core/hermes/models/hermes_session.dart';
 import 'package:navivox/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -64,5 +65,41 @@ void main() {
           ?.text,
       isEmpty,
     );
+  });
+
+  testWidgets('approval failures remain visible to the operator', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(approvalResponsesFail: true);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+        child: const MaterialApp(home: HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    channel.emitApprovalRequest(
+      const HermesApprovalRequest(
+        id: 'approval-1',
+        toolCallId: 'tool-1',
+        prompt: 'Run a command?',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hermes-approval-deny')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Could not answer Hermes approval'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('hermes-approval-deny')), findsOneWidget);
   });
 }

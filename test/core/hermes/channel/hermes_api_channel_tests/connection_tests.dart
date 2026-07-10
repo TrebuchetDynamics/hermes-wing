@@ -56,6 +56,43 @@ void _hermesApiChannelConnectionTests() {
     expect(channel.state.enabledToolsets, ['default']);
   });
 
+  test('connect distinguishes failed optional inventory from empty', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _catalogCapabilitiesFixture,
+            '/v1/models' ||
+            '/v1/skills' ||
+            '/v1/toolsets' => throw StateError('inventory offline'),
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.status, HermesConnectionStatus.connected);
+    expect(channel.state.models, isEmpty);
+    expect(
+      channel.state.optionalResourceErrors.keys,
+      containsAll([
+        HermesOptionalResource.models,
+        HermesOptionalResource.skills,
+        HermesOptionalResource.toolsets,
+      ]),
+    );
+    expect(
+      channel.state.optionalResourceErrors[HermesOptionalResource.models],
+      contains('inventory offline'),
+    );
+  });
+
   test('connect loads read-only Hermes jobs when advertised', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(

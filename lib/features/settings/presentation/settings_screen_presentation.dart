@@ -24,5 +24,4 @@ class SettingsScreenPresentation {
       'Remember the foreground chat loop preference';
 
   String get commandWordTitle => 'Command word';
-
 }

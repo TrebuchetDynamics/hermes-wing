@@ -9,6 +9,9 @@ import '../../../core/hermes/policy/hermes_transport_policy.dart';
 /// safe capability metadata. It does not include API keys, request headers, raw
 /// logs, tool payloads, transcripts, or platform error dumps.
 String hermesDiagnosticsExport(HermesChannelState state) {
+  final optionalFailures = state.optionalResourceErrors.keys
+      .map((resource) => resource.name)
+      .join(', ');
   final buffer = StringBuffer()
     ..writeln('Navivox Hermes diagnostics')
     ..writeln('Connection: ${state.status.name}')
@@ -84,6 +87,9 @@ String hermesDiagnosticsExport(HermesChannelState state) {
     ..writeln('Skills: ${state.skills.length}')
     ..writeln('Enabled toolsets: ${state.enabledToolsets.length}')
     ..writeln('Jobs: ${state.jobs.length}')
+    ..writeln(
+      'Optional inventory failures: ${optionalFailures.isEmpty ? 'none' : optionalFailures}',
+    )
     ..writeln('Secrets: excluded');
 
   return buffer.toString().trimRight();

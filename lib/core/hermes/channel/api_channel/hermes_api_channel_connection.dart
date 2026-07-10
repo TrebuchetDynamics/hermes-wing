@@ -27,30 +27,65 @@ extension _ConnectionExtension on HermesApiChannel {
       await client.health();
       if (!_isCurrentConnection(generation, client)) return;
       final capabilities = await client.capabilities();
-      final detailedHealth = await _optionalHealth(
-        capabilities.advertisesEndpoint(
+      final optionalResourceErrors = <HermesOptionalResource, String>{};
+      final detailedHealth = await _loadOptional<HermesHealthStatus>(
+        advertised: capabilities.advertisesEndpoint(
           'health_detailed',
           'GET',
           '/health/detailed',
         ),
-        client.healthDetailed,
+        resource: HermesOptionalResource.detailedHealth,
+        load: client.healthDetailed,
+        errors: optionalResourceErrors,
       );
-      final models = await _optionalCatalogList(
-        capabilities.advertisesEndpoint('models', 'GET', '/v1/models'),
-        client.listModels,
-      );
-      final skills = await _optionalCatalogList(
-        capabilities.advertisesEndpoint('skills', 'GET', '/v1/skills'),
-        client.listSkills,
-      );
-      final enabledToolsets = await _optionalCatalogList(
-        capabilities.advertisesEndpoint('toolsets', 'GET', '/v1/toolsets'),
-        client.listEnabledToolsets,
-      );
-      final jobs = await _optionalJobs(
-        capabilities.advertisesEndpoint('jobs', 'GET', '/api/jobs'),
-        client.listJobs,
-      );
+      final models =
+          await _loadOptional<List<String>>(
+            advertised: capabilities.advertisesEndpoint(
+              'models',
+              'GET',
+              '/v1/models',
+            ),
+            resource: HermesOptionalResource.models,
+            load: client.listModels,
+            errors: optionalResourceErrors,
+          ) ??
+          const [];
+      final skills =
+          await _loadOptional<List<String>>(
+            advertised: capabilities.advertisesEndpoint(
+              'skills',
+              'GET',
+              '/v1/skills',
+            ),
+            resource: HermesOptionalResource.skills,
+            load: client.listSkills,
+            errors: optionalResourceErrors,
+          ) ??
+          const [];
+      final enabledToolsets =
+          await _loadOptional<List<String>>(
+            advertised: capabilities.advertisesEndpoint(
+              'toolsets',
+              'GET',
+              '/v1/toolsets',
+            ),
+            resource: HermesOptionalResource.toolsets,
+            load: client.listEnabledToolsets,
+            errors: optionalResourceErrors,
+          ) ??
+          const [];
+      final jobs =
+          await _loadOptional<List<HermesJob>>(
+            advertised: capabilities.advertisesEndpoint(
+              'jobs',
+              'GET',
+              '/api/jobs',
+            ),
+            resource: HermesOptionalResource.jobs,
+            load: client.listJobs,
+            errors: optionalResourceErrors,
+          ) ??
+          const [];
       if (!_isCurrentConnection(generation, client)) return;
       var sessions = await client.listSessions();
       if (!_isCurrentConnection(generation, client)) return;
@@ -82,6 +117,7 @@ extension _ConnectionExtension on HermesApiChannel {
           skills: skills,
           enabledToolsets: enabledToolsets,
           jobs: jobs,
+          optionalResourceErrors: optionalResourceErrors,
           sessions: sessions,
           activeSessionId: activeId,
           clearActiveSessionId: activeId == null,
@@ -115,39 +151,18 @@ extension _ConnectionExtension on HermesApiChannel {
         _state.status == HermesConnectionStatus.connected;
   }
 
-  Future<HermesHealthStatus?> _optionalHealth(
-    bool advertised,
-    Future<HermesHealthStatus> Function() load,
-  ) async {
+  Future<T?> _loadOptional<T>({
+    required bool advertised,
+    required HermesOptionalResource resource,
+    required Future<T> Function() load,
+    required Map<HermesOptionalResource, String> errors,
+  }) async {
     if (!advertised) return null;
     try {
       return await load();
-    } catch (_) {
+    } catch (error) {
+      errors[resource] = _safeHermesError(error);
       return null;
-    }
-  }
-
-  Future<List<String>> _optionalCatalogList(
-    bool advertised,
-    Future<List<String>> Function() load,
-  ) async {
-    if (!advertised) return const [];
-    try {
-      return await load();
-    } catch (_) {
-      return const [];
-    }
-  }
-
-  Future<List<HermesJob>> _optionalJobs(
-    bool advertised,
-    Future<List<HermesJob>> Function() load,
-  ) async {
-    if (!advertised) return const [];
-    try {
-      return await load();
-    } catch (_) {
-      return const [];
     }
   }
 

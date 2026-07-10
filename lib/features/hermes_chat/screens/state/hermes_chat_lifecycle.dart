@@ -42,7 +42,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     final profiles = await ref.read(hermesEndpointStoreProvider).loadProfiles();
     if (!mounted || profiles.isEmpty) return profiles;
     final currentBaseUrl = hermesPublicEndpointBaseUrl(_baseUrlController.text);
-    if (currentBaseUrl == 'http://127.0.0.1:8642' &&
+    if ((currentBaseUrl.isEmpty || currentBaseUrl == 'http://127.0.0.1:8642') &&
         _apiKeyController.text.isEmpty) {
       _selectEndpointProfile(profiles.first);
     }
@@ -82,6 +82,9 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         _voiceInputController.pause();
       }
     }
-    if (mounted) _setState(() {});
+    if (mounted) {
+      _setState(() {});
+      unawaited(_voiceInputController.maybeContinue());
+    }
   }
 }

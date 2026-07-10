@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +60,8 @@ const _hermesBaseUrlHint =
     'Physical device: LAN/VPN/Tailscale URL';
 const _maxQueuedFollowUps = 5;
 
+bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
+
 /// Native Hermes Agent chat/session screen: manual connect, session list,
 /// streamed transcript, text composer, and continuous voice. See
 /// docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md.
@@ -79,7 +82,7 @@ class HermesChatScreen extends ConsumerStatefulWidget {
 class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     with WidgetsBindingObserver {
   final _baseUrlController = TextEditingController(
-    text: 'http://127.0.0.1:8642',
+    text: _isAndroid ? '' : 'http://127.0.0.1:8642',
   );
   final _apiKeyController = TextEditingController();
   final _composerController = TextEditingController();
@@ -87,6 +90,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   late final HermesVoiceInputController _voiceInputController;
 
   HermesChannel? _subscribed;
+  late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
   StreamSubscription<HermesApprovalRequest>? _approvalSubscription;
   String? _queuedFollowUpError;
   final Queue<_QueuedFollowUp> _queuedFollowUps = Queue<_QueuedFollowUp>();
@@ -112,12 +116,18 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       settings: () => ref.read(navivoxVoiceSettingsProvider),
       onDraft: _appendVoiceDraft,
     )..addListener(_onVoiceInputChanged);
+    _channelProviderSubscription = ref.listenManual<HermesChannel>(
+      hermesChannelProvider,
+      (_, channel) => _subscribeToChannel(channel),
+      fireImmediately: true,
+    );
     _endpointProfilesFuture = _loadEndpointProfiles();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _channelProviderSubscription.close();
     _voiceInputController.removeListener(_onVoiceInputChanged);
     _voiceInputController.dispose();
     _subscribed?.removeListener(_onChannelChanged);
@@ -155,27 +165,26 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _setState(VoidCallback fn) => setState(fn);
 
+  void _subscribeToChannel(HermesChannel channel) {
+    if (identical(_subscribed, channel)) return;
+    _subscribed?.removeListener(_onChannelChanged);
+    channel.addListener(_onChannelChanged);
+    _subscribed = channel;
+    _pendingApprovals.clear();
+    _answeringApprovalId = null;
+    _approvalSessionId = channel.state.activeSessionId;
+    unawaited(_approvalSubscription?.cancel());
+    _approvalSubscription = channel.approvalRequests.listen((request) {
+      if (mounted) setState(() => _enqueueApprovalRequest(request));
+    });
+    _onChannelChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
-    if (!identical(_subscribed, channel)) {
-      _subscribed?.removeListener(_onChannelChanged);
-      channel.addListener(_onChannelChanged);
-      _subscribed = channel;
-      _pendingApprovals.clear();
-      _answeringApprovalId = null;
-      _approvalSessionId = channel.state.activeSessionId;
-      unawaited(_approvalSubscription?.cancel());
-      _approvalSubscription = channel.approvalRequests.listen((request) {
-        if (mounted) setState(() => _enqueueApprovalRequest(request));
-      });
-    }
     final state = channel.state;
     final activeSession = state.activeSession;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_voiceInputController.maybeContinue());
-    });
 
     return Scaffold(
       appBar: AppBar(

@@ -8,6 +8,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
     this.skills = const [],
     this.enabledToolsets = const [],
     this.jobs = const [],
+    this.optionalResourceErrors = const {},
   });
 
   final HermesCapabilityDocument capabilities;
@@ -16,6 +17,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
   final List<String> skills;
   final List<String> enabledToolsets;
   final List<HermesJob> jobs;
+  final Map<HermesOptionalResource, String> optionalResourceErrors;
 
   void _showList(BuildContext context, String title, List<String> items) {
     showDialog<void>(
@@ -47,6 +49,41 @@ class _HermesCapabilityStrip extends StatelessWidget {
       ),
     );
   }
+
+  void _showOptionalResourceErrors(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unavailable Hermes inventory'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final entry in optionalResourceErrors.entries)
+              ListTile(
+                title: Text(_optionalResourceLabel(entry.key)),
+                subtitle: Text(_safeHermesUiError(entry.value)),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _optionalResourceLabel(HermesOptionalResource resource) =>
+      switch (resource) {
+        HermesOptionalResource.detailedHealth => 'Detailed health',
+        HermesOptionalResource.models => 'Models',
+        HermesOptionalResource.skills => 'Skills',
+        HermesOptionalResource.toolsets => 'Toolsets',
+        HermesOptionalResource.jobs => 'Jobs',
+      };
 
   void _showJobs(BuildContext context) {
     final jobsAdminAdvertised =
@@ -233,13 +270,9 @@ class _HermesCapabilityStrip extends StatelessWidget {
       if (!policy.supportsRunsTransport && policy.supportsSessionChatStream)
         const Chip(label: Text('Session chat streaming enabled')),
       if (policy.supportsRealtimeVoice || policy.supportsAudioApi)
-        const Chip(
-          label: Text(
-            'Server audio advertised; Navivox uses device STT -> Hermes text',
-          ),
-        )
+        const Chip(label: Text('Voice: device STT → Hermes'))
       else
-        const Chip(label: Text('Voice: device STT -> Hermes text')),
+        const Chip(label: Text('Voice: device STT → Hermes')),
       if (detailedHealth?.version case final version?)
         Chip(
           label: Text(
@@ -281,9 +314,20 @@ class _HermesCapabilityStrip extends StatelessWidget {
           label: Text('Jobs: ${jobs.length}'),
           onPressed: () => _showJobs(context),
         ),
+      if (optionalResourceErrors.isNotEmpty)
+        ActionChip(
+          key: const ValueKey('hermes-inventory-errors-chip'),
+          avatar: const Icon(Icons.warning_amber_outlined),
+          label: Text(
+            'Inventory unavailable: ${optionalResourceErrors.length}',
+          ),
+          onPressed: () => _showOptionalResourceErrors(context),
+        ),
       ActionChip(
         key: const ValueKey('hermes-surfaces-chip'),
-        label: Text('Surfaces: $deferredCount deferred, $blockedCount blocked'),
+        label: Text(
+          'Surfaces: $deferredCount deferred · $blockedCount blocked',
+        ),
         onPressed: () => _showSurfaceReadiness(context),
       ),
     ];

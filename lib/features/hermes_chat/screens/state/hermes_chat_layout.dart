@@ -37,14 +37,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    ActionChip(
-                      key: const ValueKey('hermes-preset-local'),
-                      label: const Text('Local Hermes'),
-                      onPressed: connecting
-                          ? null
-                          : () => _baseUrlController.text =
-                                'http://127.0.0.1:8642',
-                    ),
+                    if (!_isAndroid)
+                      ActionChip(
+                        key: const ValueKey('hermes-preset-local'),
+                        label: const Text('Local Hermes'),
+                        onPressed: connecting
+                            ? null
+                            : () => _baseUrlController.text =
+                                  'http://127.0.0.1:8642',
+                      ),
                     ActionChip(
                       key: const ValueKey('hermes-preset-android'),
                       label: const Text('Android emulator'),

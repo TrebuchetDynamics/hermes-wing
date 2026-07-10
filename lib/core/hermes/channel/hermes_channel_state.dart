@@ -7,6 +7,8 @@ import '../models/hermes_session.dart';
 
 enum HermesConnectionStatus { disconnected, connecting, connected, error }
 
+enum HermesOptionalResource { detailedHealth, models, skills, toolsets, jobs }
+
 class HermesChannelState {
   const HermesChannelState({
     this.status = HermesConnectionStatus.disconnected,
@@ -17,6 +19,7 @@ class HermesChannelState {
     this.skills = const [],
     this.enabledToolsets = const [],
     this.jobs = const [],
+    this.optionalResourceErrors = const {},
     this.sessions = const [],
     this.activeSessionId,
     this.connectedBaseUrl,
@@ -34,6 +37,10 @@ class HermesChannelState {
   final List<String> skills;
   final List<String> enabledToolsets;
   final List<HermesJob> jobs;
+
+  /// Advertised optional resources that failed to load. An absent resource is
+  /// unsupported; an empty loaded list is available but empty.
+  final Map<HermesOptionalResource, String> optionalResourceErrors;
   final List<HermesSession> sessions;
   final String? activeSessionId;
   final String? connectedBaseUrl;
@@ -88,6 +95,7 @@ class HermesChannelState {
     List<String>? skills,
     List<String>? enabledToolsets,
     List<HermesJob>? jobs,
+    Map<HermesOptionalResource, String>? optionalResourceErrors,
     List<HermesSession>? sessions,
     String? activeSessionId,
     bool clearActiveSessionId = false,
@@ -118,6 +126,8 @@ class HermesChannelState {
       skills: skills ?? this.skills,
       enabledToolsets: enabledToolsets ?? this.enabledToolsets,
       jobs: jobs ?? this.jobs,
+      optionalResourceErrors:
+          optionalResourceErrors ?? this.optionalResourceErrors,
       sessions: sessions ?? this.sessions,
       activeSessionId: clearActiveSessionId
           ? null

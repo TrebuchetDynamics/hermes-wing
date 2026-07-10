@@ -80,13 +80,20 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
           _answeringApprovalId = null;
         }
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       _setState(() {
         if (_answeringApprovalId == approvalId) {
           _answeringApprovalId = null;
         }
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not answer Hermes approval: ${_safeHermesUiError(error)}',
+          ),
+        ),
+      );
     }
   }
 
@@ -268,6 +275,8 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
         title: const Text('Hermes diagnostics'),
         content: SizedBox(
           width: double.maxFinite,
@@ -283,6 +292,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
                     skills: state.skills,
                     enabledToolsets: state.enabledToolsets,
                     jobs: state.jobs,
+                    optionalResourceErrors: state.optionalResourceErrors,
                   ),
                   const SizedBox(height: 12),
                 ],

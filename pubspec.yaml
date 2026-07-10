@@ -1,5 +1,5 @@
 name: navivox
-description: Flutter Hermes Agent companion UI with local continuous voice.
+description: Experimental Flutter client for Hermes Agent with optional speech input.
 publish_to: "none"
 version: 0.1.0+1
 

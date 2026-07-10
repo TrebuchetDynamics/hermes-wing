@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'hermes_endpoint_store.dart';
 
 /// [HermesEndpointStore] backed by shared preferences (non-secret profile
-/// metadata/base URLs) and the platform secure enclave (per-profile API keys).
+/// metadata/base URLs) and the platform secure-storage implementation
+/// (per-profile API keys). Hardware backing and protection vary by platform.
 /// Navivox never stores Hermes API keys in shared preferences.
 class SecureHermesEndpointStore implements HermesEndpointStore {
   SecureHermesEndpointStore({FlutterSecureStorage? secureStorage})

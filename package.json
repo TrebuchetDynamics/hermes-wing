@@ -1,13 +1,8 @@
 {
   "name": "navivox-app",
-  "version": "1.0.0",
-  "description": "Hermes Agent companion UI with local continuous voice.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "lib": "lib",
-    "test": "test"
-  },
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser test tooling for the experimental Navivox Hermes Agent client.",
   "scripts": {
     "test": "flutter test --concurrency=1",
     "web:e2e": "./playwright/scripts/run_tests.sh",
@@ -31,12 +26,12 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/TrebuchetDynamics/navivox-app/issues"
   },
   "homepage": "https://github.com/TrebuchetDynamics/navivox-app#readme",
-  "dependencies": {
+  "devDependencies": {
     "@playwright/test": "^1.60.0",
     "playwright": "^1.60.0"
   }

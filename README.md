@@ -1,76 +1,100 @@
 # Navivox
 
-Navivox is a Flutter companion for trusted local, VPN, or self-hosted Hermes Agent sessions.
+Experimental Flutter client for [Hermes Agent](https://github.com/NousResearch/hermes-agent).
 
-## Runtime
+Navivox connects to a trusted Hermes Agent API endpoint and provides session
+chat, streamed assistant and tool activity, approval handling, endpoint
+configuration, and optional speech input.
 
-The app targets the Hermes Agent API server, commonly on port `8642`:
+## Project status
 
-- `GET /health`
-- `GET /v1/capabilities`
-- `GET /v1/models`
-- `GET /v1/skills`
-- `GET /v1/toolsets`
-- `GET /api/sessions`
-- `POST /api/sessions`
-- `PATCH /api/sessions/{session_id}`
-- `DELETE /api/sessions/{session_id}`
-- `GET /api/sessions/{session_id}/messages`
-- `POST /api/sessions/{session_id}/fork`
-- `POST /api/sessions/{session_id}/chat/stream`
-- `POST /v1/runs`
-- `GET /v1/runs/{run_id}/events`
-- `POST /v1/runs/{run_id}/approval`
-- `POST /v1/runs/{run_id}/stop`
+Navivox is alpha software. It is currently distributed as source builds only;
+no signed public binaries or store releases are published.
 
-## Run
+![Navivox Hermes connection screen](docs/images/hermes-connect.png)
 
-Navivox consumes the pinned `pocket_speech` package for optional offline speech
-synthesis.
+| Platform | Current evidence | Status |
+| --- | --- | --- |
+| Android | Debug build and optional emulator integration smokes | Experimental alpha |
+| Web | Release build and fake-server browser smoke | Alpha, text-focused |
+| Linux | Release build | Alpha, text-focused |
+| Windows | Debug compilation | Build-tested only |
+| iOS | Simulator debug compilation | Build-tested only |
+| macOS | Debug compilation | Build-tested only |
+
+Voice input requests on-device recognition from the operating system speech
+service on Android, iOS, macOS, Windows, and web. Availability depends on the
+device and installed recognizer; Linux voice input is unavailable. Continuous
+voice is an opt-in application loop that rearms bounded recognition sessions,
+not an always-on audio stream. A repeatable physical-device microphone receipt
+has not yet been recorded.
+
+## Hermes compatibility
+
+Navivox negotiates behavior through `/v1/capabilities` instead of claiming a
+fixed Hermes version range. A compatible server must provide `/health`,
+`/v1/capabilities`, and the advertised session or run endpoints Navivox uses.
+See the [compatibility contract](docs/product/hermes-compatibility.md) and the
+[Hermes Agent repository](https://github.com/NousResearch/hermes-agent) for
+server setup.
+
+## Quick start
+
+Prerequisites: Flutter 3.44.2 and the platform SDK for your target.
 
 ```bash
+git clone https://github.com/TrebuchetDynamics/navivox-app.git
+cd navivox-app
 flutter pub get
 flutter run -d <device-id>
 ```
 
-Hermes endpoint hints:
+Connect to one of these Hermes endpoints:
 
-- Desktop on same host: `http://127.0.0.1:8642`
+- Desktop on the same host: `http://127.0.0.1:8642`
 - Android emulator to host: `http://10.0.2.2:8642`
-- Physical Android on Tailscale/LAN/VPN: `http://<hermes-host>:8642`
+- Physical device: an HTTPS, VPN, Tailscale, or isolated-LAN endpoint
 
-When an API key is used with a non-loopback `http://` endpoint, Navivox asks
-for explicit confirmation. Prefer HTTPS; use cleartext credentials only inside
-a trusted VPN, Tailscale network, or isolated LAN.
+Navivox asks for explicit confirmation before sending an API key to a
+non-loopback plaintext HTTP endpoint.
 
-Voice input uses on-device speech recognition and fills the composer for review
-before sending. Foreground continuous voice is a separate opt-in mode. The loop
-stops and discards late transcripts when disabled, backgrounded, disconnected,
-or switched to another Hermes session. Say `navi stop`, `navi pause`,
-`navi mute`, or `navi cancel` to pause without sending the command to Hermes.
+## Privacy and transport
 
-Optional offline TTS is provided by Pocket Speech. Navivox can select Kitten
-nano-int8 (about 26 MB) or Kokoro (about 365 MB including voices), then download
-the selected voice pack from pinned release defaults. Release operators may
-override the HTTPS URLs and SHA-256 digests:
+- API keys use the platform secure-storage implementation; hardware backing and
+  backup behavior vary by platform.
+- Endpoint metadata is stored separately in shared preferences.
+- Recognized words are excluded from diagnostic logs.
+- Navivox submits completed transcripts to Hermes as text and does not send the
+  captured microphone audio through this path.
+- Requesting on-device recognition does not prove that every operating-system
+  recognizer works offline. Verify the recognizer and device policy you deploy.
+- HTTPS is the default recommendation for remote endpoints. Plain HTTP can
+  expose credentials and conversation data outside a trusted encrypted network.
+
+See [SECURITY.md](SECURITY.md) and the [threat model](docs/security/threat-model.md).
+
+## Known limitations
+
+- No signed public packages or store distribution.
+- No repeatable real-device microphone validation in ordinary CI.
+- Windows, iOS, and macOS are compilation-tested, not release-supported.
+- Hermes server audio and realtime audio are not wired; voice submits text.
+- Optional Hermes inventory may be unavailable even when advertised; Navivox
+  reports those retrieval failures separately from empty inventories.
+
+## Development
 
 ```bash
-flutter run \
-  --dart-define=KITTEN_MODEL_URL=https://example/kitten/model.onnx \
-  --dart-define=KITTEN_MODEL_SHA256=<64-hex-digest> \
-  --dart-define=KITTEN_VOICES_JSON_URL=https://example/kitten/voices.json \
-  --dart-define=KITTEN_VOICES_JSON_SHA256=<64-hex-digest> \
-  --dart-define=KOKORO_MODEL_URL=https://example/kokoro/model.onnx \
-  --dart-define=KOKORO_MODEL_SHA256=<64-hex-digest> \
-  --dart-define=KOKORO_VOICES_JSON_URL=https://example/kokoro/voices.json \
-  --dart-define=KOKORO_VOICES_JSON_SHA256=<64-hex-digest>
-```
-
-## Verify
-
-```bash
+dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test --concurrency=1
 flutter build web --release -t lib/main_e2e.dart
+npm ci
 npm run web:e2e
 ```
+
+Optional offline text-to-speech uses the pinned `pocket_speech` package and
+operator-selected Kitten or Kokoro voice packs.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), and the
+[project documentation](docs/README.md).

@@ -98,7 +98,28 @@ class NeedleEngine implements NeedleEngineApi {
 
 const _responseBufferBytes = 64 * 1024;
 
+/// The Cactus engine enables cloud telemetry (device id, timings, error
+/// strings to a third-party endpoint) by default inside cactus_init.
+/// It honors this env-var kill switch, applied via libc setenv before init.
+/// See spike findings: evaluation must stay fully on-device.
+void _disableCloudTelemetry() {
+  final setenv = DynamicLibrary.process()
+      .lookupFunction<
+        Int32 Function(Pointer<Utf8>, Pointer<Utf8>, Int32),
+        int Function(Pointer<Utf8>, Pointer<Utf8>, int)
+      >('setenv');
+  final name = 'CACTUS_NO_CLOUD_TELE'.toNativeUtf8();
+  final value = '1'.toNativeUtf8();
+  try {
+    setenv(name, value, 1);
+  } finally {
+    calloc.free(name);
+    calloc.free(value);
+  }
+}
+
 int _initSync(String modelDir) {
+  _disableCloudTelemetry();
   final path = modelDir.toNativeUtf8();
   try {
     return cactus.cactusInit(path, nullptr, false).address;

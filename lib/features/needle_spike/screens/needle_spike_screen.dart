@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,6 +40,11 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
   /// release the microphone if the user backs out mid-capture.
   VoiceCaptureService? _activeCapture;
 
+  /// True after the first tap on Reset; the second tap within the timeout
+  /// actually clears the scorecard. Guards against stray taps wiping counts.
+  bool _resetArmed = false;
+  Timer? _resetArmTimer;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +56,7 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
     // Fire-and-forget: release the microphone if a capture is in flight.
     _activeCapture?.cancel();
     _transcriptController.dispose();
+    _resetArmTimer?.cancel();
     super.dispose();
   }
 
@@ -157,6 +165,26 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
     });
   }
 
+  /// First tap arms the reset (auto-disarms after 3s); second tap while
+  /// armed actually clears the scorecard. Prevents a stray tap from wiping
+  /// counts.
+  void _handleResetTap() {
+    if (_resetArmed) {
+      _resetArmTimer?.cancel();
+      setState(() {
+        _scorecard.reset();
+        _resetArmed = false;
+      });
+      return;
+    }
+    _resetArmTimer?.cancel();
+    setState(() => _resetArmed = true);
+    _resetArmTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      setState(() => _resetArmed = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,9 +275,7 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
   }
 
   Widget _buildResultCard(NeedleResult result) {
-    final call = result.functionCalls.isEmpty
-        ? null
-        : result.functionCalls.first;
+    final calls = result.functionCalls;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -257,9 +283,14 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              call == null
+              calls.isEmpty
                   ? 'No tool call. Raw response: ${result.response}'
-                  : 'Tool: ${call.name}\nArgs: ${call.arguments}',
+                  : [
+                      if (calls.length > 1)
+                        '⚠ ${calls.length} tool calls returned:',
+                      for (final call in calls)
+                        'Tool: ${call.name}\nArgs: ${call.arguments}',
+                    ].join('\n'),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 8),
@@ -323,8 +354,9 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
                   child: const Text('No call'),
                 ),
                 TextButton(
-                  onPressed: () => setState(_scorecard.reset),
-                  child: const Text('Reset'),
+                  key: const Key('needle-scorecard-reset'),
+                  onPressed: _handleResetTap,
+                  child: Text(_resetArmed ? 'Confirm reset' : 'Reset'),
                 ),
               ],
             ),

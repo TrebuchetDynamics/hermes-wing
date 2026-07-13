@@ -276,10 +276,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
         const Chip(label: Text('Runs SSE enabled')),
       if (!policy.supportsRunsTransport && policy.supportsSessionChatStream)
         const Chip(label: Text('Session chat streaming enabled')),
-      if (policy.supportsRealtimeVoice || policy.supportsAudioApi)
-        const Chip(label: Text('Voice: device STT → Hermes'))
-      else
-        const Chip(label: Text('Voice: device STT → Hermes')),
+      const Chip(label: Text('Voice: device STT → Hermes')),
       if (detailedHealth?.version case final version?)
         Chip(
           label: Text(

@@ -455,6 +455,19 @@ void main() {
     expect(result.error, contains('Unparseable engine response'));
   });
 
+  test('wrong-typed leaf fields degrade gracefully instead of throwing', () {
+    const raw = '{"success": true, "error": 123, "response": 42, '
+        '"confidence": "high", "total_time_ms": "slow", '
+        '"time_to_first_token_ms": [], "function_calls": []}';
+    final result = NeedleResult.fromEngineJson(raw, wallLatencyMs: 7);
+    expect(result.success, isTrue);
+    expect(result.error, isNull);
+    expect(result.response, '');
+    expect(result.confidence, isNull);
+    expect(result.totalTimeMs, isNull);
+    expect(result.timeToFirstTokenMs, isNull);
+  });
+
   test('no tool call is represented as an empty list', () {
     const raw = '{"success": true, "response": "hello", "function_calls": []}';
     final result = NeedleResult.fromEngineJson(raw, wallLatencyMs: 5);
@@ -520,13 +533,20 @@ class NeedleResult {
     }
     return NeedleResult(
       success: decoded['success'] == true,
-      error: decoded['error'] as String?,
-      response: decoded['response'] as String? ?? '',
+      error: decoded['error'] is String ? decoded['error'] as String : null,
+      response: decoded['response'] is String
+          ? decoded['response'] as String
+          : '',
       functionCalls: _parseFunctionCalls(decoded['function_calls']),
-      confidence: (decoded['confidence'] as num?)?.toDouble(),
-      totalTimeMs: (decoded['total_time_ms'] as num?)?.toDouble(),
-      timeToFirstTokenMs:
-          (decoded['time_to_first_token_ms'] as num?)?.toDouble(),
+      confidence: decoded['confidence'] is num
+          ? (decoded['confidence'] as num).toDouble()
+          : null,
+      totalTimeMs: decoded['total_time_ms'] is num
+          ? (decoded['total_time_ms'] as num).toDouble()
+          : null,
+      timeToFirstTokenMs: decoded['time_to_first_token_ms'] is num
+          ? (decoded['time_to_first_token_ms'] as num).toDouble()
+          : null,
       wallLatencyMs: wallLatencyMs,
     );
   }
@@ -581,7 +601,7 @@ class NeedleResult {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/features/needle_spike/needle_result_test.dart`
-Expected: 5 tests PASS.
+Expected: 6 tests PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -746,6 +766,13 @@ void main() {
     expect(File('$dir/config.json').existsSync(), isTrue);
     expect(await service.installedModelDir(), dir);
   });
+
+  test('empty zip fails installation and leaves no marker', () async {
+    final zip = _zipWith({});
+    final service = NeedleModelInstallService(supportDirectory: tempDir);
+    await expectLater(service.installFromZipBytes(zip), throwsStateError);
+    expect(await service.installedModelDir(), isNull);
+  });
 }
 
 List<int> _zipWith(Map<String, String> files) {
@@ -768,6 +795,7 @@ Create `lib/features/needle_spike/services/needle_model_install_service.dart`:
 
 ```dart
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:crypto/crypto.dart';
@@ -800,9 +828,22 @@ class NeedleModelInstallService {
     return recorded;
   }
 
+  Future<String>? _inFlight;
+
   /// Ensures the bundle is downloaded, verified, and extracted.
   /// Returns the directory to pass to `cactus_init`.
-  Future<String> ensureModel({void Function(int receivedBytes)? onProgress}) async {
+  ///
+  /// Concurrent calls share one in-flight download/extract; only the first
+  /// caller's [onProgress] receives updates.
+  Future<String> ensureModel({void Function(int receivedBytes)? onProgress}) {
+    return _inFlight ??= _ensureModel(onProgress: onProgress).whenComplete(() {
+      _inFlight = null;
+    });
+  }
+
+  Future<String> _ensureModel({
+    void Function(int receivedBytes)? onProgress,
+  }) async {
     final existing = await installedModelDir();
     if (existing != null) return existing;
     final zipBytes = await _downloadZip(onProgress: onProgress);
@@ -818,7 +859,22 @@ class NeedleModelInstallService {
     await _modelRoot.create(recursive: true);
     final archive = ZipDecoder().decodeBytes(zipBytes);
     await extractArchiveToDisk(archive, _modelRoot.path);
+    // extractArchiveToDisk swallows per-entry write failures, so verify
+    // every archive file actually landed on disk with the expected size.
+    for (final entry in archive.files.where((f) => f.isFile)) {
+      final out = File('${_modelRoot.path}/${entry.name}');
+      if (!await out.exists() || await out.length() != entry.size) {
+        throw StateError('Needle bundle extraction incomplete.');
+      }
+    }
     final modelDir = _resolveModelDir(_modelRoot);
+    final hasFiles = modelDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .isNotEmpty;
+    if (!hasFiles) {
+      throw StateError('Needle bundle extraction incomplete.');
+    }
     await _marker.writeAsString(modelDir.path);
     return modelDir.path;
   }
@@ -849,9 +905,7 @@ class NeedleModelInstallService {
         );
       }
       final builder = BytesBuilder(copy: false);
-      await for (final chunk in response.timeout(
-        const Duration(seconds: 30),
-      )) {
+      await for (final chunk in response.timeout(const Duration(seconds: 30))) {
         builder.add(chunk);
         if (builder.length > maximumZipBytes) {
           throw StateError('Needle bundle exceeded its size limit.');
@@ -860,7 +914,7 @@ class NeedleModelInstallService {
       }
       final bytes = builder.takeBytes();
       final digest = sha256.convert(bytes).toString().toLowerCase();
-      if (digest != modelZipSha256) {
+      if (digest != modelZipSha256.trim().toLowerCase()) {
         throw StateError('Needle bundle checksum mismatch.');
       }
       return bytes;
@@ -905,7 +959,7 @@ class NeedleModelInstallService {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/features/needle_spike/needle_model_install_service_test.dart`
-Expected: 3 tests PASS.
+Expected: 4 tests PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -922,16 +976,18 @@ git commit -m "spike(needle): sha256-verified model download and install service
 - Create: `lib/features/needle_spike/services/needle_engine.dart`
 - Create: `lib/features/needle_spike/services/needle_spike_service.dart`
 - Test: `test/features/needle_spike/needle_spike_service_test.dart`
+- Test: `test/features/needle_spike/native_call_queue_test.dart`
 
 **Interfaces:**
 - Consumes: vendored FFI functions (Task 1), `NeedleResult.fromEngineJson` (Task 3), `NeedleToolCatalog.toolsJson` (Task 2).
 - Produces:
   - `abstract interface class NeedleEngineApi { bool get isLoaded; Future<void> load(String modelDir); Future<String> complete({required String messagesJson, required String toolsJson, required String optionsJson}); Future<void> unload(); }`
-  - `class NeedleEngine implements NeedleEngineApi` (real FFI, runs blocking calls via `Isolate.run`, passes the model handle across isolates as an int address — native heap is process-wide so this is safe).
+  - `class NativeCallQueue { Future<T> run<T>(Future<T> Function() op); }` (serializes async ops in submission order).
+  - `class NeedleEngine implements NeedleEngineApi` (real FFI, runs blocking calls via `Isolate.run`, passes the model handle across isolates as an int address — native heap is process-wide so this is safe; all ops pass through a `NativeCallQueue`).
   - `class NeedleSpikeService { NeedleSpikeService({required NeedleEngineApi engine}); Future<NeedleResult> parseTranscript(String transcript); }`
   - `class NeedleEngineException implements Exception { final String message; }`
 
-FFI calls are synchronous and CPU-heavy; running them on the main isolate would freeze the UI, so every native call goes through `Isolate.run`. The UI serializes requests (one at a time) because the engine's thread-safety is unknown.
+FFI calls are synchronous and CPU-heavy; running them on the main isolate would freeze the UI, so every native call goes through `Isolate.run`. The UI serializes requests (one at a time) because the engine's thread-safety is unknown. On top of that, `NeedleEngine` itself serializes load/complete/unload through an internal `NativeCallQueue`: unload must never destroy a handle another isolate is still using (use-after-free), and concurrent loads must not both run `cactus_init` (handle leak). A consequence: `complete()` on an unloaded engine rejects asynchronously with `NeedleEngineException` (the not-loaded check runs inside the queued op, since a queued complete may legitimately execute after a queued unload).
 
 - [ ] **Step 1: Write the failing test** (exercises `NeedleSpikeService` against a fake engine — no native lib needed)
 
@@ -1049,22 +1105,43 @@ abstract interface class NeedleEngineApi {
   Future<void> unload();
 }
 
+/// Serializes async operations in submission order. Native engine calls
+/// must never overlap: thread-safety of the engine is unknown, and
+/// unload() must not destroy a handle another isolate is still using.
+class NativeCallQueue {
+  Future<void> _tail = Future<void>.value();
+
+  Future<T> run<T>(Future<T> Function() op) {
+    final result = _tail.then((_) => op());
+    _tail = result.then<void>((_) {}, onError: (_) {});
+    return result;
+  }
+}
+
 /// Real FFI engine. Blocking native calls run via [Isolate.run]; the model
 /// handle crosses isolates as a raw address (native heap is process-wide).
+/// Every op passes through a [NativeCallQueue] so ops execute strictly in
+/// submission order: concurrent loads dedupe, and unload waits for any
+/// in-flight complete before destroying the handle.
 class NeedleEngine implements NeedleEngineApi {
+  final NativeCallQueue _queue = NativeCallQueue();
   int? _modelAddress;
 
   @override
   bool get isLoaded => _modelAddress != null;
 
   @override
-  Future<void> load(String modelDir) async {
-    if (_modelAddress != null) return;
-    final address = await Isolate.run(() => _initSync(modelDir));
-    if (address == 0) {
-      throw NeedleEngineException('cactus_init returned null for $modelDir');
-    }
-    _modelAddress = address;
+  Future<void> load(String modelDir) {
+    return _queue.run(() async {
+      // Checked inside the queued op so concurrent loads dedupe instead of
+      // both running cactus_init and leaking a handle.
+      if (_modelAddress != null) return;
+      final address = await Isolate.run(() => _initSync(modelDir));
+      if (address == 0) {
+        throw NeedleEngineException('cactus_init returned null for $modelDir');
+      }
+      _modelAddress = address;
+    });
   }
 
   @override
@@ -1073,22 +1150,29 @@ class NeedleEngine implements NeedleEngineApi {
     required String toolsJson,
     required String optionsJson,
   }) {
-    final address = _modelAddress;
-    if (address == null) {
-      throw const NeedleEngineException('Model is not loaded.');
-    }
-    return Isolate.run(
-      () => _completeSync(address, messagesJson, toolsJson, optionsJson),
-    );
+    return _queue.run(() {
+      // Checked inside the queued op: a queued complete may legitimately
+      // run after a queued unload, and must then fail instead of touching
+      // a destroyed handle.
+      final address = _modelAddress;
+      if (address == null) {
+        throw const NeedleEngineException('Model is not loaded.');
+      }
+      return Isolate.run(
+        () => _completeSync(address, messagesJson, toolsJson, optionsJson),
+      );
+    });
   }
 
   @override
-  Future<void> unload() async {
-    final address = _modelAddress;
-    _modelAddress = null;
-    if (address != null) {
-      await Isolate.run(() => _destroySync(address));
-    }
+  Future<void> unload() {
+    return _queue.run(() async {
+      final address = _modelAddress;
+      _modelAddress = null;
+      if (address != null) {
+        await Isolate.run(() => _destroySync(address));
+      }
+    });
   }
 }
 
@@ -1118,7 +1202,7 @@ String _completeSync(
     final written = cactus.cactusComplete(
       model,
       messages,
-      buffer.cast(),
+      buffer.cast<Utf8>(),
       _responseBufferBytes,
       options,
       tools,
@@ -1128,9 +1212,17 @@ String _completeSync(
       0,
     );
     if (written < 0) {
-      throw NeedleEngineException('cactus_complete failed: status $written');
+      throw NeedleEngineException(
+        'cactus_complete failed: status $written${_lastErrorSuffix()}',
+      );
     }
-    return buffer.cast<Utf8>().toDartString();
+    if (written >= _responseBufferBytes) {
+      throw NeedleEngineException(
+        'cactus_complete response truncated '
+        '($written bytes; buffer $_responseBufferBytes)',
+      );
+    }
+    return buffer.cast<Utf8>().toDartString(length: written);
   } finally {
     calloc.free(messages);
     calloc.free(tools);
@@ -1141,6 +1233,16 @@ String _completeSync(
 
 void _destroySync(int modelAddress) {
   cactus.cactusDestroy(Pointer<Void>.fromAddress(modelAddress));
+}
+
+/// Formats `cactus_get_last_error` as an exception-message suffix, or ''
+/// when there is no error text. Only called on the isolate that just made
+/// the failing native call.
+String _lastErrorSuffix() {
+  final error = cactus.cactusGetLastError();
+  if (error == nullptr) return '';
+  final text = error.toDartString();
+  return text.isEmpty ? '' : ' ($text)';
 }
 ```
 
@@ -1159,6 +1261,9 @@ import 'needle_tool_catalog.dart';
 
 /// Turns one transcript into one measured Needle inference.
 class NeedleSpikeService {
+  // Private field behind a public named parameter; an initializing formal
+  // would force the parameter to be named `_engine`.
+  // ignore: prefer_initializing_formals
   NeedleSpikeService({required NeedleEngineApi engine}) : _engine = engine;
 
   final NeedleEngineApi _engine;
@@ -1220,7 +1325,7 @@ git commit -m "spike(needle): isolate-backed FFI engine wrapper and measured par
 
 **Interfaces:**
 - Consumes: everything from Tasks 2–6, plus `createDefaultVoiceCaptureService()` from `lib/features/voice/services/platform/default_voice_capture_service.dart` and `VoiceCaptureService.capture({required Duration timeout})` → `VoiceCapture { transcript, confidence, ... }` from `lib/shared/voice/voice_capture_service.dart`.
-- Produces: `needleEngineProvider` (`Provider<NeedleEngineApi>`), `needleInstallServiceProvider` (`Provider<NeedleModelInstallService>`), `needleSpikeServiceProvider` (`Provider<NeedleSpikeService>`), `needleVoiceCaptureFactoryProvider` (`Provider<VoiceCaptureService? Function()>`), `class NeedleSpikeScreen extends ConsumerStatefulWidget`. Consumed by Task 8's router wiring.
+- Produces: `needleEngineProvider` (`Provider<NeedleEngineApi>`), `needleInstallServiceProvider` (`FutureProvider<NeedleModelInstallService>` — resolving the app-support directory is async), `needleSpikeServiceProvider` (`Provider<NeedleSpikeService>`), `needleVoiceCaptureFactoryProvider` (`Provider<VoiceCaptureService? Function()>`), `class NeedleSpikeScreen extends ConsumerStatefulWidget`. Consumed by Task 8's router wiring.
 
 - [ ] **Step 1: Write the providers**
 
@@ -1238,6 +1343,9 @@ import '../services/needle_engine.dart';
 import '../services/needle_model_install_service.dart';
 import '../services/needle_spike_service.dart';
 
+/// Deliberately root-scoped: the loaded model stays resident for the whole
+/// app session, and [NeedleEngine.unload] runs only at ProviderContainer
+/// teardown — not when the spike screen is popped.
 final needleEngineProvider = Provider<NeedleEngineApi>((ref) {
   final engine = NeedleEngine();
   ref.onDispose(engine.unload);
@@ -1305,20 +1413,27 @@ class _FakeEngine implements NeedleEngineApi {
   Future<void> unload() async {}
 }
 
-void main() {
-  testWidgets('typed transcript produces a parsed tool call and scorecard tick', (
-    tester,
-  ) async {
-    final tempDir = await Directory.systemTemp.createTemp('needle_screen');
-    addTearDown(() => tempDir.delete(recursive: true));
-    // Pre-install a fake model so the screen goes straight to ready state.
-    final install = NeedleModelInstallService(supportDirectory: tempDir);
-    final modelDir = Directory('${tempDir.path}/needle_spike/model')
-      ..createSync(recursive: true);
-    File('${modelDir.path}/config.json').writeAsStringSync('{}');
-    await File('${tempDir.path}/needle_spike/.installed')
-        .writeAsString(modelDir.path);
+/// Lays down a pre-installed fake model and pumps the screen to ready state.
+///
+/// Directory.systemTemp.createTemp and the screen's own initState model
+/// check both use dart:io's real (isolate-backed) async file APIs, which
+/// never resolve inside a bare testWidgets pump cycle — they need the real
+/// event loop that tester.runAsync provides, plus a short real-time delay
+/// so the pending isolate response is delivered before the next pump().
+Future<void> _pumpReadyScreen(WidgetTester tester) async {
+  final tempDir = await tester.runAsync(
+    () => Directory.systemTemp.createTemp('needle_screen'),
+  );
+  addTearDown(() => tempDir!.delete(recursive: true));
+  final install = NeedleModelInstallService(supportDirectory: tempDir!);
+  final modelDir = Directory('${tempDir.path}/needle_spike/model')
+    ..createSync(recursive: true);
+  File('${modelDir.path}/config.json').writeAsStringSync('{}');
+  File(
+    '${tempDir.path}/needle_spike/.installed',
+  ).writeAsStringSync(modelDir.path);
 
+  await tester.runAsync(() async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -1329,24 +1444,92 @@ void main() {
         child: const MaterialApp(home: NeedleSpikeScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // Yield to the real event loop long enough for the pending real IO
+    // (installedModelDir's File.exists/readAsString) to be delivered.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await tester.pump();
+  });
+  await tester.pumpAndSettle();
+}
 
-    await tester.enterText(
-      find.byKey(const Key('needle-transcript-field')),
-      'is the agent connected',
+/// The result card and scorecard render below the 20-chip bank, which
+/// pushes them out of the default test viewport. ListView only mounts
+/// visible slivers, so scroll before locating them.
+Future<void> _scrollToBottom(WidgetTester tester) async {
+  await tester.drag(find.byType(ListView), const Offset(0, -2000));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _scrollToTop(WidgetTester tester) async {
+  await tester.drag(find.byType(ListView), const Offset(0, 2000));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _runTranscript(WidgetTester tester, String transcript) async {
+  await tester.enterText(
+    find.byKey(const Key('needle-transcript-field')),
+    transcript,
+  );
+  await tester.tap(find.byKey(const Key('needle-run-button')));
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  testWidgets(
+    'typed transcript produces a parsed tool call and scorecard tick',
+    (tester) async {
+      await _pumpReadyScreen(tester);
+      await _runTranscript(tester, 'is the agent connected');
+      await _scrollToBottom(tester);
+
+      expect(find.textContaining('show_status'), findsOneWidget);
+      expect(find.textContaining('wall'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('needle-verdict-correct')));
+      await tester.pump();
+      expect(find.textContaining('correct 1'), findsOneWidget);
+    },
+  );
+
+  testWidgets('verdict buttons only score a real, unscored, current result', (
+    tester,
+  ) async {
+    await _pumpReadyScreen(tester);
+    await _scrollToBottom(tester);
+
+    // Before any run there is no result: the verdict buttons are disabled,
+    // so tapping one must not record anything.
+    await tester.tap(
+      find.byKey(const Key('needle-verdict-correct')),
+      warnIfMissed: false,
     );
-    await tester.tap(find.byKey(const Key('needle-run-button')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    expect(find.textContaining('total 0'), findsOneWidget);
 
-    expect(find.textContaining('show_status'), findsOneWidget);
-    expect(find.textContaining('wall'), findsOneWidget);
+    // Produce a result.
+    await _scrollToTop(tester);
+    await _runTranscript(tester, 'is the agent connected');
+    await _scrollToBottom(tester);
 
+    // First tap scores the result; a second tap must not double-count.
     await tester.tap(find.byKey(const Key('needle-verdict-correct')));
     await tester.pump();
     expect(find.textContaining('correct 1'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('needle-verdict-correct')),
+      warnIfMissed: false,
+    );
+    await tester.pump();
+    expect(find.textContaining('correct 1'), findsOneWidget);
+    expect(find.textContaining('correct 2'), findsNothing);
   });
 }
 ```
+
+Adaptation note (discovered while implementing): the widget test as originally drafted hung indefinitely (10-minute framework timeout, `TimeoutException` stack rooted in `dart:isolate _RawReceivePort._handleMessage`). Root cause: `NeedleModelInstallService.installedModelDir()`'s real `dart:io` async calls (`File.exists()`, `File.readAsString()`) run during the screen's `initState`, and real isolate-backed IO never completes inside a bare `testWidgets` pump cycle — it requires `tester.runAsync()`, plus a genuine real-time yield (`Future.delayed`) after `pumpWidget` for the pending isolate response to be delivered before the next `pump()`. Separately, the 20-chip transcript bank pushes the result card and scorecard below the default test viewport; since `ListView` only mounts visible slivers, the test drags the `ListView` up before asserting on their content, exactly as this plan's original note anticipated ("adapt the test mechanics, never the asserted behaviors"). No production code changed for either fix.
+
+Review-round additions (post-implementation code review): the screen now gates verdict scoring — verdict buttons are enabled only while `_result != null && !_running && !_resultScored`, `_recordVerdict` marks the result scored (each result scores exactly once; a 'scored ✓' line appears in the scorecard card), and `_run` clears the flag when a new run starts. The screen also tracks the in-flight mic capture in a `VoiceCaptureService? _activeCapture` field and fire-and-forgets `cancel()` in `dispose()` so the microphone is released if the user backs out mid-capture. A second widget test covers the scoring gate (disabled before any run; no double-count after scoring). The code blocks above reflect all of this.
 
 - [ ] **Step 3: Run test to verify it fails**
 
@@ -1361,6 +1544,7 @@ Create `lib/features/needle_spike/screens/needle_spike_screen.dart`:
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/voice/voice_capture_service.dart';
 import '../data/needle_test_transcripts.dart';
 import '../models/needle_scorecard.dart';
 import '../providers/needle_spike_providers.dart';
@@ -1388,6 +1572,15 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
   String? _error;
   NeedleResult? _result;
 
+  /// True once the current [_result] has been given a verdict. Gates the
+  /// verdict buttons so each result is scored exactly once; cleared when a
+  /// new run starts.
+  bool _resultScored = false;
+
+  /// The capture service currently recording, if any. Held so dispose can
+  /// release the microphone if the user backs out mid-capture.
+  VoiceCaptureService? _activeCapture;
+
   @override
   void initState() {
     super.initState();
@@ -1396,6 +1589,8 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
 
   @override
   void dispose() {
+    // Fire-and-forget: release the microphone if a capture is in flight.
+    _activeCapture?.cancel();
     _transcriptController.dispose();
     super.dispose();
   }
@@ -1443,6 +1638,7 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
       _running = true;
       _error = null;
       _result = null;
+      _resultScored = false;
     });
     try {
       final engine = ref.read(needleEngineProvider);
@@ -1476,6 +1672,7 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
       _capturing = true;
       _error = null;
     });
+    _activeCapture = capture;
     try {
       final result = await capture.capture(
         timeout: const Duration(seconds: 15),
@@ -1486,12 +1683,21 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
       if (!mounted) return;
       setState(() => _error = '$e');
     } finally {
+      _activeCapture = null;
       if (mounted) setState(() => _capturing = false);
     }
   }
 
+  /// Verdicts may only be recorded against a real, current, not-yet-scored
+  /// result — otherwise the tally would drift from the actual runs.
+  bool get _canRecordVerdict => _result != null && !_running && !_resultScored;
+
   void _recordVerdict(NeedleVerdict verdict) {
-    setState(() => _scorecard.record(verdict));
+    if (!_canRecordVerdict) return;
+    setState(() {
+      _scorecard.record(verdict);
+      _resultScored = true;
+    });
   }
 
   @override
@@ -1622,28 +1828,41 @@ class _NeedleSpikeScreenState extends ConsumerState<NeedleSpikeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_scorecard.summaryLine),
+            if (_resultScored)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text('scored ✓'),
+              ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
                 OutlinedButton(
                   key: const Key('needle-verdict-correct'),
-                  onPressed: () => _recordVerdict(NeedleVerdict.correct),
+                  onPressed: _canRecordVerdict
+                      ? () => _recordVerdict(NeedleVerdict.correct)
+                      : null,
                   child: const Text('Correct'),
                 ),
                 OutlinedButton(
                   key: const Key('needle-verdict-wrong-tool'),
-                  onPressed: () => _recordVerdict(NeedleVerdict.wrongTool),
+                  onPressed: _canRecordVerdict
+                      ? () => _recordVerdict(NeedleVerdict.wrongTool)
+                      : null,
                   child: const Text('Wrong tool'),
                 ),
                 OutlinedButton(
                   key: const Key('needle-verdict-wrong-args'),
-                  onPressed: () => _recordVerdict(NeedleVerdict.wrongArgs),
+                  onPressed: _canRecordVerdict
+                      ? () => _recordVerdict(NeedleVerdict.wrongArgs)
+                      : null,
                   child: const Text('Wrong args'),
                 ),
                 OutlinedButton(
                   key: const Key('needle-verdict-no-call'),
-                  onPressed: () => _recordVerdict(NeedleVerdict.noCall),
+                  onPressed: _canRecordVerdict
+                      ? () => _recordVerdict(NeedleVerdict.noCall)
+                      : null,
                   child: const Text('No call'),
                 ),
                 TextButton(
@@ -1717,6 +1936,19 @@ void main() {
       expect(topLevelPaths, isNot(contains(AppRoutes.needleSpike)));
     }
   });
+
+  // Gated round-trip test (registered only under --dart-define=NEEDLE_SPIKE=true):
+  // pump MaterialApp.router with the routerProvider's router (ProviderScope with
+  // FakeHermesChannel/FakeHermesEndpointStore overrides plus a never-resolving
+  // needleInstallServiceProvider), go('/settings'), push('/needle-spike'), and
+  // assert router.canPop() is true, then pop() back to '/settings'. Locks the
+  // push-over-Settings behavior so the operator can round-trip during evaluation.
+  if (needleSpikeEnabled) {
+    testWidgets('pushed spike route stacks over Settings for a round-trip',
+        (tester) async {
+      // see test/router/needle_spike_route_test.dart for the full harness
+    });
+  }
 }
 ```
 
@@ -1753,7 +1985,7 @@ In the `GoRouter(... routes: [...])` list, after the closing `),` of the `ShellR
         ),
 ```
 
-(`needleSpikeEnabled` is a compile-time const, so in default builds this branch — and via tree-shaking the whole spike feature — is dropped from release binaries.)
+(`needleSpikeEnabled` is a compile-time const, so in default builds this route and all transitively imported spike Dart code are tree-shaken from the AOT snapshot. NOTE: the native `libcactus_engine.so` under `android/app/src/main/jniLibs/` is packaged by Gradle regardless of this flag once built (~4 MB compressed); it is gitignored and only present on machines that ran `scripts/spike/build_cactus_engine.sh`.)
 
 - [ ] **Step 5: Add the guarded settings tile**
 
@@ -1774,13 +2006,16 @@ In the `ListView` `children:` list (after the last existing `_SettingsSectionCar
                     ListTile(
                       leading: const Icon(Icons.play_arrow_outlined),
                       title: const Text('Open Needle evaluation screen'),
-                      onTap: () => context.go(AppRoutes.needleSpike),
+                      // push (not go): the spike route is outside the
+                      // ShellRoute, so go() would replace the whole match
+                      // stack and leave canPop()==false — no back arrow.
+                      onTap: () => context.push(AppRoutes.needleSpike),
                     ),
                   ],
                 ),
 ```
 
-(`AppRoutes` and `context.go` are already imported in this file.)
+(`AppRoutes` and the go_router context extensions are already imported in this file.)
 
 - [ ] **Step 6: Run tests both gated and ungated**
 
@@ -1848,6 +2083,7 @@ Create `docs/superpowers/specs/2026-07-13-needle-spike-findings.md` with the obs
 ## 1. Does it run?
 <loaded successfully / failed with error "...">
 Coexistence with flutter_onnxruntime (pocket_speech TTS): <build conflicts? runtime issues? tested by playing TTS then running Needle>
+- Telemetry kill switch active (CACTUS_NO_CLOUD_TELE=1 set before init): <verified how — e.g. airplane-mode run / traffic capture>
 
 ## 2. Accuracy (20 canned transcripts, typed)
 | Verdict | Count |
@@ -1861,6 +2097,7 @@ Mic-spoken utterances (n=<5+>): <tally + notes on STT-noise sensitivity>
 
 ## 3. Size & speed
 - APK delta (release, arm64): <bytes> (baseline <bytes> → gated <bytes>)
+- Note: libcactus_engine.so ships in the APK regardless of NEEDLE_SPIKE once built locally (Gradle packages jniLibs unconditionally); flag-off APKs on a machine with the .so present are NOT byte-identical to baseline.
 - Model download: 16,185,061 bytes zip → <extracted size> on disk
 - Latency over the 20 runs: wall p50 <ms> / p95 <ms>; engine-reported p50 <ms>
 - First-run model load time: <ms/s>

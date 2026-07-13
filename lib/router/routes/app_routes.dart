@@ -4,6 +4,9 @@ abstract final class AppRoutes {
   static const hermes = '/hermes';
   static const settings = '/settings';
 
+  /// Needle spike evaluation screen; registered only in NEEDLE_SPIKE builds.
+  static const needleSpike = '/needle-spike';
+
   static bool isHermesLocation(String location) {
     return AppRouteLocationPattern.hasPathPrefix(
       location: location,

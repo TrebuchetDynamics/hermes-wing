@@ -41,20 +41,24 @@ A time-boxed, rip-out-able experiment answering, in order:
 |---|---|
 | Role of Needle | Exploratory spike first; role decided by findings |
 | Where the spike lives | In-repo behind a debug flag (proves onnxruntime coexistence) |
-| Spike depth | Debug screen + mic button (reuses existing `SpeechRecognizer`; does NOT touch the Hermes voice-run path) |
-| Runtime path | `cactus` as a git dependency pinned to a v2.x commit of `cactus-compute/cactus` (pub.dev 1.3.0 predates Needle; git-dep mirrors the existing `pocket_speech` pattern) |
+| Spike depth | Debug screen + mic button (reuses existing `VoiceCaptureService` via `createDefaultVoiceCaptureService`; does NOT touch the Hermes voice-run path) |
+| Runtime path | Vendored FFI binding file (`lib/features/needle_spike/ffi/cactus.dart`, sourced from `cactus-compute/cactus@49e12567`) plus a locally built, gitignored `libcactus_engine.so` produced by `scripts/spike/build_cactus_engine.sh` (no pub package exists for the v2 engine, so a git dependency in `pubspec.yaml` was not viable) |
 | Relationship to Hermes | Augment only — never replace (user directive) |
 
 ## Architecture
 
-- **Dependency:** `cactus` git dependency pinned to a specific v2.x commit in
-  `pubspec.yaml`, alongside the existing `pocket_speech` git dep.
+- **Dependency:** vendored FFI binding file (`lib/features/needle_spike/ffi/cactus.dart`,
+  sourced from `cactus-compute/cactus@49e12567`) plus a locally built, gitignored
+  `libcactus_engine.so` produced by `scripts/spike/build_cactus_engine.sh`. No pub package
+  exists for the v2 engine, so this replaces the `pocket_speech`-style git dependency
+  originally proposed.
 - **Gating:** all spike code lives under `lib/features/needle_spike/`; the debug route is
   registered only when built with `--dart-define=NEEDLE_SPIKE=true`. Builds without the
   flag ship no reachable spike UI. (The native Cactus lib lands in the APK once the
   dependency exists — measuring that delta is part of the spike.)
 - **Isolation:** no imports from `needle_spike` into any other feature. The spike imports
-  shared services (`SpeechRecognizer`, download plumbing) but nothing imports it.
+  shared services (`VoiceCaptureService` via `createDefaultVoiceCaptureService`, download
+  plumbing) but nothing imports it.
 
 ## Components
 
@@ -75,7 +79,8 @@ Exposed via a Riverpod provider, consistent with existing feature wiring.
 Hidden debug screen containing:
 - free-text input field;
 - a bank of ~20 canned test transcripts (one tap to run);
-- a mic button that reuses the existing `SpeechRecognizer` service directly —
+- a mic button that reuses the existing `VoiceCaptureService` via
+  `createDefaultVoiceCaptureService` (a wrapper over `SpeechRecognizer`) directly —
   not `HermesVoiceInputController`, not the voice-run submission path;
 - result panel: parsed tool call, arguments, latency;
 - manual scorecard: correct / wrong tool / wrong args / no call (counts only).
@@ -94,6 +99,8 @@ Nothing reaches the Hermes endpoint. No network traffic after the one-time model
   the scorecard stores only counts, never utterances.
 - Download failures follow the pocket_speech pattern: temp-file atomic replace, size cap,
   checksum verification.
+- The native engine's default cloud telemetry is disabled via its env-var kill switch
+  before `cactus_init`; the evaluation must confirm no network traffic post-download.
 
 ## Testing
 

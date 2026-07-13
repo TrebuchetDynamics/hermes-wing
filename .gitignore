@@ -23,3 +23,6 @@ playwright/test-results/
 playwright/screenshots/*.png
 test-results/
 test/tooling/failures/
+
+# Needle spike: locally built native engine (rebuild via scripts/spike/build_cactus_engine.sh)
+android/app/src/main/jniLibs/arm64-v8a/libcactus_engine.so

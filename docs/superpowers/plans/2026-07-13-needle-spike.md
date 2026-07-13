@@ -1127,6 +1127,27 @@ class NeedleEngine implements NeedleEngineApi {
   final NativeCallQueue _queue = NativeCallQueue();
   int? _modelAddress;
 
+  // The _spawn* helpers below MUST stay static: Isolate.run serializes the
+  // closure it is given together with its enclosing context. A closure
+  // nested inside an instance method captures `this`, which drags in
+  // NativeCallQueue._tail (a Future — unsendable) and crashes at send-time.
+  // Statics have no `this` in scope, so their closures capture only their
+  // sendable parameters.
+  static Future<int> _spawnInit(String modelDir) =>
+      Isolate.run(() => _initSync(modelDir));
+
+  static Future<String> _spawnComplete(
+    int address,
+    String messagesJson,
+    String toolsJson,
+    String optionsJson,
+  ) => Isolate.run(
+    () => _completeSync(address, messagesJson, toolsJson, optionsJson),
+  );
+
+  static Future<void> _spawnDestroy(int address) =>
+      Isolate.run(() => _destroySync(address));
+
   @override
   bool get isLoaded => _modelAddress != null;
 
@@ -1136,7 +1157,7 @@ class NeedleEngine implements NeedleEngineApi {
       // Checked inside the queued op so concurrent loads dedupe instead of
       // both running cactus_init and leaking a handle.
       if (_modelAddress != null) return;
-      final address = await Isolate.run(() => _initSync(modelDir));
+      final address = await _spawnInit(modelDir);
       if (address == 0) {
         throw NeedleEngineException('cactus_init returned null for $modelDir');
       }
@@ -1158,9 +1179,7 @@ class NeedleEngine implements NeedleEngineApi {
       if (address == null) {
         throw const NeedleEngineException('Model is not loaded.');
       }
-      return Isolate.run(
-        () => _completeSync(address, messagesJson, toolsJson, optionsJson),
-      );
+      return _spawnComplete(address, messagesJson, toolsJson, optionsJson);
     });
   }
 
@@ -1170,7 +1189,7 @@ class NeedleEngine implements NeedleEngineApi {
       final address = _modelAddress;
       _modelAddress = null;
       if (address != null) {
-        await Isolate.run(() => _destroySync(address));
+        await _spawnDestroy(address);
       }
     });
   }

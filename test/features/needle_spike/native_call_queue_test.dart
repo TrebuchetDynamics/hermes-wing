@@ -39,6 +39,22 @@ void main() {
   });
 
   group('NeedleEngine op serialization', () {
+    test('load spawns its isolate with sendable captures only', () async {
+      final engine = NeedleEngine();
+      Object? failure;
+      try {
+        await engine.load('/nonexistent/model/dir');
+      } catch (e) {
+        failure = e;
+      }
+      expect(failure, isNotNull);
+      // On host the native lib is absent, so a correctly-structured spawn
+      // fails INSIDE the worker isolate with a library-load error. The bug
+      // this guards against fails BEFORE spawn with an isolate-message
+      // "unsendable" ArgumentError.
+      expect('$failure', isNot(contains('unsendable')));
+    });
+
     test('complete after unload rejects asynchronously with '
         'NeedleEngineException', () async {
       final engine = NeedleEngine();

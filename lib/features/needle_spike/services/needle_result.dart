@@ -44,13 +44,20 @@ class NeedleResult {
     }
     return NeedleResult(
       success: decoded['success'] == true,
-      error: decoded['error'] as String?,
-      response: decoded['response'] as String? ?? '',
+      error: decoded['error'] is String ? decoded['error'] as String : null,
+      response: decoded['response'] is String
+          ? decoded['response'] as String
+          : '',
       functionCalls: _parseFunctionCalls(decoded['function_calls']),
-      confidence: (decoded['confidence'] as num?)?.toDouble(),
-      totalTimeMs: (decoded['total_time_ms'] as num?)?.toDouble(),
-      timeToFirstTokenMs: (decoded['time_to_first_token_ms'] as num?)
-          ?.toDouble(),
+      confidence: decoded['confidence'] is num
+          ? (decoded['confidence'] as num).toDouble()
+          : null,
+      totalTimeMs: decoded['total_time_ms'] is num
+          ? (decoded['total_time_ms'] as num).toDouble()
+          : null,
+      timeToFirstTokenMs: decoded['time_to_first_token_ms'] is num
+          ? (decoded['time_to_first_token_ms'] as num).toDouble()
+          : null,
       wallLatencyMs: wallLatencyMs,
     );
   }

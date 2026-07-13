@@ -46,6 +46,20 @@ void main() {
     expect(result.error, contains('Unparseable engine response'));
   });
 
+  test('wrong-typed leaf fields degrade gracefully instead of throwing', () {
+    const raw =
+        '{"success": true, "error": 123, "response": 42, '
+        '"confidence": "high", "total_time_ms": "slow", '
+        '"time_to_first_token_ms": [], "function_calls": []}';
+    final result = NeedleResult.fromEngineJson(raw, wallLatencyMs: 7);
+    expect(result.success, isTrue);
+    expect(result.error, isNull);
+    expect(result.response, '');
+    expect(result.confidence, isNull);
+    expect(result.totalTimeMs, isNull);
+    expect(result.timeToFirstTokenMs, isNull);
+  });
+
   test('no tool call is represented as an empty list', () {
     const raw = '{"success": true, "response": "hello", "function_calls": []}';
     final result = NeedleResult.fromEngineJson(raw, wallLatencyMs: 5);

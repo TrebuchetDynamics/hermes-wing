@@ -13,6 +13,28 @@ import 'package:navivox/shared/voice/voice_capture_service.dart';
 import '../support/fake_hermes_channel.dart';
 
 void main() {
+  testWidgets('mobile composer keeps voice actions readable at phone width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
+        ],
+        child: const MaterialApp(home: HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hands-free'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('voice input fills the composer without sending to Hermes', (
     tester,
   ) async {
@@ -75,6 +97,7 @@ void main() {
       await tester.tap(voiceSwitch);
       await tester.pump();
       expect(capture.captureCalls, 1);
+      expect(find.text('Listening'), findsOneWidget);
 
       await tester.tap(voiceSwitch);
       await tester.pump();

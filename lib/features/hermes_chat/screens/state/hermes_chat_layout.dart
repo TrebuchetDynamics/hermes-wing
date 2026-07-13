@@ -441,30 +441,56 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool canSendTurns,
     Widget strip,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         strip,
         const SizedBox(height: 6),
-        Row(
-          children: [
-            _buildContinuousVoiceSwitch(canSendTurns),
-            Expanded(
-              child: TextField(
+        Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
                 key: const ValueKey('hermes-composer-field'),
                 controller: _composerController,
                 enabled: canSendTurns,
+                minLines: 1,
+                maxLines: 4,
                 decoration: InputDecoration(
                   hintText: canSendTurns
                       ? 'Message Hermes…'
                       : 'Chat transport unavailable',
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  filled: false,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 2),
                 ),
                 onSubmitted: (_) => _sendComposerText(channel),
               ),
-            ),
-            ..._composerIconButtons(context, channel, state, canSendTurns),
-          ],
+              Row(
+                children: [
+                  _buildContinuousVoiceSwitch(canSendTurns),
+                  const Spacer(),
+                  ..._composerIconButtons(
+                    context,
+                    channel,
+                    state,
+                    canSendTurns,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -528,23 +554,34 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   Widget _buildContinuousVoiceSwitch(bool canSendTurns) {
     final settings = ref.watch(navivoxVoiceSettingsProvider);
     final voiceEnabled = settings.continuousVoiceEnabled;
+    final label = _voiceInputController.capturing
+        ? 'Listening'
+        : _voiceInputController.speaking
+        ? 'Speaking'
+        : 'Hands-free';
     return Semantics(
       label: 'Continuous voice — device STT to Hermes text',
-      child: Switch(
-        key: const ValueKey('hermes-continuous-voice-switch'),
-        value: _voiceInputController.continuousEnabled,
-        onChanged: canSendTurns && voiceEnabled
-            ? (value) {
-                ref
-                    .read(navivoxVoiceSettingsProvider.notifier)
-                    .setSpeakRepliesEnabled(value);
-                if (value) {
-                  unawaited(_voiceInputController.enableContinuous());
-                } else {
-                  _voiceInputController.pause();
-                }
-              }
-            : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          Switch(
+            key: const ValueKey('hermes-continuous-voice-switch'),
+            value: _voiceInputController.continuousEnabled,
+            onChanged: canSendTurns && voiceEnabled
+                ? (value) {
+                    ref
+                        .read(navivoxVoiceSettingsProvider.notifier)
+                        .setSpeakRepliesEnabled(value);
+                    if (value) {
+                      unawaited(_voiceInputController.enableContinuous());
+                    } else {
+                      _voiceInputController.pause();
+                    }
+                  }
+                : null,
+          ),
+        ],
       ),
     );
   }

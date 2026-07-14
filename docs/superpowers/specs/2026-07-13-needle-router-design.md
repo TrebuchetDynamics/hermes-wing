@@ -1,7 +1,7 @@
 # Needle Voice-Command Router — Design
 
 **Date:** 2026-07-13
-**Status:** Implemented (branch feat/needle-router); on-device smoke pending
+**Status:** Implemented and merged to main; on-device smoke PASSED 2026-07-14 (Galaxy S24 Ultra: instant navigate + snackbar, session-switch guardrail, ordinary sentences flow to Hermes — all three user-verified by voice)
 **Precedes:** implementation plan (docs/superpowers/plans/)
 **Builds on:** docs/superpowers/specs/2026-07-13-needle-spike-design.md and
 docs/superpowers/specs/2026-07-13-needle-spike-findings.md (16/20 correct, 85% tool

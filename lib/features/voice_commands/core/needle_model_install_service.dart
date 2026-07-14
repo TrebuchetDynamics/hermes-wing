@@ -83,6 +83,14 @@ class NeedleModelInstallService {
     return modelDir.path;
   }
 
+  /// Deletes the whole install root (model + marker), tolerating a missing
+  /// directory so it is always safe to call.
+  Future<void> deleteModel() async {
+    if (await _root.exists()) {
+      await _root.delete(recursive: true);
+    }
+  }
+
   /// If the zip wraps everything in one directory, descend into it.
   Directory _resolveModelDir(Directory root) {
     var current = root;

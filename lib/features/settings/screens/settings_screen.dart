@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import '../../../router/app_routes.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../needle_spike/needle_spike_flag.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
+import '../../voice_commands/providers/voice_command_providers.dart';
 import '../providers/voice_settings_provider.dart';
 import '../presentation/settings_screen_presentation.dart';
 
@@ -289,6 +292,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              const _VoiceCommandsSection(),
               if (needleSpikeEnabled)
                 _SettingsSectionCard(
                   title: 'Needle spike (debug)',
@@ -416,6 +420,139 @@ class _SettingsHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 'On-device voice commands (beta)' section: toggle, model download with
+/// progress, and delete-model tile. Kept as its own stateful widget (rather
+/// than folded into the stateless [SettingsScreen]) because it owns the
+/// download-in-progress/installed-model-dir state that drives which tile
+/// shows.
+class _VoiceCommandsSection extends ConsumerStatefulWidget {
+  const _VoiceCommandsSection();
+
+  @override
+  ConsumerState<_VoiceCommandsSection> createState() =>
+      _VoiceCommandsSectionState();
+}
+
+class _VoiceCommandsSectionState extends ConsumerState<_VoiceCommandsSection> {
+  bool _checkingInstall = true;
+  String? _installedDir;
+  bool _downloading = false;
+  int _downloadedBytes = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_checkInstalled());
+  }
+
+  Future<void> _checkInstalled() async {
+    try {
+      final install = await ref.read(voiceCommandInstallServiceProvider.future);
+      final dir = await install.installedModelDir();
+      if (!mounted) return;
+      setState(() {
+        _installedDir = dir;
+        _checkingInstall = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _checkingInstall = false);
+    }
+  }
+
+  Future<void> _download() async {
+    setState(() {
+      _downloading = true;
+      _downloadedBytes = 0;
+    });
+    try {
+      final install = await ref.read(voiceCommandInstallServiceProvider.future);
+      final dir = await install.ensureModel(
+        onProgress: (bytes) {
+          if (mounted) setState(() => _downloadedBytes = bytes);
+        },
+      );
+      if (!mounted) return;
+      setState(() => _installedDir = dir);
+    } catch (_) {
+      if (!mounted) return;
+      // Toggle stays on: the router simply keeps returning null (no
+      // installed model dir) until a retry succeeds.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not download the voice command model.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    try {
+      final install = await ref.read(voiceCommandInstallServiceProvider.future);
+      await install.deleteModel();
+    } finally {
+      if (mounted) setState(() => _installedDir = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = ref.watch(
+      navivoxVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled),
+    );
+    final controller = ref.read(navivoxVoiceSettingsProvider.notifier);
+
+    return _SettingsSectionCard(
+      title: 'On-device voice commands (beta)',
+      icon: Icons.bolt_outlined,
+      children: [
+        const ListTile(
+          key: ValueKey('voice-commands-section-subtitle'),
+          title: Text(
+            'Runs a small on-device model to execute simple commands '
+            'instantly. Transcripts never leave the device.',
+          ),
+        ),
+        _ConstrainedSettingsTile(
+          child: SwitchListTile(
+            key: const ValueKey('voice-commands-enabled'),
+            title: const Text('On-device voice commands'),
+            value: enabled,
+            onChanged: controller.setVoiceCommandsEnabled,
+          ),
+        ),
+        if (enabled && !_checkingInstall && _installedDir == null)
+          ListTile(
+            key: const ValueKey('voice-commands-download'),
+            leading: const Icon(Icons.download_for_offline_outlined),
+            title: const Text('Download model (16 MB)'),
+            subtitle: _downloading
+                ? Text('Downloading… $_downloadedBytes bytes')
+                : const Text('Required for on-device commands'),
+            trailing: _downloading
+                ? const SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : FilledButton(
+                    onPressed: _download,
+                    child: const Text('Download'),
+                  ),
+          ),
+        if (_installedDir != null)
+          ListTile(
+            key: const ValueKey('voice-commands-delete'),
+            leading: const Icon(Icons.delete_outline),
+            title: const Text('Delete model (16 MB)'),
+            onTap: _delete,
+          ),
+      ],
     );
   }
 }

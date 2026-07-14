@@ -50,6 +50,7 @@ final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
       ? createPocketSpeechTextToSpeechService(
           enabled: true,
           voicePack: settings.pocketSpeechVoicePack!,
+          settings: () => ref.read(navivoxVoiceSettingsProvider),
         )
       : createDefaultTextToSpeechService(
           settings: () => ref.read(navivoxVoiceSettingsProvider),

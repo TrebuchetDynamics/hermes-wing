@@ -64,6 +64,25 @@ VoiceCommandRouter _routerFor(String toolName, Map<String, Object?> args) =>
       contextProvider: () => _context,
     );
 
+// Second context: a Kitten-style Pocket Speech voice catalog (no
+// flutter_tts-style locale IDs). Locks two validator properties raw against
+// this context rather than replaying a spike transcript: an unknown voice
+// name still falls through, and a differently-cased match still snaps to the
+// candidate's original casing.
+const _kittenContext = VoiceCommandContext(
+  sessionTitles: [],
+  voiceNames: ['Bella', 'Jasper'],
+);
+
+VoiceCommandRouter _routerForKitten(
+  String toolName,
+  Map<String, Object?> args,
+) => VoiceCommandRouter(
+  engine: _FixedEngine(_rawEngineJson(toolName, args)),
+  modelDirProvider: () async => '/model',
+  contextProvider: () => _kittenContext,
+);
+
 /// One recorded spike row: the transcript, the RAW engine function_call it
 /// actually produced on-device, and the expected validated outcome (null for
 /// fallthrough, else the command id / snapped args / tier).
@@ -268,4 +287,30 @@ void main() {
       expect(result.tier, c.expectedTier, reason: c.transcript);
     });
   }
+
+  group('set_tts_voice against a Kitten-style voice context', () {
+    test('unknown voice ("nova") falls through — no such voice in this '
+        'context', () async {
+      final router = _routerForKitten('set_tts_voice', const {
+        'voice': 'nova',
+      });
+      final result = await router.route('change the voice to nova');
+      expect(result, isNull);
+    });
+
+    test(
+      'differently-cased match ("bella") snaps to the original-cased '
+      'candidate ("Bella")',
+      () async {
+        final router = _routerForKitten('set_tts_voice', const {
+          'voice': 'bella',
+        });
+        final result = await router.route('change the voice to bella');
+        expect(result, isNotNull);
+        expect(result!.command, VoiceCommandId.setTtsVoice);
+        expect(result.args, const {'voice': 'Bella'});
+        expect(result.tier, VoiceCommandTier.confirm);
+      },
+    );
+  });
 }

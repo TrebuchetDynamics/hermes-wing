@@ -146,7 +146,11 @@ class _FakePocketSpeechEngine implements PocketSpeechEngine {
   int disposeCalls = 0;
 
   @override
-  Future<Uint8List> synthesizeWav(String text) async {
+  Future<Uint8List> synthesizeWav(
+    String text, {
+    String? voice,
+    double speed = 1.0,
+  }) async {
     calls.add(text);
     return wav;
   }

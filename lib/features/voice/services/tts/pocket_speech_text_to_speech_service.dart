@@ -8,11 +8,19 @@ import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../../shared/voice/text_to_speech_service.dart';
 import '../../../../shared/voice/voice_settings.dart';
+import 'text_to_speech_service.dart' show TtsSettingsReader;
 
 abstract interface class PocketSpeechEngine {
-  Future<Uint8List> synthesizeWav(String text);
+  Future<Uint8List> synthesizeWav(
+    String text, {
+    String? voice,
+    double speed = 1.0,
+  });
   Future<void> dispose();
 }
+
+typedef _Synthesize =
+    Future<Uint8List> Function(String text, {String? voice, double speed});
 
 class PackagePocketSpeechEngine implements PocketSpeechEngine {
   PackagePocketSpeechEngine(PocketSpeechVoicePack voicePack) {
@@ -25,7 +33,12 @@ class PackagePocketSpeechEngine implements PocketSpeechEngine {
             model: KittenTtsModel.nanoInt8,
           ),
         );
-        _synthesize = (text) => tts.synthesizeWav(text);
+        _synthesize = (text, {voice, speed = 1.0}) {
+          final supported = voice != null && KittenCatalog.supportsVoice(voice);
+          return supported
+              ? tts.synthesizeWav(text, voice: voice, speed: speed)
+              : tts.synthesizeWav(text, speed: speed);
+        };
         _dispose = tts.dispose;
       case PocketSpeechModel.kokoro:
         final tts = PocketSpeech.kokoro(
@@ -34,16 +47,22 @@ class PackagePocketSpeechEngine implements PocketSpeechEngine {
             voicesAsset: voicePack.voicesPath,
           ),
         );
-        _synthesize = (text) => tts.synthesizeWav(text);
+        _synthesize = (text, {voice, speed = 1.0}) => voice != null
+            ? tts.synthesizeWav(text, voice: voice, speed: speed)
+            : tts.synthesizeWav(text, speed: speed);
         _dispose = tts.dispose;
     }
   }
 
-  late final Future<Uint8List> Function(String text) _synthesize;
+  late final _Synthesize _synthesize;
   late final Future<void> Function() _dispose;
 
   @override
-  Future<Uint8List> synthesizeWav(String text) => _synthesize(text);
+  Future<Uint8List> synthesizeWav(
+    String text, {
+    String? voice,
+    double speed = 1.0,
+  }) => _synthesize(text, voice: voice, speed: speed);
 
   @override
   Future<void> dispose() => _dispose();
@@ -132,17 +151,36 @@ class PocketSpeechTextToSpeechService implements TextToSpeechService {
   PocketSpeechTextToSpeechService({
     required PocketSpeechEngine engine,
     required PocketSpeechAudioSink audioSink,
+    TtsSettingsReader? settings,
   }) : _engine = engine,
-       _audioSink = audioSink;
+       _audioSink = audioSink,
+       _settings = settings;
 
   final PocketSpeechEngine _engine;
   final PocketSpeechAudioSink _audioSink;
+  final TtsSettingsReader? _settings;
 
   @override
   Future<void> speak(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
-    final wav = await _engine.synthesizeWav(trimmed);
+    final settings = _settings?.call();
+    // pocket_speech's KokoroCatalog.speed.check rejects values outside
+    // 0.5-2.0; the app-level 0.25-3.0 clamp is wider by design for
+    // flutter_tts, so re-clamp here to the package-safe range.
+    final speed = (settings?.speechRate ?? 1.0).clamp(0.5, 2.0);
+    final voice = settings?.ttsVoiceName;
+    Uint8List wav;
+    try {
+      wav = await _engine.synthesizeWav(trimmed, voice: voice, speed: speed);
+    } on ArgumentError {
+      // Defense per the never-break-speech constraint: a rejected voice or
+      // speed (pocket_speech throws ArgumentError/RangeError) must not
+      // silence the utterance — retry once with the engine defaults. If the
+      // retry also throws, let it propagate; the outer service contract
+      // already treats speak failures.
+      wav = await _engine.synthesizeWav(trimmed);
+    }
     if (wav.isEmpty) return;
     await _audioSink.playWav(wav);
   }
@@ -166,6 +204,7 @@ TextToSpeechService? createPocketSpeechTextToSpeechService({
   PocketSpeechEngine? engine,
   PocketSpeechAudioSink? audioSink,
   bool useDefaultAudioSink = true,
+  TtsSettingsReader? settings,
 }) {
   if (!enabled || (voicePack == null && engine == null)) return null;
   final effectiveSink =
@@ -175,5 +214,6 @@ TextToSpeechService? createPocketSpeechTextToSpeechService({
   return PocketSpeechTextToSpeechService(
     engine: engine ?? PackagePocketSpeechEngine(voicePack!),
     audioSink: effectiveSink,
+    settings: settings,
   );
 }

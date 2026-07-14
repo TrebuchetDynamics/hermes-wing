@@ -141,12 +141,10 @@ Hybrid pre-routing, wake words, model fine-tuning for the three paraphrase failu
   candidate voice name literally contains the spoken words. Teaching the validator
   locale-aware aliasing (e.g. "british" → `en-GB-*`) is deferred; today it correctly
   falls through to Hermes rather than guessing.
-- **`set_speech_rate`/`set_tts_voice` only affect the flutter_tts path (known
-  limitation):** under Pocket Speech TTS, these voice commands still update the
-  `NavivoxVoiceSettings` values (so the confirmation notice is still shown), but the
-  Pocket Speech playback path doesn't read rate/voice from settings, so the spoken
-  output doesn't actually change. Wiring Pocket Speech to the same settings is
-  deferred.
+- **Pocket Speech voice/rate supported as of 2026-07-14:** both TTS backends honor
+  `set_tts_voice`/`set_speech_rate`; voice candidates follow the active backend
+  (Kitten catalog names / Kokoro `voices.json` keys / device voices). Pocket speed is
+  clamped to the package-safe 0.5–2.0 range (narrower than the app's 0.25–3.0).
 - **Engine/parse failures are fully silent by design:** the fallthrough path for
   engine and parse failures does not emit the transcript-free debug breadcrumb
   described above under "Error handling." In practice, logging even a

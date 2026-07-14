@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
@@ -7,6 +8,7 @@ import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.d
 import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
 import 'package:navivox/features/voice_commands/core/needle_model_install_service.dart';
 import 'package:navivox/features/voice_commands/providers/voice_command_providers.dart';
+import 'package:pocket_speech/pocket_speech.dart' show KittenCatalog;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
@@ -92,6 +94,151 @@ void main() {
       await expectLater(service.deleteModel(), completes);
       expect(await service.installedModelDir(), isNull);
     });
+  });
+
+  group('ttsVoiceNamesProvider backend awareness', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'tts_voice_names_provider_test',
+      );
+    });
+
+    tearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('pocket speech + kitten returns the Kitten catalog names', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = _buildContainer(tempDir);
+      addTearDown(container.dispose);
+
+      final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+      await pumpEventQueue();
+      notifier.setPocketSpeechVoicePack(
+        const PocketSpeechVoicePack(
+          model: PocketSpeechModel.kitten,
+          modelPath: 'kitten-model.bin',
+          voicesPath: 'kitten-voices.bin',
+        ),
+      );
+      notifier.setPocketSpeechTtsEnabled(true);
+      await pumpEventQueue();
+
+      final names = await container.read(ttsVoiceNamesProvider.future);
+      expect(names, contains('Bella'));
+      expect(names, equals(KittenCatalog.voices));
+    });
+
+    test(
+      'pocket speech + kokoro reads the voice pack voices.json keys',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final voicesFile = File('${tempDir.path}/voices.json');
+        await voicesFile.writeAsString(
+          jsonEncode({'af_heart': {}, 'af_bella': {}}),
+        );
+        final container = _buildContainer(tempDir);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        await pumpEventQueue();
+        notifier.setPocketSpeechVoicePack(
+          PocketSpeechVoicePack(
+            model: PocketSpeechModel.kokoro,
+            modelPath: '${tempDir.path}/model.bin',
+            voicesPath: voicesFile.path,
+          ),
+        );
+        notifier.setPocketSpeechTtsEnabled(true);
+        await pumpEventQueue();
+
+        final names = await container.read(ttsVoiceNamesProvider.future);
+        expect(names, unorderedEquals(['af_heart', 'af_bella']));
+      },
+    );
+
+    test(
+      'pocket speech + kokoro resolves keys from a multi-megabyte voices.json',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final voicesFile = File('${tempDir.path}/voices.json');
+        // Realistic shape: Kokoro packs embed float32 style vectors, so the
+        // production file is tens of MB. ~2 MB here keeps the suite fast
+        // while still proving large payloads resolve their keys.
+        final vector = List<double>.filled(2048, 0.125);
+        await voicesFile.writeAsString(
+          jsonEncode({
+            for (var i = 0; i < 100; i++) 'voice_$i': {'style': vector},
+          }),
+        );
+        final container = _buildContainer(tempDir);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        await pumpEventQueue();
+        notifier.setPocketSpeechVoicePack(
+          PocketSpeechVoicePack(
+            model: PocketSpeechModel.kokoro,
+            modelPath: '${tempDir.path}/model.bin',
+            voicesPath: voicesFile.path,
+          ),
+        );
+        notifier.setPocketSpeechTtsEnabled(true);
+        await pumpEventQueue();
+
+        final names = await container.read(ttsVoiceNamesProvider.future);
+        expect(names, hasLength(100));
+        expect(names, contains('voice_0'));
+        expect(names, contains('voice_99'));
+      },
+    );
+
+    test(
+      'pocket speech + kokoro with a missing voices.json returns an empty list',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final container = _buildContainer(tempDir);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        await pumpEventQueue();
+        notifier.setPocketSpeechVoicePack(
+          PocketSpeechVoicePack(
+            model: PocketSpeechModel.kokoro,
+            modelPath: '${tempDir.path}/model.bin',
+            voicesPath: '${tempDir.path}/missing-voices.json',
+          ),
+        );
+        notifier.setPocketSpeechTtsEnabled(true);
+        await pumpEventQueue();
+
+        final names = await container.read(ttsVoiceNamesProvider.future);
+        expect(names, isEmpty);
+      },
+    );
+
+    test(
+      'pocket speech disabled falls back to the flutter_tts source',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final container = _buildContainer(tempDir);
+        addTearDown(container.dispose);
+
+        container.read(navivoxVoiceSettingsProvider.notifier);
+        await pumpEventQueue();
+
+        // No platform flutter_tts plugin is registered in this unit-test
+        // environment, so the existing (unchanged) fallback degrades to an
+        // empty list rather than throwing — this locks that the pocket
+        // speech branches are not entered when the toggle is off.
+        final names = await container.read(ttsVoiceNamesProvider.future);
+        expect(names, isEmpty);
+      },
+    );
   });
 }
 

@@ -1,6 +1,6 @@
 # ADR 0008: Build a mobile Hermes UI with Telegram chat ergonomics
 
-Status: accepted
+Status: superseded by ADR 0011
 Date: 2026-07-07
 
 ## Context

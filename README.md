@@ -1,6 +1,6 @@
 # Navivox
 
-Experimental Flutter client for [Hermes Agent](https://github.com/NousResearch/hermes-agent).
+Canonical cross-platform Flutter client for [Hermes Agent](https://github.com/NousResearch/hermes-agent) and successor to Hermes Desktop. The replacement effort remains alpha and source-distributed.
 
 Navivox connects to a trusted Hermes Agent API endpoint and provides session
 chat, streamed assistant and tool activity, approval handling, endpoint

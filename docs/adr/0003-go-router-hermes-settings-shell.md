@@ -1,6 +1,6 @@
 # ADR 0003: Route through a small Hermes and Settings shell
 
-Status: accepted
+Status: superseded by ADR 0011
 Date: 2026-07-07
 
 ## Context

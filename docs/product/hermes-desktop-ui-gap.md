@@ -12,7 +12,7 @@ Current Navivox evidence:
 
 ## Design target
 
-Navivox should feel like a mobile-first Hermes companion, not a full Electron clone. Keep Telegram chat muscle memory: fast bottom composer, right-aligned user bubbles, low chrome on phones, large touch targets, and simple session controls. Copy Hermes Desktop's structure, hierarchy, status language, and high-contrast product feel around that chat core.
+Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and preserve Hermes One structure, hierarchy, status language, and product identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
 
 ## What is now close after the first scaffold slice
 
@@ -41,7 +41,7 @@ Navivox should feel like a mobile-first Hermes companion, not a full Electron cl
 
 **Navivox:** desktop/tablet now have a branded `HERMES ONE` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
 
-**Remaining gap:** optional footer/profile/collapse affordances from Desktop. Do not add Desktop's full Office/Kanban/Discover nav on phone.
+**Remaining gap:** footer/profile/collapse affordances and the approved parity navigation. On phones, adapt Office, Kanban, and Discover to task-focused navigation rather than copying the desktop rail.
 
 ### 3. Composer shape and density
 
@@ -73,7 +73,7 @@ Navivox should feel like a mobile-first Hermes companion, not a full Electron cl
 
 **Navivox:** settings now use a Hermes Agent dashboard with status, connection, appearance, diagnostics, and local voice cards. It is simpler than Desktop's full Gateway/Providers screens, which is intentional for mobile.
 
-**Copy later:** add richer provider/tool details only when Hermes Agent exposes stable mobile-safe endpoints.
+**Copy later:** add richer provider/tool details through capability-gated Hermes Agent endpoints; keep local host administration desktop-only.
 
 ### 7. Session search and history polish
 
@@ -181,9 +181,10 @@ Suggested scope:
 - Sessions and diagnostics as sheets/dialogs on phones.
 - Plain-language errors and retry near failed turns.
 
-## Do not copy from Desktop
+## Port by capability, not literally
 
-- Electron window chrome, install/update flow, or macOS traffic lights.
-- Full Desktop navigation stack on mobile.
-- Office/Kanban/Discover as primary mobile tabs unless they become Hermes mobile needs.
-- Desktop-only folder/worktree controls as default mobile actions.
+- Replace Electron window chrome and traffic lights with Flutter's platform-native desktop shell.
+- Port install/update flows as desktop host capabilities; mobile and web use remote endpoints.
+- Preserve Office, Kanban, and Discover outcomes, adapting their navigation and interaction density per form factor.
+- Gate folder, worktree, process, SSH, and local-file controls to supported desktop hosts.
+- Do not claim parity from matching screenshots alone; each capability needs contract and behavior evidence.

@@ -1,6 +1,6 @@
 # ADR 0001: Make Navivox a Hermes-only companion
 
-Status: accepted
+Status: superseded by ADR 0011
 Date: 2026-07-07
 
 ## Context

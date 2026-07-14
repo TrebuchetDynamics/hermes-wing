@@ -90,9 +90,28 @@ class HermesEnrollmentController extends ChangeNotifier {
   bool _exchangeAttempted = false;
   int _generation = 0;
 
+  bool _disposed = false;
+
   HermesEnrollmentStatus get status => _status;
   HermesEnrollmentPreview? get preview => _preview;
   String? get errorMessage => _errorMessage;
+
+  /// The origin from the pairing payload — the value that will actually be
+  /// saved and connected. The review screen must display this, never the
+  /// server-echoed `preview.origin`, so the operator consents to the host
+  /// they will really talk to.
+  Uri? get origin => _origin;
+
+  void _notify() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   /// Requests server-side inspection of [payload]. Never itself exchanges
   /// the code; only [confirm] does that, and only once.
@@ -104,7 +123,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _preview = null;
     _errorMessage = null;
     _status = HermesEnrollmentStatus.inspecting;
-    notifyListeners();
+    _notify();
     try {
       final preview = await _inspect(
         origin: payload.origin,
@@ -120,7 +139,7 @@ class HermesEnrollmentController extends ChangeNotifier {
           'This pairing link could not be verified. It may be expired or '
           'already used.';
     }
-    notifyListeners();
+    _notify();
   }
 
   /// Exchanges the inspected code for a bearer token and persists it via
@@ -137,7 +156,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _exchangeAttempted = true;
     final generation = ++_generation;
     _status = HermesEnrollmentStatus.confirming;
-    notifyListeners();
+    _notify();
     try {
       final issued = await _exchange(origin: origin, code: code);
       await _store.save(
@@ -149,7 +168,7 @@ class HermesEnrollmentController extends ChangeNotifier {
       _origin = null;
       _code = null;
       _status = HermesEnrollmentStatus.confirmed;
-      notifyListeners();
+      _notify();
       await _connectSavedEndpoint?.call();
       return;
     } catch (_) {
@@ -159,7 +178,7 @@ class HermesEnrollmentController extends ChangeNotifier {
           'Pairing could not be completed. Request a new pairing code and '
           'try again.';
     }
-    notifyListeners();
+    _notify();
   }
 
   /// Discards the pending code without contacting the exchange endpoint.
@@ -171,6 +190,6 @@ class HermesEnrollmentController extends ChangeNotifier {
     _errorMessage = null;
     _exchangeAttempted = false;
     _status = HermesEnrollmentStatus.idle;
-    notifyListeners();
+    _notify();
   }
 }

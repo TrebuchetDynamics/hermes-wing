@@ -194,13 +194,23 @@ class _HermesEnrollmentScreenState
     final preview = controller.preview;
     if (preview == null) return const SizedBox.shrink();
     final confirming = controller.status == HermesEnrollmentStatus.confirming;
-    final originUri = Uri.tryParse(preview.origin);
-    final host = originUri?.host.isNotEmpty == true
-        ? (originUri!.hasPort
+    // Display the origin from the pairing PAYLOAD — the host the token will
+    // actually be saved and connected against — never the server-echoed
+    // `preview.origin`, which the paired server fully controls. Showing the
+    // server's claimed host would let a hostile link display a trusted name
+    // while the grant lands elsewhere.
+    final originUri = controller.origin;
+    final host = originUri != null && originUri.host.isNotEmpty
+        ? (originUri.hasPort
               ? '${originUri.host}:${originUri.port}'
               : originUri.host)
-        : preview.origin;
+        : (originUri?.toString() ?? preview.origin);
     final cleartext = originUri?.scheme == 'http';
+    final previewUri = Uri.tryParse(preview.origin);
+    final originMismatch =
+        originUri != null &&
+        previewUri != null &&
+        _normalizedOrigin(previewUri) != _normalizedOrigin(originUri);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -238,6 +248,17 @@ class _HermesEnrollmentScreenState
             key: ValueKey('hermes-enrollment-cleartext-notice'),
           ),
         ],
+        if (originMismatch) ...[
+          const SizedBox(height: 8),
+          Text(
+            'This pairing server reports a different address '
+            '(${preview.origin}) than the link you opened. Navivox will '
+            'connect to the link address shown above. Only continue if you '
+            'trust it.',
+            key: const ValueKey('hermes-enrollment-origin-mismatch'),
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
         const SizedBox(height: 24),
         Row(
           children: [
@@ -264,6 +285,13 @@ class _HermesEnrollmentScreenState
         ),
       ],
     );
+  }
+
+  /// Scheme+host+port only, lowercased — the identity that matters for
+  /// deciding whether the paired server's claimed origin matches the link.
+  String _normalizedOrigin(Uri uri) {
+    final port = uri.hasPort ? ':${uri.port}' : '';
+    return '${uri.scheme.toLowerCase()}://${uri.host.toLowerCase()}$port';
   }
 
   String _formatExpiry(DateTime? expiresAt) {

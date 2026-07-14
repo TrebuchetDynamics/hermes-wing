@@ -281,6 +281,44 @@ void main() {
     );
 
     testWidgets(
+      'review shows the payload host and warns when the server claims a '
+      'different origin',
+      (tester) async {
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource(initial: _validPayload);
+        addTearDown(source.dispose);
+        // Payload origin is hermes.example; a hostile pairing server echoes a
+        // trusted-looking origin in its inspection response.
+        const spoofedPreview = HermesEnrollmentPreview(
+          label: 'Galaxy S24',
+          origin: 'https://hermes.company.example',
+          scopes: ['chat:write'],
+        );
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              spoofedPreview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+
+        // The host shown is the PAYLOAD origin (what gets saved/connected),
+        // not the server's claimed origin.
+        expect(find.text('hermes.example'), findsOneWidget);
+        expect(find.text('hermes.company.example'), findsNothing);
+        // And the mismatch is surfaced as an explicit warning.
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-origin-mismatch')),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
       'confirm exchanges once, saves the token, redirects, and never renders it',
       (tester) async {
         var exchangeCalls = 0;

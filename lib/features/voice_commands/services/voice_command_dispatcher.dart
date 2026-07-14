@@ -9,6 +9,9 @@ import '../models/voice_command.dart';
 /// methods, and production code adapts the real controller to this shape.
 abstract interface class VoiceCommandSettingsSink {
   void setContinuousVoiceEnabled(bool enabled);
+
+  /// [rate] arrives already clamped to 0.25–3.0 by the validator; an adapter
+  /// that clamps again is harmless.
   void setSpeechRate(double rate);
   void setTtsVoiceName(String? name);
 }
@@ -91,6 +94,9 @@ class VoiceCommandDispatcher {
   Future<void> _switchSession(VoiceRouteResult result) async {
     final target = _normalizeTitle(result.args['session_name']);
     for (final session in _channel().state.sessions) {
+      // An untitled session must never match — its null title would
+      // stringify to 'null' and become spoofable by a spoken "null".
+      if (session.title == null) continue;
       if (_normalizeTitle(session.title) == target) {
         await _channel().selectSession(session.id);
         return;

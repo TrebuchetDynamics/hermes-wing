@@ -181,6 +181,30 @@ void main() {
     },
   );
 
+  test('switch_session never matches a null-titled session', () async {
+    final channel = FakeHermesChannel(
+      sessions: const [
+        HermesSession(id: 'x', source: 'x'),
+        HermesSession(id: 's1', source: 'x', title: 'groceries'),
+      ],
+    );
+    final r = _Recorder();
+    final dispatcher = _dispatcher(channel, r);
+    // A null title stringifies to 'null'; it must not be spoofable.
+    await dispatcher.dispatch(
+      _result(VoiceCommandId.switchSession, const {'session_name': 'null'}),
+    );
+    expect(channel.selectSessionCalls, isEmpty);
+    expect(r.notices, ['Session no longer exists.']);
+    // And the null-titled session must not interfere with real matches.
+    await dispatcher.dispatch(
+      _result(VoiceCommandId.switchSession, const {
+        'session_name': 'groceries',
+      }),
+    );
+    expect(channel.selectSessionCalls, ['s1']);
+  });
+
   test('switch_session notices when the title no longer exists', () async {
     final channel = FakeHermesChannel(
       sessions: const [

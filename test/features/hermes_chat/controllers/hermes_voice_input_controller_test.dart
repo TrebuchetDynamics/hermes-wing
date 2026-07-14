@@ -157,6 +157,7 @@ void main() {
   test('routed transcript is consumed instead of drafted', () async {
     final channel = FakeHermesChannel();
     final routed = <VoiceRouteResult>[];
+    final routedAutoSendFlags = <bool>[];
     final drafts = <String>[];
     final controller = HermesVoiceInputController(
       channel: () => channel,
@@ -175,16 +176,170 @@ void main() {
         tier: VoiceCommandTier.instant,
         transcript: t,
       ),
-      onRoutedCommand: (result, {required autoSend}) => routed.add(result),
+      onRoutedCommand: (result, {required autoSend}) {
+        routed.add(result);
+        routedAutoSendFlags.add(autoSend);
+      },
     );
     addTearDown(controller.dispose);
 
     await controller.captureDraft();
 
     expect(routed, hasLength(1));
+    expect(routedAutoSendFlags, [false]);
     expect(drafts, isEmpty);
     expect(channel.state.voiceRuns, isEmpty);
   });
+
+  test('continuous routed transcript reports autoSend true', () async {
+    final channel = FakeHermesChannel();
+    final routedAutoSendFlags = <bool>[];
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => FakeVoiceCaptureService(
+        audio: Uint8List(0),
+        transcript: 'open the settings screen',
+        duration: const Duration(seconds: 1),
+        confidence: 0.9,
+      ),
+      textToSpeechService: () => null,
+      settings: () => const NavivoxVoiceSettings(),
+      onDraft: (_) {},
+      routeTranscript: (t) async => VoiceRouteResult(
+        command: VoiceCommandId.navigateToScreen,
+        args: const {'screen': 'settings'},
+        tier: VoiceCommandTier.instant,
+        transcript: t,
+      ),
+      onRoutedCommand: (result, {required autoSend}) =>
+          routedAutoSendFlags.add(autoSend),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.enableContinuous();
+
+    expect(routedAutoSendFlags, [true]);
+    expect(channel.sentVoiceTranscripts, isEmpty);
+  });
+
+  test('throwing router falls through to the draft path', () async {
+    final channel = FakeHermesChannel();
+    final routed = <VoiceRouteResult>[];
+    final drafts = <String>[];
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => FakeVoiceCaptureService(
+        audio: Uint8List(0),
+        transcript: 'draft from voice',
+        duration: const Duration(seconds: 1),
+        confidence: 0.9,
+      ),
+      textToSpeechService: () => null,
+      settings: () => const NavivoxVoiceSettings(),
+      onDraft: drafts.add,
+      routeTranscript: (_) async => throw StateError('router exploded'),
+      onRoutedCommand: (result, {required autoSend}) => routed.add(result),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.captureDraft();
+
+    expect(drafts, ['draft from voice']);
+    expect(routed, isEmpty);
+    expect(controller.capturing, isFalse);
+    expect(controller.error, isNull);
+  });
+
+  test('capture stays exclusive while routing is pending', () async {
+    final channel = FakeHermesChannel();
+    final gate = Completer<VoiceRouteResult?>();
+    final routed = <VoiceRouteResult>[];
+    final drafts = <String>[];
+    var captureServiceRequests = 0;
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () {
+        captureServiceRequests += 1;
+        return FakeVoiceCaptureService(
+          audio: Uint8List(0),
+          transcript: 'first transcript',
+          duration: const Duration(seconds: 1),
+          confidence: 0.9,
+        );
+      },
+      textToSpeechService: () => null,
+      settings: () => const NavivoxVoiceSettings(),
+      onDraft: drafts.add,
+      routeTranscript: (_) => gate.future,
+      onRoutedCommand: (result, {required autoSend}) => routed.add(result),
+    );
+    addTearDown(controller.dispose);
+
+    final first = controller.captureDraft();
+    await pumpEventQueue();
+
+    // The routing await is still pending: the capture window must stay
+    // closed so a second mic tap cannot interleave and drop the transcript.
+    expect(controller.capturing, isTrue);
+    final second = controller.captureDraft();
+    await pumpEventQueue();
+    expect(controller.capturing, isTrue);
+    expect(captureServiceRequests, 1);
+
+    gate.complete(null);
+    await first;
+    await second;
+
+    expect(drafts, ['first transcript']);
+    expect(routed, isEmpty);
+    expect(controller.capturing, isFalse);
+  });
+
+  test(
+    'session change during routing discards a continuous transcript',
+    () async {
+      final channel = FakeHermesChannel();
+      final gate = Completer<VoiceRouteResult?>();
+      final routed = <VoiceRouteResult>[];
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => FakeVoiceCaptureService(
+          audio: Uint8List(0),
+          transcript: 'send this continuously',
+          duration: const Duration(seconds: 1),
+          confidence: 0.9,
+        ),
+        textToSpeechService: () => null,
+        settings: () => const NavivoxVoiceSettings(),
+        onDraft: (_) {},
+        routeTranscript: (_) => gate.future,
+        onRoutedCommand: (result, {required autoSend}) => routed.add(result),
+      );
+      addTearDown(controller.dispose);
+
+      final pending = controller.enableContinuous();
+      await pumpEventQueue();
+      await channel.selectSession('sess_2');
+      gate.complete(
+        const VoiceRouteResult(
+          command: VoiceCommandId.showStatus,
+          args: {},
+          tier: VoiceCommandTier.instant,
+          transcript: 'send this continuously',
+        ),
+      );
+      await pending;
+
+      expect(routed, isEmpty);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(controller.continuousEnabled, isFalse);
+      expect(
+        controller.error,
+        'Voice capture was discarded because the Hermes session changed. '
+        'Continuous voice paused.',
+      );
+    },
+  );
 
   test('null route falls through to the draft path unchanged', () async {
     final channel = FakeHermesChannel();

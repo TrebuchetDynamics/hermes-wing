@@ -33,15 +33,21 @@ class HermesVoiceInputController extends ChangeNotifier {
     VoiceTranscriptRouter? routeTranscript,
     void Function(VoiceRouteResult result, {required bool autoSend})?
     onRoutedCommand,
-  }) => HermesVoiceInputController._(
-    channel,
-    captureService,
-    textToSpeechService,
-    settings,
-    onDraft,
-    routeTranscript,
-    onRoutedCommand,
-  );
+  }) {
+    assert(
+      routeTranscript == null || onRoutedCommand != null,
+      'onRoutedCommand is required when routeTranscript is provided',
+    );
+    return HermesVoiceInputController._(
+      channel,
+      captureService,
+      textToSpeechService,
+      settings,
+      onDraft,
+      routeTranscript,
+      onRoutedCommand,
+    );
+  }
 
   HermesVoiceInputController._(
     this._channel,
@@ -104,9 +110,14 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (_disposed || operationGeneration != _operationGeneration) return;
 
     _activeCaptureService = null;
-    _capturing = false;
+    // _capturing intentionally stays true until each branch below resolves:
+    // the routing await in the captured branch must keep the capture window
+    // closed so maybeContinue() or a second mic tap cannot interleave and
+    // silently drop the transcript. pause() still recovers a hung router
+    // (generation bump plus _capturing reset).
     if (!channel.state.isConnected ||
         channel.state.activeSessionId != captureSessionId) {
+      _capturing = false;
       _recordCaptureFailure(
         'Voice capture was discarded because the Hermes session changed.',
         autoSend: autoSend,
@@ -117,23 +128,34 @@ class HermesVoiceInputController extends ChangeNotifier {
 
     switch (outcome.status) {
       case HermesVoiceCaptureStatus.unavailable:
+        _capturing = false;
         _recordCaptureFailure(
           'Voice input is not available here.',
           autoSend: autoSend,
         );
       case HermesVoiceCaptureStatus.failed:
+        _capturing = false;
         _recordCaptureFailure(
           outcome.errorMessage ?? 'Voice capture failed.',
           autoSend: autoSend,
         );
       case HermesVoiceCaptureStatus.captured:
         final capture = outcome.capture!;
-        if (autoSend && _handleLocalCommand(capture.transcript)) break;
+        if (autoSend && _handleLocalCommand(capture.transcript)) {
+          // pause() inside _handleLocalCommand already reset _capturing.
+          break;
+        }
         final transcript = capture.transcript.trim();
         VoiceRouteResult? routed;
         if (_routeTranscript != null) {
-          routed = await _routeTranscript(transcript);
+          try {
+            routed = await _routeTranscript(transcript);
+          } catch (_) {
+            // A broken router must never block the transcript: fall through.
+            routed = null;
+          }
           if (_disposed || operationGeneration != _operationGeneration) {
+            // pause()/dispose()/a newer capture owns _capturing now.
             return;
           }
           final stillValidSession =
@@ -141,6 +163,7 @@ class HermesVoiceInputController extends ChangeNotifier {
               channel.state.activeSessionId == captureSessionId;
           if (!stillValidSession) {
             if (autoSend) {
+              _capturing = false;
               _recordCaptureFailure(
                 'Voice capture was discarded because the Hermes session changed.',
                 autoSend: true,
@@ -148,9 +171,13 @@ class HermesVoiceInputController extends ChangeNotifier {
               notifyListeners();
               return;
             }
+            // Unlike the capture-time discard above, a draft is inert text in
+            // the composer, so delivering it despite the session change is
+            // deliberate — only the routed shortcut is dropped.
             routed = null;
           }
         }
+        _capturing = false;
         if (routed != null) {
           _onRoutedCommand!(routed, autoSend: autoSend);
           break;

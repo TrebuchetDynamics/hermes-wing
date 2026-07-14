@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/needle_spike/needle_spike_flag.dart';
 import '../../features/needle_spike/screens/needle_spike_screen.dart';
@@ -32,6 +33,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const SettingsScreen(),
           ),
         ],
+      ),
+      // Reached only via an Android connect intent
+      // (navivox://connect?...); deliberately outside the ShellRoute since
+      // no Hermes endpoint is configured yet at that point.
+      GoRoute(
+        path: AppRoutes.enroll,
+        builder: (context, state) =>
+            _SelectableRoute(child: const HermesEnrollmentScreen()),
       ),
       // needleSpikeEnabled is a compile-time const, so in default builds
       // this route and all transitively imported spike Dart code are

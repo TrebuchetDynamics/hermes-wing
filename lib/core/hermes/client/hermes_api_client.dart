@@ -216,6 +216,41 @@ class HermesApiClient {
     await _postJson(config.runStopUri(runId), const {});
   }
 
+  /// Inspects a one-time pairing code against the operator-supplied
+  /// [origin] so the operator can review label/scopes/expiry before
+  /// exchanging it. Unauthenticated by design: this never sends this
+  /// client's configured bearer header, even when [origin] matches
+  /// [config].
+  Future<HermesEnrollmentPreview> inspectEnrollment({
+    required Uri origin,
+    required String code,
+  }) async {
+    final originConfig = HermesApiConfig.fromBaseUrl(origin.toString());
+    return HermesEnrollmentPreview.fromJson(
+      await _postJsonUnauthenticated(originConfig.enrollmentInspectUri, {
+        'origin': origin.toString(),
+        'code': code,
+      }),
+    );
+  }
+
+  /// Exchanges a one-time pairing code for a bearer token, once, after
+  /// operator confirmation. Unauthenticated by design; see
+  /// [inspectEnrollment]. The returned raw token must never be logged or
+  /// displayed — persist it only via `HermesEndpointStore.save`.
+  Future<HermesIssuedOperatorToken> exchangeEnrollment({
+    required Uri origin,
+    required String code,
+  }) async {
+    final originConfig = HermesApiConfig.fromBaseUrl(origin.toString());
+    return HermesIssuedOperatorToken.fromJson(
+      await _postJsonUnauthenticated(originConfig.enrollmentExchangeUri, {
+        'origin': origin.toString(),
+        'code': code,
+      }),
+    );
+  }
+
   Future<Map<String, Object?>> _getJson(Uri uri) async {
     return _decodeObject(await _bounded(_get(uri, config.headers), uri));
   }
@@ -250,6 +285,19 @@ class HermesApiClient {
     return _decodeObject(await _bounded(_delete(uri, config.headers), uri));
   }
 
+  /// Posts JSON without any bearer credential, regardless of [config]. Used
+  /// only by the unauthenticated one-time enrollment endpoints so a saved
+  /// API key is never attached to an inspect/exchange request.
+  Future<Map<String, Object?>> _postJsonUnauthenticated(
+    Uri uri,
+    Map<String, Object?> body,
+  ) async {
+    const headers = {hermesApiContentTypeHeader: hermesApiJsonContentType};
+    return _decodeObject(
+      await _bounded(_post(uri, headers, jsonEncode(body)), uri),
+    );
+  }
+
   Future<T> _bounded<T>(Future<T> request, Uri uri) {
     return request.timeout(
       requestTimeout,
@@ -282,4 +330,61 @@ class HermesApiClient {
     }
     return navivoxMapFromJson(decoded);
   }
+}
+
+/// Server-side inspection of a one-time pairing code: what an operator is
+/// about to grant before they confirm the exchange. Carries no secret.
+class HermesEnrollmentPreview {
+  const HermesEnrollmentPreview({
+    required this.label,
+    required this.origin,
+    required this.scopes,
+    this.expiresAt,
+  });
+
+  factory HermesEnrollmentPreview.fromJson(Map<String, Object?> json) {
+    return HermesEnrollmentPreview(
+      label: navivoxStringFromJson(json['label'], fallback: ''),
+      origin: navivoxStringFromJson(json['origin'], fallback: ''),
+      scopes: navivoxStringListFromJson(json['scopes']),
+      expiresAt: _epochSecondsToUtcDateTime(json['expires_at']),
+    );
+  }
+
+  final String label;
+  final String origin;
+  final List<String> scopes;
+  final DateTime? expiresAt;
+}
+
+/// Result of a successful one-time enrollment exchange. [token] is the raw
+/// bearer credential, returned exactly once by the server; callers must
+/// persist it via `HermesEndpointStore.save` and never log or display it.
+class HermesIssuedOperatorToken {
+  const HermesIssuedOperatorToken({
+    required this.token,
+    this.label = '',
+    this.credentialId = '',
+  });
+
+  factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
+    return HermesIssuedOperatorToken(
+      token: navivoxStringFromJson(json['token'], fallback: ''),
+      label: navivoxStringFromJson(json['label'], fallback: ''),
+      credentialId: navivoxStringFromJson(json['credential_id'], fallback: ''),
+    );
+  }
+
+  final String token;
+  final String label;
+  final String credentialId;
+}
+
+DateTime? _epochSecondsToUtcDateTime(Object? value) {
+  final seconds = navivoxDoubleFromJson(value);
+  if (seconds == null) return null;
+  return DateTime.fromMillisecondsSinceEpoch(
+    (seconds * 1000).round(),
+    isUtc: true,
+  );
 }

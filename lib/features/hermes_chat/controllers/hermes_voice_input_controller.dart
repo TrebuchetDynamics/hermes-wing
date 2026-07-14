@@ -155,7 +155,7 @@ class HermesVoiceInputController extends ChangeNotifier {
             routed = null;
           }
           if (_disposed || operationGeneration != _operationGeneration) {
-            // pause()/dispose()/a newer capture owns _capturing now.
+            // pause()/dispose() owns _capturing now.
             return;
           }
           final stillValidSession =
@@ -202,6 +202,9 @@ class HermesVoiceInputController extends ChangeNotifier {
           );
         }
     }
+    // onRoutedCommand may trigger navigation; cheap insurance against
+    // notifying listeners of a disposed controller after that returns.
+    if (_disposed) return;
     notifyListeners();
   }
 

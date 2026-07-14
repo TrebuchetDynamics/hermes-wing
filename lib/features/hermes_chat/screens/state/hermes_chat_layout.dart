@@ -315,6 +315,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
+            if (_pendingVoiceCommand != null)
+              VoiceCommandChip(
+                result: _pendingVoiceCommand!,
+                onConfirm: _confirmVoiceCommand,
+                onDecline: _declineVoiceCommand,
+                autoDeclineAfter: _pendingVoiceCommandAutoSend
+                    ? const Duration(seconds: 5)
+                    : null,
+              ),
             _buildComposer(context, channel, state, canSendTurns, isTurnActive),
           ],
         );

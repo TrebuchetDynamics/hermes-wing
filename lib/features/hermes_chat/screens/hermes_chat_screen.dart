@@ -19,6 +19,9 @@ import '../../../shared/voice/voice_capture_service.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
+import '../../voice_commands/models/voice_command.dart';
+import '../../voice_commands/providers/voice_command_providers.dart';
+import '../../voice_commands/widgets/voice_command_chip.dart';
 import '../controllers/hermes_voice_input_controller.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
@@ -33,6 +36,7 @@ part 'state/hermes_chat_layout.dart';
 part 'state/hermes_chat_connection.dart';
 part 'state/hermes_chat_session_actions.dart';
 part 'state/hermes_chat_message_flow.dart';
+part 'state/hermes_chat_voice_commands.dart';
 
 /// Voice-capture/TTS services for the Hermes chat screen.
 final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>(
@@ -108,6 +112,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   bool _reconnectingOnResume = false;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
 
+  // Voice-command routing (see docs/superpowers/plans/2026-07-13-needle-router.md
+  // Task 10): at most one confirm-tier chip is shown at a time, and the
+  // suspension hint fires once per screen lifetime.
+  VoiceRouteResult? _pendingVoiceCommand;
+  bool _pendingVoiceCommandAutoSend = false;
+  bool _suspensionNoticeShown = false;
+
   @override
   void initState() {
     super.initState();
@@ -122,7 +133,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           ref.read(hermesTextToSpeechServiceProvider),
       settings: () => ref.read(navivoxVoiceSettingsProvider),
       onDraft: _appendVoiceDraft,
+      routeTranscript: _routeTranscript,
+      onRoutedCommand: _onRoutedCommand,
     )..addListener(_onVoiceInputChanged);
+    final voiceCaptureHooks = ref.read(voiceCaptureHooksProvider);
+    voiceCaptureHooks.onStop = () =>
+        _voiceInputController.pause('Stopped by voice command.');
+    voiceCaptureHooks.onStart = () =>
+        unawaited(_voiceInputController.enableContinuous());
     _channelProviderSubscription = ref.listenManual<HermesChannel>(
       hermesChannelProvider,
       (_, channel) => _subscribeToChannel(channel),
@@ -193,6 +211,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final channel = ref.watch(hermesChannelProvider);
     final state = channel.state;
     final activeSession = state.activeSession;
+
+    ref.listen<String?>(voiceCommandNoticeProvider, (_, notice) {
+      if (notice == null) return;
+      ScaffoldMessenger.maybeOf(
+        context,
+      )?.showSnackBar(SnackBar(content: Text(notice)));
+      ref.read(voiceCommandNoticeProvider.notifier).state = null;
+    });
 
     return Scaffold(
       appBar: AppBar(

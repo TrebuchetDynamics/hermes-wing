@@ -13,6 +13,7 @@ coverage/
 .pi/
 **/.pi/
 .understand-anything/**
+codebase-map-understand.md
 .claude/
 **/.claude/
 

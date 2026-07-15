@@ -1044,6 +1044,263 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('provider list parses presence and a masked hint without a full '
+      'key', () async {
+    const sentinel = 'sk-secret-value-1234';
+    Uri? requested;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        requested = uri;
+        return jsonEncode({
+          'data': [
+            {
+              'slug': 'openai',
+              'label': 'OpenAI',
+              'auth_type': 'api_key',
+              'env_vars': ['OPENAI_API_KEY'],
+              'configured': true,
+              'key_hint': '····1234',
+            },
+            {'slug': '', 'label': 'Ghost', 'env_vars': <String>[]},
+            {
+              'slug': 'anthropic',
+              'label': 'Anthropic',
+              'auth_type': 'api_key',
+              'env_vars': ['ANTHROPIC_API_KEY'],
+              'configured': false,
+              'key_hint': null,
+            },
+          ],
+        });
+      },
+    );
+
+    final providers = await client.listProviders(profile: 'default');
+
+    // Invariant: the request carries the mandatory ?profile=.
+    expect(requested!.path, '/api/providers');
+    expect(requested!.queryParameters['profile'], 'default');
+    // Blank-slug rows are discarded.
+    expect(providers.map((p) => p.slug), ['openai', 'anthropic']);
+    final openai = providers.first;
+    expect(openai.configured, isTrue);
+    expect(openai.keyHint, '····1234');
+    expect(openai.envVars, ['OPENAI_API_KEY']);
+    // The masked hint never carries the full key.
+    expect(openai.keyHint!.contains(sentinel), isFalse);
+  });
+
+  test('setProviderCredential sends the value in the PUT body but never '
+      'returns it', () async {
+    const sentinel = 'sk-live-DEADBEEF-super-secret';
+    Uri? putUri;
+    Map<String, Object?>? putBody;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      put: (uri, headers, body) async {
+        putUri = uri;
+        putBody = jsonDecode(body) as Map<String, Object?>;
+        return jsonEncode({
+          'data': {
+            'slug': 'openai',
+            'label': 'OpenAI',
+            'auth_type': 'api_key',
+            'env_vars': ['OPENAI_API_KEY'],
+            'configured': true,
+            'key_hint': '····cret',
+          },
+        });
+      },
+    );
+
+    final provider = await client.setProviderCredential(
+      slug: 'openai',
+      envVar: 'OPENAI_API_KEY',
+      value: sentinel,
+      profile: 'default',
+    );
+
+    // The secret IS transmitted in the request body...
+    expect(putBody, {'env_var': 'OPENAI_API_KEY', 'value': sentinel});
+    expect(putUri!.path, '/api/providers/openai/credential');
+    expect(putUri!.queryParameters['profile'], 'default');
+    // ...but the returned model exposes only presence, never the sent value.
+    expect(provider.configured, isTrue);
+    expect(provider.keyHint, '····cret');
+    final encoded = jsonEncode({
+      'slug': provider.slug,
+      'label': provider.label,
+      'authType': provider.authType,
+      'envVars': provider.envVars,
+      'configured': provider.configured,
+      'keyHint': provider.keyHint,
+    });
+    expect(encoded.contains(sentinel), isFalse);
+  });
+
+  test('removeProviderCredential deletes with the profile and env_var '
+      'query', () async {
+    Uri? deleteUri;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      delete: (uri, headers) async {
+        deleteUri = uri;
+        return jsonEncode({
+          'data': {
+            'slug': 'openai',
+            'label': 'OpenAI',
+            'auth_type': 'api_key',
+            'env_vars': ['OPENAI_API_KEY'],
+            'configured': false,
+            'key_hint': null,
+          },
+        });
+      },
+    );
+
+    final provider = await client.removeProviderCredential(
+      slug: 'openai',
+      envVar: 'OPENAI_API_KEY',
+      profile: 'default',
+    );
+
+    expect(deleteUri!.path, '/api/providers/openai/credential');
+    expect(deleteUri!.queryParameters['profile'], 'default');
+    expect(deleteUri!.queryParameters['env_var'], 'OPENAI_API_KEY');
+    expect(provider.configured, isFalse);
+    expect(provider.keyHint, isNull);
+  });
+
+  test(
+    'validateProviderCredential returns ok and a non-secret detail',
+    () async {
+      Uri? postUri;
+      final client = HermesApiClient(
+        config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+        post: (uri, headers, body) async {
+          postUri = uri;
+          return jsonEncode({'ok': true, 'detail': 'Credential accepted.'});
+        },
+      );
+
+      final probe = await client.validateProviderCredential(
+        slug: 'openai',
+        profile: 'default',
+      );
+
+      expect(postUri!.path, '/api/providers/openai/credential/validate');
+      expect(postUri!.queryParameters['profile'], 'default');
+      expect(probe.ok, isTrue);
+      expect(probe.detail, 'Credential accepted.');
+    },
+  );
+
+  test('model inventory parses catalog, active, auxiliary, and '
+      'revision', () async {
+    Uri? requested;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        requested = uri;
+        return jsonEncode({
+          'catalog': {
+            'providers': {
+              'openai': {
+                'models': [
+                  {'id': 'gpt-5', 'description': 'flagship'},
+                ],
+              },
+            },
+          },
+          'active': {'provider': 'openai', 'model': 'gpt-5'},
+          'auxiliary': [
+            {'task': 'title', 'provider': 'auto', 'model': ''},
+          ],
+          'revision': 'mrev-1',
+        });
+      },
+    );
+
+    final inventory = await client.getModelInventory(profile: 'default');
+
+    expect(requested!.path, '/api/models');
+    expect(requested!.queryParameters['profile'], 'default');
+    expect(inventory.assignment.activeProvider, 'openai');
+    expect(inventory.assignment.activeModel, 'gpt-5');
+    expect(inventory.assignment.revision, 'mrev-1');
+    expect(inventory.assignment.auxiliary.single.task, 'title');
+    expect(inventory.catalog.providers.single.provider, 'openai');
+    expect(inventory.catalog.providers.single.models.single.id, 'gpt-5');
+  });
+
+  test('refreshModelCatalog hits the refresh endpoint, not the plain '
+      'GET', () async {
+    Uri? postUri;
+    var getCalled = false;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        getCalled = true;
+        return '{}';
+      },
+      post: (uri, headers, body) async {
+        postUri = uri;
+        return jsonEncode({
+          'catalog': {
+            'providers': {
+              'anthropic': {
+                'models': [
+                  {'id': 'claude-4'},
+                ],
+              },
+            },
+          },
+        });
+      },
+    );
+
+    final catalog = await client.refreshModelCatalog(profile: 'default');
+
+    expect(getCalled, isFalse);
+    expect(postUri!.path, '/api/models/refresh');
+    expect(postUri!.queryParameters['profile'], 'default');
+    expect(catalog.providers.single.models.single.id, 'claude-4');
+  });
+
+  test('assignModel sends If-Match and the assignment body', () async {
+    Uri? putUri;
+    String? ifMatch;
+    Map<String, Object?>? putBody;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      put: (uri, headers, body) async {
+        putUri = uri;
+        ifMatch = headers['If-Match'];
+        putBody = jsonDecode(body) as Map<String, Object?>;
+        return jsonEncode({
+          'active': {'provider': 'openai', 'model': 'gpt-5'},
+          'auxiliary': <Object?>[],
+          'revision': 'mrev-2',
+        });
+      },
+    );
+
+    final assignment = await client.assignModel(
+      scope: 'main',
+      provider: 'openai',
+      model: 'gpt-5',
+      revision: 'mrev-1',
+      profile: 'default',
+    );
+
+    expect(putUri!.path, '/api/models/assignment');
+    expect(putUri!.queryParameters['profile'], 'default');
+    expect(ifMatch, 'mrev-1');
+    expect(putBody, {'scope': 'main', 'provider': 'openai', 'model': 'gpt-5'});
+    expect(assignment.revision, 'mrev-2');
+  });
 }
 
 const _capabilitiesFixture = '''

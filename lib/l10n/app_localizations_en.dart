@@ -178,4 +178,147 @@ class AppLocalizationsEn extends AppLocalizations {
   String switchAgentFailed(String message) {
     return 'Could not switch agent: $message';
   }
+
+  @override
+  String get providersDestination => 'Providers';
+
+  @override
+  String get providersTitle => 'Providers';
+
+  @override
+  String get providersSubtitle =>
+      'Set provider credentials and choose models for this agent.';
+
+  @override
+  String get providersLoading => 'Loading providers';
+
+  @override
+  String get providersConnectionError =>
+      'Providers could not be loaded from Hermes.';
+
+  @override
+  String get providersUnavailableTitle => 'Providers unavailable';
+
+  @override
+  String get providersUnavailableBody =>
+      'Hermes did not advertise provider access for this connection.';
+
+  @override
+  String get providersEmptyTitle => 'No providers available';
+
+  @override
+  String get providersEmptyBody =>
+      'Connect with provider access to manage credentials.';
+
+  @override
+  String get providerConfiguredBadge => 'Configured';
+
+  @override
+  String get providerNotConfiguredBadge => 'Not configured';
+
+  @override
+  String providerKeyHintLabel(String hint) {
+    return 'Key $hint';
+  }
+
+  @override
+  String get manageCredentialAction => 'Manage credential';
+
+  @override
+  String get providerOperationFailed =>
+      'The provider operation could not be completed.';
+
+  @override
+  String get modelSelectionTitle => 'Model selection';
+
+  @override
+  String get modelSelectionUnavailableBody =>
+      'Hermes did not advertise model access for this connection.';
+
+  @override
+  String get activeModelLabel => 'Active model';
+
+  @override
+  String get noModelAssigned => 'No model assigned';
+
+  @override
+  String get auxiliaryModelsLabel => 'Auxiliary models';
+
+  @override
+  String auxiliaryModelSummary(String task, String provider, String model) {
+    return '$task: $provider / $model';
+  }
+
+  @override
+  String get chooseModelAction => 'Choose model';
+
+  @override
+  String get refreshCatalogAction => 'Refresh catalog';
+
+  @override
+  String get modelPickerTitle => 'Select model';
+
+  @override
+  String get modelSlotLabel => 'Slot';
+
+  @override
+  String get modelSlotMain => 'Main';
+
+  @override
+  String get modelProviderLabel => 'Provider';
+
+  @override
+  String get modelNameLabel => 'Model';
+
+  @override
+  String get assignModelAction => 'Assign';
+
+  @override
+  String get modelCatalogEmpty =>
+      'No models in the catalog. Refresh to fetch the latest.';
+
+  @override
+  String get modelAssignmentFailed =>
+      'The model assignment could not be saved.';
+
+  @override
+  String get modelRevisionConflict =>
+      'The model selection changed elsewhere. Reopen the picker to try again.';
+
+  @override
+  String credentialSheetTitle(String provider) {
+    return '$provider credential';
+  }
+
+  @override
+  String get credentialWriteOnlyNotice =>
+      'Navivox can set this credential but never shows a stored key.';
+
+  @override
+  String get credentialEnvVarLabel => 'Environment variable';
+
+  @override
+  String get credentialValueLabel => 'New secret value';
+
+  @override
+  String get credentialValueRequired => 'Enter a value to set.';
+
+  @override
+  String get setCredentialAction => 'Set';
+
+  @override
+  String get removeCredentialAction => 'Remove';
+
+  @override
+  String get validateCredentialAction => 'Validate';
+
+  @override
+  String get credentialConfiguredStatus => 'Configured';
+
+  @override
+  String get credentialNotConfiguredStatus => 'Not configured';
+
+  @override
+  String get credentialOperationFailed =>
+      'The credential operation could not be completed.';
 }

@@ -268,6 +268,42 @@ class _AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   }) async {}
 
   @override
+  Future<void> loadProviders() async {}
+
+  @override
+  Future<void> setProviderCredential({
+    required String slug,
+    required String envVar,
+    required String value,
+  }) async {}
+
+  @override
+  Future<void> removeProviderCredential({
+    required String slug,
+    required String envVar,
+  }) async {}
+
+  @override
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+  }) async => const HermesCredentialProbe(ok: true);
+
+  @override
+  Future<void> loadModels() async {}
+
+  @override
+  Future<void> refreshModels() async {}
+
+  @override
+  Future<void> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
+    required String revision,
+  }) async {}
+
+  @override
   void cancelActiveTurn() {}
 
   @override

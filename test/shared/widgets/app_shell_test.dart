@@ -37,6 +37,32 @@ void main() {
     expect(find.text('Agents'), findsOneWidget);
   });
 
+  testWidgets('Providers appears in More rather than the mobile bottom bar', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _testApp(
+        const AppShell(
+          location: AppRoutes.hermes,
+          child: SizedBox(key: ValueKey('body')),
+        ),
+      ),
+    );
+
+    expect(find.text('Providers'), findsNothing);
+    expect(find.text('More'), findsOneWidget);
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Providers'), findsOneWidget);
+  });
+
   testWidgets('app shell exposes Hermes and Settings destinations', (
     tester,
   ) async {

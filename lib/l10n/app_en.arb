@@ -69,5 +69,64 @@
     "placeholders": {
       "message": {"type": "String"}
     }
-  }
+  },
+  "providersDestination": "Providers",
+  "providersTitle": "Providers",
+  "providersSubtitle": "Set provider credentials and choose models for this agent.",
+  "providersLoading": "Loading providers",
+  "providersConnectionError": "Providers could not be loaded from Hermes.",
+  "providersUnavailableTitle": "Providers unavailable",
+  "providersUnavailableBody": "Hermes did not advertise provider access for this connection.",
+  "providersEmptyTitle": "No providers available",
+  "providersEmptyBody": "Connect with provider access to manage credentials.",
+  "providerConfiguredBadge": "Configured",
+  "providerNotConfiguredBadge": "Not configured",
+  "providerKeyHintLabel": "Key {hint}",
+  "@providerKeyHintLabel": {
+    "placeholders": {
+      "hint": {"type": "String"}
+    }
+  },
+  "manageCredentialAction": "Manage credential",
+  "providerOperationFailed": "The provider operation could not be completed.",
+  "modelSelectionTitle": "Model selection",
+  "modelSelectionUnavailableBody": "Hermes did not advertise model access for this connection.",
+  "activeModelLabel": "Active model",
+  "noModelAssigned": "No model assigned",
+  "auxiliaryModelsLabel": "Auxiliary models",
+  "auxiliaryModelSummary": "{task}: {provider} / {model}",
+  "@auxiliaryModelSummary": {
+    "placeholders": {
+      "task": {"type": "String"},
+      "provider": {"type": "String"},
+      "model": {"type": "String"}
+    }
+  },
+  "chooseModelAction": "Choose model",
+  "refreshCatalogAction": "Refresh catalog",
+  "modelPickerTitle": "Select model",
+  "modelSlotLabel": "Slot",
+  "modelSlotMain": "Main",
+  "modelProviderLabel": "Provider",
+  "modelNameLabel": "Model",
+  "assignModelAction": "Assign",
+  "modelCatalogEmpty": "No models in the catalog. Refresh to fetch the latest.",
+  "modelAssignmentFailed": "The model assignment could not be saved.",
+  "modelRevisionConflict": "The model selection changed elsewhere. Reopen the picker to try again.",
+  "credentialSheetTitle": "{provider} credential",
+  "@credentialSheetTitle": {
+    "placeholders": {
+      "provider": {"type": "String"}
+    }
+  },
+  "credentialWriteOnlyNotice": "Navivox can set this credential but never shows a stored key.",
+  "credentialEnvVarLabel": "Environment variable",
+  "credentialValueLabel": "New secret value",
+  "credentialValueRequired": "Enter a value to set.",
+  "setCredentialAction": "Set",
+  "removeCredentialAction": "Remove",
+  "validateCredentialAction": "Validate",
+  "credentialConfiguredStatus": "Configured",
+  "credentialNotConfiguredStatus": "Not configured",
+  "credentialOperationFailed": "The credential operation could not be completed."
 }

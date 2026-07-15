@@ -393,6 +393,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not switch agent: {message}'**
   String switchAgentFailed(String message);
+
+  /// No description provided for @providersDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers'**
+  String get providersDestination;
+
+  /// No description provided for @providersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers'**
+  String get providersTitle;
+
+  /// No description provided for @providersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set provider credentials and choose models for this agent.'**
+  String get providersSubtitle;
+
+  /// No description provided for @providersLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading providers'**
+  String get providersLoading;
+
+  /// No description provided for @providersConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers could not be loaded from Hermes.'**
+  String get providersConnectionError;
+
+  /// No description provided for @providersUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers unavailable'**
+  String get providersUnavailableTitle;
+
+  /// No description provided for @providersUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes did not advertise provider access for this connection.'**
+  String get providersUnavailableBody;
+
+  /// No description provided for @providersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No providers available'**
+  String get providersEmptyTitle;
+
+  /// No description provided for @providersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with provider access to manage credentials.'**
+  String get providersEmptyBody;
+
+  /// No description provided for @providerConfiguredBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Configured'**
+  String get providerConfiguredBadge;
+
+  /// No description provided for @providerNotConfiguredBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get providerNotConfiguredBadge;
+
+  /// No description provided for @providerKeyHintLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Key {hint}'**
+  String providerKeyHintLabel(String hint);
+
+  /// No description provided for @manageCredentialAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage credential'**
+  String get manageCredentialAction;
+
+  /// No description provided for @providerOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The provider operation could not be completed.'**
+  String get providerOperationFailed;
+
+  /// No description provided for @modelSelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Model selection'**
+  String get modelSelectionTitle;
+
+  /// No description provided for @modelSelectionUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes did not advertise model access for this connection.'**
+  String get modelSelectionUnavailableBody;
+
+  /// No description provided for @activeModelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active model'**
+  String get activeModelLabel;
+
+  /// No description provided for @noModelAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No model assigned'**
+  String get noModelAssigned;
+
+  /// No description provided for @auxiliaryModelsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Auxiliary models'**
+  String get auxiliaryModelsLabel;
+
+  /// No description provided for @auxiliaryModelSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{task}: {provider} / {model}'**
+  String auxiliaryModelSummary(String task, String provider, String model);
+
+  /// No description provided for @chooseModelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose model'**
+  String get chooseModelAction;
+
+  /// No description provided for @refreshCatalogAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh catalog'**
+  String get refreshCatalogAction;
+
+  /// No description provided for @modelPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select model'**
+  String get modelPickerTitle;
+
+  /// No description provided for @modelSlotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slot'**
+  String get modelSlotLabel;
+
+  /// No description provided for @modelSlotMain.
+  ///
+  /// In en, this message translates to:
+  /// **'Main'**
+  String get modelSlotMain;
+
+  /// No description provided for @modelProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get modelProviderLabel;
+
+  /// No description provided for @modelNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get modelNameLabel;
+
+  /// No description provided for @assignModelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get assignModelAction;
+
+  /// No description provided for @modelCatalogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No models in the catalog. Refresh to fetch the latest.'**
+  String get modelCatalogEmpty;
+
+  /// No description provided for @modelAssignmentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The model assignment could not be saved.'**
+  String get modelAssignmentFailed;
+
+  /// No description provided for @modelRevisionConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'The model selection changed elsewhere. Reopen the picker to try again.'**
+  String get modelRevisionConflict;
+
+  /// No description provided for @credentialSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} credential'**
+  String credentialSheetTitle(String provider);
+
+  /// No description provided for @credentialWriteOnlyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Navivox can set this credential but never shows a stored key.'**
+  String get credentialWriteOnlyNotice;
+
+  /// No description provided for @credentialEnvVarLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment variable'**
+  String get credentialEnvVarLabel;
+
+  /// No description provided for @credentialValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New secret value'**
+  String get credentialValueLabel;
+
+  /// No description provided for @credentialValueRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value to set.'**
+  String get credentialValueRequired;
+
+  /// No description provided for @setCredentialAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get setCredentialAction;
+
+  /// No description provided for @removeCredentialAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeCredentialAction;
+
+  /// No description provided for @validateCredentialAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Validate'**
+  String get validateCredentialAction;
+
+  /// No description provided for @credentialConfiguredStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Configured'**
+  String get credentialConfiguredStatus;
+
+  /// No description provided for @credentialNotConfiguredStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get credentialNotConfiguredStatus;
+
+  /// No description provided for @credentialOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The credential operation could not be completed.'**
+  String get credentialOperationFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -93,6 +93,27 @@ class HermesApiConfig {
     '/api/profiles/${hermesApiTrimmedPathSegment(profileId, name: 'profileId')}/soul',
   );
 
+  /// Provider credential presence collection. Profile-owned: callers must wrap
+  /// these in [profileScopedUri] so the mandatory `profile` query is attached.
+  Uri get providersUri => _withPath('/api/providers');
+
+  Uri providerCredentialUri(String slug) => _withPath(
+    '/api/providers/${hermesApiTrimmedPathSegment(slug, name: 'slug')}/credential',
+  );
+
+  Uri providerCredentialValidateUri(String slug) => _withPath(
+    '/api/providers/${hermesApiTrimmedPathSegment(slug, name: 'slug')}/credential/validate',
+  );
+
+  /// Model catalog + active/auxiliary assignment. Profile-owned, so callers
+  /// wrap these in [profileScopedUri]. Distinct from [modelsUri] (`/v1/models`,
+  /// the plain model-id list).
+  Uri get modelCatalogUri => _withPath('/api/models');
+
+  Uri get modelRefreshUri => _withPath('/api/models/refresh');
+
+  Uri get modelAssignmentUri => _withPath('/api/models/assignment');
+
   /// Adds the mandatory `profile` query to a profile-owned request or SSE URL,
   /// including the literal `default` profile. The id is validated (non-blank)
   /// so an implicit/empty profile scope can never reach the wire, and existing

@@ -7,6 +7,7 @@ import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/needle_spike/needle_spike_flag.dart';
 import '../../features/needle_spike/screens/needle_spike_screen.dart';
+import '../../features/providers/screens/providers_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../app_routes.dart';
@@ -32,6 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.agents,
             builder: (context, state) => const AgentsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.providers,
+            builder: (context, state) => const ProvidersScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,

@@ -37,6 +37,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     List<HermesSession>? sessions,
     List<HermesProfile> profiles = const [],
     String? selectedProfileId,
+    List<HermesProvider> providers = const [],
+    this.modelInventory,
+    this.validateProviderResult = const HermesCredentialProbe(
+      ok: true,
+      detail: 'Credential accepted.',
+    ),
     this.profileSoul = const HermesProfileSoul(soul: '', revision: 'rev-1'),
     String connectedBaseUrl = 'http://fake-hermes:8642',
     bool connectedWithApiKey = true,
@@ -66,6 +72,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                    sessions ?? [HermesSession(id: sessionId, source: 'fake')],
                profiles: profiles,
                selectedProfileId: selectedProfileId,
+               providers: providers,
+               modelInventory: modelInventory,
                activeSessionId:
                    activeSessionId ??
                    ((sessions != null && sessions.isEmpty) ? null : sessionId),
@@ -95,6 +103,19 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final List<String> readProfileSoulCalls = [];
   final List<Map<String, String>> writeProfileSoulCalls = [];
   final HermesProfileSoul profileSoul;
+
+  /// Provider/model seam call recording. [setProviderCredentialCalls] records
+  /// the raw `value` it was given (the transport seam), but the fake never
+  /// exposes that value through observable [state] — only presence.
+  int loadProvidersCalls = 0;
+  final List<Map<String, String>> setProviderCredentialCalls = [];
+  final List<Map<String, String>> removeProviderCredentialCalls = [];
+  final List<String> validateProviderCredentialCalls = [];
+  int loadModelsCalls = 0;
+  int refreshModelsCalls = 0;
+  final List<Map<String, String?>> assignModelCalls = [];
+  final HermesModelInventory? modelInventory;
+  final HermesCredentialProbe validateProviderResult;
   final List<Map<String, Object?>> respondToApprovalCalls = [];
   final bool createSessionFails;
   bool selectSessionFails;
@@ -346,6 +367,122 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     if (writeProfileSoulFails) {
       throw StateError(profileMutationFailureMessage);
     }
+  }
+
+  @override
+  Future<void> loadProviders() async {
+    loadProvidersCalls += 1;
+  }
+
+  @override
+  Future<void> setProviderCredential({
+    required String slug,
+    required String envVar,
+    required String value,
+  }) async {
+    setProviderCredentialCalls.add({
+      'slug': slug,
+      'envVar': envVar,
+      'value': value,
+    });
+    // Reconcile presence only — the raw value never lands in observable state.
+    _setState(
+      _state.copyWith(
+        providers: [
+          for (final provider in _state.providers)
+            if (provider.slug == slug)
+              HermesProvider(
+                slug: provider.slug,
+                label: provider.label,
+                authType: provider.authType,
+                envVars: provider.envVars,
+                configured: true,
+                keyHint: _maskHint(value),
+              )
+            else
+              provider,
+        ],
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeProviderCredential({
+    required String slug,
+    required String envVar,
+  }) async {
+    removeProviderCredentialCalls.add({'slug': slug, 'envVar': envVar});
+    _setState(
+      _state.copyWith(
+        providers: [
+          for (final provider in _state.providers)
+            if (provider.slug == slug)
+              HermesProvider(
+                slug: provider.slug,
+                label: provider.label,
+                authType: provider.authType,
+                envVars: provider.envVars,
+              )
+            else
+              provider,
+        ],
+      ),
+    );
+  }
+
+  @override
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+  }) async {
+    validateProviderCredentialCalls.add(slug);
+    return validateProviderResult;
+  }
+
+  @override
+  Future<void> loadModels() async {
+    loadModelsCalls += 1;
+  }
+
+  @override
+  Future<void> refreshModels() async {
+    refreshModelsCalls += 1;
+  }
+
+  @override
+  Future<void> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
+    required String revision,
+  }) async {
+    assignModelCalls.add({
+      'scope': scope,
+      'task': task,
+      'provider': provider,
+      'model': model,
+      'revision': revision,
+    });
+    final current = _state.modelInventory ?? const HermesModelInventory();
+    _setState(
+      _state.copyWith(
+        modelInventory: current.withAssignment(
+          HermesModelAssignment(
+            activeProvider: provider,
+            activeModel: model,
+            auxiliary: current.assignment.auxiliary,
+            revision: '$revision-next',
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Masked last-4-only hint mirroring the server contract; never the full
+  /// value.
+  static String _maskHint(String value) {
+    if (value.length >= 8) return '····${value.substring(value.length - 4)}';
+    return '····';
   }
 
   @override

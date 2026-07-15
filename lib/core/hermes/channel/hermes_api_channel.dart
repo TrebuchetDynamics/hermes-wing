@@ -17,6 +17,7 @@ import 'hermes_channel.dart';
 part 'api_channel/hermes_api_channel_connection.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
 part 'api_channel/hermes_api_channel_profiles.dart';
+part 'api_channel/hermes_api_channel_providers.dart';
 part 'api_channel/hermes_api_channel_messaging.dart';
 part 'api_channel/hermes_api_channel_approvals.dart';
 part 'api_channel/hermes_api_channel_voice.dart';
@@ -141,6 +142,48 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     required String soul,
     required String revision,
   }) => _writeProfileSoul(profileId: profileId, soul: soul, revision: revision);
+
+  @override
+  Future<void> loadProviders() => _loadProviders();
+
+  @override
+  Future<void> setProviderCredential({
+    required String slug,
+    required String envVar,
+    required String value,
+  }) => _setProviderCredential(slug: slug, envVar: envVar, value: value);
+
+  @override
+  Future<void> removeProviderCredential({
+    required String slug,
+    required String envVar,
+  }) => _removeProviderCredential(slug: slug, envVar: envVar);
+
+  @override
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+  }) => _validateProviderCredential(slug: slug);
+
+  @override
+  Future<void> loadModels() => _loadModels();
+
+  @override
+  Future<void> refreshModels() => _refreshModels();
+
+  @override
+  Future<void> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
+    required String revision,
+  }) => _assignModel(
+    scope: scope,
+    task: task,
+    provider: provider,
+    model: model,
+    revision: revision,
+  );
 
   @override
   Future<void> sendText(String text) => _sendText(text);

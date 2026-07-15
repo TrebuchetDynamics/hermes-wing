@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'hermes_approval_request.dart';
 import '../models/hermes_approval_decision.dart';
 import '../models/hermes_profile.dart';
+import '../models/hermes_provider.dart';
 import 'hermes_channel_state.dart';
 
 export 'hermes_approval_request.dart';
 export '../models/hermes_approval_decision.dart';
+export '../models/hermes_model_assignment.dart';
 export '../models/hermes_profile.dart';
+export '../models/hermes_provider.dart';
 export 'hermes_channel_state.dart';
 
 /// Native Hermes Agent channel: sessions, streamed chat turns, and the
@@ -47,6 +50,44 @@ abstract interface class HermesChannel implements Listenable {
   Future<void> writeProfileSoul({
     required String profileId,
     required String soul,
+    required String revision,
+  });
+
+  /// Loads the provider list + write-only credential presence for the selected
+  /// profile into `state.providers`. All requests carry the mandatory
+  /// `profile` query; no field ever holds a raw key.
+  Future<void> loadProviders();
+
+  /// Sets a provider credential (write-only). [value] is sent to the server but
+  /// is never stored in state or returned — only presence is reconciled.
+  Future<void> setProviderCredential({
+    required String slug,
+    required String envVar,
+    required String value,
+  });
+
+  Future<void> removeProviderCredential({
+    required String slug,
+    required String envVar,
+  });
+
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+  });
+
+  /// Loads the cached model catalog + assignment into `state.modelInventory`.
+  Future<void> loadModels();
+
+  /// Triggers the one gated outbound catalog refresh, replacing the catalog in
+  /// `state.modelInventory` while preserving the current assignment.
+  Future<void> refreshModels();
+
+  /// Assigns a model to a slot with an `If-Match` precondition on [revision].
+  Future<void> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
     required String revision,
   });
 

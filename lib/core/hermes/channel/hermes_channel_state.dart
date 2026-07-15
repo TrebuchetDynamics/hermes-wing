@@ -3,7 +3,9 @@ import '../models/hermes_capabilities.dart';
 import '../models/hermes_chat_turn.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
+import '../models/hermes_model_assignment.dart';
 import '../models/hermes_profile.dart';
+import '../models/hermes_provider.dart';
 import '../models/hermes_session.dart';
 
 enum HermesConnectionStatus { disconnected, connecting, connected, error }
@@ -25,6 +27,8 @@ class HermesChannelState {
     this.activeSessionId,
     this.profiles = const [],
     this.selectedProfileId,
+    this.providers = const [],
+    this.modelInventory,
     this.connectedBaseUrl,
     this.connectedWithApiKey = false,
     this.messages = const {},
@@ -54,8 +58,49 @@ class HermesChannelState {
   /// The client-selected profile. This is Navivox-local state only: selecting
   /// a profile never mutates the Hermes CLI's active profile.
   final String? selectedProfileId;
+
+  /// Providers and their write-only credential presence for the selected
+  /// profile. Loaded on demand (never carries a raw key). Empty until the
+  /// provider surface loads them.
+  final List<HermesProvider> providers;
+
+  /// The model catalog + active/auxiliary assignment for the selected profile,
+  /// loaded on demand. Null until the model surface loads it.
+  final HermesModelInventory? modelInventory;
+
   final String? connectedBaseUrl;
   final bool connectedWithApiKey;
+
+  /// Scope-gating visibility hooks. These mirror the milestone-1 pattern
+  /// (`supportsSchema` + advertised endpoint + granted scope) so surfaces can
+  /// hide read/write affordances the connected token cannot use.
+  bool get canReadProviders =>
+      _allowsEndpoint('providers', 'GET', '/api/providers', 'providers:read');
+
+  bool get canWriteProviders => _allowsEndpoint(
+    'provider_credential_set',
+    'PUT',
+    '/api/providers/{slug}/credential',
+    'providers:write',
+  );
+
+  bool get canReadModels =>
+      _allowsEndpoint('models', 'GET', '/api/models', 'models:read');
+
+  bool get canWriteModels => _allowsEndpoint(
+    'models_assignment',
+    'PUT',
+    '/api/models/assignment',
+    'models:write',
+  );
+
+  bool _allowsEndpoint(String name, String method, String path, String scope) {
+    final document = capabilities;
+    return document != null &&
+        document.supportsSchema &&
+        document.auth.allows(scope) &&
+        document.advertisesEndpoint(name, method, path);
+  }
 
   HermesProfile? get selectedProfile {
     final id = selectedProfileId;
@@ -122,6 +167,8 @@ class HermesChannelState {
     List<HermesProfile>? profiles,
     String? selectedProfileId,
     bool clearSelectedProfileId = false,
+    List<HermesProvider>? providers,
+    HermesModelInventory? modelInventory,
     String? connectedBaseUrl,
     bool clearConnectedBaseUrl = false,
     bool? connectedWithApiKey,
@@ -163,6 +210,8 @@ class HermesChannelState {
       selectedProfileId: clearSelectedProfileId
           ? null
           : selectedProfileId ?? this.selectedProfileId,
+      providers: providers ?? this.providers,
+      modelInventory: modelInventory ?? this.modelInventory,
       connectedBaseUrl: clearConnectedBaseUrl
           ? null
           : connectedBaseUrl ?? this.connectedBaseUrl,

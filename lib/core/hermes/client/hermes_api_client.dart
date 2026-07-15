@@ -5,7 +5,9 @@ import '../../protocol/navivox_json.dart';
 import '../models/hermes_capabilities.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
+import '../models/hermes_model_assignment.dart';
 import '../models/hermes_profile.dart';
+import '../models/hermes_provider.dart';
 import '../models/hermes_run.dart';
 import '../models/hermes_session.dart';
 import '../shared/hermes_api_http.dart';
@@ -322,6 +324,111 @@ class HermesApiClient {
     return HermesProfileSoul.fromJson(
       await _putJson(uri, {'soul': soul}, ifMatch: revision),
     );
+  }
+
+  /// Lists providers and their write-only credential presence for [profile].
+  /// Rows with a blank slug are discarded. The response body never carries a
+  /// raw key — only `configured` and a masked `key_hint`.
+  Future<List<HermesProvider>> listProviders({required String profile}) async {
+    final body = await _getJson(
+      config.profileScopedUri(config.providersUri, profile),
+    );
+    return navivoxMapListFromJson(body['data'])
+        .map(HermesProvider.fromJson)
+        .where((provider) => provider.slug.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  /// Sets a provider credential, write-only. [value] is transmitted in the PUT
+  /// body but is NEVER stored on this client or returned to callers: the
+  /// response carries only updated presence for the provider.
+  Future<HermesProvider> setProviderCredential({
+    required String slug,
+    required String envVar,
+    required String value,
+    required String profile,
+  }) async {
+    final uri = config.profileScopedUri(
+      config.providerCredentialUri(slug),
+      profile,
+    );
+    final response = await _putJson(uri, {'env_var': envVar, 'value': value});
+    return HermesProvider.fromJson(navivoxMapFieldFromJson(response, 'data'));
+  }
+
+  /// Removes a provider credential and returns updated presence. [envVar] is
+  /// sent as a query parameter (the transport has no DELETE body).
+  Future<HermesProvider> removeProviderCredential({
+    required String slug,
+    required String envVar,
+    required String profile,
+  }) async {
+    final scoped = config.profileScopedUri(
+      config.providerCredentialUri(slug),
+      profile,
+    );
+    final uri = scoped.replace(
+      queryParameters: {...scoped.queryParameters, 'env_var': envVar},
+    );
+    final response = await _deleteJson(uri);
+    return HermesProvider.fromJson(navivoxMapFieldFromJson(response, 'data'));
+  }
+
+  /// Probes the stored credential for [slug]. Returns only `{ok, detail}`; the
+  /// detail is a non-secret string that never carries the credential.
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+    required String profile,
+  }) async {
+    final uri = config.profileScopedUri(
+      config.providerCredentialValidateUri(slug),
+      profile,
+    );
+    return HermesCredentialProbe.fromJson(await _postJson(uri, const {}));
+  }
+
+  /// Reads the cached model catalog plus the active/auxiliary assignment for
+  /// [profile]. Makes no outbound catalog fetch — that is [refreshModelCatalog].
+  Future<HermesModelInventory> getModelInventory({
+    required String profile,
+  }) async {
+    final body = await _getJson(
+      config.profileScopedUri(config.modelCatalogUri, profile),
+    );
+    return HermesModelInventory.fromJson(body);
+  }
+
+  /// Triggers the one gated outbound catalog fetch and returns the refreshed
+  /// catalog (no assignment change).
+  Future<HermesModelCatalog> refreshModelCatalog({
+    required String profile,
+  }) async {
+    final body = await _postJson(
+      config.profileScopedUri(config.modelRefreshUri, profile),
+      const {},
+    );
+    return HermesModelCatalog.fromJson(body['catalog']);
+  }
+
+  /// Assigns a model to the main or an auxiliary slot with an `If-Match`
+  /// precondition on [revision]. Returns the new active/auxiliary + revision.
+  Future<HermesModelAssignment> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
+    required String revision,
+    required String profile,
+  }) async {
+    final uri = config.profileScopedUri(config.modelAssignmentUri, profile);
+    final body = <String, Object?>{
+      'scope': scope,
+      'provider': provider,
+      'model': model,
+      ...navivoxTrimmedStringFields({'task': task}),
+    };
+    final response = await _putJson(uri, body, ifMatch: revision);
+    return HermesModelAssignment.fromJson(response);
   }
 
   Map<String, Object?> _profileEnvelope(Map<String, Object?> response) {

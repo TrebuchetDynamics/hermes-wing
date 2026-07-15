@@ -15,6 +15,8 @@ import '../../../core/hermes/policy/hermes_surface_readiness.dart';
 import '../../../core/hermes/policy/hermes_endpoint_security.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../agents/providers/profile_selection_provider.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
@@ -197,6 +199,126 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _setState(VoidCallback fn) => setState(fn);
 
+  /// Compact Chat-header control (near the session controls) that shows the
+  /// client-selected agent and opens the switcher. The label seeds the default
+  /// agent when nothing is selected yet, purely for display.
+  Widget _buildProfileSwitcher(
+    BuildContext context,
+    HermesChannel channel,
+    HermesChannelState state,
+  ) {
+    final strings = AppLocalizations.of(context);
+    final selectedId = effectiveSelectedProfileId(state);
+    HermesProfile? selected;
+    for (final profile in state.profiles) {
+      if (profile.id == selectedId) {
+        selected = profile;
+        break;
+      }
+    }
+    final label = selected == null || selected.displayName.isEmpty
+        ? (selectedId ?? strings.switchAgent)
+        : selected.displayName;
+    return TextButton.icon(
+      key: const ValueKey('hermes-profile-switcher'),
+      onPressed: () => _showProfileSwitcher(context, channel, state),
+      icon: const Icon(Icons.support_agent_outlined),
+      label: Text(
+        _safeHermesUiPreview(label, maxLength: 24),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Future<void> _showProfileSwitcher(
+    BuildContext context,
+    HermesChannel channel,
+    HermesChannelState state,
+  ) async {
+    final strings = AppLocalizations.of(context);
+    final selectedId = effectiveSelectedProfileId(state);
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: Semantics(
+                header: true,
+                child: Text(
+                  strings.switchAgentTitle,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+              ),
+            ),
+            for (final profile in state.profiles)
+              ListTile(
+                leading: Icon(
+                  profile.id == selectedId
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                ),
+                title: Text(
+                  _safeHermesUiPreview(
+                    profile.displayName.isEmpty
+                        ? profile.id
+                        : profile.displayName,
+                    maxLength: 64,
+                  ),
+                ),
+                subtitle: Text(strings.agentStableId(profile.id)),
+                selected: profile.id == selectedId,
+                onTap: () => Navigator.of(sheetContext).pop(profile.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || !context.mounted) return;
+    await _switchProfile(context, channel, chosen);
+  }
+
+  Future<void> _switchProfile(
+    BuildContext context,
+    HermesChannel channel,
+    String profileId,
+  ) async {
+    if (profileId == effectiveSelectedProfileId(channel.state)) return;
+    // Switching agents changes the client-local profile context. Clear state
+    // that belonged to the prior profile before the refresh lands: stale
+    // pending approvals, an answering-approval marker, any pending voice
+    // command, and continuous voice capture. The transcript itself is replaced
+    // by the profile-scoped session refresh inside selectProfile, so nothing
+    // from the prior profile is retained here.
+    _voiceInputController.pause(
+      'Continuous voice paused while switching agents.',
+    );
+    setState(() {
+      _pendingApprovals.clear();
+      _answeringApprovalId = null;
+      _pendingVoiceCommand = null;
+      _pendingVoiceCommandAutoSend = false;
+    });
+    try {
+      await channel.selectProfile(profileId);
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).switchAgentFailed(_safeHermesUiError(error)),
+          ),
+        ),
+      );
+    }
+  }
+
   void _subscribeToChannel(HermesChannel channel) {
     if (identical(_subscribed, channel)) return;
     _subscribed?.removeListener(_onChannelChanged);
@@ -233,6 +355,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         ),
         actions: [
           if (state.isConnected) ...[
+            if (state.profiles.isNotEmpty)
+              _buildProfileSwitcher(context, channel, state),
             IconButton(
               key: const ValueKey('hermes-sessions-button'),
               tooltip: 'Sessions',

@@ -1,0 +1,73 @@
+{
+  "@@locale": "en",
+  "appTitle": "Navivox",
+  "hermesDestination": "Hermes",
+  "agentsDestination": "Agents",
+  "settingsDestination": "Settings",
+  "moreDestinations": "More",
+  "openMoreDestinations": "Open more destinations",
+  "agentsTitle": "Agents",
+  "agentsSubtitle": "Choose how Hermes works for each role.",
+  "newAgent": "New Agent",
+  "agentsLoading": "Loading agents",
+  "agentsEmptyTitle": "No agents available",
+  "agentsEmptyBody": "Connect with profile access to view Hermes agents.",
+  "agentsUnavailableTitle": "Agents unavailable",
+  "agentsUnavailableBody": "Hermes did not advertise profile access for this connection.",
+  "agentsConnectionError": "Agents could not be loaded from Hermes.",
+  "selectedAgent": "Selected",
+  "defaultAgent": "Default",
+  "readOnlyAccess": "Read-only access",
+  "agentStableId": "ID: {id}",
+  "@agentStableId": {
+    "placeholders": {
+      "id": {"type": "String"}
+    }
+  },
+  "agentSkillsCount": "{count, plural, =0{No skills} =1{1 skill} other{{count} skills}}",
+  "@agentSkillsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "agentGatewayRunning": "Gateway running",
+  "agentGatewayOff": "Gateway off",
+  "agentNoModel": "No model selected",
+  "chatWithAgent": "Chat",
+  "editAgent": "Edit",
+  "createAgentTitle": "Create agent",
+  "agentDisplayName": "Agent name",
+  "agentNameRequired": "Enter an agent name.",
+  "cloneFromAgent": "Clone from",
+  "startFresh": "Start fresh",
+  "createAction": "Create",
+  "cancelAction": "Cancel",
+  "saveAction": "Save",
+  "doneAction": "Done",
+  "renameAgent": "Rename agent",
+  "editPersona": "Edit persona",
+  "personaLabel": "Persona",
+  "personaHint": "Describe this agent’s role, voice, and working style.",
+  "deleteAgent": "Delete agent",
+  "deleteAgentTitle": "Delete {name}?",
+  "@deleteAgentTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteAgentBody": "This permanently deletes the agent from Hermes. Type its display name to confirm.",
+  "deleteConfirmationLabel": "Agent name",
+  "deleteConfirmationMismatch": "The name does not match.",
+  "defaultAgentCannotDelete": "The default agent cannot be deleted.",
+  "profileOperationFailed": "Hermes could not complete that profile change.",
+  "profileRevisionConflict": "This agent changed elsewhere. The latest version has been loaded; review it before trying again.",
+  "switchAgent": "Switch agent",
+  "manageAgents": "Manage agents",
+  "switchAgentTitle": "Switch agent",
+  "switchAgentFailed": "Could not switch agent: {message}",
+  "@switchAgentFailed": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  }
+}

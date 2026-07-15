@@ -45,6 +45,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.selectSessionFailureMessage = 'select failed',
     this.approvalResponsesFail = false,
     this.approvalResponseGate,
+    this.createProfileFails = false,
+    this.renameProfileFails = false,
+    this.deleteProfileFails = false,
+    this.writeProfileSoulFails = false,
+    this.profileMutationFailureMessage = 'Hermes API returned HTTP 412',
   }) : _state = status == HermesConnectionStatus.connected
            ? HermesChannelState(
                status: status,
@@ -96,6 +101,16 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   String selectSessionFailureMessage;
   final bool approvalResponsesFail;
   final Future<void> Function()? approvalResponseGate;
+
+  /// Profile-mutation failure injection. When set, the corresponding mutation
+  /// records its call, refreshes nothing successfully, and throws a
+  /// [StateError] carrying [profileMutationFailureMessage] (default contains
+  /// `HTTP 412`, which the UI maps to a revision-conflict message).
+  final bool createProfileFails;
+  final bool renameProfileFails;
+  final bool deleteProfileFails;
+  final bool writeProfileSoulFails;
+  final String profileMutationFailureMessage;
   int stopActiveTurnCalls = 0;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
@@ -243,6 +258,18 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) async {
     createProfileCalls.add({'name': name, 'cloneFrom': cloneFrom});
+    if (createProfileFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
+    final id = name.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+    _setState(
+      _state.copyWith(
+        profiles: [
+          ..._state.profiles,
+          HermesProfile(id: id, displayName: name.trim(), revision: 'rev-new'),
+        ],
+      ),
+    );
   }
 
   @override
@@ -256,6 +283,28 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       'name': name,
       'revision': revision,
     });
+    if (renameProfileFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
+    _setState(
+      _state.copyWith(
+        profiles: [
+          for (final profile in _state.profiles)
+            if (profile.id == profileId)
+              HermesProfile(
+                id: profile.id,
+                displayName: name.trim(),
+                revision: 'rev-next',
+                description: profile.description,
+                model: profile.model,
+                skillsCount: profile.skillsCount,
+                gatewayRunning: profile.gatewayRunning,
+              )
+            else
+              profile,
+        ],
+      ),
+    );
   }
 
   @override
@@ -264,6 +313,17 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     required String revision,
   }) async {
     deleteProfileCalls.add({'profileId': profileId, 'revision': revision});
+    if (deleteProfileFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
+    _setState(
+      _state.copyWith(
+        profiles: [
+          for (final profile in _state.profiles)
+            if (profile.id != profileId) profile,
+        ],
+      ),
+    );
   }
 
   @override
@@ -283,6 +343,9 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       'soul': soul,
       'revision': revision,
     });
+    if (writeProfileSoulFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
   }
 
   @override

@@ -2,6 +2,7 @@ import 'app_route_location_patterns.dart';
 
 abstract final class AppRoutes {
   static const hermes = '/hermes';
+  static const agents = '/agents';
   static const settings = '/settings';
 
   /// One-time pairing enrollment screen reached via an Android connect

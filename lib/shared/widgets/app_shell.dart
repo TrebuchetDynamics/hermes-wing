@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../theme/navivox_theme.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
-
-const _appShellPresentation = AppShellPresentation();
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.location, required this.child, super.key});
@@ -15,7 +14,10 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final presentation = _appShellPresentation.stateForLocation(location);
+    final shellPresentation = AppShellPresentation(
+      AppLocalizations.of(context),
+    );
+    final presentation = shellPresentation.stateForLocation(location);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -35,8 +37,8 @@ class AppShell extends StatelessWidget {
           selectedIndex: presentation.selectedMobileIndex,
           selectedPath: presentation.selectedDestination.path,
           showNavigationMenu: presentation.showNavigationMenu,
-          mobileOverflowLabel: _appShellPresentation.mobileOverflowLabel,
-          mobileOverflowTooltip: _appShellPresentation.mobileOverflowTooltip,
+          mobileOverflowLabel: shellPresentation.mobileOverflowLabel,
+          mobileOverflowTooltip: shellPresentation.mobileOverflowTooltip,
           onSelected: (destination) => context.go(destination.path),
           child: child,
         );
@@ -140,7 +142,7 @@ class _MobileShell extends StatelessWidget {
     showSheet(
       context,
       ActionSheet(
-        _appShellPresentation.mobileOverflowLabel,
+        mobileOverflowLabel,
         rows: [
           for (final destination in mobileOverflowDestinations)
             SheetActionRow(

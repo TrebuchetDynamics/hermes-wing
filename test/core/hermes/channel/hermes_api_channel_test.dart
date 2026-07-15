@@ -674,4 +674,59 @@ void _hermesApiChannelProfileTests() {
     expect(soulPut!.queryParameters['profile'], 'coder');
     expect(ifMatch, 'rev-c');
   });
+
+  test(
+    'a profile mutation in flight during reconnect drops its stale refresh',
+    () async {
+      final createStarted = Completer<void>();
+      final releaseCreate = Completer<void>();
+      var profileListCalls = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _profileCapabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              '/api/profiles' => () {
+                profileListCalls += 1;
+                return _profilesAfterCreateFixture;
+              }(),
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+          post: (uri, headers, body) async {
+            createStarted.complete();
+            await releaseCreate.future;
+            return jsonEncode({
+              'profile': {
+                'id': 'writer',
+                'name': 'Writer',
+                'revision': 'rev-w',
+              },
+            });
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      // Start a create whose POST parks mid-flight, then fire a second connect
+      // (a new connection generation and client) before it resolves.
+      final create = channel.createProfile(name: 'Writer');
+      await createStarted.future;
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      releaseCreate.complete();
+      await create;
+
+      // The stale mutation's post-mutation profile refresh is dropped by the
+      // connection-generation check: it never lists profiles for the new
+      // connection, and the fresh connect's empty profile list is preserved.
+      expect(channel.state.status, HermesConnectionStatus.connected);
+      expect(channel.state.profiles, isEmpty);
+      expect(profileListCalls, 0);
+    },
+  );
 }

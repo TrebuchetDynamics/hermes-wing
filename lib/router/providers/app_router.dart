@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/agents/screens/agents_screen.dart';
 import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/needle_spike/needle_spike_flag.dart';
@@ -27,6 +28,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.hermes,
             builder: (context, state) => const HermesChatScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.agents,
+            builder: (context, state) => const AgentsScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,

@@ -1,28 +1,53 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../router/app_routes.dart';
 
 class AppShellPresentation {
-  const AppShellPresentation();
+  const AppShellPresentation(this.localizations);
 
-  List<AppShellDestination> get destinations => _destinations;
+  final AppLocalizations localizations;
 
-  List<AppShellDestination> get mobileNavigationDestinations => _destinations;
+  List<AppShellDestination> get destinations => [
+    _hermesDestination,
+    _agentsDestination,
+    _settingsDestination,
+  ];
 
-  List<AppShellDestination> get mobileOverflowDestinations => const [];
+  List<AppShellDestination> get mobileNavigationDestinations => [
+    _hermesDestination,
+    _settingsDestination,
+  ];
 
-  String get navigationMenuTooltip => 'Open navigation menu';
+  List<AppShellDestination> get mobileOverflowDestinations => [
+    _agentsDestination,
+  ];
 
-  String get mobileOverflowLabel => 'More';
+  String get mobileOverflowLabel => localizations.moreDestinations;
 
-  String get mobileOverflowTooltip => 'Open more destinations';
+  String get mobileOverflowTooltip => localizations.openMoreDestinations;
 
-  String get drawerHeaderTitle => 'Navivox';
+  AppShellDestination get _hermesDestination => AppShellDestination(
+    path: AppRoutes.hermes,
+    icon: Icons.auto_awesome_outlined,
+    label: localizations.hermesDestination,
+  );
 
-  String get drawerHeaderSubtitle => 'Hermes Agent mobile console';
+  AppShellDestination get _agentsDestination => AppShellDestination(
+    path: AppRoutes.agents,
+    icon: Icons.support_agent_outlined,
+    label: localizations.agentsDestination,
+  );
+
+  AppShellDestination get _settingsDestination => AppShellDestination(
+    path: AppRoutes.settings,
+    icon: Icons.keyboard_voice_outlined,
+    label: localizations.settingsDestination,
+  );
 
   AppShellNavigationState stateForLocation(String location) {
-    final selectedIndex = destinations.indexWhere(
+    final allDestinations = destinations;
+    final selectedIndex = allDestinations.indexWhere(
       (destination) => AppRoutes.isNavigationDestinationLocation(
         location: location,
         destinationPath: destination.path,
@@ -30,7 +55,7 @@ class AppShellPresentation {
     );
     final selected = selectedIndex < 0 ? 0 : selectedIndex;
     return AppShellNavigationState(
-      destinations: destinations,
+      destinations: allDestinations,
       mobileNavigationDestinations: mobileNavigationDestinations,
       mobileOverflowDestinations: mobileOverflowDestinations,
       selectedIndex: selected,
@@ -80,16 +105,3 @@ class AppShellDestination {
   final IconData icon;
   final String label;
 }
-
-const _hermesDestination = AppShellDestination(
-  path: AppRoutes.hermes,
-  icon: Icons.auto_awesome_outlined,
-  label: 'Hermes',
-);
-const _settingsDestination = AppShellDestination(
-  path: AppRoutes.settings,
-  icon: Icons.keyboard_voice_outlined,
-  label: 'Settings',
-);
-
-const _destinations = [_hermesDestination, _settingsDestination];

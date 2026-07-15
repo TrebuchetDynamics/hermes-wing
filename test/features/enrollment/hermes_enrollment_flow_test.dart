@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:navivox/l10n/app_localizations.dart';
 import 'package:navivox/core/hermes/client/hermes_api_client.dart';
 import 'package:navivox/features/enrollment/models/hermes_enrollment_payload.dart';
 import 'package:navivox/features/enrollment/providers/hermes_enrollment_provider.dart';
@@ -235,7 +236,11 @@ void main() {
       router.go(AppRoutes.enroll);
       return UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       );
     }
 

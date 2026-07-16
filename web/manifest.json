@@ -1,11 +1,11 @@
 {
-    "name": "navivox",
-    "short_name": "navivox",
+    "name": "Hermes Wing",
+    "short_name": "Hermes Wing",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "An independent cross-platform Flutter client for Hermes Agent sessions, streamed runs, approvals, profiles, and device speech.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

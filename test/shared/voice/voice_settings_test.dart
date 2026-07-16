@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 void main() {
   test('Pocket Speech defaults to the smaller Kitten model', () {
-    const defaults = NavivoxVoiceSettings();
+    const defaults = WingVoiceSettings();
 
     expect(defaults.pocketSpeechModel, PocketSpeechModel.kitten);
     expect(PocketSpeechModel.kitten.downloadSize, '≈26 MB');
@@ -13,7 +13,7 @@ void main() {
   });
 
   test('Pocket Speech voice pack records its model and can be cleared', () {
-    const ready = NavivoxVoiceSettings(
+    const ready = WingVoiceSettings(
       pocketSpeechModel: PocketSpeechModel.kokoro,
       pocketSpeechVoicePack: PocketSpeechVoicePack(
         model: PocketSpeechModel.kokoro,

@@ -4,7 +4,7 @@
 set -euo pipefail
 
 CACTUS_SHA="49e12567c9d355a269c761619bc09eef796ab9b1"
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/navivox/cactus"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/wing/cactus"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 jni_dir="$repo_root/android/app/src/main/jniLibs/arm64-v8a"

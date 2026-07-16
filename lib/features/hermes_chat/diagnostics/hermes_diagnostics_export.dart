@@ -16,7 +16,7 @@ String hermesDiagnosticsExport(HermesChannelState state) {
         ..sort();
   final optionalFailures = optionalFailureNames.join(', ');
   final buffer = StringBuffer()
-    ..writeln('Navivox Hermes diagnostics')
+    ..writeln('Hermes Wing diagnostics')
     ..writeln('Connection: ${state.status.name}')
     ..writeln('Sessions: ${state.sessions.length}')
     ..writeln(

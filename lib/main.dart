@@ -11,5 +11,5 @@ void main() {
     // default builds along with the rest of the spike.
     WidgetsFlutterBinding.ensureInitialized().ensureSemantics();
   }
-  runApp(const NavivoxApp());
+  runApp(const WingApp());
 }

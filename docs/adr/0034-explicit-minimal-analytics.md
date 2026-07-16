@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Navivox product analytics is disabled by default on every build and platform. It creates no analytics identifier, queues no event, and sends no analytics request until the operator explicitly opts in after seeing the recipient and data categories. The configured official build does not imply consent.
+Hermes Wing product analytics is disabled by default on every build and platform. It creates no analytics identifier, queues no event, and sends no analytics request until the operator explicitly opts in after seeing the recipient and data categories. The configured official build does not imply consent.
 
 ## Event contract
 

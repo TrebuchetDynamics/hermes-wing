@@ -10,23 +10,23 @@ import 'core/hermes/channel/hermes_api_channel.dart';
 import 'features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
-import 'theme/navivox_theme.dart';
+import 'theme/wing_theme.dart';
 
-@JS('navivoxE2EHermesConnect')
-external set _navivoxE2EHermesConnect(JSFunction callback);
+@JS('wingE2EHermesConnect')
+external set _wingE2EHermesConnect(JSFunction callback);
 
-@JS('navivoxE2EHermesCreateSession')
-external set _navivoxE2EHermesCreateSession(JSFunction callback);
+@JS('wingE2EHermesCreateSession')
+external set _wingE2EHermesCreateSession(JSFunction callback);
 
-@JS('navivoxE2EHermesSendText')
-external set _navivoxE2EHermesSendText(JSFunction callback);
+@JS('wingE2EHermesSendText')
+external set _wingE2EHermesSendText(JSFunction callback);
 
-@JS('navivoxE2EHermesSubmitVoice')
-external set _navivoxE2EHermesSubmitVoice(JSFunction callback);
+@JS('wingE2EHermesSubmitVoice')
+external set _wingE2EHermesSubmitVoice(JSFunction callback);
 
 void main() {
   final hermesChannel = HermesApiChannel();
-  _navivoxE2EHermesConnect = (([JSString? baseUrl, JSString? apiKey]) {
+  _wingE2EHermesConnect = (([JSString? baseUrl, JSString? apiKey]) {
     unawaited(
       hermesChannel.connect(
         baseUrl: baseUrl?.toDart ?? 'http://127.0.0.1:8767',
@@ -34,13 +34,13 @@ void main() {
       ),
     );
   }).toJS;
-  _navivoxE2EHermesCreateSession = (([JSString? title]) {
+  _wingE2EHermesCreateSession = (([JSString? title]) {
     unawaited(hermesChannel.createSession(title: title?.toDart));
   }).toJS;
-  _navivoxE2EHermesSendText = ((JSString text) {
+  _wingE2EHermesSendText = ((JSString text) {
     unawaited(hermesChannel.sendText(text.toDart));
   }).toJS;
-  _navivoxE2EHermesSubmitVoice = ((JSString text) {
+  _wingE2EHermesSubmitVoice = ((JSString text) {
     final id = hermesChannel.startVoiceRun();
     hermesChannel.stageVoiceRunTranscript(
       voiceRunId: id,
@@ -67,11 +67,11 @@ class _E2ETestApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Navivox',
+      title: 'Hermes Wing',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: navivoxLightTheme,
-      darkTheme: navivoxDarkTheme,
+      theme: wingLightTheme,
+      darkTheme: wingDarkTheme,
       themeMode: ThemeMode.system,
       routerConfig: router,
     );

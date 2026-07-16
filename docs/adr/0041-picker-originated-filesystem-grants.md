@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-A Navivox client never gains Hermes filesystem access by typing or submitting an arbitrary path. On a verified same-host desktop connection, the platform host adapter may use the native file or folder picker and register that explicit selection with Hermes Agent. Hermes returns an opaque resource handle and safe operator-approved label, not a path.
+A Hermes Wing client never gains Hermes filesystem access by typing or submitting an arbitrary path. On a verified same-host desktop connection, the platform host adapter may use the native file or folder picker and register that explicit selection with Hermes Agent. Hermes returns an opaque resource handle and safe operator-approved label, not a path.
 
 Remote, SSH-tunnelled, mobile, and web clients cannot register client paths. They upload bounded content or choose capability-advertised server workspaces represented by opaque handles.
 
@@ -25,7 +25,7 @@ Worktrees and generated files are created by Hermes Agent inside an approved `re
 
 ## Privacy and lifecycle
 
-Raw selections may cross the loopback registration request only long enough for Hermes Agent to establish the grant. They are never returned in API responses or events and are excluded from request logs, errors, diagnostics, crash reports, analytics, clipboard actions, and notifications. Navivox stores only the opaque handle and label; Hermes stores the canonical path with restrictive local permissions.
+Raw selections may cross the loopback registration request only long enough for Hermes Agent to establish the grant. They are never returned in API responses or events and are excluded from request logs, errors, diagnostics, crash reports, analytics, clipboard actions, and notifications. Hermes Wing stores only the opaque handle and label; Hermes stores the canonical path with restrictive local permissions.
 
 ## Evidence
 

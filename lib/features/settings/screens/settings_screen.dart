@@ -25,8 +25,8 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(navivoxVoiceSettingsProvider);
-    final controller = ref.read(navivoxVoiceSettingsProvider.notifier);
+    final settings = ref.watch(wingVoiceSettingsProvider);
+    final controller = ref.read(wingVoiceSettingsProvider.notifier);
     final channel = ref.watch(hermesChannelProvider);
     final savedEndpoint = ref.watch(_savedHermesEndpointProvider);
     final pocketSpeechDownloader = ref.watch(
@@ -49,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
               _SettingsHeader(
                 title: 'Hermes Agent dashboard',
                 subtitle:
-                    'Status, connection, appearance, and local voice controls for this Navivox companion.',
+                    'Status, connection, appearance, and local voice controls for this Hermes Wing client.',
               ),
               _SettingsSectionCard(
                 title: 'Hermes Agent',
@@ -370,7 +370,7 @@ final _pocketSpeechAssetDownloadingProvider =
 Future<void> _downloadPocketSpeechAssets(
   BuildContext context,
   WidgetRef ref,
-  NavivoxVoiceSettingsController controller,
+  WingVoiceSettingsController controller,
   PocketSpeechAssetDownloadService downloader,
   PocketSpeechModel model,
 ) async {
@@ -553,9 +553,9 @@ class _VoiceCommandsSectionState extends ConsumerState<_VoiceCommandsSection> {
   @override
   Widget build(BuildContext context) {
     final enabled = ref.watch(
-      navivoxVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled),
+      wingVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled),
     );
-    final controller = ref.read(navivoxVoiceSettingsProvider.notifier);
+    final controller = ref.read(wingVoiceSettingsProvider.notifier);
 
     return _SettingsSectionCard(
       title: 'On-device voice commands (beta)',

@@ -15,7 +15,7 @@ Examples:
 
 Notes:
   - Defaults to an incremental debug build; use --clean for a clean build.
-  - Set NAVIVOX_ANDROID_HERMES_URL to prefill a private Hermes endpoint.
+  - Set WING_ANDROID_HERMES_URL to prefill a private Hermes endpoint.
   - DEVICE_ID is an adb serial from `adb devices`.
   - Extra Flutter args are appended to `flutter build apk`.
 USAGE
@@ -27,7 +27,7 @@ cd "$script_dir/.."
 mode="debug"
 device_id="${ANDROID_SERIAL:-}"
 clean_first=0
-hermes_base_url="${NAVIVOX_ANDROID_HERMES_URL:-}"
+hermes_base_url="${WING_ANDROID_HERMES_URL:-}"
 extra_flutter_args=()
 
 while [[ $# -gt 0 ]]; do
@@ -91,7 +91,7 @@ fi
 flutter pub get
 if [[ -n "$hermes_base_url" ]]; then
   extra_flutter_args+=(
-    "--dart-define=NAVIVOX_HERMES_BASE_URL=$hermes_base_url"
+    "--dart-define=WING_HERMES_BASE_URL=$hermes_base_url"
   )
 fi
 flutter build apk --"$mode" "${extra_flutter_args[@]}"

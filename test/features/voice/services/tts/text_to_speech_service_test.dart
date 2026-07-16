@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/platform/voice_capture_platform.dart';
-import 'package:navivox/features/voice/services/tts/text_to_speech_service.dart';
+import 'package:wing/features/voice/services/platform/voice_capture_platform.dart';
+import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
 
 void main() {
   test('speak configures flutter_tts once and trims text', () async {

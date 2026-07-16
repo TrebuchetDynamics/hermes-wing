@@ -1,4 +1,4 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesJob {
   const HermesJob({
@@ -13,19 +13,19 @@ class HermesJob {
   });
 
   factory HermesJob.fromJson(Map<String, Object?> json) {
-    final schedule = navivoxMapFieldFromJson(json, 'schedule');
+    final schedule = wingMapFieldFromJson(json, 'schedule');
     return HermesJob(
-      id: navivoxStringFromJson(json['id'], fallback: ''),
-      name: navivoxOptionalStringFromJson(json['name']),
-      enabled: navivoxBoolFromJson(json['enabled']),
-      state: navivoxOptionalStringFromJson(json['state']),
+      id: wingStringFromJson(json['id'], fallback: ''),
+      name: wingOptionalStringFromJson(json['name']),
+      enabled: wingBoolFromJson(json['enabled']),
+      state: wingOptionalStringFromJson(json['state']),
       scheduleDisplay:
-          navivoxOptionalStringFromJson(json['schedule_display']) ??
-          navivoxOptionalStringFromJson(schedule['display']) ??
-          navivoxOptionalStringFromJson(schedule['expr']),
-      nextRunAt: navivoxOptionalStringFromJson(json['next_run_at']),
-      lastRunAt: navivoxOptionalStringFromJson(json['last_run_at']),
-      lastError: navivoxOptionalStringFromJson(json['last_error']),
+          wingOptionalStringFromJson(json['schedule_display']) ??
+          wingOptionalStringFromJson(schedule['display']) ??
+          wingOptionalStringFromJson(schedule['expr']),
+      nextRunAt: wingOptionalStringFromJson(json['next_run_at']),
+      lastRunAt: wingOptionalStringFromJson(json['last_run_at']),
+      lastError: wingOptionalStringFromJson(json['last_error']),
     );
   }
 

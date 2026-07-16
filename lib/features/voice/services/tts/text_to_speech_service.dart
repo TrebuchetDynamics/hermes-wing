@@ -10,7 +10,7 @@ export 'pocket_speech_text_to_speech_service.dart';
 
 /// Reads the live voice settings at speak-time (not cached), so a rate/voice
 /// change takes effect on the very next utterance.
-typedef TtsSettingsReader = NavivoxVoiceSettings Function();
+typedef TtsSettingsReader = WingVoiceSettings Function();
 
 abstract interface class FlutterTtsEngine {
   Future<void> awaitSpeakCompletion(bool awaitCompletion);

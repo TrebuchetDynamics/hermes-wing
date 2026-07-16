@@ -9,7 +9,7 @@ Hermes supports both session chat streaming and `/v1/runs` with event streams. R
 
 ## Decision
 
-For supported endpoints, Navivox uses run transport for streamed work and treats SSE events as the source of live transcript state. Run events drive assistant deltas, tool progress rows, approval requests, terminal states, and server stop. The client sends both `input` and `message` when starting a run for compatibility across Hermes Agent versions. ADR 0026 generalizes this HTTP-command and SSE lifecycle to other Hermes control-plane domains.
+For supported endpoints, Hermes Wing uses run transport for streamed work and treats SSE events as the source of live transcript state. Run events drive assistant deltas, tool progress rows, approval requests, terminal states, and server stop. The client sends both `input` and `message` when starting a run for compatibility across Hermes Agent versions. ADR 0026 generalizes this HTTP-command and SSE lifecycle to other Hermes control-plane domains.
 
 Ordinary Hermes requests have a bounded timeout, and an SSE stream that stays open without any activity is failed after a bounded idle interval so the UI cannot remain permanently stuck in a streaming turn.
 

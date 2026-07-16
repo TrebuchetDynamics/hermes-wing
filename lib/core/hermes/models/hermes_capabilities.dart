@@ -1,4 +1,4 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesCapabilityDocument {
   const HermesCapabilityDocument({
@@ -13,31 +13,29 @@ class HermesCapabilityDocument {
   });
 
   factory HermesCapabilityDocument.fromJson(Map<String, Object?> json) {
-    final endpointsJson = navivoxMapFieldFromJson(json, 'endpoints');
+    final endpointsJson = wingMapFieldFromJson(json, 'endpoints');
     final rawSchemaVersion = json['schema_version'];
     return HermesCapabilityDocument(
-      object: navivoxStringFromJson(
+      object: wingStringFromJson(
         json['object'],
         fallback: 'hermes.api_server.capabilities',
       ),
-      platform: navivoxStringFromJson(json['platform'], fallback: ''),
-      model: navivoxStringFromJson(json['model'], fallback: ''),
+      platform: wingStringFromJson(json['platform'], fallback: ''),
+      model: wingStringFromJson(json['model'], fallback: ''),
       // A missing `schema_version` is a pre-versioning server response and is
       // treated as version 1 rather than an unknown/unsupported version.
       schemaVersion: rawSchemaVersion == null
           ? 1
-          : navivoxIntFromJson(rawSchemaVersion),
+          : wingIntFromJson(rawSchemaVersion),
       profileContext: HermesProfileContextCapability.fromJson(
-        navivoxMapFieldFromJson(json, 'profile_context'),
+        wingMapFieldFromJson(json, 'profile_context'),
       ),
-      auth: HermesAuthCapability.fromJson(
-        navivoxMapFieldFromJson(json, 'auth'),
-      ),
-      features: navivoxMapFieldFromJson(json, 'features'),
+      auth: HermesAuthCapability.fromJson(wingMapFieldFromJson(json, 'auth')),
+      features: wingMapFieldFromJson(json, 'features'),
       endpoints: {
         for (final entry in endpointsJson.entries)
           entry.key: HermesEndpointCapability.fromJson(
-            navivoxMapFromJson(entry.value),
+            wingMapFromJson(entry.value),
           ),
       },
     );
@@ -60,7 +58,7 @@ class HermesCapabilityDocument {
   bool get supportsSchema => schemaVersion == 1;
 
   bool supportsFeature(String feature) {
-    return navivoxBoolFromJson(features[feature]);
+    return wingBoolFromJson(features[feature]);
   }
 
   bool advertisesEndpoint(String name, String method, String path) {
@@ -75,7 +73,7 @@ class HermesCapabilityDocument {
 ///
 /// A server that omits `profile_context` entirely parses to the default
 /// (blank) instance below, whose [isSupportedQueryContext] is `false`. That
-/// is intentional: Navivox never infers an implicit default profile scope
+/// is intentional: Hermes Wing never infers an implicit default profile scope
 /// for profile-owned operations.
 class HermesProfileContextCapability {
   const HermesProfileContextCapability({
@@ -87,12 +85,10 @@ class HermesProfileContextCapability {
 
   factory HermesProfileContextCapability.fromJson(Map<String, Object?> json) {
     return HermesProfileContextCapability(
-      type: navivoxStringFromJson(json['type'], fallback: ''),
-      name: navivoxStringFromJson(json['name'], fallback: ''),
-      required: navivoxBoolFromJson(json['required']),
-      defaultProfileId: navivoxOptionalStringFromJson(
-        json['default_profile_id'],
-      ),
+      type: wingStringFromJson(json['type'], fallback: ''),
+      name: wingStringFromJson(json['name'], fallback: ''),
+      required: wingBoolFromJson(json['required']),
+      defaultProfileId: wingOptionalStringFromJson(json['default_profile_id']),
     );
   }
 
@@ -120,14 +116,11 @@ class HermesAuthCapability {
 
   factory HermesAuthCapability.fromJson(Map<String, Object?> json) {
     return HermesAuthCapability(
-      type: navivoxStringFromJson(json['type'], fallback: 'bearer'),
-      required: navivoxBoolFromJson(json['required']),
-      credentialKind: navivoxStringFromJson(
-        json['credential_kind'],
-        fallback: '',
-      ),
+      type: wingStringFromJson(json['type'], fallback: 'bearer'),
+      required: wingBoolFromJson(json['required']),
+      credentialKind: wingStringFromJson(json['credential_kind'], fallback: ''),
       grantedScopes: List.unmodifiable(
-        navivoxStringListFromJson(json['granted_scopes']),
+        wingStringListFromJson(json['granted_scopes']),
       ),
     );
   }
@@ -153,12 +146,12 @@ class HermesEndpointCapability {
 
   factory HermesEndpointCapability.fromJson(Map<String, Object?> json) {
     return HermesEndpointCapability(
-      method: navivoxStringFromJson(json['method'], fallback: '').toUpperCase(),
-      path: navivoxStringFromJson(json['path'], fallback: ''),
+      method: wingStringFromJson(json['method'], fallback: '').toUpperCase(),
+      path: wingStringFromJson(json['path'], fallback: ''),
       requiredScopes: List.unmodifiable(
-        navivoxStringListFromJson(json['required_scopes']),
+        wingStringListFromJson(json['required_scopes']),
       ),
-      profileScoped: navivoxBoolFromJson(json['profile_scoped']),
+      profileScoped: wingBoolFromJson(json['profile_scoped']),
     );
   }
 

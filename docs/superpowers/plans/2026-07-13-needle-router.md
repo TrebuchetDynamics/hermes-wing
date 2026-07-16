@@ -32,7 +32,7 @@
 
 **Interfaces:**
 - Consumes: existing spike code (no behavior change).
-- Produces: `package:navivox/features/voice_commands/core/needle_engine.dart` exporting `NeedleEngineApi`, `NeedleEngine`, `NeedleEngineException`, `NativeCallQueue`; `core/needle_result.dart` exporting `NeedleResult`, `NeedleFunctionCall`; `core/needle_model_install_service.dart` exporting `NeedleModelInstallService`. The vendored FFI file's relative import inside `needle_engine.dart` becomes `../ffi/cactus.dart`.
+- Produces: `package:wing/features/voice_commands/core/needle_engine.dart` exporting `NeedleEngineApi`, `NeedleEngine`, `NeedleEngineException`, `NativeCallQueue`; `core/needle_result.dart` exporting `NeedleResult`, `NeedleFunctionCall`; `core/needle_model_install_service.dart` exporting `NeedleModelInstallService`. The vendored FFI file's relative import inside `needle_engine.dart` becomes `../ffi/cactus.dart`.
 
 - [ ] **Step 1: Create branch and move files**
 
@@ -53,9 +53,9 @@ git mv test/features/needle_spike/native_call_queue_test.dart test/features/voic
 
 In `lib/features/voice_commands/core/needle_engine.dart`: change `import '../ffi/cactus.dart' as cactus;` — the path is unchanged textually but verify it resolves (`core/` → `../ffi/` = `voice_commands/ffi/` ✓).
 In the three remaining spike files and the two spike test files (`needle_tool_catalog_test.dart` stays put; `needle_spike_screen_test.dart`, `needle_spike_service_test.dart`), update imports:
-- `../services/needle_engine.dart` / `package:navivox/features/needle_spike/services/needle_engine.dart` → `package:navivox/features/voice_commands/core/needle_engine.dart`
+- `../services/needle_engine.dart` / `package:wing/features/needle_spike/services/needle_engine.dart` → `package:wing/features/voice_commands/core/needle_engine.dart`
 - same pattern for `needle_result.dart` and `needle_model_install_service.dart`.
-In the three moved test files, update `package:navivox/features/needle_spike/services/...` → `package:navivox/features/voice_commands/core/...`.
+In the three moved test files, update `package:wing/features/needle_spike/services/...` → `package:wing/features/voice_commands/core/...`.
 
 - [ ] **Step 3: Run the full moved+spike suite**
 
@@ -92,8 +92,8 @@ git commit -m "refactor(voice-commands): promote needle engine core out of spike
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_catalog.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_catalog.dart';
 
 void main() {
   test('catalog exposes nine tools whose names round-trip to ids', () {
@@ -314,9 +314,9 @@ git commit -m "feat(voice-commands): command model and real tool catalog"
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_result.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_validator.dart';
+import 'package:wing/features/voice_commands/core/needle_result.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_validator.dart';
 
 void main() {
   const context = VoiceCommandContext(
@@ -554,10 +554,10 @@ git commit -m "feat(voice-commands): validator with enum/bool/rate/fuzzy snappin
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_router.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_validator.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_router.dart';
+import 'package:wing/features/voice_commands/services/voice_command_validator.dart';
 
 class _ScriptedEngine implements NeedleEngineApi {
   _ScriptedEngine(this.responses);
@@ -762,28 +762,28 @@ git commit -m "feat(voice-commands): router with timeout, busy-guard, auto-suspe
 ### Task 5: Settings model — voiceCommandsEnabled, speechRate, ttsVoiceName
 
 **Files:**
-- Modify: `lib/shared/voice/voice_settings.dart` (NavivoxVoiceSettings)
+- Modify: `lib/shared/voice/voice_settings.dart` (WingVoiceSettings)
 - Modify: `lib/features/settings/providers/voice_settings_provider.dart`
 - Test: `test/features/settings/voice_command_settings_test.dart` (new)
 
 **Interfaces:**
-- Consumes: existing `NavivoxVoiceSettings` (fields `continuousVoiceEnabled`, `speakRepliesEnabled`, `pocketSpeechTtsEnabled`, `pocketSpeechModel`, `pocketSpeechVoicePack`, `commandWord`) and `NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings>` with its `_loadPrefs`/`_save` shared_preferences pattern (READ BOTH FILES FIRST and mirror their exact style, including `copyWith` if present).
-- Produces: `NavivoxVoiceSettings` gains `bool voiceCommandsEnabled` (default `false`), `double speechRate` (default `1.0`), `String? ttsVoiceName` (default null) — wired through constructor, `copyWith`, and prefs persistence with keys `voice_commands_enabled`, `tts_speech_rate`, `tts_voice_name`. Controller gains `void setVoiceCommandsEnabled(bool)`, `void setSpeechRate(double)` (clamp 0.25–3.0 before storing), `void setTtsVoiceName(String?)` — each updating state and calling `_save()` exactly like the existing setters.
+- Consumes: existing `WingVoiceSettings` (fields `continuousVoiceEnabled`, `speakRepliesEnabled`, `pocketSpeechTtsEnabled`, `pocketSpeechModel`, `pocketSpeechVoicePack`, `commandWord`) and `WingVoiceSettingsController extends Notifier<WingVoiceSettings>` with its `_loadPrefs`/`_save` shared_preferences pattern (READ BOTH FILES FIRST and mirror their exact style, including `copyWith` if present).
+- Produces: `WingVoiceSettings` gains `bool voiceCommandsEnabled` (default `false`), `double speechRate` (default `1.0`), `String? ttsVoiceName` (default null) — wired through constructor, `copyWith`, and prefs persistence with keys `voice_commands_enabled`, `tts_speech_rate`, `tts_voice_name`. Controller gains `void setVoiceCommandsEnabled(bool)`, `void setSpeechRate(double)` (clamp 0.25–3.0 before storing), `void setTtsVoiceName(String?)` — each updating state and calling `_save()` exactly like the existing setters.
 
 - [ ] **Step 1: Write the failing test**
 
 ```dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/settings/providers/voice_settings_provider.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('defaults: router off, rate 1.0, no voice', () {
-    const s = NavivoxVoiceSettings();
+    const s = WingVoiceSettings();
     expect(s.voiceCommandsEnabled, isFalse);
     expect(s.speechRate, 1.0);
     expect(s.ttsVoiceName, isNull);
@@ -794,12 +794,12 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final controller =
-        container.read(navivoxVoiceSettingsProvider.notifier);
-    await container.read(navivoxVoiceSettingsProvider.notifier).ready;
+        container.read(wingVoiceSettingsProvider.notifier);
+    await container.read(wingVoiceSettingsProvider.notifier).ready;
     controller.setVoiceCommandsEnabled(true);
     controller.setSpeechRate(9.0);
     controller.setTtsVoiceName('nova');
-    final state = container.read(navivoxVoiceSettingsProvider);
+    final state = container.read(wingVoiceSettingsProvider);
     expect(state.voiceCommandsEnabled, isTrue);
     expect(state.speechRate, 3.0);
     expect(state.ttsVoiceName, 'nova');
@@ -816,7 +816,7 @@ Expected: FAIL — fields don't exist (compile error).
 
 - [ ] **Step 3: Implement**
 
-In `NavivoxVoiceSettings`: add the three fields to the constructor (with defaults above), field declarations, and `copyWith`. In the controller: add the three setters and extend `_loadPrefs`/`_save` with the three keys, mirroring existing lines exactly (e.g. `prefs.getBool('voice_commands_enabled') ?? false`). Store `speechRate` via `prefs.setDouble`, `ttsVoiceName` via `setString` (remove the key when null).
+In `WingVoiceSettings`: add the three fields to the constructor (with defaults above), field declarations, and `copyWith`. In the controller: add the three setters and extend `_loadPrefs`/`_save` with the three keys, mirroring existing lines exactly (e.g. `prefs.getBool('voice_commands_enabled') ?? false`). Store `speechRate` via `prefs.setDouble`, `ttsVoiceName` via `setString` (remove the key when null).
 
 - [ ] **Step 4: Run tests**
 
@@ -839,7 +839,7 @@ git commit -m "feat(voice-commands): settings fields for router toggle, rate, vo
 - Test: `test/features/voice/tts_voice_binding_test.dart` (new)
 
 **Interfaces:**
-- Consumes: existing `FlutterTtsEngine` abstract interface (has `setSpeechRate(double)`, `speak(String)`, `setLanguage`, `setVolume`...) and its `PluginFlutterTtsEngine` impl wrapping `FlutterTts`; `NavivoxVoiceSettings.speechRate/ttsVoiceName` (Task 5). READ THE FILE FIRST — there is a concrete TTS service class in it that calls the engine before speaking; apply settings there.
+- Consumes: existing `FlutterTtsEngine` abstract interface (has `setSpeechRate(double)`, `speak(String)`, `setLanguage`, `setVolume`...) and its `PluginFlutterTtsEngine` impl wrapping `FlutterTts`; `WingVoiceSettings.speechRate/ttsVoiceName` (Task 5). READ THE FILE FIRST — there is a concrete TTS service class in it that calls the engine before speaking; apply settings there.
 - Produces:
   - `FlutterTtsEngine` gains `Future<List<String>> voiceNames();` and `Future<void> setVoiceByName(String name);`. `PluginFlutterTtsEngine` implements them via `_flutterTts.getVoices` (list of maps with `name`/`locale`; return the `name` values as `List<String>`) and `_flutterTts.setVoice({'name': name, 'locale': <locale for that name>})` (cache the voices list to resolve locale).
   - The flutter_tts-backed `TextToSpeechService` implementation in this file applies, before each `speak`: `engine.setSpeechRate((0.5 * settings.speechRate).clamp(0.0, 1.0))` (flutter_tts's normalized scale, 0.5 = normal) and, when `settings.ttsVoiceName != null`, `engine.setVoiceByName(settings.ttsVoiceName!)` guarded by try/catch (a bad voice name must not break speech). It already receives settings or must gain a `VoiceSettingsReader settings` parameter following the file's existing reader-injection style.
@@ -849,8 +849,8 @@ git commit -m "feat(voice-commands): settings fields for router toggle, rate, vo
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/tts/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 class _RecordingEngine implements FlutterTtsEngine {
   final calls = <String>[];
@@ -866,7 +866,7 @@ void main() {
     final engine = _RecordingEngine();
     final service = buildFlutterTtsService(
       engine: engine,
-      settings: () => const NavivoxVoiceSettings(
+      settings: () => const WingVoiceSettings(
         speechRate: 1.5,
         ttsVoiceName: 'nova',
       ),
@@ -880,7 +880,7 @@ void main() {
     final service = buildFlutterTtsService(
       engine: engine,
       settings: () =>
-          const NavivoxVoiceSettings(ttsVoiceName: 'ghost'),
+          const WingVoiceSettings(ttsVoiceName: 'ghost'),
     );
     await service.speak('hello');
     expect(engine.calls, contains('speak'));
@@ -918,7 +918,7 @@ git commit -m "feat(voice-commands): tts voice enumeration and applied rate/voic
 - Test: `test/features/voice_commands/voice_command_dispatcher_test.dart`
 
 **Interfaces:**
-- Consumes: `VoiceRouteResult`/`VoiceCommandId` (Task 2); `HermesChannel.createSession({String? title})`, `selectSession(String sessionId)`, `state.sessions` (`HermesSession{id, title, ...}`); `NavivoxVoiceSettingsController.setContinuousVoiceEnabled/setSpeechRate/setTtsVoiceName` (Task 5).
+- Consumes: `VoiceRouteResult`/`VoiceCommandId` (Task 2); `HermesChannel.createSession({String? title})`, `selectSession(String sessionId)`, `state.sessions` (`HermesSession{id, title, ...}`); `WingVoiceSettingsController.setContinuousVoiceEnabled/setSpeechRate/setTtsVoiceName` (Task 5).
 - Produces:
 
 ```dart
@@ -926,7 +926,7 @@ class VoiceCommandDispatcher {
   VoiceCommandDispatcher({
     required HermesChannel Function() channel,
     required void Function(String path) navigate,
-    required NavivoxVoiceSettingsController Function() settings,
+    required WingVoiceSettingsController Function() settings,
     required void Function(String message) showNotice,
     required void Function() stopVoiceCapture,
     required void Function() startVoiceCapture,
@@ -970,7 +970,7 @@ test('switch_session resolves real title to session id', () async {
 
 - [ ] **Step 2: Run to verify it fails** — `flutter test test/features/voice_commands/voice_command_dispatcher_test.dart` → FAIL (file missing).
 
-- [ ] **Step 3: Implement** per the Produces table. Import `AppRoutes` from `package:navivox/router/app_routes.dart`.
+- [ ] **Step 3: Implement** per the Produces table. Import `AppRoutes` from `package:wing/router/app_routes.dart`.
 
 - [ ] **Step 4: Run tests** — dispatcher suite + `flutter analyze lib/features/voice_commands` → all green.
 
@@ -1022,7 +1022,7 @@ test('routed transcript is consumed instead of drafted', () async {
       confidence: 0.9,
     ),
     textToSpeechService: () => null,
-    settings: () => const NavivoxVoiceSettings(),
+    settings: () => const WingVoiceSettings(),
     onDraft: drafts.add,
     routeTranscript: (t) async => VoiceRouteResult(
       command: VoiceCommandId.navigateToScreen,
@@ -1101,7 +1101,7 @@ final voiceCommandRouterProvider = Provider<VoiceCommandRouter?>((ref) { ... });
 final voiceCommandDispatcherProvider = Provider<VoiceCommandDispatcher>((ref) { ... });
 ```
 
-  `voiceCommandRouterProvider` watches `navivoxVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled)`; when false → null. When true → `VoiceCommandRouter(engine: ..., modelDirProvider: () async => (await ref.read(voiceCommandInstallServiceProvider.future)).installedModelDir(), contextProvider: () => VoiceCommandContext(sessionTitles: <non-null titles from ref.read(hermesChannelProvider).state.sessions>, voiceNames: <cached last-known list from the TTS engine provider — provide a small `ttsVoiceNamesProvider` FutureProvider that queries FlutterTtsEngine.voiceNames() once and caches>))`.
+  `voiceCommandRouterProvider` watches `wingVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled)`; when false → null. When true → `VoiceCommandRouter(engine: ..., modelDirProvider: () async => (await ref.read(voiceCommandInstallServiceProvider.future)).installedModelDir(), contextProvider: () => VoiceCommandContext(sessionTitles: <non-null titles from ref.read(hermesChannelProvider).state.sessions>, voiceNames: <cached last-known list from the TTS engine provider — provide a small `ttsVoiceNamesProvider` FutureProvider that queries FlutterTtsEngine.voiceNames() once and caches>))`.
   `voiceCommandDispatcherProvider` wires `channel`, `navigate: (path) => ref.read(routerProvider).push(path)` (push, not go — same back-stack lesson as the spike), `settings`, `showNotice` (see Task 10 — a `voiceCommandNoticeProvider` `StateProvider<String?>` the screen listens to for snackbars), `stopVoiceCapture`/`startVoiceCapture` (callbacks injected at screen level via a late-bound `void Function()` holder class `VoiceCaptureHooks` defined in this file with settable `onStop`/`onStart` fields, defaulting to no-ops).
 
   Settings screen: append a `_SettingsSectionCard(title: 'On-device voice commands (beta)', icon: Icons.bolt_outlined, children: [...])` containing: a `SwitchListTile` bound to `voiceCommandsEnabled` via the settings controller; when toggled ON and `installedModelDir()` is null, show the download tile (`ListTile` with progress like the spike's install card, driving `ensureModel(onProgress:)`; failure → SnackBar + toggle stays on but router returns null until installed); when installed, a 'Delete model (16 MB)' `ListTile` that deletes the `needle_spike` support subdirectory and marker (add `Future<void> deleteModel()` to `NeedleModelInstallService`: recursive-delete `_root`, tolerate absence — include a unit test in the providers test file). Section subtitle text: 'Runs a small on-device model to execute simple commands instantly. Transcripts never leave the device.'

@@ -4,16 +4,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
-import 'package:navivox/l10n/app_localizations.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
-import 'package:navivox/features/voice_commands/providers/voice_command_providers.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_router.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_validator.dart';
-import 'package:navivox/shared/voice/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/features/settings/providers/voice_settings_provider.dart';
+import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/voice_commands/providers/voice_command_providers.dart';
+import 'package:wing/features/voice_commands/services/voice_command_router.dart';
+import 'package:wing/features/voice_commands/services/voice_command_validator.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_capture_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fake_hermes_channel.dart';
@@ -391,7 +391,7 @@ void main() {
         tester.element(find.byType(HermesChatScreen)),
       );
       expect(
-        container.read(navivoxVoiceSettingsProvider).speakRepliesEnabled,
+        container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
         isTrue,
       );
       await expireSnackBars(tester);

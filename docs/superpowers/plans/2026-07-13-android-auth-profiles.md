@@ -4,7 +4,7 @@
 
 **Goal:** Establish the secure Android control-plane foundation and deliver Profiles/Agents as the first complete Hermes Desktop capability-parity slice.
 
-**Architecture:** Hermes Agent remains authoritative. Its canonical API server authenticates a compatibility superuser key or hashed, revocable scoped operator tokens; one-time pairing codes issue tokens without placing bearer credentials in handoff payloads. Navivox extends its existing typed API client, `HermesChannel`, Riverpod seam, Android intent ingress, adaptive router, and widget tests.
+**Architecture:** Hermes Agent remains authoritative. Its canonical API server authenticates a compatibility superuser key or hashed, revocable scoped operator tokens; one-time pairing codes issue tokens without placing bearer credentials in handoff payloads. Hermes Wing extends its existing typed API client, `HermesChannel`, Riverpod seam, Android intent ingress, adaptive router, and widget tests.
 
 **Tech Stack:** Python 3.11+, aiohttp, stdlib `secrets`/`hashlib`/`hmac`/`json`, pytest; Flutter 3.44.2, Dart 3.12, Riverpod 3, go_router 17, Flutter SDK `gen_l10n`/ARB resources, Android Kotlin method/event channels, Flutter secure storage.
 
@@ -15,7 +15,7 @@
 - One normalized Hermes API origin and one bearer credential per endpoint profile.
 - The Hermes API service is machine-scoped; every profile-owned operation carries explicit profile context and never falls back to `active_profile`.
 - Profile-owned HTTP and SSE operations use a mandatory `profile` query parameter, including `profile=default`; retries and reconnects preserve it.
-- Navivox profile selection is client state and must not mutate the CLI's active profile.
+- Hermes Wing profile selection is client state and must not mutate the CLI's active profile.
 - Hermes Agent owns profiles and authorization; Flutter must not read Hermes files, databases, Dashboard tokens, or CLI output.
 - Existing `API_SERVER_KEY` behavior remains compatible and maps to superuser scope `*`.
 - Capability changes are additive; `/v1/capabilities` carries `schema_version: 1`, and clients treat an absent value as version 1.
@@ -457,7 +457,7 @@ Creation returns:
 
 ```json
 {
-  "pairing_uri": "navivox://connect?origin=https%3A%2F%2Fhermes.example&code=<pairing-code>",
+  "pairing_uri": "wing://connect?origin=https%3A%2F%2Fhermes.example&code=<pairing-code>",
   "expires_at": 1000.0,
   "scopes": ["chat:write", "profiles:read"]
 }
@@ -478,10 +478,10 @@ Confirm inspect/exchange request bodies are not logged, origin equality is exact
 ### Task 5: Parse scopes and endpoint requirements in Flutter
 
 **Files:**
-- Modify: `navivox-app/lib/core/hermes/models/hermes_capabilities.dart`
-- Modify: `navivox-app/lib/core/hermes/policy/hermes_transport_policy.dart`
-- Modify: `navivox-app/test/core/hermes/hermes_api_test.dart`
-- Modify: `navivox-app/test/core/hermes/channel/hermes_api_channel_test.dart`
+- Modify: `hermes-wing/lib/core/hermes/models/hermes_capabilities.dart`
+- Modify: `hermes-wing/lib/core/hermes/policy/hermes_transport_policy.dart`
+- Modify: `hermes-wing/test/core/hermes/hermes_api_test.dart`
+- Modify: `hermes-wing/test/core/hermes/channel/hermes_api_channel_test.dart`
 
 **Interfaces:**
 - Produces: `HermesCapabilityDocument.schemaVersion`, `.supportsSchema`, `.profileContext`, `HermesProfileContextCapability`, `HermesAuthCapability.grantedScopes`, `.allows()`, and `HermesEndpointCapability.requiredScopes`/`.profileScoped`.
@@ -531,7 +531,7 @@ Add backward-compatibility coverage: absent `schema_version` parses as 1, absent
 - [ ] **Step 2: Confirm red state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter test test/core/hermes/hermes_api_test.dart --concurrency=1
 ```
 
@@ -573,17 +573,17 @@ Check older capability fixtures still parse and unsupported operations remain hi
 ### Task 6: Complete Android enrollment from existing intent ingress
 
 **Files:**
-- Create: `navivox-app/lib/features/enrollment/models/hermes_enrollment_payload.dart`
-- Create: `navivox-app/lib/features/enrollment/services/hermes_connect_intent_source.dart`
-- Create: `navivox-app/lib/features/enrollment/providers/hermes_enrollment_provider.dart`
-- Create: `navivox-app/lib/features/enrollment/screens/hermes_enrollment_screen.dart`
-- Create: `navivox-app/test/features/enrollment/hermes_enrollment_payload_test.dart`
-- Create: `navivox-app/test/features/enrollment/hermes_enrollment_flow_test.dart`
-- Modify: `navivox-app/lib/core/hermes/client/hermes_api_config.dart`
-- Modify: `navivox-app/lib/core/hermes/client/hermes_api_client.dart`
-- Modify: `navivox-app/lib/router/routes/app_routes.dart`
-- Modify: `navivox-app/lib/router/providers/app_router.dart`
-- Modify: `navivox-app/lib/features/hermes_chat/providers/hermes_channel_provider.dart`
+- Create: `hermes-wing/lib/features/enrollment/models/hermes_enrollment_payload.dart`
+- Create: `hermes-wing/lib/features/enrollment/services/hermes_connect_intent_source.dart`
+- Create: `hermes-wing/lib/features/enrollment/providers/hermes_enrollment_provider.dart`
+- Create: `hermes-wing/lib/features/enrollment/screens/hermes_enrollment_screen.dart`
+- Create: `hermes-wing/test/features/enrollment/hermes_enrollment_payload_test.dart`
+- Create: `hermes-wing/test/features/enrollment/hermes_enrollment_flow_test.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/hermes_api_config.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/hermes_api_client.dart`
+- Modify: `hermes-wing/lib/router/routes/app_routes.dart`
+- Modify: `hermes-wing/lib/router/providers/app_router.dart`
+- Modify: `hermes-wing/lib/features/hermes_chat/providers/hermes_channel_provider.dart`
 
 **Interfaces:**
 - Produces: `HermesEnrollmentPayload.parse()`, `HermesEnrollmentPreview`, `HermesEnrollmentController.inspect()` and `.confirm()`.
@@ -592,9 +592,9 @@ Check older capability fixtures still parse and unsupported operations remain hi
 - [ ] **Step 1: Write failing payload tests**
 
 ```dart
-test('accepts only navivox connect payload with HTTPS origin and code', () {
+test('accepts only wing connect payload with HTTPS origin and code', () {
   final payload = HermesEnrollmentPayload.parse(
-    'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
+    'wing://connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
   );
   expect(payload.origin, Uri.parse('https://hermes.example'));
   expect(payload.code, 'one-time');
@@ -603,7 +603,7 @@ test('accepts only navivox connect payload with HTTPS origin and code', () {
 test('rejects bearer token query parameters', () {
   expect(
     () => HermesEnrollmentPayload.parse(
-      'navivox://connect?origin=https%3A%2F%2Fhermes.example&token=secret',
+      'wing://connect?origin=https%3A%2F%2Fhermes.example&token=secret',
     ),
     throwsFormatException,
   );
@@ -615,7 +615,7 @@ Also reject fragments, userinfo, non-HTTP(S) origin, unknown hosts, blank/oversi
 - [ ] **Step 2: Confirm red state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter test test/features/enrollment/hermes_enrollment_payload_test.dart --concurrency=1
 ```
 
@@ -646,7 +646,7 @@ Future<HermesIssuedOperatorToken> exchangeEnrollment({
 
 - [ ] **Step 4: Consume the existing Android channels**
 
-`HermesConnectIntentSource` reads initial payload from `com.trebuchetdynamics.navivox/connect_intents` and listens to `.../connect_intents/events`. Other platforms return an empty stream without throwing.
+`HermesConnectIntentSource` reads initial payload from `com.trebuchetdynamics.hermes.wing/connect_intents` and listens to `.../connect_intents/events`. Other platforms return an empty stream without throwing.
 
 - [ ] **Step 5: Implement review-before-exchange UI**
 
@@ -659,7 +659,7 @@ Use fake inspect/exchange functions. Assert no exchange before confirm, one exch
 - [ ] **Step 7: Verify green state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter test test/features/enrollment --concurrency=1
 flutter analyze
 flutter build apk --debug
@@ -772,20 +772,20 @@ Compare API-server behavior with Dashboard profile fixtures and confirm both cal
 ### Task 8: Add typed Flutter profile behavior
 
 **Files:**
-- Create: `navivox-app/lib/core/hermes/models/hermes_profile.dart`
-- Modify: `navivox-app/lib/core/hermes/client/hermes_api_transport.dart`
-- Modify: `navivox-app/lib/core/hermes/client/platform/hermes_api_transport_io.dart`
-- Modify: `navivox-app/lib/core/hermes/client/platform/hermes_api_transport_web.dart`
-- Modify: `navivox-app/lib/core/hermes/client/platform/hermes_api_transport_stub.dart`
-- Modify: `navivox-app/lib/core/hermes/client/hermes_api_config.dart`
-- Modify: `navivox-app/lib/core/hermes/client/hermes_api_client.dart`
-- Modify: `navivox-app/lib/core/hermes/channel/hermes_channel.dart`
-- Modify: `navivox-app/lib/core/hermes/channel/hermes_channel_state.dart`
-- Modify: `navivox-app/lib/core/hermes/channel/hermes_api_channel.dart`
-- Create: `navivox-app/lib/core/hermes/channel/api_channel/hermes_api_channel_profiles.dart`
-- Modify: `navivox-app/test/core/hermes/hermes_api_test.dart`
-- Modify: `navivox-app/test/core/hermes/channel/hermes_api_channel_test.dart`
-- Modify: `navivox-app/test/features/hermes_chat/support/fake_hermes_channel.dart`
+- Create: `hermes-wing/lib/core/hermes/models/hermes_profile.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/hermes_api_transport.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/platform/hermes_api_transport_io.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/platform/hermes_api_transport_web.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/platform/hermes_api_transport_stub.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/hermes_api_config.dart`
+- Modify: `hermes-wing/lib/core/hermes/client/hermes_api_client.dart`
+- Modify: `hermes-wing/lib/core/hermes/channel/hermes_channel.dart`
+- Modify: `hermes-wing/lib/core/hermes/channel/hermes_channel_state.dart`
+- Modify: `hermes-wing/lib/core/hermes/channel/hermes_api_channel.dart`
+- Create: `hermes-wing/lib/core/hermes/channel/api_channel/hermes_api_channel_profiles.dart`
+- Modify: `hermes-wing/test/core/hermes/hermes_api_test.dart`
+- Modify: `hermes-wing/test/core/hermes/channel/hermes_api_channel_test.dart`
+- Modify: `hermes-wing/test/features/hermes_chat/support/fake_hermes_channel.dart`
 
 **Interfaces:**
 - Produces: `HermesProfile`, profile client methods, channel methods, `state.profiles`, `state.selectedProfileId`.
@@ -845,7 +845,7 @@ class HermesProfile {
 }
 ```
 
-Parse defensively using existing `navivox_json` helpers; discard rows with blank IDs.
+Parse defensively using existing `wing_json` helpers; discard rows with blank IDs.
 
 - [ ] **Step 4: Extend channel state and operations**
 
@@ -865,7 +865,7 @@ Future<void> writeProfileSoul({required String profileId, required String soul, 
 - [ ] **Step 5: Verify green state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter test test/core/hermes/hermes_api_test.dart --concurrency=1
 flutter test test/core/hermes/channel/hermes_api_channel_test.dart --concurrency=1
 flutter analyze
@@ -882,20 +882,20 @@ Confirm fake channels implement the same public seam and no UI imports `HermesAp
 ### Task 9: Ship `/agents`, More navigation, and Chat profile switching
 
 **Files:**
-- Create: `navivox-app/lib/features/agents/screens/agents_screen.dart`
-- Create: `navivox-app/lib/features/agents/widgets/profile_editor_sheet.dart`
-- Create: `navivox-app/lib/features/agents/providers/profile_selection_provider.dart`
-- Create: `navivox-app/test/features/agents/agents_screen_test.dart`
-- Create: `navivox-app/test/features/agents/profile_editor_sheet_test.dart`
-- Create: `navivox-app/l10n.yaml`
-- Create: `navivox-app/lib/l10n/app_en.arb`
-- Modify: `navivox-app/pubspec.yaml`
-- Modify: `navivox-app/lib/app/navivox_app.dart`
-- Modify: `navivox-app/lib/router/routes/app_routes.dart`
-- Modify: `navivox-app/lib/router/providers/app_router.dart`
-- Modify: `navivox-app/lib/shared/widgets/app_shell_presentation.dart`
-- Modify: `navivox-app/lib/features/hermes_chat/screens/hermes_chat_screen.dart`
-- Modify: `navivox-app/test/shared/widgets/app_shell_test.dart`
+- Create: `hermes-wing/lib/features/agents/screens/agents_screen.dart`
+- Create: `hermes-wing/lib/features/agents/widgets/profile_editor_sheet.dart`
+- Create: `hermes-wing/lib/features/agents/providers/profile_selection_provider.dart`
+- Create: `hermes-wing/test/features/agents/agents_screen_test.dart`
+- Create: `hermes-wing/test/features/agents/profile_editor_sheet_test.dart`
+- Create: `hermes-wing/l10n.yaml`
+- Create: `hermes-wing/lib/l10n/app_en.arb`
+- Modify: `hermes-wing/pubspec.yaml`
+- Modify: `hermes-wing/lib/app/wing_app.dart`
+- Modify: `hermes-wing/lib/router/routes/app_routes.dart`
+- Modify: `hermes-wing/lib/router/providers/app_router.dart`
+- Modify: `hermes-wing/lib/shared/widgets/app_shell_presentation.dart`
+- Modify: `hermes-wing/lib/features/hermes_chat/screens/hermes_chat_screen.dart`
+- Modify: `hermes-wing/test/shared/widgets/app_shell_test.dart`
 - Add a focused Chat profile-switch test beside existing Hermes chat screen tests.
 
 **Interfaces:**
@@ -925,7 +925,7 @@ Add tests for loading/error/empty states, selected profile marker, create/clone 
 - [ ] **Step 2: Confirm red state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter test test/features/agents test/shared/widgets/app_shell_test.dart --concurrency=1
 ```
 
@@ -933,7 +933,7 @@ Expected: missing route/screen failures.
 
 - [ ] **Step 3: Add localization seam, route, and adaptive destination**
 
-Enable Flutter SDK localization generation, add English ARB keys for every app-owned string introduced by this slice, and configure `NavivoxApp` with generated delegates and supported locales. Do not bulk-convert unrelated existing screens in this slice. Add `AppRoutes.agents = '/agents'`. Keep Android primary destinations Chat, Discover, Office, Tasks; Agents appears in `mobileOverflowDestinations`. Desktop’s destination list includes Agents directly when the route is available.
+Enable Flutter SDK localization generation, add English ARB keys for every app-owned string introduced by this slice, and configure `WingApp` with generated delegates and supported locales. Do not bulk-convert unrelated existing screens in this slice. Add `AppRoutes.agents = '/agents'`. Keep Android primary destinations Chat, Discover, Office, Tasks; Agents appears in `mobileOverflowDestinations`. Desktop’s destination list includes Agents directly when the route is available.
 
 - [ ] **Step 4: Implement profile list and editor**
 
@@ -946,7 +946,7 @@ Place the selected profile control near session controls. Switching calls `Herme
 - [ ] **Step 6: Verify green state**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 flutter gen-l10n
 flutter test test/features/agents test/shared/widgets/app_shell_test.dart --concurrency=1
 flutter test test/features/hermes_chat --concurrency=1
@@ -965,10 +965,10 @@ On the connected Android device: enroll with `profiles:read`, confirm mutations 
 ### Task 10: Close milestone evidence and update the parity ledger
 
 **Files:**
-- Modify: `navivox-app/docs/product/hermes-desktop-parity.md`
-- Modify: `navivox-app/docs/product/hermes-compatibility.md`
-- Modify: `navivox-app/docs/product/routes.md`
-- Modify: `navivox-app/docs/security/threat-model.md`
+- Modify: `hermes-wing/docs/product/hermes-desktop-parity.md`
+- Modify: `hermes-wing/docs/product/hermes-compatibility.md`
+- Modify: `hermes-wing/docs/product/routes.md`
+- Modify: `hermes-wing/docs/security/threat-model.md`
 - Modify: relevant Hermes Agent API documentation for new routes/scopes.
 
 **Interfaces:**
@@ -985,7 +985,7 @@ uv run --extra dev pytest \
   tests/gateway/test_api_server.py \
   tests/gateway/test_session_api.py -q
 
-cd ../navivox-app
+cd ../hermes-wing
 dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test --concurrency=1
@@ -1006,7 +1006,7 @@ Mark `/agents` implemented, list the exact profile/enrollment endpoints and scop
 - [ ] **Step 4: Run documentation checks**
 
 ```bash
-cd navivox-app
+cd hermes-wing
 git diff --check
 python3 - <<'PY'
 from pathlib import Path

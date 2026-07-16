@@ -35,29 +35,29 @@ require_false() {
   fi
 }
 
-require_env NAVIVOX_ANDROID_HERMES_URL
-require_env NAVIVOX_ANDROID_SPOKEN_PHRASE
-require_env NAVIVOX_ANDROID_PROVIDER_REPLY
-require_env NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE
-# Required manual-observation gates: NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED=true,
-# NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED=true, NAVIVOX_ANDROID_TTS_OBSERVED=true,
-# NAVIVOX_ANDROID_REARM_OBSERVED=true, NAVIVOX_ANDROID_NO_SECRET_LEAKS=true, and
-# NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED=false.
-require_true NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED
-require_true NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED
-require_true NAVIVOX_ANDROID_TTS_OBSERVED
-require_true NAVIVOX_ANDROID_REARM_OBSERVED
-require_true NAVIVOX_ANDROID_NO_SECRET_LEAKS
-require_false NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED
+require_env WING_ANDROID_HERMES_URL
+require_env WING_ANDROID_SPOKEN_PHRASE
+require_env WING_ANDROID_PROVIDER_REPLY
+require_env WING_ANDROID_SECOND_SPOKEN_PHRASE
+# Required manual-observation gates: WING_ANDROID_PHYSICAL_DEVICE_OBSERVED=true,
+# WING_ANDROID_PHYSICAL_MIC_OBSERVED=true, WING_ANDROID_TTS_OBSERVED=true,
+# WING_ANDROID_REARM_OBSERVED=true, WING_ANDROID_NO_SECRET_LEAKS=true, and
+# WING_ANDROID_SYNTHETIC_AUDIO_USED=false.
+require_true WING_ANDROID_PHYSICAL_DEVICE_OBSERVED
+require_true WING_ANDROID_PHYSICAL_MIC_OBSERVED
+require_true WING_ANDROID_TTS_OBSERVED
+require_true WING_ANDROID_REARM_OBSERVED
+require_true WING_ANDROID_NO_SECRET_LEAKS
+require_false WING_ANDROID_SYNTHETIC_AUDIO_USED
 
-package_name="${NAVIVOX_ANDROID_PACKAGE:-com.trebuchetdynamics.navivox}"
+package_name="${WING_ANDROID_PACKAGE:-com.trebuchetdynamics.hermes.wing}"
 
-device="${NAVIVOX_ANDROID_DEVICE_ID:-}"
+device="${WING_ANDROID_DEVICE_ID:-}"
 if [ -z "$device" ]; then
   device="$(adb devices | awk 'NR>1 && $2=="device" {print $1; exit}')"
 fi
 if [ -z "$device" ]; then
-  echo "No online Android device/emulator found. Set NAVIVOX_ANDROID_DEVICE_ID after completing the manual smoke." >&2
+  echo "No online Android device/emulator found. Set WING_ANDROID_DEVICE_ID after completing the manual smoke." >&2
   adb devices >&2 || true
   flutter devices >&2 || true
   exit 2
@@ -71,9 +71,9 @@ if [[ "$device" == emulator-* ]]; then
   echo "Android target $device is an emulator; the live-mic receipt requires a physical Android device microphone." >&2
   exit 2
 fi
-export NAVIVOX_ANDROID_DEVICE_ID="$device"
+export WING_ANDROID_DEVICE_ID="$device"
 
-receipt_path="${NAVIVOX_ANDROID_LIVE_MIC_RECEIPT:-build/receipts/android-live-mic-smoke.json}"
+receipt_path="${WING_ANDROID_LIVE_MIC_RECEIPT:-build/receipts/android-live-mic-smoke.json}"
 mkdir -p "$(dirname "$receipt_path")"
 python3 - "$receipt_path" <<'PY'
 import datetime, json, os, re, subprocess, sys
@@ -85,34 +85,34 @@ SECRET_PATTERN = re.compile(
 )
 
 path = sys.argv[1]
-spoken_phrase = os.environ['NAVIVOX_ANDROID_SPOKEN_PHRASE'].strip()
-second_spoken_phrase = os.environ['NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE'].strip()
-provider_reply = os.environ['NAVIVOX_ANDROID_PROVIDER_REPLY'].strip()
+spoken_phrase = os.environ['WING_ANDROID_SPOKEN_PHRASE'].strip()
+second_spoken_phrase = os.environ['WING_ANDROID_SECOND_SPOKEN_PHRASE'].strip()
+provider_reply = os.environ['WING_ANDROID_PROVIDER_REPLY'].strip()
 for label, value in {
-    'NAVIVOX_ANDROID_SPOKEN_PHRASE': spoken_phrase,
-    'NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE': second_spoken_phrase,
-    'NAVIVOX_ANDROID_PROVIDER_REPLY': provider_reply,
+    'WING_ANDROID_SPOKEN_PHRASE': spoken_phrase,
+    'WING_ANDROID_SECOND_SPOKEN_PHRASE': second_spoken_phrase,
+    'WING_ANDROID_PROVIDER_REPLY': provider_reply,
 }.items():
     if not value:
         raise SystemExit(f'{label} must contain a short observed non-sensitive excerpt, not whitespace.')
 if spoken_phrase.casefold() == second_spoken_phrase.casefold():
     raise SystemExit(
-        'NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE must be a different observed turn after re-arm.'
+        'WING_ANDROID_SECOND_SPOKEN_PHRASE must be a different observed turn after re-arm.'
     )
 if provider_reply.casefold() in {spoken_phrase.casefold(), second_spoken_phrase.casefold()}:
     raise SystemExit(
-        'NAVIVOX_ANDROID_PROVIDER_REPLY must be an observed assistant reply excerpt, not a repeated spoken phrase.'
+        'WING_ANDROID_PROVIDER_REPLY must be an observed assistant reply excerpt, not a repeated spoken phrase.'
     )
 for label, value in {
-    'NAVIVOX_ANDROID_SPOKEN_PHRASE': spoken_phrase,
-    'NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE': second_spoken_phrase,
-    'NAVIVOX_ANDROID_PROVIDER_REPLY': provider_reply,
+    'WING_ANDROID_SPOKEN_PHRASE': spoken_phrase,
+    'WING_ANDROID_SECOND_SPOKEN_PHRASE': second_spoken_phrase,
+    'WING_ANDROID_PROVIDER_REPLY': provider_reply,
 }.items():
     if len(value) > 240:
         raise SystemExit(f'{label} is too long; record a short non-sensitive excerpt instead.')
     if SECRET_PATTERN.search(value):
         raise SystemExit(f'{label} appears to contain a secret; record a non-sensitive excerpt instead.')
-device = os.environ.get('NAVIVOX_ANDROID_DEVICE_ID') or subprocess.check_output(
+device = os.environ.get('WING_ANDROID_DEVICE_ID') or subprocess.check_output(
     ['adb', 'devices'], text=True
 ).splitlines()[1].split()[0]
 try:
@@ -147,7 +147,7 @@ device_properties = {
     'fingerprint': getprop('ro.build.fingerprint'),
     'is_emulator': is_emulator,
 }
-package_name = os.environ.get('NAVIVOX_ANDROID_PACKAGE', 'com.trebuchetdynamics.navivox')
+package_name = os.environ.get('WING_ANDROID_PACKAGE', 'com.trebuchetdynamics.hermes.wing')
 pm_path_output = adb_shell('pm', 'path', package_name)
 package_dump = adb_shell('dumpsys', 'package', package_name)
 version_name_match = re.search(r'versionName=([^\s]+)', package_dump)
@@ -176,7 +176,7 @@ def sanitized_url(raw):
     parts = urlsplit(raw.strip())
     netloc = parts.netloc.rsplit('@', 1)[-1]
     if parts.scheme not in {'http', 'https'} or not netloc:
-        raise SystemExit('NAVIVOX_ANDROID_HERMES_URL must be a valid http(s) Hermes origin reachable by the physical Android device.')
+        raise SystemExit('WING_ANDROID_HERMES_URL must be a valid http(s) Hermes origin reachable by the physical Android device.')
     return urlunsplit((parts.scheme, netloc, '', '', ''))
 
 receipt = {
@@ -188,7 +188,7 @@ receipt = {
     'device_properties': device_properties,
     'android_target_type': 'physical_device',
     'package_info': package_info,
-    'hermes_url': sanitized_url(os.environ['NAVIVOX_ANDROID_HERMES_URL']),
+    'hermes_url': sanitized_url(os.environ['WING_ANDROID_HERMES_URL']),
     'hermes_url_sanitized': True,
     'audio_input_path': 'physical_android_microphone',
     'stt_path': 'local_device_stt_to_hermes_text',
@@ -197,12 +197,12 @@ receipt = {
     'spoken_phrase': spoken_phrase,
     'provider_reply_observed': provider_reply,
     'second_spoken_phrase': second_spoken_phrase,
-    'physical_device_observed': os.environ['NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED'] == 'true',
-    'physical_mic_observed': os.environ['NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED'] == 'true',
-    'tts_observed': os.environ['NAVIVOX_ANDROID_TTS_OBSERVED'] == 'true',
-    'rearm_observed': os.environ['NAVIVOX_ANDROID_REARM_OBSERVED'] == 'true',
-    'no_secret_leaks_observed': os.environ['NAVIVOX_ANDROID_NO_SECRET_LEAKS'] == 'true',
-    'synthetic_audio_used': os.environ['NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED'] == 'true',
+    'physical_device_observed': os.environ['WING_ANDROID_PHYSICAL_DEVICE_OBSERVED'] == 'true',
+    'physical_mic_observed': os.environ['WING_ANDROID_PHYSICAL_MIC_OBSERVED'] == 'true',
+    'tts_observed': os.environ['WING_ANDROID_TTS_OBSERVED'] == 'true',
+    'rearm_observed': os.environ['WING_ANDROID_REARM_OBSERVED'] == 'true',
+    'no_secret_leaks_observed': os.environ['WING_ANDROID_NO_SECRET_LEAKS'] == 'true',
+    'synthetic_audio_used': os.environ['WING_ANDROID_SYNTHETIC_AUDIO_USED'] == 'true',
     'distinct_rearmed_turn_observed': True,
     'evidence_for': [
         'physical Android microphone audio to local STT',
@@ -232,6 +232,6 @@ manual observations are truthful. It is not Hermes realtime/server-audio,
 native-host, platform-workflow, deferred-surface, or whole-goal completion
 evidence by itself; it is not whole-goal completion evidence.
 
-Run NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any
+Run WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any
 completion claim.
 EOF

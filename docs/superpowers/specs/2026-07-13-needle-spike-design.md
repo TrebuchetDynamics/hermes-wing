@@ -13,7 +13,7 @@ function-calling model from Cactus Compute (Simple Attention Network: encoder-de
 attention-only, INT4 QAT). It does one thing: map natural-language requests to structured
 tool calls. It runs on the Cactus engine (v2.x), which has a Flutter binding.
 
-Navivox is remote-only for intelligence today: OS STT transcript → Hermes endpoint (SSE).
+Hermes Wing is remote-only for intelligence today: OS STT transcript → Hermes endpoint (SSE).
 The app already runs on-device ONNX inference for TTS (`pocket_speech`), with an
 established model-download pattern (SHA-256 verification, size caps, atomic replace).
 
@@ -28,10 +28,10 @@ degrades the Hermes path is out of scope.
 
 A time-boxed, rip-out-able experiment answering, in order:
 
-1. **Does it run?** Needle loads and infers inside Navivox on Android (alpha target) via
+1. **Does it run?** Needle loads and infers inside Hermes Wing on Android (alpha target) via
    the Cactus Flutter binding, coexisting with `flutter_onnxruntime` (pocket_speech TTS).
 2. **Is it accurate?** Fraction of realistic voice commands mapped to the right tool with
-   the right arguments, against ~10 mock Navivox tools and a 20-transcript test bank.
+   the right arguments, against ~10 mock Hermes Wing tools and a 20-transcript test bank.
 3. **Is it fast/small enough?** End-to-end latency (transcript → tool call), APK size
    delta, model download size.
 4. **Verdict:** recommend one integration role — local command router, hybrid pre-router,
@@ -65,7 +65,7 @@ A time-boxed, rip-out-able experiment answering, in order:
 ## Components
 
 ### `NeedleToolCatalog`
-~10 hardcoded `CactusTool` definitions mirroring plausible Navivox actions:
+~10 hardcoded `CactusTool` definitions mirroring plausible Hermes Wing actions:
 `navigate_to_screen`, `start_voice_run`, `stop_voice_run`, `toggle_continuous_mode`,
 `send_message`, `new_session`, `switch_session`, `set_tts_voice`, `set_speech_rate`,
 `show_status`. Handlers are mocks — they return a canned "would have executed X(args)"
@@ -124,13 +124,13 @@ recording:
 - flutter_onnxruntime coexistence notes (build conflicts, runtime issues, memory);
 - go/no-go recommendation per integration role, honoring the augment-only constraint.
 
-## Pros & cons of Needle for Navivox (known pre-spike)
+## Pros & cons of Needle for Hermes Wing (known pre-spike)
 
 **Pros**
 - MIT license, open weights.
 - Tiny: ~20–30 MB on disk vs the 500 MB Kokoro TTS model the app already manages.
 - Very fast claimed inference (~6,000 tok/s prefill / ~1,200 decode on Cactus runtime).
-- Exactly matches Navivox's "voice command → structured action" shape.
+- Exactly matches Hermes Wing's "voice command → structured action" shape.
 - Fits the app's existing hybrid on-device/remote philosophy and download plumbing.
 - Cactus Flutter SDK also offers on-device Whisper STT — possible future bonus.
 
@@ -142,4 +142,4 @@ recording:
 - pub.dev package lags the engine; git dependency required for now.
 - NPU acceleration is gated behind a paid Pro key (CPU-only for the spike).
 - 26M params: argument extraction on messy real speech may be brittle.
-- Unclear story for Navivox's secondary targets (web, Linux, iOS).
+- Unclear story for Hermes Wing's secondary targets (web, Linux, iOS).

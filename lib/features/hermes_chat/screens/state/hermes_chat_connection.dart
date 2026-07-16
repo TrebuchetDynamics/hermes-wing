@@ -375,7 +375,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     return _deferredSurfaceSummary(
       title: 'Raw diagnostics/log export',
       detail:
-          'Raw logs, transcripts, credentials, tool payloads, and local paths remain excluded from Navivox mobile diagnostics.',
+          'Raw logs, transcripts, credentials, tool payloads, and local paths remain excluded from Hermes Wing mobile diagnostics.',
       exclusion:
           'No raw log export control is enabled until a safe Hermes redaction contract exists.',
     );

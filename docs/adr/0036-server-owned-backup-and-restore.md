@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Hermes Agent owns versioned backup creation, inspection, download, upload, and restore. Navivox uses capability-advertised typed jobs and opaque, expiring archive handles; it never reads, writes, displays, or submits a `HERMES_HOME` archive path and never shells out to backup commands.
+Hermes Agent owns versioned backup creation, inspection, download, upload, and restore. Hermes Wing uses capability-advertised typed jobs and opaque, expiring archive handles; it never reads, writes, displays, or submits a `HERMES_HOME` archive path and never shells out to backup commands.
 
 ## Archive modes
 
@@ -17,7 +17,7 @@ Scoped operator credentials, Hermes One OAuth credentials, analytics consent or 
 
 Profile backup jobs require explicit `profile=<id>` context and dedicated `backups:read` or `backups:write` authorization. Capabilities identify supported archive modes, limits, handle retention, and whether local recovery is available. Job and archive responses contain IDs, state, bounded counts, sizes, hashes, timestamps, compatibility ranges, and apply dispositions—not server filesystem paths or secret values.
 
-Archive handles are unguessable, bound to their principal and profile, expire, and support explicit deletion. Downloads and uploads are bounded and streamed. Navivox does not automatically upload archives to Hermes One or another cloud service.
+Archive handles are unguessable, bound to their principal and profile, expire, and support explicit deletion. Downloads and uploads are bounded and streamed. Hermes Wing does not automatically upload archives to Hermes One or another cloud service.
 
 ## Restore lifecycle
 

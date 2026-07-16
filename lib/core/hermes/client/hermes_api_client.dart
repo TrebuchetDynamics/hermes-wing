@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 import '../models/hermes_capabilities.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
@@ -80,16 +80,16 @@ class HermesApiClient {
 
   Future<List<String>> listEnabledToolsets({String? profile}) async {
     final body = await _getJson(_scoped(config.toolsetsUri, profile));
-    return navivoxMapListFromJson(body['data'])
-        .where((item) => navivoxBoolFromJson(item['enabled']))
-        .map((item) => navivoxOptionalStringFromJson(item['name']))
+    return wingMapListFromJson(body['data'])
+        .where((item) => wingBoolFromJson(item['enabled']))
+        .map((item) => wingOptionalStringFromJson(item['name']))
         .whereType<String>()
         .toList(growable: false);
   }
 
   Future<List<HermesSession>> listSessions({String? profile}) async {
     final body = await _getJson(_scoped(config.sessionsUri, profile));
-    return navivoxMapListFromJson(body['data'])
+    return wingMapListFromJson(body['data'])
         .map(HermesSession.fromJson)
         .where((session) => session.id.isNotEmpty)
         .toList(growable: false);
@@ -98,7 +98,7 @@ class HermesApiClient {
   Future<List<HermesJob>> listJobs({String? profile}) async {
     final body = await _getJson(_scoped(config.jobsUri, profile));
     final rawJobs = body['jobs'] ?? body['data'];
-    return navivoxMapListFromJson(rawJobs)
+    return wingMapListFromJson(rawJobs)
         .map(HermesJob.fromJson)
         .where((job) => job.id.isNotEmpty)
         .toList(growable: false);
@@ -112,19 +112,19 @@ class HermesApiClient {
   }) async {
     final body = <String, Object?>{
       'id': id.trim(),
-      ...navivoxTrimmedStringFields({
+      ...wingTrimmedStringFields({
         'title': title,
         'model': model,
         'system_prompt': systemPrompt,
       }),
     };
     final response = await _postJson(config.sessionsUri, body);
-    return HermesSession.fromJson(navivoxMapFieldFromJson(response, 'session'));
+    return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
   Future<List<HermesMessage>> sessionMessages(String sessionId) async {
     final body = await _getJson(config.sessionMessagesUri(sessionId));
-    return navivoxMapListFromJson(
+    return wingMapListFromJson(
       body['data'],
     ).map(HermesMessage.fromJson).toList(growable: false);
   }
@@ -136,14 +136,14 @@ class HermesApiClient {
     final response = await _patchJson(config.sessionUri(sessionId), {
       'title': title.trim(),
     });
-    return HermesSession.fromJson(navivoxMapFieldFromJson(response, 'session'));
+    return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
   Future<void> deleteSession(String sessionId) async {
     final trimmed = sessionId.trim();
     final response = await _deleteJson(config.sessionUri(trimmed));
-    final id = navivoxOptionalStringFromJson(response['id']);
-    final deleted = navivoxBoolFromJson(response['deleted']);
+    final id = wingOptionalStringFromJson(response['id']);
+    final deleted = wingBoolFromJson(response['deleted']);
     if (id != trimmed || !deleted) {
       throw StateError('Hermes session delete was not confirmed.');
     }
@@ -156,9 +156,9 @@ class HermesApiClient {
   }) async {
     final response = await _postJson(config.sessionForkUri(sourceSessionId), {
       'id': id.trim(),
-      ...navivoxTrimmedStringFields({'title': title}),
+      ...wingTrimmedStringFields({'title': title}),
     });
-    return HermesSession.fromJson(navivoxMapFieldFromJson(response, 'session'));
+    return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
   Stream<HermesStreamEvent> streamSessionChat(
@@ -193,7 +193,7 @@ class HermesApiClient {
       'message': message,
     });
     final run = response['run'] is Map
-        ? navivoxMapFromJson(response['run'])
+        ? wingMapFromJson(response['run'])
         : response;
     return HermesRun.fromJson(run);
   }
@@ -260,7 +260,7 @@ class HermesApiClient {
 
   Future<List<HermesProfile>> listProfiles() async {
     final body = await _getJson(config.profilesUri);
-    return navivoxMapListFromJson(body['data'])
+    return wingMapListFromJson(body['data'])
         .map(HermesProfile.fromJson)
         .where((profile) => profile.id.isNotEmpty)
         .toList(growable: false);
@@ -272,7 +272,7 @@ class HermesApiClient {
   }) async {
     final response = await _postJson(config.profilesUri, {
       'name': name.trim(),
-      ...navivoxTrimmedStringFields({'clone_from': cloneFrom}),
+      ...wingTrimmedStringFields({'clone_from': cloneFrom}),
     });
     return HermesProfile.fromJson(_profileEnvelope(response));
   }
@@ -297,8 +297,8 @@ class HermesApiClient {
       config.profileUri(trimmed),
       ifMatch: revision,
     );
-    final id = navivoxOptionalStringFromJson(response['id']);
-    final deleted = navivoxBoolFromJson(response['deleted']);
+    final id = wingOptionalStringFromJson(response['id']);
+    final deleted = wingBoolFromJson(response['deleted']);
     if (id != trimmed || !deleted) {
       throw StateError('Hermes profile delete was not confirmed.');
     }
@@ -333,7 +333,7 @@ class HermesApiClient {
     final body = await _getJson(
       config.profileScopedUri(config.providersUri, profile),
     );
-    return navivoxMapListFromJson(body['data'])
+    return wingMapListFromJson(body['data'])
         .map(HermesProvider.fromJson)
         .where((provider) => provider.slug.isNotEmpty)
         .toList(growable: false);
@@ -353,7 +353,7 @@ class HermesApiClient {
       profile,
     );
     final response = await _putJson(uri, {'env_var': envVar, 'value': value});
-    return HermesProvider.fromJson(navivoxMapFieldFromJson(response, 'data'));
+    return HermesProvider.fromJson(wingMapFieldFromJson(response, 'data'));
   }
 
   /// Removes a provider credential and returns updated presence. [envVar] is
@@ -371,7 +371,7 @@ class HermesApiClient {
       queryParameters: {...scoped.queryParameters, 'env_var': envVar},
     );
     final response = await _deleteJson(uri);
-    return HermesProvider.fromJson(navivoxMapFieldFromJson(response, 'data'));
+    return HermesProvider.fromJson(wingMapFieldFromJson(response, 'data'));
   }
 
   /// Probes the stored credential for [slug]. Returns only `{ok, detail}`; the
@@ -425,7 +425,7 @@ class HermesApiClient {
       'scope': scope,
       'provider': provider,
       'model': model,
-      ...navivoxTrimmedStringFields({'task': task}),
+      ...wingTrimmedStringFields({'task': task}),
     };
     final response = await _putJson(uri, body, ifMatch: revision);
     return HermesModelAssignment.fromJson(response);
@@ -433,7 +433,7 @@ class HermesApiClient {
 
   Map<String, Object?> _profileEnvelope(Map<String, Object?> response) {
     return response['profile'] is Map
-        ? navivoxMapFromJson(response['profile'])
+        ? wingMapFromJson(response['profile'])
         : response;
   }
 
@@ -532,10 +532,10 @@ class HermesApiClient {
     Map<String, Object?> body,
     List<String> candidateFields,
   ) {
-    return navivoxMapListFromJson(body['data'])
+    return wingMapListFromJson(body['data'])
         .map(
           (item) => candidateFields
-              .map((field) => navivoxOptionalStringFromJson(item[field]))
+              .map((field) => wingOptionalStringFromJson(item[field]))
               .whereType<String>()
               .firstOrNull,
         )
@@ -548,7 +548,7 @@ class HermesApiClient {
     if (decoded is! Map) {
       throw const FormatException('Hermes API response must be a JSON object');
     }
-    return navivoxMapFromJson(decoded);
+    return wingMapFromJson(decoded);
   }
 }
 
@@ -564,9 +564,9 @@ class HermesEnrollmentPreview {
 
   factory HermesEnrollmentPreview.fromJson(Map<String, Object?> json) {
     return HermesEnrollmentPreview(
-      label: navivoxStringFromJson(json['label'], fallback: ''),
-      origin: navivoxStringFromJson(json['origin'], fallback: ''),
-      scopes: navivoxStringListFromJson(json['scopes']),
+      label: wingStringFromJson(json['label'], fallback: ''),
+      origin: wingStringFromJson(json['origin'], fallback: ''),
+      scopes: wingStringListFromJson(json['scopes']),
       expiresAt: _epochSecondsToUtcDateTime(json['expires_at']),
     );
   }
@@ -589,9 +589,9 @@ class HermesIssuedOperatorToken {
 
   factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
     return HermesIssuedOperatorToken(
-      token: navivoxStringFromJson(json['token'], fallback: ''),
-      label: navivoxStringFromJson(json['label'], fallback: ''),
-      credentialId: navivoxStringFromJson(json['credential_id'], fallback: ''),
+      token: wingStringFromJson(json['token'], fallback: ''),
+      label: wingStringFromJson(json['label'], fallback: ''),
+      credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
     );
   }
 
@@ -601,7 +601,7 @@ class HermesIssuedOperatorToken {
 }
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {
-  final seconds = navivoxDoubleFromJson(value);
+  final seconds = wingDoubleFromJson(value);
   if (seconds == null) return null;
   return DateTime.fromMillisecondsSinceEpoch(
     (seconds * 1000).round(),

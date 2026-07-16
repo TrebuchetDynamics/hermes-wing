@@ -4,7 +4,7 @@ import '../models/voice_command.dart';
 
 /// The three settings mutations a routed voice command may trigger. Kept as
 /// a minimal interface (rather than depending on
-/// `NavivoxVoiceSettingsController` directly) so the dispatcher never needs a
+/// `WingVoiceSettingsController` directly) so the dispatcher never needs a
 /// live Riverpod `Notifier` — a test double just implements these three
 /// methods, and production code adapts the real controller to this shape.
 abstract interface class VoiceCommandSettingsSink {

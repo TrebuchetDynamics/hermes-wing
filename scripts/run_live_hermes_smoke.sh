@@ -13,24 +13,24 @@ for cmd in flutter node npx curl python3; do
   fi
 done
 
-port="${NAVIVOX_LIVE_HERMES_PORT:-18642}"
-host="${NAVIVOX_LIVE_HERMES_HOST:-127.0.0.1}"
-api_key="${NAVIVOX_LIVE_HERMES_API_KEY:-$(python3 - <<'PY'
+port="${WING_LIVE_HERMES_PORT:-18642}"
+host="${WING_LIVE_HERMES_HOST:-127.0.0.1}"
+api_key="${WING_LIVE_HERMES_API_KEY:-$(python3 - <<'PY'
 import secrets
-print('navivox-live-' + secrets.token_urlsafe(24))
+print('wing-live-' + secrets.token_urlsafe(24))
 PY
 )}"
 base_url="http://${host}:${port}"
-hermes_home="${NAVIVOX_LIVE_HERMES_HOME:-$(mktemp -d -t navivox-hermes-home.XXXXXX)}"
-web_log="${NAVIVOX_LIVE_WEB_LOG:-/tmp/navivox-live-web.log}"
-hermes_log="${NAVIVOX_LIVE_HERMES_LOG:-/tmp/navivox-live-hermes.log}"
+hermes_home="${WING_LIVE_HERMES_HOME:-$(mktemp -d -t wing-hermes-home.XXXXXX)}"
+web_log="${WING_LIVE_WEB_LOG:-/tmp/wing-live-web.log}"
+hermes_log="${WING_LIVE_HERMES_LOG:-/tmp/wing-live-hermes.log}"
 
 hermes_pid=""
 web_pid=""
 cleanup() {
   if [ -n "$web_pid" ]; then kill "$web_pid" 2>/dev/null || true; fi
   if [ -n "$hermes_pid" ]; then kill "$hermes_pid" 2>/dev/null || true; fi
-  if [ -z "${NAVIVOX_LIVE_HERMES_HOME:-}" ]; then rm -rf "$hermes_home"; fi
+  if [ -z "${WING_LIVE_HERMES_HOME:-}" ]; then rm -rf "$hermes_home"; fi
 }
 trap cleanup EXIT
 
@@ -78,13 +78,13 @@ for _ in $(seq 1 30); do
 done
 
 if [ "$web_ready" != 1 ]; then
-  echo "Navivox web server did not become ready. Log: ${web_log}" >&2
+  echo "Hermes Wing web server did not become ready. Log: ${web_log}" >&2
   tail -120 "$web_log" >&2 || true
   exit 1
 fi
 
-NAVIVOX_LIVE_HERMES_URL="$base_url" \
-NAVIVOX_LIVE_HERMES_API_KEY="$api_key" \
+WING_LIVE_HERMES_URL="$base_url" \
+WING_LIVE_HERMES_API_KEY="$api_key" \
   npx playwright test --config=playwright.config.mjs playwright/tests/regression/hermes-live-api.spec.mjs --reporter=list
 
 cat <<'EOF'
@@ -92,5 +92,5 @@ Installed-Hermes live smoke passed for API connect/session rendering only.
 This uses an isolated temp home by default; it is not provider/model evidence,
 not a chat/voice provider smoke, and not physical microphone evidence.
 It is not whole-goal completion evidence by itself; run
-NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any completion claim.
+WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any completion claim.
 EOF

@@ -8,7 +8,7 @@ import '../../../router/routes/app_routes.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../providers/hermes_enrollment_provider.dart';
 
-/// Reviews a one-time Navivox connect pairing request before exchanging it.
+/// Reviews a one-time Hermes Wing connect pairing request before exchanging it.
 /// Reached only via an Android connect intent, so it lives outside the
 /// authenticated app shell: there is no configured Hermes endpoint yet.
 /// Displays only what the server returns from inspection (host, label,
@@ -216,7 +216,7 @@ class _HermesEnrollmentScreenState
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Grant Navivox access to this Hermes endpoint?',
+          'Grant Hermes Wing access to this Hermes endpoint?',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
@@ -252,7 +252,7 @@ class _HermesEnrollmentScreenState
           const SizedBox(height: 8),
           Text(
             'This pairing server reports a different address '
-            '(${preview.origin}) than the link you opened. Navivox will '
+            '(${preview.origin}) than the link you opened. Hermes Wing will '
             'connect to the link address shown above. Only continue if you '
             'trust it.',
             key: const ValueKey('hermes-enrollment-origin-mismatch'),

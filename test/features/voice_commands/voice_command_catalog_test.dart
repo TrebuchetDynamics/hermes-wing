@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_catalog.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_catalog.dart';
 
 void main() {
   test('catalog exposes nine tools whose names round-trip to ids', () {

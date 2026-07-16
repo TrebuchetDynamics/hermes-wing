@@ -34,7 +34,7 @@ void main() {
       expect(scriptText, contains(blocker), reason: blocker);
     }
 
-    expect(scriptText, contains('NAVIVOX_HERMES_SERVER_AUDIO_RECEIPT'));
+    expect(scriptText, contains('WING_HERMES_SERVER_AUDIO_RECEIPT'));
     expect(
       scriptText,
       contains('build/receipts/hermes-server-audio-smoke.json'),
@@ -71,7 +71,7 @@ void main() {
     );
     expect(scriptText, contains('not Android physical mic'));
     expect(scriptText, contains('npm run platform:workflow-smoke'));
-    expect(scriptText, contains('NAVIVOX_PLATFORM_WORKFLOW_RECEIPT'));
+    expect(scriptText, contains('WING_PLATFORM_WORKFLOW_RECEIPT'));
     expect(
       scriptText,
       contains('platform workflow/native-host receipt present'),
@@ -117,7 +117,7 @@ void main() {
     );
     expect(
       scriptText,
-      contains('NAVIVOX_WATCH_WORKFLOW=false only proves dispatch'),
+      contains('WING_WATCH_WORKFLOW=false only proves dispatch'),
     );
     expect(
       scriptText,
@@ -246,7 +246,7 @@ void main() {
     expect(scriptText, contains('package_info'));
     expect(
       scriptText,
-      contains('package_info.package_name=com.trebuchetdynamics.navivox'),
+      contains('package_info.package_name=com.trebuchetdynamics.hermes.wing'),
     );
     expect(scriptText, contains('package_info.installed=true'));
     expect(scriptText, contains('package_info.record_audio_granted=true'));
@@ -315,7 +315,7 @@ void main() {
     expect(scriptText, contains('tests, APK hashes, configured Hermes home'));
     expect(scriptText, contains('workflow YAML, or dispatch-only output'));
 
-    expect(auditText, contains('current pure-Hermes Navivox companion goal'));
+    expect(auditText, contains('current Hermes-only Hermes Wing client goal'));
     expect(auditText, contains('Current completion audit verdict'));
     expect(
       auditText,
@@ -352,7 +352,7 @@ void main() {
       auditText,
       contains('Readiness/prep covered; real spoken audio not covered'),
     );
-    expect(auditText, contains('NAVIVOX_ANDROID_SKIP_BUILD=1'));
+    expect(auditText, contains('WING_ANDROID_SKIP_BUILD=1'));
     expect(auditText, contains('installed/launched/granted mic permission'));
     expect(auditText, contains('adb devices` had no attached Android devices'));
     expect(
@@ -382,9 +382,9 @@ void main() {
     expect(auditText, contains('Windows desktop build'));
     expect(auditText, contains('iOS simulator build'));
     expect(auditText, contains('macOS desktop build'));
-    expect(auditText, contains('non-expired `navivox-windows-debug-bundle`'));
-    expect(auditText, contains('non-expired `navivox-ios-simulator-app`'));
-    expect(auditText, contains('non-expired `navivox-macos-debug-app`'));
+    expect(auditText, contains('non-expired `wing-windows-debug-bundle`'));
+    expect(auditText, contains('non-expired `wing-ios-simulator-app`'));
+    expect(auditText, contains('non-expired `wing-macos-debug-app`'));
     expect(auditText, contains('68 Chromium tests'));
     expect(
       auditText,
@@ -422,7 +422,7 @@ void main() {
     expect(auditText, contains('Android `live-mic-prep` by itself'));
     expect(auditText, contains('Workflow YAML by itself'));
     expect(auditText, contains('Workflow dispatch by itself'));
-    expect(auditText, contains('NAVIVOX_WATCH_WORKFLOW=false'));
+    expect(auditText, contains('WING_WATCH_WORKFLOW=false'));
     expect(auditText, contains('missing visible run id or unwatched run'));
     expect(auditText, contains('build/receipts/hermes-platform-workflow.json'));
     expect(

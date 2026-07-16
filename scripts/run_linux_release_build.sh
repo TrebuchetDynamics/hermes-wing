@@ -18,7 +18,7 @@ for cmd in apt-get dpkg pkg-config python3; do
   fi
 done
 
-work="${NAVIVOX_LINUX_BUILD_DEPS_DIR:-$(mktemp -d -t navivox-linux-deps.XXXXXX)}"
+work="${WING_LINUX_BUILD_DEPS_DIR:-$(mktemp -d -t wing-linux-deps.XXXXXX)}"
 mkdir -p "$work"
 work="$(python3 - "$work" <<'PY'
 from pathlib import Path

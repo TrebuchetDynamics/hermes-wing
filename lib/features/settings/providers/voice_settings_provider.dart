@@ -5,15 +5,15 @@ import '../../../shared/voice/voice_settings.dart';
 
 export '../../../shared/voice/voice_settings.dart';
 
-class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
-  static const _keyVoiceEnabled = 'navivox.voice.continuous_enabled';
-  static const _keySpeakReplies = 'navivox.voice.speak_replies_enabled';
+class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
+  static const _keyVoiceEnabled = 'wing.voice.continuous_enabled';
+  static const _keySpeakReplies = 'wing.voice.speak_replies_enabled';
   // Keep legacy key values so existing Kokoro installs migrate in place.
-  static const _keyPocketSpeechEnabled = 'navivox.voice.kokoro_tts_enabled';
-  static const _keyPocketSpeechModel = 'navivox.voice.pocket_speech_model';
-  static const _keyModelPath = 'navivox.voice.kokoro_model_path';
-  static const _keyVoicesPath = 'navivox.voice.kokoro_voices_path';
-  static const _keyCommandWord = 'navivox.voice.command_word';
+  static const _keyPocketSpeechEnabled = 'wing.voice.kokoro_tts_enabled';
+  static const _keyPocketSpeechModel = 'wing.voice.pocket_speech_model';
+  static const _keyModelPath = 'wing.voice.kokoro_model_path';
+  static const _keyVoicesPath = 'wing.voice.kokoro_voices_path';
+  static const _keyCommandWord = 'wing.voice.command_word';
   static const _keyVoiceCommandsEnabled = 'voice_commands_enabled';
   static const _keySpeechRate = 'tts_speech_rate';
   static const _keyTtsVoiceName = 'tts_voice_name';
@@ -22,9 +22,9 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
   int _mutationGeneration = 0;
 
   @override
-  NavivoxVoiceSettings build() {
+  WingVoiceSettings build() {
     _loadPrefs();
-    return const NavivoxVoiceSettings();
+    return const WingVoiceSettings();
   }
 
   Future<void> _loadPrefs() async {
@@ -62,7 +62,7 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
           _prefs?.getBool(_keyVoiceCommandsEnabled) ?? false;
       final speechRate = _prefs?.getDouble(_keySpeechRate) ?? 1.0;
       final ttsVoiceName = _prefs?.getString(_keyTtsVoiceName);
-      state = NavivoxVoiceSettings(
+      state = WingVoiceSettings(
         continuousVoiceEnabled: enabled,
         speakRepliesEnabled: speakReplies,
         pocketSpeechTtsEnabled: pocketSpeechEnabled,
@@ -74,7 +74,7 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
         ttsVoiceName: ttsVoiceName,
       );
     } catch (_) {
-      state = const NavivoxVoiceSettings();
+      state = const WingVoiceSettings();
     }
   }
 
@@ -179,7 +179,7 @@ class NavivoxVoiceSettingsController extends Notifier<NavivoxVoiceSettings> {
   }
 }
 
-final navivoxVoiceSettingsProvider =
-    NotifierProvider<NavivoxVoiceSettingsController, NavivoxVoiceSettings>(
-      NavivoxVoiceSettingsController.new,
+final wingVoiceSettingsProvider =
+    NotifierProvider<WingVoiceSettingsController, WingVoiceSettings>(
+      WingVoiceSettingsController.new,
     );

@@ -1,15 +1,15 @@
-# ADR 0001: Make Navivox a Hermes-only companion
+# ADR 0001: Make Hermes Wing a Hermes-only companion
 
 Status: superseded by ADR 0011
 Date: 2026-07-07
 
 ## Context
 
-`CONTEXT.md` defines Navivox as a Flutter companion for Hermes Agent and limits active routes to `/hermes` and `/settings`. `README.md` lists Hermes Agent HTTP endpoints as the runtime surface, and `docs/product/prd.md` names legacy gateway setup, profile-contact management, external memory dashboards, and server configuration editors as non-goals.
+`CONTEXT.md` defines Hermes Wing as a Flutter companion for Hermes Agent and limits active routes to `/hermes` and `/settings`. `README.md` lists Hermes Agent HTTP endpoints as the runtime surface, and `docs/product/prd.md` names legacy gateway setup, profile-contact management, external memory dashboards, and server configuration editors as non-goals.
 
 ## Decision
 
-Navivox targets Hermes Agent only. Product language, code, tests, docs, and routes should use Hermes endpoint, session, run, approval, tool progress, local voice, and local settings terminology.
+Hermes Wing targets Hermes Agent only. Product language, code, tests, docs, and routes should use Hermes endpoint, session, run, approval, tool progress, local voice, and local settings terminology.
 
 Legacy Gormes/gateway/profile-contact/memory/config-admin surfaces are not part of the active app topology.
 

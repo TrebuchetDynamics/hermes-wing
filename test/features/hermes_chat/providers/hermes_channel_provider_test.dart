@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel.dart';
-import 'package:navivox/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 
 import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';

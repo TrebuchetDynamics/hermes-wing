@@ -1,9 +1,9 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 /// A Hermes Agent profile ("agent") as advertised by `GET /api/profiles`.
 ///
 /// Profiles are administrative, revisioned resources owned by the Hermes
-/// Agent. Navivox never infers profile identity: [id] is the stable wire key
+/// Agent. Hermes Wing never infers profile identity: [id] is the stable wire key
 /// used for path segments and the mandatory `profile` query on profile-owned
 /// operations, while [revision] is the optimistic-concurrency token echoed
 /// back as `If-Match` on edits.
@@ -25,15 +25,15 @@ class HermesProfile {
   /// profile without a stable key cannot be selected or scoped safely.
   factory HermesProfile.fromJson(Map<String, Object?> json) {
     return HermesProfile(
-      id: navivoxStringFromJson(json['id'], fallback: ''),
-      displayName: navivoxStringFromJson(json['name'], fallback: ''),
-      revision: navivoxStringFromJson(json['revision'], fallback: ''),
-      description: navivoxStringFromJson(json['description'], fallback: ''),
-      model: navivoxStringFromJson(json['model'], fallback: ''),
-      skillsCount: navivoxIntFromJson(json['skills_count']),
-      gatewayRunning: navivoxBoolFromJson(json['gateway_running']),
-      avatar: navivoxOptionalStringFromJson(json['avatar']),
-      color: navivoxOptionalStringFromJson(json['color']),
+      id: wingStringFromJson(json['id'], fallback: ''),
+      displayName: wingStringFromJson(json['name'], fallback: ''),
+      revision: wingStringFromJson(json['revision'], fallback: ''),
+      description: wingStringFromJson(json['description'], fallback: ''),
+      model: wingStringFromJson(json['model'], fallback: ''),
+      skillsCount: wingIntFromJson(json['skills_count']),
+      gatewayRunning: wingBoolFromJson(json['gateway_running']),
+      avatar: wingOptionalStringFromJson(json['avatar']),
+      color: wingOptionalStringFromJson(json['color']),
     );
   }
 
@@ -57,8 +57,8 @@ class HermesProfileSoul {
 
   factory HermesProfileSoul.fromJson(Map<String, Object?> json) {
     return HermesProfileSoul(
-      soul: navivoxStringFromJson(json['soul'], fallback: ''),
-      revision: navivoxStringFromJson(json['revision'], fallback: ''),
+      soul: wingStringFromJson(json['soul'], fallback: ''),
+      revision: wingStringFromJson(json['revision'], fallback: ''),
     );
   }
 

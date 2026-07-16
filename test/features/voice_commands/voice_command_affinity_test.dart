@@ -6,8 +6,8 @@
 // commands — none of which contain an anchor for the command under test.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_affinity.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_affinity.dart';
 
 typedef _Case = ({
   String description,

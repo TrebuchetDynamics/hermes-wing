@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Prove (or disprove) that the Needle 26M function-calling model runs inside Navivox on Android, measuring accuracy, latency, and size, behind a `NEEDLE_SPIKE` dart-define — per the approved spec `docs/superpowers/specs/2026-07-13-needle-spike-design.md`.
+**Goal:** Prove (or disprove) that the Needle 26M function-calling model runs inside Hermes Wing on Android, measuring accuracy, latency, and size, behind a `NEEDLE_SPIKE` dart-define — per the approved spec `docs/superpowers/specs/2026-07-13-needle-spike-design.md`.
 
 **Architecture:** Vendor the Cactus v2 engine (single FFI file `cactus.dart` + prebuilt `libcactus_engine.so` in jniLibs — there is no pub package for v2). Pure-Dart layers (tool catalog, result parsing, scorecard, download service) are TDD'd; the FFI layer is isolated behind a `NeedleEngineApi` interface so everything above it is testable without the native lib. A hidden debug screen drives evaluation.
 
@@ -58,7 +58,7 @@ Create `scripts/spike/build_cactus_engine.sh`:
 set -euo pipefail
 
 CACTUS_SHA="49e12567c9d355a269c761619bc09eef796ab9b1"
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/navivox/cactus"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/wing/cactus"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/../.." && pwd)"
 jni_dir="$repo_root/android/app/src/main/jniLibs/arm64-v8a"
@@ -102,7 +102,7 @@ Vendor the binding (single plain-Dart FFI file, no plugin):
 
 ```bash
 mkdir -p lib/features/needle_spike/ffi
-cp "${XDG_CACHE_HOME:-$HOME/.cache}/navivox/cactus/bindings/flutter/cactus.dart" lib/features/needle_spike/ffi/cactus.dart
+cp "${XDG_CACHE_HOME:-$HOME/.cache}/wing/cactus/bindings/flutter/cactus.dart" lib/features/needle_spike/ffi/cactus.dart
 ```
 
 Add this header comment at the top of the copied file (keep the rest byte-identical):
@@ -157,8 +157,8 @@ Create `test/features/needle_spike/needle_tool_catalog_test.dart`:
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/data/needle_test_transcripts.dart';
-import 'package:navivox/features/needle_spike/services/needle_tool_catalog.dart';
+import 'package:wing/features/needle_spike/data/needle_test_transcripts.dart';
+import 'package:wing/features/needle_spike/services/needle_tool_catalog.dart';
 
 void main() {
   test('catalog defines 10 uniquely named function tools', () {
@@ -212,7 +212,7 @@ Create `lib/features/needle_spike/services/needle_tool_catalog.dart`:
 ```dart
 import 'dart:convert';
 
-/// Mock Navivox actions exposed to Needle, in the Cactus/OpenAI tools JSON
+/// Mock Hermes Wing actions exposed to Needle, in the Cactus/OpenAI tools JSON
 /// shape. Handlers are intentionally absent: the spike only inspects which
 /// call the model emits; nothing here touches real app state.
 abstract final class NeedleToolCatalog {
@@ -411,7 +411,7 @@ Create `test/features/needle_spike/needle_result_test.dart`:
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/services/needle_result.dart';
+import 'package:wing/features/needle_spike/services/needle_result.dart';
 
 void main() {
   test('parses a successful tool-call response', () {
@@ -627,7 +627,7 @@ Create `test/features/needle_spike/needle_scorecard_test.dart`:
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/models/needle_scorecard.dart';
+import 'package:wing/features/needle_spike/models/needle_scorecard.dart';
 
 void main() {
   test('records verdict counts and totals', () {
@@ -729,7 +729,7 @@ import 'dart:io';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/services/needle_model_install_service.dart';
+import 'package:wing/features/needle_spike/services/needle_model_install_service.dart';
 
 void main() {
   late Directory tempDir;
@@ -997,8 +997,8 @@ Create `test/features/needle_spike/needle_spike_service_test.dart`:
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/services/needle_engine.dart';
-import 'package:navivox/features/needle_spike/services/needle_spike_service.dart';
+import 'package:wing/features/needle_spike/services/needle_engine.dart';
+import 'package:wing/features/needle_spike/services/needle_spike_service.dart';
 
 class _FakeEngine implements NeedleEngineApi {
   _FakeEngine(this.rawResponse);
@@ -1402,10 +1402,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/providers/needle_spike_providers.dart';
-import 'package:navivox/features/needle_spike/screens/needle_spike_screen.dart';
-import 'package:navivox/features/needle_spike/services/needle_engine.dart';
-import 'package:navivox/features/needle_spike/services/needle_model_install_service.dart';
+import 'package:wing/features/needle_spike/providers/needle_spike_providers.dart';
+import 'package:wing/features/needle_spike/screens/needle_spike_screen.dart';
+import 'package:wing/features/needle_spike/services/needle_engine.dart';
+import 'package:wing/features/needle_spike/services/needle_model_install_service.dart';
 
 class _FakeEngine implements NeedleEngineApi {
   bool loaded = false;
@@ -1937,9 +1937,9 @@ Create `test/router/needle_spike_route_test.dart`:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:navivox/features/needle_spike/needle_spike_flag.dart';
-import 'package:navivox/router/app_routes.dart';
-import 'package:navivox/router/providers/app_router.dart';
+import 'package:wing/features/needle_spike/needle_spike_flag.dart';
+import 'package:wing/router/app_routes.dart';
+import 'package:wing/router/providers/app_router.dart';
 
 void main() {
   test('needle spike route is absent unless NEEDLE_SPIKE is defined', () {

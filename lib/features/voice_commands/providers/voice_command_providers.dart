@@ -55,13 +55,13 @@ final voiceCommandInstallServiceProvider =
 ///    behavior, unchanged).
 final ttsVoiceNamesProvider = FutureProvider<List<String>>((ref) async {
   final pocketEnabled = ref.watch(
-    navivoxVoiceSettingsProvider.select((s) => s.pocketSpeechTtsEnabled),
+    wingVoiceSettingsProvider.select((s) => s.pocketSpeechTtsEnabled),
   );
   final pocketModel = ref.watch(
-    navivoxVoiceSettingsProvider.select((s) => s.pocketSpeechModel),
+    wingVoiceSettingsProvider.select((s) => s.pocketSpeechModel),
   );
   final kokoroVoicesPath = ref.watch(
-    navivoxVoiceSettingsProvider.select(
+    wingVoiceSettingsProvider.select(
       (s) => s.pocketSpeechVoicePack?.voicesPath,
     ),
   );
@@ -115,7 +115,7 @@ List<String> _readVoiceNamesSync(String voicesPath) {
 /// behavior is untouched (augment-only guarantee).
 final voiceCommandRouterProvider = Provider<VoiceCommandRouter?>((ref) {
   final enabled = ref.watch(
-    navivoxVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled),
+    wingVoiceSettingsProvider.select((s) => s.voiceCommandsEnabled),
   );
   if (!enabled) return null;
   final engine = ref.watch(voiceCommandEngineProvider);
@@ -147,10 +147,10 @@ final voiceCommandRouterProvider = Provider<VoiceCommandRouter?>((ref) {
 
 /// Adapts the real settings controller to the dispatcher's minimal sink
 /// interface so the dispatcher never needs a live Riverpod `Notifier`.
-class _NavivoxVoiceSettingsSink implements VoiceCommandSettingsSink {
-  _NavivoxVoiceSettingsSink(this._controller);
+class _WingVoiceSettingsSink implements VoiceCommandSettingsSink {
+  _WingVoiceSettingsSink(this._controller);
 
-  final NavivoxVoiceSettingsController _controller;
+  final WingVoiceSettingsController _controller;
 
   @override
   void setContinuousVoiceEnabled(bool enabled) =>
@@ -190,9 +190,8 @@ final voiceCommandDispatcherProvider = Provider<VoiceCommandDispatcher>((ref) {
     // the operator with no way back (same lesson as the Needle-spike debug
     // entry point in the settings screen).
     navigate: (path) => ref.read(routerProvider).push(path),
-    settings: () => _NavivoxVoiceSettingsSink(
-      ref.read(navivoxVoiceSettingsProvider.notifier),
-    ),
+    settings: () =>
+        _WingVoiceSettingsSink(ref.read(wingVoiceSettingsProvider.notifier)),
     showNotice: (message) =>
         ref.read(voiceCommandNoticeProvider.notifier).state = message,
     stopVoiceCapture: () => hooks.onStop(),

@@ -2,7 +2,7 @@ import '../speech/speech_recognizer.dart';
 
 /// Safety policy for the future-facing binary audio capture path.
 ///
-/// Navivox currently submits transcripts through the active voice path. This
+/// Hermes Wing currently submits transcripts through the active voice path. This
 /// policy prevents the recorder-backed path from silently producing audio-only
 /// captures before the gateway audio transport and retention contract exists.
 final class RecordVoiceCapturePolicy {

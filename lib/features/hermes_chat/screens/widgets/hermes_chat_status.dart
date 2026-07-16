@@ -102,7 +102,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   jobsAdminAdvertised
-                      ? 'Read-only inventory. Hermes advertises jobs admin, but Navivox has not enabled mobile create/edit/delete scheduling.'
+                      ? 'Read-only inventory. Hermes advertises jobs admin, but Hermes Wing has not enabled mobile create/edit/delete scheduling.'
                       : 'Read-only inventory. Mobile create/edit/delete scheduling is not available.',
                   key: const ValueKey('hermes-jobs-read-only-note'),
                 ),

@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
-import 'package:navivox/features/voice_commands/core/needle_model_install_service.dart';
-import 'package:navivox/features/voice_commands/providers/voice_command_providers.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/settings/providers/voice_settings_provider.dart';
+import 'package:wing/features/voice_commands/core/needle_model_install_service.dart';
+import 'package:wing/features/voice_commands/providers/voice_command_providers.dart';
 import 'package:pocket_speech/pocket_speech.dart' show KittenCatalog;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +39,7 @@ void main() {
     // Let the settings controller's async prefs load resolve (see
     // test/features/settings/voice_command_settings_test.dart for the same
     // synchronization pattern).
-    container.read(navivoxVoiceSettingsProvider.notifier);
+    container.read(wingVoiceSettingsProvider.notifier);
     await pumpEventQueue();
 
     expect(container.read(voiceCommandRouterProvider), isNull);
@@ -55,9 +55,9 @@ void main() {
     addTearDown(container.dispose);
 
     // Prime and wait for the settings controller's async prefs load before
-    // reading the router: `NavivoxVoiceSettings` starts at its (router-off)
+    // reading the router: `WingVoiceSettings` starts at its (router-off)
     // default and only flips once shared_preferences resolves.
-    container.read(navivoxVoiceSettingsProvider.notifier);
+    container.read(wingVoiceSettingsProvider.notifier);
     await pumpEventQueue();
 
     expect(container.read(voiceCommandRouterProvider), isNotNull);
@@ -116,7 +116,7 @@ void main() {
       final container = _buildContainer(tempDir);
       addTearDown(container.dispose);
 
-      final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+      final notifier = container.read(wingVoiceSettingsProvider.notifier);
       await pumpEventQueue();
       notifier.setPocketSpeechVoicePack(
         const PocketSpeechVoicePack(
@@ -144,7 +144,7 @@ void main() {
         final container = _buildContainer(tempDir);
         addTearDown(container.dispose);
 
-        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        final notifier = container.read(wingVoiceSettingsProvider.notifier);
         await pumpEventQueue();
         notifier.setPocketSpeechVoicePack(
           PocketSpeechVoicePack(
@@ -178,7 +178,7 @@ void main() {
         final container = _buildContainer(tempDir);
         addTearDown(container.dispose);
 
-        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        final notifier = container.read(wingVoiceSettingsProvider.notifier);
         await pumpEventQueue();
         notifier.setPocketSpeechVoicePack(
           PocketSpeechVoicePack(
@@ -204,7 +204,7 @@ void main() {
         final container = _buildContainer(tempDir);
         addTearDown(container.dispose);
 
-        final notifier = container.read(navivoxVoiceSettingsProvider.notifier);
+        final notifier = container.read(wingVoiceSettingsProvider.notifier);
         await pumpEventQueue();
         notifier.setPocketSpeechVoicePack(
           PocketSpeechVoicePack(
@@ -228,7 +228,7 @@ void main() {
         final container = _buildContainer(tempDir);
         addTearDown(container.dispose);
 
-        container.read(navivoxVoiceSettingsProvider.notifier);
+        container.read(wingVoiceSettingsProvider.notifier);
         await pumpEventQueue();
 
         // No platform flutter_tts plugin is registered in this unit-test

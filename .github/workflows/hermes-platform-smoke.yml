@@ -64,14 +64,14 @@ jobs:
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-lcov
+          name: hermes-wing-lcov
           path: coverage/lcov.info
           if-no-files-found: error
       - name: Build Web e2e app
         run: flutter build web --release -t lib/main_e2e.dart
       - name: Hermes browser smoke
         run: |
-          node serve_web.mjs > /tmp/navivox-serve-web.log 2>&1 &
+          node serve_web.mjs > /tmp/wing-serve-web.log 2>&1 &
           server_pid=$!
           trap 'kill $server_pid 2>/dev/null || true' EXIT
           for i in {1..30}; do
@@ -87,7 +87,7 @@ jobs:
       - name: Upload Android debug APK
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-android-debug-apk
+          name: hermes-wing-android-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
       - name: Build Linux release app
@@ -95,7 +95,7 @@ jobs:
       - name: Upload Linux release bundle
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-linux-release-bundle
+          name: hermes-wing-linux-release-bundle
           path: build/linux/x64/release/bundle/**
           if-no-files-found: error
 
@@ -136,8 +136,8 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
-            export NAVIVOX_ANDROID_DEVICE_ID=emulator-5554
-            export NAVIVOX_ANDROID_TEST_TIMEOUT_SECONDS=900
+            export WING_ANDROID_DEVICE_ID=emulator-5554
+            export WING_ANDROID_TEST_TIMEOUT_SECONDS=900
             ./scripts/run_android_voice_smoke.sh
             ./scripts/run_android_hermes_voice_loop_smoke.sh
             ./scripts/run_android_durable_key_smoke.sh
@@ -164,8 +164,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run provider-backed Hermes smoke
         env:
-          NAVIVOX_PROVIDER_HERMES_URL: ${{ inputs.provider_url }}
-          NAVIVOX_PROVIDER_HERMES_API_KEY: ${{ secrets.NAVIVOX_PROVIDER_HERMES_API_KEY }}
+          WING_PROVIDER_HERMES_URL: ${{ inputs.provider_url }}
+          WING_PROVIDER_HERMES_API_KEY: ${{ secrets.WING_PROVIDER_HERMES_API_KEY }}
         run: npm run hermes:provider-smoke
 
   windows-build:
@@ -185,7 +185,7 @@ jobs:
       - name: Upload Windows debug bundle
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-windows-debug-bundle
+          name: hermes-wing-windows-debug-bundle
           path: build/windows/x64/runner/Debug/**
           if-no-files-found: error
 
@@ -206,7 +206,7 @@ jobs:
       - name: Upload iOS simulator app
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-ios-simulator-app
+          name: hermes-wing-ios-simulator-app
           path: build/ios/iphonesimulator/Runner.app/**
           if-no-files-found: error
 
@@ -227,6 +227,6 @@ jobs:
       - name: Upload macOS debug app
         uses: actions/upload-artifact@v7
         with:
-          name: navivox-macos-debug-app
-          path: build/macos/Build/Products/Debug/navivox.app/**
+          name: hermes-wing-macos-debug-app
+          path: build/macos/Build/Products/Debug/wing.app/**
           if-no-files-found: error

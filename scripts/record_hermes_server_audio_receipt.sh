@@ -35,24 +35,24 @@ require_false() {
   fi
 }
 
-require_env NAVIVOX_HERMES_SERVER_AUDIO_PROMPT
-require_env NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY
-# Required manual-observation gates: NAVIVOX_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED=true,
-# NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED=true,
-# NAVIVOX_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED=true,
-# NAVIVOX_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED=true,
-# NAVIVOX_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS=true,
-# NAVIVOX_HERMES_SERVER_AUDIO_DEVICE_STT_USED=false, and
-# NAVIVOX_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY=false.
-require_true NAVIVOX_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED
-require_true NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED
-require_true NAVIVOX_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED
-require_true NAVIVOX_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED
-require_true NAVIVOX_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS
-require_false NAVIVOX_HERMES_SERVER_AUDIO_DEVICE_STT_USED
-require_false NAVIVOX_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY
+require_env WING_HERMES_SERVER_AUDIO_PROMPT
+require_env WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY
+# Required manual-observation gates: WING_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED=true,
+# WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED=true,
+# WING_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED=true,
+# WING_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED=true,
+# WING_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS=true,
+# WING_HERMES_SERVER_AUDIO_DEVICE_STT_USED=false, and
+# WING_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY=false.
+require_true WING_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED
+require_true WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED
+require_true WING_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED
+require_true WING_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED
+require_true WING_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS
+require_false WING_HERMES_SERVER_AUDIO_DEVICE_STT_USED
+require_false WING_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY
 
-receipt_path="${NAVIVOX_HERMES_SERVER_AUDIO_RECEIPT:-build/receipts/hermes-server-audio-smoke.json}"
+receipt_path="${WING_HERMES_SERVER_AUDIO_RECEIPT:-build/receipts/hermes-server-audio-smoke.json}"
 mkdir -p "$(dirname "$receipt_path")"
 python3 - "$receipt_path" <<'PY'
 import datetime, json, os, re, subprocess, sys
@@ -62,11 +62,11 @@ SECRET_PATTERN = re.compile(
     re.IGNORECASE,
 )
 path = sys.argv[1]
-prompt = os.environ['NAVIVOX_HERMES_SERVER_AUDIO_PROMPT'].strip()
-reply = os.environ['NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY'].strip()
+prompt = os.environ['WING_HERMES_SERVER_AUDIO_PROMPT'].strip()
+reply = os.environ['WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY'].strip()
 for label, value in {
-    'NAVIVOX_HERMES_SERVER_AUDIO_PROMPT': prompt,
-    'NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY': reply,
+    'WING_HERMES_SERVER_AUDIO_PROMPT': prompt,
+    'WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY': reply,
 }.items():
     if not value:
         raise SystemExit(f'{label} is required; record a short non-sensitive observed excerpt instead.')
@@ -75,7 +75,7 @@ for label, value in {
     if SECRET_PATTERN.search(value):
         raise SystemExit(f'{label} appears to contain a secret; record a non-sensitive excerpt instead.')
 if prompt.casefold() == reply.casefold():
-    raise SystemExit('NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY must differ from the prompt excerpt.')
+    raise SystemExit('WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY must differ from the prompt excerpt.')
 try:
     head_sha = subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], text=True, stderr=subprocess.DEVNULL
@@ -92,12 +92,12 @@ receipt = {
     'response_audio_path': 'hermes_server_audio_to_client_playback',
     'prompt_excerpt': prompt,
     'provider_reply_excerpt': reply,
-    'provider_reply_observed': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED'] == 'true',
-    'server_audio_playback_observed': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED'] == 'true',
-    'round_trip_observed': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED'] == 'true',
-    'no_secret_leaks_observed': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS'] == 'true',
-    'device_stt_used': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_DEVICE_STT_USED'] == 'true',
-    'local_tts_only': os.environ['NAVIVOX_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY'] == 'true',
+    'provider_reply_observed': os.environ['WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED'] == 'true',
+    'server_audio_playback_observed': os.environ['WING_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED'] == 'true',
+    'round_trip_observed': os.environ['WING_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED'] == 'true',
+    'no_secret_leaks_observed': os.environ['WING_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS'] == 'true',
+    'device_stt_used': os.environ['WING_HERMES_SERVER_AUDIO_DEVICE_STT_USED'] == 'true',
+    'local_tts_only': os.environ['WING_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY'] == 'true',
     'evidence_for': [
         'Hermes realtime/server audio input',
         'server-side audio turn',
@@ -126,6 +126,6 @@ realtime/audio API. It is not Android physical-mic, native-host,
 platform-workflow, deferred-surface, or whole-goal completion evidence by
 itself; it is not whole-goal completion evidence.
 
-Run NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any
+Run WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any
 completion claim.
 EOF

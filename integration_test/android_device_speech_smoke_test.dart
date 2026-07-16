@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:navivox/features/voice/services/platform/device_speech_recognition_availability.dart';
+import 'package:wing/features/voice/services/platform/device_speech_recognition_availability.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +14,7 @@ void main() {
     if (!Platform.isAndroid) return;
 
     const probe = MethodChannelDeviceSpeechRecognitionDiagnosticsProbe(
-      channel: MethodChannel('com.trebuchetdynamics.navivox/device_speech'),
+      channel: MethodChannel('com.trebuchetdynamics.hermes.wing/device_speech'),
     );
     final diagnostics = await probe.read();
 

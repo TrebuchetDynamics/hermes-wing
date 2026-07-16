@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Official Navivox distribution uses a small platform-native package matrix rather than reproducing every Hermes Desktop/Electron format.
+Official Hermes Wing distribution uses a small platform-native package matrix rather than reproducing every Hermes Desktop/Electron format.
 
 | Platform | Canonical packages |
 | --- | --- |
@@ -16,8 +16,8 @@ AppImage, Snap, portable EXE, generic tar archives, and other secondary formats 
 
 ## Package boundary
 
-- Every package preserves the stable Navivox application identity, data locations, URL handlers, secure-storage identity, and release channel across upgrades.
-- Navivox packages contain neither Python nor Hermes Agent. They may install only Navivox application files and declared platform dependencies; they do not download or mutate the managed runtime from package installation scripts.
+- Every package preserves the stable Hermes Wing application identity, data locations, URL handlers, secure-storage identity, and release channel across upgrades.
+- Hermes Wing packages contain neither Python nor Hermes Agent. They may install only Hermes Wing application files and declared platform dependencies; they do not download or mutate the managed runtime from package installation scripts.
 - Linux package maintainer scripts are minimal, deterministic, and offline. They do not invoke a network, shell a downloaded payload, change Hermes data, create privileged helpers, or add setuid files.
 - Supported architectures are declared per platform and must include every architecture supported by the final Hermes Desktop retirement cutoff unless an explicit migration disposition is approved.
 - Store and direct Android variants share the same application identity and signing lineage where platform rules permit safe upgrades. Direct and store channels never silently replace one another.
@@ -25,9 +25,9 @@ AppImage, Snap, portable EXE, generic tar archives, and other secondary formats 
 
 ## Updates and uninstall
 
-Canonical packages use ADR 0033's platform release authority and verified update path. A package upgrade preserves Navivox client preferences, secure endpoint identity, and the external Hermes runtime and home. Downgrade protection and rollback follow the signed release policy.
+Canonical packages use ADR 0033's platform release authority and verified update path. A package upgrade preserves Hermes Wing client preferences, secure endpoint identity, and the external Hermes runtime and home. Downgrade protection and rollback follow the signed release policy.
 
-Ordinary Navivox uninstall removes application binaries but does not delete Hermes Agent, `HERMES_HOME`, profiles, conversations, backups, or legacy wallet data. Revoking client credentials and removing client-local secrets is an explicit pre-uninstall action; deleting Hermes runtime or domain data requires a separately confirmed cleanup flow. Reinstall discovers the preserved runtime and offers the explicit client-state migration or fresh enrollment paths.
+Ordinary Hermes Wing uninstall removes application binaries but does not delete Hermes Agent, `HERMES_HOME`, profiles, conversations, backups, or legacy wallet data. Revoking client credentials and removing client-local secrets is an explicit pre-uninstall action; deleting Hermes runtime or domain data requires a separately confirmed cleanup flow. Reinstall discovers the preserved runtime and offers the explicit client-state migration or fresh enrollment paths.
 
 ## Evidence
 

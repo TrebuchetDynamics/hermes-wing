@@ -1,4 +1,4 @@
-import '../../protocol/voice/models/navivox_voice_run.dart';
+import '../../protocol/voice/models/wing_voice_run.dart';
 import '../models/hermes_capabilities.dart';
 import '../models/hermes_chat_turn.dart';
 import '../models/hermes_health.dart';
@@ -55,7 +55,7 @@ class HermesChannelState {
   /// profile selection and after every profile mutation or 412 conflict.
   final List<HermesProfile> profiles;
 
-  /// The client-selected profile. This is Navivox-local state only: selecting
+  /// The client-selected profile. This is Hermes Wing-local state only: selecting
   /// a profile never mutates the Hermes CLI's active profile.
   final String? selectedProfileId;
 
@@ -113,7 +113,7 @@ class HermesChannelState {
 
   /// Turns per session id, in arrival order.
   final Map<String, List<HermesChatTurn>> messages;
-  final Map<String, NavivoxVoiceRun> voiceRuns;
+  final Map<String, WingVoiceRun> voiceRuns;
   final String? activeVoiceRunId;
 
   bool get isConnected => status == HermesConnectionStatus.connected;
@@ -130,7 +130,7 @@ class HermesChannelState {
   List<HermesChatTurn> get activeMessages =>
       messages[activeSessionId] ?? const [];
 
-  NavivoxVoiceRun? get activeVoiceRun {
+  WingVoiceRun? get activeVoiceRun {
     final id = activeVoiceRunId;
     if (id == null) return null;
     final run = voiceRuns[id];
@@ -140,7 +140,7 @@ class HermesChannelState {
 
   /// The most recent voice run regardless of status, for history/recovery
   /// copy. Prefers the tracked [activeVoiceRunId], else the last-inserted run.
-  NavivoxVoiceRun? get latestVoiceRun {
+  WingVoiceRun? get latestVoiceRun {
     final id = activeVoiceRunId;
     if (id != null) {
       final run = voiceRuns[id];
@@ -173,7 +173,7 @@ class HermesChannelState {
     bool clearConnectedBaseUrl = false,
     bool? connectedWithApiKey,
     Map<String, List<HermesChatTurn>>? messages,
-    Map<String, NavivoxVoiceRun>? voiceRuns,
+    Map<String, WingVoiceRun>? voiceRuns,
     String? activeVoiceRunId,
     bool clearActiveVoiceRunId = false,
   }) {

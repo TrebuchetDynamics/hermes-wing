@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Navivox may keep already loaded read models and unsent drafts while a connection is unavailable, but it does not durably queue or automatically replay chat sends, approvals, administrative mutations, task actions, or lifecycle commands. Reconnection first refreshes authoritative profile-scoped state.
+Hermes Wing may keep already loaded read models and unsent drafts while a connection is unavailable, but it does not durably queue or automatically replay chat sends, approvals, administrative mutations, task actions, or lifecycle commands. Reconnection first refreshes authoritative profile-scoped state.
 
 ## Consequences
 

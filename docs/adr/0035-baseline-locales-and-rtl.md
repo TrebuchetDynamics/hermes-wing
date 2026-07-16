@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Navivox uses Flutter's generated localization support and preserves the frozen Hermes Desktop locale set before Electron retirement: `ar`, `en`, `es`, `he`, `id`, `ja`, `pl`, `pt-BR`, `pt-PT`, `tr`, `zh-CN`, and `zh-TW`. Android may ship English-first while parity work is incomplete, but every new user-facing Navivox string is externalized when introduced.
+Hermes Wing uses Flutter's generated localization support and preserves the frozen Hermes Desktop locale set before Electron retirement: `ar`, `en`, `es`, `he`, `id`, `ja`, `pl`, `pt-BR`, `pt-PT`, `tr`, `zh-CN`, and `zh-TW`. Android may ship English-first while parity work is incomplete, but every new user-facing Hermes Wing string is externalized when introduced.
 
 ## Locale behavior
 

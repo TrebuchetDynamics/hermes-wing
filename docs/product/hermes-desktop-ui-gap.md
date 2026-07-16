@@ -2,7 +2,7 @@
 
 Source reference: `https://github.com/fathah/hermes-desktop`, inspected from `/tmp/hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx`, `/tmp/hermes-desktop/src/renderer/src/screens/Chat/*`, and `/tmp/hermes-desktop/previews/*.png`.
 
-Current Navivox evidence:
+Current Hermes Wing evidence:
 
 - `playwright/screenshots/hermes-connected-desktop-scaffold.png`
 - `playwright/screenshots/hermes-connected-mobile-scaffold.png`
@@ -12,11 +12,11 @@ Current Navivox evidence:
 
 ## Design target
 
-Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and preserve Hermes One structure, hierarchy, status language, and product identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
+Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capability parity and preserve Hermes One structure, hierarchy, status language, and product identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
 
 ## What is now close after the first scaffold slice
 
-| Hermes Desktop aspect | Navivox current state | Status |
+| Hermes Desktop aspect | Hermes Wing current state | Status |
 | --- | --- | --- |
 | Chat-first main route | `/hermes` is primary and routes directly into Hermes sessions. | Close |
 | Persistent desktop session list | Desktop/tablet widths now show a 320px session rail next to the chat pane. | Close structurally |
@@ -31,7 +31,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** dark, high-contrast shell; strong Hermes One logo; selected nav rows on dark cards; muted borders; polished black/blue surfaces.
 
-**Navivox:** desktop/tablet now use Hermes Dark with near-black surfaces, blue selected states, dark cards/chips, and a stronger `HERMES ONE` treatment. Mobile keeps the simpler Telegram-like flow.
+**Hermes Wing:** desktop/tablet now use Hermes Dark with near-black surfaces, blue selected states, dark cards/chips, and a stronger `HERMES ONE` treatment. Mobile keeps the simpler Telegram-like flow.
 
 **Remaining gap:** fine-grain Desktop polish: tighter hover/pressed states, more deliberate dividers, and richer desktop density tuning. The major dark-shell mismatch is now closed.
 
@@ -39,7 +39,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** left shell has large `HERMES ONE` branding, pinned navigation, recent sessions, footer profile, collapse control.
 
-**Navivox:** desktop/tablet now have a branded `HERMES ONE` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
+**Hermes Wing:** desktop/tablet now have a branded `HERMES ONE` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
 
 **Remaining gap:** footer/profile/collapse affordances and the approved parity navigation. On phones, adapt Office, Kanban, and Discover to task-focused navigation rather than copying the desktop rail.
 
@@ -47,7 +47,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** one large rounded command bar contains multiline text, attachments, mic, model picker, reasoning/auto mode, fast/action chip, folder/context, web toggle, and send.
 
-**Navivox:** desktop/tablet now use a single rounded command bar with message field, voice toggle, model/voice/ready/retry/diagnostics chips, attachments, mic, and send. Mobile keeps the Telegram-like composer.
+**Hermes Wing:** desktop/tablet now use a single rounded command bar with message field, voice toggle, model/voice/ready/retry/diagnostics chips, attachments, mic, and send. Mobile keeps the Telegram-like composer.
 
 **Remaining gap:** folder/context, web/tool toggles, and richer model/reasoning controls should wait for stable Hermes Agent support.
 
@@ -55,7 +55,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** active runs appear as tabs at the top of the chat area (`ActiveSessionsBar`), supporting multi-run switching.
 
-**Navivox:** session rail shows active/forked/other sessions, and desktop/tablet now add a compact active-session bar above the chat pane with current session, status, model, and message count.
+**Hermes Wing:** session rail shows active/forked/other sessions, and desktop/tablet now add a compact active-session bar above the chat pane with current session, status, model, and message count.
 
 **Remaining gap:** true multi-run tab switching like Desktop's `ActiveSessionsBar` still depends on Hermes exposing multiple simultaneous mobile-safe active runs. Skip on mobile.
 
@@ -63,7 +63,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** reasoning and tool calls are folded into dedicated rows (`ReasoningRow`, `ToolActivityGroup`), sharing one assistant avatar per turn and avoiding raw event spam.
 
-**Navivox:** final chat bubbles remain Telegram-like, while tool calls, approvals, errors, and assistant turns now render as grouped/inline assistant-side timeline cards with desktop avatars.
+**Hermes Wing:** final chat bubbles remain Telegram-like, while tool calls, approvals, errors, and assistant turns now render as grouped/inline assistant-side timeline cards with desktop avatars.
 
 **Remaining gap:** optional `Thought`/reasoning rows when Hermes exposes stable reasoning events; otherwise avoid inventing fake reasoning UI.
 
@@ -71,7 +71,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** Settings and Gateway screens are card dashboards with connection, model/provider, health, diagnostics, and appearance controls.
 
-**Navivox:** settings now use a Hermes Agent dashboard with status, connection, appearance, diagnostics, and local voice cards. It is simpler than Desktop's full Gateway/Providers screens, which is intentional for mobile.
+**Hermes Wing:** settings now use a Hermes Agent dashboard with status, connection, appearance, diagnostics, and local voice cards. It is simpler than Desktop's full Gateway/Providers screens, which is intentional for mobile.
 
 **Copy later:** add richer provider/tool details through capability-gated Hermes Agent endpoints; keep local host administration desktop-only.
 
@@ -79,7 +79,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 **Desktop:** session history is first-class in the sidebar with richer recent-session affordances.
 
-**Navivox:** rail groups active/forked/other sessions, supports actions, and now includes desktop/tablet search/filter with visible result counts. Richer history polish, recency metadata, and keyboard-first switching can still improve later.
+**Hermes Wing:** rail groups active/forked/other sessions, supports actions, and now includes desktop/tablet search/filter with visible result counts. Richer history polish, recency metadata, and keyboard-first switching can still improve later.
 
 **Copy later:** add command-palette style session switching and richer recent-session metadata once the session list grows.
 
@@ -87,7 +87,7 @@ Navivox is the Flutter successor to Hermes Desktop. Pursue capability parity and
 
 Evidence:
 
-- `lib/theme/navivox_theme.dart` now defines `navivoxHermesDarkTheme` with near-black Hermes surfaces, blue accents, dark cards/chips, and rounded dark inputs.
+- `lib/theme/wing_theme.dart` now defines `wingHermesDarkTheme` with near-black Hermes surfaces, blue accents, dark cards/chips, and rounded dark inputs.
 - `lib/shared/widgets/app_shell.dart` applies Hermes Dark to desktop/tablet shell widths and adds a `HERMES ONE` branded rail header.
 - `playwright/screenshots/hermes-dark-desktop-scaffold.png` shows dark shell, dark session rail, dark chat pane, dark empty state chips, and dark composer.
 - `playwright/screenshots/hermes-dark-mobile-scaffold.png` shows mobile staying Telegram-like: single pane, bottom nav, bottom composer, and large touch targets.

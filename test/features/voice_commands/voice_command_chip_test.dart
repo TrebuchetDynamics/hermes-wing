@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/widgets/voice_command_chip.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/widgets/voice_command_chip.dart';
 
 void main() {
   const result = VoiceRouteResult(

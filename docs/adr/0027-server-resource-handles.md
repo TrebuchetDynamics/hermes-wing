@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Attachments and context folders cross the Navivox–Hermes boundary as opaque server-issued resource handles, never arbitrary client filesystem paths. Clients upload bounded content or, on a local desktop connected to the same host, ask a host adapter to register an operator-selected path with Hermes Agent.
+Attachments and context folders cross the Hermes Wing–Hermes boundary as opaque server-issued resource handles, never arbitrary client filesystem paths. Clients upload bounded content or, on a local desktop connected to the same host, ask a host adapter to register an operator-selected path with Hermes Agent.
 
 ## Consequences
 

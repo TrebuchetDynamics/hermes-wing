@@ -13,10 +13,10 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_router.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_validator.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_router.dart';
+import 'package:wing/features/voice_commands/services/voice_command_validator.dart';
 
 /// Fixed-response fake: hands back whatever raw engine JSON the case
 /// recorded, regardless of what the router asks for.

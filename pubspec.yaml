@@ -1,5 +1,5 @@
-name: navivox
-description: Experimental Flutter client for Hermes Agent with optional speech input.
+name: wing
+description: An independent cross-platform Flutter client for Hermes Agent sessions, streamed runs, approvals, profiles, and device speech.
 publish_to: "none"
 version: 0.1.0+1
 
@@ -43,4 +43,4 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    - navivox-app-icon.png
+    - hermes-wing-icon.png

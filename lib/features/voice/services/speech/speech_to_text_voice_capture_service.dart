@@ -324,5 +324,5 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
 }
 
 void _defaultDiagnosticLog(String message) {
-  developer.log(message, name: 'navivox.voice.speech_to_text');
+  developer.log(message, name: 'wing.voice.speech_to_text');
 }

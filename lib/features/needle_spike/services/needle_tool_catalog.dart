@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-/// Mock Navivox actions exposed to Needle, in the Cactus/OpenAI tools JSON
+/// Mock Hermes Wing actions exposed to Needle, in the Cactus/OpenAI tools JSON
 /// shape. Handlers are intentionally absent: the spike only inspects which
 /// call the model emits; nothing here touches real app state.
 abstract final class NeedleToolCatalog {

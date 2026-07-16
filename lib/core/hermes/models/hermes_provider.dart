@@ -1,9 +1,9 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 /// A provider row as advertised by `GET /api/providers`, plus write-only
 /// credential presence.
 ///
-/// Navivox is a key-setter, never a key-reader: [keyHint] is the single
+/// Hermes Wing is a key-setter, never a key-reader: [keyHint] is the single
 /// sanctioned derived disclosure (a masked last-4-only hint such as
 /// `····ab12`) and is `null` when no credential is set. No field on this
 /// model ever holds a full secret — the value written by
@@ -24,12 +24,12 @@ class HermesProvider {
   /// provider without a stable slug cannot be addressed or scoped.
   factory HermesProvider.fromJson(Map<String, Object?> json) {
     return HermesProvider(
-      slug: navivoxStringFromJson(json['slug'], fallback: ''),
-      label: navivoxStringFromJson(json['label'], fallback: ''),
-      authType: navivoxStringFromJson(json['auth_type'], fallback: ''),
-      envVars: navivoxStringListFromJson(json['env_vars']),
-      configured: navivoxBoolFromJson(json['configured']),
-      keyHint: navivoxOptionalStringFromJson(json['key_hint']),
+      slug: wingStringFromJson(json['slug'], fallback: ''),
+      label: wingStringFromJson(json['label'], fallback: ''),
+      authType: wingStringFromJson(json['auth_type'], fallback: ''),
+      envVars: wingStringListFromJson(json['env_vars']),
+      configured: wingBoolFromJson(json['configured']),
+      keyHint: wingOptionalStringFromJson(json['key_hint']),
     );
   }
 
@@ -51,8 +51,8 @@ class HermesCredentialProbe {
 
   factory HermesCredentialProbe.fromJson(Map<String, Object?> json) {
     return HermesCredentialProbe(
-      ok: navivoxBoolFromJson(json['ok']),
-      detail: navivoxStringFromJson(json['detail'], fallback: ''),
+      ok: wingBoolFromJson(json['ok']),
+      detail: wingStringFromJson(json['detail'], fallback: ''),
     );
   }
 

@@ -1,27 +1,37 @@
+# Hermes Wing
+
+**The cross-platform Flutter client for Hermes Agent.**
+
+Hermes Wing connects phones, browsers, and desktop systems to a trusted
+Hermes Agent endpoint. It provides streamed conversations, inline approvals,
+agent and model configuration, and optional device speech from one adaptive
+Flutter interface.
+
+> [!IMPORTANT]
+> Hermes Wing is independent, source-distributed alpha software.
+> There are no signed public binaries or store releases yet.
+
+Inspired by Hermes Desktop and adapted for mobile, web, and desktop.
+
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Navivox — the cross-platform Flutter client for trusted Hermes Agent sessions, streamed runs, approvals, and device speech">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Hermes Wing — the cross-platform Flutter client for trusted Hermes Agent sessions, streamed runs, approvals, and device speech">
 </p>
 
 <p align="center">
-  <a href="https://github.com/TrebuchetDynamics/navivox-app/actions/workflows/hermes-platform-smoke.yml"><img alt="Hermes platform smoke" src="https://github.com/TrebuchetDynamics/navivox-app/actions/workflows/hermes-platform-smoke.yml/badge.svg"></a>
+  <a href="https://github.com/TrebuchetDynamics/hermes-wing/actions/workflows/hermes-platform-smoke.yml"><img alt="Hermes platform smoke" src="https://github.com/TrebuchetDynamics/hermes-wing/actions/workflows/hermes-platform-smoke.yml/badge.svg"></a>
   <a href="#project-status"><img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-f59e0b"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3b82f6"></a>
 </p>
 
 <p align="center">
-  <strong>The canonical cross-platform Flutter client for <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a>.</strong><br>
-  <sub>Successor to Hermes Desktop · source-distributed alpha</sub>
+  <img src="./assets/readme/showcase.png" width="100%" alt="Hermes Wing on desktop and mobile">
 </p>
 
-<p align="center">
-  <img src="./assets/readme/showcase.png" width="100%" alt="Current Navivox desktop and mobile Hermes session interfaces">
-</p>
+<p align="center"><sub>Interfaces captured against Hermes Wing's deterministic browser fixture; no private endpoint, credential, or transcript data is shown.</sub></p>
 
-<p align="center"><sub>Current interfaces captured against Navivox's deterministic browser fixture; no private endpoint, credential, or transcript data is shown.</sub></p>
+## What Hermes Wing does
 
-## What Navivox does
-
-Navivox connects to a trusted Hermes Agent API endpoint and adapts the same
+Hermes Wing connects to a trusted Hermes Agent API endpoint and adapts the same
 session model to phone, web, and desktop layouts.
 
 - **Sessions and runs** — create and manage sessions, stream assistant and tool
@@ -41,26 +51,22 @@ session model to phone, web, and desktop layouts.
 <p align="center">
   <picture>
     <source media="(max-width: 600px)" srcset="./assets/readme/runtime-flow-mobile.svg">
-    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Navivox runtime flow from device input through operator review to Hermes sessions, streamed runs, and approvals">
+    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Hermes Wing runtime flow from device input through operator review to Hermes sessions, streamed runs, and approvals">
   </picture>
 </p>
 
-Navivox discovers `/v1/capabilities` before enabling endpoint features. Hermes
+Hermes Wing discovers `/v1/capabilities` before enabling endpoint features. Hermes
 Agent remains authoritative for profiles, sessions, tools, runs, approvals,
-and configuration; Navivox does not parse Hermes files or mirror its backend.
+and configuration; Hermes Wing does not parse Hermes files or mirror its backend.
 HTTP handles commands and resources while SSE carries typed run events.
 
 ## Start from source
 
-> [!IMPORTANT]
-> Navivox is alpha software. There are no signed public binaries or store
-> releases yet.
-
 Prerequisites: **Flutter 3.44.2** and the platform SDK for your target.
 
 ```bash
-git clone https://github.com/TrebuchetDynamics/navivox-app.git
-cd navivox-app
+git clone https://github.com/TrebuchetDynamics/hermes-wing.git
+cd hermes-wing
 flutter pub get
 flutter run -d <device-id>
 ```
@@ -73,7 +79,7 @@ Then connect to a trusted Hermes endpoint:
 | Android emulator → host | `http://10.0.2.2:8642` |
 | Physical device or remote desktop | HTTPS, VPN, Tailscale, or isolated LAN URL |
 
-Navivox asks for explicit confirmation before sending a bearer credential to a
+Hermes Wing asks for explicit confirmation before sending a bearer credential to a
 non-loopback plaintext HTTP endpoint. See the
 [Android setup guide](docs/runbooks/android-hermes-setup.md) and the
 [Hermes compatibility contract](docs/product/hermes-compatibility.md).
@@ -114,7 +120,7 @@ or encrypted private network.
 
 ## Compatibility and known limits
 
-Navivox negotiates compatibility rather than claiming a fixed Hermes release
+Hermes Wing negotiates compatibility rather than claiming a fixed Hermes release
 range. A compatible server must provide `/health`, `/v1/capabilities`, and the
 advertised session or run endpoints used by the client.
 
@@ -125,7 +131,7 @@ Current limits:
 - Hermes server audio and realtime audio are not wired; voice submits text.
 - Remote transcript media and client-path attachments remain deferred.
 - Optional Hermes inventory can fail independently of an otherwise healthy
-  connection; Navivox reports those failures separately from empty results.
+  connection; Hermes Wing reports those failures separately from empty results.
 
 ## Development
 
@@ -155,4 +161,4 @@ package with operator-selected Kitten or Kokoro voice packs.
 
 ## License
 
-Navivox is available under the [MIT License](LICENSE).
+Hermes Wing is available under the MIT License.

@@ -5,7 +5,7 @@ Date: 2026-07-07
 
 ## Context
 
-Navivox voice is local to the client install. The app depends on `speech_to_text` for speech-to-text, `flutter_tts` for platform text-to-speech, and the pinned `pocket_speech` package for optional offline model inference. Hermes receives submitted text transcripts; it does not need client-recorded audio for the active workflow.
+Hermes Wing voice is local to the client install. The app depends on `speech_to_text` for speech-to-text, `flutter_tts` for platform text-to-speech, and the pinned `pocket_speech` package for optional offline model inference. Hermes receives submitted text transcripts; it does not need client-recorded audio for the active workflow.
 
 ## Decision
 

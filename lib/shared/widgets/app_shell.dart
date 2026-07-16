@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../theme/navivox_theme.dart';
+import '../../theme/wing_theme.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
@@ -175,7 +175,7 @@ class _DesktopShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: navivoxHermesDarkTheme,
+      data: wingHermesDarkTheme,
       child: Builder(
         builder: (context) {
           final theme = Theme.of(context);
@@ -264,7 +264,7 @@ class _HermesDesktopBrand extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Navivox',
+                    'Hermes Wing',
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,

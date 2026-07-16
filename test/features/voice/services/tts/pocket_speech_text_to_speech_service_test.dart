@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 import 'package:pocket_speech/src/kokoro_engine/src/tokenizer.dart';
 
 void main() {

@@ -409,7 +409,7 @@ class _HermesEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start a session with text or local voice. Navivox keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.',
+              'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

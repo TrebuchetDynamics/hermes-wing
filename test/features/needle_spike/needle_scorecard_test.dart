@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/models/needle_scorecard.dart';
+import 'package:wing/features/needle_spike/models/needle_scorecard.dart';
 
 void main() {
   test('records verdict counts and totals', () {

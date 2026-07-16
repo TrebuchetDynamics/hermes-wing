@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Navivox';
+  String get appTitle => 'Hermes Wing';
 
   @override
   String get hermesDestination => 'Hermes';
@@ -298,7 +298,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get credentialWriteOnlyNotice =>
-      'Navivox can set this credential but never shows a stored key.';
+      'Hermes Wing can set this credential but never shows a stored key.';
 
   @override
   String get credentialEnvVarLabel => 'Environment variable';

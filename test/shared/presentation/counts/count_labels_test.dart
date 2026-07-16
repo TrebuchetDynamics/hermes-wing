@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/shared/presentation/count_labels.dart';
+import 'package:wing/shared/presentation/count_labels.dart';
 
 void main() {
   test('formats singular, regular plural, and custom plural count labels', () {

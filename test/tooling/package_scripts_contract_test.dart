@@ -75,7 +75,7 @@ void main() {
       expect(helperText, contains('not whole-goal completion evidence'));
       expect(
         helperText,
-        contains('NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+        contains('WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
       );
     }
     expect(androidVoiceSmoke, contains('Manual continuous-voice closeout'));
@@ -97,29 +97,23 @@ void main() {
     );
     expect(
       androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_PHYSICAL_DEVICE_OBSERVED=true'),
+      contains('WING_ANDROID_PHYSICAL_DEVICE_OBSERVED=true'),
     );
     expect(
       androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_PHYSICAL_MIC_OBSERVED=true'),
+      contains('WING_ANDROID_PHYSICAL_MIC_OBSERVED=true'),
     );
     expect(androidLiveMicReceipt, contains('physical_device_observed'));
     expect(androidLiveMicReceipt, contains('physical_mic_observed'));
+    expect(androidLiveMicReceipt, contains('WING_ANDROID_TTS_OBSERVED=true'));
+    expect(androidLiveMicReceipt, contains('WING_ANDROID_REARM_OBSERVED=true'));
     expect(
       androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_TTS_OBSERVED=true'),
+      contains('WING_ANDROID_NO_SECRET_LEAKS=true'),
     );
     expect(
       androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_REARM_OBSERVED=true'),
-    );
-    expect(
-      androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_NO_SECRET_LEAKS=true'),
-    );
-    expect(
-      androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_SYNTHETIC_AUDIO_USED=false'),
+      contains('WING_ANDROID_SYNTHETIC_AUDIO_USED=false'),
     );
     expect(androidLiveMicReceipt, contains('synthetic_audio_used'));
     expect(androidLiveMicReceipt, contains('android_target_type'));
@@ -139,19 +133,17 @@ void main() {
     );
     expect(
       androidLiveMicReceipt,
-      contains('NAVIVOX_ANDROID_SECOND_SPOKEN_PHRASE must be a different'),
+      contains('WING_ANDROID_SECOND_SPOKEN_PHRASE must be a different'),
     );
     expect(
       androidLiveMicReceipt,
       contains(
-        'NAVIVOX_ANDROID_PROVIDER_REPLY must be an observed assistant reply excerpt',
+        'WING_ANDROID_PROVIDER_REPLY must be an observed assistant reply excerpt',
       ),
     );
     expect(
       androidLiveMicReceipt,
-      contains(
-        'NAVIVOX_ANDROID_HERMES_URL must be a valid http(s) Hermes origin',
-      ),
+      contains('WING_ANDROID_HERMES_URL must be a valid http(s) Hermes origin'),
     );
     expect(androidLiveMicReceipt, contains('distinct_rearmed_turn_observed'));
     expect(androidLiveMicReceipt, contains('hermes_url_sanitized'));
@@ -186,31 +178,31 @@ void main() {
     expect(androidLiveMicReceipt, contains('eyJ[a-z0-9_-]'));
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED=true'),
+      contains('WING_HERMES_SERVER_AUDIO_TRANSPORT_OBSERVED=true'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED=true'),
+      contains('WING_HERMES_SERVER_AUDIO_PROVIDER_REPLY_OBSERVED=true'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED=true'),
+      contains('WING_HERMES_SERVER_AUDIO_PLAYBACK_OBSERVED=true'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED=true'),
+      contains('WING_HERMES_SERVER_AUDIO_ROUND_TRIP_OBSERVED=true'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS=true'),
+      contains('WING_HERMES_SERVER_AUDIO_NO_SECRET_LEAKS=true'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_DEVICE_STT_USED=false'),
+      contains('WING_HERMES_SERVER_AUDIO_DEVICE_STT_USED=false'),
     );
     expect(
       serverAudioReceipt,
-      contains('NAVIVOX_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY=false'),
+      contains('WING_HERMES_SERVER_AUDIO_LOCAL_TTS_ONLY=false'),
     );
     expect(serverAudioReceipt, contains('device_stt_used'));
     expect(serverAudioReceipt, contains('local_tts_only'));
@@ -249,7 +241,7 @@ void main() {
     expect(liveSmoke, contains('not whole-goal completion evidence'));
     expect(
       liveSmoke,
-      contains('NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+      contains('WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
     );
 
     final providerSmoke = File(
@@ -280,7 +272,7 @@ void main() {
     expect(providerSmoke, contains('not whole-goal completion evidence'));
     expect(
       providerSmoke,
-      contains('NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+      contains('WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
     );
   });
 }

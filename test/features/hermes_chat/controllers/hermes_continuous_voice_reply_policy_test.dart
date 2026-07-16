@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/models/hermes_chat_turn.dart';
-import 'package:navivox/features/hermes_chat/controllers/hermes_continuous_voice_reply_policy.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/features/hermes_chat/controllers/hermes_continuous_voice_reply_policy.dart';
 
 HermesChatTurn _assistant(
   String id,

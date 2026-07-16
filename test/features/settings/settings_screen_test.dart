@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel_state.dart';
-import 'package:navivox/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/settings/screens/settings_screen.dart';
+import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/settings/screens/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
@@ -85,7 +85,7 @@ void main() {
     await tester.tap(copy);
     await tester.pump();
 
-    expect(copiedText, contains('Navivox Hermes diagnostics'));
+    expect(copiedText, contains('Hermes Wing diagnostics'));
     expect(copiedText, contains('Models: hermes-3'));
     expect(copiedText, contains('Secrets: excluded'));
     expect(find.text('Hermes diagnostics copied'), findsOneWidget);

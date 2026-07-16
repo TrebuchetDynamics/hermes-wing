@@ -2,7 +2,7 @@
 import process from 'process';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8642';
-const DEFAULT_MESSAGE = 'Navivox live smoke: reply with a short acknowledgement.';
+const DEFAULT_MESSAGE = 'Hermes Wing live smoke: reply with a short acknowledgement.';
 
 function usage() {
   console.log(`Hermes Agent live smoke
@@ -183,7 +183,7 @@ async function run(options) {
   const sessionId = `navi-smoke-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const created = await requestJson(options, 'POST', '/api/sessions', {
     id: sessionId,
-    title: 'Navivox live smoke',
+    title: 'Hermes Wing live smoke',
   });
   const effectiveSessionId = created?.session?.id || sessionId;
   summary.sessionCreated = true;

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/hermes_chat/controllers/hermes_voice_input_controller.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/shared/voice/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/hermes_chat/controllers/hermes_voice_input_controller.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_capture_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 import '../support/fake_hermes_channel.dart';
 
@@ -25,7 +25,7 @@ void main() {
           confidence: 0.9,
         ),
         textToSpeechService: () => null,
-        settings: () => const NavivoxVoiceSettings(),
+        settings: () => const WingVoiceSettings(),
         onDraft: drafts.add,
       );
       addTearDown(controller.dispose);
@@ -50,7 +50,7 @@ void main() {
         channel: () => channel,
         captureService: () => capture,
         textToSpeechService: () => null,
-        settings: () => const NavivoxVoiceSettings(),
+        settings: () => const WingVoiceSettings(),
         onDraft: drafts.add,
       );
       addTearDown(controller.dispose);
@@ -77,7 +77,7 @@ void main() {
       channel: () => channel,
       captureService: () => capture,
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
     );
     addTearDown(controller.dispose);
@@ -98,7 +98,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
     );
     addTearDown(controller.dispose);
@@ -117,7 +117,7 @@ void main() {
       channel: () => channel,
       captureService: () => capture,
       textToSpeechService: () => tts,
-      settings: () => const NavivoxVoiceSettings(
+      settings: () => const WingVoiceSettings(
         continuousVoiceEnabled: true,
         speakRepliesEnabled: true,
       ),
@@ -140,7 +140,7 @@ void main() {
       channel: () => channel,
       captureService: () => const _FailingVoiceCaptureService(),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
     );
     addTearDown(controller.dispose);
@@ -168,7 +168,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: drafts.add,
       routeTranscript: (t) async => VoiceRouteResult(
         command: VoiceCommandId.navigateToScreen,
@@ -203,7 +203,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
       routeTranscript: (t) async => VoiceRouteResult(
         command: VoiceCommandId.navigateToScreen,
@@ -235,7 +235,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: drafts.add,
       routeTranscript: (_) async => throw StateError('router exploded'),
       onRoutedCommand: (result, {required autoSend}) => routed.add(result),
@@ -268,7 +268,7 @@ void main() {
         );
       },
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: drafts.add,
       routeTranscript: (_) => gate.future,
       onRoutedCommand: (result, {required autoSend}) => routed.add(result),
@@ -310,7 +310,7 @@ void main() {
           confidence: 0.9,
         ),
         textToSpeechService: () => null,
-        settings: () => const NavivoxVoiceSettings(),
+        settings: () => const WingVoiceSettings(),
         onDraft: (_) {},
         routeTranscript: (_) => gate.future,
         onRoutedCommand: (result, {required autoSend}) => routed.add(result),
@@ -354,7 +354,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: drafts.add,
       routeTranscript: (_) async => null,
       onRoutedCommand: (result, {required autoSend}) => routed.add(result),
@@ -379,7 +379,7 @@ void main() {
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const NavivoxVoiceSettings(),
+      settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
       routeTranscript: (_) async => fail('router must not run'),
       onRoutedCommand: (result, {required autoSend}) =>

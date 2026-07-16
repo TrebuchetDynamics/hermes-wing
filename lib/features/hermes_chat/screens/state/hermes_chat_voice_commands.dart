@@ -134,9 +134,7 @@ extension _HermesChatScreenVoiceCommands on _HermesChatScreenState {
         }
         return;
       }
-      ref
-          .read(navivoxVoiceSettingsProvider.notifier)
-          .setSpeakRepliesEnabled(true);
+      ref.read(wingVoiceSettingsProvider.notifier).setSpeakRepliesEnabled(true);
       unawaited(_voiceInputController.enableContinuous());
       return;
     }

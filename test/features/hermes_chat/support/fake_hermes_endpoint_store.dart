@@ -1,4 +1,4 @@
-import 'package:navivox/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 
 class FakeHermesEndpointStore implements HermesEndpointStore {
   FakeHermesEndpointStore({

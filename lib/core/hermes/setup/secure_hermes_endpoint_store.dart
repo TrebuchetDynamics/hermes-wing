@@ -8,17 +8,16 @@ import 'hermes_endpoint_store.dart';
 /// [HermesEndpointStore] backed by shared preferences (non-secret profile
 /// metadata/base URLs) and the platform secure-storage implementation
 /// (per-profile API keys). Hardware backing and protection vary by platform.
-/// Navivox never stores Hermes API keys in shared preferences.
+/// Hermes Wing never stores Hermes API keys in shared preferences.
 class SecureHermesEndpointStore implements HermesEndpointStore {
   SecureHermesEndpointStore({FlutterSecureStorage? secureStorage})
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
-  static const _legacyBaseUrlPreferenceKey = 'navivox.hermes.base_url';
-  static const _legacyApiKeySecureStorageKey = 'navivox.hermes.api_key';
-  static const _profilesPreferenceKey = 'navivox.hermes.profiles';
-  static const _selectedProfilePreferenceKey =
-      'navivox.hermes.selected_profile';
-  static const _apiKeySecureStoragePrefix = 'navivox.hermes.profile_api_key.';
+  static const _legacyBaseUrlPreferenceKey = 'wing.hermes.base_url';
+  static const _legacyApiKeySecureStorageKey = 'wing.hermes.api_key';
+  static const _profilesPreferenceKey = 'wing.hermes.profiles';
+  static const _selectedProfilePreferenceKey = 'wing.hermes.selected_profile';
+  static const _apiKeySecureStoragePrefix = 'wing.hermes.profile_api_key.';
 
   final FlutterSecureStorage _secureStorage;
 

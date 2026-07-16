@@ -1,4 +1,4 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesHealthStatus {
   const HermesHealthStatus({
@@ -11,14 +11,11 @@ class HermesHealthStatus {
 
   factory HermesHealthStatus.fromJson(Map<String, Object?> json) {
     return HermesHealthStatus(
-      status: navivoxStringFromJson(json['status'], fallback: 'unknown'),
-      platform: navivoxStringFromJson(
-        json['platform'],
-        fallback: 'hermes-agent',
-      ),
-      version: navivoxOptionalStringFromJson(json['version']),
-      gatewayState: navivoxOptionalStringFromJson(json['gateway_state']),
-      activeAgents: navivoxIntFromJson(json['active_agents']),
+      status: wingStringFromJson(json['status'], fallback: 'unknown'),
+      platform: wingStringFromJson(json['platform'], fallback: 'hermes-agent'),
+      version: wingOptionalStringFromJson(json['version']),
+      gatewayState: wingOptionalStringFromJson(json['gateway_state']),
+      activeAgents: wingIntFromJson(json['active_agents']),
     );
   }
 

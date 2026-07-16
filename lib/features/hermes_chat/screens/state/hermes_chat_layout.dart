@@ -52,7 +52,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Navivox connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.',
+                            'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                               height: 1.45,
@@ -737,7 +737,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildContinuousVoiceSwitch(bool canSendTurns) {
-    final settings = ref.watch(navivoxVoiceSettingsProvider);
+    final settings = ref.watch(wingVoiceSettingsProvider);
     final voiceEnabled = settings.continuousVoiceEnabled;
     final label = _voiceInputController.capturing
         ? 'Listening'
@@ -756,7 +756,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             onChanged: canSendTurns && voiceEnabled
                 ? (value) {
                     ref
-                        .read(navivoxVoiceSettingsProvider.notifier)
+                        .read(wingVoiceSettingsProvider.notifier)
                         .setSpeakRepliesEnabled(value);
                     if (value) {
                       unawaited(_voiceInputController.enableContinuous());
@@ -773,7 +773,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
   List<Widget> _composerIconButtons(HermesChannel channel, bool canSendTurns) {
     final voiceEnabled = ref.watch(
-      navivoxVoiceSettingsProvider.select(
+      wingVoiceSettingsProvider.select(
         (settings) => settings.continuousVoiceEnabled,
       ),
     );

@@ -1,6 +1,6 @@
 # Contributing
 
-Navivox is a Hermes-only Flutter alpha. Keep product language and routes within
+Hermes Wing is a Hermes-only Flutter alpha. Keep product language and routes within
 the Hermes session/run model described in `CONTEXT.md` and `docs/adr/`.
 
 ## Setup

@@ -20,11 +20,11 @@
 
 **Files:**
 - Modify: `lib/features/voice/services/tts/pocket_speech_text_to_speech_service.dart`
-- Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart` (pocket construction call ~line 50: pass `settings: () => ref.read(navivoxVoiceSettingsProvider)`)
+- Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart` (pocket construction call ~line 50: pass `settings: () => ref.read(wingVoiceSettingsProvider)`)
 - Test: `test/features/voice/pocket_speech_voice_binding_test.dart` (new)
 
 **Interfaces:**
-- Consumes: `TtsSettingsReader` typedef (exported from `lib/features/voice/services/tts/text_to_speech_service.dart`); `NavivoxVoiceSettings.speechRate/ttsVoiceName`; pocket_speech package APIs — READ the package sources in `~/.pub-cache/git/pocket-speech-dart-*/lib/src/{kitten_tts,kokoro_tts}.dart` for the EXACT `synthesizeWav` named params of both classes before writing code.
+- Consumes: `TtsSettingsReader` typedef (exported from `lib/features/voice/services/tts/text_to_speech_service.dart`); `WingVoiceSettings.speechRate/ttsVoiceName`; pocket_speech package APIs — READ the package sources in `~/.pub-cache/git/pocket-speech-dart-*/lib/src/{kitten_tts,kokoro_tts}.dart` for the EXACT `synthesizeWav` named params of both classes before writing code.
 - Produces: `PocketSpeechEngine.synthesizeWav(String text, {String? voice, double speed = 1.0})`; `PackagePocketSpeechEngine` threads both to the package — Kitten: resolve via `KittenCatalog.supportsVoice`/`resolveVoice`, unsupported ⇒ omit (engine default); Kokoro: pass `voice` when non-null else package default, `speed` always. `PocketSpeechTextToSpeechService({required engine, required audioSink, TtsSettingsReader? settings})` applies per `speak`: `speed = settings.speechRate` (already clamped 0.25–3.0 upstream; clamp again harmlessly), `voice = settings.ttsVoiceName`. `createPocketSpeechTextToSpeechService` gains and threads the same optional param.
 
 - [ ] **Step 1: Failing test** — fake `PocketSpeechEngine` recording `(text, voice, speed)` per call; cases: (a) no settings reader ⇒ `voice == null && speed == 1.0` (back-compat); (b) reader with `speechRate: 2.0, ttsVoiceName: 'Bella'` ⇒ recorded `('hi', 'Bella', 2.0)`; (c) reader present with defaults ⇒ `(null, 1.0)` (augment-only). Write complete test code against the new signature; run: FAIL (params don't exist).
@@ -41,7 +41,7 @@
 - Test: extend `test/features/voice_commands/voice_command_providers_test.dart`
 
 **Interfaces:**
-- Consumes: `navivoxVoiceSettingsProvider` (`pocketSpeechTtsEnabled`, `pocketSpeechModel`, `pocketSpeechVoicePack.voicesPath`); `KittenCatalog.voices` (import `package:pocket_speech/pocket_speech.dart`; verify the symbol is exported — if not, import the concrete src path is FORBIDDEN; instead hardcode the 8 names with a comment pinning them to the package version and a test asserting `KittenCatalog`-equality if reachable).
+- Consumes: `wingVoiceSettingsProvider` (`pocketSpeechTtsEnabled`, `pocketSpeechModel`, `pocketSpeechVoicePack.voicesPath`); `KittenCatalog.voices` (import `package:pocket_speech/pocket_speech.dart`; verify the symbol is exported — if not, import the concrete src path is FORBIDDEN; instead hardcode the 8 names with a comment pinning them to the package version and a test asserting `KittenCatalog`-equality if reachable).
 - Produces: `ttsVoiceNamesProvider` returns, in priority order: pocket enabled + kitten ⇒ Kitten catalog names; pocket enabled + kokoro ⇒ keys parsed from the pack's `voices.json` (read file, `jsonDecode`, top-level keys; missing/unreadable ⇒ `[]`, non-caching retry per the existing empty-retry rule); pocket disabled ⇒ current flutter_tts path unchanged. Provider watches the relevant settings selects so switching TTS backend invalidates the list.
 
 - [ ] **Step 1: Failing tests** — (a) pocket+kitten settings override ⇒ names contain 'Bella'; (b) pocket+kokoro with a temp voices.json `{"af_heart": {}, "af_bella": {}}` ⇒ `['af_heart','af_bella']`; (c) pocket disabled ⇒ falls back to flutter_tts source (existing behavior test still green). Run: FAIL.

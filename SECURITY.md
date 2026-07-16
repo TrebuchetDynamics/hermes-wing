@@ -1,6 +1,6 @@
 # Security policy
 
-Navivox is alpha software and has not received an independent security audit.
+Hermes Wing is alpha software and has not received an independent security audit.
 
 ## Reporting a vulnerability
 

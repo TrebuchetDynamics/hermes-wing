@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/tts/pocket_speech_asset_download_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/voice/services/tts/pocket_speech_asset_download_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 void main() {
   test('release defaults configure both downloadable models', () {

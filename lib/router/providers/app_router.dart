@@ -45,7 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Reached only via an Android connect intent
-      // (navivox://connect?...); deliberately outside the ShellRoute since
+      // (wing://connect?...); deliberately outside the ShellRoute since
       // no Hermes endpoint is configured yet at that point.
       GoRoute(
         path: AppRoutes.enroll,
@@ -67,7 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => _SelectableRoute(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Navivox')),
+        appBar: AppBar(title: const Text('Hermes Wing')),
         body: Center(child: Text('Route not found: ${state.uri.path}')),
       ),
     ),

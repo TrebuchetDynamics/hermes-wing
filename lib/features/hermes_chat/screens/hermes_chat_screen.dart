@@ -46,16 +46,16 @@ final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>(
 );
 
 final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
-  final settings = ref.watch(navivoxVoiceSettingsProvider);
+  final settings = ref.watch(wingVoiceSettingsProvider);
   final service =
       settings.pocketSpeechTtsEnabled && settings.pocketSpeechVoicePackReady
       ? createPocketSpeechTextToSpeechService(
           enabled: true,
           voicePack: settings.pocketSpeechVoicePack!,
-          settings: () => ref.read(navivoxVoiceSettingsProvider),
+          settings: () => ref.read(wingVoiceSettingsProvider),
         )
       : createDefaultTextToSpeechService(
-          settings: () => ref.read(navivoxVoiceSettingsProvider),
+          settings: () => ref.read(wingVoiceSettingsProvider),
         );
   if (service != null) {
     ref.onDispose(() => unawaited(service.dispose()));
@@ -68,9 +68,7 @@ const _hermesBaseUrlHint =
     'Android emulator: http://10.0.2.2:8642\n'
     'Physical device: LAN/VPN/Tailscale URL';
 const _maxQueuedFollowUps = 5;
-const _configuredHermesBaseUrl = String.fromEnvironment(
-  'NAVIVOX_HERMES_BASE_URL',
-);
+const _configuredHermesBaseUrl = String.fromEnvironment('WING_HERMES_BASE_URL');
 
 bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 String get _defaultHermesBaseUrl => _configuredHermesBaseUrl;
@@ -84,7 +82,7 @@ bool _isValidHermesBaseUrl(String value) {
 
 /// Native Hermes Agent chat/session screen: manual connect, session list,
 /// streamed transcript, text composer, and continuous voice. See
-/// docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md.
+/// docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
 class HermesChatScreen extends ConsumerStatefulWidget {
   const HermesChatScreen({
     this.voiceCaptureServiceOverride,
@@ -143,7 +141,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       textToSpeechService: () =>
           widget.textToSpeechServiceOverride ??
           ref.read(hermesTextToSpeechServiceProvider),
-      settings: () => ref.read(navivoxVoiceSettingsProvider),
+      settings: () => ref.read(wingVoiceSettingsProvider),
       onDraft: _appendVoiceDraft,
       routeTranscript: _routeTranscript,
       onRoutedCommand: _onRoutedCommand,
@@ -197,7 +195,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       unawaited(_reconnectAfterResumeIfRecoverable());
     } else {
       _voiceInputController.pause(
-        'Continuous voice paused while Navivox is not in the foreground.',
+        'Continuous voice paused while Hermes Wing is not in the foreground.',
       );
     }
   }

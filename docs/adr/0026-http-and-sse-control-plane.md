@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-The Hermes control plane uses ordinary HTTP requests for commands and queries and profile-scoped Server-Sent Events for asynchronous updates. Dashboard WebSocket behavior is not a Navivox parity transport; WebSocket remains reserved for a future capability that is genuinely bidirectional, such as realtime media.
+The Hermes control plane uses ordinary HTTP requests for commands and queries and profile-scoped Server-Sent Events for asynchronous updates. Dashboard WebSocket behavior is not a Hermes Wing parity transport; WebSocket remains reserved for a future capability that is genuinely bidirectional, such as realtime media.
 
 ## Consequences
 

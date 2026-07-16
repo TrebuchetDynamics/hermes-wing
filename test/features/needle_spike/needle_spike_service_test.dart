@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/services/needle_spike_service.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/needle_spike/services/needle_spike_service.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
 
 class _FakeEngine implements NeedleEngineApi {
   _FakeEngine(this.rawResponse);

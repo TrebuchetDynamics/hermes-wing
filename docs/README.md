@@ -1,6 +1,6 @@
-# Navivox Docs
+# Hermes Wing Docs
 
-Navivox is the canonical cross-platform Flutter client for Hermes Agent and the successor to Hermes Desktop. Documentation remains Hermes-only while the capability-parity topology is planned.
+Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. Documentation remains Hermes-only while the capability-parity topology is planned.
 
 - [Architecture decision records](adr/README.md)
 - [Product requirements](product/prd.md)

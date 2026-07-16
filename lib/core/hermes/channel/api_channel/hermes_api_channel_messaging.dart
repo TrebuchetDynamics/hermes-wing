@@ -337,7 +337,7 @@ extension _MessagingExtension on HermesApiChannel {
 
   String? _rawStreamText(Object? value) {
     if (value is String) return value.isEmpty ? null : value;
-    return navivoxOptionalStringFromJson(value);
+    return wingOptionalStringFromJson(value);
   }
 
   bool _isDeltaEvent(String name) {
@@ -420,19 +420,19 @@ extension _MessagingExtension on HermesApiChannel {
 
   String? _streamErrorDetail(Map<String, Object?> payload) {
     final topLevel =
-        navivoxOptionalStringFromJson(payload['message']) ??
-        navivoxOptionalStringFromJson(payload['detail']);
+        wingOptionalStringFromJson(payload['message']) ??
+        wingOptionalStringFromJson(payload['detail']);
     if (topLevel != null) return topLevel;
-    final nested = navivoxMapFromJson(payload['error']);
+    final nested = wingMapFromJson(payload['error']);
     if (nested.isNotEmpty) {
-      final code = navivoxOptionalStringFromJson(nested['code']);
+      final code = wingOptionalStringFromJson(nested['code']);
       final message =
-          navivoxOptionalStringFromJson(nested['message']) ??
-          navivoxOptionalStringFromJson(nested['detail']);
+          wingOptionalStringFromJson(nested['message']) ??
+          wingOptionalStringFromJson(nested['detail']);
       if (code != null && message != null) return '$code: $message';
       return message ?? code;
     }
-    return navivoxOptionalStringFromJson(payload['error']);
+    return wingOptionalStringFromJson(payload['error']);
   }
 
   bool _isSuccessfulTerminalRunEvent(String name) {
@@ -479,23 +479,23 @@ extension _MessagingExtension on HermesApiChannel {
     required int insertBefore,
   }) {
     final toolName =
-        navivoxOptionalStringFromJson(event.payload['tool']) ??
-        navivoxOptionalStringFromJson(event.payload['tool_name']) ??
+        wingOptionalStringFromJson(event.payload['tool']) ??
+        wingOptionalStringFromJson(event.payload['tool_name']) ??
         'tool';
     final status = switch (event.name) {
       'tool.completed' => 'completed',
       'tool.failed' => 'failed',
       _ => 'running',
     };
-    final preview = navivoxOptionalStringFromJson(event.payload['preview']);
+    final preview = wingOptionalStringFromJson(event.payload['preview']);
     final result =
-        navivoxOptionalStringFromJson(event.payload['result_text']) ??
-        navivoxOptionalStringFromJson(event.payload['output']) ??
-        navivoxOptionalStringFromJson(event.payload['result']);
+        wingOptionalStringFromJson(event.payload['result_text']) ??
+        wingOptionalStringFromJson(event.payload['output']) ??
+        wingOptionalStringFromJson(event.payload['result']);
     final eventCallId =
-        navivoxOptionalStringFromJson(event.payload['tool_call_id']) ??
-        navivoxOptionalStringFromJson(event.payload['call_id']) ??
-        navivoxOptionalStringFromJson(event.payload['id']);
+        wingOptionalStringFromJson(event.payload['tool_call_id']) ??
+        wingOptionalStringFromJson(event.payload['call_id']) ??
+        wingOptionalStringFromJson(event.payload['id']);
     final callId = eventCallId == null || eventCallId.trim().isEmpty
         ? '$_activeRunId:$toolName'
         : '$_activeRunId:${eventCallId.trim()}';
@@ -532,18 +532,18 @@ extension _MessagingExtension on HermesApiChannel {
   HermesApprovalRequest _approvalRequestFromEvent(HermesStreamEvent event) {
     return HermesApprovalRequest(
       id:
-          navivoxOptionalStringFromJson(event.payload['approval_id']) ??
-          navivoxOptionalStringFromJson(event.payload['approvalId']) ??
-          navivoxOptionalStringFromJson(event.payload['id']) ??
+          wingOptionalStringFromJson(event.payload['approval_id']) ??
+          wingOptionalStringFromJson(event.payload['approvalId']) ??
+          wingOptionalStringFromJson(event.payload['id']) ??
           '',
       toolCallId:
-          navivoxOptionalStringFromJson(event.payload['tool_call_id']) ??
-          navivoxOptionalStringFromJson(event.payload['toolCallId']) ??
+          wingOptionalStringFromJson(event.payload['tool_call_id']) ??
+          wingOptionalStringFromJson(event.payload['toolCallId']) ??
           '',
       prompt:
-          navivoxOptionalStringFromJson(event.payload['prompt']) ??
+          wingOptionalStringFromJson(event.payload['prompt']) ??
           'Approval requested',
-      risk: navivoxOptionalStringFromJson(event.payload['risk']),
+      risk: wingOptionalStringFromJson(event.payload['risk']),
     );
   }
 

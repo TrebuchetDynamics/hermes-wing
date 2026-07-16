@@ -59,7 +59,7 @@ class MethodChannelDeviceSpeechRecognitionDiagnosticsProbe
   const MethodChannelDeviceSpeechRecognitionDiagnosticsProbe._(this._channel);
 
   static const _defaultChannel = MethodChannel(
-    'com.trebuchetdynamics.navivox/device_speech',
+    'com.trebuchetdynamics.hermes.wing/device_speech',
   );
 
   final MethodChannel _channel;

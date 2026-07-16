@@ -27,38 +27,38 @@ jobs:
           cache: true
       - name: Require release signing secrets
         env:
-          KEYSTORE: ${{ secrets.NAVIVOX_RELEASE_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.NAVIVOX_RELEASE_STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.NAVIVOX_RELEASE_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.NAVIVOX_RELEASE_KEY_PASSWORD }}
+          KEYSTORE: ${{ secrets.WING_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.WING_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.WING_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.WING_RELEASE_KEY_PASSWORD }}
         run: |
           test -n "$KEYSTORE"
           test -n "$STORE_PASSWORD"
           test -n "$KEY_ALIAS"
           test -n "$KEY_PASSWORD"
-          printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/navivox-release.jks"
+          printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/wing-release.jks"
       - name: Build Cactus engine (arm64)
         run: |
           sudo apt-get update && sudo apt-get install -y cmake ninja-build
           bash scripts/spike/build_cactus_engine.sh
       - name: Build signed release APK
         env:
-          NAVIVOX_RELEASE_STORE_FILE: ${{ runner.temp }}/navivox-release.jks
-          NAVIVOX_RELEASE_STORE_PASSWORD: ${{ secrets.NAVIVOX_RELEASE_STORE_PASSWORD }}
-          NAVIVOX_RELEASE_KEY_ALIAS: ${{ secrets.NAVIVOX_RELEASE_KEY_ALIAS }}
-          NAVIVOX_RELEASE_KEY_PASSWORD: ${{ secrets.NAVIVOX_RELEASE_KEY_PASSWORD }}
+          WING_RELEASE_STORE_FILE: ${{ runner.temp }}/wing-release.jks
+          WING_RELEASE_STORE_PASSWORD: ${{ secrets.WING_RELEASE_STORE_PASSWORD }}
+          WING_RELEASE_KEY_ALIAS: ${{ secrets.WING_RELEASE_KEY_ALIAS }}
+          WING_RELEASE_KEY_PASSWORD: ${{ secrets.WING_RELEASE_KEY_PASSWORD }}
         run: |
           flutter pub get
           flutter build apk --release
           unzip -l build/app/outputs/flutter-apk/app-release.apk | grep -q "libcactus_engine.so" || { echo "engine .so missing from APK" >&2; exit 1; }
-          sha256sum build/app/outputs/flutter-apk/app-release.apk > navivox-android.apk.sha256
-          cp build/app/outputs/flutter-apk/app-release.apk navivox-android.apk
+          sha256sum build/app/outputs/flutter-apk/app-release.apk > hermes-wing-android.apk.sha256
+          cp build/app/outputs/flutter-apk/app-release.apk hermes-wing-android.apk
       - uses: actions/upload-artifact@v7
         with:
-          name: navivox-android-release
+          name: hermes-wing-android-release
           path: |
-            navivox-android.apk
-            navivox-android.apk.sha256
+            hermes-wing-android.apk
+            hermes-wing-android.apk.sha256
           if-no-files-found: error
 
   linux:
@@ -78,14 +78,14 @@ jobs:
         run: |
           flutter pub get
           flutter build linux --release
-          tar -C build/linux/x64/release -czf navivox-linux-x64.tar.gz bundle
-          sha256sum navivox-linux-x64.tar.gz > navivox-linux-x64.tar.gz.sha256
+          tar -C build/linux/x64/release -czf hermes-wing-linux-x64.tar.gz bundle
+          sha256sum hermes-wing-linux-x64.tar.gz > hermes-wing-linux-x64.tar.gz.sha256
       - uses: actions/upload-artifact@v7
         with:
-          name: navivox-linux-release
+          name: hermes-wing-linux-release
           path: |
-            navivox-linux-x64.tar.gz
-            navivox-linux-x64.tar.gz.sha256
+            hermes-wing-linux-x64.tar.gz
+            hermes-wing-linux-x64.tar.gz.sha256
           if-no-files-found: error
 
   publish:
@@ -117,6 +117,6 @@ jobs:
           gh release create "$TAG" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Navivox $TAG" \
+            --title "Hermes Wing $TAG" \
             --notes "Alpha source build. Android is signed with the configured release key; Linux is distributed with a SHA-256 checksum. See README.md for support limits." \
             --prerelease

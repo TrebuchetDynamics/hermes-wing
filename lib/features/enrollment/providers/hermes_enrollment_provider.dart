@@ -9,7 +9,7 @@ import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../services/hermes_connect_intent_source.dart';
 
-/// Reads the pending Navivox connect pairing payload from the platform's
+/// Reads the pending Hermes Wing connect pairing payload from the platform's
 /// intent ingress; see [HermesConnectIntentSource].
 final hermesConnectIntentSourceProvider = Provider<HermesConnectIntentSource>(
   (ref) => const MethodChannelHermesConnectIntentSource(),

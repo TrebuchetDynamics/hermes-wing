@@ -26,7 +26,7 @@ Future<void> hermesAutoConnect(
 }
 
 /// Native Hermes channel; see
-/// docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md.
+/// docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
 final hermesChannelProvider = Provider<HermesChannel>((ref) {
   final store = ref.watch(hermesEndpointStoreProvider);
   final channel = HermesApiChannel();

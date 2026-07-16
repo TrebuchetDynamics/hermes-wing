@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/platform/default_voice_capture_service.dart';
+import 'package:wing/features/voice/services/platform/default_voice_capture_service.dart';
 
 void main() {
   test(

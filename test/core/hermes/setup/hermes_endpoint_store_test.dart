@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 
 void main() {
   test('hermesPublicEndpointBaseUrl strips copied URL secret material', () {

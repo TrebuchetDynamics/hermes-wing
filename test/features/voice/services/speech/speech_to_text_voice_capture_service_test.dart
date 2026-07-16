@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
+import 'package:wing/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
+import 'package:wing/shared/voice/voice_capture_service.dart';
 
 void main() {
   test('speech diagnostics do not log recognized words', () async {

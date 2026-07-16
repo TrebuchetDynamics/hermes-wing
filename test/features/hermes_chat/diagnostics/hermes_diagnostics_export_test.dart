@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel_state.dart';
-import 'package:navivox/core/hermes/models/hermes_session.dart';
-import 'package:navivox/features/hermes_chat/diagnostics/hermes_diagnostics_export.dart';
+import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
+import 'package:wing/core/hermes/models/hermes_session.dart';
+import 'package:wing/features/hermes_chat/diagnostics/hermes_diagnostics_export.dart';
 
 void main() {
   test('diagnostics are redacted and deterministic', () {

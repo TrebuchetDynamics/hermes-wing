@@ -5,7 +5,7 @@
 # 'On-device voice commands (beta)' toggle and model download succeed; actual
 # command routing (mic-driven) is verified manually per the plan's on-device
 # smoke step, since Maestro cannot inject microphone audio.
-appId: com.trebuchetdynamics.navivox
+appId: com.trebuchetdynamics.hermes.wing
 ---
 - launchApp:
     stopApp: true

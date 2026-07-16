@@ -1,4 +1,4 @@
-export const APP_URL = process.env.NAVIVOX_APP_URL ?? 'http://127.0.0.1:8767/';
+export const APP_URL = process.env.WING_APP_URL ?? 'http://127.0.0.1:8767/';
 
 export const INTERACTIVE_SEMANTIC_ROLES = ['button', 'checkbox', 'menuitem', 'switch', 'textbox'];
 export const SEMANTIC_BUTTON_SELECTOR = 'flt-semantics[role="button"],flt-semantics[role="menuitem"]';

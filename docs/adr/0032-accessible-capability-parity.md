@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Navivox treats WCAG 2.2 Level AA, where applicable to Flutter applications, plus each target platform's accessibility conventions as capability-parity requirements. A capability is not validated when its user outcome depends only on a 3D or canvas surface, pointer input, speech, motion, sound, or color.
+Hermes Wing treats WCAG 2.2 Level AA, where applicable to Flutter applications, plus each target platform's accessibility conventions as capability-parity requirements. A capability is not validated when its user outcome depends only on a 3D or canvas surface, pointer input, speech, motion, sound, or color.
 
 ## Acceptance baseline
 

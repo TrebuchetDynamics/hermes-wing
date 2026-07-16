@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:navivox/features/voice/services/tts/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 /// Constructs the flutter_tts-backed [TextToSpeechService] under test. This
 /// stands in for `buildFlutterTtsService` in the plan skeleton — the real
@@ -121,7 +121,7 @@ void main() {
     final service = buildFlutterTtsService(
       engine: engine,
       settings: () =>
-          const NavivoxVoiceSettings(speechRate: 1.5, ttsVoiceName: 'nova'),
+          const WingVoiceSettings(speechRate: 1.5, ttsVoiceName: 'nova'),
     );
     await service.speak('hello');
     expect(
@@ -141,7 +141,7 @@ void main() {
       final engine = _RecordingEngine();
       final service = buildFlutterTtsService(
         engine: engine,
-        settings: () => const NavivoxVoiceSettings(),
+        settings: () => const WingVoiceSettings(),
       );
       await service.speak('hello');
       // The last rate call is the one _applySettings makes at speak-time
@@ -157,7 +157,7 @@ void main() {
     final engine = _RecordingEngine()..failVoice = true;
     final service = buildFlutterTtsService(
       engine: engine,
-      settings: () => const NavivoxVoiceSettings(ttsVoiceName: 'ghost'),
+      settings: () => const WingVoiceSettings(ttsVoiceName: 'ghost'),
     );
     await service.speak('hello');
     expect(engine.calls, contains('speak'));

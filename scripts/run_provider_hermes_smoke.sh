@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -z "${NAVIVOX_PROVIDER_HERMES_URL:-}" ]; then
+if [ -z "${WING_PROVIDER_HERMES_URL:-}" ]; then
   cat >&2 <<'EOF'
-NAVIVOX_PROVIDER_HERMES_URL is required.
+WING_PROVIDER_HERMES_URL is required.
 Point it at a running Hermes Agent API server that is configured with a real provider/model.
 Optional:
-  NAVIVOX_PROVIDER_HERMES_API_KEY
-  NAVIVOX_PROVIDER_TEXT_PROMPT / NAVIVOX_PROVIDER_TEXT_EXPECTED
-  NAVIVOX_PROVIDER_VOICE_PROMPT / NAVIVOX_PROVIDER_VOICE_EXPECTED
+  WING_PROVIDER_HERMES_API_KEY
+  WING_PROVIDER_TEXT_PROMPT / WING_PROVIDER_TEXT_EXPECTED
+  WING_PROVIDER_VOICE_PROMPT / WING_PROVIDER_VOICE_EXPECTED
 EOF
   exit 2
 fi
@@ -20,7 +20,7 @@ for cmd in flutter node npx curl python3; do
   fi
 done
 
-base_url="${NAVIVOX_PROVIDER_HERMES_URL%/}"
+base_url="${WING_PROVIDER_HERMES_URL%/}"
 safe_receipt_base_url="$(python3 - "$base_url" <<'PY'
 from urllib.parse import urlsplit, urlunsplit
 import sys
@@ -33,10 +33,10 @@ if parts.port:
 print(urlunsplit((parts.scheme, host, '', '', '')))
 PY
 )"
-web_log="${NAVIVOX_PROVIDER_WEB_LOG:-/tmp/navivox-provider-web.log}"
+web_log="${WING_PROVIDER_WEB_LOG:-/tmp/wing-provider-web.log}"
 headers=()
-if [ -n "${NAVIVOX_PROVIDER_HERMES_API_KEY:-}" ]; then
-  headers=(-H "Authorization: Bearer ${NAVIVOX_PROVIDER_HERMES_API_KEY}")
+if [ -n "${WING_PROVIDER_HERMES_API_KEY:-}" ]; then
+  headers=(-H "Authorization: Bearer ${WING_PROVIDER_HERMES_API_KEY}")
 fi
 
 curl -fsS "${headers[@]}" "${base_url}/health" >/dev/null
@@ -64,14 +64,14 @@ for _ in $(seq 1 30); do
 done
 
 if [ "$web_ready" != 1 ]; then
-  echo "Navivox web server did not become ready. Log: ${web_log}" >&2
+  echo "Hermes Wing web server did not become ready. Log: ${web_log}" >&2
   tail -120 "$web_log" >&2 || true
   exit 1
 fi
 
 npx playwright test --config=playwright.config.mjs playwright/tests/regression/hermes-provider-chat.spec.mjs --reporter=list --retries=0
 
-receipt_path="${NAVIVOX_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
+receipt_path="${WING_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
 head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
 mkdir -p "$(dirname "$receipt_path")"
 cat >"$receipt_path" <<EOF
@@ -103,5 +103,5 @@ cat <<'EOF'
 Provider-backed Hermes smoke passed for typed text plus deterministic transcript voice only.
 This is not physical microphone evidence and does not prove Hermes realtime/server audio.
 It is not whole-goal completion evidence by itself; run
-NAVIVOX_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any completion claim.
+WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit before any completion claim.
 EOF

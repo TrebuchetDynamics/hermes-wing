@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Navivox</string>
+	<string>Hermes Wing</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>navivox</string>
+	<string>wing</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -27,11 +27,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Navivox records your voice only when you tap the mic or enable continuous voice, then sends the transcript to your Hermes Agent.</string>
+	<string>Hermes Wing records your voice only when you tap the mic or enable continuous voice, then sends the transcript to your Hermes Agent.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Navivox uses on-device speech recognition to turn your speech into Hermes chat text.</string>
+	<string>Hermes Wing uses on-device speech recognition to turn your speech into Hermes chat text.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Navivox connects to a Hermes Agent on your trusted local or private network.</string>
+	<string>Hermes Wing connects to a Hermes Agent on your trusted local or private network.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

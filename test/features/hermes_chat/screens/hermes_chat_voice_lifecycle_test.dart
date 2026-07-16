@@ -4,11 +4,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
-import 'package:navivox/shared/voice/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/features/settings/providers/voice_settings_provider.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_capture_service.dart';
 
 import '../support/fake_hermes_channel.dart';
 
@@ -200,9 +200,9 @@ void main() {
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
-          navivoxVoiceSettingsProvider.overrideWith(
+          wingVoiceSettingsProvider.overrideWith(
             () => _TestVoiceSettingsController(
-              const NavivoxVoiceSettings(continuousVoiceEnabled: false),
+              const WingVoiceSettings(continuousVoiceEnabled: false),
             ),
           ),
         ],
@@ -237,9 +237,9 @@ void main() {
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
-          navivoxVoiceSettingsProvider.overrideWith(
+          wingVoiceSettingsProvider.overrideWith(
             () => _TestVoiceSettingsController(
-              const NavivoxVoiceSettings(speakRepliesEnabled: false),
+              const WingVoiceSettings(speakRepliesEnabled: false),
             ),
           ),
         ],
@@ -259,7 +259,7 @@ void main() {
       tester.element(find.byType(HermesChatScreen)),
     );
     expect(
-      container.read(navivoxVoiceSettingsProvider).speakRepliesEnabled,
+      container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
       isTrue,
     );
   });
@@ -335,11 +335,11 @@ class _CommandThenBlockCaptureService implements VoiceCaptureService {
   Future<void> cancel() async {}
 }
 
-class _TestVoiceSettingsController extends NavivoxVoiceSettingsController {
+class _TestVoiceSettingsController extends WingVoiceSettingsController {
   _TestVoiceSettingsController(this.initial);
 
-  final NavivoxVoiceSettings initial;
+  final WingVoiceSettings initial;
 
   @override
-  NavivoxVoiceSettings build() => initial;
+  WingVoiceSettings build() => initial;
 }

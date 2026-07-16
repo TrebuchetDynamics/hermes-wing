@@ -22,7 +22,7 @@ file_exists() {
   if [ -e "$path" ]; then ok "$label ($path)"; else warn "$label missing ($path)"; fi
 }
 
-printf 'Navivox Hermes readiness audit (read-only)\n\n'
+printf 'Hermes Wing readiness audit (read-only)\n\n'
 
 file_exists docs/runbooks/hermes-readiness-audit.md 'readiness audit doc'
 file_exists docs/runbooks/hermes-platform-smoke.md 'platform smoke runbook'
@@ -46,7 +46,7 @@ if [ -f build/app/outputs/flutter-apk/app-debug.apk ]; then
 else
   warn 'Android debug APK not present; run flutter build apk --debug'
 fi
-[ -x build/linux/x64/release/bundle/navivox ] && ok 'Linux release binary present' || warn 'Linux release binary not present; run npm run linux:release-build'
+[ -x build/linux/x64/release/bundle/wing ] && ok 'Linux release binary present' || warn 'Linux release binary not present; run npm run linux:release-build'
 
 printf '\nObjective checklist (read-only; not completion evidence):\n'
 info 'provider-backed Hermes chat/voice: requires configured model/provider credentials plus a current npm run hermes:provider-smoke:local receipt; transcript voice is not physical mic/server audio'
@@ -55,9 +55,9 @@ info 'Windows, iOS, and macOS builds: require successful native-host runner jobs
 info 'Hermes realtime/server audio: unimplemented; current voice path is device STT -> Hermes text'
 info 'Deferred Hermes surfaces: config admin, memory UI, jobs/schedules admin, messaging gateways, persona/SOUL, attachments/media, files/context folders, and raw diagnostics/log export; multi-endpoint/profile management is implemented locally'
 
-android_live_mic_receipt="${NAVIVOX_ANDROID_LIVE_MIC_RECEIPT:-build/receipts/android-live-mic-smoke.json}"
+android_live_mic_receipt="${WING_ANDROID_LIVE_MIC_RECEIPT:-build/receipts/android-live-mic-smoke.json}"
 android_live_mic_receipt_valid=0
-android_voice_path_receipt="${NAVIVOX_ANDROID_VOICE_PATH_RECEIPT:-build/receipts/android-hermes-voice-loop-smoke.json}"
+android_voice_path_receipt="${WING_ANDROID_VOICE_PATH_RECEIPT:-build/receipts/android-hermes-voice-loop-smoke.json}"
 android_voice_path_receipt_valid=0
 if [ -f "$android_voice_path_receipt" ]; then
   current_head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
@@ -153,8 +153,8 @@ for key in ['manufacturer', 'model', 'sdk', 'fingerprint']:
 if device_properties.get('is_emulator') is not False:
     missing.append('device_properties.is_emulator=false')
 package_info = receipt.get('package_info') or {}
-if package_info.get('package_name') != 'com.trebuchetdynamics.navivox':
-    missing.append('package_info.package_name=com.trebuchetdynamics.navivox')
+if package_info.get('package_name') != 'com.trebuchetdynamics.hermes.wing':
+    missing.append('package_info.package_name=com.trebuchetdynamics.hermes.wing')
 if package_info.get('installed') is not True:
     missing.append('package_info.installed=true')
 if package_info.get('record_audio_granted') is not True:
@@ -234,7 +234,7 @@ PY
   fi
 fi
 
-platform_receipt="${NAVIVOX_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
+platform_receipt="${WING_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
 platform_receipt_valid=0
 if [ -f "$platform_receipt" ]; then
   current_head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
@@ -272,9 +272,9 @@ artifact_details_by_name = {
     if isinstance(artifact, dict)
 }
 for artifact in [
-    'navivox-windows-debug-bundle',
-    'navivox-ios-simulator-app',
-    'navivox-macos-debug-app',
+    'wing-windows-debug-bundle',
+    'wing-ios-simulator-app',
+    'wing-macos-debug-app',
 ]:
     if artifact not in artifacts:
         missing.append(f'artifact:{artifact}')
@@ -336,7 +336,7 @@ PY
     ok "platform workflow/native-host receipt present ($platform_receipt)"
     info 'platform workflow receipt is not Android physical mic, realtime/server-audio, deferred-surface, or whole-goal evidence'
   else
-    block_receipt "platform workflow receipt is present but incomplete ($platform_receipt); rerun npm run platform:workflow-smoke with NAVIVOX_WATCH_WORKFLOW=true after publishing the workflow"
+    block_receipt "platform workflow receipt is present but incomplete ($platform_receipt); rerun npm run platform:workflow-smoke with WING_WATCH_WORKFLOW=true after publishing the workflow"
   fi
 fi
 
@@ -359,7 +359,7 @@ if command -v gh >/dev/null 2>&1; then
 else
   block_receipt 'gh not installed; cannot inspect/dispatch native-host workflow receipts; install gh before running npm run platform:workflow-smoke'
 fi
-info 'workflow dispatch without successful gh run view job/artifact evidence is not a platform receipt; NAVIVOX_WATCH_WORKFLOW=false only proves dispatch was requested'
+info 'workflow dispatch without successful gh run view job/artifact evidence is not a platform receipt; WING_WATCH_WORKFLOW=false only proves dispatch was requested'
 
 if [ "$platform_receipt_valid" = 1 ]; then
   ok 'Windows desktop native-host build receipt recorded'
@@ -405,12 +405,12 @@ else
   block_physical_mic 'adb not installed; cannot inspect Android device readiness'
 fi
 
-if [ -f "${NAVIVOX_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}/config.yaml" ]; then
+if [ -f "${WING_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}/config.yaml" ]; then
   info 'configured local Hermes home appears present; this is not a provider-smoke receipt, run npm run hermes:provider-smoke:local for proof'
 else
   block_receipt 'no configured Hermes config.yaml found for local provider-backed smoke'
 fi
-provider_receipt="${NAVIVOX_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
+provider_receipt="${WING_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
 if [ -f "$provider_receipt" ]; then
   current_head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
   if python3 - "$provider_receipt" "$current_head_sha" <<'PY'
@@ -473,7 +473,7 @@ else
   block_receipt 'full live provider-backed Hermes chat/voice smoke receipt missing from this audit; run npm run hermes:provider-smoke:local with configured model/provider credentials; deterministic transcript voice is not physical microphone/server audio evidence'
 fi
 
-server_audio_receipt="${NAVIVOX_HERMES_SERVER_AUDIO_RECEIPT:-build/receipts/hermes-server-audio-smoke.json}"
+server_audio_receipt="${WING_HERMES_SERVER_AUDIO_RECEIPT:-build/receipts/hermes-server-audio-smoke.json}"
 if [ -f "$server_audio_receipt" ]; then
   current_head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
   if python3 - "$server_audio_receipt" "$current_head_sha" <<'PY'
@@ -584,7 +584,7 @@ fi
 printf 'This audit is informational and must not be used as a completion receipt by itself.\n'
 printf 'Do not promote proxy evidence (tests, APK hashes, configured Hermes home, workflow YAML, or dispatch-only output) to completion.\n'
 
-if [ "${NAVIVOX_FAIL_ON_BLOCKERS:-0}" = "1" ] && [ "$blockers" -gt 0 ]; then
+if [ "${WING_FAIL_ON_BLOCKERS:-0}" = "1" ] && [ "$blockers" -gt 0 ]; then
   exit 3
 fi
 exit 0

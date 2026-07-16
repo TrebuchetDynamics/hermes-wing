@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel.dart';
-import 'package:navivox/core/hermes/models/hermes_chat_turn.dart';
-import 'package:navivox/core/hermes/models/hermes_session.dart';
-import 'package:navivox/core/protocol/voice/models/navivox_voice_run.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:navivox/shared/voice/text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_capture_service.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/hermes/models/hermes_session.dart';
+import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_capture_service.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -156,7 +156,7 @@ class _AndroidHermesVoiceSmokeChannel extends ChangeNotifier
         activeVoiceRunId: id,
         voiceRuns: {
           ..._state.voiceRuns,
-          id: NavivoxVoiceRun.recording(
+          id: WingVoiceRun.recording(
             id: id,
             serverId: 'hermes',
             profileId: _sessionId,

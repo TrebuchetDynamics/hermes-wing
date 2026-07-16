@@ -1,6 +1,6 @@
-import 'package:navivox/core/protocol/voice_unavailable_reason.dart';
+import 'package:wing/core/protocol/voice_unavailable_reason.dart';
 
-export 'package:navivox/core/protocol/voice_unavailable_reason.dart'
+export 'package:wing/core/protocol/voice_unavailable_reason.dart'
     show
         canonicalVoiceUnavailableReason,
         deviceSttUnavailableReason,
@@ -15,10 +15,10 @@ const selectProfileContactVoiceUnavailableReason = 'select a profile contact';
 
 String? defaultVoiceUnavailableRecoveryAction(String reason) {
   if (reason == deviceSttUnavailableReason) {
-    return 'Install or enable device speech recognition, then return to Navivox.';
+    return 'Install or enable device speech recognition, then return to Hermes Wing.';
   }
   if (reason == microphonePermissionDeniedReason) {
-    return 'Grant microphone permission in Android App info, then return to Navivox.';
+    return 'Grant microphone permission in Android App info, then return to Hermes Wing.';
   }
   return null;
 }

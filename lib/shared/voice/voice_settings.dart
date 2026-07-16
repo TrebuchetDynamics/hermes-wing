@@ -21,8 +21,8 @@ class PocketSpeechVoicePack {
   final String voicesPath;
 }
 
-class NavivoxVoiceSettings {
-  const NavivoxVoiceSettings({
+class WingVoiceSettings {
+  const WingVoiceSettings({
     this.continuousVoiceEnabled = true,
     this.speakRepliesEnabled = false,
     this.pocketSpeechTtsEnabled = false,
@@ -58,7 +58,7 @@ class NavivoxVoiceSettings {
   /// Selected TTS voice name, or null to use the engine default.
   final String? ttsVoiceName;
 
-  NavivoxVoiceSettings copyWith({
+  WingVoiceSettings copyWith({
     bool? continuousVoiceEnabled,
     bool? speakRepliesEnabled,
     bool? pocketSpeechTtsEnabled,
@@ -71,7 +71,7 @@ class NavivoxVoiceSettings {
     String? ttsVoiceName,
     bool clearTtsVoiceName = false,
   }) {
-    return NavivoxVoiceSettings(
+    return WingVoiceSettings(
       continuousVoiceEnabled:
           continuousVoiceEnabled ?? this.continuousVoiceEnabled,
       speakRepliesEnabled: speakRepliesEnabled ?? this.speakRepliesEnabled,

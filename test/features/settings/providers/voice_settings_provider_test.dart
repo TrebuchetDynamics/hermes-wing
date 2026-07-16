@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:navivox/features/settings/providers/voice_settings_provider.dart';
+import 'package:wing/features/settings/providers/voice_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -8,21 +8,21 @@ void main() {
     'an immediate voice preference change wins over async preference load',
     () async {
       SharedPreferences.setMockInitialValues({
-        'navivox.voice.continuous_enabled': true,
+        'wing.voice.continuous_enabled': true,
       });
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final controller = container.read(navivoxVoiceSettingsProvider.notifier);
+      final controller = container.read(wingVoiceSettingsProvider.notifier);
       controller.setContinuousVoiceEnabled(false);
       await pumpEventQueue();
 
       expect(
-        container.read(navivoxVoiceSettingsProvider).continuousVoiceEnabled,
+        container.read(wingVoiceSettingsProvider).continuousVoiceEnabled,
         isFalse,
       );
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getBool('navivox.voice.continuous_enabled'), isFalse);
+      expect(prefs.getBool('wing.voice.continuous_enabled'), isFalse);
     },
   );
 
@@ -32,7 +32,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      final controller = container.read(navivoxVoiceSettingsProvider.notifier);
+      final controller = container.read(wingVoiceSettingsProvider.notifier);
 
       controller.setPocketSpeechVoicePack(
         const PocketSpeechVoicePack(
@@ -44,7 +44,7 @@ void main() {
       controller.setPocketSpeechTtsEnabled(true);
       controller.setPocketSpeechModel(PocketSpeechModel.kitten);
 
-      final settings = container.read(navivoxVoiceSettingsProvider);
+      final settings = container.read(wingVoiceSettingsProvider);
       expect(settings.pocketSpeechModel, PocketSpeechModel.kitten);
       expect(settings.pocketSpeechVoicePack, isNull);
       expect(settings.pocketSpeechTtsEnabled, isFalse);

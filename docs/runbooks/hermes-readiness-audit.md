@@ -17,7 +17,7 @@ all native jobs with a validated receipt written to
 "Dependency review is not supported on this repository"; enabling the
 Dependency graph in repository settings is an owner action.
 
-This audit maps the current pure-Hermes Navivox companion goal to concrete
+This audit maps the current Hermes-only Hermes Wing client goal to concrete
 evidence and remaining blockers. It is intentionally conservative: a passing
 test only counts for the behavior it directly exercises. For a quick read-only
 local snapshot, run `npm run hermes:readiness-audit`; that helper prints every
@@ -28,15 +28,15 @@ explicit external or deferred blocker but is not a completion receipt.
 | Requirement | Current evidence | Status |
 | --- | --- | --- |
 | Provider-backed Hermes chat smoke with real model/provider credentials | `npm run hermes:provider-smoke:local` writes `build/receipts/hermes-provider-smoke.json` after a no-retry Playwright pass against a configured local Hermes home. The receipt is bound to the current `head_sha`, records a sanitized origin-only `base_url`, includes `evidence_for` entries for `provider-backed Hermes typed text turn` and `deterministic transcript voice turn`, and includes `not_evidence_for` caveats for physical Android mic, Hermes realtime/server audio, native-host receipts, platform workflow publication, deferred parity, and whole-goal completion. | Covered for configured local Hermes text. |
-| Provider-backed Hermes voice smoke | Same provider smoke submits a deterministic device transcript via `navivoxE2EHermesSubmitVoice` and verifies a model reply. The helper caveat says this is deterministic transcript voice only, not physical microphone evidence or Hermes realtime/server audio, and the readiness audit rejects stale/malformed provider receipts. | Covered for transcript voice only; not physical mic or server audio. |
-| Android speech/mic readiness | `npm run android:voice-smoke` passed on a KVM-backed `fractal_test` emulator on 2026-07-03, verifying speech recognizer availability and granted mic permission. `NAVIVOX_ANDROID_SKIP_BUILD=1 NAVIVOX_ANDROID_HERMES_URL=http://10.0.2.2:8642 npm run android:live-mic-prep` also installed/launched/granted mic permission on `fractal_test`. A later direct target recheck showed `adb devices` had no attached Android devices while `flutter devices` listed only Linux desktop and Chrome web. The canonical manual physical-audio checklist is `docs/runbooks/android/live-mic-smoke.md`; the live receipt helper and readiness audit reject whitespace-only observed excerpts and invalid/non-origin Hermes URLs. | Readiness/prep covered; real spoken audio not covered. |
+| Provider-backed Hermes voice smoke | Same provider smoke submits a deterministic device transcript via `wingE2EHermesSubmitVoice` and verifies a model reply. The helper caveat says this is deterministic transcript voice only, not physical microphone evidence or Hermes realtime/server audio, and the readiness audit rejects stale/malformed provider receipts. | Covered for transcript voice only; not physical mic or server audio. |
+| Android speech/mic readiness | `npm run android:voice-smoke` passed on a KVM-backed `fractal_test` emulator on 2026-07-03, verifying speech recognizer availability and granted mic permission. `WING_ANDROID_SKIP_BUILD=1 WING_ANDROID_HERMES_URL=http://10.0.2.2:8642 npm run android:live-mic-prep` also installed/launched/granted mic permission on `fractal_test`. A later direct target recheck showed `adb devices` had no attached Android devices while `flutter devices` listed only Linux desktop and Chrome web. The canonical manual physical-audio checklist is `docs/runbooks/android/live-mic-smoke.md`; the live receipt helper and readiness audit reject whitespace-only observed excerpts and invalid/non-origin Hermes URLs. | Readiness/prep covered; real spoken audio not covered. |
 | Android automated voice loop | `npm run android:hermes-voice-loop-smoke` writes `build/receipts/android-hermes-voice-loop-smoke.json` after an Android integration test runs `HermesChatScreen` with deterministic transcript capture, fake Hermes channel/provider replies, fake TTS, and a distinct second turn after continuous-voice re-arm. The receipt is bound to current `HEAD` and records Android device properties. | Covered for no-human Android Flutter voice-loop mechanics; explicitly not physical mic/provider/server-audio evidence. |
 | Android debug APK build | `flutter build apk --debug` produces `build/app/outputs/flutter-apk/app-debug.apk`; `npm run hermes:readiness-audit` prints the current APK SHA-256 when present. App-scoped native units also passed with `cd android && ./gradlew :app:testDebugUnitTest`. | Covered locally for build/native units and artifact identity only; not physical mic evidence. |
-| Linux release build | `npm run linux:release-build` passed on 2026-07-03 and produced executable `build/linux/x64/release/bundle/navivox`. | Covered locally. |
-| Windows build | `build/receipts/hermes-platform-workflow.json` records the watched current-head GitHub run id with a successful `Windows desktop build` job and non-expired `navivox-windows-debug-bundle` artifact. | Covered by hosted native-runner receipt. |
-| iOS simulator build | `build/receipts/hermes-platform-workflow.json` (run 29256462998, head `9c44607`, 2026-07-13) records a successful `iOS simulator build` job and non-expired `navivox-ios-simulator-app` artifact after the deployment target was raised to 16.0 for `flutter_onnxruntime`. | Covered by hosted native-runner receipt. |
-| macOS desktop build | `build/receipts/hermes-platform-workflow.json` (run 29256462998, head `9c44607`, 2026-07-13) records a successful `macOS desktop build` job and non-expired `navivox-macos-debug-app` artifact after the deployment target was raised to 14.0 for `flutter_onnxruntime`. | Covered by hosted native-runner receipt. |
-| Browser fake Hermes smoke | Focused Playwright regression rerun of `navivox-e2e.spec.mjs` plus `hermes-smoke.spec.mjs` passed on 2026-07-03 against `node serve_web.mjs` with 68 Chromium tests after a longer-timeout rerun; the focused Hermes smoke itself passed 2 Chromium tests and covers fake Hermes health/capabilities/sessions/runs/events/approvals/tool progress/stop. | Covered for fake server. |
+| Linux release build | `npm run linux:release-build` passed on 2026-07-03 and produced executable `build/linux/x64/release/bundle/wing`. | Covered locally. |
+| Windows build | `build/receipts/hermes-platform-workflow.json` records the watched current-head GitHub run id with a successful `Windows desktop build` job and non-expired `wing-windows-debug-bundle` artifact. | Covered by hosted native-runner receipt. |
+| iOS simulator build | `build/receipts/hermes-platform-workflow.json` (run 29256462998, head `9c44607`, 2026-07-13) records a successful `iOS simulator build` job and non-expired `wing-ios-simulator-app` artifact after the deployment target was raised to 16.0 for `flutter_onnxruntime`. | Covered by hosted native-runner receipt. |
+| macOS desktop build | `build/receipts/hermes-platform-workflow.json` (run 29256462998, head `9c44607`, 2026-07-13) records a successful `macOS desktop build` job and non-expired `wing-macos-debug-app` artifact after the deployment target was raised to 14.0 for `flutter_onnxruntime`. | Covered by hosted native-runner receipt. |
+| Browser fake Hermes smoke | Focused Playwright regression rerun of `wing-e2e.spec.mjs` plus `hermes-smoke.spec.mjs` passed on 2026-07-03 against `node serve_web.mjs` with 68 Chromium tests after a longer-timeout rerun; the focused Hermes smoke itself passed 2 Chromium tests and covers fake Hermes health/capabilities/sessions/runs/events/approvals/tool progress/stop. | Covered for fake server. |
 | Installed Hermes API connect smoke | `npm run hermes:live-smoke` passed on 2026-07-03 against installed local Hermes with isolated temp home and no provider credentials; Playwright reported 1 pass. The helper caveat says this is API connect/session rendering only, not provider/model evidence, not chat/voice provider smoke, not physical microphone evidence, and not whole-goal completion evidence by itself. | Covered for live connect/session surface. |
 | Deferred server realtime audio honesty | `lib/core/hermes/policy/hermes_surface_readiness.dart` marks advertised-but-unwired server realtime voice/audio as blocked and unadvertised server audio as deferred; README states voice is local-first. | Covered by code/docs. |
 | Deferred config admin honesty | Surface readiness marks config editing/admin as `deferred`; the surface-readiness dialog repeats that no mobile config mutation controls are enabled. | Covered by code/docs. |
@@ -53,7 +53,7 @@ explicit external or deferred blocker but is not a completion receipt.
 
 ## Open blockers
 
-1. **Hermes server realtime audio** — not implemented in Navivox; voice remains
+1. **Hermes server realtime audio** — not implemented in Hermes Wing; voice remains
    device STT -> Hermes text. Automated Android voice-loop evidence does not
    claim server audio.
 2. **Deferred product surfaces** — config editing/admin, Hermes memory UI,
@@ -163,7 +163,7 @@ non-overlapping categories:
   receipt proves provider-backed chat/transcript voice.
 - Workflow YAML by itself: it proves a planned CI path, not a native-host build
   receipt, even when the YAML parses and has timeouts/artifact uploads.
-- Workflow dispatch by itself: `NAVIVOX_WATCH_WORKFLOW=false` proves only that
+- Workflow dispatch by itself: `WING_WATCH_WORKFLOW=false` proves only that
   dispatch was requested; a missing visible run id or unwatched run is not a
   platform receipt. Only a watched successful run with required artifacts and the
   validated `build/receipts/hermes-platform-workflow.json` receipt can satisfy

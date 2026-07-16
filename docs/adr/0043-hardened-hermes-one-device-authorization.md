@@ -7,9 +7,9 @@ Android, iOS, Linux, Windows, and macOS use the Hermes One OAuth 2.0 Device Auth
 
 ## Authorization flow
 
-Hermes One advertises the HTTPS device-code and token endpoints, verification origin, polling requirements, supported scopes, token lifetime, revocation, and optional refresh rotation. Navivox accepts only the configured Hermes One authority and verifies that `verification_uri` and `verification_uri_complete` use its allowed HTTPS origin before opening either.
+Hermes One advertises the HTTPS device-code and token endpoints, verification origin, polling requirements, supported scopes, token lifetime, revocation, and optional refresh rotation. Hermes Wing accepts only the configured Hermes One authority and verifies that `verification_uri` and `verification_uri_complete` use its allowed HTTPS origin before opening either.
 
-Navivox requests one short-lived device authorization at a time using a generic, non-unique label such as `Navivox on Android`; it does not submit the hostname, endpoint identity, profile name, hardware identifier, analytics identifier, or advertising identifier. The system browser opens `verification_uri_complete`. The app may display the user code for visual confirmation but never copies, shares, persists, logs, announces in diagnostics, or places it in a Navivox URL.
+Hermes Wing requests one short-lived device authorization at a time using a generic, non-unique label such as `Hermes Wing on Android`; it does not submit the hostname, endpoint identity, profile name, hardware identifier, analytics identifier, or advertising identifier. The system browser opens `verification_uri_complete`. The app may display the user code for visual confirmation but never copies, shares, persists, logs, announces in diagnostics, or places it in a Hermes Wing URL.
 
 Polling follows the server interval, `slow_down`, expiry, denial, cancellation, and transient-failure rules. Android/iOS suspension pauses client polling without a foreground service and may resume the same unexpired flow; expiry starts a fresh explicit flow rather than replaying a request. Login is single-flight per client.
 
@@ -19,7 +19,7 @@ The resulting Hermes One OAuth credential is client-global and stored only throu
 
 Access-token expiry and refresh-token rotation follow the advertised account contract. Invalid-grant, revocation, account switch, or sign-out clears local account state and profile-linked cloud views without disabling Hermes Agent chat. Sign-out attempts online revocation but does not durably queue a failed revocation; the UI reports when server-side sessions may still require account-portal revocation.
 
-The browser approval page is the authority for account identity, requested scopes, device label, and consent. Navivox never treats a displayed user code, browser-open success, or polling transport state as proof of authorization.
+The browser approval page is the authority for account identity, requested scopes, device label, and consent. Hermes Wing never treats a displayed user code, browser-open success, or polling transport state as proof of authorization.
 
 ## Web
 

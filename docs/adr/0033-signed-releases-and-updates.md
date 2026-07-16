@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Every official Navivox artifact uses its platform's release-signing path. Store distribution may delegate update verification to the platform store; direct distribution requires authenticated update metadata and artifact verification before installation. Unsigned or development builds do not self-update.
+Every official Hermes Wing artifact uses its platform's release-signing path. Store distribution may delegate update verification to the platform store; direct distribution requires authenticated update metadata and artifact verification before installation. Unsigned or development builds do not self-update.
 
 ## Platform requirements
 

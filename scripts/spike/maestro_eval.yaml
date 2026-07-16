@@ -1,6 +1,6 @@
 # Automated Needle spike evaluation (Task 9). Run: maestro test scripts/spike/maestro_eval.yaml
 # Requires: NEEDLE_SPIKE=true release build installed, model downloadable, phone untouched.
-appId: com.trebuchetdynamics.navivox
+appId: com.trebuchetdynamics.hermes.wing
 ---
 - launchApp:
     stopApp: true

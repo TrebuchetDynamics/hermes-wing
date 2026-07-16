@@ -1,15 +1,15 @@
-# Navivox Context
+# Hermes Wing Context
 
-Navivox is the canonical cross-platform Flutter client for Hermes Agent and the successor to Hermes Desktop. Product language, routes, tests, and docs should describe Hermes endpoints, Hermes sessions, Hermes runs, local device speech-to-text, approvals, tool progress, and platform-gated administration.
+Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. Product language, routes, tests, and docs should describe Hermes endpoints, Hermes sessions, Hermes runs, local device speech-to-text, approvals, tool progress, and platform-gated administration.
 
 ## Product language
 
-**Hermes One client**:
-The Navivox Flutter application across desktop, mobile, and web.
+**Hermes Wing client**:
+The independent Hermes Wing Flutter application across desktop, mobile, and web.
 _Avoid_: companion, Electron clone
 
 **Capability parity**:
-Equivalent user outcomes across Hermes Desktop and Navivox, using platform-native implementations and hiding host capabilities where a platform cannot safely provide them.
+Equivalent user outcomes across Hermes Desktop and Hermes Wing, using platform-native implementations and hiding host capabilities where a platform cannot safely provide them.
 _Avoid_: line-for-line port, widget parity
 
 **Planning baseline**:
@@ -53,15 +53,15 @@ The optional cloud authority for account identity, cloud-agent synchronization, 
 _Avoid_: Hermes Agent account API, second control plane
 
 **Legacy local wallet**:
-A profile-scoped wallet previously created or imported by Hermes Desktop and encrypted through Electron secure storage. It is migration data requiring guarded export, not a Navivox wallet subsystem.
-_Avoid_: Navivox wallet, portable wallet store
+A profile-scoped wallet previously created or imported by Hermes Desktop and encrypted through Electron secure storage. It is migration data requiring guarded export, not a Hermes Wing wallet subsystem.
+_Avoid_: Hermes Wing wallet, portable wallet store
 
 **Host adapter**:
 A platform-specific client boundary for bootstrap and machine integration, limited to installation, process lifecycle, SSH tunnelling, secure storage, filesystem selection, updates, and window behavior.
 _Avoid_: domain service
 
 **Managed Hermes runtime**:
-An external Hermes Agent installation discovered or installed by a desktop host adapter and verified through health and capabilities. It is not embedded in the Navivox application package.
+An external Hermes Agent installation discovered or installed by a desktop host adapter and verified through health and capabilities. It is not embedded in the Hermes Wing application package.
 _Avoid_: bundled Agent, Flutter backend
 
 **Scoped operator token**:
@@ -93,7 +93,7 @@ A semantic, fully operable path to the same state and actions without requiring 
 _Avoid_: accessibility fallback, read-only alternative
 
 **Release authority**:
-The platform store or Navivox signing identity trusted to authenticate official artifacts and update metadata. HTTPS and adjacent checksums are transport and integrity aids, not release authority.
+The platform store or Hermes Wing signing identity trusted to authenticate official artifacts and update metadata. HTTPS and adjacent checksums are transport and integrity aids, not release authority.
 _Avoid_: download server, checksum file
 
 **Analytics consent**:
@@ -101,7 +101,7 @@ An explicit local opt-in to a closed set of coarse product events. It is never i
 _Avoid_: anonymous by default, configured means consented
 
 **Baseline locale set**:
-The twelve locale tags supported by frozen Hermes Desktop and required in Navivox before Electron retirement, including complete RTL behavior for Arabic and Hebrew.
+The twelve locale tags supported by frozen Hermes Desktop and required in Hermes Wing before Electron retirement, including complete RTL behavior for Arabic and Hebrew.
 _Avoid_: translated generated content, English-only parity
 
 **Portable profile archive**:
@@ -109,7 +109,7 @@ A versioned Hermes Agent export of one profile's portable domain state that excl
 _Avoid_: HERMES_HOME zip, full backup
 
 **SSH host identity**:
-The canonical host, port, key algorithm, and SHA-256 fingerprint explicitly trusted for one desktop SSH endpoint and stored only in Navivox-owned host-key state.
+The canonical host, port, key algorithm, and SHA-256 fingerprint explicitly trusted for one desktop SSH endpoint and stored only in Hermes Wing-owned host-key state.
 _Avoid_: accept-new, SSH credential
 
 **Managed runtime release**:
@@ -117,7 +117,7 @@ An exact Hermes Agent version and platform artifact authenticated by signed rele
 _Avoid_: latest main, install script URL
 
 **Canonical package matrix**:
-The signed AAB/APK, APT/RPM, MSIX, and notarized DMG formats that carry official Navivox releases and retirement evidence.
+The signed AAB/APK, APT/RPM, MSIX, and notarized DMG formats that carry official Hermes Wing releases and retirement evidence.
 _Avoid_: every Electron format, generic archive release
 
 **Detached run**:
@@ -133,11 +133,11 @@ A local-only, one-wallet-at-a-time Hermes Desktop exit flow that verifies and re
 _Avoid_: wallet migration, recovery sync
 
 **Device authorization**:
-The RFC 8628 system-browser flow that gives one native Navivox installation a client-global Hermes One OAuth credential after browser approval.
+The RFC 8628 system-browser flow that gives one native Hermes Wing installation a client-global Hermes One OAuth credential after browser approval.
 _Avoid_: device enrollment, Hermes pairing
 
 **Pairing code**:
-A short-lived, single-use enrollment secret that authorizes one scoped-token exchange after the operator reviews the endpoint and requested scopes. It is not a bearer token and may travel in a QR or `navivox://connect` payload.
+A short-lived, single-use enrollment secret that authorizes one scoped-token exchange after the operator reviews the endpoint and requested scopes. It is not a bearer token and may travel in a QR or `wing://connect` payload.
 _Avoid_: pairing token, API key
 
 **Tasks**:

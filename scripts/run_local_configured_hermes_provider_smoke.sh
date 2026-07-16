@@ -13,16 +13,16 @@ for cmd in curl python3; do
   fi
 done
 
-configured_hermes_home="${NAVIVOX_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}"
+configured_hermes_home="${WING_CONFIGURED_HERMES_HOME:-${HERMES_HOME:-$HOME/.hermes}}"
 if [ ! -f "$configured_hermes_home/config.yaml" ]; then
-  echo "No Hermes config.yaml found at ${configured_hermes_home}. Set NAVIVOX_CONFIGURED_HERMES_HOME to a configured Hermes home." >&2
+  echo "No Hermes config.yaml found at ${configured_hermes_home}. Set WING_CONFIGURED_HERMES_HOME to a configured Hermes home." >&2
   exit 2
 fi
 
 hermes_home="$configured_hermes_home"
 cloned_hermes_home=""
-if [ "${NAVIVOX_CONFIGURED_HERMES_CLONE_HOME:-true}" = "true" ]; then
-  cloned_hermes_home="$(mktemp -d -t navivox-configured-hermes-home.XXXXXX)"
+if [ "${WING_CONFIGURED_HERMES_CLONE_HOME:-true}" = "true" ]; then
+  cloned_hermes_home="$(mktemp -d -t wing-configured-hermes-home.XXXXXX)"
   chmod 700 "$cloned_hermes_home"
   hermes_home="$cloned_hermes_home"
   for file in config.yaml .env auth.json SOUL.md; do
@@ -32,15 +32,15 @@ if [ "${NAVIVOX_CONFIGURED_HERMES_CLONE_HOME:-true}" = "true" ]; then
   done
 fi
 
-port="${NAVIVOX_CONFIGURED_HERMES_PORT:-28642}"
-host="${NAVIVOX_CONFIGURED_HERMES_HOST:-127.0.0.1}"
-api_key="${NAVIVOX_CONFIGURED_HERMES_API_KEY:-$(python3 - <<'PY'
+port="${WING_CONFIGURED_HERMES_PORT:-28642}"
+host="${WING_CONFIGURED_HERMES_HOST:-127.0.0.1}"
+api_key="${WING_CONFIGURED_HERMES_API_KEY:-$(python3 - <<'PY'
 import secrets
-print('navivox-provider-' + secrets.token_urlsafe(24))
+print('wing-provider-' + secrets.token_urlsafe(24))
 PY
 )}"
 base_url="http://${host}:${port}"
-hermes_log="${NAVIVOX_CONFIGURED_HERMES_LOG:-/tmp/navivox-configured-hermes.log}"
+hermes_log="${WING_CONFIGURED_HERMES_LOG:-/tmp/wing-configured-hermes.log}"
 hermes_pid=""
 cleanup() {
   if [ -n "$hermes_pid" ]; then
@@ -79,6 +79,6 @@ if [ "$ready" != 1 ]; then
   exit 1
 fi
 
-NAVIVOX_PROVIDER_HERMES_URL="$base_url" \
-NAVIVOX_PROVIDER_HERMES_API_KEY="$api_key" \
+WING_PROVIDER_HERMES_URL="$base_url" \
+WING_PROVIDER_HERMES_API_KEY="$api_key" \
   "$(dirname "$0")/run_provider_hermes_smoke.sh"

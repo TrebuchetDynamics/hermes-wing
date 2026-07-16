@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
-  <title id="title">Navivox Hermes runtime flow</title>
+  <title id="title">Hermes Wing runtime flow</title>
   <desc id="desc">A five-stage flow from device speech or typing through operator-reviewed text, a Hermes session, streamed run events, and approval or stop controls.</desc>
 
   <rect width="1200" height="320" rx="24" fill="#111214"/>

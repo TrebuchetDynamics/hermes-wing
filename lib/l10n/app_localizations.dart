@@ -97,7 +97,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Navivox'**
+  /// **'Hermes Wing'**
   String get appTitle;
 
   /// No description provided for @hermesDestination.
@@ -601,7 +601,7 @@ abstract class AppLocalizations {
   /// No description provided for @credentialWriteOnlyNotice.
   ///
   /// In en, this message translates to:
-  /// **'Navivox can set this credential but never shows a stored key.'**
+  /// **'Hermes Wing can set this credential but never shows a stored key.'**
   String get credentialWriteOnlyNotice;
 
   /// No description provided for @credentialEnvVarLabel.

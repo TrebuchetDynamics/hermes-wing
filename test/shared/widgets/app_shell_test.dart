@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/l10n/app_localizations.dart';
-import 'package:navivox/router/app_routes.dart';
-import 'package:navivox/shared/widgets/app_shell.dart';
+import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/router/app_routes.dart';
+import 'package:wing/shared/widgets/app_shell.dart';
 
 Widget _testApp(Widget home) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,

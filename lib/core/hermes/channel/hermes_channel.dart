@@ -15,7 +15,7 @@ export 'hermes_channel_state.dart';
 
 /// Native Hermes Agent channel: sessions, streamed chat turns, and the
 /// device-transcript voice-run lifecycle. Deliberately does not implement
-/// `NavivoxChannel` — see docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md.
+/// `WingChannel` — see docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
 abstract interface class HermesChannel implements Listenable {
   HermesChannelState get state;
 

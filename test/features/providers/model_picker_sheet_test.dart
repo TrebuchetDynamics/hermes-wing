@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel.dart';
-import 'package:navivox/features/providers/widgets/model_picker_sheet.dart';
-import 'package:navivox/l10n/app_localizations.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/features/providers/widgets/model_picker_sheet.dart';
+import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 

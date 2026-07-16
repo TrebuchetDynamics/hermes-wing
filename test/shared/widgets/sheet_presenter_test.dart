@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/shared/widgets/sheet_presenter.dart';
+import 'package:wing/shared/widgets/sheet_presenter.dart';
 
 void main() {
   testWidgets('ActionSheet renders title and action rows', (tester) async {

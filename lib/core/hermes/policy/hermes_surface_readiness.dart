@@ -83,21 +83,21 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.blocked
           : HermesSurfaceStatus.deferred,
       detail: advertisedServerAudio
-          ? 'Hermes server audio/realtime voice is advertised, but Navivox has not wired server audio; device STT -> Hermes text remains the voice path.'
+          ? 'Hermes server audio/realtime voice is advertised, but Hermes Wing has not wired server audio; device STT -> Hermes text remains the voice path.'
           : 'Hermes realtime/server audio is not advertised; device STT -> Hermes text remains the voice path.',
     ),
     HermesSurfaceReadiness(
       title: 'Config editing/admin',
       status: HermesSurfaceStatus.deferred,
       detail: policy.supportsConfigWrite
-          ? 'admin_config_rw is advertised, but Hermes config editing is not wired in Navivox.'
-          : 'admin_config_rw is not advertised; Navivox keeps this hidden.',
+          ? 'admin_config_rw is advertised, but Hermes config editing is not wired in Hermes Wing.'
+          : 'admin_config_rw is not advertised; Hermes Wing keeps this hidden.',
     ),
     HermesSurfaceReadiness(
       title: 'Memory UI',
       status: HermesSurfaceStatus.deferred,
       detail: policy.supportsMemoryWrite
-          ? 'Hermes memory API is advertised, but Navivox memory UI is not wired.'
+          ? 'Hermes memory API is advertised, but Hermes Wing memory UI is not wired.'
           : 'memory_write_api is not advertised; Hermes memory stays hidden.',
     ),
     HermesSurfaceReadiness(
@@ -106,14 +106,14 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.readOnly
           : HermesSurfaceStatus.deferred,
       detail: advertisesJobsList
-          ? 'Jobs list endpoint is advertised; Navivox shows a read-only inventory.'
+          ? 'Jobs list endpoint is advertised; Hermes Wing shows a read-only inventory.'
           : 'Jobs list endpoint is not advertised for mobile use.',
     ),
     HermesSurfaceReadiness(
       title: 'Jobs/schedules admin',
       status: HermesSurfaceStatus.deferred,
       detail: supportsJobsAdmin
-          ? 'Jobs admin is advertised, but Navivox has not wired create/edit/delete scheduling; no mobile mutation controls are shown.'
+          ? 'Jobs admin is advertised, but Hermes Wing has not wired create/edit/delete scheduling; no mobile mutation controls are shown.'
           : 'Jobs create/edit/delete scheduling remains outside the mobile MVP; no mobile mutation controls are shown.',
     ),
     const HermesSurfaceReadiness(
@@ -132,8 +132,8 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
       title: 'Attachments/media',
       status: HermesSurfaceStatus.deferred,
       detail: supportsAttachments
-          ? 'Attachment/multimodal capability is advertised, but Navivox has not wired mobile attachments; no upload controls are shown.'
-          : 'Text-only plus local voice transcript until Hermes exposes a mobile-safe attachment contract and Navivox wires it.',
+          ? 'Attachment/multimodal capability is advertised, but Hermes Wing has not wired mobile attachments; no upload controls are shown.'
+          : 'Text-only plus local voice transcript until Hermes exposes a mobile-safe attachment contract and Hermes Wing wires it.',
     ),
     const HermesSurfaceReadiness(
       title: 'Files/context folders',

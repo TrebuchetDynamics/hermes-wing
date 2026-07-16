@@ -109,7 +109,7 @@ Hybrid pre-routing, wake words, model fine-tuning for the three paraphrase failu
 
 - **`VoiceCommandSettingsSink` interface:** the dispatcher depends on a small
   `VoiceCommandSettingsSink` interface rather than the concrete
-  `NavivoxVoiceSettingsController` from Riverpod, decoupling command dispatch from the
+  `WingVoiceSettingsController` from Riverpod, decoupling command dispatch from the
   Riverpod controller type and keeping the dispatcher's unit tests free of a
   `ProviderContainer`.
 - **Voice toggle-on side effect (user-intent deviation):** the voice command

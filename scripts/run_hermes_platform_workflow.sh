@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-workflow_name="${NAVIVOX_HERMES_PLATFORM_WORKFLOW:-Hermes platform smoke}"
-ref="${NAVIVOX_WORKFLOW_REF:-$(git branch --show-current 2>/dev/null || true)}"
-run_provider="${NAVIVOX_RUN_PROVIDER_SMOKE:-false}"
-provider_url="${NAVIVOX_PROVIDER_HERMES_URL:-}"
-run_android="${NAVIVOX_RUN_ANDROID_EMULATOR_SMOKE:-false}"
-watch="${NAVIVOX_WATCH_WORKFLOW:-true}"
-receipt_path="${NAVIVOX_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
-existing_run_id="${NAVIVOX_PLATFORM_WORKFLOW_RUN_ID:-}"
+workflow_name="${WING_HERMES_PLATFORM_WORKFLOW:-Hermes platform smoke}"
+ref="${WING_WORKFLOW_REF:-$(git branch --show-current 2>/dev/null || true)}"
+run_provider="${WING_RUN_PROVIDER_SMOKE:-false}"
+provider_url="${WING_PROVIDER_HERMES_URL:-}"
+run_android="${WING_RUN_ANDROID_EMULATOR_SMOKE:-false}"
+watch="${WING_WATCH_WORKFLOW:-true}"
+receipt_path="${WING_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
+existing_run_id="${WING_PLATFORM_WORKFLOW_RUN_ID:-}"
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "gh is required to dispatch the Hermes platform workflow." >&2
@@ -16,7 +16,7 @@ if ! command -v gh >/dev/null 2>&1; then
 fi
 
 if [ -z "$ref" ]; then
-  echo "Could not determine git ref. Set NAVIVOX_WORKFLOW_REF." >&2
+  echo "Could not determine git ref. Set WING_WORKFLOW_REF." >&2
   exit 1
 fi
 
@@ -44,7 +44,7 @@ EOF
 fi
 
 if [ "$run_provider" = "true" ] && [ -z "$provider_url" ]; then
-  echo "NAVIVOX_PROVIDER_HERMES_URL is required when NAVIVOX_RUN_PROVIDER_SMOKE=true." >&2
+  echo "WING_PROVIDER_HERMES_URL is required when WING_RUN_PROVIDER_SMOKE=true." >&2
   exit 1
 fi
 
@@ -64,7 +64,7 @@ else
   gh "${args[@]}"
 
   # Give GitHub a moment to create the run, then show the newest matching run.
-  sleep "${NAVIVOX_WORKFLOW_RUN_DISCOVERY_DELAY_SECONDS:-5}"
+  sleep "${WING_WORKFLOW_RUN_DISCOVERY_DELAY_SECONDS:-5}"
   run_id="$(gh run list --workflow "$workflow_name" --branch "$ref" --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
   if [ -z "$run_id" ]; then
     cat >&2 <<'EOF'
@@ -80,9 +80,9 @@ echo "Run: $(gh run view "$run_id" --json url --jq '.url')"
 if [ "$watch" = "true" ]; then
   gh run watch "$run_id" --exit-status
   mkdir -p "$(dirname "$receipt_path")"
-  run_json="$(mktemp -t navivox-platform-run.XXXXXX.json)"
-  artifacts_json="$(mktemp -t navivox-platform-artifacts.XXXXXX.json)"
-  jobs_json="$(mktemp -t navivox-platform-jobs.XXXXXX.json)"
+  run_json="$(mktemp -t wing-platform-run.XXXXXX.json)"
+  artifacts_json="$(mktemp -t wing-platform-artifacts.XXXXXX.json)"
+  jobs_json="$(mktemp -t wing-platform-jobs.XXXXXX.json)"
   gh run view "$run_id" \
     --json databaseId,url,workflowName,headBranch,headSha,status,conclusion,createdAt,updatedAt \
     >"$run_json"
@@ -99,9 +99,9 @@ artifacts = [
     for artifact in artifact_details
 ]
 required_native_artifacts = [
-    'navivox-windows-debug-bundle',
-    'navivox-ios-simulator-app',
-    'navivox-macos-debug-app',
+    'wing-windows-debug-bundle',
+    'wing-ios-simulator-app',
+    'wing-macos-debug-app',
 ]
 artifact_by_name = {
     artifact.get('name'): artifact
@@ -219,7 +219,7 @@ PY
   echo "Platform workflow receipt written: $receipt_path"
 else
   cat <<'EOF'
-Workflow dispatch succeeded, but NAVIVOX_WATCH_WORKFLOW=false did not wait for job results.
+Workflow dispatch succeeded, but WING_WATCH_WORKFLOW=false did not wait for job results.
 Collect successful Windows/iOS/macOS/Android/Linux job receipts before claiming platform readiness.
 EOF
 fi

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/data/needle_test_transcripts.dart';
-import 'package:navivox/features/needle_spike/services/needle_tool_catalog.dart';
+import 'package:wing/features/needle_spike/data/needle_test_transcripts.dart';
+import 'package:wing/features/needle_spike/services/needle_tool_catalog.dart';
 
 void main() {
   test('catalog defines 10 uniquely named function tools', () {

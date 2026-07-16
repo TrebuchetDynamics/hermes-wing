@@ -3,7 +3,7 @@ part of '../hermes_api_channel.dart';
 extension _VoiceExtension on HermesApiChannel {
   String _startVoiceRun() {
     final id = 'voice-${_uuid.v4()}';
-    final run = NavivoxVoiceRun.recording(
+    final run = WingVoiceRun.recording(
       id: id,
       serverId: 'hermes',
       profileId: _state.activeSessionId ?? '',
@@ -115,7 +115,7 @@ extension _VoiceExtension on HermesApiChannel {
     _updateVoiceRun(run.markFailed(reason));
   }
 
-  void _updateVoiceRun(NavivoxVoiceRun run) {
+  void _updateVoiceRun(WingVoiceRun run) {
     _setState(_state.copyWith(voiceRuns: {..._state.voiceRuns, run.id: run}));
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// Surfaces the raw Navivox connect pairing payload string carried by the
+/// Surfaces the raw Hermes Wing connect pairing payload string carried by the
 /// Android activity's intent (an `ACTION_VIEW` deep link or `ACTION_SEND`
 /// shared text), so it can be handed to `HermesEnrollmentPayload.parse()`.
 /// Implementations must never throw: an inbound intent is untrusted input,
@@ -33,10 +33,10 @@ class MethodChannelHermesConnectIntentSource
   );
 
   static const _defaultMethodChannel = MethodChannel(
-    'com.trebuchetdynamics.navivox/connect_intents',
+    'com.trebuchetdynamics.hermes.wing/connect_intents',
   );
   static const _defaultEventChannel = EventChannel(
-    'com.trebuchetdynamics.navivox/connect_intents/events',
+    'com.trebuchetdynamics.hermes.wing/connect_intents/events',
   );
 
   final MethodChannel _methodChannel;

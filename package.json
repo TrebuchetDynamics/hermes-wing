@@ -1,8 +1,8 @@
 {
-  "name": "navivox-app",
+  "name": "hermes-wing",
   "version": "0.1.0",
   "private": true,
-  "description": "Browser test tooling for the experimental Navivox Hermes Agent client.",
+  "description": "Browser test tooling for Hermes Wing.",
   "scripts": {
     "test": "flutter test --concurrency=1",
     "web:e2e": "./playwright/scripts/run_tests.sh",
@@ -22,15 +22,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrebuchetDynamics/navivox-app.git"
+    "url": "git+https://github.com/TrebuchetDynamics/hermes-wing.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TrebuchetDynamics/navivox-app/issues"
+    "url": "https://github.com/TrebuchetDynamics/hermes-wing/issues"
   },
-  "homepage": "https://github.com/TrebuchetDynamics/navivox-app#readme",
+  "homepage": "https://github.com/TrebuchetDynamics/hermes-wing#readme",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "playwright": "^1.60.0"

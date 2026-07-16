@@ -32,7 +32,7 @@ void _hermesApiChannelVoiceTests() {
       final voiceRunId = channel.startVoiceRun();
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
-        NavivoxVoiceRunStatus.recording,
+        WingVoiceRunStatus.recording,
       );
 
       channel.stageVoiceRunTranscript(
@@ -43,7 +43,7 @@ void _hermesApiChannelVoiceTests() {
       );
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
-        NavivoxVoiceRunStatus.pendingSend,
+        WingVoiceRunStatus.pendingSend,
       );
 
       channel.submitVoiceRun(voiceRunId);
@@ -52,7 +52,7 @@ void _hermesApiChannelVoiceTests() {
       expect(sentMessages, ['turn the lights on']);
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
-        NavivoxVoiceRunStatus.completed,
+        WingVoiceRunStatus.completed,
       );
       // Reconciled with server-confirmed history after the streamed turn.
       expect(channel.state.activeMessages.map((t) => t.text), [
@@ -97,7 +97,7 @@ void _hermesApiChannelVoiceTests() {
       await pumpEventQueue();
 
       final run = channel.state.voiceRuns[voiceRunId]!;
-      expect(run.status, NavivoxVoiceRunStatus.failed);
+      expect(run.status, WingVoiceRunStatus.failed);
       expect(run.reason, 'Hermes voice transcript was empty.');
       expect(postStreamCalled, isFalse);
       expect(channel.state.activeMessages.map((turn) => turn.text), ['Hello']);
@@ -118,7 +118,7 @@ void _hermesApiChannelVoiceTests() {
     await pumpEventQueue();
 
     final run = channel.state.voiceRuns[voiceRunId]!;
-    expect(run.status, NavivoxVoiceRunStatus.failed);
+    expect(run.status, WingVoiceRunStatus.failed);
     expect(run.reason, 'Hermes channel is not connected to a session.');
     expect(run.sessionId, isNull);
     expect(channel.state.messages, isEmpty);
@@ -159,7 +159,7 @@ void _hermesApiChannelVoiceTests() {
       await pumpEventQueue();
 
       final run = channel.state.voiceRuns[voiceRunId]!;
-      expect(run.status, NavivoxVoiceRunStatus.failed);
+      expect(run.status, WingVoiceRunStatus.failed);
       expect(run.reason, contains('supported chat transport'));
       expect(run.sessionId, isNull);
       expect(postStreamCalled, isFalse);
@@ -201,7 +201,7 @@ void _hermesApiChannelVoiceTests() {
 
     final run = channel.state.voiceRuns[voiceRunId]!;
     expect(messagesRequests, 1);
-    expect(run.status, NavivoxVoiceRunStatus.failed);
+    expect(run.status, WingVoiceRunStatus.failed);
     expect(run.reason, 'Hermes voice turn did not complete.');
   });
 
@@ -239,14 +239,14 @@ void _hermesApiChannelVoiceTests() {
       await pumpEventQueue();
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
-        NavivoxVoiceRunStatus.submitted,
+        WingVoiceRunStatus.submitted,
       );
 
       await channel.selectSession('sess_2');
       await pumpEventQueue();
 
       final run = channel.state.voiceRuns[voiceRunId];
-      expect(run?.status, NavivoxVoiceRunStatus.failed);
+      expect(run?.status, WingVoiceRunStatus.failed);
       expect(run?.reason, 'Hermes voice turn did not complete.');
       expect(channel.state.activeSessionId, 'sess_2');
       expect(channel.state.activeMessages.single.text, 'From two');
@@ -289,7 +289,7 @@ void _hermesApiChannelVoiceTests() {
       await pumpEventQueue();
 
       final run = channel.state.voiceRuns[voiceRunId];
-      expect(run?.status, NavivoxVoiceRunStatus.cancelled);
+      expect(run?.status, WingVoiceRunStatus.cancelled);
       expect(run?.reason, 'user cancelled');
       expect(run?.transcript, isNull);
       expect(postStreamCalled, isFalse);
@@ -331,7 +331,7 @@ void _hermesApiChannelVoiceTests() {
       await pumpEventQueue();
 
       final run = channel.state.voiceRuns[voiceRunId];
-      expect(run?.status, NavivoxVoiceRunStatus.cancelled);
+      expect(run?.status, WingVoiceRunStatus.cancelled);
       expect(run?.reason, 'user cancelled');
     },
   );
@@ -370,14 +370,14 @@ void _hermesApiChannelVoiceTests() {
     await pumpEventQueue();
     expect(
       channel.state.voiceRuns[voiceRunId]?.status,
-      NavivoxVoiceRunStatus.completed,
+      WingVoiceRunStatus.completed,
     );
 
     channel.cancelVoiceRun(voiceRunId, reason: 'late cancel');
     channel.failVoiceRun(voiceRunId, reason: 'late failure');
 
     final run = channel.state.voiceRuns[voiceRunId];
-    expect(run?.status, NavivoxVoiceRunStatus.completed);
+    expect(run?.status, WingVoiceRunStatus.completed);
     expect(run?.reason, isNull);
   });
 
@@ -407,7 +407,7 @@ void _hermesApiChannelVoiceTests() {
 
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
-        NavivoxVoiceRunStatus.cancelled,
+        WingVoiceRunStatus.cancelled,
       );
       expect(channel.state.activeVoiceRun, isNull);
     },

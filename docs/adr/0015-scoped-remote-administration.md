@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Hermes Agent must enforce scoped authorization before Navivox exposes mutating administration on Android. Scoped operator tokens are revocable bearer credentials with domain-level read/write grants; the legacy `API_SERVER_KEY` remains a compatibility superuser credential but is not the default Android credential.
+Hermes Agent must enforce scoped authorization before Hermes Wing exposes mutating administration on Android. Scoped operator tokens are revocable bearer credentials with domain-level read/write grants; the legacy `API_SERVER_KEY` remains a compatibility superuser credential but is not the default Android credential.
 
 ## Consequences
 

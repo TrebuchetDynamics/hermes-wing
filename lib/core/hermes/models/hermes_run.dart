@@ -1,12 +1,12 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesRun {
   const HermesRun({required this.id, required this.sessionId});
 
   factory HermesRun.fromJson(Map<String, Object?> json) {
     return HermesRun(
-      id: navivoxStringFromJson(json['id'] ?? json['run_id'], fallback: ''),
-      sessionId: navivoxStringFromJson(json['session_id'], fallback: ''),
+      id: wingStringFromJson(json['id'] ?? json['run_id'], fallback: ''),
+      sessionId: wingStringFromJson(json['session_id'], fallback: ''),
     );
   }
 

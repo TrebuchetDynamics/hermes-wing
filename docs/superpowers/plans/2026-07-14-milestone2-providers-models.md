@@ -6,12 +6,12 @@
 
 **Architecture:** Reuse existing `hermes_cli` provider/model domain functions over `_authorize`-gated HTTP (the milestone-0 pattern), then build the Flutter client (the milestone-1 pattern). No `hermes_cli` behavior changes.
 
-**Tech Stack:** hermes-agent (Python 3.11+, aiohttp, `uv run --extra dev pytest`); navivox (Flutter 3.44, Dart 3.12, Riverpod 3, go_router 17).
+**Tech Stack:** hermes-agent (Python 3.11+, aiohttp, `uv run --extra dev pytest`); wing (Flutter 3.44, Dart 3.12, Riverpod 3, go_router 17).
 
 ## Global Constraints
 
 - **Secret invariant (load-bearing):** no endpoint, response body, log line, error message, or capability field ever returns a raw provider key. Credential set is write-only; the Dashboard's `reveal_env_var` is NOT mirrored. Presence = `configured: bool` + masked last-4 only.
-- hermes-agent work on branch `feat/providers-models` (from local `main`, which now has milestone 0); commit, NEVER push. navivox on branch `feat/providers-models` (from local `main`).
+- hermes-agent work on branch `feat/providers-models` (from local `main`, which now has milestone 0); commit, NEVER push. wing on branch `feat/providers-models` (from local `main`).
 - New scope domains `providers` and `models` added to `VALID_SCOPE_DOMAINS`.
 - All mutations `:write`-gated via `_authorize`; assignment changes use `If-Match`; every operation carries the mandatory `?profile=` query.
 - Stage only files each task names; never bare `git add -A`; leave the user's pre-existing dirty docs/ADR files untouched.
@@ -76,7 +76,7 @@
 ### Task 4: Typed Flutter provider/model client + channel
 
 **Files:**
-- Create: `navivox-app/lib/core/hermes/models/hermes_provider.dart`, `lib/core/hermes/models/hermes_model_assignment.dart`
+- Create: `hermes-wing/lib/core/hermes/models/hermes_provider.dart`, `lib/core/hermes/models/hermes_model_assignment.dart`
 - Modify: `lib/core/hermes/client/hermes_api_client.dart`, `hermes_api_config.dart`, `hermes_api_transport*.dart` (if a new verb is needed — reuse PUT from milestone 1), `lib/core/hermes/channel/hermes_channel.dart`, `hermes_channel_state.dart`, `hermes_api_channel.dart`, add `lib/core/hermes/channel/api_channel/hermes_api_channel_providers.dart`
 - Modify tests: `test/core/hermes/hermes_api_test.dart`, `test/core/hermes/channel/hermes_api_channel_test.dart`, `test/features/hermes_chat/support/fake_hermes_channel.dart`
 
@@ -85,14 +85,14 @@
 - Produces: `HermesProvider {slug, label, authType, envVars, configured, keyHint}` (keyHint nullable, never a full key); `HermesModelAssignment {activeProvider, activeModel, auxiliary}`; client methods `listProviders`, `setProviderCredential({slug, envVar, value})`, `removeProviderCredential({slug, envVar})`, `validateProviderCredential({slug})`, `listModels`, `refreshModels`, `assignModel({scope, task?, provider, model, revision})`; channel methods mirroring them; `state.providers`, `state.models`. All profile-scoped; assignment sends `If-Match`; refresh is explicit. `HermesProvider.fromJson` discards blank-slug rows; NO field ever holds a full secret.
 
 - [ ] **Step 1: Failing tests** — provider list parse (configured + keyHint, no full key); setProviderCredential sends the value in the request body but the RESULT/state exposes only presence; model list parse; assignModel sends If-Match; refresh hits the refresh endpoint; scope-gating; the two invariants (all provider/model requests carry `?profile=`; a set-credential response/state never contains the sent value). Fake channel gains the seam. Red.
-- [ ] **Step 2: Implement.** **Step 3: Run** `cd navivox-app && flutter test test/core/hermes --concurrency=1` + `flutter analyze lib/core/hermes` + format. **Step 4: Commit** `feat(hermes): typed provider/model client and channel operations`.
+- [ ] **Step 2: Implement.** **Step 3: Run** `cd hermes-wing && flutter test test/core/hermes --concurrency=1` + `flutter analyze lib/core/hermes` + format. **Step 4: Commit** `feat(hermes): typed provider/model client and channel operations`.
 
 ---
 
 ### Task 5: Providers screen, write-only credential sheet, model picker
 
 **Files:**
-- Create: `navivox-app/lib/features/providers/screens/providers_screen.dart`, `lib/features/providers/widgets/provider_credential_sheet.dart`, `lib/features/providers/widgets/model_picker_sheet.dart`
+- Create: `hermes-wing/lib/features/providers/screens/providers_screen.dart`, `lib/features/providers/widgets/provider_credential_sheet.dart`, `lib/features/providers/widgets/model_picker_sheet.dart`
 - Create tests: `test/features/providers/providers_screen_test.dart`, `test/features/providers/provider_credential_sheet_test.dart`
 - Modify: `lib/router/routes/app_routes.dart`, `lib/router/providers/app_router.dart`, `lib/shared/widgets/app_shell_presentation.dart`, `lib/l10n/app_en.arb` (+ regenerate), `test/shared/widgets/app_shell_test.dart`
 
@@ -109,10 +109,10 @@
 
 **Files:**
 - Create: `hermes-agent/tests/gateway/test_milestone2_receipt.py`
-- Modify (navivox, LEAVE UNCOMMITTED for the user given the dirty-doc entanglement — apply and report, do not stage): `docs/product/hermes-desktop-parity.md`, `docs/product/hermes-compatibility.md`, `docs/product/routes.md`, `docs/security/threat-model.md`
+- Modify (wing, LEAVE UNCOMMITTED for the user given the dirty-doc entanglement — apply and report, do not stage): `docs/product/hermes-desktop-parity.md`, `docs/product/hermes-compatibility.md`, `docs/product/routes.md`, `docs/security/threat-model.md`
 
 - [ ] **Step 1: End-to-end receipt** — `test_milestone2_receipt.py` mirroring `test_milestone0_receipt.py`: with a scoped `providers:write`+`models:write` token, set a provider credential → validate → GET providers shows configured (value absent) → refresh models → assign a main model with If-Match → GET models shows it active → assert the set key string is absent from every response and the capabilities doc. Run: passes immediately (locks the contract); if any step fails, fix the handler, never the assertion.
-- [ ] **Step 2: Full validation** — hermes-agent auth+providers+models suites green + baseline-diff the full `tests/gateway/` for zero new failures; navivox `flutter test` + `flutter analyze` + `flutter build apk --debug`.
+- [ ] **Step 2: Full validation** — hermes-agent auth+providers+models suites green + baseline-diff the full `tests/gateway/` for zero new failures; wing `flutter test` + `flutter analyze` + `flutter build apk --debug`.
 - [ ] **Step 3: Docs** — apply (do not commit; report as a diff for the user): parity ledger milestone-2 row → `implementing` with a status line and remaining-before-`validated` (on-device receipt); routes `/providers` → implemented; compatibility endpoint/scope table gains the provider/model rows and the write-only-no-reveal note; threat-model gains a provider-key-never-revealed line.
 - [ ] **Step 4: Commit** the receipt only (`test(gateway): milestone-2 end-to-end contract receipt`). Report the doc diff separately.
 - [ ] **Step 5:** report; merge of both branches and the on-device receipt remain user-gated.

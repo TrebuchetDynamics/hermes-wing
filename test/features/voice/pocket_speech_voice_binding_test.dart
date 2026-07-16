@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
-import 'package:navivox/shared/voice/voice_settings.dart';
+import 'package:wing/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 /// Fake [PocketSpeechEngine] that records the exact `(text, voice, speed)`
 /// tuple passed to [synthesizeWav] for each call, so tests can assert on
@@ -68,7 +68,7 @@ void main() {
       engine: engine,
       audioSink: _NoopPocketSpeechAudioSink(),
       settings: () =>
-          const NavivoxVoiceSettings(speechRate: 2.0, ttsVoiceName: 'Bella'),
+          const WingVoiceSettings(speechRate: 2.0, ttsVoiceName: 'Bella'),
     );
 
     await service.speak('hi');
@@ -83,7 +83,7 @@ void main() {
       final service = PocketSpeechTextToSpeechService(
         engine: engine,
         audioSink: _NoopPocketSpeechAudioSink(),
-        settings: () => const NavivoxVoiceSettings(),
+        settings: () => const WingVoiceSettings(),
       );
 
       await service.speak('hi');
@@ -101,7 +101,7 @@ void main() {
       final service = PocketSpeechTextToSpeechService(
         engine: engine,
         audioSink: _NoopPocketSpeechAudioSink(),
-        settings: () => const NavivoxVoiceSettings(speechRate: 3.0),
+        settings: () => const WingVoiceSettings(speechRate: 3.0),
       );
 
       await service.speak('hi');
@@ -118,7 +118,7 @@ void main() {
         engine: engine,
         audioSink: _NoopPocketSpeechAudioSink(),
         settings: () =>
-            const NavivoxVoiceSettings(speechRate: 2.0, ttsVoiceName: 'ghost'),
+            const WingVoiceSettings(speechRate: 2.0, ttsVoiceName: 'ghost'),
       );
 
       await service.speak('hi');

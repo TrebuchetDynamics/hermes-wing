@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Before Electron retirement, the final supported Hermes Desktop line must let an operator recover every decryptable legacy local wallet one at a time. This is a local data-exit feature in Hermes Desktop, not wallet custody or import in Navivox.
+Before Electron retirement, the final supported Hermes Desktop line must let an operator recover every decryptable legacy local wallet one at a time. This is a local data-exit feature in Hermes Desktop, not wallet custody or import in Hermes Wing.
 
 ## Entry and verification
 
@@ -15,7 +15,7 @@ The Electron main process decrypts exactly one `safeStorage` value and derives i
 
 ### Timed manual reveal
 
-A dedicated sandboxed, CSP-locked, non-debuggable local window reveals the phrase only after confirmation, obscures it on focus loss, disables selection and clipboard actions, requests platform screen-capture protection where available, and clears and closes after a short visible timeout. The operator transcribes it manually and confirms selected words before the flow records success. Navivox does not claim that desktop operating systems can prevent every camera or privileged screen capture.
+A dedicated sandboxed, CSP-locked, non-debuggable local window reveals the phrase only after confirmation, obscures it on focus loss, disables selection and clipboard actions, requests platform screen-capture protection where available, and clears and closes after a short visible timeout. The operator transcribes it manually and confirms selected words before the flow records success. Hermes Wing does not claim that desktop operating systems can prevent every camera or privileged screen capture.
 
 ### Passphrase-encrypted file
 
@@ -25,9 +25,9 @@ The export passphrase and plaintext are never persisted, logged, copied, include
 
 ## Prohibited flows
 
-There is no clipboard, QR, print, cloud upload, bulk export, automatic Navivox/Hermes One transfer, analytics event containing wallet identity, or API response containing recovery material. Export does not delete, rename, migrate, or mark the wallet safe. Deletion remains a separate later action with its own confirmation after the operator independently verifies recovery.
+There is no clipboard, QR, print, cloud upload, bulk export, automatic Hermes Wing/Hermes One transfer, analytics event containing wallet identity, or API response containing recovery material. Export does not delete, rename, migrate, or mark the wallet safe. Deletion remains a separate later action with its own confirmation after the operator independently verifies recovery.
 
-Legacy wallet material remains excluded from Navivox backup/import and client-state migration. Navivox never decrypts or imports the phrase.
+Legacy wallet material remains excluded from Hermes Wing backup/import and client-state migration. Hermes Wing never decrypts or imports the phrase.
 
 ## Retirement evidence
 

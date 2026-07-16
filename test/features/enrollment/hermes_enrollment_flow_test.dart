@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/l10n/app_localizations.dart';
-import 'package:navivox/core/hermes/client/hermes_api_client.dart';
-import 'package:navivox/features/enrollment/models/hermes_enrollment_payload.dart';
-import 'package:navivox/features/enrollment/providers/hermes_enrollment_provider.dart';
-import 'package:navivox/features/enrollment/services/hermes_connect_intent_source.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/router/providers/app_router.dart';
-import 'package:navivox/router/routes/app_routes.dart';
+import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/core/hermes/client/hermes_api_client.dart';
+import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
+import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
+import 'package:wing/features/enrollment/services/hermes_connect_intent_source.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/router/providers/app_router.dart';
+import 'package:wing/router/routes/app_routes.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
@@ -18,7 +18,7 @@ import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 const _secretToken = 'hop_super-secret-token-should-never-render';
 
 const _validPayload =
-    'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=one-time';
+    'wing://connect?origin=https%3A%2F%2Fhermes.example&code=one-time';
 
 const _preview = HermesEnrollmentPreview(
   label: 'Galaxy S24',

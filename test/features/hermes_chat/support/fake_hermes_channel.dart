@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel.dart';
-import 'package:navivox/core/hermes/models/hermes_capabilities.dart';
-import 'package:navivox/core/hermes/models/hermes_chat_turn.dart';
-import 'package:navivox/core/hermes/models/hermes_health.dart';
-import 'package:navivox/core/hermes/models/hermes_job.dart';
-import 'package:navivox/core/hermes/models/hermes_session.dart';
-import 'package:navivox/core/hermes/policy/hermes_transport_policy.dart';
-import 'package:navivox/core/protocol/voice/models/navivox_voice_run.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/hermes/models/hermes_health.dart';
+import 'package:wing/core/hermes/models/hermes_job.dart';
+import 'package:wing/core/hermes/models/hermes_session.dart';
+import 'package:wing/core/hermes/policy/hermes_transport_policy.dart';
+import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
 
 class FakeHermesConnectCall {
   const FakeHermesConnectCall({required this.baseUrl, this.apiKey});
@@ -675,7 +675,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   @override
   String startVoiceRun() {
     final id = 'voice-${_state.voiceRuns.length}';
-    final run = NavivoxVoiceRun.recording(
+    final run = WingVoiceRun.recording(
       id: id,
       serverId: 'hermes',
       profileId: _state.activeSessionId ?? '',
@@ -754,7 +754,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     _updateVoiceRun(run.markFailed(reason));
   }
 
-  void _updateVoiceRun(NavivoxVoiceRun run) {
+  void _updateVoiceRun(WingVoiceRun run) {
     _setState(_state.copyWith(voiceRuns: {..._state.voiceRuns, run.id: run}));
   }
 }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
-import '../../../core/protocol/voice/models/navivox_voice_run.dart';
+import '../../../core/protocol/voice/models/wing_voice_run.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/voice/voice_settings.dart';
@@ -14,7 +14,7 @@ import 'hermes_voice_capture_flow.dart';
 typedef HermesChannelReader = HermesChannel Function();
 typedef VoiceCaptureServiceReader = VoiceCaptureService? Function();
 typedef TextToSpeechServiceReader = TextToSpeechService? Function();
-typedef VoiceSettingsReader = NavivoxVoiceSettings Function();
+typedef VoiceSettingsReader = WingVoiceSettings Function();
 
 /// Optional post-STT routing seam: tried after STT, before draft/submit.
 /// Null (the default) keeps behavior identical to today.
@@ -195,7 +195,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         );
         channel.submitVoiceRun(voiceRunId);
         final run = channel.state.voiceRuns[voiceRunId];
-        if (run?.status == NavivoxVoiceRunStatus.failed) {
+        if (run?.status == WingVoiceRunStatus.failed) {
           _recordCaptureFailure(
             run?.reason ?? 'Voice turn could not be sent.',
             autoSend: true,

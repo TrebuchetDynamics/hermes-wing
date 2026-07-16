@@ -1,1 +1,1 @@
-export 'app/navivox_app.dart';
+export 'app/wing_app.dart';

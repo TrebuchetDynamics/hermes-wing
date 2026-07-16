@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/channel/hermes_channel.dart';
-import 'package:navivox/core/hermes/channel/hermes_api_channel.dart';
-import 'package:navivox/core/hermes/hermes_api.dart';
-import 'package:navivox/core/hermes/models/hermes_chat_turn.dart';
-import 'package:navivox/core/protocol/voice/models/navivox_voice_run.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/hermes_api.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
 
 import '../../../features/hermes_chat/support/fake_hermes_channel.dart';
 

@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Hermes Desktop remains supported while Navivox ships incremental Android and desktop milestones. The Electron retirement gate opens only when the planning-baseline capability matrix and every accepted delta through ADR 0021’s retirement cutoff are reconciled on Linux, Windows, and macOS; success on the Android or Linux reference platform alone is not sufficient.
+Hermes Desktop remains supported while Hermes Wing ships incremental Android and desktop milestones. The Electron retirement gate opens only when the planning-baseline capability matrix and every accepted delta through ADR 0021’s retirement cutoff are reconciled on Linux, Windows, and macOS; success on the Android or Linux reference platform alone is not sufficient.
 
 ## Consequences
 

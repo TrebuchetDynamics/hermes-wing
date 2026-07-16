@@ -6,7 +6,8 @@ All notable user-visible changes will be documented here.
 
 ### Changed
 
-- Reframed Navivox as an alpha, source-distributed Hermes Agent client.
+- Renamed the project and its internal identifiers to Hermes Wing.
+- Reframed Hermes Wing as an alpha, source-distributed Hermes Agent client.
 - Qualified platform, speech-recognition, privacy, and transport claims.
 - Kept the active application shell Hermes-only.
 - Reported optional Hermes inventory failures separately from empty results.

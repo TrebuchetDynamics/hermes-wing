@@ -7,7 +7,7 @@ abstract final class AppRoutes {
   static const settings = '/settings';
 
   /// One-time pairing enrollment screen reached via an Android connect
-  /// intent (`navivox://connect?...`); deliberately outside the
+  /// intent (`wing://connect?...`); deliberately outside the
   /// authenticated shell since no endpoint is configured yet.
   static const enroll = '/enroll';
 

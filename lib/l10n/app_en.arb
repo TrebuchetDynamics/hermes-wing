@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Navivox",
+  "appTitle": "Hermes Wing",
   "hermesDestination": "Hermes",
   "agentsDestination": "Agents",
   "settingsDestination": "Settings",
@@ -121,7 +121,7 @@
       "provider": {"type": "String"}
     }
   },
-  "credentialWriteOnlyNotice": "Navivox can set this credential but never shows a stored key.",
+  "credentialWriteOnlyNotice": "Hermes Wing can set this credential but never shows a stored key.",
   "credentialEnvVarLabel": "Environment variable",
   "credentialValueLabel": "New secret value",
   "credentialValueRequired": "Enter a value to set.",

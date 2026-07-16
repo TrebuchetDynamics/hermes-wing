@@ -55,7 +55,7 @@ concurrency; capabilities advertises each endpoint with `required_scopes` and
 pass/fail. No response body, log line, error message, or capability field ever contains
 a raw key. Extends the milestone-0 diagnostic redaction list to cover provider keys.
 
-## Client (navivox)
+## Client (wing)
 
 New `/providers` route in the More sheet (milestone-1 `/agents` pattern):
 - provider list with `configured` badges;

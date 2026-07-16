@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_router.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_validator.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_router.dart';
+import 'package:wing/features/voice_commands/services/voice_command_validator.dart';
 
 class _ScriptedEngine implements NeedleEngineApi {
   _ScriptedEngine(this.responses);

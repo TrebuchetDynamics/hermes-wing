@@ -1,5 +1,5 @@
-/// Parses and validates the Navivox connect pairing payload carried by an
-/// Android intent (`navivox://connect?...` deep link, or shared text that
+/// Parses and validates the Hermes Wing connect pairing payload carried by an
+/// Android intent (`wing://connect?...` deep link, or shared text that
 /// contains one). Only a small allowlisted shape is accepted: an HTTPS (or
 /// explicitly confirmed cleartext) Hermes origin plus a one-time pairing
 /// code. Nothing else survives parsing, and no bearer credential is ever
@@ -17,7 +17,7 @@ class HermesEnrollmentPayload {
   final String code;
 
   static const _maxCodeLength = 128;
-  static const _connectScheme = 'navivox';
+  static const _connectScheme = 'wing';
   static const _connectHost = 'connect';
 
   /// Hosts exempt from the plaintext-origin confirmation requirement below,
@@ -40,7 +40,7 @@ class HermesEnrollmentPayload {
     }
     final uri = Uri.parse(trimmed);
     if (uri.scheme != _connectScheme || uri.host != _connectHost) {
-      throw const FormatException('not a Navivox connect payload');
+      throw const FormatException('not a Hermes Wing connect payload');
     }
     if (uri.fragment.isNotEmpty) {
       throw const FormatException(

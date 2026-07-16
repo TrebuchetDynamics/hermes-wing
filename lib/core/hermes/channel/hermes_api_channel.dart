@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../protocol/navivox_json.dart';
-import '../../protocol/voice/models/navivox_voice_run.dart';
+import '../../protocol/wing_json.dart';
+import '../../protocol/voice/models/wing_voice_run.dart';
 import '../client/hermes_api_client.dart';
 import '../client/hermes_api_config.dart';
 import '../models/hermes_chat_turn.dart';
@@ -24,7 +24,7 @@ part 'api_channel/hermes_api_channel_voice.dart';
 part 'api_channel/hermes_api_channel_errors.dart';
 
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
-/// API server. See docs/adr/0007-native-hermes-channel-not-navivox-channel-adapter.md.
+/// API server. See docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
 class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,

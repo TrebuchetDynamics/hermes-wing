@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesSseEvent {
   const HermesSseEvent({this.id, required this.event, required this.data});
@@ -26,7 +26,7 @@ class HermesStreamEvent {
       if (decoded is! Map) {
         throw const FormatException('Hermes SSE data must be a JSON object');
       }
-      final payload = navivoxMapFromJson(decoded);
+      final payload = wingMapFromJson(decoded);
       final embeddedName = event.event == 'message'
           ? _embeddedEventName(payload)
           : null;
@@ -49,15 +49,15 @@ class HermesStreamEvent {
   final Map<String, Object?> payload;
 
   bool get isDone => name == 'done';
-  String? get runId => navivoxOptionalStringFromJson(payload['run_id']);
-  String? get sessionId => navivoxOptionalStringFromJson(payload['session_id']);
-  String? get messageId => navivoxOptionalStringFromJson(payload['message_id']);
-  String? get delta => navivoxOptionalStringFromJson(payload['delta']);
+  String? get runId => wingOptionalStringFromJson(payload['run_id']);
+  String? get sessionId => wingOptionalStringFromJson(payload['session_id']);
+  String? get messageId => wingOptionalStringFromJson(payload['message_id']);
+  String? get delta => wingOptionalStringFromJson(payload['delta']);
 }
 
 String? _embeddedEventName(Map<String, Object?> payload) {
   for (final key in const ['event', 'type', 'name']) {
-    final value = navivoxOptionalStringFromJson(payload[key])?.trim();
+    final value = wingOptionalStringFromJson(payload[key])?.trim();
     if (value != null && value.isNotEmpty) return value;
   }
   return null;

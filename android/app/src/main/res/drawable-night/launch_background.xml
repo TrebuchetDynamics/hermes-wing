@@ -11,5 +11,5 @@
     </item>
     <item
         android:gravity="center"
-        android:drawable="@drawable/navivox_splash_mark" />
+        android:drawable="@drawable/wing_splash_mark" />
 </layer-list>

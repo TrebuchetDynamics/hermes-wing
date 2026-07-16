@@ -1,6 +1,6 @@
 # Routes
 
-Navivox uses one adaptive route tree. Android renders four primary destinations plus More; desktop layouts map the same routes to a navigation rail. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands.
+Hermes Wing uses one adaptive route tree. Android renders four primary destinations plus More; desktop layouts map the same routes to a navigation rail. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands.
 
 | Route | Android placement | Purpose | State |
 | --- | --- | --- | --- |

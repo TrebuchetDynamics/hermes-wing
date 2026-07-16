@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
-  <title id="title">Navivox — the cross-platform Flutter client for Hermes Agent</title>
-  <desc id="desc">A technical title board showing Navivox connecting a device voice and text interface to capability-negotiated Hermes sessions, streamed runs, and approvals.</desc>
+  <title id="title">Hermes Wing — the cross-platform Flutter client for Hermes Agent</title>
+  <desc id="desc">A technical title board showing Hermes Wing connecting a device voice and text interface to capability-negotiated Hermes sessions, streamed runs, and approvals.</desc>
 
   <rect width="1200" height="380" rx="28" fill="#111214"/>
   <path d="M0 312H1200" stroke="#30343b"/>
@@ -8,7 +8,7 @@
 
   <g transform="translate(58 52)">
     <text x="0" y="0" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="700" letter-spacing="2.5">HERMES ONE / FLUTTER CLIENT</text>
-    <text x="0" y="58" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="76" font-weight="800" letter-spacing="-3">NAVIVOX</text>
+    <text x="0" y="58" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="76" font-weight="800" letter-spacing="-3">WING</text>
     <text x="2" y="154" dominant-baseline="hanging" fill="#c4c8cf" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="25" font-weight="500">Run Hermes sessions from phone, web, or desktop.</text>
     <text x="2" y="196" dominant-baseline="hanging" fill="#8f96a3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18">Stream work, handle approvals, manage agents, and use device speech.</text>
   </g>
@@ -23,7 +23,7 @@
       <circle cx="54" cy="4" r="6" fill="#3b82f6"/>
       <circle cx="10" cy="78" r="6" fill="#3b82f6"/>
       <circle cx="98" cy="78" r="6" fill="#3b82f6"/>
-      <text x="54" y="119" text-anchor="middle" fill="#f4f4f5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">NAVIVOX</text>
+      <text x="54" y="119" text-anchor="middle" fill="#f4f4f5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700">WING</text>
     </g>
 
     <path d="M142 130H206" stroke="#565b65" stroke-width="2"/>

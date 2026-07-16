@@ -1,4 +1,4 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 class HermesSession {
   const HermesSession({
@@ -14,14 +14,14 @@ class HermesSession {
 
   factory HermesSession.fromJson(Map<String, Object?> json) {
     return HermesSession(
-      id: navivoxStringFieldFromJson(json, 'id'),
-      source: navivoxStringFromJson(json['source'], fallback: 'api_server'),
-      model: navivoxOptionalStringFromJson(json['model']),
-      title: navivoxOptionalStringFromJson(json['title']),
-      messageCount: navivoxIntFromJson(json['message_count']),
-      lastActive: navivoxOptionalStringFromJson(json['last_active']),
-      preview: navivoxOptionalStringFromJson(json['preview']),
-      parentSessionId: navivoxOptionalStringFromJson(json['parent_session_id']),
+      id: wingStringFieldFromJson(json, 'id'),
+      source: wingStringFromJson(json['source'], fallback: 'api_server'),
+      model: wingOptionalStringFromJson(json['model']),
+      title: wingOptionalStringFromJson(json['title']),
+      messageCount: wingIntFromJson(json['message_count']),
+      lastActive: wingOptionalStringFromJson(json['last_active']),
+      preview: wingOptionalStringFromJson(json['preview']),
+      parentSessionId: wingOptionalStringFromJson(json['parent_session_id']),
     );
   }
 
@@ -48,13 +48,13 @@ class HermesMessage {
 
   factory HermesMessage.fromJson(Map<String, Object?> json) {
     return HermesMessage(
-      id: navivoxStringFieldFromJson(json, 'id'),
-      sessionId: navivoxStringFieldFromJson(json, 'session_id'),
-      role: navivoxStringFromJson(json['role'], fallback: ''),
-      content: navivoxStringFromJson(json['content'], fallback: ''),
-      toolName: navivoxOptionalStringFromJson(json['tool_name']),
-      timestamp: navivoxOptionalStringFromJson(json['timestamp']),
-      finishReason: navivoxOptionalStringFromJson(json['finish_reason']),
+      id: wingStringFieldFromJson(json, 'id'),
+      sessionId: wingStringFieldFromJson(json, 'session_id'),
+      role: wingStringFromJson(json['role'], fallback: ''),
+      content: wingStringFromJson(json['content'], fallback: ''),
+      toolName: wingOptionalStringFromJson(json['tool_name']),
+      timestamp: wingOptionalStringFromJson(json['timestamp']),
+      finishReason: wingOptionalStringFromJson(json['finish_reason']),
     );
   }
 

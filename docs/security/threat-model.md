@@ -1,4 +1,4 @@
-# Navivox threat model
+# Hermes Wing threat model
 
 Status: alpha baseline, not an independent security assessment.
 
@@ -9,7 +9,7 @@ Status: alpha baseline, not an independent security assessment.
 - Backup archives, recovery passphrases, archive handles, and restore checkpoints
 - SSH host trust, private-key paths, and forwarded Hermes traffic
 - Hermes Agent release manifests, installer artifacts, runtime selection, and elevation boundary
-- Navivox package identity, repository metadata, signing lineage, maintainer scripts, and upgrade state
+- Hermes Wing package identity, repository metadata, signing lineage, maintainer scripts, and upgrade state
 - Session transcripts, prompts, tool activity, approval decisions, attachments, context resources, and filesystem grants
 - Microphone input and completed speech transcripts
 - Local voice models and downloaded model metadata
@@ -18,7 +18,7 @@ Status: alpha baseline, not an independent security assessment.
 
 ## Trust boundaries
 
-1. **Navivox process and local storage.** The app controls UI state and splits
+1. **Hermes Wing process and local storage.** The app controls UI state and splits
    non-secret endpoint metadata from API keys stored through the platform
    secure-storage plugin.
 2. **Operating-system services.** Speech recognition, keychain/keystore,
@@ -41,8 +41,8 @@ Status: alpha baseline, not an independent security assessment.
 - API keys, scoped operator tokens, and Hermes One OAuth credentials are not stored in shared preferences.
 - Pairing payloads carry only short-lived, single-use codes; bearer tokens are excluded from URLs, QR payloads, shared text, logs, and clipboard flows.
 - Native Hermes One sign-in uses an allowed-origin system-browser RFC 8628 flow with generic device labels, server-paced polling, no code clipboard/logging, and a client-global credential in platform secure storage.
-- Hermes One OAuth credentials never transit through Hermes Agent, and backend-managed wallet secrets never reach Navivox.
-- Navivox does not create, import, persist, or automatically transfer wallet recovery phrases.
+- Hermes One OAuth credentials never transit through Hermes Agent, and backend-managed wallet secrets never reach Hermes Wing.
+- Hermes Wing does not create, import, persist, or automatically transfer wallet recovery phrases.
 - Legacy recovery export remains local to final Hermes Desktop, verifies one wallet at a time, offers only timed manual reveal or authenticated passphrase-encrypted output, and prohibits clipboard, QR, bulk, remote, and cloud transfer.
 - Electron client-state import is explicit and allowlisted, excludes credentials and private paths, never mutates the legacy source, and requires fresh authorization.
 - Credentials and recognized words are excluded from diagnostics.
@@ -72,7 +72,7 @@ Status: alpha baseline, not an independent security assessment.
 - The device OS, installed speech recognizer, and Hermes server are trusted.
 - A user who confirms plaintext HTTP understands the external network boundary.
 - A compromised device, accessibility service, keyboard, clipboard observer,
-  root user, or Hermes server can access sensitive content; Navivox does not
+  root user, or Hermes server can access sensitive content; Hermes Wing does not
   defend against those actors.
 - Platform backups and secure-storage migration behavior depend on OS and
   plugin configuration.
@@ -92,7 +92,7 @@ Status: alpha baseline, not an independent security assessment.
   single-owner install), a completed/expired code retry counts toward that
   lockout, and expired/consumed enrollment rows are not yet pruned.
 - Attachment upload, resource-handle retention, server-workspace contracts, and picker-originated filesystem grant enforcement remain to be implemented.
-- Hermes One device authorization, refresh/revocation, account sync, and backend-managed wallet contracts have not yet been ported to Navivox; web PKCE and browser token storage lack implementation receipts.
+- Hermes One device authorization, refresh/revocation, account sync, and backend-managed wallet contracts have not yet been ported to Hermes Wing; web PKCE and browser token storage lack implementation receipts.
 - Hermes Desktop does not yet provide ADR 0042's guarded export path for encrypted legacy local-wallet recovery phrases; Electron retirement is blocked on the cross-platform data-exit receipts.
 - The allowlisted Electron client-state importer and cross-platform migration receipts remain to be implemented.
 - Android release signing has an alpha workflow, but public signed releases, authenticated update metadata, desktop signing/notarization, protected key-custody procedures, and cross-platform update receipts remain incomplete.

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_model_install_service.dart';
+import 'package:wing/features/voice_commands/core/needle_model_install_service.dart';
 
 void main() {
   late Directory tempDir;

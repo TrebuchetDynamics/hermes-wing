@@ -21,7 +21,7 @@ fun releaseSigningValue(propertyName: String, environmentName: String): String? 
 }
 
 android {
-    namespace = "com.trebuchetdynamics.navivox"
+    namespace = "com.trebuchetdynamics.hermes.wing"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -35,7 +35,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.trebuchetdynamics.navivox"
+        applicationId = "com.trebuchetdynamics.hermes.wing"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -45,20 +45,20 @@ android {
     }
 
     val releaseKeystorePath = releaseSigningValue(
-        "navivox.release.storeFile",
-        "NAVIVOX_RELEASE_STORE_FILE",
+        "wing.release.storeFile",
+        "WING_RELEASE_STORE_FILE",
     )
     val releaseKeystorePassword = releaseSigningValue(
-        "navivox.release.storePassword",
-        "NAVIVOX_RELEASE_STORE_PASSWORD",
+        "wing.release.storePassword",
+        "WING_RELEASE_STORE_PASSWORD",
     )
     val releaseKeyAlias = releaseSigningValue(
-        "navivox.release.keyAlias",
-        "NAVIVOX_RELEASE_KEY_ALIAS",
+        "wing.release.keyAlias",
+        "WING_RELEASE_KEY_ALIAS",
     )
     val releaseKeyPassword = releaseSigningValue(
-        "navivox.release.keyPassword",
-        "NAVIVOX_RELEASE_KEY_PASSWORD",
+        "wing.release.keyPassword",
+        "WING_RELEASE_KEY_PASSWORD",
     )
 
     if (
@@ -80,7 +80,7 @@ android {
     buildTypes {
         release {
             // A keystore-backed release signing config is selected when all
-            // navivox.release.* local properties or NAVIVOX_RELEASE_* environment
+            // wing.release.* local properties or WING_RELEASE_* environment
             // variables are present. Without them, keep debug signing only for
             // local release smoke runs; do not distribute that artifact.
             signingConfig = signingConfigs.findByName("release")

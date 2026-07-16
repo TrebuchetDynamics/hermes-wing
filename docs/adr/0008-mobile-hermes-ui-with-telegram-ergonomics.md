@@ -5,7 +5,7 @@ Date: 2026-07-07
 
 ## Context
 
-The Hermes Desktop UI gap audit says Navivox should feel like a mobile-first Hermes companion, not a full Electron clone. It should preserve Telegram chat muscle memory while borrowing Hermes Desktop structure, hierarchy, status language, and high-contrast product feel around the chat core.
+The Hermes Desktop UI gap audit says Hermes Wing should feel like a mobile-first Hermes companion, not a full Electron clone. It should preserve Telegram chat muscle memory while borrowing Hermes Desktop structure, hierarchy, status language, and high-contrast product feel around the chat core.
 
 ## Decision
 

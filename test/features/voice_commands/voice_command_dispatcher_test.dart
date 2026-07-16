@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/models/hermes_session.dart';
-import 'package:navivox/features/voice_commands/models/voice_command.dart';
-import 'package:navivox/features/voice_commands/services/voice_command_dispatcher.dart';
-import 'package:navivox/router/app_routes.dart';
+import 'package:wing/core/hermes/models/hermes_session.dart';
+import 'package:wing/features/voice_commands/models/voice_command.dart';
+import 'package:wing/features/voice_commands/services/voice_command_dispatcher.dart';
+import 'package:wing/router/app_routes.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 

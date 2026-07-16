@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:navivox/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:navivox/features/needle_spike/needle_spike_flag.dart';
-import 'package:navivox/features/needle_spike/providers/needle_spike_providers.dart';
-import 'package:navivox/features/voice_commands/core/needle_model_install_service.dart';
-import 'package:navivox/router/app_routes.dart';
-import 'package:navivox/router/providers/app_router.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/needle_spike/needle_spike_flag.dart';
+import 'package:wing/features/needle_spike/providers/needle_spike_providers.dart';
+import 'package:wing/features/voice_commands/core/needle_model_install_service.dart';
+import 'package:wing/router/app_routes.dart';
+import 'package:wing/router/providers/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/hermes_chat/support/fake_hermes_channel.dart';

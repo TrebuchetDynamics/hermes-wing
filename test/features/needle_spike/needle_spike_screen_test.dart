@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/needle_spike/providers/needle_spike_providers.dart';
-import 'package:navivox/features/needle_spike/screens/needle_spike_screen.dart';
-import 'package:navivox/features/voice_commands/core/needle_engine.dart';
-import 'package:navivox/features/voice_commands/core/needle_model_install_service.dart';
+import 'package:wing/features/needle_spike/providers/needle_spike_providers.dart';
+import 'package:wing/features/needle_spike/screens/needle_spike_screen.dart';
+import 'package:wing/features/voice_commands/core/needle_engine.dart';
+import 'package:wing/features/voice_commands/core/needle_model_install_service.dart';
 
 class _FakeEngine implements NeedleEngineApi {
   bool loaded = false;

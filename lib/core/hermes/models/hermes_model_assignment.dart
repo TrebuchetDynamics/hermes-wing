@@ -1,4 +1,4 @@
-import '../../protocol/navivox_json.dart';
+import '../../protocol/wing_json.dart';
 
 /// One auxiliary task-slot assignment from `GET /api/models`
 /// (`auxiliary[]`). Each entry names the task slot and the provider/model
@@ -13,10 +13,10 @@ class HermesAuxiliaryModel {
 
   factory HermesAuxiliaryModel.fromJson(Map<String, Object?> json) {
     return HermesAuxiliaryModel(
-      task: navivoxStringFromJson(json['task'], fallback: ''),
-      provider: navivoxStringFromJson(json['provider'], fallback: ''),
-      model: navivoxStringFromJson(json['model'], fallback: ''),
-      baseUrl: navivoxStringFromJson(json['base_url'], fallback: ''),
+      task: wingStringFromJson(json['task'], fallback: ''),
+      provider: wingStringFromJson(json['provider'], fallback: ''),
+      model: wingStringFromJson(json['model'], fallback: ''),
+      baseUrl: wingStringFromJson(json['base_url'], fallback: ''),
     );
   }
 
@@ -41,14 +41,14 @@ class HermesModelAssignment {
   /// of both the `GET /api/models` body and the `PUT /api/models/assignment`
   /// response.
   factory HermesModelAssignment.fromJson(Map<String, Object?> json) {
-    final active = navivoxMapFieldFromJson(json, 'active');
+    final active = wingMapFieldFromJson(json, 'active');
     return HermesModelAssignment(
-      activeProvider: navivoxStringFromJson(active['provider'], fallback: ''),
-      activeModel: navivoxStringFromJson(active['model'], fallback: ''),
-      auxiliary: navivoxMapListFromJson(
+      activeProvider: wingStringFromJson(active['provider'], fallback: ''),
+      activeModel: wingStringFromJson(active['model'], fallback: ''),
+      auxiliary: wingMapListFromJson(
         json['auxiliary'],
       ).map(HermesAuxiliaryModel.fromJson).toList(growable: false),
-      revision: navivoxStringFromJson(json['revision'], fallback: ''),
+      revision: wingStringFromJson(json['revision'], fallback: ''),
     );
   }
 
@@ -64,8 +64,8 @@ class HermesCatalogModel {
 
   factory HermesCatalogModel.fromJson(Map<String, Object?> json) {
     return HermesCatalogModel(
-      id: navivoxStringFromJson(json['id'], fallback: ''),
-      description: navivoxStringFromJson(json['description'], fallback: ''),
+      id: wingStringFromJson(json['id'], fallback: ''),
+      description: wingStringFromJson(json['description'], fallback: ''),
     );
   }
 
@@ -92,14 +92,14 @@ class HermesModelCatalog {
   const HermesModelCatalog({this.providers = const []});
 
   factory HermesModelCatalog.fromJson(Object? raw) {
-    final providersJson = navivoxMapFieldFromJson(
-      navivoxMapFromJson(raw),
+    final providersJson = wingMapFieldFromJson(
+      wingMapFromJson(raw),
       'providers',
     );
     final providers = <HermesCatalogProvider>[];
     for (final entry in providersJson.entries) {
-      final block = navivoxMapFromJson(entry.value);
-      final models = navivoxMapListFromJson(block['models'])
+      final block = wingMapFromJson(entry.value);
+      final models = wingMapListFromJson(block['models'])
           .map(HermesCatalogModel.fromJson)
           .where((model) => model.id.isNotEmpty)
           .toList(growable: false);

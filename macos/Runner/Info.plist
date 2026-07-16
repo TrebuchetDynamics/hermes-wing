@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Hermes Wing</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconFile</key>
@@ -25,9 +27,9 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Navivox listens only while you use foreground voice with your Hermes Agent.</string>
+	<string>Hermes Wing listens only while you use foreground voice with your Hermes Agent.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Navivox uses on-device speech recognition to turn speech into Hermes chat text.</string>
+	<string>Hermes Wing uses on-device speech recognition to turn speech into Hermes chat text.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Run Navivox Playwright E2E tests
+# Run Hermes Wing Playwright E2E tests
 set -e
 
-echo "=== Navivox Playwright E2E Tests ==="
+echo "=== Hermes Wing Playwright E2E Tests ==="
 echo ""
 
 # Kill any existing server on port 8767

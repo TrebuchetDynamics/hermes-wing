@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/core/hermes/hermes_api.dart';
+import 'package:wing/core/hermes/hermes_api.dart';
 
 void main() {
   test('client bounds requests that never complete', () async {

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/enrollment/models/hermes_enrollment_payload.dart';
+import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
 
 void main() {
-  test('accepts only navivox connect payload with HTTPS origin and code', () {
+  test('accepts only wing connect payload with HTTPS origin and code', () {
     final payload = HermesEnrollmentPayload.parse(
-      'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
+      'wing://connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
     );
     expect(payload.origin, Uri.parse('https://hermes.example'));
     expect(payload.code, 'one-time');
@@ -13,7 +13,7 @@ void main() {
   test('rejects bearer token query parameters', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=https%3A%2F%2Fhermes.example&token=secret',
+        'wing://connect?origin=https%3A%2F%2Fhermes.example&token=secret',
       ),
       throwsFormatException,
     );
@@ -22,7 +22,7 @@ void main() {
   test('rejects a fragment', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=one-time#frag',
+        'wing://connect?origin=https%3A%2F%2Fhermes.example&code=one-time#frag',
       ),
       throwsFormatException,
     );
@@ -31,7 +31,7 @@ void main() {
   test('rejects userinfo on the connect payload itself', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://user@connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
+        'wing://user@connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
       ),
       throwsFormatException,
     );
@@ -40,7 +40,7 @@ void main() {
   test('rejects userinfo embedded in the origin', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=https%3A%2F%2Fuser%3Apass%40hermes.example&code=one-time',
+        'wing://connect?origin=https%3A%2F%2Fuser%3Apass%40hermes.example&code=one-time',
       ),
       throwsFormatException,
     );
@@ -49,7 +49,7 @@ void main() {
   test('rejects a non-HTTP(S) origin scheme', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=ftp%3A%2F%2Fhermes.example&code=one-time',
+        'wing://connect?origin=ftp%3A%2F%2Fhermes.example&code=one-time',
       ),
       throwsFormatException,
     );
@@ -58,7 +58,7 @@ void main() {
   test('rejects an unknown connect host', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://pair?origin=https%3A%2F%2Fhermes.example&code=one-time',
+        'wing://pair?origin=https%3A%2F%2Fhermes.example&code=one-time',
       ),
       throwsFormatException,
     );
@@ -67,7 +67,7 @@ void main() {
   test('rejects a blank code', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=',
+        'wing://connect?origin=https%3A%2F%2Fhermes.example&code=',
       ),
       throwsFormatException,
     );
@@ -77,7 +77,7 @@ void main() {
     final oversized = 'a' * 200;
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=https%3A%2F%2Fhermes.example&code=$oversized',
+        'wing://connect?origin=https%3A%2F%2Fhermes.example&code=$oversized',
       ),
       throwsFormatException,
     );
@@ -85,7 +85,7 @@ void main() {
 
   test('rejects a missing origin', () {
     expect(
-      () => HermesEnrollmentPayload.parse('navivox://connect?code=one-time'),
+      () => HermesEnrollmentPayload.parse('wing://connect?code=one-time'),
       throwsFormatException,
     );
   });
@@ -100,7 +100,7 @@ void main() {
   test('rejects a plaintext remote origin without explicit confirmation', () {
     expect(
       () => HermesEnrollmentPayload.parse(
-        'navivox://connect?origin=http%3A%2F%2Fhermes.example&code=one-time',
+        'wing://connect?origin=http%3A%2F%2Fhermes.example&code=one-time',
       ),
       throwsA(isA<HermesEnrollmentCleartextOriginRequired>()),
     );
@@ -108,7 +108,7 @@ void main() {
 
   test('accepts a plaintext remote origin once explicitly confirmed', () {
     final payload = HermesEnrollmentPayload.parse(
-      'navivox://connect?origin=http%3A%2F%2Fhermes.example&code=one-time',
+      'wing://connect?origin=http%3A%2F%2Fhermes.example&code=one-time',
       cleartextOriginConfirmed: true,
     );
     expect(payload.origin, Uri.parse('http://hermes.example'));
@@ -117,14 +117,14 @@ void main() {
 
   test('accepts a plaintext loopback origin without confirmation', () {
     final payload = HermesEnrollmentPayload.parse(
-      'navivox://connect?origin=http%3A%2F%2F127.0.0.1%3A8642&code=one-time',
+      'wing://connect?origin=http%3A%2F%2F127.0.0.1%3A8642&code=one-time',
     );
     expect(payload.origin, Uri.parse('http://127.0.0.1:8642'));
   });
 
   test('strips path, query, and port normalization noise from the origin', () {
     final payload = HermesEnrollmentPayload.parse(
-      'navivox://connect?origin=https%3A%2F%2Fhermes.example%3A8642%2Fsetup%3Fold%3D1&code=one-time',
+      'wing://connect?origin=https%3A%2F%2Fhermes.example%3A8642%2Fsetup%3Fold%3D1&code=one-time',
     );
     expect(payload.origin, Uri.parse('https://hermes.example:8642'));
   });

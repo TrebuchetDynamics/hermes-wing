@@ -5,10 +5,10 @@ APK, a Linux x64 archive, SHA-256 checksum files, and a GitHub prerelease.
 
 Configure these GitHub Actions secrets before dispatching it:
 
-- `NAVIVOX_RELEASE_KEYSTORE_BASE64`
-- `NAVIVOX_RELEASE_STORE_PASSWORD`
-- `NAVIVOX_RELEASE_KEY_ALIAS`
-- `NAVIVOX_RELEASE_KEY_PASSWORD`
+- `WING_RELEASE_KEYSTORE_BASE64`
+- `WING_RELEASE_STORE_PASSWORD`
+- `WING_RELEASE_KEY_ALIAS`
+- `WING_RELEASE_KEY_PASSWORD`
 
 Encode the existing release keystore as one base64 line; do not create a new
 identity for each build and never commit the keystore or passwords. Record key

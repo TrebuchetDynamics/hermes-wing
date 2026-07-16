@@ -5,7 +5,7 @@ Date: 2026-07-07
 
 ## Context
 
-The Flutter app uses `flutter_riverpod`. `NavivoxApp` wraps the app in `ProviderScope`, `routerProvider` supplies the router, `hermesChannelProvider` owns the default `HermesApiChannel`, and the Hermes chat screen exposes provider seams for voice capture and text-to-speech.
+The Flutter app uses `flutter_riverpod`. `WingApp` wraps the app in `ProviderScope`, `routerProvider` supplies the router, `hermesChannelProvider` owns the default `HermesApiChannel`, and the Hermes chat screen exposes provider seams for voice capture and text-to-speech.
 
 E2E builds also override `hermesChannelProvider` to install a test-owned `HermesApiChannel` while keeping the normal router and widgets.
 
@@ -22,7 +22,7 @@ Use Riverpod providers as the app's dependency injection seam for app-level serv
 ## Evidence
 
 - `pubspec.yaml:12`
-- `lib/app/navivox_app.dart:1-30`
+- `lib/app/wing_app.dart:1-30`
 - `lib/router/providers/app_router.dart:10-42`
 - `lib/features/hermes_chat/providers/hermes_channel_provider.dart:13-37`
 - `lib/features/hermes_chat/screens/hermes_chat_screen.dart:37-44`

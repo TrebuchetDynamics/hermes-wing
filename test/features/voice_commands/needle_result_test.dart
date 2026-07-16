@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:navivox/features/voice_commands/core/needle_result.dart';
+import 'package:wing/features/voice_commands/core/needle_result.dart';
 
 void main() {
   test('parses a successful tool-call response', () {

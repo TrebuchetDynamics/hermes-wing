@@ -5,7 +5,7 @@ Date: 2026-07-07
 
 ## Context
 
-Navivox connects to trusted local, VPN, LAN, Tailscale, or self-hosted Hermes Agent endpoints. `CONTEXT.md` says API keys are secrets, while endpoint URLs are non-secret operator-controlled metadata. Setup URLs may contain copied secret material in userinfo, query strings, or fragments.
+Hermes Wing connects to trusted local, VPN, LAN, Tailscale, or self-hosted Hermes Agent endpoints. `CONTEXT.md` says API keys are secrets, while endpoint URLs are non-secret operator-controlled metadata. Setup URLs may contain copied secret material in userinfo, query strings, or fragments.
 
 ## Decision
 

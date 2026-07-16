@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,6 +48,24 @@ HermesCapabilityDocument _profileCapabilities(
       },
   },
 });
+
+class _GatedProfileSelectionChannel extends FakeHermesChannel {
+  _GatedProfileSelectionChannel({
+    required super.capabilities,
+    required super.profiles,
+    required super.selectedProfileId,
+  });
+
+  final selectionGate = Completer<void>();
+  int selectionAttempts = 0;
+
+  @override
+  Future<void> selectProfile(String profileId) async {
+    selectionAttempts += 1;
+    await selectionGate.future;
+    await super.selectProfile(profileId);
+  }
+}
 
 Widget _agentsTestApp(FakeHermesChannel channel, {double textScale = 1.0}) =>
     ProviderScope(
@@ -294,6 +314,45 @@ void main() {
     await tester.tap(coderChat);
     await tester.pumpAndSettle();
 
+    expect(channel.selectProfileCalls, ['coder']);
+  });
+
+  testWidgets('shows progress and blocks repeat taps while switching agents', (
+    tester,
+  ) async {
+    final channel = _GatedProfileSelectionChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+      ],
+      selectedProfileId: 'default',
+    );
+    addTearDown(() {
+      if (!channel.selectionGate.isCompleted) channel.selectionGate.complete();
+      channel.dispose();
+    });
+
+    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpAndSettle();
+
+    final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
+    await tester.scrollUntilVisible(coderChat, 300);
+    await tester.tap(coderChat);
+    await tester.pump();
+
+    expect(channel.selectionAttempts, 1);
+    expect(find.text('Switching…'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Switching…'))
+          .onPressed,
+      isNull,
+    );
+
+    channel.selectionGate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Switching…'), findsNothing);
     expect(channel.selectProfileCalls, ['coder']);
   });
 

@@ -238,6 +238,12 @@ abstract class AppLocalizations {
   /// **'Chat'**
   String get chatWithAgent;
 
+  /// No description provided for @switchingAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching…'**
+  String get switchingAgent;
+
   /// No description provided for @editAgent.
   ///
   /// In en, this message translates to:

@@ -34,6 +34,7 @@
   "agentGatewayOff": "Gateway off",
   "agentNoModel": "No model selected",
   "chatWithAgent": "Chat",
+  "switchingAgent": "Switching…",
   "editAgent": "Edit",
   "createAgentTitle": "Create agent",
   "agentDisplayName": "Agent name",

@@ -94,6 +94,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatWithAgent => 'Chat';
 
   @override
+  String get switchingAgent => 'Switching…';
+
+  @override
   String get editAgent => 'Edit';
 
   @override

@@ -19,6 +19,7 @@ class AgentsScreen extends ConsumerStatefulWidget {
 
 class _AgentsScreenState extends ConsumerState<AgentsScreen> {
   String? _actionError;
+  String? _switchingProfileId;
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +138,10 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
                     path: '/api/profiles/{profile_id}',
                   ),
               strings: strings,
-              onChat: () => _selectProfile(channel, profiles[index].id),
+              switching: _switchingProfileId == profiles[index].id,
+              onChat: _switchingProfileId == null
+                  ? () => _selectProfile(channel, profiles[index].id)
+                  : null,
               onEdit: () => _openEditor(
                 channel: channel,
                 profiles: profiles,
@@ -202,13 +206,23 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
   }
 
   Future<void> _selectProfile(HermesChannel channel, String profileId) async {
+    if (_switchingProfileId != null) return;
+    setState(() {
+      _switchingProfileId = profileId;
+      _actionError = null;
+    });
     try {
       await channel.selectProfile(profileId);
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _actionError = AppLocalizations.of(context).profileOperationFailed;
-      });
+      if (mounted) {
+        setState(() {
+          _actionError = AppLocalizations.of(context).profileOperationFailed;
+        });
+      }
+    } finally {
+      if (mounted && _switchingProfileId == profileId) {
+        setState(() => _switchingProfileId = null);
+      }
     }
   }
 }
@@ -289,6 +303,7 @@ class _AgentCard extends StatelessWidget {
     required this.canEdit,
     required this.canDelete,
     required this.strings,
+    required this.switching,
     required this.onChat,
     required this.onEdit,
     required this.onDelete,
@@ -299,7 +314,8 @@ class _AgentCard extends StatelessWidget {
   final bool canEdit;
   final bool canDelete;
   final AppLocalizations strings;
-  final VoidCallback onChat;
+  final bool switching;
+  final VoidCallback? onChat;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -398,8 +414,17 @@ class _AgentCard extends StatelessWidget {
                 children: [
                   FilledButton.tonalIcon(
                     onPressed: onChat,
-                    icon: const Icon(Icons.chat_bubble_outline),
-                    label: Text(strings.chatWithAgent),
+                    icon: switching
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.chat_bubble_outline),
+                    label: Text(
+                      switching
+                          ? strings.switchingAgent
+                          : strings.chatWithAgent,
+                    ),
                   ),
                   if (canEdit)
                     OutlinedButton.icon(

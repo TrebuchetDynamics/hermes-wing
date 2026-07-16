@@ -3,6 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
 
+String auxiliaryTaskLabel(AppLocalizations strings, String task) =>
+    switch (task) {
+      'vision' => strings.auxiliaryTaskVision,
+      'web_extract' => strings.auxiliaryTaskWebExtract,
+      'compression' => strings.auxiliaryTaskCompression,
+      'skills_hub' => strings.auxiliaryTaskSkillsHub,
+      'approval' => strings.auxiliaryTaskApproval,
+      'mcp' => strings.auxiliaryTaskMcp,
+      'title_generation' => strings.auxiliaryTaskTitleGeneration,
+      'triage_specifier' => strings.auxiliaryTaskTriageSpecifier,
+      'kanban_decomposer' => strings.auxiliaryTaskKanbanDecomposer,
+      'profile_describer' => strings.auxiliaryTaskProfileDescriber,
+      'curator' => strings.auxiliaryTaskCurator,
+      _ => task,
+    };
+
 /// Slot options for a model assignment: the main slot or one existing
 /// auxiliary task slot.
 class _SlotOption {
@@ -125,6 +141,34 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
     _model = models.isNotEmpty ? models.first.id : null;
   }
 
+  void _syncSlotAssignment() {
+    var provider = _assignment.activeProvider;
+    var model = _assignment.activeModel;
+    if (_slot?.scope == 'auxiliary') {
+      for (final auxiliary in _assignment.auxiliary) {
+        if (auxiliary.task == _slot?.task) {
+          provider = auxiliary.provider;
+          model = auxiliary.model;
+          break;
+        }
+      }
+    }
+
+    if (_catalog.providers.any((block) => block.provider == provider)) {
+      _provider = provider;
+      final models = _modelsForProvider;
+      _model = models.any((item) => item.id == model)
+          ? model
+          : (models.isNotEmpty ? models.first.id : null);
+      return;
+    }
+
+    _provider = _catalog.providers.isNotEmpty
+        ? _catalog.providers.first.provider
+        : null;
+    _syncModel();
+  }
+
   Future<void> _refresh() async {
     setState(() {
       _busy = true;
@@ -235,13 +279,16 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
                         child: Text(
                           slot.scope == 'main'
                               ? strings.modelSlotMain
-                              : slot.label,
+                              : auxiliaryTaskLabel(strings, slot.label),
                         ),
                       ),
                   ],
                   onChanged: _busy
                       ? null
-                      : (value) => setState(() => _slot = value),
+                      : (value) => setState(() {
+                          _slot = value;
+                          _syncSlotAssignment();
+                        }),
                 ),
                 const SizedBox(height: 16),
               ],

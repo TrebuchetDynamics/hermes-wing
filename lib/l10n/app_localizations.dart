@@ -286,6 +286,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancelAction;
 
+  /// No description provided for @retryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryAction;
+
   /// No description provided for @saveAction.
   ///
   /// In en, this message translates to:
@@ -681,6 +687,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show less'**
   String get showLessAction;
+
+  /// No description provided for @auxiliaryTaskVision.
+  ///
+  /// In en, this message translates to:
+  /// **'Vision'**
+  String get auxiliaryTaskVision;
+
+  /// No description provided for @auxiliaryTaskWebExtract.
+  ///
+  /// In en, this message translates to:
+  /// **'Web extract'**
+  String get auxiliaryTaskWebExtract;
+
+  /// No description provided for @auxiliaryTaskCompression.
+  ///
+  /// In en, this message translates to:
+  /// **'Compression'**
+  String get auxiliaryTaskCompression;
+
+  /// No description provided for @auxiliaryTaskSkillsHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills hub'**
+  String get auxiliaryTaskSkillsHub;
+
+  /// No description provided for @auxiliaryTaskApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval'**
+  String get auxiliaryTaskApproval;
+
+  /// No description provided for @auxiliaryTaskMcp.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP'**
+  String get auxiliaryTaskMcp;
+
+  /// No description provided for @auxiliaryTaskTitleGeneration.
+  ///
+  /// In en, this message translates to:
+  /// **'Title generation'**
+  String get auxiliaryTaskTitleGeneration;
+
+  /// No description provided for @auxiliaryTaskTriageSpecifier.
+  ///
+  /// In en, this message translates to:
+  /// **'Triage specifier'**
+  String get auxiliaryTaskTriageSpecifier;
+
+  /// No description provided for @auxiliaryTaskKanbanDecomposer.
+  ///
+  /// In en, this message translates to:
+  /// **'Kanban decomposer'**
+  String get auxiliaryTaskKanbanDecomposer;
+
+  /// No description provided for @auxiliaryTaskProfileDescriber.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile describer'**
+  String get auxiliaryTaskProfileDescriber;
+
+  /// No description provided for @auxiliaryTaskCurator.
+  ///
+  /// In en, this message translates to:
+  /// **'Curator'**
+  String get auxiliaryTaskCurator;
 }
 
 class _AppLocalizationsDelegate

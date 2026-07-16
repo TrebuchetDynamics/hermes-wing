@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,7 +61,9 @@ const _anthropicProvider = HermesProvider(
   envVars: ['ANTHROPIC_API_KEY'],
 );
 
-HermesModelInventory _inventory() => HermesModelInventory(
+HermesModelInventory _inventory({
+  List<HermesAuxiliaryModel> auxiliary = const [],
+}) => HermesModelInventory(
   catalog: HermesModelCatalog.fromJson(const {
     'providers': {
       'openai': {
@@ -74,9 +78,10 @@ HermesModelInventory _inventory() => HermesModelInventory(
       },
     },
   }),
-  assignment: const HermesModelAssignment(
+  assignment: HermesModelAssignment(
     activeProvider: 'openai',
     activeModel: 'gpt-5',
+    auxiliary: auxiliary,
     revision: 'rev-models-1',
   ),
 );
@@ -87,6 +92,50 @@ HermesModelInventory _inventory() => HermesModelInventory(
 /// at construction and never change, which is not enough to prove
 /// `ProvidersScreen` refetches and re-renders after a mid-session profile
 /// switch.
+class _DelayedLoadFakeChannel extends FakeHermesChannel {
+  _DelayedLoadFakeChannel({
+    required super.capabilities,
+    required super.selectedProfileId,
+  });
+
+  final loadGate = Completer<void>();
+
+  @override
+  Future<void> loadProviders() async {
+    await super.loadProviders();
+    await loadGate.future;
+  }
+
+  @override
+  Future<void> loadModels() async {
+    await super.loadModels();
+    await loadGate.future;
+  }
+}
+
+class _FailingLoadFakeChannel extends FakeHermesChannel {
+  _FailingLoadFakeChannel({
+    required super.capabilities,
+    required super.providers,
+    required super.modelInventory,
+    required super.selectedProfileId,
+  });
+
+  bool failLoads = true;
+
+  @override
+  Future<void> loadProviders() async {
+    await super.loadProviders();
+    if (failLoads) throw StateError('provider load failed');
+  }
+
+  @override
+  Future<void> loadModels() async {
+    await super.loadModels();
+    if (failLoads) throw StateError('model load failed');
+  }
+}
+
 class _ProfileSwitchingFakeChannel extends FakeHermesChannel {
   _ProfileSwitchingFakeChannel({
     required this.providersByProfile,
@@ -160,6 +209,58 @@ void main() {
   });
 
   testWidgets(
+    'shows loading instead of an empty state while inventories load',
+    (tester) async {
+      final channel = _DelayedLoadFakeChannel(
+        capabilities: _capabilities(const ['providers:read', 'models:read']),
+        selectedProfileId: 'default',
+      );
+      addTearDown(channel.dispose);
+
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('No providers available'), findsNothing);
+
+      channel.loadGate.complete();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('No providers available'), findsOneWidget);
+    },
+  );
+
+  testWidgets('failed loads show a retry that reloads both inventories', (
+    tester,
+  ) async {
+    final channel = _FailingLoadFakeChannel(
+      capabilities: _capabilities(const ['providers:read', 'models:read']),
+      providers: const [_openAiProvider],
+      modelInventory: _inventory(),
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Providers could not be loaded from Hermes.'),
+      findsOneWidget,
+    );
+    expect(find.text('Retry'), findsOneWidget);
+
+    channel.failLoads = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(channel.loadProvidersCalls, 2);
+    expect(channel.loadModelsCalls, 2);
+    expect(find.text('OpenAI'), findsOneWidget);
+  });
+
+  testWidgets(
     'reloads providers and models when the selected profile changes mid-session',
     (tester) async {
       final channel = _ProfileSwitchingFakeChannel(
@@ -195,6 +296,32 @@ void main() {
       expect(find.text('Anthropic'), findsOneWidget);
     },
   );
+
+  testWidgets('shows friendly labels for known auxiliary tasks', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(const ['providers:read', 'models:read']),
+      providers: const [_openAiProvider],
+      modelInventory: _inventory(
+        auxiliary: const [
+          HermesAuxiliaryModel(
+            task: 'title_generation',
+            provider: 'openai',
+            model: 'gpt-5',
+          ),
+        ],
+      ),
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Title generation: openai / gpt-5'), findsOneWidget);
+    expect(find.textContaining('title_generation'), findsNothing);
+  });
 
   testWidgets('write scopes expose mutation affordances', (tester) async {
     final channel = FakeHermesChannel(

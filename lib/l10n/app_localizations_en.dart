@@ -118,6 +118,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelAction => 'Cancel';
 
   @override
+  String get retryAction => 'Retry';
+
+  @override
   String get saveAction => 'Save';
 
   @override
@@ -339,4 +342,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showLessAction => 'Show less';
+
+  @override
+  String get auxiliaryTaskVision => 'Vision';
+
+  @override
+  String get auxiliaryTaskWebExtract => 'Web extract';
+
+  @override
+  String get auxiliaryTaskCompression => 'Compression';
+
+  @override
+  String get auxiliaryTaskSkillsHub => 'Skills hub';
+
+  @override
+  String get auxiliaryTaskApproval => 'Approval';
+
+  @override
+  String get auxiliaryTaskMcp => 'MCP';
+
+  @override
+  String get auxiliaryTaskTitleGeneration => 'Title generation';
+
+  @override
+  String get auxiliaryTaskTriageSpecifier => 'Triage specifier';
+
+  @override
+  String get auxiliaryTaskKanbanDecomposer => 'Kanban decomposer';
+
+  @override
+  String get auxiliaryTaskProfileDescriber => 'Profile describer';
+
+  @override
+  String get auxiliaryTaskCurator => 'Curator';
 }

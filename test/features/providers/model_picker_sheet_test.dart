@@ -60,6 +60,68 @@ Widget _testApp(FakeHermesChannel channel, HermesModelInventory inventory) =>
     );
 
 void main() {
+  testWidgets('selecting an auxiliary slot preserves its assigned model', (
+    tester,
+  ) async {
+    final inventory = HermesModelInventory(
+      catalog: HermesModelCatalog.fromJson({
+        'providers': {
+          'openai': {
+            'models': [
+              {'id': 'gpt-5'},
+            ],
+          },
+          'anthropic': {
+            'models': [
+              {'id': 'claude-sonnet'},
+            ],
+          },
+        },
+      }),
+      assignment: const HermesModelAssignment(
+        activeProvider: 'openai',
+        activeModel: 'gpt-5',
+        auxiliary: [
+          HermesAuxiliaryModel(
+            task: 'title_generation',
+            provider: 'anthropic',
+            model: 'claude-sonnet',
+          ),
+          HermesAuxiliaryModel(
+            task: 'future_task',
+            provider: 'anthropic',
+            model: 'claude-sonnet',
+          ),
+        ],
+        revision: 'rev-1',
+      ),
+    );
+    final channel = FakeHermesChannel(
+      modelInventory: inventory,
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel, inventory));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Main'));
+    await tester.pumpAndSettle();
+    expect(find.text('future_task'), findsOneWidget);
+    await tester.tap(find.text('Title generation').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+
+    expect(channel.assignModelCalls.single, {
+      'scope': 'auxiliary',
+      'task': 'title_generation',
+      'provider': 'anthropic',
+      'model': 'claude-sonnet',
+      'revision': 'rev-1',
+    });
+  });
+
   testWidgets('refresh updates the open sheet with the newly fetched catalog', (
     tester,
   ) async {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,6 +26,9 @@ class ProvidersScreen extends ConsumerStatefulWidget {
 
 class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
   String? _loadedProfileId;
+  int _loadGeneration = 0;
+  bool _loading = false;
+  bool _loadFailed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +58,32 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     _loadedProfileId = profileId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (state.canReadProviders) channel.loadProviders();
-      if (state.canReadModels) channel.loadModels();
+      unawaited(_reload(channel, profileId));
     });
+  }
+
+  Future<void> _reload(HermesChannel channel, String? profileId) async {
+    final generation = ++_loadGeneration;
+    setState(() {
+      _loading = true;
+      _loadFailed = false;
+    });
+    try {
+      await Future.wait([
+        if (channel.state.canReadProviders) channel.loadProviders(),
+        if (channel.state.canReadModels) channel.loadModels(),
+      ]);
+    } catch (_) {
+      if (mounted &&
+          generation == _loadGeneration &&
+          effectiveSelectedProfileId(channel.state) == profileId) {
+        setState(() => _loadFailed = true);
+      }
+    } finally {
+      if (mounted && generation == _loadGeneration) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
   Widget _buildBody(
@@ -65,7 +93,8 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
   ) {
     final state = channel.state;
 
-    if (state.status == HermesConnectionStatus.connecting) {
+    if (state.status == HermesConnectionStatus.connecting ||
+        (_loading && state.providers.isEmpty)) {
       return Center(
         child: Semantics(
           label: strings.providersLoading,
@@ -85,6 +114,19 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         icon: Icons.lock_outline,
         title: strings.providersUnavailableTitle,
         body: strings.providersUnavailableBody,
+      );
+    }
+    if (_loadFailed) {
+      return _ProvidersMessage(
+        icon: Icons.sync_problem_outlined,
+        title: strings.providersConnectionError,
+        body: strings.providerOperationFailed,
+        actionLabel: strings.retryAction,
+        onAction: _loading
+            ? null
+            : () => unawaited(
+                _reload(channel, effectiveSelectedProfileId(state)),
+              ),
       );
     }
 
@@ -341,7 +383,7 @@ class _ModelSection extends StatelessWidget {
                     for (final aux in assignment.auxiliary)
                       Text(
                         strings.auxiliaryModelSummary(
-                          aux.task,
+                          auxiliaryTaskLabel(strings, aux.task),
                           aux.provider,
                           aux.model,
                         ),
@@ -374,11 +416,15 @@ class _ProvidersMessage extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.body,
+    this.actionLabel,
+    this.onAction,
   });
 
   final IconData icon;
   final String title;
   final String body;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -404,6 +450,10 @@ class _ProvidersMessage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge,
               ),
+              if (actionLabel != null) ...[
+                const SizedBox(height: 16),
+                FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+              ],
             ],
           ),
         ),

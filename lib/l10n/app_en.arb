@@ -42,6 +42,7 @@
   "startFresh": "Start fresh",
   "createAction": "Create",
   "cancelAction": "Cancel",
+  "retryAction": "Retry",
   "saveAction": "Save",
   "doneAction": "Done",
   "renameAgent": "Rename agent",
@@ -134,5 +135,16 @@
   "copyCodeAction": "Copy code",
   "codeCopiedMessage": "Code copied",
   "showMoreAction": "Show more",
-  "showLessAction": "Show less"
+  "showLessAction": "Show less",
+  "auxiliaryTaskVision": "Vision",
+  "auxiliaryTaskWebExtract": "Web extract",
+  "auxiliaryTaskCompression": "Compression",
+  "auxiliaryTaskSkillsHub": "Skills hub",
+  "auxiliaryTaskApproval": "Approval",
+  "auxiliaryTaskMcp": "MCP",
+  "auxiliaryTaskTitleGeneration": "Title generation",
+  "auxiliaryTaskTriageSpecifier": "Triage specifier",
+  "auxiliaryTaskKanbanDecomposer": "Kanban decomposer",
+  "auxiliaryTaskProfileDescriber": "Profile describer",
+  "auxiliaryTaskCurator": "Curator"
 }

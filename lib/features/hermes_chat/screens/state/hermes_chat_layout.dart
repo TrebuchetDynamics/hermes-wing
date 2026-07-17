@@ -103,6 +103,17 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             color: colors.onSurfaceVariant,
                           ),
                         ),
+                        if (!kIsWeb &&
+                            defaultTargetPlatform ==
+                                TargetPlatform.android) ...[
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            key: const ValueKey('hermes-open-qr-scanner'),
+                            onPressed: () => context.push(AppRoutes.enroll),
+                            icon: const Icon(Icons.qr_code_scanner),
+                            label: const Text('Scan wing-cli QR code'),
+                          ),
+                        ],
                         const SizedBox(height: 20),
                         TextField(
                           key: const ValueKey('hermes-base-url-field'),

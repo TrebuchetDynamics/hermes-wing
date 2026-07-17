@@ -28,6 +28,7 @@ class _HermesEnrollmentScreenState
   String? _payloadError;
   bool _redirected = false;
   bool _bootstrapped = false;
+  bool _scanning = false;
 
   @override
   void didChangeDependencies() {
@@ -62,6 +63,20 @@ class _HermesEnrollmentScreenState
             '${error.message}',
       );
     }
+  }
+
+  Future<void> _scanQrCode() async {
+    if (_scanning) return;
+    setState(() {
+      _scanning = true;
+      _payloadError = null;
+    });
+    final payload = await ref
+        .read(hermesConnectIntentSourceProvider)
+        .scanQrCode();
+    if (!mounted) return;
+    setState(() => _scanning = false);
+    if (payload != null) _handlePayload(payload);
   }
 
   Future<void> _confirmCleartextOrigin(String raw, Uri origin) async {
@@ -133,18 +148,33 @@ class _HermesEnrollmentScreenState
   Widget _buildBody(HermesEnrollmentController controller) {
     if (_payloadError != null) {
       return Center(
-        child: Text(
-          _payloadError!,
-          key: const ValueKey('hermes-enrollment-payload-error'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _payloadError!,
+              key: const ValueKey('hermes-enrollment-payload-error'),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            _scanButton(),
+          ],
         ),
       );
     }
     switch (controller.status) {
       case HermesEnrollmentStatus.idle:
-        return const Center(
-          child: Text(
-            'Waiting for a pairing link from Hermes Desktop…',
-            key: ValueKey('hermes-enrollment-idle'),
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Scan the QR code shown by wing-cli.',
+                key: ValueKey('hermes-enrollment-idle'),
+              ),
+              const SizedBox(height: 16),
+              _scanButton(),
+            ],
           ),
         );
       case HermesEnrollmentStatus.inspecting:
@@ -188,6 +218,21 @@ class _HermesEnrollmentScreenState
           ),
         );
     }
+  }
+
+  Widget _scanButton() {
+    return FilledButton.icon(
+      key: const ValueKey('hermes-enrollment-scan-qr'),
+      onPressed: _scanning ? null : () => unawaited(_scanQrCode()),
+      icon: _scanning
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.qr_code_scanner),
+      label: Text(_scanning ? 'Opening scanner…' : 'Scan QR code'),
+    );
   }
 
   Widget _buildPreview(HermesEnrollmentController controller) {

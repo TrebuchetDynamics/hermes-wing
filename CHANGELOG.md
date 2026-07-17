@@ -13,6 +13,7 @@ All notable user-visible changes will be documented here.
 - Reported optional Hermes inventory failures separately from empty results.
 - Moved Hermes channel subscription and voice-loop effects out of widget build.
 - Added verified Pocket Speech download progress, storage controls, voice selection, and reply-speed settings.
+- Added in-app Android QR scanning for one-time `wing-cli` enrollment.
 
 ### Security
 

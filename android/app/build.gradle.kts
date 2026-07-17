@@ -94,5 +94,6 @@ flutter {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     testImplementation("junit:junit:4.13.2")
 }

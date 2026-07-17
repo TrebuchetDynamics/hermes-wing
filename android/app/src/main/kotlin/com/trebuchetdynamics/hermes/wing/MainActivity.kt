@@ -6,6 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionService
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.trebuchetdynamics.hermes.wing.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.hermes.wing.durablekeys.DurableKeyStoreChannel
 import com.trebuchetdynamics.hermes.wing.pairing.PairingHandoffIntentParser
@@ -17,6 +20,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private var initialConnectIntent: Map<String, String>? = null
     private var connectIntentEvents: EventChannel.EventSink? = null
+    private var qrScanPending = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         initialConnectIntent = connectPayloadFrom(intent)
@@ -33,6 +37,7 @@ class MainActivity : FlutterActivity() {
                 "initialConnectIntent" -> result.success(
                     initialConnectIntent ?: connectPayloadFrom(intent),
                 )
+                "scanQrCode" -> scanQrCode(result)
                 else -> result.notImplemented()
             }
         }
@@ -71,6 +76,40 @@ class MainActivity : FlutterActivity() {
         val payload = connectPayloadFrom(intent) ?: return
         initialConnectIntent = payload
         connectIntentEvents?.success(payload)
+    }
+
+    private fun scanQrCode(result: MethodChannel.Result) {
+        if (qrScanPending) {
+            result.error("qr_scan_pending", "A QR scan is already open.", null)
+            return
+        }
+        qrScanPending = true
+        val options = GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .enableAutoZoom()
+            .build()
+        GmsBarcodeScanning.getClient(this, options).startScan()
+            .addOnSuccessListener { barcode ->
+                qrScanPending = false
+                val payload = barcode.rawValue?.trim()
+                if (payload.isNullOrEmpty()) {
+                    result.error("qr_scan_empty", "The QR code contained no text.", null)
+                } else {
+                    result.success(payload)
+                }
+            }
+            .addOnCanceledListener {
+                qrScanPending = false
+                result.success(null)
+            }
+            .addOnFailureListener { error ->
+                qrScanPending = false
+                result.error(
+                    "qr_scan_failed",
+                    error.message ?: "Could not open the QR scanner.",
+                    null,
+                )
+            }
     }
 
     private fun deviceSpeechDiagnostics(): Map<String, Any?> {

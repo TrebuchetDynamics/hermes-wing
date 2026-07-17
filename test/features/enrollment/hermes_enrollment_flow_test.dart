@@ -33,9 +33,11 @@ const _issued = HermesIssuedOperatorToken(
 );
 
 class _FakeConnectIntentSource implements HermesConnectIntentSource {
-  _FakeConnectIntentSource({this.initial});
+  _FakeConnectIntentSource({this.initial, this.scanned});
 
   final String? initial;
+  final String? scanned;
+  int scanCalls = 0;
   final _events = StreamController<String>.broadcast();
 
   @override
@@ -43,6 +45,12 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
 
   @override
   Stream<String> payloadEvents() => _events.stream;
+
+  @override
+  Future<String?> scanQrCode() async {
+    scanCalls++;
+    return scanned;
+  }
 
   void emit(String payload) => _events.add(payload);
 
@@ -286,6 +294,28 @@ void main() {
       }
       return false;
     }
+
+    testWidgets('scan QR opens pairing review', (tester) async {
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(scanned: _validPayload);
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('hermes-enrollment-scan-qr')));
+      await tester.pumpAndSettle();
+
+      expect(source.scanCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      expect(find.text('hermes.example'), findsOneWidget);
+    });
 
     testWidgets(
       'shows scopes/expiry from inspection and does not exchange before confirm',

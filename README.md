@@ -149,7 +149,7 @@ Optional offline text-to-speech uses the pinned
 [`pocket_speech`](https://github.com/TrebuchetDynamics/pocket-speech-dart)
 package with operator-selected Kitten or Kokoro voice packs. **Settings → Local
 device voice** shows verified download progress, installed storage, voice choice,
-and reply speed without exposing local model paths.
+local preview, and reply speed without exposing model paths.
 
 ## Project map
 

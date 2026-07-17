@@ -123,6 +123,7 @@ void main() {
     await tester.scrollUntilVisible(speed, 300);
 
     expect(find.byKey(const ValueKey('voice-pocket-speech-voice')), findsOne);
+    expect(find.byKey(const ValueKey('voice-pocket-speech-preview')), findsOne);
     expect(speed, findsOne);
     expect(find.text('About 26 MB · English · 8 voices'), findsOneWidget);
     expect(find.textContaining('stored on this device'), findsOneWidget);

@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
@@ -36,6 +37,7 @@ class SettingsScreen extends ConsumerWidget {
       _pocketSpeechAssetDownloadingProvider,
     );
     final pocketSpeechVoices = ref.watch(pocketSpeechVoiceNamesProvider);
+    final pocketSpeechPreviewing = ref.watch(_pocketSpeechPreviewingProvider);
     final pocketSpeechDownloading = pocketSpeechDownload != null;
 
     return Scaffold(
@@ -364,7 +366,12 @@ class SettingsScreen extends ConsumerWidget {
                             for (final voice in voices)
                               DropdownMenuItem<String?>(
                                 value: voice,
-                                child: Text(voice),
+                                child: Text(
+                                  _pocketSpeechVoiceLabel(
+                                    settings.pocketSpeechModel,
+                                    voice,
+                                  ),
+                                ),
                               ),
                           ],
                           onChanged: settings.pocketSpeechVoicePackReady
@@ -394,6 +401,30 @@ class SettingsScreen extends ConsumerWidget {
                           '${settings.speechRate.clamp(0.5, 2.0).toStringAsFixed(2)}×',
                       onChanged: controller.setSpeechRate,
                     ),
+                  ),
+                  ListTile(
+                    key: const ValueKey('voice-pocket-speech-preview'),
+                    leading: const Icon(Icons.play_circle_outline),
+                    title: const Text('Preview offline voice'),
+                    subtitle: const Text(
+                      'Play a local sample with the selected voice and speed',
+                    ),
+                    trailing: pocketSpeechPreviewing
+                        ? const SizedBox.square(
+                            dimension: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : OutlinedButton.icon(
+                            onPressed: settings.pocketSpeechVoicePackReady
+                                ? () => _previewPocketSpeech(
+                                    context,
+                                    ref,
+                                    settings,
+                                  )
+                                : null,
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('Preview'),
+                          ),
                   ),
                   ListTile(
                     key: const ValueKey('settings-command-word'),
@@ -440,6 +471,18 @@ final _savedHermesEndpointProvider = FutureProvider<HermesEndpointConfig?>(
 final _pocketSpeechAssetDownloadServiceProvider =
     Provider<PocketSpeechAssetDownloadService?>(
       (_) => createDefaultPocketSpeechAssetDownloadService(),
+    );
+
+class _PocketSpeechPreviewingController extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setPreviewing(bool value) => state = value;
+}
+
+final _pocketSpeechPreviewingProvider =
+    NotifierProvider<_PocketSpeechPreviewingController, bool>(
+      _PocketSpeechPreviewingController.new,
     );
 
 class _PocketSpeechAssetDownloadingController
@@ -589,6 +632,53 @@ Future<void> _deletePocketSpeechAssets(
   }
 }
 
+Future<void> _previewPocketSpeech(
+  BuildContext context,
+  WidgetRef ref,
+  WingVoiceSettings settings,
+) async {
+  final voicePack = settings.pocketSpeechVoicePack;
+  if (voicePack == null) return;
+
+  final previewing = ref.read(_pocketSpeechPreviewingProvider.notifier);
+  TextToSpeechService? service;
+  previewing.setPreviewing(true);
+  try {
+    service = createPocketSpeechTextToSpeechService(
+      enabled: true,
+      voicePack: voicePack,
+      settings: () => ref.read(wingVoiceSettingsProvider),
+    );
+    if (service == null) throw StateError('Pocket Speech preview unavailable');
+    final spanishVoice =
+        settings.pocketSpeechModel == PocketSpeechModel.kokoro &&
+        (settings.ttsVoiceName?.startsWith('ef_') == true ||
+            settings.ttsVoiceName?.startsWith('em_') == true);
+    await service.speak(
+      spanishVoice
+          ? 'Hermes Wing responde con Pocket Speech.'
+          : 'Hermes Wing is ready to speak.',
+    );
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not preview this voice. Update the voice pack and try again.',
+          ),
+        ),
+      );
+    }
+  } finally {
+    try {
+      await service?.dispose();
+    } catch (_) {
+      // Preview cleanup must not replace the actionable synthesis error.
+    }
+    previewing.setPreviewing(false);
+  }
+}
+
 class _PocketSpeechAssetSubtitle extends StatelessWidget {
   const _PocketSpeechAssetSubtitle({
     required this.model,
@@ -635,11 +725,21 @@ class _PocketSpeechAssetSubtitle extends StatelessWidget {
               ? 'Installed and stored on this device for offline use'
               : configured
               ? 'Verified download; stored on this device. Keep the app open.'
-              : 'This build does not configure a verified download source',
+              : 'Downloads are unavailable in this build',
         ),
       ],
     );
   }
+}
+
+String _pocketSpeechVoiceLabel(PocketSpeechModel model, String voice) {
+  if (model != PocketSpeechModel.kokoro ||
+      !KokoroCatalog.supportsVoice(voice)) {
+    return voice;
+  }
+  final metadata = KokoroCatalog.voice(voice);
+  final language = KokoroCatalog.language(metadata.languageCode);
+  return '${metadata.name} · ${language.name}';
 }
 
 String _formatDownloadBytes(int bytes) =>

@@ -1,20 +1,7 @@
 # Hermes Wing
 
-**The cross-platform Flutter client for Hermes Agent.**
-
-Hermes Wing connects phones, browsers, and desktop systems to a trusted
-Hermes Agent endpoint. It provides streamed conversations, inline approvals,
-agent and model configuration, and optional device speech from one adaptive
-Flutter interface.
-
-> [!IMPORTANT]
-> Hermes Wing is independent, source-distributed alpha software.
-> There are no signed public binaries or store releases yet.
-
-Inspired by Hermes Desktop and adapted for mobile, web, and desktop.
-
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Hermes Wing — the cross-platform Flutter client for trusted Hermes Agent sessions, streamed runs, approvals, and device speech">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Hermes Wing — pair once, then run trusted Hermes Agent sessions from Android, web, or desktop">
 </p>
 
 <p align="center">
@@ -23,46 +10,40 @@ Inspired by Hermes Desktop and adapted for mobile, web, and desktop.
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3b82f6"></a>
 </p>
 
-<p align="center">
-  <img src="./assets/readme/showcase.png" width="100%" alt="Hermes Wing on desktop and mobile">
-</p>
-
-<p align="center"><sub>Interfaces captured against Hermes Wing's deterministic browser fixture; no private endpoint, credential, or transcript data is shown.</sub></p>
-
-## What Hermes Wing does
-
-Hermes Wing connects to a trusted Hermes Agent API endpoint and adapts the same
-session model to phone, web, and desktop layouts.
-
-- **Sessions and runs** — create and manage sessions, stream assistant and tool
-  activity, stop active work, and render rich Markdown replies.
-- **Operator control** — review approval requests inline instead of silently
-  allowing sensitive actions.
-- **Agents and models** — manage profiles, providers, model assignments, and
-  auxiliary task models when the endpoint advertises those capabilities.
-- **Device speech** — request operating-system speech recognition, review the
-  resulting text, then submit it to Hermes. Optional continuous voice rearms
-  bounded recognition sessions and can speak completed replies.
-- **Adaptive interface** — Telegram-light mobile ergonomics and a
-  Hermes Desktop-inspired dark workspace share one Flutter codebase.
-
-## How it works
+> [!IMPORTANT]
+> Hermes Wing is independent, source-distributed alpha software. There are no
+> signed public binaries or store releases yet.
 
 <p align="center">
-  <picture>
-    <source media="(max-width: 600px)" srcset="./assets/readme/runtime-flow-mobile.svg">
-    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Hermes Wing runtime flow from device input through operator review to Hermes sessions, streamed runs, and approvals">
-  </picture>
+  <img src="./assets/readme/showcase.png" width="100%" alt="Hermes Wing adapting one Hermes session to its dark desktop workspace and light mobile interface">
 </p>
 
-Hermes Wing discovers `/v1/capabilities` before enabling endpoint features. Hermes
-Agent remains authoritative for profiles, sessions, tools, runs, approvals,
-and configuration; Hermes Wing does not parse Hermes files or mirror its backend.
-HTTP handles commands and resources while SSE carries typed run events.
+<p align="center"><sub>Captured against the deterministic browser fixture; no private endpoint, credential, or transcript data is shown.</sub></p>
 
-## Start from source
+## One Hermes session model, every screen
 
-Prerequisites: **Flutter 3.44.2** and the platform SDK for your target.
+Hermes Wing connects phones, browsers, and desktops to a trusted Hermes Agent
+endpoint. The same Flutter client keeps streamed work, tool activity, approvals,
+profiles, models, and optional device speech within reach without replacing the
+Hermes backend.
+
+- **Follow live work** — create sessions, stream assistant and tool events, and
+  stop active runs.
+- **Keep operator control visible** — review approval requests inline before
+  sensitive work continues.
+- **Manage the endpoint** — work with advertised agents, profiles, providers,
+  and model assignments.
+- **Use device speech** — review recognized text before sending it; optionally
+  speak completed replies.
+- **Move between layouts** — use a compact mobile flow or a desktop workspace
+  from one adaptive codebase.
+
+## From source to first session
+
+Prerequisites: **Flutter 3.44.2**, the SDK for your target platform, and a
+reachable Hermes Agent endpoint.
+
+### 1. Run Hermes Wing
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/hermes-wing.git
@@ -71,7 +52,57 @@ flutter pub get
 flutter run -d <device-id>
 ```
 
-Then connect to a trusted Hermes endpoint:
+### 2. Install the host helper
+
+On the machine running Hermes Agent:
+
+```bash
+./install-wing-cli.sh
+wing-cli info
+```
+
+The installer puts `wing-cli` in `~/.local/bin` by default and prints a PATH
+hint when needed. The helper uses Bash and Python 3. It discovers
+`API_SERVER_KEY` through `hermes config env-path`, or from the
+`WING_HERMES_TOKEN` environment override.
+
+### 3. Pair Android
+
+With Hermes Agent reachable through Tailscale or another trusted origin:
+
+```bash
+wing-cli qr
+```
+
+In Hermes Wing, open **Connect to Hermes → Scan QR code**, review the endpoint
+and access, then connect. The QR carries a short-lived, single-use handoff—not
+the API key. The compatibility QR path grants the configured
+`API_SERVER_KEY` superuser access and says so before scanning; it exits after
+one exchange or after its timeout. Other platforms can enter the trusted
+endpoint and access token manually.
+
+| Helper command | Purpose |
+| --- | --- |
+| `wing-cli info` | Show the Tailscale address and Hermes endpoint without revealing a token |
+| `wing-cli qr` | Render the temporary Android pairing handoff in the terminal |
+| `wing-cli link` | Request a short-lived scoped `wing://` link from a Hermes enrollment endpoint |
+| `wing-cli token` | Explicitly reveal the superuser key for a manual developer fallback |
+
+Run `wing-cli help` for origin, label, scope, and environment overrides.
+
+## How the trust path works
+
+<p align="center">
+  <picture>
+    <source media="(max-width: 600px)" srcset="./assets/readme/runtime-flow-mobile.svg">
+    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Hermes Wing flow from reviewed device input through Hermes sessions and streamed runs to operator approval or stop controls">
+  </picture>
+</p>
+
+Hermes Wing reads `/v1/capabilities` before enabling endpoint features. Hermes
+Agent remains authoritative for profiles, sessions, tools, runs, approvals, and
+configuration; the client does not parse Hermes files or mirror its backend.
+HTTP carries commands and resources while SSE carries typed run events.
 
 | Target | Endpoint example |
 | --- | --- |
@@ -79,9 +110,9 @@ Then connect to a trusted Hermes endpoint:
 | Android emulator → host | `http://10.0.2.2:8642` |
 | Physical device or remote desktop | HTTPS, VPN, Tailscale, or isolated LAN URL |
 
-Hermes Wing asks for explicit confirmation before sending a bearer credential to a
-non-loopback plaintext HTTP endpoint. See the
-[Android setup guide](docs/runbooks/android-hermes-setup.md) and the
+Hermes Wing asks for explicit confirmation before sending a bearer credential
+to a non-loopback plaintext HTTP endpoint. See the
+[Android setup guide](docs/runbooks/android-hermes-setup.md) and
 [Hermes compatibility contract](docs/product/hermes-compatibility.md).
 
 ## Project status
@@ -95,43 +126,41 @@ non-loopback plaintext HTTP endpoint. See the
 | iOS | Simulator debug compilation | Build-tested only |
 | macOS | Debug compilation | Build-tested only |
 
-Voice input requests the operating system's on-device recognition interface on
-Android, iOS, macOS, Windows, and web. Availability and offline behavior depend
-on the installed recognizer and device policy. Linux voice input is currently
-unavailable, and a repeatable physical-device microphone receipt has not yet
-been recorded.
+Voice input requests the operating system's recognition interface on Android,
+iOS, macOS, Windows, and web. Availability and offline behavior depend on the
+installed recognizer and device policy. Linux voice input is unavailable, and a
+repeatable physical-device microphone receipt has not yet been recorded.
 
-## Security and privacy boundaries
+## Security boundaries
 
-- Bearer credentials use the platform secure-storage implementation; hardware
-  backing and backup behavior vary by platform.
+- Bearer credentials use each platform's secure-storage implementation;
+  hardware backing and backup behavior vary.
+- Pairing links never include bearer tokens. Android shows the endpoint and
+  requested or effective access before exchange.
 - Endpoint metadata is stored separately in shared preferences.
-- Recognized words are excluded from diagnostic logs.
-- The voice path submits completed text to Hermes, not captured microphone
-  audio.
+- Recognized words are excluded from diagnostic logs, and voice submits
+  completed text rather than captured microphone audio.
 - HTTPS is recommended for remote endpoints. Plain HTTP can expose credentials
-  and conversation data outside a trusted encrypted network.
-- Authorization is enforced by Hermes Agent capabilities and scopes, not by
-  hidden client controls alone.
+  and conversations outside a trusted encrypted network.
+- Hermes Agent capabilities and scopes enforce authorization; hidden client
+  controls are not a security boundary.
 
-Read [SECURITY.md](SECURITY.md) and the
-[threat model](docs/security/threat-model.md) before deploying outside a local
-or encrypted private network.
+Hermes Wing has not received an independent security audit. Read
+[SECURITY.md](SECURITY.md) and the [threat model](docs/security/threat-model.md)
+before deploying outside a local or encrypted private network.
 
-## Compatibility and known limits
+## Compatibility and current limits
 
-Hermes Wing negotiates compatibility rather than claiming a fixed Hermes release
-range. A compatible server must provide `/health`, `/v1/capabilities`, and the
+Hermes Wing negotiates compatibility instead of claiming a fixed Hermes release
+range. A compatible server provides `/health`, `/v1/capabilities`, and the
 advertised session or run endpoints used by the client.
-
-Current limits:
 
 - No signed packages or store distribution.
 - Windows, iOS, and macOS are compilation-tested, not release-supported.
 - Hermes server audio and realtime audio are not wired; voice submits text.
 - Remote transcript media and client-path attachments remain deferred.
-- Optional Hermes inventory can fail independently of an otherwise healthy
-  connection; Hermes Wing reports those failures separately from empty results.
+- Optional inventory can fail independently of an otherwise healthy connection;
+  the UI distinguishes unavailable data from an empty result.
 
 ## Development
 
@@ -148,8 +177,8 @@ npm audit
 Optional offline text-to-speech uses the pinned
 [`pocket_speech`](https://github.com/TrebuchetDynamics/pocket-speech-dart)
 package with operator-selected Kitten or Kokoro voice packs. **Settings → Local
-device voice** shows verified download progress, installed storage, voice choice,
-local preview, and reply speed without exposing model paths.
+device voice** shows download progress, installed storage, voice choice, local
+preview, and reply speed without exposing model paths.
 
 ## Project map
 
@@ -163,4 +192,4 @@ local preview, and reply speed without exposing model paths.
 
 ## License
 
-Hermes Wing is available under the MIT License.
+Hermes Wing is available under the [MIT License](LICENSE).

@@ -1252,6 +1252,30 @@ abstract class AppLocalizations {
   /// **'Show the selected agent persona.'**
   String get localCommandPersonaDescription;
 
+  /// No description provided for @localCommandVersionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the connected gateway version.'**
+  String get localCommandVersionDescription;
+
+  /// No description provided for @gatewayVersionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway version: {platform} {version}'**
+  String gatewayVersionSummary(String platform, String version);
+
+  /// No description provided for @gatewayVersionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway version is unavailable.'**
+  String get gatewayVersionUnavailable;
+
+  /// No description provided for @gatewayVersionUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'version unknown'**
+  String get gatewayVersionUnknown;
+
   /// No description provided for @profilePersonaTitle.
   ///
   /// In en, this message translates to:

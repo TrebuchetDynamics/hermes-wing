@@ -105,7 +105,8 @@ A usable endpoint must also advertise at least one supported chat transport:
 Wing owns only local navigation/draft/status commands (`/new`, `/sessions`, `/clear`,
 `/settings`, `/usage`, `/help`, `/agents`, `/providers`, `/model`, `/tools`,
 `/skills`, `/schedules`, and `/gateway`), plus capability-gated `/persona` for
-an exact scoped profile SOUL read. They execute as client actions without sending slash text as an agent turn;
+an exact scoped profile SOUL read and capability-gated `/version` for exact
+scoped detailed gateway health. They execute as client actions without sending slash text as an agent turn;
 `/new` uses the already-advertised session-create contract. They are disabled
 while a run is active. Every unknown slash command remains an ordinary server-owned message;
 Wing does not guess Hermes command semantics or claim runtime discovery without

@@ -665,6 +665,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show the selected agent persona.';
 
   @override
+  String get localCommandVersionDescription =>
+      'Show the connected gateway version.';
+
+  @override
+  String gatewayVersionSummary(String platform, String version) {
+    return 'Gateway version: $platform $version';
+  }
+
+  @override
+  String get gatewayVersionUnavailable => 'Gateway version is unavailable.';
+
+  @override
+  String get gatewayVersionUnknown => 'version unknown';
+
+  @override
   String profilePersonaTitle(String profile) {
     return '$profile persona';
   }

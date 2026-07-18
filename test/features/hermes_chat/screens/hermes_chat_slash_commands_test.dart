@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
+import 'package:wing/core/hermes/models/hermes_health.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/models/hermes_run.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -376,6 +377,57 @@ void main() {
     expect(
       channel.state.activeMessages.any((turn) => turn.text == '/persona'),
       isTrue,
+    );
+  });
+
+  testWidgets('advertised version command reports bounded gateway version', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: HermesCapabilityDocument.fromJson({
+        'schema_version': 1,
+        'auth': {
+          'type': 'bearer',
+          'required': true,
+          'granted_scopes': ['gateway:read'],
+        },
+        'features': {'session_chat_streaming': true},
+        'endpoints': {
+          'session_chat_stream': {
+            'method': 'POST',
+            'path': '/api/sessions/{session_id}/chat/stream',
+          },
+          'health_detailed': {
+            'method': 'GET',
+            'path': '/health/detailed',
+            'required_scopes': ['gateway:read'],
+          },
+        },
+      }),
+      detailedHealth: const HermesHealthStatus(
+        status: 'ok',
+        platform: 'hermes-agent',
+        version: '0.18.0',
+      ),
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/version',
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-local-command-version')),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.text('Gateway version: hermes-agent 0.18.0'), findsOneWidget);
+    expect(
+      channel.state.activeMessages.where((turn) => turn.text == '/version'),
+      isEmpty,
     );
   });
 

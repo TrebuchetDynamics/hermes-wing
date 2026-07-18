@@ -149,7 +149,7 @@ The current implementation therefore has no reliable fixed command count despite
 
 Sources: `../hermes-desktop/src/renderer/src/screens/Chat/slashCommands.ts:9-174`, `../hermes-desktop/src/renderer/src/screens/Chat/slash/desktopCommands.ts:12-129`, `../hermes-desktop/src/renderer/src/screens/Chat/slash/commandCatalog.ts:40-176`.
 
-**Wing disposition:** Wing now provides filtered, tap-operable client-owned `/new`, `/sessions`, `/clear`, `/settings`, `/usage`, `/help`, `/agents`, `/providers`, `/model`, `/tools`, `/skills`, `/schedules`, and `/gateway` suggestions, plus `/persona` only when the selected gateway advertises the exact scoped SOUL read contract, including 200% text-scale coverage. Exact local commands execute as client actions without sending slash text as an agent turn and cannot bypass an active run; unknown slash commands remain server-owned messages. Runtime model/agent command discovery is still **contract-gated** rather than reimplemented from guessed semantics.
+**Wing disposition:** Wing now provides filtered, tap-operable client-owned `/new`, `/sessions`, `/clear`, `/settings`, `/usage`, `/help`, `/agents`, `/providers`, `/model`, `/tools`, `/skills`, `/schedules`, and `/gateway` suggestions, plus `/persona` only when the selected gateway advertises the exact scoped SOUL read contract and `/version` only with exact scoped detailed health, including 200% text-scale coverage. Exact local commands execute as client actions without sending slash text as an agent turn and cannot bypass an active run; unknown slash commands remain server-owned messages. Runtime model/agent command discovery is still **contract-gated** rather than reimplemented from guessed semantics.
 
 ### 7. Sessions and conversation history
 

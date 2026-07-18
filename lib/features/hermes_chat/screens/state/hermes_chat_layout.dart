@@ -735,6 +735,25 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         unawaited(_showLocalSlashCommandHelp(context, channel));
       case 'persona':
         unawaited(_showCurrentPersona(context, channel));
+      case 'version':
+        final strings = AppLocalizations.of(context);
+        final health = channel.state.detailedHealth;
+        final platform = health?.platform.trim() ?? '';
+        final version = health?.version?.trim() ?? '';
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            content: Text(
+              platform.isEmpty
+                  ? strings.gatewayVersionUnavailable
+                  : strings.gatewayVersionSummary(
+                      _safeHermesUiPreview(platform, maxLength: 64),
+                      version.isEmpty
+                          ? strings.gatewayVersionUnknown
+                          : _safeHermesUiPreview(version, maxLength: 64),
+                    ),
+            ),
+          ),
+        );
       case 'usage':
         final turns = channel.state.activeMessages;
         final usageIndex = turns.lastIndexWhere((turn) => turn.usage != null);
@@ -963,6 +982,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         command: '/persona',
         description: strings.localCommandPersonaDescription,
         icon: Icons.psychology_outlined,
+      ),
+    if (state.canReadDetailedHealth)
+      _LocalSlashCommand(
+        id: 'version',
+        command: '/version',
+        description: strings.localCommandVersionDescription,
+        icon: Icons.info_outline,
       ),
   ];
 

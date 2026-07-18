@@ -255,6 +255,16 @@
   "localCommandModelDescription": "Open provider and model management.",
   "localCommandSchedulesDescription": "Open gateway schedules.",
   "localCommandPersonaDescription": "Show the selected agent persona.",
+  "localCommandVersionDescription": "Show the connected gateway version.",
+  "gatewayVersionSummary": "Gateway version: {platform} {version}",
+  "@gatewayVersionSummary": {
+    "placeholders": {
+      "platform": {"type": "String"},
+      "version": {"type": "String"}
+    }
+  },
+  "gatewayVersionUnavailable": "Gateway version is unavailable.",
+  "gatewayVersionUnknown": "version unknown",
   "profilePersonaTitle": "{profile} persona",
   "@profilePersonaTitle": {
     "placeholders": {

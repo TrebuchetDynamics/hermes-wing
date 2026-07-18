@@ -16,6 +16,14 @@ if [ ! -f "build/web/main.dart.js" ] || [ "$1" == "--rebuild" ]; then
   echo ""
 fi
 
+cleanup() {
+  echo ""
+  echo "Stopping test server..."
+  kill "$SERVER_PID" 2>/dev/null || true
+  wait "$SERVER_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
 echo "Starting test server..."
 node serve_web.mjs &
 SERVER_PID=$!
@@ -24,7 +32,6 @@ sleep 2
 # Check server health
 if ! curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8767/ | grep -q 200; then
   echo "ERROR: Test server failed to start"
-  kill $SERVER_PID 2>/dev/null
   exit 1
 fi
 echo "Test server running on http://127.0.0.1:8767"
@@ -33,11 +40,3 @@ echo ""
 # Run the Playwright tests
 echo "Running Playwright tests..."
 npx playwright test --config=playwright.config.mjs 2>&1
-EXIT_CODE=$?
-
-# Cleanup
-echo ""
-echo "Stopping test server..."
-kill $SERVER_PID 2>/dev/null
-
-exit $EXIT_CODE

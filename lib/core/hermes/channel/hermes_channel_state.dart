@@ -92,6 +92,9 @@ class HermesChannelState {
   bool get canReadRuntimeModels =>
       _advertisesEndpoint('models', 'GET', '/v1/models');
 
+  bool get canReadJobs =>
+      _allowsEndpoint('jobs', 'GET', '/api/jobs', 'tasks:read');
+
   bool get canReadProfileSoul => _allowsEndpoint(
     'profile_soul',
     'GET',

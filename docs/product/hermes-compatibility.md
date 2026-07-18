@@ -124,7 +124,7 @@ Hermes Wing may use these only when advertised:
 - `DELETE /api/sessions/{session_id}`
 - `GET /api/sessions/{session_id}/messages`
 - `POST /api/sessions/{session_id}/fork`
-- `GET /api/jobs`
+- `GET /api/jobs` with declared and granted `tasks:read`
 - `GET /v1/runs/{run_id}`
 - `POST /v1/runs/{run_id}/approval`
 - `POST /v1/runs/{run_id}/stop`

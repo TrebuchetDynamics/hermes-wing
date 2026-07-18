@@ -13,14 +13,25 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../hermes_chat/support/fake_hermes_channel.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
-HermesCapabilityDocument _capabilities({bool jobs = true}) =>
-    HermesCapabilityDocument.fromJson({
-      'schema_version': 1,
-      'auth': {'type': 'bearer', 'required': true},
-      'endpoints': {
-        if (jobs) 'jobs': {'method': 'GET', 'path': '/api/jobs'},
+HermesCapabilityDocument _capabilities({
+  bool jobs = true,
+  bool grantTasksRead = true,
+}) => HermesCapabilityDocument.fromJson({
+  'schema_version': 1,
+  'auth': {
+    'type': 'bearer',
+    'required': true,
+    'granted_scopes': [if (grantTasksRead) 'tasks:read'],
+  },
+  'endpoints': {
+    if (jobs)
+      'jobs': {
+        'method': 'GET',
+        'path': '/api/jobs',
+        'required_scopes': ['tasks:read'],
       },
-    });
+  },
+});
 
 const _morningJob = HermesJob(
   id: 'morning',
@@ -128,6 +139,30 @@ void main() {
       find.byKey(const ValueKey('schedules-refresh-button')),
       findsNothing,
     );
+  });
+
+  testWidgets('schedule inventory requires the granted tasks read scope', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(grantTasksRead: false),
+      jobs: const [_morningJob],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('This gateway did not advertise scheduled-job inventory.'),
+      findsOneWidget,
+    );
+    expect(find.text('Morning check'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('schedules-refresh-button')),
+      findsNothing,
+    );
+    expect(channel.loadJobsCalls, 0);
   });
 
   testWidgets('load failure is distinct and does not expose raw errors', (

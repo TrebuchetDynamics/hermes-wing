@@ -72,7 +72,14 @@ extension _ConnectionExtension on HermesApiChannel {
         errors: optionalResourceErrors,
       );
       final jobsFuture = _loadOptional<List<HermesJob>>(
-        advertised: capabilities.advertisesEndpoint('jobs', 'GET', '/api/jobs'),
+        advertised:
+            capabilities.auth.allows('tasks:read') &&
+            capabilities.advertisesScopedEndpoint(
+              'jobs',
+              'GET',
+              '/api/jobs',
+              'tasks:read',
+            ),
         resource: HermesOptionalResource.jobs,
         load: client.listJobs,
         errors: optionalResourceErrors,
@@ -186,10 +193,7 @@ extension _ConnectionExtension on HermesApiChannel {
 
   Future<void> _reloadJobs() async {
     final client = _requireConnectedClient();
-    final capabilities = _state.capabilities;
-    if (capabilities == null ||
-        !capabilities.supportsSchema ||
-        !capabilities.advertisesEndpoint('jobs', 'GET', '/api/jobs')) {
+    if (!_state.canReadJobs) {
       throw StateError('Hermes did not advertise scheduled-job inventory.');
     }
     final generation = _connectionGeneration;

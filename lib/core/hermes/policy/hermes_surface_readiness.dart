@@ -47,11 +47,15 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
         '/health/detailed',
         'gateway:read',
       );
-  final advertisesJobsList = capabilities.advertisesEndpoint(
-    'jobs',
-    'GET',
-    '/api/jobs',
-  );
+  final advertisesJobsList =
+      capabilities.supportsSchema &&
+      capabilities.auth.allows('tasks:read') &&
+      capabilities.advertisesScopedEndpoint(
+        'jobs',
+        'GET',
+        '/api/jobs',
+        'tasks:read',
+      );
   final supportsJobsAdmin =
       capabilities.supportsFeature('jobs_admin') && advertisesJobsList;
   final supportsAttachments =

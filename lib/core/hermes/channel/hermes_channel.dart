@@ -53,12 +53,14 @@ abstract interface class HermesChannel implements Listenable {
     required String revision,
   });
 
-  /// Refreshes bounded gateway health when `GET /health/detailed` is
-  /// advertised. This is status only and never changes gateway lifecycle.
+  /// Refreshes bounded gateway health only when exact `GET /health/detailed`
+  /// and declared/granted `gateway:read` are present. This is status only and
+  /// never changes gateway lifecycle.
   Future<void> loadDetailedHealth();
 
   /// Refreshes the read-only scheduled-job inventory for the selected profile
-  /// when the exact `GET /api/jobs` capability is advertised.
+  /// only when exact `GET /api/jobs` and declared/granted `tasks:read` are
+  /// present.
   Future<void> loadJobs();
 
   /// Loads the provider list + write-only credential presence for the selected

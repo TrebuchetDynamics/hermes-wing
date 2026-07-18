@@ -168,10 +168,10 @@ const _jobsCapabilitiesFixture = '''
   "object": "hermes.api_server.capabilities",
   "platform": "hermes-agent",
   "model": "hermes-agent",
-  "auth": {"type": "bearer", "required": true},
+  "auth": {"type": "bearer", "required": true, "granted_scopes": ["tasks:read"]},
   "features": {"jobs_admin": false},
   "endpoints": {
-    "jobs": {"method": "GET", "path": "/api/jobs"}
+    "jobs": {"method": "GET", "path": "/api/jobs", "required_scopes": ["tasks:read"]}
   }
 }
 ''';
@@ -471,6 +471,7 @@ void _hermesApiChannelProfileTests() {
       'chat:read',
       'skills:read',
       'tools:read',
+      'tasks:read',
     ];
     endpoints.addAll({
       'models': {'method': 'GET', 'path': '/v1/models'},
@@ -484,7 +485,11 @@ void _hermesApiChannelProfileTests() {
         'path': '/v1/toolsets',
         'required_scopes': ['tools:read'],
       },
-      'jobs': {'method': 'GET', 'path': '/api/jobs'},
+      'jobs': {
+        'method': 'GET',
+        'path': '/api/jobs',
+        'required_scopes': ['tasks:read'],
+      },
     });
     final capabilities = jsonEncode(capabilityMap);
     final channel = HermesApiChannel(

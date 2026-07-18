@@ -111,20 +111,70 @@ void _hermesApiChannelConnectionTests() {
     },
   );
 
+  test(
+    'connect does not probe jobs without the granted tasks read scope',
+    () async {
+      const capabilities = '''
+{
+  "object": "hermes.api_server.capabilities",
+  "platform": "hermes-agent",
+  "model": "hermes-agent",
+  "schema_version": 1,
+  "auth": {"type": "bearer", "required": true, "granted_scopes": []},
+  "features": {},
+  "endpoints": {
+    "jobs": {
+      "method": "GET",
+      "path": "/api/jobs",
+      "required_scopes": ["tasks:read"]
+    }
+  }
+}
+''';
+      final requestedPaths = <String>[];
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            requestedPaths.add(uri.path);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => capabilities,
+              '/api/sessions' => '{"object":"list","data":[]}',
+              '/api/jobs' => throw StateError('must not be requested'),
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      expect(requestedPaths, isNot(contains('/api/jobs')));
+      expect(channel.state.canReadJobs, isFalse);
+      expect(channel.state.jobs, isEmpty);
+
+      requestedPaths.clear();
+      await expectLater(channel.loadJobs(), throwsStateError);
+      expect(requestedPaths, isEmpty);
+    },
+  );
+
   test('connect starts independent startup requests concurrently', () async {
     const capabilities = '''
 {
   "object": "hermes.api_server.capabilities",
   "platform": "hermes-agent",
   "model": "hermes-agent",
-  "auth": {"type": "bearer", "required": true, "granted_scopes": ["gateway:read", "skills:read", "tools:read"]},
+  "auth": {"type": "bearer", "required": true, "granted_scopes": ["gateway:read", "skills:read", "tools:read", "tasks:read"]},
   "features": {},
   "endpoints": {
     "health_detailed": {"method": "GET", "path": "/health/detailed", "required_scopes": ["gateway:read"]},
     "models": {"method": "GET", "path": "/v1/models"},
     "skills": {"method": "GET", "path": "/v1/skills", "required_scopes": ["skills:read"]},
     "toolsets": {"method": "GET", "path": "/v1/toolsets", "required_scopes": ["tools:read"]},
-    "jobs": {"method": "GET", "path": "/api/jobs"}
+    "jobs": {"method": "GET", "path": "/api/jobs", "required_scopes": ["tasks:read"]}
   }
 }
 ''';

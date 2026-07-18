@@ -347,12 +347,8 @@ class _CenteredMessage extends StatelessWidget {
   );
 }
 
-bool _jobsAdvertised(HermesChannelState state) {
-  final capabilities = state.capabilities;
-  return state.status == HermesConnectionStatus.connected &&
-      capabilities?.supportsSchema == true &&
-      capabilities!.advertisesEndpoint('jobs', 'GET', '/api/jobs');
-}
+bool _jobsAdvertised(HermesChannelState state) =>
+    state.status == HermesConnectionStatus.connected && state.canReadJobs;
 
 int _compareJobs(HermesJob a, HermesJob b) {
   if (a.enabled != b.enabled) return a.enabled ? -1 : 1;

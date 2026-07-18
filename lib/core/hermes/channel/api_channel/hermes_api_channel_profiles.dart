@@ -78,8 +78,14 @@ extension _ProfilesExtension on HermesApiChannel {
     final jobs =
         await _loadOptional<List<HermesJob>>(
           advertised:
-              capabilities?.advertisesEndpoint('jobs', 'GET', '/api/jobs') ??
-              false,
+              capabilities?.supportsSchema == true &&
+              capabilities!.auth.allows('tasks:read') &&
+              capabilities.advertisesScopedEndpoint(
+                'jobs',
+                'GET',
+                '/api/jobs',
+                'tasks:read',
+              ),
           resource: HermesOptionalResource.jobs,
           load: () => client.listJobs(profile: id),
           errors: errors,

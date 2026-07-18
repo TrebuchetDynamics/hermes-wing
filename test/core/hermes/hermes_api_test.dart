@@ -1567,7 +1567,7 @@ const _futureSurfaceCapabilitiesFixture = '''
   "object": "hermes.api_server.capabilities",
   "platform": "hermes-agent",
   "model": "hermes-agent",
-  "auth": {"type": "bearer", "required": true},
+  "auth": {"type": "bearer", "required": true, "granted_scopes": ["tasks:read"]},
   "features": {
     "realtime_voice": true,
     "admin_config_rw": true,
@@ -1576,7 +1576,7 @@ const _futureSurfaceCapabilitiesFixture = '''
     "attachments_api": true
   },
   "endpoints": {
-    "jobs": {"method": "GET", "path": "/api/jobs"}
+    "jobs": {"method": "GET", "path": "/api/jobs", "required_scopes": ["tasks:read"]}
   }
 }
 ''';

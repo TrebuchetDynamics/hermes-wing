@@ -149,7 +149,12 @@ class _GatewaySettingsTile extends StatelessWidget {
       trailing: PopupMenuButton<String>(
         key: ValueKey('settings-gateway-menu-${gateway.id}'),
         onSelected: (action) async {
-          if (action == 'rename') {
+          if (action == 'agents') {
+            await _runGatewayAction(context, () async {
+              await directory.activateGateway(gateway.id);
+              if (context.mounted) context.go(AppRoutes.agents);
+            }, 'Could not connect to this gateway.');
+          } else if (action == 'rename') {
             await _renameGateway(context, directory, gateway);
           } else if (action == 'reconnect') {
             await _runGatewayAction(
@@ -162,6 +167,7 @@ class _GatewaySettingsTile extends StatelessWidget {
           }
         },
         itemBuilder: (_) => const [
+          PopupMenuItem(value: 'agents', child: Text('Manage agents')),
           PopupMenuItem(value: 'rename', child: Text('Rename')),
           PopupMenuItem(value: 'reconnect', child: Text('Reconnect')),
           PopupMenuItem(value: 'remove', child: Text('Remove')),

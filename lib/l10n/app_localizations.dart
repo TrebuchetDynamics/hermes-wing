@@ -175,7 +175,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsUnavailableBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes did not advertise profile access for this connection.'**
+  /// **'Update Hermes Agent and reconnect this gateway with profile permissions.'**
   String get agentsUnavailableBody;
 
   /// No description provided for @agentsConnectionError.

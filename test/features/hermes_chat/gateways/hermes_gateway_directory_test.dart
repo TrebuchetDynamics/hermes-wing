@@ -57,6 +57,26 @@ void main() {
     );
   });
 
+  test('activateGateway connects the gateway default profile', () async {
+    final channel = FakeHermesChannel.disconnected();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['coder', 'default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+
+    await directory.activateGateway('alpha');
+
+    expect(channel.connectCalls.single.baseUrl, 'https://alpha.example');
+    expect(channel.selectProfileCalls, ['default']);
+    expect(directory.activeContactId?.gatewayId, 'alpha');
+  });
+
   test('fallback contact skips profile selection', () async {
     final channel = FakeHermesChannel.disconnected();
     final directory = directoryFor(

@@ -351,6 +351,26 @@ class HermesGatewayDirectory extends ChangeNotifier
     await _cache.save(_contacts);
   }
 
+  Future<void> activateGateway(String gatewayId) async {
+    GatewayContact? target;
+    for (final contact in _contacts) {
+      if (contact.id.gatewayId != gatewayId) continue;
+      target ??= contact;
+      if (contact.id.profileId == 'default') {
+        target = contact;
+        break;
+      }
+    }
+    if (target == null) {
+      await reconnectGateway(gatewayId);
+      target = _contacts
+          .where((contact) => contact.id.gatewayId == gatewayId)
+          .firstOrNull;
+    }
+    if (target == null) throw StateError('Gateway has no available profiles.');
+    await activate(target.id);
+  }
+
   Future<void> removeGateway(String gatewayId) async {
     if (_activeContactId?.gatewayId == gatewayId) await showDirectory();
     await _store.deleteProfile(gatewayId);

@@ -50,7 +50,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentsUnavailableBody =>
-      'Hermes did not advertise profile access for this connection.';
+      'Update Hermes Agent and reconnect this gateway with profile permissions.';
 
   @override
   String get agentsConnectionError => 'Agents could not be loaded from Hermes.';

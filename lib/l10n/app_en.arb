@@ -13,7 +13,7 @@
   "agentsEmptyTitle": "No agents available",
   "agentsEmptyBody": "Connect with profile access to view Hermes agents.",
   "agentsUnavailableTitle": "Agents unavailable",
-  "agentsUnavailableBody": "Hermes did not advertise profile access for this connection.",
+  "agentsUnavailableBody": "Update Hermes Agent and reconnect this gateway with profile permissions.",
   "agentsConnectionError": "Agents could not be loaded from Hermes.",
   "selectedAgent": "Selected",
   "defaultAgent": "Default",

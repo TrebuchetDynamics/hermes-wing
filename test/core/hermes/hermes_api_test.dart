@@ -560,6 +560,36 @@ void main() {
     },
   );
 
+  test('surface readiness rejects ungranted session scopes', () {
+    final capabilities = HermesCapabilityDocument.fromJson({
+      'schema_version': 1,
+      'auth': {
+        'type': 'bearer',
+        'required': true,
+        'granted_scopes': <String>[],
+      },
+      'endpoints': {
+        'sessions': {
+          'method': 'GET',
+          'path': '/api/sessions',
+          'required_scopes': ['sessions:read'],
+        },
+        'session_create': {
+          'method': 'POST',
+          'path': '/api/sessions',
+          'required_scopes': ['sessions:write'],
+        },
+      },
+    });
+
+    final sessions = hermesSurfaceReadiness(
+      capabilities,
+    ).singleWhere((item) => item.title == 'Sessions');
+
+    expect(sessions.status, HermesSurfaceStatus.blocked);
+    expect(sessions.detail, contains('authorized'));
+  });
+
   test('surface readiness recognizes advertised detailed gateway health', () {
     final capabilities = HermesCapabilityDocument.fromJson({
       'schema_version': 1,

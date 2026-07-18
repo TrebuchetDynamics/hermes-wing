@@ -28,12 +28,22 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
   HermesCapabilityDocument capabilities,
 ) {
   final policy = HermesTransportPolicy(capabilities);
-  final supportsSessions = capabilities.advertisesEndpoint(
+  bool authorizesEndpoint(String name, String method, String path) {
+    if (!capabilities.supportsSchema ||
+        !capabilities.advertisesEndpoint(name, method, path)) {
+      return false;
+    }
+    final endpoint = capabilities.endpoints[name];
+    return endpoint != null &&
+        endpoint.requiredScopes.every(capabilities.auth.allows);
+  }
+
+  final supportsSessions = authorizesEndpoint(
     'sessions',
     'GET',
     '/api/sessions',
   );
-  final supportsSessionCreate = capabilities.advertisesEndpoint(
+  final supportsSessionCreate = authorizesEndpoint(
     'session_create',
     'POST',
     '/api/sessions',
@@ -101,7 +111,7 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           : HermesSurfaceStatus.blocked,
       detail: supportsSessions && supportsSessionCreate
           ? 'List, create, select, rename, delete, and fork when advertised.'
-          : 'Required session list/create endpoints are missing.',
+          : 'Required authorized session list/create endpoints are missing.',
     ),
     const HermesSurfaceReadiness(
       title: 'Local voice-to-text',

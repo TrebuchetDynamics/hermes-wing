@@ -5,13 +5,16 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: ./wing-cli [info|token|link|qr] [options]
+Hermes Wing CLI
+
+Usage:
+  wing-cli [info|token|link|qr] [options]
 
 Commands:
-  info   Print the Tailscale address and Hermes endpoint (default)
-  token  Print API_SERVER_KEY explicitly; never included in info or QR output
-  link   Create and print a short-lived, single-use wing:// pairing link
-  qr     Create a pairing link and render it in the terminal
+  info   Show connection details and suggested next steps (default)
+  token  Reveal the API_SERVER_KEY superuser credential
+  link   Create a short-lived, single-use wing:// pairing link
+  qr     Render a short-lived, single-use pairing QR in the terminal
 
 Options:
   --origin URL    Hermes API origin (default: WING_HERMES_URL or Tailscale IP)
@@ -19,8 +22,17 @@ Options:
   --scopes CSV    Pairing scopes (default: basic Hermes Wing chat access)
   -h, --help      Show this help
 
-Environment overrides:
+Environment:
   WING_HERMES_URL, WING_HERMES_PORT, WING_HERMES_TOKEN, WING_HERMES_SCOPES
+  WING_CLI_BROKER_HOST, WING_CLI_BROKER_TIMEOUT, WING_CLI_SHOW_LINK
+
+Examples:
+  wing-cli                 Show connection details
+  wing-cli qr              Pair Hermes Wing by QR code
+  wing-cli link --label phone
+  wing-cli token           Reveal the token for manual setup
+
+The token and link commands keep their payload alone on stdout for scripting.
 EOF
 }
 
@@ -252,7 +264,7 @@ server.server_close()
 timer.cancel()
 if not state["exchanged"]:
     raise SystemExit("Pairing timed out without exposing the API key.")
-print("Hermes Wing received the access token.", file=sys.stderr)
+print("Pairing complete: Hermes Wing received the access token.", file=sys.stderr)
 PY
 }
 
@@ -344,20 +356,26 @@ case "$command" in
     ;;
   info)
     origin="${origin:-$(default_origin)}"
-    printf 'Tailscale IPv4: %s\n' "$(tailscale_ip 2>/dev/null || echo unavailable)"
-    printf 'Hermes endpoint: %s\n' "$origin"
+    printf 'Hermes Wing connection\n\n'
+    printf '  %-18s %s\n' 'Tailscale IPv4' "$(tailscale_ip 2>/dev/null || echo unavailable)"
+    printf '  %-18s %s\n' 'Hermes endpoint' "$origin"
     if api_token >/dev/null 2>&1; then
-      echo "Access token: configured (run './wing-cli token' to reveal)"
+      printf '  %-18s %s\n' 'Access token' 'configured (hidden)'
+      printf '\nNext steps\n  %-18s %s\n  %-18s %s\n' 'Pair by QR' 'wing-cli qr' 'Reveal token' 'wing-cli token'
     else
-      echo "Access token: not configured"
+      printf '  %-18s %s\n' 'Access token' 'not configured'
+      printf '\nNext step\n  Set API_SERVER_KEY in Hermes or export WING_HERMES_TOKEN.\n'
     fi
     ;;
   token)
-    echo "Warning: this is a superuser credential; do not share, log, or encode it in a QR." >&2
+    printf 'Hermes Wing access token\n\n  %-18s %s\n  %-18s %s\n\n' 'Credential' 'API_SERVER_KEY' 'Access' 'superuser' >&2
+    echo "Warning: do not share, log, or encode this credential in a QR." >&2
     api_token
     ;;
   link)
     origin="${origin:-$(default_origin)}"
+    printf 'Creating Hermes Wing pairing link\n\n  %-18s %s\n  %-18s %s\n  %-18s %s\n\nPairing link (short-lived, single-use):\n' \
+      'Hermes endpoint' "$origin" 'Device label' "$label" 'Scopes' "$scopes" >&2
     create_pairing_link "$origin" "$label" "$scopes"
     ;;
   qr)
@@ -369,12 +387,17 @@ case "$command" in
     }
     broker_pid="$BROKER_PROCESS_PID"
     IFS= read -r link <&"${BROKER_PROCESS[0]}"
-    printf 'Hermes endpoint: %s\nAccess: API_SERVER_KEY superuser\nScan this short-lived, single-use code with Hermes Wing:\n' "$origin"
+    printf 'Hermes Wing QR pairing\n\n'
+    printf '  %-18s %s\n' 'Hermes endpoint' "$origin"
+    printf '  %-18s %s\n' 'Device label' "$label"
+    printf '  %-18s %s\n' 'Access' 'API_SERVER_KEY superuser'
+    printf '  %-18s %s seconds\n' 'Expires in' "$broker_timeout"
+    printf '\nScan this short-lived, single-use code with Hermes Wing:\n'
     if [[ "${WING_CLI_SHOW_LINK:-false}" == true ]]; then
-      printf '%s\n' "$link"
+      printf '\nPairing link (debug):\n%s\n' "$link"
     fi
     render_qr "$link"
-    printf 'Waiting up to %s seconds for Hermes Wing…\n' "$broker_timeout"
+    printf '\nWaiting up to %s seconds for Hermes Wing…\n' "$broker_timeout"
     wait "$broker_pid"
     ;;
   *)

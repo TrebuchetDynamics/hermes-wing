@@ -289,7 +289,11 @@ void main() {
       'info',
     ], environment: environment);
     expect(info.exitCode, 0);
+    expect(info.stdout, contains('Hermes Wing connection'));
     expect(info.stdout, contains('https://hermes.example'));
+    expect(info.stdout, contains('configured (hidden)'));
+    expect(info.stdout, contains('wing-cli qr'));
+    expect(info.stdout, contains('wing-cli token'));
     expect(info.stdout, isNot(contains(token)));
 
     final reveal = await Process.run('./wing-cli', [
@@ -297,6 +301,8 @@ void main() {
     ], environment: environment);
     expect(reveal.exitCode, 0);
     expect((reveal.stdout as String).trim(), token);
+    expect(reveal.stderr, contains('Hermes Wing access token'));
+    expect(reveal.stderr, contains('superuser'));
   });
 
   test('wing-cli creates a pairing link without exposing the token', () async {
@@ -334,6 +340,9 @@ void main() {
     await requestHandled;
 
     expect(link.exitCode, 0, reason: link.stderr as String);
+    expect(link.stderr, contains('Creating Hermes Wing pairing link'));
+    expect(link.stderr, contains('test-phone'));
+    expect(link.stderr, contains('short-lived, single-use'));
     final pairing = Uri.parse((link.stdout as String).trim());
     expect(pairing.scheme, 'wing');
     expect(pairing.host, 'connect');
@@ -397,6 +406,9 @@ void main() {
     expect(issued['token'], token);
 
     expect(await process.exitCode, 0, reason: error.toString());
+    expect(output.toString(), contains('Hermes Wing QR pairing'));
+    expect(output.toString(), contains('Device label'));
+    expect(output.toString(), contains('Expires in'));
     expect(output.toString(), contains('\x1b[40m'));
     expect(output.toString(), contains('\x1b[47m'));
     expect(output.toString(), isNot(contains(token)));
@@ -497,6 +509,8 @@ void main() {
 
     final help = await Process.run(installed.path, ['--help']);
     expect(help.exitCode, 0);
-    expect(help.stdout, contains('Usage: ./wing-cli'));
+    expect(help.stdout, contains('Hermes Wing CLI'));
+    expect(help.stdout, contains('wing-cli [info|token|link|qr]'));
+    expect(help.stdout, contains('Examples:'));
   });
 }

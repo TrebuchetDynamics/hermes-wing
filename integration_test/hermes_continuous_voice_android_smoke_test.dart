@@ -11,6 +11,7 @@ import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_capture_service.dart';
 
@@ -33,6 +34,8 @@ void main() {
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(
             voiceCaptureServiceOverride: capture,
             textToSpeechServiceOverride: tts,
@@ -42,9 +45,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const ValueKey('hermes-continuous-voice-switch')),
+    final desktopSwitch = find.byKey(
+      const ValueKey('hermes-continuous-voice-switch'),
     );
+    if (desktopSwitch.evaluate().isNotEmpty) {
+      await tester.tap(desktopSwitch);
+    } else {
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-menu-button')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tapAt(tester.getCenter(find.text('Hands-free voice')));
+    }
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     expect(channel.sentVoiceTranscripts, [

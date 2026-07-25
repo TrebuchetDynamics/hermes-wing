@@ -88,15 +88,14 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         final activeSessionId = channel.state.activeSessionId;
         if (_observedSessionId != null &&
             _observedSessionId != activeSessionId) {
-          final voiceWasActive =
-              _voiceInputController.continuousEnabled ||
-              _voiceInputController.capturing ||
-              _voiceInputController.speaking;
-          _voiceInputController.pause(
-            voiceWasActive
-                ? 'Hermes session changed. Continuous voice paused.'
-                : null,
-          );
+          final voiceNotice = _voiceInputController.continuousEnabled
+              ? 'Hermes session changed. Continuous voice paused.'
+              : _voiceInputController.speaking
+              ? 'Hermes session changed. Spoken reply stopped.'
+              : _voiceInputController.capturing
+              ? 'Hermes session changed. Voice capture stopped.'
+              : null;
+          _voiceInputController.pause(voiceNotice);
         }
         _observedSessionId = activeSessionId;
         _dropQueuedFollowUpsForMissingSessions(channel.state);

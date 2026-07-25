@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../../shared/voice/text_to_speech_service.dart';
@@ -31,9 +33,17 @@ abstract interface class FlutterTtsEngine {
 
 class PluginFlutterTtsEngine implements FlutterTtsEngine {
   PluginFlutterTtsEngine({FlutterTts? flutterTts})
-    : _flutterTts = flutterTts ?? FlutterTts();
+    : _flutterTts = flutterTts ?? FlutterTts() {
+    _flutterTts.setErrorHandler((message) {
+      final failure = _speechFailure;
+      if (failure != null && !failure.isCompleted) {
+        failure.completeError(StateError(message));
+      }
+    });
+  }
 
   final FlutterTts _flutterTts;
+  Completer<void>? _speechFailure;
   List<Map<Object?, Object?>>? _cachedVoices;
 
   @override
@@ -63,7 +73,16 @@ class PluginFlutterTtsEngine implements FlutterTtsEngine {
 
   @override
   Future<void> speak(String text) async {
-    await _flutterTts.speak(text);
+    final failure = Completer<void>();
+    _speechFailure = failure;
+    try {
+      await Future.any<void>([
+        _flutterTts.speak(text).then<void>((_) {}),
+        failure.future,
+      ]);
+    } finally {
+      if (identical(_speechFailure, failure)) _speechFailure = null;
+    }
   }
 
   @override

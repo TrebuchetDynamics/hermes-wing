@@ -588,7 +588,12 @@ class _ApprovalBanner extends StatelessWidget {
         );
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              MediaQuery.sizeOf(sheetContext).width < 600 ? 80 : 16,
+            ),
             child: SingleChildScrollView(
               key: const ValueKey('hermes-approval-sheet-scroll'),
               child: Column(

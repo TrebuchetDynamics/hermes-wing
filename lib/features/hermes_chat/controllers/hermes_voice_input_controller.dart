@@ -251,6 +251,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     if (!_continuousEnabled) {
       notifyListeners();
+      unawaited(maybeContinue());
       return;
     }
     notifyListeners();

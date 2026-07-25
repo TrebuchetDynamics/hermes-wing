@@ -27,7 +27,18 @@ const MIME = {
 };
 
 const hermesState = {
-  sessions: [
+  sessions: [],
+  nextSessionNumber: 2,
+  nextMessageId: 1,
+  nextRunId: 1,
+  stopCount: 0,
+  decisions: [],
+  runs: new Map(),
+};
+
+function resetHermesState() {
+  for (const run of hermesState.runs.values()) run.release?.('reset');
+  hermesState.sessions = [
     {
       id: 'e2e-hermes-session',
       source: 'e2e',
@@ -41,13 +52,16 @@ const hermesState = {
         },
       ],
     },
-  ],
-  nextSessionNumber: 2,
-  nextMessageId: 1,
-  nextRunId: 1,
-  stopCount: 0,
-  runs: new Map(),
-};
+  ];
+  hermesState.nextSessionNumber = 2;
+  hermesState.nextMessageId = 1;
+  hermesState.nextRunId = 1;
+  hermesState.stopCount = 0;
+  hermesState.decisions = [];
+  hermesState.runs.clear();
+}
+
+resetHermesState();
 
 async function readJsonBody(req) {
   let body = '';
@@ -74,8 +88,18 @@ function findHermesSession(id) {
 
 async function handleHermesApi(req, res, url) {
   if (req.method === 'OPTIONS') return json(res, 204, {});
+  if (req.method === 'POST' && url === '/e2e/hermes/reset') {
+    resetHermesState();
+    return json(res, 200, { reset: true });
+  }
   if (req.method === 'GET' && url === '/e2e/hermes/stop-count') {
     return json(res, 200, { stopCount: hermesState.stopCount });
+  }
+  if (req.method === 'GET' && url === '/e2e/hermes/run-count') {
+    return json(res, 200, { runCount: hermesState.runs.size });
+  }
+  if (req.method === 'GET' && url === '/e2e/hermes/decisions') {
+    return json(res, 200, { decisions: hermesState.decisions });
   }
   if (req.method === 'GET' && url === '/health') {
     return json(res, 200, { status: 'ok', platform: 'hermes-agent' });
@@ -255,17 +279,18 @@ async function handleHermesApi(req, res, url) {
     const runId = `run_${hermesState.nextRunId++}`;
     const reply = `Hermes echo: ${body.message}`;
     if (session) {
-      session.messages.push(
-        { id: `msg_${hermesState.nextMessageId++}`, role: 'user', content: body.message },
-        { id: `msg_${hermesState.nextMessageId++}`, role: 'assistant', content: reply },
-      );
+      session.messages.push({
+        id: `msg_${hermesState.nextMessageId++}`,
+        role: 'user',
+        content: body.message,
+      });
     }
     hermesState.runs.set(runId, {
       id: runId,
       session_id: body.session_id,
       reply,
       approval_id: `approval_${runId}`,
-      slow: body.message?.includes('slow') ?? false,
+      release: null,
     });
     return json(res, 200, {
       object: 'hermes.run',
@@ -286,31 +311,55 @@ async function handleHermesApi(req, res, url) {
         tool_call_id: 'tool_e2e',
         prompt: 'Approve e2e browser run?',
         risk: 'low',
-      })}\n\n` +
-        `event: tool.started\ndata: ${JSON.stringify({
-          tool: 'bash',
-          preview: 'echo e2e',
-        })}\n\n`,
+      })}\n\n`,
     );
-    setTimeout(
-      () => {
-        res.end(
-          `event: tool.completed\ndata: ${JSON.stringify({
-            tool: 'bash',
-            result_text: 'tool complete',
-          })}\n\n` +
-            `event: message.delta\ndata: ${JSON.stringify({ delta: run?.reply ?? '' })}\n\n` +
-            `event: run.completed\ndata: ${JSON.stringify({ status: 'completed' })}\n\n` +
-            `data: [DONE]\n\n`,
-        );
-      },
-      run?.slow ? 8000 : 1200,
+    const decision = await new Promise((resolve) => {
+      if (!run) return resolve('missing');
+      run.release = resolve;
+      res.once('close', () => resolve('closed'));
+    });
+    if (res.writableEnded || decision === 'closed') return;
+    if (decision === 'stop' || decision === 'reset' || decision === 'deny') {
+      res.end(
+        `event: run.completed\ndata: ${JSON.stringify({ status: decision })}\n\n` +
+          `data: [DONE]\n\n`,
+      );
+      return;
+    }
+    const session = findHermesSession(run?.session_id);
+    if (session) {
+      session.messages.push({
+        id: `msg_${hermesState.nextMessageId++}`,
+        role: 'assistant',
+        content: run.reply,
+      });
+    }
+    res.end(
+      `event: tool.started\ndata: ${JSON.stringify({
+        tool: 'bash',
+        preview: 'echo e2e',
+      })}\n\n` +
+        `event: tool.completed\ndata: ${JSON.stringify({
+          tool: 'bash',
+          result_text: 'tool complete',
+        })}\n\n` +
+        `event: message.delta\ndata: ${JSON.stringify({ delta: run?.reply ?? '' })}\n\n` +
+        `event: run.completed\ndata: ${JSON.stringify({ status: 'completed' })}\n\n` +
+        `data: [DONE]\n\n`,
     );
     return;
   }
-  if (req.method === 'POST' && /^\/v1\/runs\/[^/]+\/(approval|stop)$/.test(url)) {
-    await readJsonBody(req);
-    if (url.endsWith('/stop')) hermesState.stopCount += 1;
+  const runActionMatch = url.match(/^\/v1\/runs\/([^/]+)\/(approval|stop)$/);
+  if (req.method === 'POST' && runActionMatch) {
+    const body = await readJsonBody(req);
+    const run = hermesState.runs.get(decodeURIComponent(runActionMatch[1]));
+    const action = runActionMatch[2];
+    if (action === 'stop') {
+      hermesState.stopCount += 1;
+    } else {
+      hermesState.decisions.push(body.decision);
+    }
+    run?.release?.(action === 'stop' ? 'stop' : body.decision);
     return json(res, 200, {});
   }
   return false;

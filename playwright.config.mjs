@@ -5,7 +5,9 @@ export default defineConfig({
   timeout: 60000,
   expect: { timeout: 10000 },
   retries: 1,
-  workers: 2,
+  preserveOutput: 'always',
+  // The local Hermes API mock is intentionally stateful across each user flow.
+  workers: 1,
   use: {
     headless: true,
     viewport: { width: 1280, height: 900 },

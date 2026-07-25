@@ -1,0 +1,93 @@
+appId: com.trebuchetdynamics.hermes.wing
+name: Real gateway regression
+tags:
+  - device
+  - regression
+  - real-gateway
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+- setOrientation: PORTRAIT
+
+# Start from the gateway directory without assuming the prior app route.
+- runFlow:
+    when:
+      visible: "All chats"
+    commands:
+      - tapOn: "All chats"
+- assertVisible: "(?s).*Default agent.*online.*"
+- tapOn: "(?s).*Default agent.*online.*"
+- extendedWaitUntil:
+    visible: "Message Hermes…"
+    timeout: 60000
+
+# Exercise a real session mutation, run submission, SSE completion, and usage.
+- tapOn: "More actions"
+- tapOn: "New session"
+- extendedWaitUntil:
+    visible: "How can Hermes help today?"
+    timeout: 30000
+- tapOn:
+    point: "50%,90%"
+- inputText: "Join these four uppercase words with hyphens and reply with only the result: REAL WING RUN OK"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RUN-OK.*"
+    timeout: 120000
+- assertVisible: "(?s).*Token usage:.*total.*"
+- assertNotVisible: "(?s).*HttpException.*"
+
+# A second real turn verifies session continuity rather than only first-turn chat.
+- tapOn:
+    point: "50%,90%"
+- inputText: "Without tools or external actions replace the spaces in phrase REAL WING CONTEXT OK with hyphens and reply with only the result"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-CONTEXT-OK.*"
+    timeout: 120000
+- assertNotVisible: "(?s).*HttpException.*"
+
+# Stop a server-owned run, then prove the same session remains usable.
+- tapOn:
+    point: "50%,90%"
+- inputText: "Without tools or external actions write five hundred words about a brass telescope"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "Stop"
+    timeout: 30000
+- tapOn: "Stop"
+- extendedWaitUntil:
+    notVisible: "Stop"
+    timeout: 30000
+- tapOn:
+    point: "50%,90%"
+- inputText: "Join these three uppercase words with hyphens and reply with only the result: REAL WING RECOVERED"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RECOVERED.*"
+    timeout: 120000
+- assertNotVisible: "(?s).*HttpException.*"
+
+# Kill and relaunch the real APK, then verify authoritative transcript recovery.
+- stopApp
+- launchApp
+- runFlow:
+    when:
+      visible: "(?s).*Default agent.*online.*"
+    commands:
+      - tapOn: "(?s).*Default agent.*online.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RECOVERED.*"
+    timeout: 60000
+- assertVisible: "(?s).*REAL-WING-RUN-OK.*"
+- assertVisible: "(?s).*REAL-WING-CONTEXT-OK.*"
+- assertNotVisible: "(?s).*HttpException.*"
+
+# Leave and reopen the contact to cover directory-to-session restoration.
+- tapOn: "All chats"
+- assertVisible: "(?s).*Default agent.*online.*"
+- tapOn: "(?s).*Default agent.*online.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RECOVERED.*"
+    timeout: 60000

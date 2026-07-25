@@ -10,6 +10,11 @@ function semanticText(page, text) {
   return page.locator('flt-semantics').filter({ hasText: text }).last();
 }
 
+test.beforeEach(async ({ request }) => {
+  const response = await request.post(`${APP}e2e/hermes/reset`);
+  expect(response.ok()).toBeTruthy();
+});
+
 test('Hermes route renders the VPS connect form in a real browser', async ({ page }) => {
   await page.goto(`${APP}#/hermes`, { timeout: 15000 });
   await page.waitForTimeout(2000);
@@ -120,5 +125,7 @@ test('Hermes route renders connected session/capabilities in a real browser e2e 
 
   await page.evaluate(() => globalThis.wingE2EHermesSendText('slow browser turn'));
   await expect(page.getByText('slow browser turn').first()).toBeVisible();
+  await expect(semanticLabel(page, 'Approve e2e browser run')).toBeVisible();
+  await page.getByRole('button', { name: 'Approve once' }).click();
   await expect(semanticText(page, 'Hermes echo: slow browser turn')).toBeVisible();
 });

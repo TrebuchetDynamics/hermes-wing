@@ -26,15 +26,26 @@ name: gateway_status_qa
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
 - extendedWaitUntil:
-    visible: "(?s).*Read-only gateway status.*"
+    visible: "(?s).*(Read-only gateway status|did not advertise detailed health status).*"
     timeout: 60000
-- assertVisible: "(?s).*Healthy.*"
-- assertVisible: "(?s).*Refresh gateway status.*"
-- assertNotVisible: "(?s)^Restart$"
-- assertNotVisible: "(?s)^Configure$"
-- takeScreenshot: gateway_status
-- tapOn: "(?s).*Refresh gateway status.*"
-- extendedWaitUntil:
-    visible: "(?s).*Healthy.*"
-    timeout: 60000
-- takeScreenshot: gateway_status_refreshed
+- runFlow:
+    when:
+      visible: "(?s).*Read-only gateway status.*"
+    commands:
+      - assertVisible: "(?s).*Healthy.*"
+      - assertVisible: "(?s).*Refresh gateway status.*"
+      - assertNotVisible: "(?s)^Restart$"
+      - assertNotVisible: "(?s)^Configure$"
+      - takeScreenshot: gateway_status
+      - tapOn: "(?s).*Refresh gateway status.*"
+      - extendedWaitUntil:
+          visible: "(?s).*Healthy.*"
+          timeout: 60000
+      - takeScreenshot: gateway_status_refreshed
+- runFlow:
+    when:
+      visible: "(?s).*did not advertise detailed health status.*"
+    commands:
+      - assertNotVisible: "(?s).*Refresh gateway status.*"
+      - assertNotVisible: "(?s)^Restart$"
+      - assertNotVisible: "(?s)^Configure$"

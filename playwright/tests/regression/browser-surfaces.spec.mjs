@@ -1,0 +1,139 @@
+import { test, expect } from '@playwright/test';
+import {
+  APP_URL as APP,
+  enableFlutterAccessibility as a11y,
+} from '../../support/flutter_semantics.mjs';
+
+async function open(page, route) {
+  await page.goto(`${APP}#${route}`, { timeout: 15000 });
+  await page.waitForFunction(
+    () => typeof globalThis.wingE2EHermesConnect === 'function',
+    null,
+    { timeout: 30000 },
+  );
+  await a11y(page, { delay: 500 });
+}
+
+async function openConnected(page, route) {
+  await open(page, route);
+  await page.evaluate(() => globalThis.wingE2EHermesConnect());
+}
+
+test('Hermes connection form validates the endpoint and protects the access token', async ({ page }) => {
+  await open(page, '/hermes');
+
+  const endpoint = page.getByRole('textbox', { name: 'Hermes server URL' });
+  const token = page.getByRole('textbox', { name: 'Access token' });
+  const connect = page.getByRole('button', { name: 'Connect to VPS' });
+
+  await expect(connect).toBeDisabled();
+  await endpoint.fill('ftp://example.com');
+  await expect(connect).toBeDisabled();
+  await endpoint.fill('https://hermes.example.com');
+  await expect(connect).toBeEnabled();
+
+  await token.fill('not-a-real-secret');
+  await expect(token).toHaveAttribute('type', 'password');
+  await page.getByRole('button', { name: 'Show access token' }).click();
+  await expect(token).toHaveAttribute('type', 'text');
+  await expect(page.getByRole('button', { name: 'Hide access token' })).toBeVisible();
+});
+
+test('unknown routes render a bounded not-found screen', async ({ page }) => {
+  await open(page, '/does-not-exist');
+
+  await expect(page.getByText('Hermes Wing').first()).toBeVisible();
+  await expect(page.getByText('Route not found: /does-not-exist')).toBeVisible();
+});
+
+test('Office renders its connected empty state and settings recovery action', async ({ page }) => {
+  await openConnected(page, '/office');
+
+  await expect(page.getByRole('group', { name: /No Hermes agents available/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open settings' })).toBeVisible();
+});
+
+test('Agents fails closed when profile administration is not advertised', async ({ page }) => {
+  await openConnected(page, '/agents');
+
+  await expect(page.getByText('Agents unavailable')).toBeVisible();
+  await expect(
+    page.getByText('Update Hermes Agent and reconnect this gateway with profile permissions.'),
+  ).toBeVisible();
+  await expect(page.getByText('New Agent')).toHaveCount(0);
+});
+
+test('Providers exposes runtime models without unsupported mutation controls', async ({ page }) => {
+  await openConnected(page, '/providers');
+
+  await expect(page.getByText('Providers unavailable')).toBeVisible();
+  const modelSelection = page.getByRole('group', { name: 'Model selection' });
+  await expect(modelSelection).toContainText('Runtime models');
+  await expect(modelSelection).toContainText('hermes-agent');
+  await expect(page.getByText('Manage credential')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Choose model' })).toHaveCount(0);
+});
+
+test('Tools inventory supports search and resolved-tool disclosure', async ({ page }) => {
+  await openConnected(page, '/tools');
+
+  const skillSearch = page.getByRole('textbox', { name: 'Search installed skills' });
+  await expect(skillSearch).toBeVisible();
+  const skills = page.getByRole('group', { name: 'Installed skills' });
+  await expect(skills).toContainText('ascii-art');
+  await expect(skills).toContainText('github');
+
+  await skillSearch.click();
+  await page.waitForTimeout(100);
+  await skillSearch.fill('no_matching_skill_98765');
+  await expect(
+    page.getByRole('textbox', { name: /No installed skills match this search/ }),
+  ).toBeVisible();
+  await page.getByRole('textbox', { name: /Search installed skills/ }).fill('');
+
+  await page.getByRole('button', { name: /Default Tools/ }).click();
+  await expect(page.getByRole('group', { name: /Resolved tools/ })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'read_file' })).toBeVisible();
+});
+
+test('Schedules renders and refreshes read-only jobs', async ({ page }) => {
+  await openConnected(page, '/tasks');
+
+  await expect(page.getByText('Read-only schedule inventory.', { exact: false })).toBeVisible();
+  const job = page.getByRole('group', { name: /Morning check/ });
+  await expect(job).toHaveAccessibleName(/Every day at 09:00/);
+  await expect(page.getByRole('checkbox', { name: 'Enabled' })).toBeVisible();
+  await page.getByRole('button', { name: 'Refresh schedules' }).click();
+  await expect(page.getByRole('group', { name: /Morning check/ })).toBeVisible();
+});
+
+test('Gateway status renders and refreshes bounded health', async ({ page }) => {
+  await openConnected(page, '/gateway');
+
+  const status = page.getByRole('group').filter({ hasText: 'Healthy' }).last();
+  await expect(status).toContainText('hermes-agent');
+  await expect(status).toContainText('0.16.0');
+  await page.getByRole('button', { name: 'Refresh gateway status' }).click();
+  await expect(status).toContainText('Healthy');
+});
+
+test('Voice settings exposes keyboard-accessible local preference switches', async ({ page }) => {
+  await openConnected(page, '/settings/voice');
+
+  const speakReplies = page.getByRole('switch', { name: /Speak replies aloud/ });
+  await expect(speakReplies).not.toBeChecked();
+  await speakReplies.press('Space');
+  await expect(speakReplies).toBeChecked();
+});
+
+test('Diagnostics reports connected inventory and confirms redacted export', async ({ page }) => {
+  await openConnected(page, '/settings/diagnostics');
+
+  const diagnostics = page.getByRole('group').filter({ hasText: 'Connection' }).last();
+  await expect(diagnostics).toContainText('Status Connected');
+  await expect(diagnostics).toContainText('Runs SSE enabled');
+  await expect(diagnostics).toContainText('1 models • 2 skills • 1 toolsets • 1 jobs');
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByRole('button', { name: /Copy diagnostics/ }).click();
+  await expect(page.getByText('Hermes diagnostics copied').last()).toBeVisible();
+});

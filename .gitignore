@@ -3,6 +3,7 @@
 .flutter-plugins-dependencies
 .packages
 build/
+android/.kotlin/
 coverage/
 
 # IDE

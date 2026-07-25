@@ -29,6 +29,21 @@ jobs:
         run: |
           flutter pub get
           npm ci
+      - name: Validate tag against app version
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          app_version=$(awk '/^version:/{print $2; exit}' pubspec.yaml)
+          app_version=${app_version%%+*}
+          case "$TAG" in
+            v${app_version}-alpha.*) ;;
+            *) echo "Tag must match app version: v${app_version}-alpha.N" >&2; exit 1 ;;
+          esac
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release already exists: $TAG" >&2
+            exit 1
+          fi
       - name: Format, analyze, test, and audit
         run: |
           dart format --output=none --set-exit-if-changed lib test integration_test
@@ -39,7 +54,7 @@ jobs:
           npm audit --audit-level=high
 
   android:
-    name: Signed Android APK
+    name: Signed Android APK and AAB
     needs: validation
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +79,7 @@ jobs:
           test -n "$KEY_ALIAS"
           test -n "$KEY_PASSWORD"
           printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/wing-release.jks"
-      - name: Build signed release APK
+      - name: Build signed release APK and AAB
         env:
           WING_RELEASE_STORE_FILE: ${{ runner.temp }}/wing-release.jks
           WING_RELEASE_STORE_PASSWORD: ${{ secrets.WING_RELEASE_STORE_PASSWORD }}
@@ -73,14 +88,19 @@ jobs:
         run: |
           flutter pub get
           flutter build apk --release
-          sha256sum build/app/outputs/flutter-apk/app-release.apk > hermes-wing-android.apk.sha256
+          flutter build appbundle --release
           cp build/app/outputs/flutter-apk/app-release.apk hermes-wing-android.apk
+          cp build/app/outputs/bundle/release/app-release.aab hermes-wing-android.aab
+          sha256sum hermes-wing-android.apk > hermes-wing-android.apk.sha256
+          sha256sum hermes-wing-android.aab > hermes-wing-android.aab.sha256
       - uses: actions/upload-artifact@v7
         with:
           name: hermes-wing-android-release
           path: |
             hermes-wing-android.apk
             hermes-wing-android.apk.sha256
+            hermes-wing-android.aab
+            hermes-wing-android.aab.sha256
           if-no-files-found: error
 
   linux:
@@ -111,9 +131,33 @@ jobs:
             hermes-wing-linux-x64.tar.gz.sha256
           if-no-files-found: error
 
+  web:
+    name: Web release archive
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.2
+          cache: true
+      - name: Build web release archive
+        run: |
+          flutter pub get
+          flutter build web --release
+          tar -C build/web -czf hermes-wing-web.tar.gz .
+          sha256sum hermes-wing-web.tar.gz > hermes-wing-web.tar.gz.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hermes-wing-web-release
+          path: |
+            hermes-wing-web.tar.gz
+            hermes-wing-web.tar.gz.sha256
+          if-no-files-found: error
+
   publish:
     name: Publish GitHub prerelease
-    needs: [android, linux]
+    needs: [android, linux, web]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -122,16 +166,6 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Validate new alpha tag
-        env:
-          TAG: ${{ inputs.tag }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          case "$TAG" in v*-alpha.*) ;; *) echo "Tag must match v*-alpha.*" >&2; exit 1;; esac
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release already exists: $TAG" >&2
-            exit 1
-          fi
       - name: Publish prerelease
         env:
           TAG: ${{ inputs.tag }}
@@ -141,5 +175,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Hermes Wing $TAG" \
-            --notes "Alpha source build. Android is signed with the configured release key; Linux is distributed with a SHA-256 checksum. See README.md for support limits." \
+            --notes "Alpha release with signed Android APK/AAB, Linux x64, and static web artifacts. Every downloadable archive includes a SHA-256 checksum. See README.md for support limits." \
             --prerelease

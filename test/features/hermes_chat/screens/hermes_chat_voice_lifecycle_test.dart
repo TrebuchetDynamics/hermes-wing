@@ -409,6 +409,49 @@ void main() {
       isTrue,
     );
   });
+
+  testWidgets('hands-free voice state is announced, not shown only', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel();
+    final capture = _ControlledVoiceCaptureService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.bySemanticsLabel(RegExp(r'Hands-free')),
+      findsOneWidget,
+      reason: 'idle voice state must be reachable without sight',
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-continuous-voice-switch')),
+    );
+    await tester.pump();
+
+    final listening = find.bySemanticsLabel(RegExp(r'Listening'));
+    expect(
+      listening,
+      findsOneWidget,
+      reason: 'a live microphone must be named in the semantics tree',
+    );
+    expect(
+      tester.getSemantics(listening).flagsCollection.isLiveRegion,
+      isTrue,
+      reason: 'voice state changes must be announced while hands-free',
+    );
+
+    semantics.dispose();
+  });
 }
 
 class _ControlledVoiceCaptureService implements VoiceCaptureService {

@@ -1296,7 +1296,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label),
+          // Hands-free voice is an eyes-free surface, so the capture state has
+          // to be announced rather than only rendered.
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: label,
+            child: ExcludeSemantics(child: Text(label)),
+          ),
           Switch(
             key: const ValueKey('hermes-continuous-voice-switch'),
             value: active,

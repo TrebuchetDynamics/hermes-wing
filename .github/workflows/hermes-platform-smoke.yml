@@ -3,6 +3,20 @@ name: Hermes platform smoke
 "on":
   push:
     branches: [main]
+    # Prose-only pushes do not need the platform matrix. docs/runbooks is
+    # deliberately absent: hermes_readiness_audit_contract_test.dart and
+    # package_scripts_contract_test.dart read those runbooks and assert their
+    # contents, so editing one can fail the suite and must still run CI.
+    # Pull requests keep the full matrix so a required check can never hang.
+    paths-ignore:
+      - "docs/adr/**"
+      - "docs/audits/**"
+      - "docs/images/**"
+      - "docs/product/**"
+      - "docs/security/**"
+      - "docs/superpowers/**"
+      - "*.md"
+      - LICENSE
   pull_request:
   workflow_dispatch:
     inputs:

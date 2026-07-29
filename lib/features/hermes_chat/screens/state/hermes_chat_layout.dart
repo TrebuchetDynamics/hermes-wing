@@ -667,7 +667,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     BuildContext context,
     HermesChannel channel,
   ) {
-    if (_pendingAttachmentName != null || _isTurnActive(channel.state)) {
+    if (_stagedAttachment != null || _isTurnActive(channel.state)) {
       return null;
     }
     final strings = _hermesStrings(context);
@@ -1016,16 +1016,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasPayload =
-        _composerController.text.trim().isNotEmpty ||
-        _pendingImageBytes != null ||
-        _pendingTextAttachment != null;
+        _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (strip != null) ...[strip, const SizedBox(height: 6)],
         ?_buildLocalSlashCommandSuggestions(context, channel),
-        if (_pendingAttachmentName != null) ...[
+        if (_stagedAttachment != null) ...[
           Align(
             alignment: Alignment.centerLeft,
             child: _buildPendingAttachment(),
@@ -1116,7 +1114,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ?_buildLocalSlashCommandSuggestions(context, channel),
-          if (_pendingAttachmentName != null) ...[
+          if (_stagedAttachment != null) ...[
             Align(
               alignment: Alignment.centerLeft,
               child: _buildPendingAttachment(),
@@ -1312,7 +1310,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
   Widget _buildPendingAttachment() {
     final colors = Theme.of(context).colorScheme;
-    final name = _safeHermesUiPreview(_pendingAttachmentName!, maxLength: 40);
+    final name = _safeHermesUiPreview(_stagedAttachment!.name, maxLength: 40);
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -1331,7 +1329,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           children: [
             ExcludeSemantics(
               child: Icon(
-                _pendingTextAttachment == null
+                _stagedAttachment is StagedImageAttachment
                     ? Icons.image_outlined
                     : Icons.description_outlined,
                 color: colors.primary,
@@ -1361,13 +1359,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               tooltip: 'Remove attachment',
               icon: const Icon(Icons.close_rounded, size: 20),
               visualDensity: VisualDensity.compact,
-              onPressed: () => _setState(() {
-                _pendingImageBytes = null;
-                _pendingImageName = null;
-                _pendingImageMimeType = null;
-                _pendingTextAttachment = null;
-                _pendingTextAttachmentName = null;
-              }),
+              onPressed: () => _setState(() => _stagedAttachment = null),
             ),
           ],
         ),
@@ -1419,9 +1411,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
   Widget _buildSendButton(HermesChannel channel, bool canSendTurns) {
     final hasPayload =
-        _composerController.text.trim().isNotEmpty ||
-        _pendingImageBytes != null ||
-        _pendingTextAttachment != null;
+        _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return IconButton.filled(
       key: const ValueKey('hermes-send-button'),
       tooltip: 'Send',

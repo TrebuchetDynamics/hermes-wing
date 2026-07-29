@@ -3,16 +3,13 @@ part of '../hermes_chat_screen.dart';
 extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   void _sendComposerText(HermesChannel channel) {
     final text = _composerController.text.trim();
-    final imageBytes = _pendingImageBytes;
-    final textAttachment = _pendingTextAttachment;
-    if (text.isEmpty && imageBytes == null && textAttachment == null) return;
-    if (imageBytes == null &&
-        textAttachment == null &&
-        _runExactLocalSlashCommand(text, channel)) {
+    final staged = _stagedAttachment;
+    if (text.isEmpty && staged == null) return;
+    if (staged == null && _runExactLocalSlashCommand(text, channel)) {
       return;
     }
     if (_isTurnActive(channel.state)) {
-      if (imageBytes != null || textAttachment != null) {
+      if (staged != null) {
         _setState(() {
           _queuedFollowUpError =
               'Wait for Hermes to finish before sending an attachment.';
@@ -35,25 +32,17 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       });
       return;
     }
-    final imageDataUrl = imageBytes == null
-        ? null
-        : 'data:${_pendingImageMimeType!};base64,${base64Encode(imageBytes)}';
-    final attachmentName = _pendingAttachmentName;
     _composerController.clear();
     _setState(() {
       _queuedFollowUpError = null;
-      _pendingImageBytes = null;
-      _pendingImageName = null;
-      _pendingImageMimeType = null;
-      _pendingTextAttachment = null;
-      _pendingTextAttachmentName = null;
+      _stagedAttachment = null;
     });
     _sendText(
       channel,
       text,
-      imageDataUrl: imageDataUrl,
-      textAttachment: textAttachment,
-      attachmentName: attachmentName,
+      imageDataUrl: staged?.imageDataUrl,
+      textAttachment: staged?.textContent,
+      attachmentName: staged?.name,
     );
   }
 
@@ -76,11 +65,11 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       if (mimeType != null) {
         if (!mounted) return;
         _setState(() {
-          _pendingImageBytes = bytes;
-          _pendingImageName = file.name;
-          _pendingImageMimeType = mimeType;
-          _pendingTextAttachment = null;
-          _pendingTextAttachmentName = null;
+          _stagedAttachment = StagedImageAttachment(
+            name: file.name,
+            bytes: bytes,
+            mimeType: mimeType,
+          );
         });
         return;
       }
@@ -88,11 +77,10 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
         final content = utf8.decode(bytes);
         if (!mounted) return;
         _setState(() {
-          _pendingImageBytes = null;
-          _pendingImageName = null;
-          _pendingImageMimeType = null;
-          _pendingTextAttachment = content;
-          _pendingTextAttachmentName = file.name;
+          _stagedAttachment = StagedTextAttachment(
+            name: file.name,
+            content: content,
+          );
         });
         return;
       }

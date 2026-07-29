@@ -29,6 +29,7 @@ import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../attachments/hermes_attachment_content.dart';
+import '../attachments/staged_attachment.dart';
 import '../controllers/hermes_approval_queue.dart';
 import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_voice_input_controller.dart';
@@ -166,14 +167,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final _composerController = TextEditingController();
   final _transcriptScrollController = ScrollController();
   late final HermesVoiceInputController _voiceInputController;
-  Uint8List? _pendingImageBytes;
-  String? _pendingImageName;
-  String? _pendingImageMimeType;
-  String? _pendingTextAttachment;
-  String? _pendingTextAttachmentName;
-
-  String? get _pendingAttachmentName =>
-      _pendingImageName ?? _pendingTextAttachmentName;
+  StagedAttachment? _stagedAttachment;
 
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;

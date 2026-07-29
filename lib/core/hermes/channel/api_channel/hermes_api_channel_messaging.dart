@@ -971,11 +971,9 @@ extension _MessagingExtension on HermesApiChannel {
         ? true
         : HermesTransportPolicy(capabilities).supportsRunStop;
     if (client != null && runId != null && canStopRun) {
-      unawaited(
-        client
-            .stopRun(runId)
-            .then((_) => _releaseDetachedRun(runId))
-            .catchError((_) {}),
+      fireAndForget(
+        client.stopRun(runId).then((_) => _releaseDetachedRun(runId)),
+        'stop detached run',
       );
     }
   }

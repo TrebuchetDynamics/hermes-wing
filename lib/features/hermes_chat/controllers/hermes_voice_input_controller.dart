@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_chat_turn.dart';
 import '../../../core/protocol/voice/models/wing_voice_run.dart';
+import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/voice/voice_settings.dart';
@@ -289,10 +290,10 @@ class HermesVoiceInputController extends ChangeNotifier {
     _operationGeneration += 1;
     final service = _activeCaptureService;
     _activeCaptureService = null;
-    unawaited(service?.cancel().catchError((_) {}));
+    fireAndForget(service?.cancel(), 'voice capture cancel on pause');
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
-    unawaited(tts?.stop().catchError((_) {}));
+    fireAndForget(tts?.stop(), 'speech stop on pause');
     _continuousEnabled = false;
     _speakNextReply = false;
     _capturing = false;
@@ -306,11 +307,14 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (_disposed) return;
     _disposed = true;
     _operationGeneration += 1;
-    unawaited(_activeCaptureService?.cancel().catchError((_) {}));
+    fireAndForget(
+      _activeCaptureService?.cancel(),
+      'voice capture cancel on dispose',
+    );
     _activeCaptureService = null;
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
-    unawaited(tts?.stop().catchError((_) {}));
+    fireAndForget(tts?.stop(), 'speech stop on dispose');
     super.dispose();
   }
 }

@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../../shared/async/fire_and_forget.dart';
 import '../../../../shared/voice/voice_capture_failures.dart';
 import '../../../../shared/voice/voice_capture_service.dart';
 import 'speech_to_text_capture_coordinator.dart';
@@ -186,7 +187,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
     Future<T> bounded<T>(Future<T> operation) {
       final remaining = timeout - elapsed.elapsed;
       if (remaining <= Duration.zero) {
-        unawaited(_engine.cancel().catchError((_) {}));
+        fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
         throw const VoiceCaptureTimeout();
       }
       return operation.timeout(

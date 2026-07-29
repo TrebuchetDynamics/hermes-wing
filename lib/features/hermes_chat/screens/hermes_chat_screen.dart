@@ -22,6 +22,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_en.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../agents/providers/profile_selection_provider.dart';
+import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../settings/providers/voice_settings_provider.dart';
@@ -469,7 +470,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (gatewayId == null) return;
     // This runs automatically after every completed turn and session action,
     // so a gateway that stopped being saved must not raise here.
-    unawaited(directory.reconnectGateway(gatewayId).catchError((_) {}));
+    fireAndForget(
+      directory.reconnectGateway(gatewayId),
+      'active gateway contact refresh',
+    );
   }
 
   Future<void> _showGatewayContacts() async {

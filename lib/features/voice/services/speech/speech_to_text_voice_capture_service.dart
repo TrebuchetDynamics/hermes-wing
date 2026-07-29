@@ -186,7 +186,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
     Future<T> bounded<T>(Future<T> operation) {
       final remaining = timeout - elapsed.elapsed;
       if (remaining <= Duration.zero) {
-        unawaited(_engine.cancel());
+        unawaited(_engine.cancel().catchError((_) {}));
         throw const VoiceCaptureTimeout();
       }
       return operation.timeout(

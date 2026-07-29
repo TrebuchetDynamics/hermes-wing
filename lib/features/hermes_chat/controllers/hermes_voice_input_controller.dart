@@ -306,7 +306,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (_disposed) return;
     _disposed = true;
     _operationGeneration += 1;
-    unawaited(_activeCaptureService?.cancel());
+    unawaited(_activeCaptureService?.cancel().catchError((_) {}));
     _activeCaptureService = null;
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;

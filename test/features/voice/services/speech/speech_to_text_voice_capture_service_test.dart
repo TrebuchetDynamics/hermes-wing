@@ -49,6 +49,51 @@ void main() {
     );
     expect(engine.cancelCalls, 1);
   });
+
+  test(
+    'an exhausted capture budget cannot raise from a failed cancel',
+    () async {
+      final service = SpeechToTextVoiceCaptureService(
+        engine: _UncancellableSpeechToTextEngine(),
+      );
+
+      await expectLater(
+        service.capture(timeout: Duration.zero),
+        throwsA(isA<VoiceCaptureTimeout>()),
+      );
+      await Future<void>.delayed(Duration.zero);
+    },
+  );
+}
+
+/// Mirrors a recognizer that is already gone, so cancelling it fails.
+class _UncancellableSpeechToTextEngine implements SpeechToTextEngine {
+  @override
+  Future<bool?> hasPermission() async => true;
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async => true;
+
+  @override
+  Future<SpeechToTextLocale?> systemLocale() async => null;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> cancel() async => throw StateError('recognizer unavailable');
 }
 
 class _FakeSpeechToTextEngine implements SpeechToTextEngine {

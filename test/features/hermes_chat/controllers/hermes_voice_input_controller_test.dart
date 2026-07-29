@@ -240,6 +240,35 @@ void main() {
 
     expect(controller.continuousEnabled, isFalse);
   });
+
+  test('disposing mid-capture cannot raise from the microphone', () async {
+    final channel = FakeHermesChannel();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => const _UncancellableVoiceCaptureService(),
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+
+    unawaited(controller.captureDraft());
+    await Future<void>.delayed(Duration.zero);
+    controller.dispose();
+    await Future<void>.delayed(Duration.zero);
+  });
+}
+
+/// Mirrors a platform speech engine whose cancel fails while a capture is
+/// still active, which is what happens when the recognizer is already gone.
+class _UncancellableVoiceCaptureService implements VoiceCaptureService {
+  const _UncancellableVoiceCaptureService();
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) =>
+      Completer<VoiceCapture>().future;
+
+  @override
+  Future<void> cancel() async => throw StateError('recognizer unavailable');
 }
 
 class _RecordingVoiceCaptureService implements VoiceCaptureService {

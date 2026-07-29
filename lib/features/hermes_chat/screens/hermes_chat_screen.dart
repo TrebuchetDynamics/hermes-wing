@@ -27,6 +27,7 @@ import '../../../shared/widgets/app_shell.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
+import '../attachments/hermes_attachment_content.dart';
 import '../controllers/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
@@ -78,67 +79,6 @@ const _hermesBaseUrlHint =
     'Android emulator: http://10.0.2.2:8642\n'
     'Physical device: LAN/VPN/Tailscale URL';
 const _maxQueuedFollowUps = 5;
-const _maxAttachmentBytes = 10 * 1024 * 1024;
-const _maxTextAttachmentBytes = 256 * 1024;
-const _textAttachmentExtensions = {
-  'md',
-  'markdown',
-  'txt',
-  'text',
-  'log',
-  'csv',
-  'tsv',
-  'json',
-  'yaml',
-  'yml',
-  'toml',
-  'ini',
-  'env',
-  'xml',
-  'html',
-  'htm',
-  'css',
-  'scss',
-  'less',
-  'sql',
-  'sh',
-  'bash',
-  'zsh',
-  'fish',
-  'ps1',
-  'py',
-  'js',
-  'jsx',
-  'ts',
-  'tsx',
-  'mjs',
-  'cjs',
-  'dart',
-  'go',
-  'rs',
-  'c',
-  'cc',
-  'cpp',
-  'cxx',
-  'h',
-  'hpp',
-  'java',
-  'kt',
-  'kts',
-  'rb',
-  'php',
-  'swift',
-  'scala',
-  'lua',
-  'r',
-  'pl',
-  'vue',
-  'svelte',
-  'dockerfile',
-  'makefile',
-  'gitignore',
-  'editorconfig',
-};
 const _configuredHermesBaseUrl = String.fromEnvironment('WING_HERMES_BASE_URL');
 const _composerEmojis = [
   '😀',

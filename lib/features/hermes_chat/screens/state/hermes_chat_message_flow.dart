@@ -81,17 +81,17 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       final file = await ref.read(hermesAttachmentPickerProvider)();
       if (file == null || !mounted) return;
       final length = await file.length();
-      final isText = _isSupportedTextAttachment(file);
-      if (isText && length > _maxTextAttachmentBytes) {
+      final isText = isTextAttachment(name: file.name, mimeType: file.mimeType);
+      if (isText && length > maxTextAttachmentBytes) {
         _showAttachmentError('Text files must be 256 KB or smaller.');
         return;
       }
-      if (!isText && length > _maxAttachmentBytes) {
+      if (!isText && length > maxImageAttachmentBytes) {
         _showAttachmentError('Images must be 10 MB or smaller.');
         return;
       }
       final bytes = await file.readAsBytes();
-      final mimeType = _supportedImageMimeType(bytes);
+      final mimeType = supportedImageMimeType(bytes);
       if (mimeType != null) {
         if (!mounted) return;
         _setState(() {
@@ -131,52 +131,10 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     }
   }
 
-  bool _isSupportedTextAttachment(XFile file) {
-    if (file.mimeType?.toLowerCase().startsWith('text/') == true) return true;
-    final name = file.name.toLowerCase();
-    final dot = name.lastIndexOf('.');
-    final extension = dot < 0 || dot == name.length - 1
-        ? name
-        : name.substring(dot + 1);
-    return _textAttachmentExtensions.contains(extension);
-  }
-
   void _showAttachmentError(String message) {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String? _supportedImageMimeType(Uint8List bytes) {
-    if (bytes.length >= 8 &&
-        bytes[0] == 0x89 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x4e &&
-        bytes[3] == 0x47 &&
-        bytes[4] == 0x0d &&
-        bytes[5] == 0x0a &&
-        bytes[6] == 0x1a &&
-        bytes[7] == 0x0a) {
-      return 'image/png';
-    }
-    if (bytes.length >= 3 &&
-        bytes[0] == 0xff &&
-        bytes[1] == 0xd8 &&
-        bytes[2] == 0xff) {
-      return 'image/jpeg';
-    }
-    if (bytes.length >= 6 &&
-        ascii
-            .decode(bytes.sublist(0, 6), allowInvalid: true)
-            .startsWith('GIF8')) {
-      return 'image/gif';
-    }
-    if (bytes.length >= 12 &&
-        ascii.decode(bytes.sublist(0, 4), allowInvalid: true) == 'RIFF' &&
-        ascii.decode(bytes.sublist(8, 12), allowInvalid: true) == 'WEBP') {
-      return 'image/webp';
-    }
-    return null;
   }
 
   bool _isTurnActive(HermesChannelState state) =>

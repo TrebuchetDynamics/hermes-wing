@@ -516,7 +516,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void _refreshActiveGatewayContact() {
     final directory = ref.read(hermesGatewayDirectoryProvider);
     final gatewayId = directory.activeContactId?.gatewayId;
-    if (gatewayId != null) unawaited(directory.reconnectGateway(gatewayId));
+    if (gatewayId == null) return;
+    // This runs automatically after every completed turn and session action,
+    // so a gateway that stopped being saved must not raise here.
+    unawaited(directory.reconnectGateway(gatewayId).catchError((_) {}));
   }
 
   Future<void> _showGatewayContacts() async {

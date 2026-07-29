@@ -8,9 +8,9 @@ class GatewayContactCache {
   static const _key = 'wing.hermes.gateway_contacts.v1';
 
   Future<List<GatewayContact>> load() async {
-    final raw = (await SharedPreferences.getInstance()).getString(_key);
-    if (raw == null || raw.isEmpty) return const [];
     try {
+      final raw = (await SharedPreferences.getInstance()).getString(_key);
+      if (raw == null || raw.isEmpty) return const [];
       final decoded = jsonDecode(raw);
       if (decoded is! List) return const [];
       return sortGatewayContacts([

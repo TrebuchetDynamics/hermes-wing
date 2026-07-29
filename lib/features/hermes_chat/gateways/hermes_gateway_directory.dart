@@ -142,7 +142,18 @@ class HermesGatewayDirectory extends ChangeNotifier
     final generation = ++_refreshGeneration;
     _refreshing = true;
     notifyListeners();
-    final configs = await _store.loadProfiles();
+    final List<HermesEndpointConfig> configs;
+    try {
+      configs = await _store.loadProfiles();
+    } catch (_) {
+      // Saved gateways are unreadable, so report every known gateway as
+      // unreachable instead of stranding the directory mid-refresh.
+      if (generation != _refreshGeneration) return;
+      _refreshing = false;
+      _markEverythingOffline();
+      notifyListeners();
+      return;
+    }
     if (generation != _refreshGeneration) return;
 
     _configsById
@@ -185,8 +196,38 @@ class HermesGatewayDirectory extends ChangeNotifier
     );
     if (generation != _refreshGeneration) return;
     _refreshing = false;
-    await _cache.save(_contacts);
+    await _saveContacts();
     notifyListeners();
+  }
+
+  /// The contact cache is a best-effort local convenience that every refresh
+  /// rebuilds, so a failed write must never break the operation that triggered
+  /// it or strand callers that discard this future.
+  Future<void> _saveContacts() async {
+    try {
+      await _cache.save(_contacts);
+    } catch (_) {
+      // Intentionally ignored; authoritative state lives on the gateway.
+    }
+  }
+
+  void _markEverythingOffline() {
+    _contacts = sortGatewayContacts(
+      _contacts.map(
+        (contact) =>
+            contact.copyWith(availability: GatewayAvailability.offline),
+      ),
+    );
+    _gateways = [
+      for (final gateway in _gateways)
+        GatewayOverview(
+          id: gateway.id,
+          label: gateway.label,
+          baseUrl: gateway.baseUrl,
+          availability: GatewayAvailability.offline,
+          lastRefreshedAt: gateway.lastRefreshedAt,
+        ),
+    ];
   }
 
   Future<void> _refreshGateway(
@@ -347,7 +388,7 @@ class HermesGatewayDirectory extends ChangeNotifier
               )
             : gateway,
     ];
-    await _cache.save(_contacts);
+    await _saveContacts();
     notifyListeners();
   }
 
@@ -407,14 +448,14 @@ class HermesGatewayDirectory extends ChangeNotifier
     );
     notifyListeners();
     await _refreshGateway(replacement, _refreshGeneration);
-    await _cache.save(_contacts);
+    await _saveContacts();
   }
 
   Future<void> reconnectGateway(String gatewayId) async {
     final config = _configsById[gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');
     await _refreshGateway(config, _refreshGeneration);
-    await _cache.save(_contacts);
+    await _saveContacts();
   }
 
   Future<void> activateGateway(String gatewayId) async {
@@ -441,7 +482,12 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (_activeContactId?.gatewayId == gatewayId) await showDirectory();
     await _store.deleteProfile(gatewayId);
     _configsById.remove(gatewayId);
-    await _cache.removeGateway(gatewayId);
+    try {
+      await _cache.removeGateway(gatewayId);
+    } catch (_) {
+      // The authoritative delete already succeeded; stale cache rows are
+      // dropped by the next refresh.
+    }
     _contacts = sortGatewayContacts(
       _contacts.where((contact) => contact.id.gatewayId != gatewayId),
     );

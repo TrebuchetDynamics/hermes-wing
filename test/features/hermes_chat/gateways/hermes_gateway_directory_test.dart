@@ -749,6 +749,184 @@ void main() {
     expect(directory.contacts.single.isFallbackProfile, isTrue);
     expect(directory.contacts.single.id.profileId, 'default');
   });
+
+  test(
+    'a failed saved-gateway read leaves the directory refreshable',
+    () async {
+      final cache = FakeGatewayContactCache([
+        GatewayContact(
+          id: const GatewayContactId(gatewayId: 'a', profileId: 'a1'),
+          gatewayLabel: 'A',
+          profileName: 'A1',
+          sessionCount: 0,
+          availability: GatewayAvailability.online,
+          lastRefreshedAt: DateTime.utc(2026, 7, 16),
+        ),
+      ]);
+      final directory = HermesGatewayDirectory(
+        store: _ThrowingHermesEndpointStore(),
+        cache: cache,
+        loader: FakeGatewaySummaryLoader(const {}),
+        activeChannel: FakeHermesChannel.disconnected(),
+        now: () => DateTime.utc(2026, 7, 16),
+      );
+
+      await directory.refresh();
+
+      expect(directory.refreshing, isFalse);
+      expect(
+        directory.contacts.map((contact) => contact.availability),
+        everyElement(GatewayAvailability.offline),
+      );
+    },
+  );
+
+  test('a failed contact cache write still ends the refresh', () async {
+    var notifications = 0;
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'a', label: 'A', baseUrl: 'https://a.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'a': gatewaySummary(['a1']),
+      }),
+      cache: _ThrowingGatewayContactCache(),
+    );
+    directory.addListener(() => notifications++);
+
+    await directory.refresh();
+
+    expect(directory.refreshing, isFalse);
+    expect(notifications, greaterThan(0));
+  });
+
+  test(
+    'a discarded periodic refresh never escapes as an uncaught error',
+    () async {
+      final timers = <_FakeTimer>[];
+      final directory = HermesGatewayDirectory(
+        store: _ThrowingHermesEndpointStore(),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader(const {}),
+        activeChannel: FakeHermesChannel.disconnected(),
+        now: () => DateTime.utc(2026, 7, 16),
+        periodicTimer: (duration, callback) {
+          final timer = _FakeTimer(callback);
+          timers.add(timer);
+          return timer;
+        },
+      );
+
+      await directory.start();
+      directory.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      timers.single.elapse();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(directory.refreshing, isFalse);
+      directory.dispose();
+    },
+  );
+
+  test('a failed cache write cannot break reconnect or rename', () async {
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'a', label: 'A', baseUrl: 'https://a.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'a': gatewaySummary(['a1']),
+      }),
+      cache: _ThrowingGatewayContactCache(),
+    );
+    await directory.refresh();
+
+    await directory.reconnectGateway('a');
+    await directory.renameGateway('a', 'Work');
+
+    expect(directory.contacts.single.availability, GatewayAvailability.online);
+    expect(directory.contacts.single.gatewayLabel, 'Work');
+  });
+
+  test('a failed cache write cannot break an updated connection', () async {
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'a', label: 'A', baseUrl: 'https://a.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'a': gatewaySummary(['a1']),
+      }),
+      cache: _ThrowingGatewayContactCache(),
+    );
+    await directory.refresh();
+
+    await directory.updateGatewayConnection('a', baseUrl: 'https://b.example');
+
+    expect(directory.gateways.single.baseUrl, 'https://b.example');
+  });
+
+  test('a failed cache cleanup cannot strand a removed gateway', () async {
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'a', label: 'A', baseUrl: 'https://a.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'a': gatewaySummary(['a1']),
+      }),
+      cache: _ThrowingGatewayContactCache(),
+    );
+    await directory.refresh();
+
+    await directory.removeGateway('a');
+
+    expect(directory.contacts, isEmpty);
+    expect(directory.gateways, isEmpty);
+  });
+
+  test('reconnecting an unsaved gateway still reports it lost', () async {
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'a', label: 'A', baseUrl: 'https://a.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'a': gatewaySummary(['a1']),
+      }),
+    );
+    await directory.refresh();
+
+    await expectLater(directory.reconnectGateway('gone'), throwsStateError);
+  });
+}
+
+class _ThrowingHermesEndpointStore implements HermesEndpointStore {
+  @override
+  Future<HermesEndpointConfig?> load() async => null;
+
+  @override
+  Future<List<HermesEndpointConfig>> loadProfiles() async =>
+      throw StateError('secure storage unavailable');
+
+  @override
+  Future<void> save({
+    required String baseUrl,
+    String? apiKey,
+    String? label,
+    String? profileId,
+  }) async {}
+
+  @override
+  Future<void> deleteProfile(String profileId) async {}
+
+  @override
+  Future<void> clear() async {}
+}
+
+class _ThrowingGatewayContactCache extends FakeGatewayContactCache {
+  @override
+  Future<void> save(List<GatewayContact> contacts) async =>
+      throw StateError('contact cache unavailable');
+
+  @override
+  Future<void> removeGateway(String gatewayId) async =>
+      throw StateError('contact cache unavailable');
 }
 
 class _FakeTimer implements Timer {

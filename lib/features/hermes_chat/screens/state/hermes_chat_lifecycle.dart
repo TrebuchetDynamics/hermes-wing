@@ -104,8 +104,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         _scheduleTranscriptScrollToBottom(force: _isTurnActive(channel.state));
         _sendQueuedFollowUpIfIdle(channel);
       } else {
-        _queuedFollowUps.clear();
-        _queuedFollowUpError = null;
+        _followUps.reset();
         _approvals.reset();
         _observedSessionId = null;
         _completedAssistantSignature = null;

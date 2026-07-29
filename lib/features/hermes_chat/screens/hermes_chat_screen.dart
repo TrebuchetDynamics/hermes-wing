@@ -32,6 +32,7 @@ import '../attachments/hermes_attachment_content.dart';
 import '../attachments/staged_attachment.dart';
 import '../controllers/hermes_approval_queue.dart';
 import '../controllers/hermes_connection_form.dart';
+import '../controllers/hermes_follow_up_queue.dart';
 import '../controllers/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
@@ -172,8 +173,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
   late final HermesApprovalQueue _approvals;
-  String? _queuedFollowUpError;
-  final Queue<_QueuedFollowUp> _queuedFollowUps = Queue<_QueuedFollowUp>();
+  final HermesFollowUpQueue _followUps = HermesFollowUpQueue(
+    capacity: _maxQueuedFollowUps,
+  );
   String? _observedSessionId;
   String? _completedAssistantSignature;
   bool _reconnectingOnResume = false;
@@ -421,7 +423,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   bool _hasActiveGatewayWork(HermesChannel channel) =>
       channel.state.hasStreamingSessions ||
       _approvals.hasPendingWork ||
-      _queuedFollowUps.isNotEmpty;
+      _followUps.isNotEmpty;
 
   Future<bool> _confirmLeaveActiveContact(HermesChannel channel) async {
     if (!_hasActiveGatewayWork(channel)) return true;
@@ -475,7 +477,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final channel = ref.read(hermesChannelProvider);
     if (!await _confirmLeaveActiveContact(channel) || !mounted) return;
     _voiceInputController.pause('Closed Hermes contact.');
-    _queuedFollowUps.clear();
+    _followUps.clear();
     _approvals.clearPending();
     await ref.read(hermesGatewayDirectoryProvider).showDirectory();
   }
@@ -489,7 +491,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       return;
     }
     _voiceInputController.pause('Switched Hermes contact.');
-    _queuedFollowUps.clear();
+    _followUps.clear();
     _approvals.clearPending();
     await directory.activate(id);
   }
@@ -949,11 +951,4 @@ class _LocalSlashCommand {
   final String command;
   final String description;
   final IconData icon;
-}
-
-class _QueuedFollowUp {
-  const _QueuedFollowUp(this.text, this.sessionId);
-
-  final String text;
-  final String? sessionId;
 }

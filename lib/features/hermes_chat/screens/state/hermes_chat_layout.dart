@@ -445,7 +445,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            if (_queuedFollowUps.isNotEmpty)
+            if (_followUps.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: MaterialBanner(
@@ -499,11 +499,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   ],
                 ),
               ),
-            if (_queuedFollowUpError != null)
+            if (_followUps.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  _queuedFollowUpError!,
+                  _followUps.error!,
                   key: const ValueKey('hermes-queued-follow-up-error'),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),

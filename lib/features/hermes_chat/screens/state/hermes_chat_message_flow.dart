@@ -11,30 +11,27 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     if (_isTurnActive(channel.state)) {
       if (staged != null) {
         _setState(() {
-          _queuedFollowUpError =
+          _followUps.error =
               'Wait for Hermes to finish before sending an attachment.';
         });
         return;
       }
-      if (_queuedFollowUps.length >= _maxQueuedFollowUps) {
+      if (_followUps.isFull) {
         _setState(() {
-          _queuedFollowUpError =
+          _followUps.error =
               'Queued follow-ups are full ($_maxQueuedFollowUps). Wait for Hermes to finish before adding more.';
         });
         return;
       }
       _composerController.clear();
       _setState(() {
-        _queuedFollowUpError = null;
-        _queuedFollowUps.addLast(
-          _QueuedFollowUp(text, channel.state.activeSessionId),
-        );
+        _followUps.enqueue(text, channel.state.activeSessionId);
       });
       return;
     }
     _composerController.clear();
     _setState(() {
-      _queuedFollowUpError = null;
+      _followUps.error = null;
       _stagedAttachment = null;
     });
     _sendText(
@@ -126,9 +123,12 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   bool _canCreateSession(HermesChannelState state) => state.canCreateSessions;
 
   void _sendQueuedFollowUpIfIdle(HermesChannel channel) {
-    if (!_canSendQueuedFollowUp(channel.state)) return;
-    final queued = _queuedFollowUps.removeFirst();
-    _queuedFollowUpError = null;
+    final queued = _followUps.takeNextIfEligible(
+      activeSessionId: channel.state.activeSessionId,
+      turnActive: _isTurnActive(channel.state),
+      canSendTurns: _canSendTurns(channel.state),
+    );
+    if (queued == null) return;
     _sendText(
       channel,
       queued.text,
@@ -138,35 +138,30 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _dropQueuedFollowUpsForMissingSessions(HermesChannelState state) {
-    final sessionIds = state.sessions.map((session) => session.id).toSet();
-    _queuedFollowUps.removeWhere(
-      (queued) =>
-          queued.sessionId != null && !sessionIds.contains(queued.sessionId),
+    _followUps.dropForMissingSessions(
+      state.sessions.map((session) => session.id).toSet(),
     );
   }
 
-  bool _canSendQueuedFollowUp(HermesChannelState state) {
-    if (_queuedFollowUps.isEmpty ||
-        _isTurnActive(state) ||
-        !_canSendTurns(state)) {
-      return false;
-    }
-    return _queuedFollowUps.first.sessionId == state.activeSessionId;
-  }
+  bool _canSendQueuedFollowUp(HermesChannelState state) =>
+      _followUps.canSendNext(
+        activeSessionId: state.activeSessionId,
+        turnActive: _isTurnActive(state),
+        canSendTurns: _canSendTurns(state),
+      );
 
-  bool _canOpenQueuedFollowUpSession(HermesChannelState state) {
-    if (_queuedFollowUps.isEmpty) return false;
-    final sessionId = _queuedFollowUps.first.sessionId;
-    if (sessionId == null || sessionId == state.activeSessionId) return false;
-    return state.sessions.any((session) => session.id == sessionId);
-  }
+  bool _canOpenQueuedFollowUpSession(HermesChannelState state) =>
+      _followUps.canOpenNextSession(
+        activeSessionId: state.activeSessionId,
+        knownSessionIds: state.sessions.map((session) => session.id).toSet(),
+      );
 
   Future<void> _openQueuedFollowUpSession(
     BuildContext context,
     HermesChannel channel,
   ) async {
     if (!_canOpenQueuedFollowUpSession(channel.state)) return;
-    final sessionId = _queuedFollowUps.first.sessionId;
+    final sessionId = _followUps.next?.sessionId;
     if (sessionId == null) return;
     try {
       await channel.selectSession(sessionId);
@@ -214,13 +209,14 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
             if (!mounted || !requeueOnFailure || !channel.state.isConnected) {
               return;
             }
-            _setState(() {
-              _queuedFollowUpError =
-                  'Could not send queued follow-up: ${_safeHermesUiError(error)}';
-              if (_queuedFollowUps.length < _maxQueuedFollowUps) {
-                _queuedFollowUps.addFirst(_QueuedFollowUp(text, sessionId));
-              }
-            });
+            _setState(
+              () => _followUps.requeueFailed(
+                text,
+                sessionId,
+                message:
+                    'Could not send queued follow-up: ${_safeHermesUiError(error)}',
+              ),
+            );
           }),
     );
   }
@@ -245,9 +241,9 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   String _queuedFollowUpSummary(HermesChannelState state) {
-    final count = _queuedFollowUps.length;
+    final count = _followUps.length;
     final label = count == 1 ? 'follow-up' : 'follow-ups';
-    final preview = _queuedFollowUps
+    final preview = _followUps.pending
         .take(2)
         .map((queued) => _queuedFollowUpPreview(queued.text))
         .join(' • ');
@@ -255,7 +251,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     final suffix = remaining > 0 ? ' • +$remaining more' : '';
     final waiting = !_canSendTurns(state)
         ? ' Waiting for a supported Hermes chat transport.'
-        : _queuedFollowUps.first.sessionId != state.activeSessionId
+        : _followUps.next?.sessionId != state.activeSessionId
         ? ' Waiting for the original session.'
         : '';
     return 'Queued $count $label after current reply: $preview$suffix$waiting';
@@ -267,16 +263,16 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   String _queuedFollowUpDetailsSummary(HermesChannelState state) {
     final buffer = StringBuffer()
       ..writeln('Hermes queued follow-ups')
-      ..writeln('Queued: ${_queuedFollowUps.length}')
+      ..writeln('Queued: ${_followUps.length}')
       ..writeln(
         'Active session: ${_safeHermesUiPreview(state.activeSessionId ?? 'none', maxLength: 80)}',
       )
       ..writeln(
-        'Next session: ${_safeHermesUiPreview(_queuedFollowUps.first.sessionId ?? 'none', maxLength: 80)}',
+        'Next session: ${_safeHermesUiPreview(_followUps.next?.sessionId ?? 'none', maxLength: 80)}',
       )
       ..writeln('Can send now: ${_canSendQueuedFollowUp(state)}');
     var index = 1;
-    for (final queued in _queuedFollowUps.take(_maxQueuedFollowUps)) {
+    for (final queued in _followUps.pending.take(_maxQueuedFollowUps)) {
       buffer.writeln(
         '$index. ${_safeHermesUiPreview(queued.text, maxLength: 160)}',
       );
@@ -287,10 +283,10 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   Future<void> _confirmClearQueuedFollowUps(BuildContext context) async {
-    if (_queuedFollowUps.isEmpty) return;
-    final count = _queuedFollowUps.length;
+    if (_followUps.isEmpty) return;
+    final count = _followUps.length;
     final label = count == 1 ? 'follow-up' : 'follow-ups';
-    final preview = _queuedFollowUps
+    final preview = _followUps.pending
         .take(3)
         .map((queued) => _safeHermesUiPreview(queued.text, maxLength: 80))
         .join('\n');
@@ -319,8 +315,8 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     );
     if (confirmed != true || !mounted) return;
     _setState(() {
-      _queuedFollowUps.clear();
-      _queuedFollowUpError = null;
+      _followUps.clear();
+      _followUps.error = null;
     });
   }
 }

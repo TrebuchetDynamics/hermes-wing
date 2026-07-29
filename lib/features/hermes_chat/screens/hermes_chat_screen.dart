@@ -28,6 +28,7 @@ import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../attachments/hermes_attachment_content.dart';
+import '../controllers/hermes_approval_queue.dart';
 import '../controllers/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
@@ -176,11 +177,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
-  StreamSubscription<HermesApprovalRequest>? _approvalSubscription;
+  late final HermesApprovalQueue _approvals;
   String? _queuedFollowUpError;
   final Queue<_QueuedFollowUp> _queuedFollowUps = Queue<_QueuedFollowUp>();
-  final Queue<HermesApprovalRequest> _pendingApprovals = Queue();
-  String? _answeringApprovalId;
   String? _observedSessionId;
   String? _completedAssistantSignature;
   int _connectAttemptId = 0;
@@ -206,6 +205,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       settings: () => ref.read(wingVoiceSettingsProvider),
       onDraft: _appendVoiceDraft,
     )..addListener(_onVoiceInputChanged);
+    _approvals = HermesApprovalQueue(
+      channel: () => ref.read(hermesChannelProvider),
+      onResolveError: _showApprovalError,
+    )..addListener(_onApprovalsChanged);
     _channelProviderSubscription = ref.listenManual<HermesChannel>(
       hermesChannelProvider,
       (_, channel) => _subscribeToChannel(channel),
@@ -222,7 +225,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _voiceInputController.removeListener(_onVoiceInputChanged);
     _voiceInputController.dispose();
     _subscribed?.removeListener(_onChannelChanged);
-    _approvalSubscription?.cancel();
+    _approvals.removeListener(_onApprovalsChanged);
+    _approvals.dispose();
     _baseUrlController.removeListener(_onConnectionFormChanged);
     _composerController.removeListener(_onComposerChanged);
     _baseUrlController.dispose();
@@ -373,10 +377,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _voiceInputController.pause(
       'Continuous voice paused while switching agents.',
     );
-    setState(() {
-      _pendingApprovals.clear();
-      _answeringApprovalId = null;
-    });
+    setState(_approvals.reset);
     try {
       await channel.selectProfile(profileId);
     } catch (error) {
@@ -398,23 +399,32 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _subscribed?.removeListener(_onChannelChanged);
     channel.addListener(_onChannelChanged);
     _subscribed = channel;
-    _pendingApprovals.clear();
-    _answeringApprovalId = null;
     _observedSessionId = channel.state.activeSessionId;
     _completedAssistantSignature = _completedAssistantTurnSignature(
       channel.state,
     );
-    unawaited(_approvalSubscription?.cancel());
-    _approvalSubscription = channel.approvalRequests.listen((request) {
-      if (mounted) setState(() => _enqueueApprovalRequest(request));
-    });
+    _approvals.watch(channel);
     _onChannelChanged();
+  }
+
+  void _onApprovalsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _showApprovalError(Object error) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Could not answer Hermes approval: ${_safeHermesUiError(error)}',
+        ),
+      ),
+    );
   }
 
   bool _hasActiveGatewayWork(HermesChannel channel) =>
       channel.state.hasStreamingSessions ||
-      _pendingApprovals.isNotEmpty ||
-      _answeringApprovalId != null ||
+      _approvals.hasPendingWork ||
       _queuedFollowUps.isNotEmpty;
 
   Future<bool> _confirmLeaveActiveContact(HermesChannel channel) async {
@@ -467,7 +477,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (!await _confirmLeaveActiveContact(channel) || !mounted) return;
     _voiceInputController.pause('Closed Hermes contact.');
     _queuedFollowUps.clear();
-    _pendingApprovals.clear();
+    _approvals.clearPending();
     await ref.read(hermesGatewayDirectoryProvider).showDirectory();
   }
 
@@ -481,7 +491,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     }
     _voiceInputController.pause('Switched Hermes contact.');
     _queuedFollowUps.clear();
-    _pendingApprovals.clear();
+    _approvals.clearPending();
     await directory.activate(id);
   }
 

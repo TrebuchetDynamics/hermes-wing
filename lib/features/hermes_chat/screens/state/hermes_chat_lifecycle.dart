@@ -104,8 +104,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
       } else {
         _queuedFollowUps.clear();
         _queuedFollowUpError = null;
-        _pendingApprovals.clear();
-        _answeringApprovalId = null;
+        _approvals.reset();
         _observedSessionId = null;
         _completedAssistantSignature = null;
         _voiceInputController.pause();

@@ -16,58 +16,10 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     HermesChannel channel,
     HermesApprovalDecision decision,
     HermesApprovalRequest request,
-  ) async {
-    if (_answeringApprovalId != null ||
-        !_pendingApprovals.any(
-          (pending) =>
-              _approvalRequestKey(pending) == _approvalRequestKey(request),
-        )) {
-      return;
-    }
-    final approvalId = request.id.trim();
-    if (approvalId.isEmpty) return;
-    _setState(() => _answeringApprovalId = approvalId);
-    try {
-      await channel.respondToApproval(
-        approvalId: approvalId,
-        decision: decision,
-      );
-      if (!mounted) return;
-      _setState(() {
-        _pendingApprovals.removeWhere(
-          (pending) =>
-              _approvalRequestKey(pending) == _approvalRequestKey(request),
-        );
-        if (_answeringApprovalId == approvalId) {
-          _answeringApprovalId = null;
-        }
-      });
-    } catch (error) {
-      if (!mounted) return;
-      _setState(() {
-        if (_answeringApprovalId == approvalId) {
-          _answeringApprovalId = null;
-        }
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Could not answer Hermes approval: ${_safeHermesUiError(error)}',
-          ),
-        ),
-      );
-    }
-  }
+  ) => _approvals.resolve(decision, request);
 
-  void _dismissApproval(HermesApprovalRequest request) {
-    _setState(() {
-      _pendingApprovals.removeWhere(
-        (pending) =>
-            _approvalRequestKey(pending) == _approvalRequestKey(request),
-      );
-      _answeringApprovalId = null;
-    });
-  }
+  void _dismissApproval(HermesApprovalRequest request) =>
+      _approvals.dismiss(request);
 
   void _selectEndpointProfile(HermesEndpointConfig profile) {
     _baseUrlController.text = profile.baseUrl;

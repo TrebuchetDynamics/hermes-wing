@@ -1,25 +1,6 @@
 part of '../hermes_chat_screen.dart';
 
 extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
-  void _enqueueApprovalRequest(HermesApprovalRequest request) {
-    final requestKey = _approvalRequestKey(request);
-    final duplicate = _pendingApprovals.any(
-      (pending) => _approvalRequestKey(pending) == requestKey,
-    );
-    if (duplicate || _answeringApprovalId == request.id.trim()) return;
-    _pendingApprovals.addLast(request);
-  }
-
-  String _approvalRequestKey(HermesApprovalRequest request) {
-    final id = request.id.trim();
-    if (id.isNotEmpty) return 'id:$id';
-    final toolCallId = request.toolCallId.trim();
-    if (toolCallId.isNotEmpty) {
-      return 'tool:$toolCallId';
-    }
-    return 'prompt:${request.prompt}';
-  }
-
   void _sendComposerText(HermesChannel channel) {
     final text = _composerController.text.trim();
     final imageBytes = _pendingImageBytes;

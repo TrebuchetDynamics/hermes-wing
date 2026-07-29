@@ -8,7 +8,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   ) {
     final connecting = state.status == HermesConnectionStatus.connecting;
     final canConnect =
-        !connecting && _isValidHermesBaseUrl(_baseUrlController.text);
+        !connecting && _isValidHermesBaseUrl(_connectionForm.baseUrl.text);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -117,7 +117,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         const SizedBox(height: 20),
                         TextField(
                           key: const ValueKey('hermes-base-url-field'),
-                          controller: _baseUrlController,
+                          controller: _connectionForm.baseUrl,
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.next,
                           autofillHints: const [AutofillHints.url],
@@ -135,8 +135,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         const SizedBox(height: 16),
                         TextField(
                           key: const ValueKey('hermes-api-key-field'),
-                          controller: _apiKeyController,
-                          obscureText: _obscureApiKey,
+                          controller: _connectionForm.apiKey,
+                          obscureText: _connectionForm.obscureApiKey,
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
                           enableSuggestions: false,
@@ -148,14 +148,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             prefixIcon: const Icon(Icons.key_outlined),
                             suffixIcon: IconButton(
                               key: const ValueKey('hermes-api-key-visibility'),
-                              tooltip: _obscureApiKey
+                              tooltip: _connectionForm.obscureApiKey
                                   ? 'Show access token'
                                   : 'Hide access token',
-                              onPressed: () => _setState(
-                                () => _obscureApiKey = !_obscureApiKey,
-                              ),
+                              onPressed: _connectionForm.toggleApiKeyVisibility,
                               icon: Icon(
-                                _obscureApiKey
+                                _connectionForm.obscureApiKey
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                               ),
@@ -165,7 +163,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         const SizedBox(height: 16),
                         TextField(
                           key: const ValueKey('hermes-profile-label-field'),
-                          controller: _profileLabelController,
+                          controller: _connectionForm.label,
                           textInputAction: TextInputAction.done,
                           onSubmitted: canConnect
                               ? (_) => unawaited(_connect(channel))

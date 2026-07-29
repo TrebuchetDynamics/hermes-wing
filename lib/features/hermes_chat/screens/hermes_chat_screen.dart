@@ -30,6 +30,7 @@ import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../attachments/hermes_attachment_content.dart';
 import '../controllers/hermes_approval_queue.dart';
+import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
@@ -161,9 +162,7 @@ class HermesChatScreen extends ConsumerStatefulWidget {
 
 class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     with WidgetsBindingObserver {
-  final _baseUrlController = TextEditingController(text: _defaultHermesBaseUrl);
-  final _apiKeyController = TextEditingController();
-  final _profileLabelController = TextEditingController();
+  late final HermesConnectionForm _connectionForm;
   final _composerController = TextEditingController();
   final _transcriptScrollController = ScrollController();
   late final HermesVoiceInputController _voiceInputController;
@@ -183,9 +182,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final Queue<_QueuedFollowUp> _queuedFollowUps = Queue<_QueuedFollowUp>();
   String? _observedSessionId;
   String? _completedAssistantSignature;
-  int _connectAttemptId = 0;
   bool _reconnectingOnResume = false;
-  bool _obscureApiKey = true;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
 
@@ -193,7 +190,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _baseUrlController.addListener(_onConnectionFormChanged);
+    _connectionForm = HermesConnectionForm(
+      normalizeBaseUrl: hermesPublicEndpointBaseUrl,
+      sanitizeLabel: _safeHermesUiText,
+      initialBaseUrl: _defaultHermesBaseUrl,
+    )..addListener(_onConnectionFormChanged);
+    _connectionForm.baseUrl.addListener(_onConnectionFormChanged);
     _composerController.addListener(_onComposerChanged);
     _voiceInputController = HermesVoiceInputController(
       channel: () => ref.read(hermesChannelProvider),
@@ -228,11 +230,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _subscribed?.removeListener(_onChannelChanged);
     _approvals.removeListener(_onApprovalsChanged);
     _approvals.dispose();
-    _baseUrlController.removeListener(_onConnectionFormChanged);
+    _connectionForm.baseUrl.removeListener(_onConnectionFormChanged);
+    _connectionForm.removeListener(_onConnectionFormChanged);
+    _connectionForm.dispose();
     _composerController.removeListener(_onComposerChanged);
-    _baseUrlController.dispose();
-    _apiKeyController.dispose();
-    _profileLabelController.dispose();
     _composerController.dispose();
     _transcriptScrollController.dispose();
     super.dispose();

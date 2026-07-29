@@ -22,15 +22,15 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       _approvals.dismiss(request);
 
   void _selectEndpointProfile(HermesEndpointConfig profile) {
-    _baseUrlController.text = profile.baseUrl;
-    _apiKeyController.text = profile.apiKey ?? '';
-    _profileLabelController.text = profile.label ?? '';
+    _connectionForm.applyProfile(
+      baseUrl: profile.baseUrl,
+      apiKey: profile.apiKey,
+      label: profile.label,
+    );
   }
 
   void _applyEndpointPreset(String baseUrl) {
-    _baseUrlController.text = baseUrl;
-    _apiKeyController.clear();
-    _profileLabelController.clear();
+    _connectionForm.clear(keepBaseUrl: baseUrl);
   }
 
   Future<void> _renameEndpointProfile(
@@ -101,18 +101,16 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final id = profile.id;
     if (id == null || id.trim().isEmpty) return;
     await ref.read(hermesEndpointStoreProvider).deleteProfile(id);
-    if (_baseUrlController.text.trim() == profile.baseUrl) {
-      _baseUrlController.clear();
-      _apiKeyController.clear();
-      _profileLabelController.clear();
+    if (_connectionForm.baseUrl.text.trim() == profile.baseUrl) {
+      _connectionForm.clear();
     }
     _refreshEndpointProfiles();
     unawaited(ref.read(hermesGatewayDirectoryProvider).reload());
   }
 
   Future<void> _connect(HermesChannel channel) async {
-    final baseUrl = hermesPublicEndpointBaseUrl(_baseUrlController.text);
-    final apiKey = _apiKeyController.text.trim();
+    final baseUrl = hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text);
+    final apiKey = _connectionForm.apiKey.text.trim();
     if (hermesEndpointRequiresCleartextCredentialWarning(
       baseUrl,
       apiKey: apiKey,
@@ -158,7 +156,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final saved = await ref.read(hermesEndpointStoreProvider).load();
     final stateBaseUrl = channel.state.connectedBaseUrl;
     final controllerBaseUrl = hermesPublicEndpointBaseUrl(
-      _baseUrlController.text,
+      _connectionForm.baseUrl.text,
     );
     final baseUrl = stateBaseUrl?.trim().isNotEmpty == true
         ? stateBaseUrl!.trim()
@@ -167,11 +165,11 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         : controllerBaseUrl;
     final apiKey = saved?.baseUrl == baseUrl
         ? saved?.apiKey
-        : _apiKeyController.text.trim().isEmpty
+        : _connectionForm.apiKey.text.trim().isEmpty
         ? null
-        : _apiKeyController.text.trim();
-    _baseUrlController.text = baseUrl;
-    _apiKeyController.text = apiKey ?? '';
+        : _connectionForm.apiKey.text.trim();
+    _connectionForm.baseUrl.text = baseUrl;
+    _connectionForm.apiKey.text = apiKey ?? '';
     await _connectToEndpoint(
       channel,
       baseUrl: baseUrl,
@@ -183,11 +181,11 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   Future<void> _reauthorize(HermesChannel channel) async {
     final baseUrl =
         channel.state.connectedBaseUrl ??
-        hermesPublicEndpointBaseUrl(_baseUrlController.text);
-    _connectAttemptId += 1;
+        hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text);
+    _connectionForm.abandonAttempt();
     await channel.disconnect();
-    _baseUrlController.text = baseUrl;
-    _apiKeyController.clear();
+    _connectionForm.baseUrl.text = baseUrl;
+    _connectionForm.apiKey.clear();
     _refreshEndpointProfiles();
   }
 
@@ -197,20 +195,15 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     String? apiKey,
     required bool persistOnSuccess,
   }) async {
-    final attemptId = ++_connectAttemptId;
-    final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
-    final normalizedApiKey = apiKey?.trim();
-    final profileLabel = _safeHermesUiText(_profileLabelController.text).trim();
-    await channel.connect(
-      baseUrl: normalizedBaseUrl,
-      apiKey: normalizedApiKey?.isEmpty == true ? null : normalizedApiKey,
+    final attempt = _connectionForm.beginAttempt(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
     );
-    if (attemptId != _connectAttemptId ||
-        hermesPublicEndpointBaseUrl(_baseUrlController.text) !=
-            normalizedBaseUrl ||
-        _apiKeyController.text.trim() != (normalizedApiKey ?? '') ||
-        _safeHermesUiText(_profileLabelController.text).trim() !=
-            profileLabel ||
+    await channel.connect(
+      baseUrl: attempt.baseUrl,
+      apiKey: attempt.storedApiKey,
+    );
+    if (_connectionForm.isStale(attempt) ||
         channel.state.status != HermesConnectionStatus.connected) {
       return;
     }
@@ -218,9 +211,9 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       await ref
           .read(hermesEndpointStoreProvider)
           .save(
-            baseUrl: normalizedBaseUrl,
-            apiKey: normalizedApiKey?.isEmpty == true ? null : normalizedApiKey,
-            label: profileLabel.isEmpty ? null : profileLabel,
+            baseUrl: attempt.baseUrl,
+            apiKey: attempt.storedApiKey,
+            label: attempt.storedLabel,
           );
       _refreshEndpointProfiles();
       await channel.disconnect();
@@ -235,7 +228,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final activeContact = ref
         .read(hermesGatewayDirectoryProvider)
         .activeContact;
-    final target = activeContact?.gatewayLabel ?? _baseUrlController.text;
+    final target = activeContact?.gatewayLabel ?? _connectionForm.baseUrl.text;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(

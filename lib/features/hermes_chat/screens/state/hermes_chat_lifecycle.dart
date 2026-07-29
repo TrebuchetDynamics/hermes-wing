@@ -57,9 +57,11 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
   Future<List<HermesEndpointConfig>> _loadEndpointProfiles() async {
     final profiles = await ref.read(hermesEndpointStoreProvider).loadProfiles();
     if (!mounted || profiles.isEmpty) return profiles;
-    final currentBaseUrl = hermesPublicEndpointBaseUrl(_baseUrlController.text);
+    final currentBaseUrl = hermesPublicEndpointBaseUrl(
+      _connectionForm.baseUrl.text,
+    );
     if ((currentBaseUrl.isEmpty || currentBaseUrl == 'http://127.0.0.1:8642') &&
-        _apiKeyController.text.isEmpty) {
+        _connectionForm.apiKey.text.isEmpty) {
       _selectEndpointProfile(profiles.first);
     }
     return profiles;

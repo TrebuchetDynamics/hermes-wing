@@ -31,6 +31,7 @@ import '../../voice/services/tts/text_to_speech_service.dart';
 import '../attachments/hermes_attachment_content.dart';
 import '../attachments/staged_attachment.dart';
 import '../controllers/hermes_approval_queue.dart';
+import '../controllers/hermes_channel_observation.dart';
 import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_follow_up_queue.dart';
 import '../controllers/hermes_voice_input_controller.dart';
@@ -176,8 +177,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final HermesFollowUpQueue _followUps = HermesFollowUpQueue(
     capacity: _maxQueuedFollowUps,
   );
-  String? _observedSessionId;
-  String? _completedAssistantSignature;
+  final HermesChannelObservation _observation = HermesChannelObservation();
   bool _reconnectingOnResume = false;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
@@ -397,10 +397,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _subscribed?.removeListener(_onChannelChanged);
     channel.addListener(_onChannelChanged);
     _subscribed = channel;
-    _observedSessionId = channel.state.activeSessionId;
-    _completedAssistantSignature = _completedAssistantTurnSignature(
-      channel.state,
-    );
+    _observation.adopt(channel.state);
     _approvals.watch(channel);
     _onChannelChanged();
   }
@@ -448,17 +445,6 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           ),
         ) ??
         false;
-  }
-
-  String? _completedAssistantTurnSignature(HermesChannelState state) {
-    final ids = <String>[
-      for (final turns in state.messages.values)
-        for (final turn in turns)
-          if (turn.author == HermesTurnAuthor.assistant &&
-              turn.status == HermesTurnStatus.completed)
-            '${turn.sessionId}:${turn.id}',
-    ]..sort();
-    return ids.isEmpty ? null : ids.join('\u001f');
   }
 
   void _refreshActiveGatewayContact() {

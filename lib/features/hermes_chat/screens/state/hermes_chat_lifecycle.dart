@@ -78,18 +78,11 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     final channel = _subscribed;
     if (channel != null) {
       if (channel.state.isConnected) {
-        final completedAssistantSignature = _completedAssistantTurnSignature(
-          channel.state,
-        );
-        if (completedAssistantSignature != _completedAssistantSignature) {
-          _completedAssistantSignature = completedAssistantSignature;
-          if (completedAssistantSignature != null) {
-            _refreshActiveGatewayContact();
-          }
+        final change = _observation.observe(channel.state);
+        if (change.completedReplyArrived) {
+          _refreshActiveGatewayContact();
         }
-        final activeSessionId = channel.state.activeSessionId;
-        if (_observedSessionId != null &&
-            _observedSessionId != activeSessionId) {
+        if (change.activeSessionChanged) {
           final voiceNotice = _voiceInputController.continuousEnabled
               ? 'Hermes session changed. Continuous voice paused.'
               : _voiceInputController.speaking
@@ -99,15 +92,13 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
               : null;
           _voiceInputController.pause(voiceNotice);
         }
-        _observedSessionId = activeSessionId;
         _dropQueuedFollowUpsForMissingSessions(channel.state);
         _scheduleTranscriptScrollToBottom(force: _isTurnActive(channel.state));
         _sendQueuedFollowUpIfIdle(channel);
       } else {
         _followUps.reset();
         _approvals.reset();
-        _observedSessionId = null;
-        _completedAssistantSignature = null;
+        _observation.reset();
         _voiceInputController.pause();
       }
     }

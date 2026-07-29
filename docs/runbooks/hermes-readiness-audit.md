@@ -1,6 +1,6 @@
 # Hermes Wing readiness audit
 
-Last updated: 2026-07-18.
+Last updated: 2026-07-29.
 
 2026-07-13 status refresh: the latest main-branch `Hermes platform smoke` run
 (29129974871, head `b7b99d8`, 2026-07-10) failed three jobs. Browser smoke
@@ -13,9 +13,17 @@ targeted 13.0/10.15; deployment targets were raised in `6ca4afb`, and the
 push-triggered main run 29256462998 (head `9c44607`, 2026-07-13) succeeded on
 all native jobs with a validated receipt written to
 `build/receipts/hermes-platform-workflow.json`. The
-`Dependency and license review` job fails on every PR with
-"Dependency review is not supported on this repository"; enabling the
-Dependency graph in repository settings is an owner action.
+`Dependency and license review` job previously failed on every PR with
+"Dependency review is not supported on this repository".
+
+2026-07-29 status refresh: that dependency-review blocker no longer reproduces.
+`gh pr checks` reports `Dependency and license review` as SUCCESS on all three
+open pull requests (12, 13, and 14), and
+`.github/workflows/hermes-platform-smoke.yml:102-111` still gates the job to
+`pull_request` events, so it is skipped rather than failed on push-triggered
+main runs. No owner action is outstanding for this check. Revisit this
+paragraph if the job regresses to the unsupported-repository error, or if the
+job's `pull_request` gate or `fail-on-severity`/`deny-licenses` inputs change.
 
 This audit maps the current Hermes-only Hermes Wing client goal to concrete
 evidence and remaining blockers. It is intentionally conservative: a passing

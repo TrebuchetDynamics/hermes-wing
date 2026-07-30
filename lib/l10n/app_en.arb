@@ -1721,5 +1721,8 @@
   "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.",
   "tipVoice": "Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.",
   "tipApprovals": "Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.",
-  "tipDismissTooltip": "Dismiss tip"
+  "tipDismissTooltip": "Dismiss tip",
+  "toolsLoading": "Loading tools",
+  "gatewayLoading": "Loading gateway status",
+  "schedulesLoading": "Loading schedules"
 }

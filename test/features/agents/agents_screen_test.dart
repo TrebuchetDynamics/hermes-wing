@@ -11,6 +11,7 @@ import 'package:wing/features/agents/screens/agents_screen.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/shared/widgets/wing_skeleton.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
@@ -232,9 +233,9 @@ void main() {
     await tester.pumpWidget(_agentsTestApp(channel));
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(WingSkeletonList), findsOneWidget);
     expect(
-      tester.getSemantics(find.byType(CircularProgressIndicator)).label,
+      tester.getSemantics(find.byType(WingSkeletonList)).label,
       contains('Loading agents'),
     );
   });

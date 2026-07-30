@@ -4476,6 +4476,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss tip'**
   String get tipDismissTooltip;
+
+  /// No description provided for @toolsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading tools'**
+  String get toolsLoading;
+
+  /// No description provided for @gatewayLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading gateway status'**
+  String get gatewayLoading;
+
+  /// No description provided for @schedulesLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading schedules'**
+  String get schedulesLoading;
 }
 
 class _AppLocalizationsDelegate

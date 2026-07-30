@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_runtime_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_skeleton.dart';
 import '../../agents/providers/profile_selection_provider.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -182,12 +183,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
 
     if (state.status == HermesConnectionStatus.connecting ||
         (_loading && state.providers.isEmpty)) {
-      return Center(
-        child: Semantics(
-          label: strings.providersLoading,
-          child: const CircularProgressIndicator(),
-        ),
-      );
+      return WingSkeletonList(semanticLabel: strings.providersLoading);
     }
     if (state.status == HermesConnectionStatus.error) {
       return _ProvidersMessage(

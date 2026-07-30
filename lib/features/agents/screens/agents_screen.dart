@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../providers/profile_selection_provider.dart';
@@ -52,12 +53,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
     final capabilities = state.capabilities;
 
     if (state.status == HermesConnectionStatus.connecting) {
-      return Center(
-        child: Semantics(
-          label: strings.agentsLoading,
-          child: const CircularProgressIndicator(),
-        ),
-      );
+      return WingSkeletonList(semanticLabel: strings.agentsLoading);
     }
     if (state.status == HermesConnectionStatus.error) {
       return _AgentsMessage(

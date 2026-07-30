@@ -2681,4 +2681,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipDismissTooltip => 'Dismiss tip';
+
+  @override
+  String get toolsLoading => 'Loading tools';
+
+  @override
+  String get gatewayLoading => 'Loading gateway status';
+
+  @override
+  String get schedulesLoading => 'Loading schedules';
 }

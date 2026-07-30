@@ -15,6 +15,23 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../app_routes.dart';
 
+/// The shared shell-route page: a motion-free 200ms fade-through, so route
+/// changes read as one surface and stay comfortable under reduced motion.
+Page<void> wingFadeThroughPage({
+  required LocalKey key,
+  required Widget child,
+}) => CustomTransitionPage<void>(
+  key: key,
+  transitionDuration: const Duration(milliseconds: 200),
+  reverseTransitionDuration: const Duration(milliseconds: 200),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+      FadeTransition(
+        opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+        child: child,
+      ),
+  child: child,
+);
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.hermes,
@@ -31,43 +48,73 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: AppRoutes.hermes,
-            builder: (context, state) => const HermesChatScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const HermesChatScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.office,
-            builder: (context, state) => const OfficeScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const OfficeScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.agents,
-            builder: (context, state) => const AgentsScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const AgentsScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.providers,
-            builder: (context, state) => const ProvidersScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const ProvidersScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.tools,
-            builder: (context, state) => const ToolsScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const ToolsScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.schedules,
-            builder: (context, state) => const SchedulesScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const SchedulesScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.gateway,
-            builder: (context, state) => const GatewayScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const GatewayScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.settings,
-            builder: (context, state) => const SettingsScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const SettingsScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.settingsVoice,
-            builder: (context, state) => const VoiceSettingsScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const VoiceSettingsScreen(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.settingsDiagnostics,
-            builder: (context, state) => const DiagnosticsSettingsScreen(),
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const DiagnosticsSettingsScreen(),
+            ),
           ),
         ],
       ),

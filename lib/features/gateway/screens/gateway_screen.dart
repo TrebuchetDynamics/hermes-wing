@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_health.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 
@@ -171,7 +172,9 @@ class _GatewayBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.status == HermesConnectionStatus.connecting) {
-      return const Center(child: CircularProgressIndicator());
+      return WingSkeletonList(
+        semanticLabel: AppLocalizations.of(context).gatewayLoading,
+      );
     }
     if (state.status != HermesConnectionStatus.connected) {
       return _CenteredMessage(

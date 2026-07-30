@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_skeleton.dart';
 import '../../../router/app_routes.dart';
 import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -99,12 +100,7 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
               .toList(growable: false);
 
     if (contacts.isEmpty && directory.refreshing) {
-      return Center(
-        child: Semantics(
-          label: strings.officeRefresh,
-          child: const CircularProgressIndicator(),
-        ),
-      );
+      return WingSkeletonList(semanticLabel: strings.officeRefresh);
     }
 
     return RefreshIndicator(

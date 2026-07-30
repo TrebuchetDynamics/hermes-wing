@@ -11,6 +11,7 @@ import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/providers/screens/providers_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/shared/widgets/wing_skeleton.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
@@ -254,13 +255,13 @@ void main() {
       await tester.pumpWidget(_testApp(channel));
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(WingSkeletonList), findsOneWidget);
       expect(find.text('No providers available'), findsNothing);
 
       channel.loadGate.complete();
       await tester.pumpAndSettle();
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(WingSkeletonList), findsNothing);
       expect(find.text('No providers available'), findsOneWidget);
     },
   );
@@ -492,7 +493,7 @@ void main() {
     await tester.pumpWidget(_testApp(channel));
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(WingSkeletonList), findsOneWidget);
   });
 
   testWidgets('shows a connection error when the channel is in error', (

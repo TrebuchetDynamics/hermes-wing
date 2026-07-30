@@ -4452,6 +4452,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mulberry'**
   String get themePaletteMulberry;
+
+  /// No description provided for @tipMoreDestinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.'**
+  String get tipMoreDestinations;
+
+  /// No description provided for @tipVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.'**
+  String get tipVoice;
+
+  /// No description provided for @tipApprovals.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.'**
+  String get tipApprovals;
+
+  /// No description provided for @tipDismissTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss tip'**
+  String get tipDismissTooltip;
 }
 
 class _AppLocalizationsDelegate

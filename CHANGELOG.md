@@ -26,6 +26,7 @@ All notable user-visible changes will be documented here.
 - Added client-side model presets: save the current slot/provider/model combo under a name in the model picker, recall it with one tap, and delete it; presets stay on this device and are never sent to Hermes.
 - Extended credential validation into a connection probe: the result now shows round-trip latency on success and failure, plus the provider's bounded model availability from the already-loaded catalog.
 - Added a theme picker under Settings → Appearance: five palettes (Wing, Indigo, Forest, Amber, Mulberry), each with light and dark variants, plus a System/Light/Dark mode selector; the choice persists on this device.
+- Added context-aware first-run tips: where administration lives (with the phone navigation bar), how voice dictation works (first connected chat), and how approvals work (first approval request). Each tip shows once and stays dismissed.
 - Announced hands-free voice state to assistive technology instead of showing it only visually, and bounded TTS and microphone-cancel failures so the voice loop recovers cleanly.
 
 ### Security

@@ -1,16 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_routes.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
 
-Widget _testApp(Widget home) => MaterialApp(
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: home,
+Widget _testApp(Widget home) => ProviderScope(
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  ),
 );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('the More tip shows once on phones and stays dismissed', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _testApp(
+        const AppShell(
+          location: AppRoutes.hermes,
+          child: SizedBox(key: ValueKey('body')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('wing-tip-moreDestinations')),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('wing-tip-moreDestinations-dismiss')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('wing-tip-moreDestinations')),
+      findsNothing,
+    );
+
+    // A fresh shell (same device) never shows it again.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      _testApp(
+        const AppShell(
+          location: AppRoutes.hermes,
+          child: SizedBox(key: ValueKey('body')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('wing-tip-moreDestinations')),
+      findsNothing,
+    );
+  });
   testWidgets('Office appears in More rather than the mobile bottom bar', (
     tester,
   ) async {

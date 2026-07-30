@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/wing_theme.dart';
+import '../tips/wing_tip_card.dart';
+import '../tips/wing_tips.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
@@ -88,70 +90,89 @@ class _MobileShell extends StatelessWidget {
           showNavigationMenu && MediaQuery.viewInsetsOf(context).bottom == 0
           ? SafeArea(
               top: false,
-              child: DecoratedBox(
-                key: const ValueKey('mobile-navigation-surface'),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow,
-                  border: Border(
-                    top: BorderSide(color: colorScheme.outlineVariant),
-                  ),
-                ),
-                child: NavigationBarTheme(
-                  data: NavigationBarThemeData(
-                    backgroundColor: Colors.transparent,
-                    indicatorColor: colorScheme.primary.withValues(alpha: 0.14),
-                    indicatorShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (mobileOverflowDestinations.isNotEmpty)
+                    WingTipCard(
+                      tip: WingTip.moreDestinations,
+                      text: AppLocalizations.of(context).tipMoreDestinations,
                     ),
-                    labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                      final selected = states.contains(WidgetState.selected);
-                      return theme.textTheme.labelSmall?.copyWith(
-                        color: selected
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                        fontWeight: selected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      );
-                    }),
-                    iconTheme: WidgetStateProperty.resolveWith((states) {
-                      final selected = states.contains(WidgetState.selected);
-                      return IconThemeData(
-                        color: selected
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                        size: 23,
-                      );
-                    }),
-                  ),
-                  child: NavigationBar(
-                    height: 64,
-                    elevation: 0,
-                    selectedIndex: selectedIndex,
-                    labelBehavior:
-                        NavigationDestinationLabelBehavior.alwaysShow,
-                    onDestinationSelected: (index) {
-                      if (index < mobileNavigationDestinations.length) {
-                        onSelected(mobileNavigationDestinations[index]);
-                        return;
-                      }
-                      _showOverflowMenu(context);
-                    },
-                    destinations: [
-                      for (final destination in mobileNavigationDestinations)
-                        NavigationDestination(
-                          icon: Icon(destination.icon),
-                          label: destination.label,
+                  DecoratedBox(
+                    key: const ValueKey('mobile-navigation-surface'),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      border: Border(
+                        top: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                    ),
+                    child: NavigationBarTheme(
+                      data: NavigationBarThemeData(
+                        backgroundColor: Colors.transparent,
+                        indicatorColor: colorScheme.primary.withValues(
+                          alpha: 0.14,
                         ),
-                      if (mobileOverflowDestinations.isNotEmpty)
-                        NavigationDestination(
-                          icon: const Icon(Icons.more_horiz),
-                          label: mobileOverflowLabel,
-                          tooltip: mobileOverflowTooltip,
+                        indicatorShape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                    ],
+                        labelTextStyle: WidgetStateProperty.resolveWith((
+                          states,
+                        ) {
+                          final selected = states.contains(
+                            WidgetState.selected,
+                          );
+                          return theme.textTheme.labelSmall?.copyWith(
+                            color: selected
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                            fontWeight: selected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                          );
+                        }),
+                        iconTheme: WidgetStateProperty.resolveWith((states) {
+                          final selected = states.contains(
+                            WidgetState.selected,
+                          );
+                          return IconThemeData(
+                            color: selected
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                            size: 23,
+                          );
+                        }),
+                      ),
+                      child: NavigationBar(
+                        height: 64,
+                        elevation: 0,
+                        selectedIndex: selectedIndex,
+                        labelBehavior:
+                            NavigationDestinationLabelBehavior.alwaysShow,
+                        onDestinationSelected: (index) {
+                          if (index < mobileNavigationDestinations.length) {
+                            onSelected(mobileNavigationDestinations[index]);
+                            return;
+                          }
+                          _showOverflowMenu(context);
+                        },
+                        destinations: [
+                          for (final destination
+                              in mobileNavigationDestinations)
+                            NavigationDestination(
+                              icon: Icon(destination.icon),
+                              label: destination.label,
+                            ),
+                          if (mobileOverflowDestinations.isNotEmpty)
+                            NavigationDestination(
+                              icon: const Icon(Icons.more_horiz),
+                              label: mobileOverflowLabel,
+                              tooltip: mobileOverflowTooltip,
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             )
           : null,

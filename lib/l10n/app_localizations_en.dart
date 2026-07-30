@@ -2666,4 +2666,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themePaletteMulberry => 'Mulberry';
+
+  @override
+  String get tipMoreDestinations =>
+      'Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.';
+
+  @override
+  String get tipVoice =>
+      'Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.';
+
+  @override
+  String get tipApprovals =>
+      'Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.';
+
+  @override
+  String get tipDismissTooltip => 'Dismiss tip';
 }

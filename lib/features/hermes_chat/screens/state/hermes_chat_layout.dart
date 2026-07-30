@@ -512,6 +512,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
+            if (canSendTurns)
+              WingTipCard(
+                tip: WingTip.voice,
+                text: AppLocalizations.of(context).tipVoice,
+              ),
             _buildComposer(context, channel, state, canSendTurns, isTurnActive),
           ],
         );

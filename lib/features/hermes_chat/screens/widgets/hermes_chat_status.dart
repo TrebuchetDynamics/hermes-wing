@@ -437,117 +437,133 @@ class _ApprovalBanner extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
-          child: Card(
-            key: const ValueKey('hermes-approval-banner'),
-            color: colorScheme.errorContainer,
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              WingTipCard(tip: WingTip.approvals, text: strings.tipApprovals),
+              Card(
+                key: const ValueKey('hermes-approval-banner'),
+                color: colorScheme.errorContainer,
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(Icons.security_outlined, color: colorScheme.error),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          pendingCount > 1
-                              ? strings.chatStatusPendingApprovalsLabel(
-                                  pendingCount,
-                                )
-                              : strings.chatStatusApprovalRequestedTitle,
-                          key: const ValueKey('hermes-approval-pending-count'),
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(_safeHermesUiPreview(request.prompt, maxLength: 240)),
-                  if (risk != null)
-                    Text(
-                      strings.chatStatusRiskLabel(
-                        _safeHermesUiPreview(risk, maxLength: 120),
-                      ),
-                    ),
-                  if (!canRespond) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      strings.chatStatusApprovalResponseUnavailableBody,
-                      key: const ValueKey(
-                        'hermes-approval-response-unavailable',
-                      ),
-                    ),
-                  ] else if (!hasApprovalId) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      strings.chatStatusApprovalIdMissingBody,
-                      key: const ValueKey('hermes-approval-id-missing'),
-                    ),
-                  ],
-                  if (responding) ...[
-                    const SizedBox(height: 8),
-                    const LinearProgressIndicator(
-                      key: ValueKey('hermes-approval-responding'),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(strings.chatStatusAnsweringApprovalLabel),
-                  ],
-                  const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    children: [
-                      OutlinedButton.icon(
-                        key: const ValueKey('hermes-approval-review'),
-                        onPressed: responding
-                            ? null
-                            : () => _showApprovalSheet(context),
-                        icon: const Icon(Icons.security_outlined),
-                        label: Text(strings.chatStatusReviewAction),
-                      ),
-                      if (!hasApprovalId)
-                        TextButton(
-                          key: const ValueKey(
-                            'hermes-approval-dismiss-malformed',
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.security_outlined,
+                            color: colorScheme.error,
                           ),
-                          onPressed: responding ? null : onDismissMalformed,
-                          child: Text(strings.chatStatusDismissAction),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              pendingCount > 1
+                                  ? strings.chatStatusPendingApprovalsLabel(
+                                      pendingCount,
+                                    )
+                                  : strings.chatStatusApprovalRequestedTitle,
+                              key: const ValueKey(
+                                'hermes-approval-pending-count',
+                              ),
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _safeHermesUiPreview(request.prompt, maxLength: 240),
+                      ),
+                      if (risk != null)
+                        Text(
+                          strings.chatStatusRiskLabel(
+                            _safeHermesUiPreview(risk, maxLength: 120),
+                          ),
                         ),
-                      TextButton(
-                        key: const ValueKey('hermes-approval-deny'),
-                        onPressed: responding || !canAnswer
-                            ? null
-                            : () => onDecide(HermesApprovalDecision.deny),
-                        child: Text(strings.chatStatusDenyAction),
-                      ),
-                      OutlinedButton(
-                        key: const ValueKey('hermes-approval-session'),
-                        onPressed: responding || !canAnswer
-                            ? null
-                            : () => unawaited(_confirmSessionAllow(context)),
-                        child: Text(strings.chatStatusAllowForSessionAction),
-                      ),
-                      OutlinedButton(
-                        key: const ValueKey('hermes-approval-always'),
-                        onPressed: responding || !canAnswer
-                            ? null
-                            : () => unawaited(_confirmAlwaysAllow(context)),
-                        child: Text(strings.chatStatusAlwaysAllowAction),
-                      ),
-                      FilledButton(
-                        key: const ValueKey('hermes-approval-once'),
-                        onPressed: responding || !canAnswer
-                            ? null
-                            : () => onDecide(HermesApprovalDecision.once),
-                        child: Text(strings.chatStatusApproveOnceAction),
+                      if (!canRespond) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          strings.chatStatusApprovalResponseUnavailableBody,
+                          key: const ValueKey(
+                            'hermes-approval-response-unavailable',
+                          ),
+                        ),
+                      ] else if (!hasApprovalId) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          strings.chatStatusApprovalIdMissingBody,
+                          key: const ValueKey('hermes-approval-id-missing'),
+                        ),
+                      ],
+                      if (responding) ...[
+                        const SizedBox(height: 8),
+                        const LinearProgressIndicator(
+                          key: ValueKey('hermes-approval-responding'),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(strings.chatStatusAnsweringApprovalLabel),
+                      ],
+                      const SizedBox(height: 8),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            key: const ValueKey('hermes-approval-review'),
+                            onPressed: responding
+                                ? null
+                                : () => _showApprovalSheet(context),
+                            icon: const Icon(Icons.security_outlined),
+                            label: Text(strings.chatStatusReviewAction),
+                          ),
+                          if (!hasApprovalId)
+                            TextButton(
+                              key: const ValueKey(
+                                'hermes-approval-dismiss-malformed',
+                              ),
+                              onPressed: responding ? null : onDismissMalformed,
+                              child: Text(strings.chatStatusDismissAction),
+                            ),
+                          TextButton(
+                            key: const ValueKey('hermes-approval-deny'),
+                            onPressed: responding || !canAnswer
+                                ? null
+                                : () => onDecide(HermesApprovalDecision.deny),
+                            child: Text(strings.chatStatusDenyAction),
+                          ),
+                          OutlinedButton(
+                            key: const ValueKey('hermes-approval-session'),
+                            onPressed: responding || !canAnswer
+                                ? null
+                                : () =>
+                                      unawaited(_confirmSessionAllow(context)),
+                            child: Text(
+                              strings.chatStatusAllowForSessionAction,
+                            ),
+                          ),
+                          OutlinedButton(
+                            key: const ValueKey('hermes-approval-always'),
+                            onPressed: responding || !canAnswer
+                                ? null
+                                : () => unawaited(_confirmAlwaysAllow(context)),
+                            child: Text(strings.chatStatusAlwaysAllowAction),
+                          ),
+                          FilledButton(
+                            key: const ValueKey('hermes-approval-once'),
+                            onPressed: responding || !canAnswer
+                                ? null
+                                : () => onDecide(HermesApprovalDecision.once),
+                            child: Text(strings.chatStatusApproveOnceAction),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

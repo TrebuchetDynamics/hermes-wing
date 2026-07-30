@@ -195,6 +195,62 @@ void main() {
     expect(find.textContaining('claude-sonnet'), findsNothing);
   });
 
+  testWidgets('probe results stay usable at 200% text scale', (tester) async {
+    final channel = FakeHermesChannel(
+      providers: const [_configuredProvider],
+      validateProviderResult: const HermesCredentialProbe(
+        ok: true,
+        detail: 'Credential accepted.',
+      ),
+      modelInventory: HermesModelInventory(
+        catalog: HermesModelCatalog.fromJson({
+          'providers': {
+            'openai': {
+              'models': [
+                {'id': 'gpt-5'},
+                {'id': 'gpt-5-mini'},
+              ],
+            },
+          },
+        }),
+        assignment: const HermesModelAssignment(
+          activeProvider: 'openai',
+          activeModel: 'gpt-5',
+          revision: 'rev-1',
+        ),
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: ProviderCredentialSheet(
+            channel: channel,
+            provider: _configuredProvider,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Validate'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('2 models available'), findsOneWidget);
+  });
+
   testWidgets('a failed probe shows the bounded error with latency', (
     tester,
   ) async {

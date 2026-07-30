@@ -77,6 +77,40 @@ void main() {
     );
   });
 
+  testWidgets('the voice tip stays usable at 200% text scale', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const HermesChatScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('wing-tip-voice')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('wing-tip-voice-dismiss')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('wing-tip-voice')), findsNothing);
+  });
+
   testWidgets('the voice tip stays hidden while disconnected', (tester) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);

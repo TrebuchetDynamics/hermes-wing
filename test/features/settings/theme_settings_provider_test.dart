@@ -43,6 +43,45 @@ void main() {
     expect(prefs.getString('wing.theme.palette'), 'forest');
   });
 
+  testWidgets('the appearance section stays usable at 200% text scale', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const SettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('settings-palette-forest')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('settings-palette-forest')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      (await SharedPreferences.getInstance()).getString('wing.theme.palette'),
+      'forest',
+    );
+  });
+
   test('defaults to the system mode and the Wing palette', () async {
     SharedPreferences.setMockInitialValues({});
     final container = ProviderContainer();

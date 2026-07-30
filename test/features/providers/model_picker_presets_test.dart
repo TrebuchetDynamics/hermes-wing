@@ -128,6 +128,48 @@ void main() {
     });
   });
 
+  testWidgets('preset chips stay usable at 200% text scale', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      _presetsKey: jsonEncode([
+        {
+          'name': 'Fast drafts',
+          'slot': 'main',
+          'provider': 'anthropic',
+          'model': 'claude-sonnet',
+        },
+      ]),
+    });
+    final inventory = _inventory();
+    final channel = FakeHermesChannel(
+      modelInventory: inventory,
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: ModelPickerSheet(channel: channel, inventory: inventory),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Fast drafts'), 200);
+    await tester.tap(find.text('Fast drafts'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a preset absent from this catalog is disabled but deletable', (
     tester,
   ) async {

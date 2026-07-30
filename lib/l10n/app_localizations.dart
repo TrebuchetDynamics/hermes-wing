@@ -2588,6 +2588,1774 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect'**
   String get enrollConnectAction;
+
+  /// No description provided for @closeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeAction;
+
+  /// No description provided for @routeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Route not found: {path}'**
+  String routeNotFound(String path);
+
+  /// No description provided for @agentsSelectGatewayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select gateway'**
+  String get agentsSelectGatewayHint;
+
+  /// No description provided for @agentsGatewayPickerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add and edit profiles on the selected gateway.'**
+  String get agentsGatewayPickerHelp;
+
+  /// No description provided for @gatewayContactsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Hermes gateways yet'**
+  String get gatewayContactsEmptyTitle;
+
+  /// No description provided for @gatewayContactsConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect gateway'**
+  String get gatewayContactsConnectAction;
+
+  /// No description provided for @chatQueuedCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Cancel {count} queued follow-up?} other{Cancel {count} queued follow-ups?}}'**
+  String chatQueuedCancelTitle(int count);
+
+  /// No description provided for @chatQueuedMore.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String chatQueuedMore(int count);
+
+  /// No description provided for @chatQueuedRedactedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued text is redacted and bounded in this confirmation.'**
+  String get chatQueuedRedactedNote;
+
+  /// No description provided for @chatQueuedKeepAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get chatQueuedKeepAction;
+
+  /// No description provided for @chatQueuedCancelAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel all'**
+  String get chatQueuedCancelAllAction;
+
+  /// No description provided for @chatConnectionRenameProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Hermes profile'**
+  String get chatConnectionRenameProfileTitle;
+
+  /// No description provided for @chatConnectionProfileLabelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile label'**
+  String get chatConnectionProfileLabelLabel;
+
+  /// No description provided for @chatConnectionProfileLabelHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to show the endpoint URL.'**
+  String get chatConnectionProfileLabelHelper;
+
+  /// No description provided for @chatConnectionRenameProfileErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rename Hermes profile: {error}'**
+  String chatConnectionRenameProfileErrorBody(String error);
+
+  /// No description provided for @chatConnectionCleartextWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send API key without TLS?'**
+  String get chatConnectionCleartextWarningTitle;
+
+  /// No description provided for @chatConnectionCleartextWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The endpoint {endpoint} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
+  String chatConnectionCleartextWarningBody(String endpoint);
+
+  /// No description provided for @chatConnectionContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get chatConnectionContinueAction;
+
+  /// No description provided for @chatConnectionDisconnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect from Hermes?'**
+  String get chatConnectionDisconnectTitle;
+
+  /// No description provided for @chatConnectionDisconnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect from {target} and remove this saved endpoint/API key from this device. Other saved Hermes gateways remain available.'**
+  String chatConnectionDisconnectBody(String target);
+
+  /// No description provided for @chatConnectionDiagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes diagnostics'**
+  String get chatConnectionDiagnosticsTitle;
+
+  /// No description provided for @chatConnectionRawLogStatusCopiedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw-log status copied'**
+  String get chatConnectionRawLogStatusCopiedBody;
+
+  /// No description provided for @chatConnectionCopyRawLogStatusAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy raw-log status'**
+  String get chatConnectionCopyRawLogStatusAction;
+
+  /// No description provided for @chatConnectionDiagnosticsCopiedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes diagnostics copied'**
+  String get chatConnectionDiagnosticsCopiedBody;
+
+  /// No description provided for @chatConnectionCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatConnectionCopyAction;
+
+  /// No description provided for @chatConnectionDisconnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get chatConnectionDisconnectAction;
+
+  /// No description provided for @chatSessionActionCreateFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create session: {error}'**
+  String chatSessionActionCreateFailedBody(String error);
+
+  /// No description provided for @chatSessionActionOpenFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open session: {error}'**
+  String chatSessionActionOpenFailedBody(String error);
+
+  /// No description provided for @chatSessionActionRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename session'**
+  String get chatSessionActionRenameTitle;
+
+  /// No description provided for @chatSessionActionTitleFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session title'**
+  String get chatSessionActionTitleFieldLabel;
+
+  /// No description provided for @chatSessionActionRenameFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rename session: {error}'**
+  String chatSessionActionRenameFailedBody(String error);
+
+  /// No description provided for @chatSessionActionBranchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch this session?'**
+  String get chatSessionActionBranchTitle;
+
+  /// No description provided for @chatSessionActionBranchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new session with the conversation history from “{title}”? The original remains in Hermes and the new branch becomes active.'**
+  String chatSessionActionBranchBody(String title);
+
+  /// No description provided for @chatSessionActionBranchConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create branch'**
+  String get chatSessionActionBranchConfirmAction;
+
+  /// No description provided for @chatSessionActionBranchCreatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Created a new session branch.'**
+  String get chatSessionActionBranchCreatedBody;
+
+  /// No description provided for @chatSessionActionBranchFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create session branch: {error}'**
+  String chatSessionActionBranchFailedBody(String error);
+
+  /// No description provided for @chatSessionActionDeleteManyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Delete {count} session?} other{Delete {count} sessions?}}'**
+  String chatSessionActionDeleteManyTitle(int count);
+
+  /// No description provided for @chatSessionActionDeleteManyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the selected sessions from Hermes? This cannot be undone.'**
+  String get chatSessionActionDeleteManyBody;
+
+  /// No description provided for @chatSessionActionDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get chatSessionActionDeleteAction;
+
+  /// No description provided for @chatSessionActionDeletedCountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Deleted {count} session.} other{Deleted {count} sessions.}}'**
+  String chatSessionActionDeletedCountBody(int count);
+
+  /// No description provided for @chatSessionActionDeletedPartialBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted} of {count} sessions. {failed} could not be deleted.'**
+  String chatSessionActionDeletedPartialBody(
+    int deleted,
+    int count,
+    int failed,
+  );
+
+  /// No description provided for @chatSessionActionDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete session?'**
+  String get chatSessionActionDeleteTitle;
+
+  /// No description provided for @chatSessionActionDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\" from Hermes?'**
+  String chatSessionActionDeleteBody(String title);
+
+  /// No description provided for @chatSessionActionDeleteFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete session: {error}'**
+  String chatSessionActionDeleteFailedBody(String error);
+
+  /// No description provided for @chatTranscriptCopyChatTextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy entire chat (text)'**
+  String get chatTranscriptCopyChatTextAction;
+
+  /// No description provided for @chatTranscriptCopyChatMarkdownAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy entire chat (Markdown)'**
+  String get chatTranscriptCopyChatMarkdownAction;
+
+  /// No description provided for @chatTranscriptReplyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get chatTranscriptReplyAction;
+
+  /// No description provided for @chatTranscriptCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatTranscriptCopyAction;
+
+  /// No description provided for @chatTranscriptMessageCopiedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get chatTranscriptMessageCopiedLabel;
+
+  /// No description provided for @chatTranscriptToolStatusNeedsAttentionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get chatTranscriptToolStatusNeedsAttentionLabel;
+
+  /// No description provided for @chatTranscriptToolStatusRunningLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get chatTranscriptToolStatusRunningLabel;
+
+  /// No description provided for @chatTranscriptToolStatusCompletedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get chatTranscriptToolStatusCompletedLabel;
+
+  /// No description provided for @chatTranscriptToolActivitySingleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool activity: {name}'**
+  String chatTranscriptToolActivitySingleTitle(String name);
+
+  /// No description provided for @chatTranscriptToolActivityCountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool activity: {count} calls'**
+  String chatTranscriptToolActivityCountTitle(int count);
+
+  /// No description provided for @chatTranscriptActionBlockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Action blocked'**
+  String get chatTranscriptActionBlockedTitle;
+
+  /// No description provided for @chatTranscriptHideDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide details'**
+  String get chatTranscriptHideDetailsAction;
+
+  /// No description provided for @chatTranscriptDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get chatTranscriptDetailsAction;
+
+  /// No description provided for @chatErrorAuthRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes API rejected the saved API key.'**
+  String get chatErrorAuthRejectedTitle;
+
+  /// No description provided for @chatErrorAuthRejectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect with a fresh Hermes API key, then retry this message.'**
+  String get chatErrorAuthRejectedBody;
+
+  /// No description provided for @chatErrorApprovalResponseFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes could not record the approval decision.'**
+  String get chatErrorApprovalResponseFailedTitle;
+
+  /// No description provided for @chatErrorApprovalResponseFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the request, check that the run is still active, then try the decision again.'**
+  String get chatErrorApprovalResponseFailedBody;
+
+  /// No description provided for @chatErrorMalformedApprovalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes sent an incomplete approval request.'**
+  String get chatErrorMalformedApprovalTitle;
+
+  /// No description provided for @chatErrorMalformedApprovalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry when Hermes can provide an approval id for this run.'**
+  String get chatErrorMalformedApprovalBody;
+
+  /// No description provided for @chatErrorUnsupportedTransportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes endpoint does not support chat turns.'**
+  String get chatErrorUnsupportedTransportTitle;
+
+  /// No description provided for @chatErrorUnsupportedTransportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a Hermes API server that advertises session chat streaming or run events.'**
+  String get chatErrorUnsupportedTransportBody;
+
+  /// No description provided for @chatErrorRunStillActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes run is still active.'**
+  String get chatErrorRunStillActiveTitle;
+
+  /// No description provided for @chatErrorRunStillActiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect to reconcile this run before sending it again.'**
+  String get chatErrorRunStillActiveBody;
+
+  /// No description provided for @chatErrorRunCancelledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes run was cancelled.'**
+  String get chatErrorRunCancelledTitle;
+
+  /// No description provided for @chatErrorRunCancelledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a new turn when you are ready.'**
+  String get chatErrorRunCancelledBody;
+
+  /// No description provided for @chatErrorRunFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes run failed.'**
+  String get chatErrorRunFailedTitle;
+
+  /// No description provided for @chatErrorRunFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Hermes, then retry this message when the run is recoverable.'**
+  String get chatErrorRunFailedBody;
+
+  /// No description provided for @chatErrorStreamDroppedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes stream dropped.'**
+  String get chatErrorStreamDroppedTitle;
+
+  /// No description provided for @chatErrorStreamDroppedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the endpoint/network and send again when Hermes is reachable.'**
+  String get chatErrorStreamDroppedBody;
+
+  /// No description provided for @chatErrorGenericTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes could not finish the turn.'**
+  String get chatErrorGenericTitle;
+
+  /// No description provided for @chatErrorGenericBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry when Hermes is ready.'**
+  String get chatErrorGenericBody;
+
+  /// No description provided for @chatErrorDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get chatErrorDetailsAction;
+
+  /// No description provided for @chatErrorUpdateKeyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update key'**
+  String get chatErrorUpdateKeyAction;
+
+  /// No description provided for @chatErrorReconnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get chatErrorReconnectAction;
+
+  /// No description provided for @chatErrorRetryLastMessageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry last message'**
+  String get chatErrorRetryLastMessageAction;
+
+  /// No description provided for @chatErrorRedactedDetailsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Redacted error details'**
+  String get chatErrorRedactedDetailsLabel;
+
+  /// No description provided for @chatErrorRedactionNoteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Secrets, bearer tokens, API keys, cookies, and copied endpoint credentials are redacted before display.'**
+  String get chatErrorRedactionNoteBody;
+
+  /// No description provided for @chatErrorCopiedRedactedDetailsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied redacted Hermes error details.'**
+  String get chatErrorCopiedRedactedDetailsBody;
+
+  /// No description provided for @chatErrorCopyRedactedDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy redacted details'**
+  String get chatErrorCopyRedactedDetailsAction;
+
+  /// No description provided for @chatErrorSavedProfilesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Hermes profiles'**
+  String get chatErrorSavedProfilesLabel;
+
+  /// No description provided for @chatErrorRenameProfileTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Hermes profile'**
+  String get chatErrorRenameProfileTooltip;
+
+  /// No description provided for @chatErrorRemoveProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved Hermes profile?'**
+  String get chatErrorRemoveProfileTitle;
+
+  /// No description provided for @chatErrorRemoveProfileBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {label} ({baseUrl}) from this device. Any stored API key for this profile is removed from secure storage.'**
+  String chatErrorRemoveProfileBody(String label, String baseUrl);
+
+  /// No description provided for @chatErrorRemoveProfileAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get chatErrorRemoveProfileAction;
+
+  /// No description provided for @chatErrorConnectAuthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes API rejected the API key.'**
+  String get chatErrorConnectAuthTitle;
+
+  /// No description provided for @chatErrorConnectAuthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the endpoint API key in Hermes and try again.'**
+  String get chatErrorConnectAuthBody;
+
+  /// No description provided for @chatErrorConnectUnreachableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes endpoint is unreachable.'**
+  String get chatErrorConnectUnreachableTitle;
+
+  /// No description provided for @chatErrorConnectUnreachableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the base URL, network, VPN, and that Hermes API server is running.'**
+  String get chatErrorConnectUnreachableBody;
+
+  /// No description provided for @chatErrorConnectGenericTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to Hermes.'**
+  String get chatErrorConnectGenericTitle;
+
+  /// No description provided for @chatErrorConnectGenericBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the endpoint and try again.'**
+  String get chatErrorConnectGenericBody;
+
+  /// No description provided for @chatLayoutConnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to your Hermes VPS'**
+  String get chatLayoutConnectTitle;
+
+  /// No description provided for @chatLayoutConnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.'**
+  String get chatLayoutConnectBody;
+
+  /// No description provided for @chatLayoutVpsConnectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'VPS connection'**
+  String get chatLayoutVpsConnectionTitle;
+
+  /// No description provided for @chatLayoutVpsConnectionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.'**
+  String get chatLayoutVpsConnectionBody;
+
+  /// No description provided for @chatLayoutScanQrAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan wing-cli QR code'**
+  String get chatLayoutScanQrAction;
+
+  /// No description provided for @chatLayoutServerUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes server URL'**
+  String get chatLayoutServerUrlLabel;
+
+  /// No description provided for @chatLayoutServerUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://hermes.example.com'**
+  String get chatLayoutServerUrlHint;
+
+  /// No description provided for @chatLayoutServerUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the HTTPS or private-network URL without /v1.'**
+  String get chatLayoutServerUrlHelper;
+
+  /// No description provided for @chatLayoutAccessTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get chatLayoutAccessTokenLabel;
+
+  /// No description provided for @chatLayoutAccessTokenHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Required for internet-facing servers; optional only on trusted private networks.'**
+  String get chatLayoutAccessTokenHelper;
+
+  /// No description provided for @chatLayoutShowAccessTokenTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show access token'**
+  String get chatLayoutShowAccessTokenTooltip;
+
+  /// No description provided for @chatLayoutHideAccessTokenTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide access token'**
+  String get chatLayoutHideAccessTokenTooltip;
+
+  /// No description provided for @chatLayoutVpsNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'VPS name (optional)'**
+  String get chatLayoutVpsNameLabel;
+
+  /// No description provided for @chatLayoutVpsNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'My Hermes VPS'**
+  String get chatLayoutVpsNameHint;
+
+  /// No description provided for @chatLayoutVpsNameHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'A private label shown only on this device.'**
+  String get chatLayoutVpsNameHelper;
+
+  /// No description provided for @chatLayoutTokenStorageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your token is stored in secure device storage and is never shown after connecting.'**
+  String get chatLayoutTokenStorageBody;
+
+  /// No description provided for @chatLayoutConnectingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get chatLayoutConnectingAction;
+
+  /// No description provided for @chatLayoutConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to VPS'**
+  String get chatLayoutConnectAction;
+
+  /// No description provided for @chatLayoutDevShortcutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to a local Agent?'**
+  String get chatLayoutDevShortcutsTitle;
+
+  /// No description provided for @chatLayoutDevShortcutsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a development shortcut instead of a VPS address.'**
+  String get chatLayoutDevShortcutsBody;
+
+  /// No description provided for @chatLayoutPresetThisDeviceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get chatLayoutPresetThisDeviceLabel;
+
+  /// No description provided for @chatLayoutPresetAndroidEmulatorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Android emulator'**
+  String get chatLayoutPresetAndroidEmulatorLabel;
+
+  /// No description provided for @chatLayoutPresetClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear server details'**
+  String get chatLayoutPresetClearAction;
+
+  /// No description provided for @chatLayoutModelFallbackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes model'**
+  String get chatLayoutModelFallbackLabel;
+
+  /// No description provided for @chatLayoutTransportUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes did not advertise a supported chat transport for this endpoint.'**
+  String get chatLayoutTransportUnavailableBody;
+
+  /// No description provided for @chatLayoutOpenSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open session'**
+  String get chatLayoutOpenSessionAction;
+
+  /// No description provided for @chatLayoutFollowUpsCopiedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied redacted Hermes queued follow-ups.'**
+  String get chatLayoutFollowUpsCopiedBody;
+
+  /// No description provided for @chatLayoutCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatLayoutCopyAction;
+
+  /// No description provided for @chatLayoutSendNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Send now'**
+  String get chatLayoutSendNowAction;
+
+  /// No description provided for @chatLayoutCancelAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel all'**
+  String get chatLayoutCancelAllAction;
+
+  /// No description provided for @chatLayoutNoSessionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No Hermes sessions. Create a new session to start chatting.'**
+  String get chatLayoutNoSessionsBody;
+
+  /// No description provided for @chatLayoutNoSessionsNoCreateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No Hermes sessions are available, and this endpoint did not advertise session creation.'**
+  String get chatLayoutNoSessionsNoCreateBody;
+
+  /// No description provided for @chatLayoutVoiceLoopOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice loop on'**
+  String get chatLayoutVoiceLoopOnLabel;
+
+  /// No description provided for @chatLayoutVoiceReadyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice ready'**
+  String get chatLayoutVoiceReadyLabel;
+
+  /// No description provided for @chatLayoutComposerSpeakingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking reply…'**
+  String get chatLayoutComposerSpeakingHint;
+
+  /// No description provided for @chatLayoutComposerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Hermes…'**
+  String get chatLayoutComposerHint;
+
+  /// No description provided for @chatLayoutComposerUnavailableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat unavailable'**
+  String get chatLayoutComposerUnavailableHint;
+
+  /// No description provided for @chatLayoutComposerTransportUnavailableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat transport unavailable'**
+  String get chatLayoutComposerTransportUnavailableHint;
+
+  /// No description provided for @chatLayoutChatMenuTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat menu'**
+  String get chatLayoutChatMenuTooltip;
+
+  /// No description provided for @chatLayoutSessionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get chatLayoutSessionsLabel;
+
+  /// No description provided for @chatLayoutHandsFreeVoiceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hands-free voice'**
+  String get chatLayoutHandsFreeVoiceLabel;
+
+  /// No description provided for @chatLayoutEmojiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji'**
+  String get chatLayoutEmojiTitle;
+
+  /// No description provided for @chatLayoutInsertEmojiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert {value}'**
+  String chatLayoutInsertEmojiLabel(String value);
+
+  /// No description provided for @chatLayoutListeningLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get chatLayoutListeningLabel;
+
+  /// No description provided for @chatLayoutSpeakingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get chatLayoutSpeakingLabel;
+
+  /// No description provided for @chatLayoutHandsFreeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hands-free'**
+  String get chatLayoutHandsFreeLabel;
+
+  /// No description provided for @chatLayoutContinuousVoiceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous voice — device STT to Hermes text'**
+  String get chatLayoutContinuousVoiceLabel;
+
+  /// No description provided for @chatLayoutAttachedFileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached file {name}, ready to send'**
+  String chatLayoutAttachedFileLabel(String name);
+
+  /// No description provided for @chatLayoutReadyToSendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to send'**
+  String get chatLayoutReadyToSendLabel;
+
+  /// No description provided for @chatLayoutRemoveAttachmentTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove attachment'**
+  String get chatLayoutRemoveAttachmentTooltip;
+
+  /// No description provided for @chatLayoutAttachFileTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach image or text file'**
+  String get chatLayoutAttachFileTooltip;
+
+  /// No description provided for @chatLayoutStopSpeakingTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop speaking'**
+  String get chatLayoutStopSpeakingTooltip;
+
+  /// No description provided for @chatLayoutSpeakAndSendTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak and send'**
+  String get chatLayoutSpeakAndSendTooltip;
+
+  /// No description provided for @chatLayoutSendTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatLayoutSendTooltip;
+
+  /// No description provided for @chatShellVoicePausedBackgroundBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous voice paused while Hermes Wing is not in the foreground.'**
+  String get chatShellVoicePausedBackgroundBody;
+
+  /// No description provided for @chatShellVoicePausedSwitchingAgentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous voice paused while switching agents.'**
+  String get chatShellVoicePausedSwitchingAgentsBody;
+
+  /// No description provided for @chatShellApprovalAnswerFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not answer Hermes approval: {message}'**
+  String chatShellApprovalAnswerFailedBody(String message);
+
+  /// No description provided for @chatShellSwitchChatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch chats?'**
+  String get chatShellSwitchChatsTitle;
+
+  /// No description provided for @chatShellSwitchChatsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This gateway has active work or an approval. Switching closes its live streams; Hermes remains authoritative and will reconcile them when reopened.'**
+  String get chatShellSwitchChatsBody;
+
+  /// No description provided for @chatShellStayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get chatShellStayAction;
+
+  /// No description provided for @chatShellSwitchAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get chatShellSwitchAction;
+
+  /// No description provided for @chatShellContactClosedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed Hermes contact.'**
+  String get chatShellContactClosedBody;
+
+  /// No description provided for @chatShellContactSwitchedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched Hermes contact.'**
+  String get chatShellContactSwitchedBody;
+
+  /// No description provided for @chatShellAllChatsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'All chats'**
+  String get chatShellAllChatsTooltip;
+
+  /// No description provided for @chatShellHermesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes'**
+  String get chatShellHermesTitle;
+
+  /// No description provided for @chatShellConnectAnotherGatewayTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect another gateway'**
+  String get chatShellConnectAnotherGatewayTooltip;
+
+  /// No description provided for @chatShellSessionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get chatShellSessionsLabel;
+
+  /// No description provided for @chatShellNewSessionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New session'**
+  String get chatShellNewSessionLabel;
+
+  /// No description provided for @chatShellMoreActionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get chatShellMoreActionsTooltip;
+
+  /// No description provided for @chatShellDiagnosticsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get chatShellDiagnosticsLabel;
+
+  /// No description provided for @chatShellDisconnectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get chatShellDisconnectLabel;
+
+  /// No description provided for @chatShellTranscriptSessionMetadataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session metadata'**
+  String get chatShellTranscriptSessionMetadataTitle;
+
+  /// No description provided for @chatShellTranscriptSessionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session: {title}'**
+  String chatShellTranscriptSessionLabel(String title);
+
+  /// No description provided for @chatShellTranscriptSessionIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ID: {id}'**
+  String chatShellTranscriptSessionIdLabel(String id);
+
+  /// No description provided for @chatShellTranscriptMessageCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages: {count}'**
+  String chatShellTranscriptMessageCountLabel(int count);
+
+  /// No description provided for @chatStatusUnavailableInventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable Hermes inventory'**
+  String get chatStatusUnavailableInventoryTitle;
+
+  /// No description provided for @chatStatusDetailedHealthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed health'**
+  String get chatStatusDetailedHealthLabel;
+
+  /// No description provided for @chatStatusModelsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Models'**
+  String get chatStatusModelsLabel;
+
+  /// No description provided for @chatStatusSkillsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get chatStatusSkillsLabel;
+
+  /// No description provided for @chatStatusToolsetsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolsets'**
+  String get chatStatusToolsetsLabel;
+
+  /// No description provided for @chatStatusJobsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs'**
+  String get chatStatusJobsLabel;
+
+  /// No description provided for @chatStatusJobsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes jobs'**
+  String get chatStatusJobsTitle;
+
+  /// No description provided for @chatStatusJobsReadOnlyAdminBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only inventory. Hermes advertises jobs admin, but Hermes Wing has not enabled mobile create/edit/delete scheduling.'**
+  String get chatStatusJobsReadOnlyAdminBody;
+
+  /// No description provided for @chatStatusJobsReadOnlyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only inventory. Mobile create/edit/delete scheduling is not available.'**
+  String get chatStatusJobsReadOnlyBody;
+
+  /// No description provided for @chatStatusCopyJobDetailsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy job details'**
+  String get chatStatusCopyJobDetailsTooltip;
+
+  /// No description provided for @chatStatusCopiedJobDetailsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied redacted Hermes job details.'**
+  String get chatStatusCopiedJobDetailsBody;
+
+  /// No description provided for @chatStatusJobEnabledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get chatStatusJobEnabledLabel;
+
+  /// No description provided for @chatStatusJobDisabledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get chatStatusJobDisabledLabel;
+
+  /// No description provided for @chatStatusJobStateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'State: {value}'**
+  String chatStatusJobStateLabel(String value);
+
+  /// No description provided for @chatStatusJobScheduleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule: {value}'**
+  String chatStatusJobScheduleLabel(String value);
+
+  /// No description provided for @chatStatusJobNextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {value}'**
+  String chatStatusJobNextLabel(String value);
+
+  /// No description provided for @chatStatusJobLastLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last: {value}'**
+  String chatStatusJobLastLabel(String value);
+
+  /// No description provided for @chatStatusJobLastErrorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last error: {value}'**
+  String chatStatusJobLastErrorLabel(String value);
+
+  /// No description provided for @chatStatusSurfaceReadinessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes surface readiness'**
+  String get chatStatusSurfaceReadinessTitle;
+
+  /// No description provided for @chatStatusSurfaceReadinessNoteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No mobile config, memory, schedule, or messaging-gateway mutation controls are enabled.'**
+  String get chatStatusSurfaceReadinessNoteBody;
+
+  /// No description provided for @chatStatusCopiedSurfaceReadinessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied Hermes surface readiness summary.'**
+  String get chatStatusCopiedSurfaceReadinessBody;
+
+  /// No description provided for @chatStatusCopySummaryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy summary'**
+  String get chatStatusCopySummaryAction;
+
+  /// No description provided for @chatStatusRunsSseEnabledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs SSE enabled'**
+  String get chatStatusRunsSseEnabledLabel;
+
+  /// No description provided for @chatStatusSessionChatStreamingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session chat streaming enabled'**
+  String get chatStatusSessionChatStreamingLabel;
+
+  /// No description provided for @chatStatusVoiceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice: device STT → Hermes'**
+  String get chatStatusVoiceLabel;
+
+  /// No description provided for @chatStatusVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version: {version}'**
+  String chatStatusVersionLabel(String version);
+
+  /// No description provided for @chatStatusGatewayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway: {state}'**
+  String chatStatusGatewayLabel(String state);
+
+  /// No description provided for @chatStatusActiveAgentsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active agents: {count}'**
+  String chatStatusActiveAgentsLabel(int count);
+
+  /// No description provided for @chatStatusModelsChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Models: {names}'**
+  String chatStatusModelsChipLabel(String names);
+
+  /// No description provided for @chatStatusModelsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes models'**
+  String get chatStatusModelsTitle;
+
+  /// No description provided for @chatStatusSkillsChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills: {count}'**
+  String chatStatusSkillsChipLabel(int count);
+
+  /// No description provided for @chatStatusSkillsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes skills'**
+  String get chatStatusSkillsTitle;
+
+  /// No description provided for @chatStatusToolsetsChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolsets enabled: {count}'**
+  String chatStatusToolsetsChipLabel(int count);
+
+  /// No description provided for @chatStatusToolsetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes toolsets'**
+  String get chatStatusToolsetsTitle;
+
+  /// No description provided for @chatStatusJobsChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs: {count}'**
+  String chatStatusJobsChipLabel(int count);
+
+  /// No description provided for @chatStatusInventoryUnavailableChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory unavailable: {count}'**
+  String chatStatusInventoryUnavailableChipLabel(int count);
+
+  /// No description provided for @chatStatusSurfacesChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Surfaces: {deferredCount} deferred · {blockedCount} blocked'**
+  String chatStatusSurfacesChipLabel(int deferredCount, int blockedCount);
+
+  /// No description provided for @chatStatusAgentHeaderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent {model}'**
+  String chatStatusAgentHeaderLabel(String model);
+
+  /// No description provided for @chatStatusPendingApprovalsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{{count} pending approvals}}'**
+  String chatStatusPendingApprovalsLabel(int count);
+
+  /// No description provided for @chatStatusApprovalRequestedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes approval requested'**
+  String get chatStatusApprovalRequestedTitle;
+
+  /// No description provided for @chatStatusRiskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk: {risk}'**
+  String chatStatusRiskLabel(String risk);
+
+  /// No description provided for @chatStatusApprovalResponseUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes did not advertise approval responses for this run.'**
+  String get chatStatusApprovalResponseUnavailableBody;
+
+  /// No description provided for @chatStatusApprovalIdMissingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes sent this approval without an approval id, so it cannot be answered.'**
+  String get chatStatusApprovalIdMissingBody;
+
+  /// No description provided for @chatStatusAnsweringApprovalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Answering Hermes approval…'**
+  String get chatStatusAnsweringApprovalLabel;
+
+  /// No description provided for @chatStatusReviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get chatStatusReviewAction;
+
+  /// No description provided for @chatStatusDismissAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get chatStatusDismissAction;
+
+  /// No description provided for @chatStatusDenyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny'**
+  String get chatStatusDenyAction;
+
+  /// No description provided for @chatStatusAllowForSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow for session'**
+  String get chatStatusAllowForSessionAction;
+
+  /// No description provided for @chatStatusAlwaysAllowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Always allow'**
+  String get chatStatusAlwaysAllowAction;
+
+  /// No description provided for @chatStatusApproveOnceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve once'**
+  String get chatStatusApproveOnceAction;
+
+  /// No description provided for @chatStatusAllowForSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow this for the session?'**
+  String get chatStatusAllowForSessionTitle;
+
+  /// No description provided for @chatStatusAllowForSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This may approve matching requests for the current Hermes session.'**
+  String get chatStatusAllowForSessionBody;
+
+  /// No description provided for @chatStatusAlwaysAllowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Always allow this Hermes approval?'**
+  String get chatStatusAlwaysAllowTitle;
+
+  /// No description provided for @chatStatusAlwaysAllowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This may approve matching future requests without asking again.'**
+  String get chatStatusAlwaysAllowBody;
+
+  /// No description provided for @chatStatusReviewApprovalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Hermes approval'**
+  String get chatStatusReviewApprovalTitle;
+
+  /// No description provided for @chatStatusReviewingPendingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewing 1 of {count} pending approvals'**
+  String chatStatusReviewingPendingLabel(int count);
+
+  /// No description provided for @chatStatusPromptTruncatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompt preview truncated for mobile review.'**
+  String get chatStatusPromptTruncatedBody;
+
+  /// No description provided for @chatStatusRiskTruncatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk preview truncated for mobile review.'**
+  String get chatStatusRiskTruncatedBody;
+
+  /// No description provided for @chatStatusToolCallLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool call: {value}'**
+  String chatStatusToolCallLabel(String value);
+
+  /// No description provided for @chatStatusDecisionsDisabledEndpointBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision buttons are disabled because Hermes did not advertise /v1/runs/{run_id}/approval.'**
+  String chatStatusDecisionsDisabledEndpointBody(String run_id);
+
+  /// No description provided for @chatStatusDecisionsDisabledIdBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision buttons are disabled because Hermes did not include an approval id.'**
+  String get chatStatusDecisionsDisabledIdBody;
+
+  /// No description provided for @chatStatusCopiedApprovalDetailsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied redacted Hermes approval details.'**
+  String get chatStatusCopiedApprovalDetailsBody;
+
+  /// No description provided for @chatStatusCopyDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy details'**
+  String get chatStatusCopyDetailsAction;
+
+  /// No description provided for @chatRailSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get chatRailSessionsTitle;
+
+  /// No description provided for @chatRailHermesSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes sessions'**
+  String get chatRailHermesSessionsTitle;
+
+  /// No description provided for @chatRailNewSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get chatRailNewSessionAction;
+
+  /// No description provided for @chatRailSelectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get chatRailSelectAction;
+
+  /// No description provided for @chatRailSelectAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get chatRailSelectAllAction;
+
+  /// No description provided for @chatRailSelectedCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String chatRailSelectedCountLabel(int count);
+
+  /// No description provided for @chatRailDeleteCountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count}'**
+  String chatRailDeleteCountAction(int count);
+
+  /// No description provided for @chatRailSearchSessionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search sessions'**
+  String get chatRailSearchSessionsLabel;
+
+  /// No description provided for @chatRailClearSearchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get chatRailClearSearchTooltip;
+
+  /// No description provided for @chatRailSessionCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 session} other{{count} sessions}}'**
+  String chatRailSessionCountLabel(int count);
+
+  /// No description provided for @chatRailShowingSessionCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{Showing {visible} of {total} session} other{Showing {visible} of {total} sessions}}'**
+  String chatRailShowingSessionCountLabel(int total, int visible);
+
+  /// No description provided for @chatRailNoSessionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet. Create one to start a Hermes chat.'**
+  String get chatRailNoSessionsBody;
+
+  /// No description provided for @chatRailNoSessionsMatchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions match “{query}”.'**
+  String chatRailNoSessionsMatchBody(String query);
+
+  /// No description provided for @chatRailNoHermesSessionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No Hermes sessions yet.'**
+  String get chatRailNoHermesSessionsBody;
+
+  /// No description provided for @chatRailNoHermesSessionsMatchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No Hermes sessions match “{query}”.'**
+  String chatRailNoHermesSessionsMatchBody(String query);
+
+  /// No description provided for @chatRailActiveHermesSessionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Hermes session'**
+  String get chatRailActiveHermesSessionLabel;
+
+  /// No description provided for @chatRailActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get chatRailActiveLabel;
+
+  /// No description provided for @chatRailStatusStreamingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming'**
+  String get chatRailStatusStreamingLabel;
+
+  /// No description provided for @chatRailStatusReadyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get chatRailStatusReadyLabel;
+
+  /// No description provided for @chatRailStatusTransportUnavailableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport unavailable'**
+  String get chatRailStatusTransportUnavailableLabel;
+
+  /// No description provided for @chatRailMessageCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 message} other{{count} messages}}'**
+  String chatRailMessageCountLabel(int count);
+
+  /// No description provided for @chatRailTileMessageCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} messages'**
+  String chatRailTileMessageCountLabel(int count);
+
+  /// No description provided for @chatRailEmptyStateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How can Hermes help today?'**
+  String get chatRailEmptyStateTitle;
+
+  /// No description provided for @chatRailEmptyStateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.'**
+  String get chatRailEmptyStateBody;
+
+  /// No description provided for @chatRailPromptSummarizeHelpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize what you can help me do.'**
+  String get chatRailPromptSummarizeHelpLabel;
+
+  /// No description provided for @chatRailPromptListSkillsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'List my available Hermes skills.'**
+  String get chatRailPromptListSkillsLabel;
+
+  /// No description provided for @chatRailPromptPlanTaskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan my next coding task.'**
+  String get chatRailPromptPlanTaskLabel;
+
+  /// No description provided for @chatRailPromptExplainSessionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain the current session state.'**
+  String get chatRailPromptExplainSessionLabel;
+
+  /// No description provided for @chatRailStopAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get chatRailStopAction;
+
+  /// No description provided for @chatRailForkedFromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Forked from {sessionId}'**
+  String chatRailForkedFromLabel(String sessionId);
+
+  /// No description provided for @chatRailLastActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last active {timestamp}'**
+  String chatRailLastActiveLabel(String timestamp);
+
+  /// No description provided for @chatRailSessionActionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Session actions'**
+  String get chatRailSessionActionsTooltip;
+
+  /// No description provided for @chatRailViewDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get chatRailViewDetailsAction;
+
+  /// No description provided for @chatRailCopyDetailsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy details'**
+  String get chatRailCopyDetailsAction;
+
+  /// No description provided for @chatRailRenameAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get chatRailRenameAction;
+
+  /// No description provided for @chatRailBranchAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get chatRailBranchAction;
+
+  /// No description provided for @chatRailDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get chatRailDeleteAction;
+
+  /// No description provided for @chatRailCopiedSessionDetailsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied redacted Hermes session details.'**
+  String get chatRailCopiedSessionDetailsBody;
+
+  /// No description provided for @chatRailSessionDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session details'**
+  String get chatRailSessionDetailsTitle;
+
+  /// No description provided for @chatRailSessionDetailsHeaderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session'**
+  String get chatRailSessionDetailsHeaderLabel;
+
+  /// No description provided for @chatRailDetailTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title: {value}'**
+  String chatRailDetailTitleLabel(String value);
+
+  /// No description provided for @chatRailDetailIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ID: {value}'**
+  String chatRailDetailIdLabel(String value);
+
+  /// No description provided for @chatRailDetailActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active: {value}'**
+  String chatRailDetailActiveLabel(String value);
+
+  /// No description provided for @chatRailDetailMessagesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages: {count}'**
+  String chatRailDetailMessagesLabel(int count);
+
+  /// No description provided for @chatRailDetailToolCallsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool calls: {count}'**
+  String chatRailDetailToolCallsLabel(int count);
+
+  /// No description provided for @chatRailDetailApiCallsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'API calls: {count}'**
+  String chatRailDetailApiCallsLabel(int count);
+
+  /// No description provided for @chatRailDetailInputTokensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Input tokens: {count}'**
+  String chatRailDetailInputTokensLabel(int count);
+
+  /// No description provided for @chatRailDetailOutputTokensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Output tokens: {count}'**
+  String chatRailDetailOutputTokensLabel(int count);
+
+  /// No description provided for @chatRailDetailCacheReadTokensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache read tokens: {count}'**
+  String chatRailDetailCacheReadTokensLabel(int count);
+
+  /// No description provided for @chatRailDetailCacheWriteTokensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache write tokens: {count}'**
+  String chatRailDetailCacheWriteTokensLabel(int count);
+
+  /// No description provided for @chatRailDetailReasoningTokensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reasoning tokens: {count}'**
+  String chatRailDetailReasoningTokensLabel(int count);
+
+  /// No description provided for @chatRailDetailActualCostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual cost (USD): {cost}'**
+  String chatRailDetailActualCostLabel(String cost);
+
+  /// No description provided for @chatRailDetailEstimatedCostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated cost (USD): {cost}'**
+  String chatRailDetailEstimatedCostLabel(String cost);
+
+  /// No description provided for @chatRailDetailStartedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Started: {value}'**
+  String chatRailDetailStartedLabel(String value);
+
+  /// No description provided for @chatRailDetailEndedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended: {value}'**
+  String chatRailDetailEndedLabel(String value);
+
+  /// No description provided for @chatRailDetailEndReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'End reason: {value}'**
+  String chatRailDetailEndReasonLabel(String value);
+
+  /// No description provided for @chatRailDetailSystemPromptSnapshotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'System prompt snapshot: {value}'**
+  String chatRailDetailSystemPromptSnapshotLabel(String value);
+
+  /// No description provided for @chatRailDetailModelConfigSnapshotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model config snapshot: {value}'**
+  String chatRailDetailModelConfigSnapshotLabel(String value);
+
+  /// No description provided for @chatRailDetailYesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'yes'**
+  String get chatRailDetailYesLabel;
+
+  /// No description provided for @chatRailDetailNoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'no'**
+  String get chatRailDetailNoLabel;
+
+  /// No description provided for @chatRailDetailForkedFromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Forked from: {value}'**
+  String chatRailDetailForkedFromLabel(String value);
+
+  /// No description provided for @chatRailDetailLastActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last active: {value}'**
+  String chatRailDetailLastActiveLabel(String value);
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contacts_view.dart';
@@ -19,6 +20,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: contacts,
@@ -41,6 +44,8 @@ void main() {
     var refreshCalls = 0;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [
@@ -65,6 +70,8 @@ void main() {
   ) async {
     var connectCalls = 0;
     Widget view([VoidCallback? onConnect]) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: GatewayContactsView(
           contacts: const [],
@@ -90,6 +97,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [
@@ -120,6 +129,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [
@@ -151,6 +162,8 @@ void main() {
         'This deliberately long session preview must stay on one line in the contact list.';
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [
@@ -181,6 +194,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [
@@ -217,6 +232,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: GatewayContactsView(
             contacts: [contact],

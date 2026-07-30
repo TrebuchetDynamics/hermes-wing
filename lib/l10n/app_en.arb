@@ -22,13 +22,17 @@
   "agentStableId": "ID: {id}",
   "@agentStableId": {
     "placeholders": {
-      "id": {"type": "String"}
+      "id": {
+        "type": "String"
+      }
     }
   },
   "agentSkillsCount": "{count, plural, =0{No skills} =1{1 skill} other{{count} skills}}",
   "@agentSkillsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "agentGatewayRunning": "Gateway running",
@@ -53,7 +57,9 @@
   "deleteAgentTitle": "Delete {name}?",
   "@deleteAgentTitle": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "deleteAgentBody": "This permanently deletes the agent from Hermes. Type its display name to confirm.",
@@ -66,7 +72,9 @@
   "switchAgentFailed": "Could not switch agent: {message}",
   "@switchAgentFailed": {
     "placeholders": {
-      "message": {"type": "String"}
+      "message": {
+        "type": "String"
+      }
     }
   },
   "providersDestination": "Providers",
@@ -84,7 +92,9 @@
   "officeAgentCount": "{count, plural, =1{1 agent} other{{count} agents}}",
   "@officeAgentCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "officeSearchLabel": "Search agents and gateways",
@@ -92,8 +102,12 @@
   "officeShowingCount": "Showing {visible} of {total} agents",
   "@officeShowingCount": {
     "placeholders": {
-      "visible": {"type": "int"},
-      "total": {"type": "int"}
+      "visible": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "officeNoAgentsTitle": "No Hermes agents available",
@@ -109,7 +123,9 @@
   "officeSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
   "@officeSessionCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "officeStatusOnline": "Online",
@@ -129,7 +145,9 @@
   "toolsetResolvedToolsCount": "{count, plural, =1{1 resolved tool} other{{count} resolved tools}}",
   "@toolsetResolvedToolsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "toolsetResolvedToolsTitle": "Resolved tools",
@@ -196,22 +214,34 @@
   "gatewayReadinessDiskUsage": "{usedPercent}% used",
   "@gatewayReadinessDiskUsage": {
     "placeholders": {
-      "usedPercent": {"type": "String"}
+      "usedPercent": {
+        "type": "String"
+      }
     }
   },
   "gatewayReadinessPlatformCounts": "{connected} of {configured} connected",
   "@gatewayReadinessPlatformCounts": {
     "placeholders": {
-      "connected": {"type": "int"},
-      "configured": {"type": "int"}
+      "connected": {
+        "type": "int"
+      },
+      "configured": {
+        "type": "int"
+      }
     }
   },
   "gatewayReadinessQueueCounts": "{activeRuns} API runs · {completions} completions · {delegations} delegations",
   "@gatewayReadinessQueueCounts": {
     "placeholders": {
-      "activeRuns": {"type": "int"},
-      "completions": {"type": "int"},
-      "delegations": {"type": "int"}
+      "activeRuns": {
+        "type": "int"
+      },
+      "completions": {
+        "type": "int"
+      },
+      "delegations": {
+        "type": "int"
+      }
     }
   },
   "providersTitle": "Providers",
@@ -228,7 +258,9 @@
   "providerKeyHintLabel": "Key {hint}",
   "@providerKeyHintLabel": {
     "placeholders": {
-      "hint": {"type": "String"}
+      "hint": {
+        "type": "String"
+      }
     }
   },
   "manageCredentialAction": "Manage credential",
@@ -243,13 +275,17 @@
   "runtimeModelRoutesTo": "Routes to {model}",
   "@runtimeModelRoutesTo": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "runtimeModelParent": "Parent {model}",
   "@runtimeModelParent": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "activeModelLabel": "Active model",
@@ -258,9 +294,15 @@
   "auxiliaryModelSummary": "{task}: {provider} / {model}",
   "@auxiliaryModelSummary": {
     "placeholders": {
-      "task": {"type": "String"},
-      "provider": {"type": "String"},
-      "model": {"type": "String"}
+      "task": {
+        "type": "String"
+      },
+      "provider": {
+        "type": "String"
+      },
+      "model": {
+        "type": "String"
+      }
     }
   },
   "chooseModelAction": "Choose model",
@@ -277,7 +319,9 @@
   "credentialSheetTitle": "{provider} credential",
   "@credentialSheetTitle": {
     "placeholders": {
-      "provider": {"type": "String"}
+      "provider": {
+        "type": "String"
+      }
     }
   },
   "credentialWriteOnlyNotice": "Hermes Wing can set this credential but never shows a stored key.",
@@ -299,7 +343,9 @@
   "transcriptCopiedMessage": "Transcript copied as {format}",
   "@transcriptCopiedMessage": {
     "placeholders": {
-      "format": {"type": "String"}
+      "format": {
+        "type": "String"
+      }
     }
   },
   "transcriptAuthorYou": "You",
@@ -308,13 +354,17 @@
   "transcriptToolHeading": "Tool: {name}",
   "@transcriptToolHeading": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "transcriptToolStatus": "Status: {status}",
   "@transcriptToolStatus": {
     "placeholders": {
-      "status": {"type": "String"}
+      "status": {
+        "type": "String"
+      }
     }
   },
   "sessionsToday": "Today",
@@ -325,13 +375,17 @@
   "sessionSourceLabel": "Source: {source}",
   "@sessionSourceLabel": {
     "placeholders": {
-      "source": {"type": "String"}
+      "source": {
+        "type": "String"
+      }
     }
   },
   "sessionModelLabel": "Model: {model}",
   "@sessionModelLabel": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "sessionModelNotReported": "Not reported",
@@ -361,8 +415,12 @@
   "gatewayVersionSummary": "Gateway version: {platform} {version}",
   "@gatewayVersionSummary": {
     "placeholders": {
-      "platform": {"type": "String"},
-      "version": {"type": "String"}
+      "platform": {
+        "type": "String"
+      },
+      "version": {
+        "type": "String"
+      }
     }
   },
   "gatewayVersionUnavailable": "Gateway version is unavailable.",
@@ -370,14 +428,18 @@
   "profilePersonaTitle": "{profile} persona",
   "@profilePersonaTitle": {
     "placeholders": {
-      "profile": {"type": "String"}
+      "profile": {
+        "type": "String"
+      }
     }
   },
   "profilePersonaEmptyBody": "This agent has no persona content.",
   "profilePersonaLoadFailed": "Persona could not be loaded: {error}",
   "@profilePersonaLoadFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "localCommandNewDescription": "Start a new Hermes session.",
@@ -385,13 +447,17 @@
   "desktopSessionsShortcutTooltip": "Sessions ({modifier}+K)",
   "@desktopSessionsShortcutTooltip": {
     "placeholders": {
-      "modifier": {"type": "String"}
+      "modifier": {
+        "type": "String"
+      }
     }
   },
   "desktopNewSessionShortcutTooltip": "New session ({modifier}+N)",
   "@desktopNewSessionShortcutTooltip": {
     "placeholders": {
-      "modifier": {"type": "String"}
+      "modifier": {
+        "type": "String"
+      }
     }
   },
   "localCommandClearDescription": "Clear the current draft.",
@@ -401,25 +467,43 @@
   "runTokenUsage": "{inputTokens} in · {outputTokens} out · {totalTokens} total tokens",
   "@runTokenUsage": {
     "placeholders": {
-      "inputTokens": {"type": "int"},
-      "outputTokens": {"type": "int"},
-      "totalTokens": {"type": "int"}
+      "inputTokens": {
+        "type": "int"
+      },
+      "outputTokens": {
+        "type": "int"
+      },
+      "totalTokens": {
+        "type": "int"
+      }
     }
   },
   "transcriptRunTokenUsage": "Usage: {inputTokens} input · {outputTokens} output · {totalTokens} total tokens",
   "@transcriptRunTokenUsage": {
     "placeholders": {
-      "inputTokens": {"type": "int"},
-      "outputTokens": {"type": "int"},
-      "totalTokens": {"type": "int"}
+      "inputTokens": {
+        "type": "int"
+      },
+      "outputTokens": {
+        "type": "int"
+      },
+      "totalTokens": {
+        "type": "int"
+      }
     }
   },
   "runTokenUsageSemantics": "Token usage: {inputTokens} input, {outputTokens} output, {totalTokens} total",
   "@runTokenUsageSemantics": {
     "placeholders": {
-      "inputTokens": {"type": "int"},
-      "outputTokens": {"type": "int"},
-      "totalTokens": {"type": "int"}
+      "inputTokens": {
+        "type": "int"
+      },
+      "outputTokens": {
+        "type": "int"
+      },
+      "totalTokens": {
+        "type": "int"
+      }
     }
   },
   "auxiliaryTaskVision": "Vision",
@@ -451,29 +535,43 @@
   "diagnosticsNoHealthDetails": "No health details yet",
   "diagnosticsUnknownVersion": "unknown version",
   "diagnosticsUnknownGateway": "unknown gateway",
-  "diagnosticsHealthSummary": "{version} \u2022 {gateway}",
+  "diagnosticsHealthSummary": "{version} • {gateway}",
   "@diagnosticsHealthSummary": {
     "placeholders": {
-      "version": {"type": "String"},
-      "gateway": {"type": "String"}
+      "version": {
+        "type": "String"
+      },
+      "gateway": {
+        "type": "String"
+      }
     }
   },
   "diagnosticsInventorySection": "Inventory",
   "diagnosticsResourcesLabel": "Resources",
-  "diagnosticsResourcesSummary": "{models} models \u2022 {skills} skills \u2022 {toolsets} toolsets \u2022 {jobs} jobs",
+  "diagnosticsResourcesSummary": "{models} models • {skills} skills • {toolsets} toolsets • {jobs} jobs",
   "@diagnosticsResourcesSummary": {
     "placeholders": {
-      "models": {"type": "int"},
-      "skills": {"type": "int"},
-      "toolsets": {"type": "int"},
-      "jobs": {"type": "int"}
+      "models": {
+        "type": "int"
+      },
+      "skills": {
+        "type": "int"
+      },
+      "toolsets": {
+        "type": "int"
+      },
+      "jobs": {
+        "type": "int"
+      }
     }
   },
   "diagnosticsInventoryWarningsLabel": "Inventory warnings",
   "diagnosticsUnavailableSummary": "{resources} unavailable",
   "@diagnosticsUnavailableSummary": {
     "placeholders": {
-      "resources": {"type": "String"}
+      "resources": {
+        "type": "String"
+      }
     }
   },
   "diagnosticsResourceHealth": "health",
@@ -482,11 +580,15 @@
   "diagnosticsResourceToolsets": "toolsets",
   "diagnosticsResourceJobs": "jobs",
   "diagnosticsSessionsSection": "Sessions",
-  "diagnosticsSessionsSummary": "{count} sessions \u2022 active {active}",
+  "diagnosticsSessionsSummary": "{count} sessions • active {active}",
   "@diagnosticsSessionsSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "active": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "active": {
+        "type": "String"
+      }
     }
   },
   "diagnosticsActiveYes": "yes",
@@ -503,14 +605,16 @@
   "voiceSpeakRepliesSubtitle": "Read Hermes replies aloud while the chat is open",
   "voiceAdvancedSection": "Advanced",
   "voiceCommandWordTitle": "Command word",
-  "voiceCommandWordHint": "Say this before \u201cstop\u201d, \u201cpause\u201d, \u201cmute\u201d, or \u201ccancel\u201d while the foreground voice loop is listening.",
+  "voiceCommandWordHint": "Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.",
   "voicePocketSpeechSection": "Local voice preferences",
   "voicePocketSpeechModelTitle": "Pocket Speech model",
   "voicePocketSpeechModelSubtitle": "Choose a compact English pack or the larger bilingual pack",
   "voicePackTitle": "{model} voice pack",
   "@voicePackTitle": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceRemovePackTooltip": "Remove downloaded voice pack",
@@ -521,13 +625,17 @@
   "voiceUsePocketSpeechReadySubtitle": "Use the installed {model} pack when Speak assistant replies is on",
   "@voiceUsePocketSpeechReadySubtitle": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceUsePocketSpeechNotReadySubtitle": "Download {model} before enabling",
   "@voiceUsePocketSpeechNotReadySubtitle": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceOfflineVoiceTitle": "Offline voice",
@@ -535,10 +643,12 @@
   "voiceOfflineVoiceNotReadySubtitle": "Available after the voice pack is downloaded",
   "voiceDefaultVoiceLabel": "Default",
   "voiceVoicesUnavailable": "Unavailable",
-  "voiceReplySpeedTitle": "Reply speed \u00b7 {rate}\u00d7",
+  "voiceReplySpeedTitle": "Reply speed · {rate}×",
   "@voiceReplySpeedTitle": {
     "placeholders": {
-      "rate": {"type": "String"}
+      "rate": {
+        "type": "String"
+      }
     }
   },
   "voicePreviewTitle": "Preview offline voice",
@@ -547,71 +657,97 @@
   "voicePackReadyNotice": "{model} voice pack is ready",
   "@voicePackReadyNotice": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceUseForRepliesAction": "Use for replies",
   "voiceDownloadFailedNotice": "{model} download failed. Check the connection and free storage, then retry.",
   "@voiceDownloadFailedNotice": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceDownloadDialogTitle": "Download {model}?",
   "@voiceDownloadDialogTitle": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceDownloadDialogBody": "{summary}. Keep Hermes Wing open until the verified download finishes.",
   "@voiceDownloadDialogBody": {
     "placeholders": {
-      "summary": {"type": "String"}
+      "summary": {
+        "type": "String"
+      }
     }
   },
   "voiceRemoveDialogTitle": "Remove {model} voice pack?",
   "@voiceRemoveDialogTitle": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voiceRemoveDialogBody": "This frees {size} of app storage. You can download it again later.",
   "@voiceRemoveDialogBody": {
     "placeholders": {
-      "size": {"type": "String"}
+      "size": {
+        "type": "String"
+      }
     }
   },
   "voicePackRemovedNotice": "{model} voice pack removed",
   "@voicePackRemovedNotice": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voicePackRemoveFailedNotice": "Could not remove {model} voice pack",
   "@voicePackRemoveFailedNotice": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voicePreviewFailedNotice": "Could not preview this voice. Update the voice pack and try again.",
-  "voiceDownloadProgress": "{part} \u00b7 {received} of {total}",
+  "voiceDownloadProgress": "{part} · {received} of {total}",
   "@voiceDownloadProgress": {
     "placeholders": {
-      "part": {"type": "String"},
-      "received": {"type": "String"},
-      "total": {"type": "String"}
+      "part": {
+        "type": "String"
+      },
+      "received": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
     }
   },
   "voiceDownloadProgressSemantics": "{model} download progress",
   "@voiceDownloadProgressSemantics": {
     "placeholders": {
-      "model": {"type": "String"}
+      "model": {
+        "type": "String"
+      }
     }
   },
   "voicePercentSemantics": "{percent} percent",
   "@voicePercentSemantics": {
     "placeholders": {
-      "percent": {"type": "int"}
+      "percent": {
+        "type": "int"
+      }
     }
   },
   "voicePackInstalledSubtitle": "Installed and stored on this device for offline use",
@@ -623,11 +759,15 @@
   "settingsScanPairingQr": "Scan a Hermes pairing QR code",
   "settingsCredentialsNote": "Credentials stay in secure storage; values hidden",
   "settingsVoiceSection": "Voice",
-  "settingsVoiceLinkSummary": "{model} \u2022 {status}",
+  "settingsVoiceLinkSummary": "{model} • {status}",
   "@settingsVoiceLinkSummary": {
     "placeholders": {
-      "model": {"type": "String"},
-      "status": {"type": "String"}
+      "model": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
     }
   },
   "settingsVoiceInstalled": "installed",
@@ -635,7 +775,9 @@
   "settingsGatewayActionsTooltip": "Gateway actions for {label}",
   "@settingsGatewayActionsTooltip": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
   "settingsManageAgentsAction": "Manage agents",
@@ -663,30 +805,36 @@
   "settingsRemoveGatewayBody": "Remove {label} and its saved credential from this device?",
   "@settingsRemoveGatewayBody": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
   "enrollTitle": "Connect to Hermes",
   "enrollInvalidLink": "This pairing link is not valid: {message}",
   "@enrollInvalidLink": {
     "placeholders": {
-      "message": {"type": "String"}
+      "message": {
+        "type": "String"
+      }
     }
   },
   "enrollCleartextDialogTitle": "Pair over plain HTTP?",
   "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
   "@enrollCleartextDialogBody": {
     "placeholders": {
-      "host": {"type": "String"}
+      "host": {
+        "type": "String"
+      }
     }
   },
   "enrollContinueAction": "Continue",
   "enrollScanPrompt": "Scan the QR code shown by wing-cli.",
-  "enrollVerifying": "Verifying pairing code\u2026",
-  "enrollConnected": "Connected. Returning to Hermes\u2026",
+  "enrollVerifying": "Verifying pairing code…",
+  "enrollConnected": "Connected. Returning to Hermes…",
   "enrollFailed": "Pairing failed.",
   "enrollCloseAction": "Close",
-  "enrollOpeningScanner": "Opening scanner\u2026",
+  "enrollOpeningScanner": "Opening scanner…",
   "enrollScanQr": "Scan QR code",
   "enrollGrantQuestion": "Grant Hermes Wing access to this Hermes endpoint?",
   "enrollEndpointLabel": "Endpoint",
@@ -700,8 +848,844 @@
   "enrollOriginMismatch": "This pairing server reports a different address ({origin}) than the link you opened. Hermes Wing will connect to the link address shown above. Only continue if you trust it.",
   "@enrollOriginMismatch": {
     "placeholders": {
-      "origin": {"type": "String"}
+      "origin": {
+        "type": "String"
+      }
     }
   },
-  "enrollConnectAction": "Connect"
+  "enrollConnectAction": "Connect",
+  "closeAction": "Close",
+  "routeNotFound": "Route not found: {path}",
+  "@routeNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "agentsSelectGatewayHint": "Select gateway",
+  "agentsGatewayPickerHelp": "Add and edit profiles on the selected gateway.",
+  "gatewayContactsEmptyTitle": "No Hermes gateways yet",
+  "gatewayContactsConnectAction": "Connect gateway",
+  "chatQueuedCancelTitle": "{count, plural, one{Cancel {count} queued follow-up?} other{Cancel {count} queued follow-ups?}}",
+  "@chatQueuedCancelTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatQueuedMore": "+{count} more",
+  "@chatQueuedMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatQueuedRedactedNote": "Queued text is redacted and bounded in this confirmation.",
+  "chatQueuedKeepAction": "Keep",
+  "chatQueuedCancelAllAction": "Cancel all",
+  "chatConnectionRenameProfileTitle": "Rename Hermes profile",
+  "chatConnectionProfileLabelLabel": "Profile label",
+  "chatConnectionProfileLabelHelper": "Leave blank to show the endpoint URL.",
+  "chatConnectionRenameProfileErrorBody": "Could not rename Hermes profile: {error}",
+  "@chatConnectionRenameProfileErrorBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatConnectionCleartextWarningTitle": "Send API key without TLS?",
+  "chatConnectionCleartextWarningBody": "The endpoint {endpoint} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
+  "@chatConnectionCleartextWarningBody": {
+    "placeholders": {
+      "endpoint": {
+        "type": "String"
+      }
+    }
+  },
+  "chatConnectionContinueAction": "Continue",
+  "chatConnectionDisconnectTitle": "Disconnect from Hermes?",
+  "chatConnectionDisconnectBody": "Disconnect from {target} and remove this saved endpoint/API key from this device. Other saved Hermes gateways remain available.",
+  "@chatConnectionDisconnectBody": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "chatConnectionDiagnosticsTitle": "Hermes diagnostics",
+  "chatConnectionRawLogStatusCopiedBody": "Raw-log status copied",
+  "chatConnectionCopyRawLogStatusAction": "Copy raw-log status",
+  "chatConnectionDiagnosticsCopiedBody": "Hermes diagnostics copied",
+  "chatConnectionCopyAction": "Copy",
+  "chatConnectionDisconnectAction": "Disconnect",
+  "chatSessionActionCreateFailedBody": "Could not create session: {error}",
+  "@chatSessionActionCreateFailedBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionOpenFailedBody": "Could not open session: {error}",
+  "@chatSessionActionOpenFailedBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionRenameTitle": "Rename session",
+  "chatSessionActionTitleFieldLabel": "Session title",
+  "chatSessionActionRenameFailedBody": "Could not rename session: {error}",
+  "@chatSessionActionRenameFailedBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionBranchTitle": "Branch this session?",
+  "chatSessionActionBranchBody": "Create a new session with the conversation history from “{title}”? The original remains in Hermes and the new branch becomes active.",
+  "@chatSessionActionBranchBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionBranchConfirmAction": "Create branch",
+  "chatSessionActionBranchCreatedBody": "Created a new session branch.",
+  "chatSessionActionBranchFailedBody": "Could not create session branch: {error}",
+  "@chatSessionActionBranchFailedBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionDeleteManyTitle": "{count, plural, one{Delete {count} session?} other{Delete {count} sessions?}}",
+  "@chatSessionActionDeleteManyTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSessionActionDeleteManyBody": "Delete the selected sessions from Hermes? This cannot be undone.",
+  "chatSessionActionDeleteAction": "Delete",
+  "chatSessionActionDeletedCountBody": "{count, plural, one{Deleted {count} session.} other{Deleted {count} sessions.}}",
+  "@chatSessionActionDeletedCountBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSessionActionDeletedPartialBody": "Deleted {deleted} of {count} sessions. {failed} could not be deleted.",
+  "@chatSessionActionDeletedPartialBody": {
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSessionActionDeleteTitle": "Delete session?",
+  "chatSessionActionDeleteBody": "Delete \"{title}\" from Hermes?",
+  "@chatSessionActionDeleteBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSessionActionDeleteFailedBody": "Could not delete session: {error}",
+  "@chatSessionActionDeleteFailedBody": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTranscriptCopyChatTextAction": "Copy entire chat (text)",
+  "chatTranscriptCopyChatMarkdownAction": "Copy entire chat (Markdown)",
+  "chatTranscriptReplyAction": "Reply",
+  "chatTranscriptCopyAction": "Copy",
+  "chatTranscriptMessageCopiedLabel": "Message copied",
+  "chatTranscriptToolStatusNeedsAttentionLabel": "Needs attention",
+  "chatTranscriptToolStatusRunningLabel": "Running",
+  "chatTranscriptToolStatusCompletedLabel": "Completed",
+  "chatTranscriptToolActivitySingleTitle": "Tool activity: {name}",
+  "@chatTranscriptToolActivitySingleTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTranscriptToolActivityCountTitle": "Tool activity: {count} calls",
+  "@chatTranscriptToolActivityCountTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatTranscriptActionBlockedTitle": "Action blocked",
+  "chatTranscriptHideDetailsAction": "Hide details",
+  "chatTranscriptDetailsAction": "Details",
+  "chatErrorAuthRejectedTitle": "Hermes API rejected the saved API key.",
+  "chatErrorAuthRejectedBody": "Reconnect with a fresh Hermes API key, then retry this message.",
+  "chatErrorApprovalResponseFailedTitle": "Hermes could not record the approval decision.",
+  "chatErrorApprovalResponseFailedBody": "Review the request, check that the run is still active, then try the decision again.",
+  "chatErrorMalformedApprovalTitle": "Hermes sent an incomplete approval request.",
+  "chatErrorMalformedApprovalBody": "Retry when Hermes can provide an approval id for this run.",
+  "chatErrorUnsupportedTransportTitle": "Hermes endpoint does not support chat turns.",
+  "chatErrorUnsupportedTransportBody": "Connect to a Hermes API server that advertises session chat streaming or run events.",
+  "chatErrorRunStillActiveTitle": "Hermes run is still active.",
+  "chatErrorRunStillActiveBody": "Reconnect to reconcile this run before sending it again.",
+  "chatErrorRunCancelledTitle": "Hermes run was cancelled.",
+  "chatErrorRunCancelledBody": "Start a new turn when you are ready.",
+  "chatErrorRunFailedTitle": "Hermes run failed.",
+  "chatErrorRunFailedBody": "Check Hermes, then retry this message when the run is recoverable.",
+  "chatErrorStreamDroppedTitle": "Hermes stream dropped.",
+  "chatErrorStreamDroppedBody": "Check the endpoint/network and send again when Hermes is reachable.",
+  "chatErrorGenericTitle": "Hermes could not finish the turn.",
+  "chatErrorGenericBody": "Retry when Hermes is ready.",
+  "chatErrorDetailsAction": "Details",
+  "chatErrorUpdateKeyAction": "Update key",
+  "chatErrorReconnectAction": "Reconnect",
+  "chatErrorRetryLastMessageAction": "Retry last message",
+  "chatErrorRedactedDetailsLabel": "Redacted error details",
+  "chatErrorRedactionNoteBody": "Secrets, bearer tokens, API keys, cookies, and copied endpoint credentials are redacted before display.",
+  "chatErrorCopiedRedactedDetailsBody": "Copied redacted Hermes error details.",
+  "chatErrorCopyRedactedDetailsAction": "Copy redacted details",
+  "chatErrorSavedProfilesLabel": "Saved Hermes profiles",
+  "chatErrorRenameProfileTooltip": "Rename Hermes profile",
+  "chatErrorRemoveProfileTitle": "Remove saved Hermes profile?",
+  "chatErrorRemoveProfileBody": "Remove {label} ({baseUrl}) from this device. Any stored API key for this profile is removed from secure storage.",
+  "@chatErrorRemoveProfileBody": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "baseUrl": {
+        "type": "String"
+      }
+    }
+  },
+  "chatErrorRemoveProfileAction": "Remove",
+  "chatErrorConnectAuthTitle": "Hermes API rejected the API key.",
+  "chatErrorConnectAuthBody": "Check the endpoint API key in Hermes and try again.",
+  "chatErrorConnectUnreachableTitle": "Hermes endpoint is unreachable.",
+  "chatErrorConnectUnreachableBody": "Check the base URL, network, VPN, and that Hermes API server is running.",
+  "chatErrorConnectGenericTitle": "Could not connect to Hermes.",
+  "chatErrorConnectGenericBody": "Check the endpoint and try again.",
+  "chatLayoutConnectTitle": "Connect to your Hermes VPS",
+  "chatLayoutConnectBody": "Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.",
+  "chatLayoutVpsConnectionTitle": "VPS connection",
+  "chatLayoutVpsConnectionBody": "Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.",
+  "chatLayoutScanQrAction": "Scan wing-cli QR code",
+  "chatLayoutServerUrlLabel": "Hermes server URL",
+  "chatLayoutServerUrlHint": "https://hermes.example.com",
+  "chatLayoutServerUrlHelper": "Enter the HTTPS or private-network URL without /v1.",
+  "chatLayoutAccessTokenLabel": "Access token",
+  "chatLayoutAccessTokenHelper": "Required for internet-facing servers; optional only on trusted private networks.",
+  "chatLayoutShowAccessTokenTooltip": "Show access token",
+  "chatLayoutHideAccessTokenTooltip": "Hide access token",
+  "chatLayoutVpsNameLabel": "VPS name (optional)",
+  "chatLayoutVpsNameHint": "My Hermes VPS",
+  "chatLayoutVpsNameHelper": "A private label shown only on this device.",
+  "chatLayoutTokenStorageBody": "Your token is stored in secure device storage and is never shown after connecting.",
+  "chatLayoutConnectingAction": "Connecting…",
+  "chatLayoutConnectAction": "Connect to VPS",
+  "chatLayoutDevShortcutsTitle": "Connecting to a local Agent?",
+  "chatLayoutDevShortcutsBody": "Use a development shortcut instead of a VPS address.",
+  "chatLayoutPresetThisDeviceLabel": "This device",
+  "chatLayoutPresetAndroidEmulatorLabel": "Android emulator",
+  "chatLayoutPresetClearAction": "Clear server details",
+  "chatLayoutModelFallbackLabel": "Hermes model",
+  "chatLayoutTransportUnavailableBody": "Hermes did not advertise a supported chat transport for this endpoint.",
+  "chatLayoutOpenSessionAction": "Open session",
+  "chatLayoutFollowUpsCopiedBody": "Copied redacted Hermes queued follow-ups.",
+  "chatLayoutCopyAction": "Copy",
+  "chatLayoutSendNowAction": "Send now",
+  "chatLayoutCancelAllAction": "Cancel all",
+  "chatLayoutNoSessionsBody": "No Hermes sessions. Create a new session to start chatting.",
+  "chatLayoutNoSessionsNoCreateBody": "No Hermes sessions are available, and this endpoint did not advertise session creation.",
+  "chatLayoutVoiceLoopOnLabel": "Voice loop on",
+  "chatLayoutVoiceReadyLabel": "Voice ready",
+  "chatLayoutComposerSpeakingHint": "Speaking reply…",
+  "chatLayoutComposerHint": "Message Hermes…",
+  "chatLayoutComposerUnavailableHint": "Chat unavailable",
+  "chatLayoutComposerTransportUnavailableHint": "Chat transport unavailable",
+  "chatLayoutChatMenuTooltip": "Chat menu",
+  "chatLayoutSessionsLabel": "Sessions",
+  "chatLayoutHandsFreeVoiceLabel": "Hands-free voice",
+  "chatLayoutEmojiTitle": "Emoji",
+  "chatLayoutInsertEmojiLabel": "Insert {value}",
+  "@chatLayoutInsertEmojiLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatLayoutListeningLabel": "Listening",
+  "chatLayoutSpeakingLabel": "Speaking",
+  "chatLayoutHandsFreeLabel": "Hands-free",
+  "chatLayoutContinuousVoiceLabel": "Continuous voice — device STT to Hermes text",
+  "chatLayoutAttachedFileLabel": "Attached file {name}, ready to send",
+  "@chatLayoutAttachedFileLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatLayoutReadyToSendLabel": "Ready to send",
+  "chatLayoutRemoveAttachmentTooltip": "Remove attachment",
+  "chatLayoutAttachFileTooltip": "Attach image or text file",
+  "chatLayoutStopSpeakingTooltip": "Stop speaking",
+  "chatLayoutSpeakAndSendTooltip": "Speak and send",
+  "chatLayoutSendTooltip": "Send",
+  "chatShellVoicePausedBackgroundBody": "Continuous voice paused while Hermes Wing is not in the foreground.",
+  "chatShellVoicePausedSwitchingAgentsBody": "Continuous voice paused while switching agents.",
+  "chatShellApprovalAnswerFailedBody": "Could not answer Hermes approval: {message}",
+  "@chatShellApprovalAnswerFailedBody": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatShellSwitchChatsTitle": "Switch chats?",
+  "chatShellSwitchChatsBody": "This gateway has active work or an approval. Switching closes its live streams; Hermes remains authoritative and will reconcile them when reopened.",
+  "chatShellStayAction": "Stay",
+  "chatShellSwitchAction": "Switch",
+  "chatShellContactClosedBody": "Closed Hermes contact.",
+  "chatShellContactSwitchedBody": "Switched Hermes contact.",
+  "chatShellAllChatsTooltip": "All chats",
+  "chatShellHermesTitle": "Hermes",
+  "chatShellConnectAnotherGatewayTooltip": "Connect another gateway",
+  "chatShellSessionsLabel": "Sessions",
+  "chatShellNewSessionLabel": "New session",
+  "chatShellMoreActionsTooltip": "More actions",
+  "chatShellDiagnosticsLabel": "Diagnostics",
+  "chatShellDisconnectLabel": "Disconnect",
+  "chatShellTranscriptSessionMetadataTitle": "Session metadata",
+  "chatShellTranscriptSessionLabel": "Session: {title}",
+  "@chatShellTranscriptSessionLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chatShellTranscriptSessionIdLabel": "Session ID: {id}",
+  "@chatShellTranscriptSessionIdLabel": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "chatShellTranscriptMessageCountLabel": "Messages: {count}",
+  "@chatShellTranscriptMessageCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusUnavailableInventoryTitle": "Unavailable Hermes inventory",
+  "chatStatusDetailedHealthLabel": "Detailed health",
+  "chatStatusModelsLabel": "Models",
+  "chatStatusSkillsLabel": "Skills",
+  "chatStatusToolsetsLabel": "Toolsets",
+  "chatStatusJobsLabel": "Jobs",
+  "chatStatusJobsTitle": "Hermes jobs",
+  "chatStatusJobsReadOnlyAdminBody": "Read-only inventory. Hermes advertises jobs admin, but Hermes Wing has not enabled mobile create/edit/delete scheduling.",
+  "chatStatusJobsReadOnlyBody": "Read-only inventory. Mobile create/edit/delete scheduling is not available.",
+  "chatStatusCopyJobDetailsTooltip": "Copy job details",
+  "chatStatusCopiedJobDetailsBody": "Copied redacted Hermes job details.",
+  "chatStatusJobEnabledLabel": "Enabled",
+  "chatStatusJobDisabledLabel": "Disabled",
+  "chatStatusJobStateLabel": "State: {value}",
+  "@chatStatusJobStateLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusJobScheduleLabel": "Schedule: {value}",
+  "@chatStatusJobScheduleLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusJobNextLabel": "Next: {value}",
+  "@chatStatusJobNextLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusJobLastLabel": "Last: {value}",
+  "@chatStatusJobLastLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusJobLastErrorLabel": "Last error: {value}",
+  "@chatStatusJobLastErrorLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusSurfaceReadinessTitle": "Hermes surface readiness",
+  "chatStatusSurfaceReadinessNoteBody": "No mobile config, memory, schedule, or messaging-gateway mutation controls are enabled.",
+  "chatStatusCopiedSurfaceReadinessBody": "Copied Hermes surface readiness summary.",
+  "chatStatusCopySummaryAction": "Copy summary",
+  "chatStatusRunsSseEnabledLabel": "Runs SSE enabled",
+  "chatStatusSessionChatStreamingLabel": "Session chat streaming enabled",
+  "chatStatusVoiceLabel": "Voice: device STT → Hermes",
+  "chatStatusVersionLabel": "Version: {version}",
+  "@chatStatusVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusGatewayLabel": "Gateway: {state}",
+  "@chatStatusGatewayLabel": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusActiveAgentsLabel": "Active agents: {count}",
+  "@chatStatusActiveAgentsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusModelsChipLabel": "Models: {names}",
+  "@chatStatusModelsChipLabel": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusModelsTitle": "Hermes models",
+  "chatStatusSkillsChipLabel": "Skills: {count}",
+  "@chatStatusSkillsChipLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusSkillsTitle": "Hermes skills",
+  "chatStatusToolsetsChipLabel": "Toolsets enabled: {count}",
+  "@chatStatusToolsetsChipLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusToolsetsTitle": "Hermes toolsets",
+  "chatStatusJobsChipLabel": "Jobs: {count}",
+  "@chatStatusJobsChipLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusInventoryUnavailableChipLabel": "Inventory unavailable: {count}",
+  "@chatStatusInventoryUnavailableChipLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusSurfacesChipLabel": "Surfaces: {deferredCount} deferred · {blockedCount} blocked",
+  "@chatStatusSurfacesChipLabel": {
+    "placeholders": {
+      "deferredCount": {
+        "type": "int"
+      },
+      "blockedCount": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusAgentHeaderLabel": "Hermes Agent {model}",
+  "@chatStatusAgentHeaderLabel": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusPendingApprovalsLabel": "{count, plural, other{{count} pending approvals}}",
+  "@chatStatusPendingApprovalsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusApprovalRequestedTitle": "Hermes approval requested",
+  "chatStatusRiskLabel": "Risk: {risk}",
+  "@chatStatusRiskLabel": {
+    "placeholders": {
+      "risk": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusApprovalResponseUnavailableBody": "Hermes did not advertise approval responses for this run.",
+  "chatStatusApprovalIdMissingBody": "Hermes sent this approval without an approval id, so it cannot be answered.",
+  "chatStatusAnsweringApprovalLabel": "Answering Hermes approval…",
+  "chatStatusReviewAction": "Review",
+  "chatStatusDismissAction": "Dismiss",
+  "chatStatusDenyAction": "Deny",
+  "chatStatusAllowForSessionAction": "Allow for session",
+  "chatStatusAlwaysAllowAction": "Always allow",
+  "chatStatusApproveOnceAction": "Approve once",
+  "chatStatusAllowForSessionTitle": "Allow this for the session?",
+  "chatStatusAllowForSessionBody": "This may approve matching requests for the current Hermes session.",
+  "chatStatusAlwaysAllowTitle": "Always allow this Hermes approval?",
+  "chatStatusAlwaysAllowBody": "This may approve matching future requests without asking again.",
+  "chatStatusReviewApprovalTitle": "Review Hermes approval",
+  "chatStatusReviewingPendingLabel": "Reviewing 1 of {count} pending approvals",
+  "@chatStatusReviewingPendingLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatStatusPromptTruncatedBody": "Prompt preview truncated for mobile review.",
+  "chatStatusRiskTruncatedBody": "Risk preview truncated for mobile review.",
+  "chatStatusToolCallLabel": "Tool call: {value}",
+  "@chatStatusToolCallLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusDecisionsDisabledEndpointBody": "Decision buttons are disabled because Hermes did not advertise /v1/runs/{run_id}/approval.",
+  "@chatStatusDecisionsDisabledEndpointBody": {
+    "placeholders": {
+      "run_id": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusDecisionsDisabledIdBody": "Decision buttons are disabled because Hermes did not include an approval id.",
+  "chatStatusCopiedApprovalDetailsBody": "Copied redacted Hermes approval details.",
+  "chatStatusCopyDetailsAction": "Copy details",
+  "chatRailSessionsTitle": "Sessions",
+  "chatRailHermesSessionsTitle": "Hermes sessions",
+  "chatRailNewSessionAction": "New",
+  "chatRailSelectAction": "Select",
+  "chatRailSelectAllAction": "Select all",
+  "chatRailSelectedCountLabel": "{count} selected",
+  "@chatRailSelectedCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDeleteCountAction": "Delete {count}",
+  "@chatRailDeleteCountAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailSearchSessionsLabel": "Search sessions",
+  "chatRailClearSearchTooltip": "Clear search",
+  "chatRailSessionCountLabel": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@chatRailSessionCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailShowingSessionCountLabel": "{total, plural, =1{Showing {visible} of {total} session} other{Showing {visible} of {total} sessions}}",
+  "@chatRailShowingSessionCountLabel": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "visible": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailNoSessionsBody": "No sessions yet. Create one to start a Hermes chat.",
+  "chatRailNoSessionsMatchBody": "No sessions match “{query}”.",
+  "@chatRailNoSessionsMatchBody": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailNoHermesSessionsBody": "No Hermes sessions yet.",
+  "chatRailNoHermesSessionsMatchBody": "No Hermes sessions match “{query}”.",
+  "@chatRailNoHermesSessionsMatchBody": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailActiveHermesSessionLabel": "Active Hermes session",
+  "chatRailActiveLabel": "Active",
+  "chatRailStatusStreamingLabel": "Streaming",
+  "chatRailStatusReadyLabel": "Ready",
+  "chatRailStatusTransportUnavailableLabel": "Transport unavailable",
+  "chatRailMessageCountLabel": "{count, plural, =1{1 message} other{{count} messages}}",
+  "@chatRailMessageCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailTileMessageCountLabel": "{count} messages",
+  "@chatRailTileMessageCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailEmptyStateTitle": "How can Hermes help today?",
+  "chatRailEmptyStateBody": "Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.",
+  "chatRailPromptSummarizeHelpLabel": "Summarize what you can help me do.",
+  "chatRailPromptListSkillsLabel": "List my available Hermes skills.",
+  "chatRailPromptPlanTaskLabel": "Plan my next coding task.",
+  "chatRailPromptExplainSessionLabel": "Explain the current session state.",
+  "chatRailStopAction": "Stop",
+  "chatRailForkedFromLabel": "Forked from {sessionId}",
+  "@chatRailForkedFromLabel": {
+    "placeholders": {
+      "sessionId": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailLastActiveLabel": "Last active {timestamp}",
+  "@chatRailLastActiveLabel": {
+    "placeholders": {
+      "timestamp": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailSessionActionsTooltip": "Session actions",
+  "chatRailViewDetailsAction": "View details",
+  "chatRailCopyDetailsAction": "Copy details",
+  "chatRailRenameAction": "Rename",
+  "chatRailBranchAction": "Branch",
+  "chatRailDeleteAction": "Delete",
+  "chatRailCopiedSessionDetailsBody": "Copied redacted Hermes session details.",
+  "chatRailSessionDetailsTitle": "Session details",
+  "chatRailSessionDetailsHeaderLabel": "Hermes session",
+  "chatRailDetailTitleLabel": "Title: {value}",
+  "@chatRailDetailTitleLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailIdLabel": "ID: {value}",
+  "@chatRailDetailIdLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailActiveLabel": "Active: {value}",
+  "@chatRailDetailActiveLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailMessagesLabel": "Messages: {count}",
+  "@chatRailDetailMessagesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailToolCallsLabel": "Tool calls: {count}",
+  "@chatRailDetailToolCallsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailApiCallsLabel": "API calls: {count}",
+  "@chatRailDetailApiCallsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailInputTokensLabel": "Input tokens: {count}",
+  "@chatRailDetailInputTokensLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailOutputTokensLabel": "Output tokens: {count}",
+  "@chatRailDetailOutputTokensLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailCacheReadTokensLabel": "Cache read tokens: {count}",
+  "@chatRailDetailCacheReadTokensLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailCacheWriteTokensLabel": "Cache write tokens: {count}",
+  "@chatRailDetailCacheWriteTokensLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailReasoningTokensLabel": "Reasoning tokens: {count}",
+  "@chatRailDetailReasoningTokensLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatRailDetailActualCostLabel": "Actual cost (USD): {cost}",
+  "@chatRailDetailActualCostLabel": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailEstimatedCostLabel": "Estimated cost (USD): {cost}",
+  "@chatRailDetailEstimatedCostLabel": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailStartedLabel": "Started: {value}",
+  "@chatRailDetailStartedLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailEndedLabel": "Ended: {value}",
+  "@chatRailDetailEndedLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailEndReasonLabel": "End reason: {value}",
+  "@chatRailDetailEndReasonLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailSystemPromptSnapshotLabel": "System prompt snapshot: {value}",
+  "@chatRailDetailSystemPromptSnapshotLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailModelConfigSnapshotLabel": "Model config snapshot: {value}",
+  "@chatRailDetailModelConfigSnapshotLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailYesLabel": "yes",
+  "chatRailDetailNoLabel": "no",
+  "chatRailDetailForkedFromLabel": "Forked from: {value}",
+  "@chatRailDetailForkedFromLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRailDetailLastActiveLabel": "Last active: {value}",
+  "@chatRailDetailLastActiveLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }

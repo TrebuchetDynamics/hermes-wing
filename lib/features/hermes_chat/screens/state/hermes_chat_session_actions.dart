@@ -10,10 +10,13 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
       _refreshActiveGatewayContact();
     } catch (error) {
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not create session: ${_safeHermesUiError(error)}',
+            strings.chatSessionActionCreateFailedBody(
+              _safeHermesUiError(error),
+            ),
           ),
         ),
       );
@@ -29,9 +32,12 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
       await channel.selectSession(session.id);
     } catch (error) {
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not open session: ${_safeHermesUiError(error)}'),
+          content: Text(
+            strings.chatSessionActionOpenFailedBody(_safeHermesUiError(error)),
+          ),
         ),
       );
     }
@@ -46,28 +52,34 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
     var draftTitle = _safeHermesRenameDefault(currentTitle);
     final nextTitle = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rename session'),
-        content: TextFormField(
-          key: const ValueKey('hermes-session-title-field'),
-          initialValue: draftTitle,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Session title'),
-          onChanged: (value) => draftTitle = value,
-          onFieldSubmitted: (value) => Navigator.of(context).pop(value.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatSessionActionRenameTitle),
+          content: TextFormField(
+            key: const ValueKey('hermes-session-title-field'),
+            initialValue: draftTitle,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: strings.chatSessionActionTitleFieldLabel,
+            ),
+            onChanged: (value) => draftTitle = value,
+            onFieldSubmitted: (value) =>
+                Navigator.of(context).pop(value.trim()),
           ),
-          FilledButton(
-            key: const ValueKey('hermes-session-title-save'),
-            onPressed: () => Navigator.of(context).pop(draftTitle.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-session-title-save'),
+              onPressed: () => Navigator.of(context).pop(draftTitle.trim()),
+              child: Text(strings.saveAction),
+            ),
+          ],
+        );
+      },
     );
     final title = nextTitle?.trim();
     if (title == null || title.isEmpty || title == currentTitle) return;
@@ -76,10 +88,13 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
       _refreshActiveGatewayContact();
     } catch (error) {
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not rename session: ${_safeHermesUiError(error)}',
+            strings.chatSessionActionRenameFailedBody(
+              _safeHermesUiError(error),
+            ),
           ),
         ),
       );
@@ -93,38 +108,47 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Branch this session?'),
-        content: Text(
-          'Create a new session with the conversation history from “${_safeHermesUiPreview(session.title ?? session.id, maxLength: 96)}”? The original remains in Hermes and the new branch becomes active.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatSessionActionBranchTitle),
+          content: Text(
+            strings.chatSessionActionBranchBody(
+              _safeHermesUiPreview(session.title ?? session.id, maxLength: 96),
+            ),
           ),
-          FilledButton(
-            key: const ValueKey('hermes-session-branch-confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Create branch'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-session-branch-confirm'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.chatSessionActionBranchConfirmAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     try {
       await channel.forkSession(session.id);
       _refreshActiveGatewayContact();
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Created a new session branch.')),
+        SnackBar(content: Text(strings.chatSessionActionBranchCreatedBody)),
       );
     } catch (error) {
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not create session branch: ${_safeHermesUiError(error)}',
+            strings.chatSessionActionBranchFailedBody(
+              _safeHermesUiError(error),
+            ),
           ),
         ),
       );
@@ -149,23 +173,24 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
     final count = selected.length;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete $count sessions?'),
-        content: const Text(
-          'Delete the selected sessions from Hermes? This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            key: const ValueKey('hermes-sessions-delete-confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatSessionActionDeleteManyTitle(count)),
+          content: Text(strings.chatSessionActionDeleteManyBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-sessions-delete-confirm'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.chatSessionActionDeleteAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
 
@@ -185,9 +210,14 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
     }
     _refreshActiveGatewayContact();
     if (!context.mounted) return;
+    final strings = AppLocalizations.of(context);
     final message = deleted == count
-        ? 'Deleted $deleted ${deleted == 1 ? 'session' : 'sessions'}.'
-        : 'Deleted $deleted of $count sessions. ${count - deleted} could not be deleted.';
+        ? strings.chatSessionActionDeletedCountBody(deleted)
+        : strings.chatSessionActionDeletedPartialBody(
+            deleted,
+            count,
+            count - deleted,
+          );
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -200,23 +230,28 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete session?'),
-        content: Text(
-          'Delete "${_safeHermesUiPreview(session.title ?? session.id, maxLength: 96)}" from Hermes?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatSessionActionDeleteTitle),
+          content: Text(
+            strings.chatSessionActionDeleteBody(
+              _safeHermesUiPreview(session.title ?? session.id, maxLength: 96),
+            ),
           ),
-          FilledButton(
-            key: const ValueKey('hermes-session-delete-confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-session-delete-confirm'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.chatSessionActionDeleteAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     try {
@@ -224,10 +259,13 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
       _refreshActiveGatewayContact();
     } catch (error) {
       if (!context.mounted) return;
+      final strings = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not delete session: ${_safeHermesUiError(error)}',
+            strings.chatSessionActionDeleteFailedBody(
+              _safeHermesUiError(error),
+            ),
           ),
         ),
       );

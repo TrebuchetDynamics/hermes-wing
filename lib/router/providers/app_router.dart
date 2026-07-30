@@ -11,6 +11,7 @@ import '../../features/providers/screens/providers_screen.dart';
 import '../../features/schedules/screens/schedules_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/tools/screens/tools_screen.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../app_routes.dart';
 
@@ -81,8 +82,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => _SelectableRoute(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Hermes Wing')),
-        body: Center(child: Text('Route not found: ${state.uri.path}')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).appTitle)),
+        body: Center(
+          child: Text(
+            AppLocalizations.of(context).routeNotFound(state.uri.path),
+          ),
+        ),
       ),
     ),
   );

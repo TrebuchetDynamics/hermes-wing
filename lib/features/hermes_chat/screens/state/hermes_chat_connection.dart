@@ -42,34 +42,38 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     var draftLabel = _safeHermesRenameDefault(profile.label ?? '');
     final nextLabel = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-endpoint-profile-rename-dialog'),
-        title: const Text('Rename Hermes profile'),
-        content: TextFormField(
-          key: const ValueKey('hermes-endpoint-profile-rename-field'),
-          initialValue: draftLabel,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Profile label',
-            helperText: 'Leave blank to show the endpoint URL.',
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-endpoint-profile-rename-dialog'),
+          title: Text(strings.chatConnectionRenameProfileTitle),
+          content: TextFormField(
+            key: const ValueKey('hermes-endpoint-profile-rename-field'),
+            initialValue: draftLabel,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: strings.chatConnectionProfileLabelLabel,
+              helperText: strings.chatConnectionProfileLabelHelper,
+            ),
+            onChanged: (value) => draftLabel = value,
+            onFieldSubmitted: (value) =>
+                Navigator.of(dialogContext).pop(value.trim()),
           ),
-          onChanged: (value) => draftLabel = value,
-          onFieldSubmitted: (value) =>
-              Navigator.of(dialogContext).pop(value.trim()),
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-endpoint-profile-rename-cancel'),
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            key: const ValueKey('hermes-endpoint-profile-rename-save'),
-            onPressed: () => Navigator.of(dialogContext).pop(draftLabel.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-endpoint-profile-rename-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-endpoint-profile-rename-save'),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(draftLabel.trim()),
+              child: Text(strings.saveAction),
+            ),
+          ],
+        );
+      },
     );
     if (nextLabel == null || nextLabel.trim() == (profile.label ?? '').trim()) {
       return;
@@ -90,7 +94,9 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not rename Hermes profile: ${_safeHermesUiError(error)}',
+            AppLocalizations.of(
+              context,
+            ).chatConnectionRenameProfileErrorBody(_safeHermesUiError(error)),
           ),
         ),
       );
@@ -129,25 +135,29 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   Future<bool> _confirmCleartextCredentialUse(String baseUrl) async {
     return await showDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            key: const ValueKey('hermes-cleartext-credential-warning'),
-            title: const Text('Send API key without TLS?'),
-            content: Text(
-              'The endpoint ${_safeHermesUiPreview(baseUrl, maxLength: 120)} uses plain HTTP. '
-              'Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Cancel'),
+          builder: (dialogContext) {
+            final strings = AppLocalizations.of(dialogContext);
+            return AlertDialog(
+              key: const ValueKey('hermes-cleartext-credential-warning'),
+              title: Text(strings.chatConnectionCleartextWarningTitle),
+              content: Text(
+                strings.chatConnectionCleartextWarningBody(
+                  _safeHermesUiPreview(baseUrl, maxLength: 120),
+                ),
               ),
-              FilledButton(
-                key: const ValueKey('hermes-cleartext-credential-confirm'),
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Continue'),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(strings.cancelAction),
+                ),
+                FilledButton(
+                  key: const ValueKey('hermes-cleartext-credential-confirm'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(strings.chatConnectionContinueAction),
+                ),
+              ],
+            );
+          },
         ) ??
         false;
   }
@@ -231,27 +241,30 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final target = activeContact?.gatewayLabel ?? _connectionForm.baseUrl.text;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-disconnect-confirm-dialog'),
-        title: const Text('Disconnect from Hermes?'),
-        content: Text(
-          'Disconnect from ${_safeHermesUiPreview(target, maxLength: 120)} '
-          'and remove this saved endpoint/API key from this device. Other saved '
-          'Hermes gateways remain available.',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-disconnect-cancel'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-disconnect-confirm-dialog'),
+          title: Text(strings.chatConnectionDisconnectTitle),
+          content: Text(
+            strings.chatConnectionDisconnectBody(
+              _safeHermesUiPreview(target, maxLength: 120),
+            ),
           ),
-          FilledButton(
-            key: const ValueKey('hermes-disconnect-confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Disconnect'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-disconnect-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-disconnect-confirm'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.chatConnectionDisconnectAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true) await _disconnect(channel);
   }
@@ -273,64 +286,73 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final rawLogsSummary = _rawLogsDeferredSummary();
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        insetPadding: const EdgeInsets.all(16),
-        contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-        title: const Text('Hermes diagnostics'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (state.capabilities != null) ...[
-                  _HermesCapabilityStrip(
-                    capabilities: state.capabilities!,
-                    detailedHealth: state.detailedHealth,
-                    models: state.models,
-                    skills: state.skills,
-                    enabledToolsets: state.enabledToolsets,
-                    jobs: state.jobs,
-                    optionalResourceErrors: state.optionalResourceErrors,
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          insetPadding: const EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+          title: Text(strings.chatConnectionDiagnosticsTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (state.capabilities != null) ...[
+                    _HermesCapabilityStrip(
+                      capabilities: state.capabilities!,
+                      detailedHealth: state.detailedHealth,
+                      models: state.models,
+                      skills: state.skills,
+                      enabledToolsets: state.enabledToolsets,
+                      jobs: state.jobs,
+                      optionalResourceErrors: state.optionalResourceErrors,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  SelectableText(
+                    diagnostics,
+                    key: const ValueKey('hermes-diagnostics-text'),
                   ),
-                  const SizedBox(height: 12),
                 ],
-                SelectableText(
-                  diagnostics,
-                  key: const ValueKey('hermes-diagnostics-text'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton.icon(
-            key: const ValueKey('hermes-raw-logs-status-copy'),
-            onPressed: () {
-              unawaited(Clipboard.setData(ClipboardData(text: rawLogsSummary)));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Raw-log status copied')),
-              );
-            },
-            icon: const Icon(Icons.copy_outlined),
-            label: const Text('Copy raw-log status'),
-          ),
-          TextButton(
-            key: const ValueKey('hermes-diagnostics-copy'),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: diagnostics));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Hermes diagnostics copied')),
-              );
-            },
-            child: const Text('Copy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton.icon(
+              key: const ValueKey('hermes-raw-logs-status-copy'),
+              onPressed: () {
+                unawaited(
+                  Clipboard.setData(ClipboardData(text: rawLogsSummary)),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(strings.chatConnectionRawLogStatusCopiedBody),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy_outlined),
+              label: Text(strings.chatConnectionCopyRawLogStatusAction),
+            ),
+            TextButton(
+              key: const ValueKey('hermes-diagnostics-copy'),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: diagnostics));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(strings.chatConnectionDiagnosticsCopiedBody),
+                  ),
+                );
+              },
+              child: Text(strings.chatConnectionCopyAction),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.closeAction),
+            ),
+          ],
+        );
+      },
     );
   }
 

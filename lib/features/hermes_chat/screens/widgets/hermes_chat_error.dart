@@ -29,44 +29,45 @@ class _HermesChatError extends StatelessWidget {
         _isHermesNetworkError(lower) || lower.contains('stream');
     final runCancelled = lower.contains('hermes run was cancelled');
     final runFailed = lower.contains('hermes run failed');
+    final strings = AppLocalizations.of(context);
     final (title, recovery) = authRejected
         ? (
-            'Hermes API rejected the saved API key.',
-            'Reconnect with a fresh Hermes API key, then retry this message.',
+            strings.chatErrorAuthRejectedTitle,
+            strings.chatErrorAuthRejectedBody,
           )
         : approvalResponseFailed
         ? (
-            'Hermes could not record the approval decision.',
-            'Review the request, check that the run is still active, then try the decision again.',
+            strings.chatErrorApprovalResponseFailedTitle,
+            strings.chatErrorApprovalResponseFailedBody,
           )
         : malformedApprovalRequest
         ? (
-            'Hermes sent an incomplete approval request.',
-            'Retry when Hermes can provide an approval id for this run.',
+            strings.chatErrorMalformedApprovalTitle,
+            strings.chatErrorMalformedApprovalBody,
           )
         : unsupportedChatTransport
         ? (
-            'Hermes endpoint does not support chat turns.',
-            'Connect to a Hermes API server that advertises session chat streaming or run events.',
+            strings.chatErrorUnsupportedTransportTitle,
+            strings.chatErrorUnsupportedTransportBody,
           )
         : runStillActive
         ? (
-            'Hermes run is still active.',
-            'Reconnect to reconcile this run before sending it again.',
+            strings.chatErrorRunStillActiveTitle,
+            strings.chatErrorRunStillActiveBody,
           )
         : runCancelled
-        ? ('Hermes run was cancelled.', 'Start a new turn when you are ready.')
-        : runFailed
         ? (
-            'Hermes run failed.',
-            'Check Hermes, then retry this message when the run is recoverable.',
+            strings.chatErrorRunCancelledTitle,
+            strings.chatErrorRunCancelledBody,
           )
+        : runFailed
+        ? (strings.chatErrorRunFailedTitle, strings.chatErrorRunFailedBody)
         : streamOrNetworkFailure
         ? (
-            'Hermes stream dropped.',
-            'Check the endpoint/network and send again when Hermes is reachable.',
+            strings.chatErrorStreamDroppedTitle,
+            strings.chatErrorStreamDroppedBody,
           )
-        : ('Hermes could not finish the turn.', 'Retry when Hermes is ready.');
+        : (strings.chatErrorGenericTitle, strings.chatErrorGenericBody);
     final colorScheme = Theme.of(context).colorScheme;
     return _AssistantTimelineItem(
       child: Align(
@@ -112,7 +113,7 @@ class _HermesChatError extends StatelessWidget {
                             error: error,
                           ),
                           icon: const Icon(Icons.article_outlined),
-                          label: const Text('Details'),
+                          label: Text(strings.chatErrorDetailsAction),
                         ),
                         if (authRejected && onReauthorize != null)
                           OutlinedButton.icon(
@@ -121,7 +122,7 @@ class _HermesChatError extends StatelessWidget {
                             ),
                             onPressed: onReauthorize,
                             icon: const Icon(Icons.key_outlined),
-                            label: const Text('Update key'),
+                            label: Text(strings.chatErrorUpdateKeyAction),
                           )
                         else if ((runStillActive || streamOrNetworkFailure) &&
                             onReconnect != null)
@@ -129,14 +130,16 @@ class _HermesChatError extends StatelessWidget {
                             key: const ValueKey('hermes-chat-error-reconnect'),
                             onPressed: onReconnect,
                             icon: const Icon(Icons.cable_outlined),
-                            label: const Text('Reconnect'),
+                            label: Text(strings.chatErrorReconnectAction),
                           ),
                         if (onRetry != null)
                           FilledButton.icon(
                             key: const ValueKey('hermes-chat-error-retry'),
                             onPressed: onRetry,
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Retry last message'),
+                            label: Text(
+                              strings.chatErrorRetryLastMessageAction,
+                            ),
                           ),
                       ],
                     ),
@@ -165,67 +168,70 @@ void _showHermesErrorDetailsSheet(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetContext) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          key: const ValueKey('hermes-error-details-sheet'),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(title, style: Theme.of(sheetContext).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Text(recovery),
-              const SizedBox(height: 12),
-              const Text('Redacted error details'),
-              const SizedBox(height: 4),
-              SelectableText(
-                safeError,
-                key: const ValueKey('hermes-error-details-text'),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Secrets, bearer tokens, API keys, cookies, and copied endpoint credentials are redacted before display.',
-                key: ValueKey('hermes-error-details-redaction-note'),
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      key: const ValueKey('hermes-error-details-copy'),
-                      onPressed: () {
-                        unawaited(
-                          Clipboard.setData(ClipboardData(text: safeError)),
-                        );
-                        ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Copied redacted Hermes error details.',
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.copy_outlined),
-                      label: const Text('Copy redacted details'),
-                    ),
-                    TextButton(
-                      key: const ValueKey('hermes-error-details-close'),
-                      onPressed: () => Navigator.of(sheetContext).pop(),
-                      child: const Text('Close'),
-                    ),
-                  ],
+    builder: (sheetContext) {
+      final strings = AppLocalizations.of(sheetContext);
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            key: const ValueKey('hermes-error-details-sheet'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(title, style: Theme.of(sheetContext).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(recovery),
+                const SizedBox(height: 12),
+                Text(strings.chatErrorRedactedDetailsLabel),
+                const SizedBox(height: 4),
+                SelectableText(
+                  safeError,
+                  key: const ValueKey('hermes-error-details-text'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  strings.chatErrorRedactionNoteBody,
+                  key: const ValueKey('hermes-error-details-redaction-note'),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        key: const ValueKey('hermes-error-details-copy'),
+                        onPressed: () {
+                          unawaited(
+                            Clipboard.setData(ClipboardData(text: safeError)),
+                          );
+                          ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                strings.chatErrorCopiedRedactedDetailsBody,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_outlined),
+                        label: Text(strings.chatErrorCopyRedactedDetailsAction),
+                      ),
+                      TextButton(
+                        key: const ValueKey('hermes-error-details-close'),
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: Text(strings.closeAction),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -335,7 +341,7 @@ class _EndpointProfileChips extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Saved Hermes profiles',
+          AppLocalizations.of(context).chatErrorSavedProfilesLabel,
           style: Theme.of(context).textTheme.labelLarge,
         ),
         const SizedBox(height: 8),
@@ -378,7 +384,9 @@ class _EndpointProfileChips extends StatelessWidget {
                       key: ValueKey(
                         'hermes-endpoint-profile-rename-${profile.id ?? profile.baseUrl}',
                       ),
-                      tooltip: 'Rename Hermes profile',
+                      tooltip: AppLocalizations.of(
+                        context,
+                      ).chatErrorRenameProfileTooltip,
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       onPressed: connecting || profile.id == null
                           ? null
@@ -399,27 +407,31 @@ class _EndpointProfileChips extends StatelessWidget {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-endpoint-profile-delete-dialog'),
-        title: const Text('Remove saved Hermes profile?'),
-        content: Text(
-          'Remove ${_safeHermesUiPreview(profile.displayLabel, maxLength: 96)} '
-          '(${_safeHermesUiPreview(profile.baseUrl, maxLength: 120)}) from this device. '
-          'Any stored API key for this profile is removed from secure storage.',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-endpoint-profile-delete-cancel'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-endpoint-profile-delete-dialog'),
+          title: Text(strings.chatErrorRemoveProfileTitle),
+          content: Text(
+            strings.chatErrorRemoveProfileBody(
+              _safeHermesUiPreview(profile.displayLabel, maxLength: 96),
+              _safeHermesUiPreview(profile.baseUrl, maxLength: 120),
+            ),
           ),
-          FilledButton(
-            key: const ValueKey('hermes-endpoint-profile-delete-confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-endpoint-profile-delete-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-endpoint-profile-delete-confirm'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.chatErrorRemoveProfileAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true) onDelete(profile);
   }
@@ -482,17 +494,18 @@ class _HermesConnectError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lower = error.toLowerCase();
+    final strings = AppLocalizations.of(context);
     final (title, recovery) = _isHermesAuthError(lower)
-        ? (
-            'Hermes API rejected the API key.',
-            'Check the endpoint API key in Hermes and try again.',
-          )
+        ? (strings.chatErrorConnectAuthTitle, strings.chatErrorConnectAuthBody)
         : _isHermesNetworkError(lower)
         ? (
-            'Hermes endpoint is unreachable.',
-            'Check the base URL, network, VPN, and that Hermes API server is running.',
+            strings.chatErrorConnectUnreachableTitle,
+            strings.chatErrorConnectUnreachableBody,
           )
-        : ('Could not connect to Hermes.', 'Check the endpoint and try again.');
+        : (
+            strings.chatErrorConnectGenericTitle,
+            strings.chatErrorConnectGenericBody,
+          );
     return Column(
       key: const ValueKey('hermes-connect-error'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +527,7 @@ class _HermesConnectError extends StatelessWidget {
               error: error,
             ),
             icon: const Icon(Icons.article_outlined),
-            label: const Text('Details'),
+            label: Text(strings.chatErrorDetailsAction),
           ),
         ),
       ],

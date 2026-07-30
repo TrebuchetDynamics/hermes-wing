@@ -43,7 +43,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context).closeAction),
           ),
         ],
       ),
@@ -53,37 +53,43 @@ class _HermesCapabilityStrip extends StatelessWidget {
   void _showOptionalResourceErrors(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unavailable Hermes inventory'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final entry in optionalResourceErrors.entries)
-              ListTile(
-                title: Text(_optionalResourceLabel(entry.key)),
-                subtitle: Text(_safeHermesUiError(entry.value)),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatStatusUnavailableInventoryTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final entry in optionalResourceErrors.entries)
+                ListTile(
+                  title: Text(_optionalResourceLabel(strings, entry.key)),
+                  subtitle: Text(_safeHermesUiError(entry.value)),
+                ),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.closeAction),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  String _optionalResourceLabel(HermesOptionalResource resource) =>
-      switch (resource) {
-        HermesOptionalResource.detailedHealth => 'Detailed health',
-        HermesOptionalResource.models => 'Models',
-        HermesOptionalResource.skills => 'Skills',
-        HermesOptionalResource.toolsets => 'Toolsets',
-        HermesOptionalResource.jobs => 'Jobs',
-      };
+  String _optionalResourceLabel(
+    AppLocalizations strings,
+    HermesOptionalResource resource,
+  ) => switch (resource) {
+    HermesOptionalResource.detailedHealth =>
+      strings.chatStatusDetailedHealthLabel,
+    HermesOptionalResource.models => strings.chatStatusModelsLabel,
+    HermesOptionalResource.skills => strings.chatStatusSkillsLabel,
+    HermesOptionalResource.toolsets => strings.chatStatusToolsetsLabel,
+    HermesOptionalResource.jobs => strings.chatStatusJobsLabel,
+  };
 
   void _showJobs(BuildContext context) {
     final jobsAdminAdvertised =
@@ -91,74 +97,91 @@ class _HermesCapabilityStrip extends StatelessWidget {
         capabilities.advertisesEndpoint('jobs', 'GET', '/api/jobs');
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hermes jobs'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text(
-                  jobsAdminAdvertised
-                      ? 'Read-only inventory. Hermes advertises jobs admin, but Hermes Wing has not enabled mobile create/edit/delete scheduling.'
-                      : 'Read-only inventory. Mobile create/edit/delete scheduling is not available.',
-                  key: const ValueKey('hermes-jobs-read-only-note'),
-                ),
-              ),
-              for (final job in jobs)
-                ListTile(
-                  title: Text(
-                    _safeHermesUiPreview(job.displayName, maxLength: 96),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(_jobSummary(job)),
-                  trailing: IconButton(
-                    key: ValueKey('hermes-job-copy-${job.id}'),
-                    tooltip: 'Copy job details',
-                    icon: const Icon(Icons.copy_outlined),
-                    onPressed: () {
-                      unawaited(
-                        Clipboard.setData(
-                          ClipboardData(text: _jobDetailsSummary(job)),
-                        ),
-                      );
-                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                        const SnackBar(
-                          content: Text('Copied redacted Hermes job details.'),
-                        ),
-                      );
-                    },
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatStatusJobsTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    jobsAdminAdvertised
+                        ? strings.chatStatusJobsReadOnlyAdminBody
+                        : strings.chatStatusJobsReadOnlyBody,
+                    key: const ValueKey('hermes-jobs-read-only-note'),
                   ),
                 ),
-            ],
+                for (final job in jobs)
+                  ListTile(
+                    title: Text(
+                      _safeHermesUiPreview(job.displayName, maxLength: 96),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(_jobSummary(strings, job)),
+                    trailing: IconButton(
+                      key: ValueKey('hermes-job-copy-${job.id}'),
+                      tooltip: strings.chatStatusCopyJobDetailsTooltip,
+                      icon: const Icon(Icons.copy_outlined),
+                      onPressed: () {
+                        unawaited(
+                          Clipboard.setData(
+                            ClipboardData(text: _jobDetailsSummary(job)),
+                          ),
+                        );
+                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              strings.chatStatusCopiedJobDetailsBody,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.closeAction),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  String _jobSummary(HermesJob job) {
+  String _jobSummary(AppLocalizations strings, HermesJob job) {
     final parts = <String>[
-      job.enabled ? 'Enabled' : 'Disabled',
+      job.enabled
+          ? strings.chatStatusJobEnabledLabel
+          : strings.chatStatusJobDisabledLabel,
       if (job.state?.trim().isNotEmpty ?? false)
-        'State: ${_safeHermesUiPreview(job.state!, maxLength: 48)}',
+        strings.chatStatusJobStateLabel(
+          _safeHermesUiPreview(job.state!, maxLength: 48),
+        ),
       if (job.scheduleDisplay?.trim().isNotEmpty ?? false)
-        'Schedule: ${_safeHermesUiPreview(job.scheduleDisplay!, maxLength: 80)}',
+        strings.chatStatusJobScheduleLabel(
+          _safeHermesUiPreview(job.scheduleDisplay!, maxLength: 80),
+        ),
       if (job.nextRunAt?.trim().isNotEmpty ?? false)
-        'Next: ${_safeHermesUiPreview(job.nextRunAt!, maxLength: 48)}',
+        strings.chatStatusJobNextLabel(
+          _safeHermesUiPreview(job.nextRunAt!, maxLength: 48),
+        ),
       if (job.lastRunAt?.trim().isNotEmpty ?? false)
-        'Last: ${_safeHermesUiPreview(job.lastRunAt!, maxLength: 48)}',
+        strings.chatStatusJobLastLabel(
+          _safeHermesUiPreview(job.lastRunAt!, maxLength: 48),
+        ),
       if (job.lastError?.trim().isNotEmpty ?? false)
-        'Last error: ${_safeHermesUiPreview(job.lastError!, maxLength: 96)}',
+        strings.chatStatusJobLastErrorLabel(
+          _safeHermesUiPreview(job.lastError!, maxLength: 96),
+        ),
     ];
     return parts.join(' • ');
   }
@@ -204,49 +227,52 @@ class _HermesCapabilityStrip extends StatelessWidget {
     final summary = _surfaceReadinessSummary(items);
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hermes surface readiness'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text(
-                  'No mobile config, memory, schedule, or messaging-gateway mutation controls are enabled.',
-                  key: ValueKey('hermes-admin-surfaces-note'),
+      builder: (context) {
+        final strings = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(strings.chatStatusSurfaceReadinessTitle),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    strings.chatStatusSurfaceReadinessNoteBody,
+                    key: const ValueKey('hermes-admin-surfaces-note'),
+                  ),
                 ),
-              ),
-              for (final item in items)
-                ListTile(
-                  title: Text(item.title),
-                  subtitle: Text(item.detail),
-                  trailing: Text(item.status.label),
-                ),
-            ],
+                for (final item in items)
+                  ListTile(
+                    title: Text(item.title),
+                    subtitle: Text(item.detail),
+                    trailing: Text(item.status.label),
+                  ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton.icon(
-            key: const ValueKey('hermes-surfaces-copy'),
-            onPressed: () {
-              unawaited(Clipboard.setData(ClipboardData(text: summary)));
-              ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                const SnackBar(
-                  content: Text('Copied Hermes surface readiness summary.'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.copy_outlined),
-            label: const Text('Copy summary'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton.icon(
+              key: const ValueKey('hermes-surfaces-copy'),
+              onPressed: () {
+                unawaited(Clipboard.setData(ClipboardData(text: summary)));
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  SnackBar(
+                    content: Text(strings.chatStatusCopiedSurfaceReadinessBody),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy_outlined),
+              label: Text(strings.chatStatusCopySummaryAction),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.closeAction),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -263,6 +289,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final policy = HermesTransportPolicy(capabilities);
     final surfaceItems = hermesSurfaceReadiness(capabilities);
     final deferredCount = surfaceItems
@@ -273,49 +300,69 @@ class _HermesCapabilityStrip extends StatelessWidget {
         .length;
     final chips = <Widget>[
       if (policy.supportsRunsTransport)
-        const Chip(label: Text('Runs SSE enabled')),
+        Chip(label: Text(strings.chatStatusRunsSseEnabledLabel)),
       if (!policy.supportsRunsTransport && policy.supportsSessionChatStream)
-        const Chip(label: Text('Session chat streaming enabled')),
-      const Chip(label: Text('Voice: device STT → Hermes')),
+        Chip(label: Text(strings.chatStatusSessionChatStreamingLabel)),
+      Chip(label: Text(strings.chatStatusVoiceLabel)),
       if (detailedHealth?.version case final version?)
         Chip(
           label: Text(
-            'Version: ${_safeHermesUiPreview(version, maxLength: 48)}',
+            strings.chatStatusVersionLabel(
+              _safeHermesUiPreview(version, maxLength: 48),
+            ),
           ),
         ),
       if (detailedHealth?.gatewayState case final gatewayState?)
         Chip(
           label: Text(
-            'Gateway: ${_safeHermesUiPreview(gatewayState, maxLength: 48)}',
+            strings.chatStatusGatewayLabel(
+              _safeHermesUiPreview(gatewayState, maxLength: 48),
+            ),
           ),
         ),
       if (detailedHealth != null)
-        Chip(label: Text('Active agents: ${detailedHealth!.activeAgents}')),
+        Chip(
+          label: Text(
+            strings.chatStatusActiveAgentsLabel(detailedHealth!.activeAgents),
+          ),
+        ),
       if (models.isNotEmpty)
         ActionChip(
           key: const ValueKey('hermes-models-chip'),
           label: Text(
-            'Models: ${models.take(2).map((model) => _safeHermesUiPreview(model, maxLength: 48)).join(', ')}',
+            strings.chatStatusModelsChipLabel(
+              models
+                  .take(2)
+                  .map((model) => _safeHermesUiPreview(model, maxLength: 48))
+                  .join(', '),
+            ),
           ),
-          onPressed: () => _showList(context, 'Hermes models', models),
+          onPressed: () =>
+              _showList(context, strings.chatStatusModelsTitle, models),
         ),
       if (skills.isNotEmpty)
         ActionChip(
           key: const ValueKey('hermes-skills-chip'),
-          label: Text('Skills: ${skills.length}'),
-          onPressed: () => _showList(context, 'Hermes skills', skills),
+          label: Text(strings.chatStatusSkillsChipLabel(skills.length)),
+          onPressed: () =>
+              _showList(context, strings.chatStatusSkillsTitle, skills),
         ),
       if (enabledToolsets.isNotEmpty)
         ActionChip(
           key: const ValueKey('hermes-toolsets-chip'),
-          label: Text('Toolsets enabled: ${enabledToolsets.length}'),
-          onPressed: () =>
-              _showList(context, 'Hermes toolsets', enabledToolsets),
+          label: Text(
+            strings.chatStatusToolsetsChipLabel(enabledToolsets.length),
+          ),
+          onPressed: () => _showList(
+            context,
+            strings.chatStatusToolsetsTitle,
+            enabledToolsets,
+          ),
         ),
       if (jobs.isNotEmpty)
         ActionChip(
           key: const ValueKey('hermes-jobs-chip'),
-          label: Text('Jobs: ${jobs.length}'),
+          label: Text(strings.chatStatusJobsChipLabel(jobs.length)),
           onPressed: () => _showJobs(context),
         ),
       if (optionalResourceErrors.isNotEmpty)
@@ -323,14 +370,16 @@ class _HermesCapabilityStrip extends StatelessWidget {
           key: const ValueKey('hermes-inventory-errors-chip'),
           avatar: const Icon(Icons.warning_amber_outlined),
           label: Text(
-            'Inventory unavailable: ${optionalResourceErrors.length}',
+            strings.chatStatusInventoryUnavailableChipLabel(
+              optionalResourceErrors.length,
+            ),
           ),
           onPressed: () => _showOptionalResourceErrors(context),
         ),
       ActionChip(
         key: const ValueKey('hermes-surfaces-chip'),
         label: Text(
-          'Surfaces: $deferredCount deferred · $blockedCount blocked',
+          strings.chatStatusSurfacesChipLabel(deferredCount, blockedCount),
         ),
         onPressed: () => _showSurfaceReadiness(context),
       ),
@@ -345,7 +394,9 @@ class _HermesCapabilityStrip extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Hermes Agent ${_safeHermesUiPreview(capabilities.model, maxLength: 96)}',
+                strings.chatStatusAgentHeaderLabel(
+                  _safeHermesUiPreview(capabilities.model, maxLength: 96),
+                ),
               ),
               const SizedBox(height: 8),
               Wrap(spacing: 8, runSpacing: 8, children: chips),
@@ -376,6 +427,7 @@ class _ApprovalBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final risk = request.risk;
     final hasApprovalId = request.id.trim().isNotEmpty;
     final canAnswer = canRespond && hasApprovalId;
@@ -401,8 +453,10 @@ class _ApprovalBanner extends StatelessWidget {
                       Expanded(
                         child: Text(
                           pendingCount > 1
-                              ? '$pendingCount pending approvals'
-                              : 'Hermes approval requested',
+                              ? strings.chatStatusPendingApprovalsLabel(
+                                  pendingCount,
+                                )
+                              : strings.chatStatusApprovalRequestedTitle,
                           key: const ValueKey('hermes-approval-pending-count'),
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
@@ -412,18 +466,24 @@ class _ApprovalBanner extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(_safeHermesUiPreview(request.prompt, maxLength: 240)),
                   if (risk != null)
-                    Text('Risk: ${_safeHermesUiPreview(risk, maxLength: 120)}'),
+                    Text(
+                      strings.chatStatusRiskLabel(
+                        _safeHermesUiPreview(risk, maxLength: 120),
+                      ),
+                    ),
                   if (!canRespond) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Hermes did not advertise approval responses for this run.',
-                      key: ValueKey('hermes-approval-response-unavailable'),
+                    Text(
+                      strings.chatStatusApprovalResponseUnavailableBody,
+                      key: const ValueKey(
+                        'hermes-approval-response-unavailable',
+                      ),
                     ),
                   ] else if (!hasApprovalId) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Hermes sent this approval without an approval id, so it cannot be answered.',
-                      key: ValueKey('hermes-approval-id-missing'),
+                    Text(
+                      strings.chatStatusApprovalIdMissingBody,
+                      key: const ValueKey('hermes-approval-id-missing'),
                     ),
                   ],
                   if (responding) ...[
@@ -432,7 +492,7 @@ class _ApprovalBanner extends StatelessWidget {
                       key: ValueKey('hermes-approval-responding'),
                     ),
                     const SizedBox(height: 4),
-                    const Text('Answering Hermes approval…'),
+                    Text(strings.chatStatusAnsweringApprovalLabel),
                   ],
                   const SizedBox(height: 8),
                   Wrap(
@@ -445,7 +505,7 @@ class _ApprovalBanner extends StatelessWidget {
                             ? null
                             : () => _showApprovalSheet(context),
                         icon: const Icon(Icons.security_outlined),
-                        label: const Text('Review'),
+                        label: Text(strings.chatStatusReviewAction),
                       ),
                       if (!hasApprovalId)
                         TextButton(
@@ -453,35 +513,35 @@ class _ApprovalBanner extends StatelessWidget {
                             'hermes-approval-dismiss-malformed',
                           ),
                           onPressed: responding ? null : onDismissMalformed,
-                          child: const Text('Dismiss'),
+                          child: Text(strings.chatStatusDismissAction),
                         ),
                       TextButton(
                         key: const ValueKey('hermes-approval-deny'),
                         onPressed: responding || !canAnswer
                             ? null
                             : () => onDecide(HermesApprovalDecision.deny),
-                        child: const Text('Deny'),
+                        child: Text(strings.chatStatusDenyAction),
                       ),
                       OutlinedButton(
                         key: const ValueKey('hermes-approval-session'),
                         onPressed: responding || !canAnswer
                             ? null
                             : () => unawaited(_confirmSessionAllow(context)),
-                        child: const Text('Allow for session'),
+                        child: Text(strings.chatStatusAllowForSessionAction),
                       ),
                       OutlinedButton(
                         key: const ValueKey('hermes-approval-always'),
                         onPressed: responding || !canAnswer
                             ? null
                             : () => unawaited(_confirmAlwaysAllow(context)),
-                        child: const Text('Always allow'),
+                        child: Text(strings.chatStatusAlwaysAllowAction),
                       ),
                       FilledButton(
                         key: const ValueKey('hermes-approval-once'),
                         onPressed: responding || !canAnswer
                             ? null
                             : () => onDecide(HermesApprovalDecision.once),
-                        child: const Text('Approve once'),
+                        child: Text(strings.chatStatusApproveOnceAction),
                       ),
                     ],
                   ),
@@ -501,27 +561,30 @@ class _ApprovalBanner extends StatelessWidget {
     final risk = request.risk;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-approval-session-confirm-dialog'),
-        title: const Text('Allow this for the session?'),
-        content: Text(
-          '${_safeHermesUiPreview(request.prompt, maxLength: 240)}'
-          '${risk == null ? '' : '\nRisk: ${_safeHermesUiPreview(risk, maxLength: 160)}'}\n\n'
-          'This may approve matching requests for the current Hermes session.',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-approval-session-cancel'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-approval-session-confirm-dialog'),
+          title: Text(strings.chatStatusAllowForSessionTitle),
+          content: Text(
+            '${_safeHermesUiPreview(request.prompt, maxLength: 240)}'
+            '${risk == null ? '' : '\n${strings.chatStatusRiskLabel(_safeHermesUiPreview(risk, maxLength: 160))}'}\n\n'
+            '${strings.chatStatusAllowForSessionBody}',
           ),
-          FilledButton(
-            key: const ValueKey('hermes-approval-session-confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Allow for session'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-approval-session-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-approval-session-confirm'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.chatStatusAllowForSessionAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     if (closeSheetOnConfirm && context.mounted) {
@@ -537,27 +600,30 @@ class _ApprovalBanner extends StatelessWidget {
     final risk = request.risk;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-approval-always-confirm-dialog'),
-        title: const Text('Always allow this Hermes approval?'),
-        content: Text(
-          '${_safeHermesUiPreview(request.prompt, maxLength: 240)}'
-          '${risk == null ? '' : '\nRisk: ${_safeHermesUiPreview(risk, maxLength: 160)}'}\n\n'
-          'This may approve matching future requests without asking again.',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-approval-always-cancel'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-approval-always-confirm-dialog'),
+          title: Text(strings.chatStatusAlwaysAllowTitle),
+          content: Text(
+            '${_safeHermesUiPreview(request.prompt, maxLength: 240)}'
+            '${risk == null ? '' : '\n${strings.chatStatusRiskLabel(_safeHermesUiPreview(risk, maxLength: 160))}'}\n\n'
+            '${strings.chatStatusAlwaysAllowBody}',
           ),
-          FilledButton(
-            key: const ValueKey('hermes-approval-always-confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Always allow'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-approval-always-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-approval-always-confirm'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.chatStatusAlwaysAllowAction),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     if (closeSheetOnConfirm && context.mounted) {
@@ -572,6 +638,7 @@ class _ApprovalBanner extends StatelessWidget {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (sheetContext) {
+        final strings = AppLocalizations.of(sheetContext);
         final risk = request.risk;
         final hasApprovalId = request.id.trim().isNotEmpty;
         final canAnswer = canRespond && hasApprovalId;
@@ -601,13 +668,13 @@ class _ApprovalBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Review Hermes approval',
+                    strings.chatStatusReviewApprovalTitle,
                     style: Theme.of(sheetContext).textTheme.titleLarge,
                   ),
                   if (pendingCount > 1) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Reviewing 1 of $pendingCount pending approvals',
+                      strings.chatStatusReviewingPendingLabel(pendingCount),
                       key: const ValueKey(
                         'hermes-approval-sheet-pending-count',
                       ),
@@ -619,38 +686,46 @@ class _ApprovalBanner extends StatelessWidget {
                     key: const ValueKey('hermes-approval-sheet-prompt'),
                   ),
                   if (promptTruncated)
-                    const Text(
-                      'Prompt preview truncated for mobile review.',
-                      key: ValueKey('hermes-approval-sheet-prompt-truncated'),
+                    Text(
+                      strings.chatStatusPromptTruncatedBody,
+                      key: const ValueKey(
+                        'hermes-approval-sheet-prompt-truncated',
+                      ),
                     ),
                   if (safeRisk != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Risk: ${_safeHermesUiPreview(safeRisk, maxLength: 240)}',
+                      strings.chatStatusRiskLabel(
+                        _safeHermesUiPreview(safeRisk, maxLength: 240),
+                      ),
                       key: const ValueKey('hermes-approval-sheet-risk'),
                     ),
                     if (riskTruncated)
-                      const Text(
-                        'Risk preview truncated for mobile review.',
-                        key: ValueKey('hermes-approval-sheet-risk-truncated'),
+                      Text(
+                        strings.chatStatusRiskTruncatedBody,
+                        key: const ValueKey(
+                          'hermes-approval-sheet-risk-truncated',
+                        ),
                       ),
                   ],
                   if (request.toolCallId.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Tool call: ${_safeHermesUiPreview(safeToolCallId, maxLength: 160)}',
+                      strings.chatStatusToolCallLabel(
+                        _safeHermesUiPreview(safeToolCallId, maxLength: 160),
+                      ),
                     ),
                   ],
                   if (!canRespond) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Decision buttons are disabled because Hermes did not advertise /v1/runs/{run_id}/approval.',
+                    Text(
+                      strings.chatStatusDecisionsDisabledEndpointBody(
+                        '{run_id}',
+                      ),
                     ),
                   ] else if (!hasApprovalId) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Decision buttons are disabled because Hermes did not include an approval id.',
-                    ),
+                    Text(strings.chatStatusDecisionsDisabledIdBody),
                   ],
                   const SizedBox(height: 16),
                   Wrap(
@@ -667,20 +742,20 @@ class _ApprovalBanner extends StatelessWidget {
                             ),
                           );
                           ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Copied redacted Hermes approval details.',
+                                strings.chatStatusCopiedApprovalDetailsBody,
                               ),
                             ),
                           );
                         },
                         icon: const Icon(Icons.copy_outlined),
-                        label: const Text('Copy details'),
+                        label: Text(strings.chatStatusCopyDetailsAction),
                       ),
                       TextButton(
                         key: const ValueKey('hermes-approval-sheet-close'),
                         onPressed: () => Navigator.of(sheetContext).pop(),
-                        child: const Text('Close'),
+                        child: Text(strings.closeAction),
                       ),
                       if (!hasApprovalId)
                         TextButton(
@@ -691,7 +766,7 @@ class _ApprovalBanner extends StatelessWidget {
                             Navigator.of(sheetContext).pop();
                             onDismissMalformed();
                           },
-                          child: const Text('Dismiss'),
+                          child: Text(strings.chatStatusDismissAction),
                         ),
                       TextButton(
                         key: const ValueKey('hermes-approval-sheet-deny'),
@@ -701,7 +776,7 @@ class _ApprovalBanner extends StatelessWidget {
                                 onDecide(HermesApprovalDecision.deny);
                               }
                             : null,
-                        child: const Text('Deny'),
+                        child: Text(strings.chatStatusDenyAction),
                       ),
                       OutlinedButton(
                         key: const ValueKey('hermes-approval-sheet-session'),
@@ -713,7 +788,7 @@ class _ApprovalBanner extends StatelessWidget {
                                 ),
                               )
                             : null,
-                        child: const Text('Allow for session'),
+                        child: Text(strings.chatStatusAllowForSessionAction),
                       ),
                       OutlinedButton(
                         key: const ValueKey('hermes-approval-sheet-always'),
@@ -725,7 +800,7 @@ class _ApprovalBanner extends StatelessWidget {
                                 ),
                               )
                             : null,
-                        child: const Text('Always allow'),
+                        child: Text(strings.chatStatusAlwaysAllowAction),
                       ),
                       FilledButton(
                         key: const ValueKey('hermes-approval-sheet-once'),
@@ -735,7 +810,7 @@ class _ApprovalBanner extends StatelessWidget {
                                 onDecide(HermesApprovalDecision.once);
                               }
                             : null,
-                        child: const Text('Approve once'),
+                        child: Text(strings.chatStatusApproveOnceAction),
                       ),
                     ],
                   ),

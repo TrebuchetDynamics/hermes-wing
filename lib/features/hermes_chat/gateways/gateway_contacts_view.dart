@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import 'gateway_contact.dart';
 
 class GatewayContactsView extends StatelessWidget {
@@ -32,12 +33,18 @@ class GatewayContactsView extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('No Hermes gateways yet'),
+                    Text(
+                      AppLocalizations.of(context).gatewayContactsEmptyTitle,
+                    ),
                     if (onConnect != null) ...[
                       const SizedBox(height: 12),
                       FilledButton(
                         onPressed: onConnect,
-                        child: const Text('Connect gateway'),
+                        child: Text(
+                          AppLocalizations.of(
+                            context,
+                          ).gatewayContactsConnectAction,
+                        ),
                       ),
                     ],
                   ],

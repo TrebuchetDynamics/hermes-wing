@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
@@ -34,7 +35,11 @@ void main() {
             FakeHermesEndpointStore(),
           ),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -84,7 +89,11 @@ void main() {
           hermesEndpointStoreProvider.overrideWithValue(store),
           hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

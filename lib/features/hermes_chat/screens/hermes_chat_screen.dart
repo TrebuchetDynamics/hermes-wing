@@ -257,7 +257,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       unawaited(_reconnectAfterResumeIfRecoverable());
     } else {
       _voiceInputController.pause(
-        'Continuous voice paused while Hermes Wing is not in the foreground.',
+        _hermesStrings(context).chatShellVoicePausedBackgroundBody,
       );
     }
   }
@@ -373,7 +373,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     // refresh inside selectProfile, so nothing from the prior profile is
     // retained here.
     _voiceInputController.pause(
-      'Continuous voice paused while switching agents.',
+      _hermesStrings(context).chatShellVoicePausedSwitchingAgentsBody,
     );
     setState(_approvals.reset);
     try {
@@ -411,7 +411,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Could not answer Hermes approval: ${_safeHermesUiError(error)}',
+          _hermesStrings(
+            context,
+          ).chatShellApprovalAnswerFailedBody(_safeHermesUiError(error)),
         ),
       ),
     );
@@ -426,23 +428,24 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (!_hasActiveGatewayWork(channel)) return true;
     return await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            key: const ValueKey('hermes-gateway-switch-confirm-dialog'),
-            title: const Text('Switch chats?'),
-            content: const Text(
-              'This gateway has active work or an approval. Switching closes its live streams; Hermes remains authoritative and will reconcile them when reopened.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Stay'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Switch'),
-              ),
-            ],
-          ),
+          builder: (dialogContext) {
+            final strings = AppLocalizations.of(dialogContext);
+            return AlertDialog(
+              key: const ValueKey('hermes-gateway-switch-confirm-dialog'),
+              title: Text(strings.chatShellSwitchChatsTitle),
+              content: Text(strings.chatShellSwitchChatsBody),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(strings.chatShellStayAction),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(strings.chatShellSwitchAction),
+                ),
+              ],
+            );
+          },
         ) ??
         false;
   }
@@ -462,13 +465,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   Future<void> _showGatewayContacts() async {
     final channel = ref.read(hermesChannelProvider);
     if (!await _confirmLeaveActiveContact(channel) || !mounted) return;
-    _voiceInputController.pause('Closed Hermes contact.');
+    _voiceInputController.pause(
+      _hermesStrings(context).chatShellContactClosedBody,
+    );
     _followUps.clear();
     _approvals.clearPending();
     await ref.read(hermesGatewayDirectoryProvider).showDirectory();
   }
 
   Future<void> _openGatewayContact(GatewayContactId id) async {
+    final strings = _hermesStrings(context);
     final channel = ref.read(hermesChannelProvider);
     final directory = ref.read(hermesGatewayDirectoryProvider);
     if (directory.activeContactId != null &&
@@ -476,7 +482,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         !await _confirmLeaveActiveContact(channel)) {
       return;
     }
-    _voiceInputController.pause('Switched Hermes contact.');
+    _voiceInputController.pause(strings.chatShellContactSwitchedBody);
     _followUps.clear();
     _approvals.clearPending();
     await directory.activate(id);
@@ -585,16 +591,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
             ? null
             : IconButton(
                 key: const ValueKey('hermes-back-to-contacts'),
-                tooltip: 'All chats',
+                tooltip: strings.chatShellAllChatsTooltip,
                 onPressed: () => unawaited(_showGatewayContacts()),
                 icon: const Icon(Icons.arrow_back),
               ),
         title: activeContact == null
             ? Text(
                 showingDirectory
-                    ? 'Hermes'
+                    ? strings.chatShellHermesTitle
                     : _safeHermesUiPreview(
-                        activeSession?.title ?? 'Hermes',
+                        activeSession?.title ?? strings.chatShellHermesTitle,
                         maxLength: 96,
                       ),
               )
@@ -667,7 +673,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           if (showingDirectory)
             IconButton(
               key: const ValueKey('hermes-connect-another-gateway'),
-              tooltip: 'Connect another gateway',
+              tooltip: strings.chatShellConnectAnotherGatewayTooltip,
               onPressed: () => context.push(AppRoutes.enroll),
               icon: const Icon(Icons.add_link),
             ),
@@ -681,7 +687,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                     ? strings.desktopSessionsShortcutTooltip(
                         _desktopShortcutModifier,
                       )
-                    : 'Sessions',
+                    : strings.chatShellSessionsLabel,
                 icon: const Icon(Icons.view_list_outlined),
                 onPressed: () => _showSessionsPanel(context, channel),
               ),
@@ -692,7 +698,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                       ? strings.desktopNewSessionShortcutTooltip(
                           _desktopShortcutModifier,
                         )
-                      : 'New session',
+                      : strings.chatShellNewSessionLabel,
                   icon: const Icon(Icons.add_comment_outlined),
                   onPressed: () => unawaited(_createSession(context, channel)),
                 ),
@@ -700,7 +706,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
             if (compactAppBar)
               PopupMenuButton<String>(
                 key: const ValueKey('hermes-more-actions-button'),
-                tooltip: 'More actions',
+                tooltip: strings.chatShellMoreActionsTooltip,
                 onSelected: (action) {
                   switch (action) {
                     case 'sessions':
@@ -716,20 +722,20 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'sessions',
                     child: ListTile(
-                      leading: Icon(Icons.view_list_outlined),
-                      title: Text('Sessions'),
+                      leading: const Icon(Icons.view_list_outlined),
+                      title: Text(strings.chatShellSessionsLabel),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                   if (_canCreateSession(state))
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'new-session',
                       child: ListTile(
-                        leading: Icon(Icons.add_comment_outlined),
-                        title: Text('New session'),
+                        leading: const Icon(Icons.add_comment_outlined),
+                        title: Text(strings.chatShellNewSessionLabel),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -742,19 +748,19 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'diagnostics',
                     child: ListTile(
-                      leading: Icon(Icons.info_outline),
-                      title: Text('Diagnostics'),
+                      leading: const Icon(Icons.info_outline),
+                      title: Text(strings.chatShellDiagnosticsLabel),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'disconnect',
                     child: ListTile(
-                      leading: Icon(Icons.logout_outlined),
-                      title: Text('Disconnect'),
+                      leading: const Icon(Icons.logout_outlined),
+                      title: Text(strings.chatShellDisconnectLabel),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
@@ -771,13 +777,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 ),
               IconButton(
                 key: const ValueKey('hermes-diagnostics-button'),
-                tooltip: 'Diagnostics',
+                tooltip: strings.chatShellDiagnosticsLabel,
                 icon: const Icon(Icons.info_outline),
                 onPressed: () => _showDiagnosticsDialog(context, state),
               ),
               IconButton(
                 key: const ValueKey('hermes-disconnect-button'),
-                tooltip: 'Disconnect',
+                tooltip: strings.chatShellDisconnectLabel,
                 icon: const Icon(Icons.logout_outlined),
                 onPressed: () =>
                     unawaited(_confirmDisconnect(context, channel)),
@@ -867,17 +873,29 @@ List<String> _hermesTranscriptSections(
   final sections = <String>[];
   if (session != null && _hasHermesExtendedSessionMetadata(session)) {
     final metadata = [
-      'Session: ${_safeHermesUiPreview(session.title ?? session.id, maxLength: 96)}',
-      'Session ID: ${_safeHermesUiPreview(session.id, maxLength: 120)}',
+      strings.chatShellTranscriptSessionLabel(
+        _safeHermesUiPreview(session.title ?? session.id, maxLength: 96),
+      ),
+      strings.chatShellTranscriptSessionIdLabel(
+        _safeHermesUiPreview(session.id, maxLength: 120),
+      ),
       if (session.model?.trim().isNotEmpty ?? false)
-        'Model: ${_safeHermesUiPreview(session.model!.trim(), maxLength: 120)}',
-      'Messages: ${session.messageCount}',
-      ..._hermesExtendedSessionMetadataLines(session),
+        strings.sessionModelLabel(
+          _safeHermesUiPreview(session.model!.trim(), maxLength: 120),
+        ),
+      strings.chatShellTranscriptMessageCountLabel(session.messageCount),
+      ..._hermesExtendedSessionMetadataLines(strings, session),
     ];
     sections.add(
       markdown
-          ? ['## Session metadata', metadata.join('\n')].join('\n\n')
-          : ['Session metadata', ...metadata].join('\n'),
+          ? [
+              '## ${strings.chatShellTranscriptSessionMetadataTitle}',
+              metadata.join('\n'),
+            ].join('\n\n')
+          : [
+              strings.chatShellTranscriptSessionMetadataTitle,
+              ...metadata,
+            ].join('\n'),
     );
   }
   for (final turn in turns) {

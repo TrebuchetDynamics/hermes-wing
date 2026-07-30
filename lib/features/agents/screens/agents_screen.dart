@@ -192,6 +192,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
   }
 
   Widget _buildGatewayPicker(HermesGatewayDirectory directory) {
+    final strings = AppLocalizations.of(context);
     final selectedId = directory.activeContactId?.gatewayId;
     final selected = directory.gateways.any((item) => item.id == selectedId)
         ? selectedId
@@ -206,11 +207,11 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
             child: DropdownButtonFormField<String>(
               key: ValueKey('agents-gateway-picker-$selected'),
               initialValue: selected,
-              decoration: const InputDecoration(
-                labelText: 'Gateway',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: strings.gatewayLabel,
+                border: const OutlineInputBorder(),
               ),
-              hint: const Text('Select gateway'),
+              hint: Text(strings.agentsSelectGatewayHint),
               items: [
                 for (final gateway in directory.gateways)
                   DropdownMenuItem(
@@ -228,7 +229,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text('Add and edit profiles on the selected gateway.'),
+          Text(strings.agentsGatewayPickerHelp),
         ],
       ),
     );

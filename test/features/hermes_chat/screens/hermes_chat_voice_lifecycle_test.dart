@@ -29,7 +29,11 @@ void main() {
         overrides: [
           hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -170,7 +174,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -228,6 +236,8 @@ void main() {
         ProviderScope(
           overrides: [hermesChannelProvider.overrideWithValue(channel)],
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: HermesChatScreen(
               voiceCaptureServiceOverride: capture,
               textToSpeechServiceOverride: tts,
@@ -267,6 +277,8 @@ void main() {
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(voiceCaptureServiceOverride: capture),
         ),
       ),
@@ -311,6 +323,8 @@ void main() {
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(
             voiceCaptureServiceOverride: capture,
             textToSpeechServiceOverride: tts,
@@ -352,7 +366,11 @@ void main() {
             ),
           ),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -390,6 +408,8 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(voiceCaptureServiceOverride: capture),
         ),
       ),
@@ -421,6 +441,8 @@ void main() {
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(voiceCaptureServiceOverride: capture),
         ),
       ),

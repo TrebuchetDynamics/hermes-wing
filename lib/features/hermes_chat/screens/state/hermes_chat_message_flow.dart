@@ -284,8 +284,8 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
 
   Future<void> _confirmClearQueuedFollowUps(BuildContext context) async {
     if (_followUps.isEmpty) return;
+    final strings = AppLocalizations.of(context);
     final count = _followUps.length;
-    final label = count == 1 ? 'follow-up' : 'follow-ups';
     final preview = _followUps.pending
         .take(3)
         .map((queued) => _safeHermesUiPreview(queued.text, maxLength: 80))
@@ -294,21 +294,22 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       context: context,
       builder: (dialogContext) => AlertDialog(
         key: const ValueKey('hermes-queued-follow-up-clear-dialog'),
-        title: Text('Cancel $count queued $label?'),
+        title: Text(strings.chatQueuedCancelTitle(count)),
         content: Text(
-          '$preview${count > 3 ? '\n+${count - 3} more' : ''}\n\n'
-          'Queued text is redacted and bounded in this confirmation.',
+          '$preview'
+          '${count > 3 ? '\n${strings.chatQueuedMore(count - 3)}' : ''}'
+          '\n\n${strings.chatQueuedRedactedNote}',
         ),
         actions: [
           TextButton(
             key: const ValueKey('hermes-queued-follow-up-clear-keep'),
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Keep'),
+            child: Text(strings.chatQueuedKeepAction),
           ),
           FilledButton(
             key: const ValueKey('hermes-queued-follow-up-clear-confirm'),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Cancel all'),
+            child: Text(strings.chatQueuedCancelAllAction),
           ),
         ],
       ),

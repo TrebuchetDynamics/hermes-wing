@@ -1471,4 +1471,1141 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollConnectAction => 'Connect';
+
+  @override
+  String get closeAction => 'Close';
+
+  @override
+  String routeNotFound(String path) {
+    return 'Route not found: $path';
+  }
+
+  @override
+  String get agentsSelectGatewayHint => 'Select gateway';
+
+  @override
+  String get agentsGatewayPickerHelp =>
+      'Add and edit profiles on the selected gateway.';
+
+  @override
+  String get gatewayContactsEmptyTitle => 'No Hermes gateways yet';
+
+  @override
+  String get gatewayContactsConnectAction => 'Connect gateway';
+
+  @override
+  String chatQueuedCancelTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cancel $count queued follow-ups?',
+      one: 'Cancel $count queued follow-up?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatQueuedMore(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String get chatQueuedRedactedNote =>
+      'Queued text is redacted and bounded in this confirmation.';
+
+  @override
+  String get chatQueuedKeepAction => 'Keep';
+
+  @override
+  String get chatQueuedCancelAllAction => 'Cancel all';
+
+  @override
+  String get chatConnectionRenameProfileTitle => 'Rename Hermes profile';
+
+  @override
+  String get chatConnectionProfileLabelLabel => 'Profile label';
+
+  @override
+  String get chatConnectionProfileLabelHelper =>
+      'Leave blank to show the endpoint URL.';
+
+  @override
+  String chatConnectionRenameProfileErrorBody(String error) {
+    return 'Could not rename Hermes profile: $error';
+  }
+
+  @override
+  String get chatConnectionCleartextWarningTitle => 'Send API key without TLS?';
+
+  @override
+  String chatConnectionCleartextWarningBody(String endpoint) {
+    return 'The endpoint $endpoint uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.';
+  }
+
+  @override
+  String get chatConnectionContinueAction => 'Continue';
+
+  @override
+  String get chatConnectionDisconnectTitle => 'Disconnect from Hermes?';
+
+  @override
+  String chatConnectionDisconnectBody(String target) {
+    return 'Disconnect from $target and remove this saved endpoint/API key from this device. Other saved Hermes gateways remain available.';
+  }
+
+  @override
+  String get chatConnectionDiagnosticsTitle => 'Hermes diagnostics';
+
+  @override
+  String get chatConnectionRawLogStatusCopiedBody => 'Raw-log status copied';
+
+  @override
+  String get chatConnectionCopyRawLogStatusAction => 'Copy raw-log status';
+
+  @override
+  String get chatConnectionDiagnosticsCopiedBody => 'Hermes diagnostics copied';
+
+  @override
+  String get chatConnectionCopyAction => 'Copy';
+
+  @override
+  String get chatConnectionDisconnectAction => 'Disconnect';
+
+  @override
+  String chatSessionActionCreateFailedBody(String error) {
+    return 'Could not create session: $error';
+  }
+
+  @override
+  String chatSessionActionOpenFailedBody(String error) {
+    return 'Could not open session: $error';
+  }
+
+  @override
+  String get chatSessionActionRenameTitle => 'Rename session';
+
+  @override
+  String get chatSessionActionTitleFieldLabel => 'Session title';
+
+  @override
+  String chatSessionActionRenameFailedBody(String error) {
+    return 'Could not rename session: $error';
+  }
+
+  @override
+  String get chatSessionActionBranchTitle => 'Branch this session?';
+
+  @override
+  String chatSessionActionBranchBody(String title) {
+    return 'Create a new session with the conversation history from “$title”? The original remains in Hermes and the new branch becomes active.';
+  }
+
+  @override
+  String get chatSessionActionBranchConfirmAction => 'Create branch';
+
+  @override
+  String get chatSessionActionBranchCreatedBody =>
+      'Created a new session branch.';
+
+  @override
+  String chatSessionActionBranchFailedBody(String error) {
+    return 'Could not create session branch: $error';
+  }
+
+  @override
+  String chatSessionActionDeleteManyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count sessions?',
+      one: 'Delete $count session?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatSessionActionDeleteManyBody =>
+      'Delete the selected sessions from Hermes? This cannot be undone.';
+
+  @override
+  String get chatSessionActionDeleteAction => 'Delete';
+
+  @override
+  String chatSessionActionDeletedCountBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count sessions.',
+      one: 'Deleted $count session.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatSessionActionDeletedPartialBody(
+    int deleted,
+    int count,
+    int failed,
+  ) {
+    return 'Deleted $deleted of $count sessions. $failed could not be deleted.';
+  }
+
+  @override
+  String get chatSessionActionDeleteTitle => 'Delete session?';
+
+  @override
+  String chatSessionActionDeleteBody(String title) {
+    return 'Delete \"$title\" from Hermes?';
+  }
+
+  @override
+  String chatSessionActionDeleteFailedBody(String error) {
+    return 'Could not delete session: $error';
+  }
+
+  @override
+  String get chatTranscriptCopyChatTextAction => 'Copy entire chat (text)';
+
+  @override
+  String get chatTranscriptCopyChatMarkdownAction =>
+      'Copy entire chat (Markdown)';
+
+  @override
+  String get chatTranscriptReplyAction => 'Reply';
+
+  @override
+  String get chatTranscriptCopyAction => 'Copy';
+
+  @override
+  String get chatTranscriptMessageCopiedLabel => 'Message copied';
+
+  @override
+  String get chatTranscriptToolStatusNeedsAttentionLabel => 'Needs attention';
+
+  @override
+  String get chatTranscriptToolStatusRunningLabel => 'Running';
+
+  @override
+  String get chatTranscriptToolStatusCompletedLabel => 'Completed';
+
+  @override
+  String chatTranscriptToolActivitySingleTitle(String name) {
+    return 'Tool activity: $name';
+  }
+
+  @override
+  String chatTranscriptToolActivityCountTitle(int count) {
+    return 'Tool activity: $count calls';
+  }
+
+  @override
+  String get chatTranscriptActionBlockedTitle => 'Action blocked';
+
+  @override
+  String get chatTranscriptHideDetailsAction => 'Hide details';
+
+  @override
+  String get chatTranscriptDetailsAction => 'Details';
+
+  @override
+  String get chatErrorAuthRejectedTitle =>
+      'Hermes API rejected the saved API key.';
+
+  @override
+  String get chatErrorAuthRejectedBody =>
+      'Reconnect with a fresh Hermes API key, then retry this message.';
+
+  @override
+  String get chatErrorApprovalResponseFailedTitle =>
+      'Hermes could not record the approval decision.';
+
+  @override
+  String get chatErrorApprovalResponseFailedBody =>
+      'Review the request, check that the run is still active, then try the decision again.';
+
+  @override
+  String get chatErrorMalformedApprovalTitle =>
+      'Hermes sent an incomplete approval request.';
+
+  @override
+  String get chatErrorMalformedApprovalBody =>
+      'Retry when Hermes can provide an approval id for this run.';
+
+  @override
+  String get chatErrorUnsupportedTransportTitle =>
+      'Hermes endpoint does not support chat turns.';
+
+  @override
+  String get chatErrorUnsupportedTransportBody =>
+      'Connect to a Hermes API server that advertises session chat streaming or run events.';
+
+  @override
+  String get chatErrorRunStillActiveTitle => 'Hermes run is still active.';
+
+  @override
+  String get chatErrorRunStillActiveBody =>
+      'Reconnect to reconcile this run before sending it again.';
+
+  @override
+  String get chatErrorRunCancelledTitle => 'Hermes run was cancelled.';
+
+  @override
+  String get chatErrorRunCancelledBody =>
+      'Start a new turn when you are ready.';
+
+  @override
+  String get chatErrorRunFailedTitle => 'Hermes run failed.';
+
+  @override
+  String get chatErrorRunFailedBody =>
+      'Check Hermes, then retry this message when the run is recoverable.';
+
+  @override
+  String get chatErrorStreamDroppedTitle => 'Hermes stream dropped.';
+
+  @override
+  String get chatErrorStreamDroppedBody =>
+      'Check the endpoint/network and send again when Hermes is reachable.';
+
+  @override
+  String get chatErrorGenericTitle => 'Hermes could not finish the turn.';
+
+  @override
+  String get chatErrorGenericBody => 'Retry when Hermes is ready.';
+
+  @override
+  String get chatErrorDetailsAction => 'Details';
+
+  @override
+  String get chatErrorUpdateKeyAction => 'Update key';
+
+  @override
+  String get chatErrorReconnectAction => 'Reconnect';
+
+  @override
+  String get chatErrorRetryLastMessageAction => 'Retry last message';
+
+  @override
+  String get chatErrorRedactedDetailsLabel => 'Redacted error details';
+
+  @override
+  String get chatErrorRedactionNoteBody =>
+      'Secrets, bearer tokens, API keys, cookies, and copied endpoint credentials are redacted before display.';
+
+  @override
+  String get chatErrorCopiedRedactedDetailsBody =>
+      'Copied redacted Hermes error details.';
+
+  @override
+  String get chatErrorCopyRedactedDetailsAction => 'Copy redacted details';
+
+  @override
+  String get chatErrorSavedProfilesLabel => 'Saved Hermes profiles';
+
+  @override
+  String get chatErrorRenameProfileTooltip => 'Rename Hermes profile';
+
+  @override
+  String get chatErrorRemoveProfileTitle => 'Remove saved Hermes profile?';
+
+  @override
+  String chatErrorRemoveProfileBody(String label, String baseUrl) {
+    return 'Remove $label ($baseUrl) from this device. Any stored API key for this profile is removed from secure storage.';
+  }
+
+  @override
+  String get chatErrorRemoveProfileAction => 'Remove';
+
+  @override
+  String get chatErrorConnectAuthTitle => 'Hermes API rejected the API key.';
+
+  @override
+  String get chatErrorConnectAuthBody =>
+      'Check the endpoint API key in Hermes and try again.';
+
+  @override
+  String get chatErrorConnectUnreachableTitle =>
+      'Hermes endpoint is unreachable.';
+
+  @override
+  String get chatErrorConnectUnreachableBody =>
+      'Check the base URL, network, VPN, and that Hermes API server is running.';
+
+  @override
+  String get chatErrorConnectGenericTitle => 'Could not connect to Hermes.';
+
+  @override
+  String get chatErrorConnectGenericBody => 'Check the endpoint and try again.';
+
+  @override
+  String get chatLayoutConnectTitle => 'Connect to your Hermes VPS';
+
+  @override
+  String get chatLayoutConnectBody =>
+      'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.';
+
+  @override
+  String get chatLayoutVpsConnectionTitle => 'VPS connection';
+
+  @override
+  String get chatLayoutVpsConnectionBody =>
+      'Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.';
+
+  @override
+  String get chatLayoutScanQrAction => 'Scan wing-cli QR code';
+
+  @override
+  String get chatLayoutServerUrlLabel => 'Hermes server URL';
+
+  @override
+  String get chatLayoutServerUrlHint => 'https://hermes.example.com';
+
+  @override
+  String get chatLayoutServerUrlHelper =>
+      'Enter the HTTPS or private-network URL without /v1.';
+
+  @override
+  String get chatLayoutAccessTokenLabel => 'Access token';
+
+  @override
+  String get chatLayoutAccessTokenHelper =>
+      'Required for internet-facing servers; optional only on trusted private networks.';
+
+  @override
+  String get chatLayoutShowAccessTokenTooltip => 'Show access token';
+
+  @override
+  String get chatLayoutHideAccessTokenTooltip => 'Hide access token';
+
+  @override
+  String get chatLayoutVpsNameLabel => 'VPS name (optional)';
+
+  @override
+  String get chatLayoutVpsNameHint => 'My Hermes VPS';
+
+  @override
+  String get chatLayoutVpsNameHelper =>
+      'A private label shown only on this device.';
+
+  @override
+  String get chatLayoutTokenStorageBody =>
+      'Your token is stored in secure device storage and is never shown after connecting.';
+
+  @override
+  String get chatLayoutConnectingAction => 'Connecting…';
+
+  @override
+  String get chatLayoutConnectAction => 'Connect to VPS';
+
+  @override
+  String get chatLayoutDevShortcutsTitle => 'Connecting to a local Agent?';
+
+  @override
+  String get chatLayoutDevShortcutsBody =>
+      'Use a development shortcut instead of a VPS address.';
+
+  @override
+  String get chatLayoutPresetThisDeviceLabel => 'This device';
+
+  @override
+  String get chatLayoutPresetAndroidEmulatorLabel => 'Android emulator';
+
+  @override
+  String get chatLayoutPresetClearAction => 'Clear server details';
+
+  @override
+  String get chatLayoutModelFallbackLabel => 'Hermes model';
+
+  @override
+  String get chatLayoutTransportUnavailableBody =>
+      'Hermes did not advertise a supported chat transport for this endpoint.';
+
+  @override
+  String get chatLayoutOpenSessionAction => 'Open session';
+
+  @override
+  String get chatLayoutFollowUpsCopiedBody =>
+      'Copied redacted Hermes queued follow-ups.';
+
+  @override
+  String get chatLayoutCopyAction => 'Copy';
+
+  @override
+  String get chatLayoutSendNowAction => 'Send now';
+
+  @override
+  String get chatLayoutCancelAllAction => 'Cancel all';
+
+  @override
+  String get chatLayoutNoSessionsBody =>
+      'No Hermes sessions. Create a new session to start chatting.';
+
+  @override
+  String get chatLayoutNoSessionsNoCreateBody =>
+      'No Hermes sessions are available, and this endpoint did not advertise session creation.';
+
+  @override
+  String get chatLayoutVoiceLoopOnLabel => 'Voice loop on';
+
+  @override
+  String get chatLayoutVoiceReadyLabel => 'Voice ready';
+
+  @override
+  String get chatLayoutComposerSpeakingHint => 'Speaking reply…';
+
+  @override
+  String get chatLayoutComposerHint => 'Message Hermes…';
+
+  @override
+  String get chatLayoutComposerUnavailableHint => 'Chat unavailable';
+
+  @override
+  String get chatLayoutComposerTransportUnavailableHint =>
+      'Chat transport unavailable';
+
+  @override
+  String get chatLayoutChatMenuTooltip => 'Chat menu';
+
+  @override
+  String get chatLayoutSessionsLabel => 'Sessions';
+
+  @override
+  String get chatLayoutHandsFreeVoiceLabel => 'Hands-free voice';
+
+  @override
+  String get chatLayoutEmojiTitle => 'Emoji';
+
+  @override
+  String chatLayoutInsertEmojiLabel(String value) {
+    return 'Insert $value';
+  }
+
+  @override
+  String get chatLayoutListeningLabel => 'Listening';
+
+  @override
+  String get chatLayoutSpeakingLabel => 'Speaking';
+
+  @override
+  String get chatLayoutHandsFreeLabel => 'Hands-free';
+
+  @override
+  String get chatLayoutContinuousVoiceLabel =>
+      'Continuous voice — device STT to Hermes text';
+
+  @override
+  String chatLayoutAttachedFileLabel(String name) {
+    return 'Attached file $name, ready to send';
+  }
+
+  @override
+  String get chatLayoutReadyToSendLabel => 'Ready to send';
+
+  @override
+  String get chatLayoutRemoveAttachmentTooltip => 'Remove attachment';
+
+  @override
+  String get chatLayoutAttachFileTooltip => 'Attach image or text file';
+
+  @override
+  String get chatLayoutStopSpeakingTooltip => 'Stop speaking';
+
+  @override
+  String get chatLayoutSpeakAndSendTooltip => 'Speak and send';
+
+  @override
+  String get chatLayoutSendTooltip => 'Send';
+
+  @override
+  String get chatShellVoicePausedBackgroundBody =>
+      'Continuous voice paused while Hermes Wing is not in the foreground.';
+
+  @override
+  String get chatShellVoicePausedSwitchingAgentsBody =>
+      'Continuous voice paused while switching agents.';
+
+  @override
+  String chatShellApprovalAnswerFailedBody(String message) {
+    return 'Could not answer Hermes approval: $message';
+  }
+
+  @override
+  String get chatShellSwitchChatsTitle => 'Switch chats?';
+
+  @override
+  String get chatShellSwitchChatsBody =>
+      'This gateway has active work or an approval. Switching closes its live streams; Hermes remains authoritative and will reconcile them when reopened.';
+
+  @override
+  String get chatShellStayAction => 'Stay';
+
+  @override
+  String get chatShellSwitchAction => 'Switch';
+
+  @override
+  String get chatShellContactClosedBody => 'Closed Hermes contact.';
+
+  @override
+  String get chatShellContactSwitchedBody => 'Switched Hermes contact.';
+
+  @override
+  String get chatShellAllChatsTooltip => 'All chats';
+
+  @override
+  String get chatShellHermesTitle => 'Hermes';
+
+  @override
+  String get chatShellConnectAnotherGatewayTooltip => 'Connect another gateway';
+
+  @override
+  String get chatShellSessionsLabel => 'Sessions';
+
+  @override
+  String get chatShellNewSessionLabel => 'New session';
+
+  @override
+  String get chatShellMoreActionsTooltip => 'More actions';
+
+  @override
+  String get chatShellDiagnosticsLabel => 'Diagnostics';
+
+  @override
+  String get chatShellDisconnectLabel => 'Disconnect';
+
+  @override
+  String get chatShellTranscriptSessionMetadataTitle => 'Session metadata';
+
+  @override
+  String chatShellTranscriptSessionLabel(String title) {
+    return 'Session: $title';
+  }
+
+  @override
+  String chatShellTranscriptSessionIdLabel(String id) {
+    return 'Session ID: $id';
+  }
+
+  @override
+  String chatShellTranscriptMessageCountLabel(int count) {
+    return 'Messages: $count';
+  }
+
+  @override
+  String get chatStatusUnavailableInventoryTitle =>
+      'Unavailable Hermes inventory';
+
+  @override
+  String get chatStatusDetailedHealthLabel => 'Detailed health';
+
+  @override
+  String get chatStatusModelsLabel => 'Models';
+
+  @override
+  String get chatStatusSkillsLabel => 'Skills';
+
+  @override
+  String get chatStatusToolsetsLabel => 'Toolsets';
+
+  @override
+  String get chatStatusJobsLabel => 'Jobs';
+
+  @override
+  String get chatStatusJobsTitle => 'Hermes jobs';
+
+  @override
+  String get chatStatusJobsReadOnlyAdminBody =>
+      'Read-only inventory. Hermes advertises jobs admin, but Hermes Wing has not enabled mobile create/edit/delete scheduling.';
+
+  @override
+  String get chatStatusJobsReadOnlyBody =>
+      'Read-only inventory. Mobile create/edit/delete scheduling is not available.';
+
+  @override
+  String get chatStatusCopyJobDetailsTooltip => 'Copy job details';
+
+  @override
+  String get chatStatusCopiedJobDetailsBody =>
+      'Copied redacted Hermes job details.';
+
+  @override
+  String get chatStatusJobEnabledLabel => 'Enabled';
+
+  @override
+  String get chatStatusJobDisabledLabel => 'Disabled';
+
+  @override
+  String chatStatusJobStateLabel(String value) {
+    return 'State: $value';
+  }
+
+  @override
+  String chatStatusJobScheduleLabel(String value) {
+    return 'Schedule: $value';
+  }
+
+  @override
+  String chatStatusJobNextLabel(String value) {
+    return 'Next: $value';
+  }
+
+  @override
+  String chatStatusJobLastLabel(String value) {
+    return 'Last: $value';
+  }
+
+  @override
+  String chatStatusJobLastErrorLabel(String value) {
+    return 'Last error: $value';
+  }
+
+  @override
+  String get chatStatusSurfaceReadinessTitle => 'Hermes surface readiness';
+
+  @override
+  String get chatStatusSurfaceReadinessNoteBody =>
+      'No mobile config, memory, schedule, or messaging-gateway mutation controls are enabled.';
+
+  @override
+  String get chatStatusCopiedSurfaceReadinessBody =>
+      'Copied Hermes surface readiness summary.';
+
+  @override
+  String get chatStatusCopySummaryAction => 'Copy summary';
+
+  @override
+  String get chatStatusRunsSseEnabledLabel => 'Runs SSE enabled';
+
+  @override
+  String get chatStatusSessionChatStreamingLabel =>
+      'Session chat streaming enabled';
+
+  @override
+  String get chatStatusVoiceLabel => 'Voice: device STT → Hermes';
+
+  @override
+  String chatStatusVersionLabel(String version) {
+    return 'Version: $version';
+  }
+
+  @override
+  String chatStatusGatewayLabel(String state) {
+    return 'Gateway: $state';
+  }
+
+  @override
+  String chatStatusActiveAgentsLabel(int count) {
+    return 'Active agents: $count';
+  }
+
+  @override
+  String chatStatusModelsChipLabel(String names) {
+    return 'Models: $names';
+  }
+
+  @override
+  String get chatStatusModelsTitle => 'Hermes models';
+
+  @override
+  String chatStatusSkillsChipLabel(int count) {
+    return 'Skills: $count';
+  }
+
+  @override
+  String get chatStatusSkillsTitle => 'Hermes skills';
+
+  @override
+  String chatStatusToolsetsChipLabel(int count) {
+    return 'Toolsets enabled: $count';
+  }
+
+  @override
+  String get chatStatusToolsetsTitle => 'Hermes toolsets';
+
+  @override
+  String chatStatusJobsChipLabel(int count) {
+    return 'Jobs: $count';
+  }
+
+  @override
+  String chatStatusInventoryUnavailableChipLabel(int count) {
+    return 'Inventory unavailable: $count';
+  }
+
+  @override
+  String chatStatusSurfacesChipLabel(int deferredCount, int blockedCount) {
+    return 'Surfaces: $deferredCount deferred · $blockedCount blocked';
+  }
+
+  @override
+  String chatStatusAgentHeaderLabel(String model) {
+    return 'Hermes Agent $model';
+  }
+
+  @override
+  String chatStatusPendingApprovalsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending approvals',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatStatusApprovalRequestedTitle => 'Hermes approval requested';
+
+  @override
+  String chatStatusRiskLabel(String risk) {
+    return 'Risk: $risk';
+  }
+
+  @override
+  String get chatStatusApprovalResponseUnavailableBody =>
+      'Hermes did not advertise approval responses for this run.';
+
+  @override
+  String get chatStatusApprovalIdMissingBody =>
+      'Hermes sent this approval without an approval id, so it cannot be answered.';
+
+  @override
+  String get chatStatusAnsweringApprovalLabel => 'Answering Hermes approval…';
+
+  @override
+  String get chatStatusReviewAction => 'Review';
+
+  @override
+  String get chatStatusDismissAction => 'Dismiss';
+
+  @override
+  String get chatStatusDenyAction => 'Deny';
+
+  @override
+  String get chatStatusAllowForSessionAction => 'Allow for session';
+
+  @override
+  String get chatStatusAlwaysAllowAction => 'Always allow';
+
+  @override
+  String get chatStatusApproveOnceAction => 'Approve once';
+
+  @override
+  String get chatStatusAllowForSessionTitle => 'Allow this for the session?';
+
+  @override
+  String get chatStatusAllowForSessionBody =>
+      'This may approve matching requests for the current Hermes session.';
+
+  @override
+  String get chatStatusAlwaysAllowTitle => 'Always allow this Hermes approval?';
+
+  @override
+  String get chatStatusAlwaysAllowBody =>
+      'This may approve matching future requests without asking again.';
+
+  @override
+  String get chatStatusReviewApprovalTitle => 'Review Hermes approval';
+
+  @override
+  String chatStatusReviewingPendingLabel(int count) {
+    return 'Reviewing 1 of $count pending approvals';
+  }
+
+  @override
+  String get chatStatusPromptTruncatedBody =>
+      'Prompt preview truncated for mobile review.';
+
+  @override
+  String get chatStatusRiskTruncatedBody =>
+      'Risk preview truncated for mobile review.';
+
+  @override
+  String chatStatusToolCallLabel(String value) {
+    return 'Tool call: $value';
+  }
+
+  @override
+  String chatStatusDecisionsDisabledEndpointBody(String run_id) {
+    return 'Decision buttons are disabled because Hermes did not advertise /v1/runs/$run_id/approval.';
+  }
+
+  @override
+  String get chatStatusDecisionsDisabledIdBody =>
+      'Decision buttons are disabled because Hermes did not include an approval id.';
+
+  @override
+  String get chatStatusCopiedApprovalDetailsBody =>
+      'Copied redacted Hermes approval details.';
+
+  @override
+  String get chatStatusCopyDetailsAction => 'Copy details';
+
+  @override
+  String get chatRailSessionsTitle => 'Sessions';
+
+  @override
+  String get chatRailHermesSessionsTitle => 'Hermes sessions';
+
+  @override
+  String get chatRailNewSessionAction => 'New';
+
+  @override
+  String get chatRailSelectAction => 'Select';
+
+  @override
+  String get chatRailSelectAllAction => 'Select all';
+
+  @override
+  String chatRailSelectedCountLabel(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String chatRailDeleteCountAction(int count) {
+    return 'Delete $count';
+  }
+
+  @override
+  String get chatRailSearchSessionsLabel => 'Search sessions';
+
+  @override
+  String get chatRailClearSearchTooltip => 'Clear search';
+
+  @override
+  String chatRailSessionCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatRailShowingSessionCountLabel(int total, int visible) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'Showing $visible of $total sessions',
+      one: 'Showing $visible of $total session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatRailNoSessionsBody =>
+      'No sessions yet. Create one to start a Hermes chat.';
+
+  @override
+  String chatRailNoSessionsMatchBody(String query) {
+    return 'No sessions match “$query”.';
+  }
+
+  @override
+  String get chatRailNoHermesSessionsBody => 'No Hermes sessions yet.';
+
+  @override
+  String chatRailNoHermesSessionsMatchBody(String query) {
+    return 'No Hermes sessions match “$query”.';
+  }
+
+  @override
+  String get chatRailActiveHermesSessionLabel => 'Active Hermes session';
+
+  @override
+  String get chatRailActiveLabel => 'Active';
+
+  @override
+  String get chatRailStatusStreamingLabel => 'Streaming';
+
+  @override
+  String get chatRailStatusReadyLabel => 'Ready';
+
+  @override
+  String get chatRailStatusTransportUnavailableLabel => 'Transport unavailable';
+
+  @override
+  String chatRailMessageCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messages',
+      one: '1 message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatRailTileMessageCountLabel(int count) {
+    return '$count messages';
+  }
+
+  @override
+  String get chatRailEmptyStateTitle => 'How can Hermes help today?';
+
+  @override
+  String get chatRailEmptyStateBody =>
+      'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.';
+
+  @override
+  String get chatRailPromptSummarizeHelpLabel =>
+      'Summarize what you can help me do.';
+
+  @override
+  String get chatRailPromptListSkillsLabel =>
+      'List my available Hermes skills.';
+
+  @override
+  String get chatRailPromptPlanTaskLabel => 'Plan my next coding task.';
+
+  @override
+  String get chatRailPromptExplainSessionLabel =>
+      'Explain the current session state.';
+
+  @override
+  String get chatRailStopAction => 'Stop';
+
+  @override
+  String chatRailForkedFromLabel(String sessionId) {
+    return 'Forked from $sessionId';
+  }
+
+  @override
+  String chatRailLastActiveLabel(String timestamp) {
+    return 'Last active $timestamp';
+  }
+
+  @override
+  String get chatRailSessionActionsTooltip => 'Session actions';
+
+  @override
+  String get chatRailViewDetailsAction => 'View details';
+
+  @override
+  String get chatRailCopyDetailsAction => 'Copy details';
+
+  @override
+  String get chatRailRenameAction => 'Rename';
+
+  @override
+  String get chatRailBranchAction => 'Branch';
+
+  @override
+  String get chatRailDeleteAction => 'Delete';
+
+  @override
+  String get chatRailCopiedSessionDetailsBody =>
+      'Copied redacted Hermes session details.';
+
+  @override
+  String get chatRailSessionDetailsTitle => 'Session details';
+
+  @override
+  String get chatRailSessionDetailsHeaderLabel => 'Hermes session';
+
+  @override
+  String chatRailDetailTitleLabel(String value) {
+    return 'Title: $value';
+  }
+
+  @override
+  String chatRailDetailIdLabel(String value) {
+    return 'ID: $value';
+  }
+
+  @override
+  String chatRailDetailActiveLabel(String value) {
+    return 'Active: $value';
+  }
+
+  @override
+  String chatRailDetailMessagesLabel(int count) {
+    return 'Messages: $count';
+  }
+
+  @override
+  String chatRailDetailToolCallsLabel(int count) {
+    return 'Tool calls: $count';
+  }
+
+  @override
+  String chatRailDetailApiCallsLabel(int count) {
+    return 'API calls: $count';
+  }
+
+  @override
+  String chatRailDetailInputTokensLabel(int count) {
+    return 'Input tokens: $count';
+  }
+
+  @override
+  String chatRailDetailOutputTokensLabel(int count) {
+    return 'Output tokens: $count';
+  }
+
+  @override
+  String chatRailDetailCacheReadTokensLabel(int count) {
+    return 'Cache read tokens: $count';
+  }
+
+  @override
+  String chatRailDetailCacheWriteTokensLabel(int count) {
+    return 'Cache write tokens: $count';
+  }
+
+  @override
+  String chatRailDetailReasoningTokensLabel(int count) {
+    return 'Reasoning tokens: $count';
+  }
+
+  @override
+  String chatRailDetailActualCostLabel(String cost) {
+    return 'Actual cost (USD): $cost';
+  }
+
+  @override
+  String chatRailDetailEstimatedCostLabel(String cost) {
+    return 'Estimated cost (USD): $cost';
+  }
+
+  @override
+  String chatRailDetailStartedLabel(String value) {
+    return 'Started: $value';
+  }
+
+  @override
+  String chatRailDetailEndedLabel(String value) {
+    return 'Ended: $value';
+  }
+
+  @override
+  String chatRailDetailEndReasonLabel(String value) {
+    return 'End reason: $value';
+  }
+
+  @override
+  String chatRailDetailSystemPromptSnapshotLabel(String value) {
+    return 'System prompt snapshot: $value';
+  }
+
+  @override
+  String chatRailDetailModelConfigSnapshotLabel(String value) {
+    return 'Model config snapshot: $value';
+  }
+
+  @override
+  String get chatRailDetailYesLabel => 'yes';
+
+  @override
+  String get chatRailDetailNoLabel => 'no';
+
+  @override
+  String chatRailDetailForkedFromLabel(String value) {
+    return 'Forked from: $value';
+  }
+
+  @override
+  String chatRailDetailLastActiveLabel(String value) {
+    return 'Last active: $value';
+  }
 }

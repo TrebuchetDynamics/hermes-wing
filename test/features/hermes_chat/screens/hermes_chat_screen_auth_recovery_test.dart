@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
@@ -36,7 +37,11 @@ void main() {
           hermesChannelProvider.overrideWithValue(channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -79,7 +84,11 @@ void main() {
           hermesChannelProvider.overrideWithValue(channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -188,7 +197,11 @@ void main() {
             FakeHermesEndpointStore(),
           ),
         ],
-        child: const MaterialApp(home: HermesChatScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

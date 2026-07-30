@@ -11,6 +11,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         !connecting && _isValidHermesBaseUrl(_connectionForm.baseUrl.text);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final strings = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
@@ -45,14 +46,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Connect to your Hermes VPS',
+                            strings.chatLayoutConnectTitle,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.',
+                            strings.chatLayoutConnectBody,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                               height: 1.45,
@@ -91,14 +92,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'VPS connection',
+                          strings.chatLayoutVpsConnectionTitle,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.',
+                          strings.chatLayoutVpsConnectionBody,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.onSurfaceVariant,
                           ),
@@ -111,7 +112,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             key: const ValueKey('hermes-open-qr-scanner'),
                             onPressed: () => context.push(AppRoutes.enroll),
                             icon: const Icon(Icons.qr_code_scanner),
-                            label: const Text('Scan wing-cli QR code'),
+                            label: Text(strings.chatLayoutScanQrAction),
                           ),
                         ],
                         const SizedBox(height: 20),
@@ -123,13 +124,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           autofillHints: const [AutofillHints.url],
                           autocorrect: false,
                           enableSuggestions: false,
-                          decoration: const InputDecoration(
-                            labelText: 'Hermes server URL',
-                            hintText: 'https://hermes.example.com',
-                            helperText:
-                                'Enter the HTTPS or private-network URL without /v1.',
+                          decoration: InputDecoration(
+                            labelText: strings.chatLayoutServerUrlLabel,
+                            hintText: strings.chatLayoutServerUrlHint,
+                            helperText: strings.chatLayoutServerUrlHelper,
                             helperMaxLines: 2,
-                            prefixIcon: Icon(Icons.language_outlined),
+                            prefixIcon: const Icon(Icons.language_outlined),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -141,16 +141,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           autocorrect: false,
                           enableSuggestions: false,
                           decoration: InputDecoration(
-                            labelText: 'Access token',
-                            helperText:
-                                'Required for internet-facing servers; optional only on trusted private networks.',
+                            labelText: strings.chatLayoutAccessTokenLabel,
+                            helperText: strings.chatLayoutAccessTokenHelper,
                             helperMaxLines: 2,
                             prefixIcon: const Icon(Icons.key_outlined),
                             suffixIcon: IconButton(
                               key: const ValueKey('hermes-api-key-visibility'),
                               tooltip: _connectionForm.obscureApiKey
-                                  ? 'Show access token'
-                                  : 'Hide access token',
+                                  ? strings.chatLayoutShowAccessTokenTooltip
+                                  : strings.chatLayoutHideAccessTokenTooltip,
                               onPressed: _connectionForm.toggleApiKeyVisibility,
                               icon: Icon(
                                 _connectionForm.obscureApiKey
@@ -168,12 +167,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           onSubmitted: canConnect
                               ? (_) => unawaited(_connect(channel))
                               : null,
-                          decoration: const InputDecoration(
-                            labelText: 'VPS name (optional)',
-                            hintText: 'My Hermes VPS',
-                            helperText:
-                                'A private label shown only on this device.',
-                            prefixIcon: Icon(Icons.label_outline),
+                          decoration: InputDecoration(
+                            labelText: strings.chatLayoutVpsNameLabel,
+                            hintText: strings.chatLayoutVpsNameHint,
+                            helperText: strings.chatLayoutVpsNameHelper,
+                            prefixIcon: const Icon(Icons.label_outline),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -194,7 +192,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Your token is stored in secure device storage and is never shown after connecting.',
+                                  strings.chatLayoutTokenStorageBody,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: colors.onSurfaceVariant,
                                     height: 1.4,
@@ -228,7 +226,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                 )
                               : const Icon(Icons.arrow_forward),
                           label: Text(
-                            connecting ? 'Connecting…' : 'Connect to VPS',
+                            connecting
+                                ? strings.chatLayoutConnectingAction
+                                : strings.chatLayoutConnectAction,
                           ),
                         ),
                       ],
@@ -241,10 +241,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   child: ExpansionTile(
                     key: const ValueKey('hermes-developer-shortcuts'),
                     leading: const Icon(Icons.developer_mode_outlined),
-                    title: const Text('Connecting to a local Agent?'),
-                    subtitle: const Text(
-                      'Use a development shortcut instead of a VPS address.',
-                    ),
+                    title: Text(strings.chatLayoutDevShortcutsTitle),
+                    subtitle: Text(strings.chatLayoutDevShortcutsBody),
                     childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     children: [
                       Align(
@@ -260,7 +258,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                   Icons.computer_outlined,
                                   size: 18,
                                 ),
-                                label: const Text('This device'),
+                                label: Text(
+                                  strings.chatLayoutPresetThisDeviceLabel,
+                                ),
                                 onPressed: connecting
                                     ? null
                                     : () => _applyEndpointPreset(
@@ -273,7 +273,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                 Icons.android_outlined,
                                 size: 18,
                               ),
-                              label: const Text('Android emulator'),
+                              label: Text(
+                                strings.chatLayoutPresetAndroidEmulatorLabel,
+                              ),
                               onPressed: connecting
                                   ? null
                                   : () => _applyEndpointPreset(
@@ -283,7 +285,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             ActionChip(
                               key: const ValueKey('hermes-preset-remote'),
                               avatar: const Icon(Icons.refresh, size: 18),
-                              label: const Text('Clear server details'),
+                              label: Text(strings.chatLayoutPresetClearAction),
                               onPressed: connecting
                                   ? null
                                   : () => _applyEndpointPreset(''),
@@ -386,6 +388,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         : null;
     return LayoutBuilder(
       builder: (context, constraints) {
+        final strings = AppLocalizations.of(context);
         final activeSession = state.activeSession;
         final showActiveSessionBar =
             constraints.maxWidth >= 600 && activeSession != null;
@@ -396,7 +399,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             ? state.models.first
             : state.capabilities?.model.trim().isNotEmpty == true
             ? state.capabilities!.model.trim()
-            : 'Hermes model';
+            : strings.chatLayoutModelFallbackLabel;
 
         return Column(
           children: [
@@ -409,15 +412,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 canSendTurns: canSendTurns,
               ),
             if (hasActiveSession && !canSendTurns)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 child: Card(
-                  key: ValueKey('hermes-chat-transport-unavailable'),
+                  key: const ValueKey('hermes-chat-transport-unavailable'),
                   child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      'Hermes did not advertise a supported chat transport for this endpoint.',
-                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Text(strings.chatLayoutTransportUnavailableBody),
                   ),
                 ),
               ),
@@ -460,7 +464,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         onPressed: () => unawaited(
                           _openQueuedFollowUpSession(context, channel),
                         ),
-                        child: const Text('Open session'),
+                        child: Text(strings.chatLayoutOpenSessionAction),
                       ),
                     TextButton.icon(
                       key: const ValueKey('hermes-queued-follow-up-copy'),
@@ -473,28 +477,28 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           ),
                         );
                         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Copied redacted Hermes queued follow-ups.',
+                              strings.chatLayoutFollowUpsCopiedBody,
                             ),
                           ),
                         );
                       },
                       icon: const Icon(Icons.copy_outlined),
-                      label: const Text('Copy'),
+                      label: Text(strings.chatLayoutCopyAction),
                     ),
                     TextButton(
                       key: const ValueKey('hermes-queued-follow-up-send-now'),
                       onPressed: _canSendQueuedFollowUp(state)
                           ? () => _sendQueuedFollowUpIfIdle(channel)
                           : null,
-                      child: const Text('Send now'),
+                      child: Text(strings.chatLayoutSendNowAction),
                     ),
                     TextButton(
                       key: const ValueKey('hermes-queued-follow-up-cancel'),
                       onPressed: () =>
                           unawaited(_confirmClearQueuedFollowUps(context)),
-                      child: const Text('Cancel all'),
+                      child: Text(strings.chatLayoutCancelAllAction),
                     ),
                   ],
                 ),
@@ -529,13 +533,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     required VoidCallback onReauthorizeError,
   }) {
     if (state.activeSessionId == null) {
+      final strings = AppLocalizations.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
             _canCreateSession(state)
-                ? 'No Hermes sessions. Create a new session to start chatting.'
-                : 'No Hermes sessions are available, and this endpoint did not advertise session creation.',
+                ? strings.chatLayoutNoSessionsBody
+                : strings.chatLayoutNoSessionsNoCreateBody,
             textAlign: TextAlign.center,
           ),
         ),
@@ -600,12 +605,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool canSendTurns,
     bool isTurnActive,
   ) {
+    final strings = AppLocalizations.of(context);
     final modelLabel = state.models.isEmpty
-        ? state.capabilities?.model ?? 'Hermes model'
+        ? state.capabilities?.model ?? strings.chatLayoutModelFallbackLabel
         : state.models.first;
     final voiceLabel = _voiceInputController.continuousEnabled
-        ? 'Voice loop on'
-        : 'Voice ready';
+        ? strings.chatLayoutVoiceLoopOnLabel
+        : strings.chatLayoutVoiceReadyLabel;
     final canRetry =
         canSendTurns &&
         !isTurnActive &&
@@ -1015,6 +1021,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     Widget? strip,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
+    final strings = AppLocalizations.of(context);
     final hasPayload =
         _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return Column(
@@ -1055,10 +1062,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     labelText: _voiceInputController.speaking
-                        ? 'Speaking reply…'
+                        ? strings.chatLayoutComposerSpeakingHint
                         : canSendTurns
-                        ? 'Message Hermes…'
-                        : 'Chat unavailable',
+                        ? strings.chatLayoutComposerHint
+                        : strings.chatLayoutComposerUnavailableHint,
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -1101,6 +1108,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final strings = AppLocalizations.of(context);
     return Container(
       key: const ValueKey('hermes-desktop-command-bar'),
       decoration: BoxDecoration(
@@ -1129,10 +1137,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             maxLines: 4,
             decoration: InputDecoration(
               hintText: _voiceInputController.speaking
-                  ? 'Speaking reply…'
+                  ? strings.chatLayoutComposerSpeakingHint
                   : canSendTurns
-                  ? 'Message Hermes…'
-                  : 'Chat transport unavailable',
+                  ? strings.chatLayoutComposerHint
+                  : strings.chatLayoutComposerTransportUnavailableHint,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -1165,9 +1173,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final handsFreeAvailable = canSendTurns && settings.continuousVoiceEnabled;
     final handsFreeActive = _voiceInputController.continuousEnabled;
+    final strings = AppLocalizations.of(context);
     return PopupMenuButton<_ComposerMenuAction>(
       key: const ValueKey('hermes-composer-menu-button'),
-      tooltip: 'Chat menu',
+      tooltip: strings.chatLayoutChatMenuTooltip,
       icon: const Icon(Icons.menu_rounded),
       onSelected: (action) {
         switch (action) {
@@ -1178,11 +1187,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: _ComposerMenuAction.sessions,
           child: ListTile(
-            leading: Icon(Icons.forum_outlined),
-            title: Text('Sessions'),
+            leading: const Icon(Icons.forum_outlined),
+            title: Text(strings.chatLayoutSessionsLabel),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -1190,7 +1199,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           value: _ComposerMenuAction.handsFree,
           enabled: handsFreeAvailable,
           checked: handsFreeActive,
-          child: const Text('Hands-free voice'),
+          child: Text(strings.chatLayoutHandsFreeVoiceLabel),
         ),
       ],
     );
@@ -1199,7 +1208,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   Widget _buildEmojiButton(bool canSendTurns) {
     return IconButton(
       key: const ValueKey('hermes-emoji-button'),
-      tooltip: 'Emoji',
+      tooltip: AppLocalizations.of(context).chatLayoutEmojiTitle,
       icon: const Icon(Icons.sentiment_satisfied_alt_outlined),
       onPressed: canSendTurns ? () => unawaited(_showEmojiPicker()) : null,
     );
@@ -1218,7 +1227,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                 child: Text(
-                  'Emoji',
+                  AppLocalizations.of(sheetContext).chatLayoutEmojiTitle,
                   style: Theme.of(sheetContext).textTheme.titleMedium,
                 ),
               ),
@@ -1232,7 +1241,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   itemBuilder: (_, index) {
                     final value = _composerEmojis[index];
                     return Semantics(
-                      label: 'Insert $value',
+                      label: AppLocalizations.of(
+                        sheetContext,
+                      ).chatLayoutInsertEmojiLabel(value),
                       button: true,
                       child: InkResponse(
                         key: ValueKey('hermes-emoji-$index'),
@@ -1278,13 +1289,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final voiceEnabled = settings.continuousVoiceEnabled;
     final active = _voiceInputController.continuousEnabled;
+    final strings = AppLocalizations.of(context);
     final label = _voiceInputController.capturing
-        ? 'Listening'
+        ? strings.chatLayoutListeningLabel
         : _voiceInputController.speaking
-        ? 'Speaking'
-        : 'Hands-free';
+        ? strings.chatLayoutSpeakingLabel
+        : strings.chatLayoutHandsFreeLabel;
     return Semantics(
-      label: 'Continuous voice — device STT to Hermes text',
+      label: strings.chatLayoutContinuousVoiceLabel,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1310,11 +1322,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
   Widget _buildPendingAttachment() {
     final colors = Theme.of(context).colorScheme;
+    final strings = AppLocalizations.of(context);
     final name = _safeHermesUiPreview(_stagedAttachment!.name, maxLength: 40);
     return Semantics(
       container: true,
       explicitChildNodes: true,
-      label: 'Attached file $name, ready to send',
+      label: strings.chatLayoutAttachedFileLabel(name),
       child: Container(
         key: const ValueKey('hermes-pending-attachment'),
         constraints: const BoxConstraints(maxWidth: 340),
@@ -1345,7 +1358,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   children: [
                     Text(name, overflow: TextOverflow.ellipsis),
                     Text(
-                      'Ready to send',
+                      strings.chatLayoutReadyToSendLabel,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.onSurfaceVariant,
                       ),
@@ -1356,7 +1369,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             ),
             const SizedBox(width: 4),
             IconButton(
-              tooltip: 'Remove attachment',
+              tooltip: strings.chatLayoutRemoveAttachmentTooltip,
               icon: const Icon(Icons.close_rounded, size: 20),
               visualDensity: VisualDensity.compact,
               onPressed: () => _setState(() => _stagedAttachment = null),
@@ -1370,7 +1383,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   Widget _buildAttachmentButton(HermesChannel channel, bool canSendTurns) {
     return IconButton(
       key: const ValueKey('hermes-attachment-button'),
-      tooltip: 'Attach image or text file',
+      tooltip: AppLocalizations.of(context).chatLayoutAttachFileTooltip,
       icon: const Icon(Icons.attach_file),
       onPressed: canSendTurns && !_isTurnActive(channel.state)
           ? () => unawaited(_pickAttachment())
@@ -1382,7 +1395,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     if (_voiceInputController.speaking) {
       return IconButton.filledTonal(
         key: const ValueKey('hermes-tts-stop-button'),
-        tooltip: 'Stop speaking',
+        tooltip: AppLocalizations.of(context).chatLayoutStopSpeakingTooltip,
         icon: const Icon(Icons.volume_up_rounded),
         onPressed: _voiceInputController.pause,
       );
@@ -1394,7 +1407,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
     return IconButton(
       key: const ValueKey('hermes-mic-button'),
-      tooltip: 'Speak and send',
+      tooltip: AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip,
       icon: _voiceInputController.capturing
           ? const SizedBox(
               height: 18,
@@ -1414,7 +1427,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return IconButton.filled(
       key: const ValueKey('hermes-send-button'),
-      tooltip: 'Send',
+      tooltip: AppLocalizations.of(context).chatLayoutSendTooltip,
       icon: const Icon(Icons.arrow_upward_rounded),
       onPressed: canSendTurns && hasPayload
           ? () => _sendComposerText(channel)

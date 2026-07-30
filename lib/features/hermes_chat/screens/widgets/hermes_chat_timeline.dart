@@ -147,19 +147,20 @@ class _HermesTranscriptList extends StatelessWidget {
     BuildContext context,
     Offset globalPosition,
   ) async {
+    final strings = AppLocalizations.of(context);
     final action = await showMenu<_TranscriptContextAction>(
       context: context,
       position: _contextMenuPosition(context, globalPosition),
-      items: const [
+      items: [
         PopupMenuItem(
-          key: ValueKey('hermes-context-copy-chat-text'),
+          key: const ValueKey('hermes-context-copy-chat-text'),
           value: _TranscriptContextAction.copyText,
-          child: Text('Copy entire chat (text)'),
+          child: Text(strings.chatTranscriptCopyChatTextAction),
         ),
         PopupMenuItem(
-          key: ValueKey('hermes-context-copy-chat-markdown'),
+          key: const ValueKey('hermes-context-copy-chat-markdown'),
           value: _TranscriptContextAction.copyMarkdown,
-          child: Text('Copy entire chat (Markdown)'),
+          child: Text(strings.chatTranscriptCopyChatMarkdownAction),
         ),
       ],
     );
@@ -262,14 +263,17 @@ class _ToolActivityGroup extends StatelessWidget {
         : running
         ? Icons.hourglass_top_outlined
         : Icons.check_circle_outline;
+    final strings = AppLocalizations.of(context);
     final status = failed
-        ? 'Needs attention'
+        ? strings.chatTranscriptToolStatusNeedsAttentionLabel
         : running
-        ? 'Running'
-        : 'Completed';
+        ? strings.chatTranscriptToolStatusRunningLabel
+        : strings.chatTranscriptToolStatusCompletedLabel;
     final title = tools.length == 1
-        ? 'Tool activity: ${_safeHermesUiPreview(tools.single.name, maxLength: 48)}'
-        : 'Tool activity: ${tools.length} calls';
+        ? strings.chatTranscriptToolActivitySingleTitle(
+            _safeHermesUiPreview(tools.single.name, maxLength: 48),
+          )
+        : strings.chatTranscriptToolActivityCountTitle(tools.length);
 
     return _AssistantTimelineItem(
       child: Align(
@@ -470,6 +474,7 @@ class _TurnBubble extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
+    final strings = AppLocalizations.of(context);
     final action = await showModalBottomSheet<_TurnAction>(
       context: context,
       showDragHandle: true,
@@ -478,12 +483,12 @@ class _TurnBubble extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.reply_outlined),
-              title: const Text('Reply'),
+              title: Text(strings.chatTranscriptReplyAction),
               onTap: () => Navigator.pop(context, _TurnAction.reply),
             ),
             ListTile(
               leading: const Icon(Icons.copy_outlined),
-              title: const Text('Copy'),
+              title: Text(strings.chatTranscriptCopyAction),
               onTap: () => Navigator.pop(context, _TurnAction.copy),
             ),
           ],
@@ -498,30 +503,31 @@ class _TurnBubble extends StatelessWidget {
     BuildContext context,
     Offset globalPosition,
   ) async {
+    final strings = AppLocalizations.of(context);
     final action = await showMenu<_TurnAction>(
       context: context,
       position: _contextMenuPosition(context, globalPosition),
-      items: const [
+      items: [
         PopupMenuItem(
-          key: ValueKey('hermes-context-reply-message'),
+          key: const ValueKey('hermes-context-reply-message'),
           value: _TurnAction.reply,
-          child: Text('Reply'),
+          child: Text(strings.chatTranscriptReplyAction),
         ),
         PopupMenuItem(
-          key: ValueKey('hermes-context-copy-message'),
+          key: const ValueKey('hermes-context-copy-message'),
           value: _TurnAction.copy,
-          child: Text('Copy'),
+          child: Text(strings.chatTranscriptCopyAction),
         ),
-        PopupMenuDivider(),
+        const PopupMenuDivider(),
         PopupMenuItem(
-          key: ValueKey('hermes-context-copy-chat-text'),
+          key: const ValueKey('hermes-context-copy-chat-text'),
           value: _TurnAction.copyTranscriptText,
-          child: Text('Copy entire chat (text)'),
+          child: Text(strings.chatTranscriptCopyChatTextAction),
         ),
         PopupMenuItem(
-          key: ValueKey('hermes-context-copy-chat-markdown'),
+          key: const ValueKey('hermes-context-copy-chat-markdown'),
           value: _TurnAction.copyTranscriptMarkdown,
-          child: Text('Copy entire chat (Markdown)'),
+          child: Text(strings.chatTranscriptCopyChatMarkdownAction),
         ),
       ],
     );
@@ -534,9 +540,13 @@ class _TurnBubble extends StatelessWidget {
       case _TurnAction.copy:
         await Clipboard.setData(ClipboardData(text: turn.text));
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Message copied')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).chatTranscriptMessageCopiedLabel,
+              ),
+            ),
+          );
         }
       case _TurnAction.reply:
         onReply(turn);
@@ -577,7 +587,7 @@ class _StructuredAssistantErrorState extends State<_StructuredAssistantError> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Action blocked',
+              AppLocalizations.of(context).chatTranscriptActionBlockedTitle,
               style: Theme.of(
                 context,
               ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -600,7 +610,11 @@ class _StructuredAssistantErrorState extends State<_StructuredAssistantError> {
               visualDensity: VisualDensity.compact,
             ),
             onPressed: () => setState(() => _expanded = !_expanded),
-            child: Text(_expanded ? 'Hide details' : 'Details'),
+            child: Text(
+              _expanded
+                  ? AppLocalizations.of(context).chatTranscriptHideDetailsAction
+                  : AppLocalizations.of(context).chatTranscriptDetailsAction,
+            ),
           ),
       ],
     );

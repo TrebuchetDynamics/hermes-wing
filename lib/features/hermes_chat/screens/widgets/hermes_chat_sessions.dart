@@ -63,6 +63,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
     final query = _query.trim().toLowerCase();
     final sessions = query.isEmpty
@@ -92,7 +93,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Sessions',
+                        strings.chatRailSessionsTitle,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -103,7 +104,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                         key: const ValueKey('hermes-session-rail-new'),
                         onPressed: widget.canCreate ? widget.onCreate : null,
                         icon: const Icon(Icons.add),
-                        label: const Text('New'),
+                        label: Text(strings.chatRailNewSessionAction),
                       ),
                   ],
                 ),
@@ -115,7 +116,11 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('${_selectedSessionIds.length} selected'),
+                            Text(
+                              strings.chatRailSelectedCountLabel(
+                                _selectedSessionIds.length,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Wrap(
                               alignment: WrapAlignment.end,
@@ -142,7 +147,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                         );
                                     });
                                   },
-                                  child: const Text('Select all'),
+                                  child: Text(strings.chatRailSelectAllAction),
                                 ),
                                 TextButton(
                                   onPressed: () {
@@ -151,7 +156,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                       _selectedSessionIds.clear();
                                     });
                                   },
-                                  child: const Text('Cancel'),
+                                  child: Text(strings.cancelAction),
                                 ),
                                 FilledButton.icon(
                                   key: const ValueKey(
@@ -168,7 +173,9 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                         ]),
                                   icon: const Icon(Icons.delete_outline),
                                   label: Text(
-                                    'Delete ${_selectedSessionIds.length}',
+                                    strings.chatRailDeleteCountAction(
+                                      _selectedSessionIds.length,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -181,7 +188,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                             key: const ValueKey('hermes-session-rail-select'),
                             onPressed: () => setState(() => _selecting = true),
                             icon: const Icon(Icons.checklist_outlined),
-                            label: const Text('Select'),
+                            label: Text(strings.chatRailSelectAction),
                           ),
                         ),
                 ),
@@ -192,7 +199,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                     key: const ValueKey('hermes-session-rail-search-field'),
                     controller: _searchController,
                     decoration: InputDecoration(
-                      labelText: 'Search sessions',
+                      labelText: strings.chatRailSearchSessionsLabel,
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: _query.isEmpty
                           ? null
@@ -200,7 +207,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                               key: const ValueKey(
                                 'hermes-session-rail-search-clear',
                               ),
-                              tooltip: 'Clear search',
+                              tooltip: strings.chatRailClearSearchTooltip,
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 _searchController.clear();
@@ -215,6 +222,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Text(
                     _sessionCountSummary(
+                      strings: strings,
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
                       query: _query,
@@ -227,12 +235,12 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                 ),
               ],
               if (allSessions.isEmpty)
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Text(
-                        'No sessions yet. Create one to start a Hermes chat.',
+                        strings.chatRailNoSessionsBody,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -244,7 +252,9 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        'No sessions match “${_safeHermesUiPreview(_query.trim(), maxLength: 64)}”.',
+                        strings.chatRailNoSessionsMatchBody(
+                          _safeHermesUiPreview(_query.trim(), maxLength: 64),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -336,11 +346,12 @@ class _HermesActiveSessionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final strings = _hermesStrings(context);
     final statusLabel = isTurnActive
-        ? 'Streaming'
+        ? strings.chatRailStatusStreamingLabel
         : canSendTurns
-        ? 'Ready'
-        : 'Transport unavailable';
+        ? strings.chatRailStatusReadyLabel
+        : strings.chatRailStatusTransportUnavailableLabel;
     final statusIcon = isTurnActive
         ? Icons.autorenew
         : canSendTurns
@@ -348,7 +359,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
         : Icons.block;
 
     return Semantics(
-      label: 'Active Hermes session',
+      label: strings.chatRailActiveHermesSessionLabel,
       child: Container(
         key: const ValueKey('hermes-active-session-bar'),
         decoration: BoxDecoration(
@@ -398,7 +409,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
             );
 
             final activeLabel = Text(
-              'Active',
+              strings.chatRailActiveLabel,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colors.onSurfaceVariant,
                 fontWeight: FontWeight.w700,
@@ -413,7 +424,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
               label: _safeHermesUiPreview(modelLabel, maxLength: 28),
             );
             final count = Text(
-              '$messageCount ${messageCount == 1 ? 'message' : 'messages'}',
+              strings.chatRailMessageCountLabel(messageCount),
               style: theme.textTheme.labelMedium?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
@@ -500,16 +511,16 @@ class _HermesEmptyState extends StatelessWidget {
   final bool canSendTurns;
   final ValueChanged<String> onPromptSelected;
 
-  static const _prompts = [
-    'Summarize what you can help me do.',
-    'List my available Hermes skills.',
-    'Plan my next coding task.',
-    'Explain the current session state.',
-  ];
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final strings = _hermesStrings(context);
+    final prompts = [
+      strings.chatRailPromptSummarizeHelpLabel,
+      strings.chatRailPromptListSkillsLabel,
+      strings.chatRailPromptPlanTaskLabel,
+      strings.chatRailPromptExplainSessionLabel,
+    ];
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -529,7 +540,7 @@ class _HermesEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'How can Hermes help today?',
+              strings.chatRailEmptyStateTitle,
               key: const ValueKey('hermes-empty-state-title'),
               textAlign: TextAlign.center,
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -538,7 +549,7 @@ class _HermesEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.',
+              strings.chatRailEmptyStateBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -550,7 +561,7 @@ class _HermesEmptyState extends StatelessWidget {
               spacing: 10,
               runSpacing: 10,
               children: [
-                for (final prompt in _prompts)
+                for (final prompt in prompts)
                   ActionChip(
                     key: ValueKey('hermes-empty-prompt-$prompt'),
                     avatar: const Icon(Icons.auto_awesome, size: 18),
@@ -589,6 +600,7 @@ class _HermesComposerStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = _hermesStrings(context);
     return SingleChildScrollView(
       key: const ValueKey('hermes-composer-strip'),
       scrollDirection: Axis.horizontal,
@@ -605,20 +617,22 @@ class _HermesComposerStrip extends StatelessWidget {
             ActionChip(
               key: const ValueKey('hermes-composer-stop-chip'),
               avatar: const Icon(Icons.stop_circle_outlined, size: 18),
-              label: const Text('Stop'),
+              label: Text(strings.chatRailStopAction),
               onPressed: onStop,
             )
           else
             _ComposerChip(
               icon: canSendTurns ? Icons.bolt_outlined : Icons.block,
-              label: canSendTurns ? 'Ready' : 'Transport unavailable',
+              label: canSendTurns
+                  ? strings.chatRailStatusReadyLabel
+                  : strings.chatRailStatusTransportUnavailableLabel,
             ),
           if (canRetry) ...[
             const SizedBox(width: 8),
             ActionChip(
               key: const ValueKey('hermes-composer-retry-chip'),
               avatar: const Icon(Icons.refresh, size: 18),
-              label: const Text('Retry'),
+              label: Text(strings.retryAction),
               onPressed: onRetry,
             ),
           ],
@@ -706,6 +720,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
     final query = _query.trim().toLowerCase();
     final sessions = query.isEmpty
@@ -727,7 +742,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
           children: [
             ListTile(
               title: Text(
-                'Hermes sessions',
+                strings.chatRailHermesSessionsTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               trailing: widget.canCreate && !_selecting
@@ -735,7 +750,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                       key: const ValueKey('hermes-sessions-new'),
                       onPressed: widget.onCreate,
                       icon: const Icon(Icons.add_comment_outlined),
-                      label: const Text('New'),
+                      label: Text(strings.chatRailNewSessionAction),
                     )
                   : null,
             ),
@@ -749,7 +764,11 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          Text('${_selectedSessionIds.length} selected'),
+                          Text(
+                            strings.chatRailSelectedCountLabel(
+                              _selectedSessionIds.length,
+                            ),
+                          ),
                           TextButton(
                             key: const ValueKey('hermes-sessions-select-all'),
                             onPressed: () {
@@ -766,7 +785,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                                   );
                               });
                             },
-                            child: const Text('Select all'),
+                            child: Text(strings.chatRailSelectAllAction),
                           ),
                           TextButton(
                             onPressed: () {
@@ -775,7 +794,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                                 _selectedSessionIds.clear();
                               });
                             },
-                            child: const Text('Cancel'),
+                            child: Text(strings.cancelAction),
                           ),
                           FilledButton.icon(
                             key: const ValueKey(
@@ -791,7 +810,11 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                                         session,
                                   ]),
                             icon: const Icon(Icons.delete_outline),
-                            label: Text('Delete ${_selectedSessionIds.length}'),
+                            label: Text(
+                              strings.chatRailDeleteCountAction(
+                                _selectedSessionIds.length,
+                              ),
+                            ),
                           ),
                         ],
                       )
@@ -801,7 +824,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                           key: const ValueKey('hermes-sessions-select'),
                           onPressed: () => setState(() => _selecting = true),
                           icon: const Icon(Icons.checklist_outlined),
-                          label: const Text('Select'),
+                          label: Text(strings.chatRailSelectAction),
                         ),
                       ),
               ),
@@ -812,13 +835,13 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                   key: const ValueKey('hermes-session-search-field'),
                   controller: _searchController,
                   decoration: InputDecoration(
-                    labelText: 'Search sessions',
+                    labelText: strings.chatRailSearchSessionsLabel,
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _query.isEmpty
                         ? null
                         : IconButton(
                             key: const ValueKey('hermes-session-search-clear'),
-                            tooltip: 'Clear search',
+                            tooltip: strings.chatRailClearSearchTooltip,
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               _searchController.clear();
@@ -835,6 +858,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _sessionCountSummary(
+                      strings: strings,
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
                       query: _query,
@@ -846,14 +870,18 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
               ),
             ],
             if (allSessions.isEmpty)
-              const Expanded(
-                child: Center(child: Text('No Hermes sessions yet.')),
+              Expanded(
+                child: Center(
+                  child: Text(strings.chatRailNoHermesSessionsBody),
+                ),
               )
             else if (sessions.isEmpty)
               Expanded(
                 child: Center(
                   child: Text(
-                    'No Hermes sessions match “${_safeHermesUiPreview(_query.trim(), maxLength: 64)}”.',
+                    strings.chatRailNoHermesSessionsMatchBody(
+                      _safeHermesUiPreview(_query.trim(), maxLength: 64),
+                    ),
                   ),
                 ),
               )
@@ -920,13 +948,15 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
 }
 
 String _sessionCountSummary({
+  required AppLocalizations strings,
   required int visibleCount,
   required int totalCount,
   required String query,
 }) {
-  final totalLabel = totalCount == 1 ? 'session' : 'sessions';
-  if (query.trim().isEmpty) return '$totalCount $totalLabel';
-  return 'Showing $visibleCount of $totalCount $totalLabel';
+  if (query.trim().isEmpty) {
+    return strings.chatRailSessionCountLabel(totalCount);
+  }
+  return strings.chatRailShowingSessionCountLabel(totalCount, visibleCount);
 }
 
 bool _sessionMatchesQuery(
@@ -1054,31 +1084,56 @@ bool _hasHermesExtendedSessionMetadata(HermesSession session) =>
     session.hasSystemPrompt != null ||
     session.hasModelConfig != null;
 
-List<String> _hermesExtendedSessionMetadataLines(HermesSession session) => [
-  if (session.toolCallCount != null) 'Tool calls: ${session.toolCallCount}',
-  if (session.apiCallCount != null) 'API calls: ${session.apiCallCount}',
-  if (session.inputTokens != null) 'Input tokens: ${session.inputTokens}',
-  if (session.outputTokens != null) 'Output tokens: ${session.outputTokens}',
+List<String> _hermesExtendedSessionMetadataLines(
+  AppLocalizations strings,
+  HermesSession session,
+) => [
+  if (session.toolCallCount != null)
+    strings.chatRailDetailToolCallsLabel(session.toolCallCount!),
+  if (session.apiCallCount != null)
+    strings.chatRailDetailApiCallsLabel(session.apiCallCount!),
+  if (session.inputTokens != null)
+    strings.chatRailDetailInputTokensLabel(session.inputTokens!),
+  if (session.outputTokens != null)
+    strings.chatRailDetailOutputTokensLabel(session.outputTokens!),
   if (session.cacheReadTokens != null)
-    'Cache read tokens: ${session.cacheReadTokens}',
+    strings.chatRailDetailCacheReadTokensLabel(session.cacheReadTokens!),
   if (session.cacheWriteTokens != null)
-    'Cache write tokens: ${session.cacheWriteTokens}',
+    strings.chatRailDetailCacheWriteTokensLabel(session.cacheWriteTokens!),
   if (session.reasoningTokens != null)
-    'Reasoning tokens: ${session.reasoningTokens}',
+    strings.chatRailDetailReasoningTokensLabel(session.reasoningTokens!),
   if (session.actualCostUsd != null)
-    'Actual cost (USD): ${_formatSessionCost(session.actualCostUsd!)}',
+    strings.chatRailDetailActualCostLabel(
+      _formatSessionCost(session.actualCostUsd!),
+    ),
   if (session.estimatedCostUsd != null)
-    'Estimated cost (USD): ${_formatSessionCost(session.estimatedCostUsd!)}',
+    strings.chatRailDetailEstimatedCostLabel(
+      _formatSessionCost(session.estimatedCostUsd!),
+    ),
   if (session.startedAt != null)
-    'Started: ${_safeHermesUiPreview(session.startedAt!, maxLength: 120)}',
+    strings.chatRailDetailStartedLabel(
+      _safeHermesUiPreview(session.startedAt!, maxLength: 120),
+    ),
   if (session.endedAt != null)
-    'Ended: ${_safeHermesUiPreview(session.endedAt!, maxLength: 120)}',
+    strings.chatRailDetailEndedLabel(
+      _safeHermesUiPreview(session.endedAt!, maxLength: 120),
+    ),
   if (session.endReason != null)
-    'End reason: ${_safeHermesUiPreview(session.endReason!, maxLength: 80)}',
+    strings.chatRailDetailEndReasonLabel(
+      _safeHermesUiPreview(session.endReason!, maxLength: 80),
+    ),
   if (session.hasSystemPrompt != null)
-    'System prompt snapshot: ${session.hasSystemPrompt! ? 'yes' : 'no'}',
+    strings.chatRailDetailSystemPromptSnapshotLabel(
+      session.hasSystemPrompt!
+          ? strings.chatRailDetailYesLabel
+          : strings.chatRailDetailNoLabel,
+    ),
   if (session.hasModelConfig != null)
-    'Model config snapshot: ${session.hasModelConfig! ? 'yes' : 'no'}',
+    strings.chatRailDetailModelConfigSnapshotLabel(
+      session.hasModelConfig!
+          ? strings.chatRailDetailYesLabel
+          : strings.chatRailDetailNoLabel,
+    ),
 ];
 
 class _HermesSessionTile extends StatelessWidget {
@@ -1157,15 +1212,19 @@ class _HermesSessionTile extends StatelessWidget {
           _sessionSourceLabel(context, session.source),
           if (session.model?.trim().isNotEmpty ?? false)
             _safeHermesUiPreview(session.model!.trim(), maxLength: 80),
-          '${session.messageCount} messages',
+          strings.chatRailTileMessageCountLabel(session.messageCount),
           if (streaming)
             strings.sessionStreamingReply
           else if (failed)
             strings.sessionReplyFailed,
           if (session.parentSessionId != null)
-            'Forked from ${_safeHermesUiPreview(session.parentSessionId!, maxLength: 80)}',
+            strings.chatRailForkedFromLabel(
+              _safeHermesUiPreview(session.parentSessionId!, maxLength: 80),
+            ),
           if (session.lastActive != null)
-            'Last active ${_sessionLastActiveLabel(context, session.lastActive!)}',
+            strings.chatRailLastActiveLabel(
+              _sessionLastActiveLabel(context, session.lastActive!),
+            ),
           if (session.preview != null)
             _safeHermesUiPreview(session.preview!, maxLength: 160),
         ].join(' • '),
@@ -1181,7 +1240,7 @@ class _HermesSessionTile extends StatelessWidget {
           ? null
           : PopupMenuButton<String>(
               key: ValueKey('hermes-session-menu-${session.id}'),
-              tooltip: 'Session actions',
+              tooltip: strings.chatRailSessionActionsTooltip,
               onSelected: (value) {
                 switch (value) {
                   case 'details':
@@ -1199,10 +1258,8 @@ class _HermesSessionTile extends StatelessWidget {
                       ),
                     );
                     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Copied redacted Hermes session details.',
-                        ),
+                      SnackBar(
+                        content: Text(strings.chatRailCopiedSessionDetailsBody),
                       ),
                     );
                   case 'rename':
@@ -1214,17 +1271,29 @@ class _HermesSessionTile extends StatelessWidget {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'details',
-                  child: Text('View details'),
+                  child: Text(strings.chatRailViewDetailsAction),
                 ),
-                const PopupMenuItem(value: 'copy', child: Text('Copy details')),
+                PopupMenuItem(
+                  value: 'copy',
+                  child: Text(strings.chatRailCopyDetailsAction),
+                ),
                 if (canRename)
-                  const PopupMenuItem(value: 'rename', child: Text('Rename')),
+                  PopupMenuItem(
+                    value: 'rename',
+                    child: Text(strings.chatRailRenameAction),
+                  ),
                 if (canFork)
-                  const PopupMenuItem(value: 'fork', child: Text('Branch')),
+                  PopupMenuItem(
+                    value: 'fork',
+                    child: Text(strings.chatRailBranchAction),
+                  ),
                 if (canDelete)
-                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(strings.chatRailDeleteAction),
+                  ),
               ],
             ),
     );
@@ -1248,7 +1317,7 @@ class _HermesSessionTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Session details',
+                _hermesStrings(sheetContext).chatRailSessionDetailsTitle,
                 style: Theme.of(sheetContext).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
@@ -1259,13 +1328,19 @@ class _HermesSessionTile extends StatelessWidget {
                   await Clipboard.setData(ClipboardData(text: summary));
                   if (!sheetContext.mounted) return;
                   ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
-                    const SnackBar(
-                      content: Text('Copied redacted Hermes session details.'),
+                    SnackBar(
+                      content: Text(
+                        _hermesStrings(
+                          sheetContext,
+                        ).chatRailCopiedSessionDetailsBody,
+                      ),
                     ),
                   );
                 },
                 icon: const Icon(Icons.copy_outlined),
-                label: const Text('Copy details'),
+                label: Text(
+                  _hermesStrings(sheetContext).chatRailCopyDetailsAction,
+                ),
               ),
             ],
           ),
@@ -1281,11 +1356,17 @@ class _HermesSessionTile extends StatelessWidget {
   ) {
     final strings = _hermesStrings(context);
     final buffer = StringBuffer()
-      ..writeln('Hermes session')
+      ..writeln(strings.chatRailSessionDetailsHeaderLabel)
       ..writeln(
-        'Title: ${_safeHermesUiPreview(session.title ?? session.id, maxLength: 96)}',
+        strings.chatRailDetailTitleLabel(
+          _safeHermesUiPreview(session.title ?? session.id, maxLength: 96),
+        ),
       )
-      ..writeln('ID: ${_safeHermesUiPreview(session.id, maxLength: 120)}')
+      ..writeln(
+        strings.chatRailDetailIdLabel(
+          _safeHermesUiPreview(session.id, maxLength: 120),
+        ),
+      )
       ..writeln(
         strings.sessionSourceLabel(
           _sessionSourceLabel(context, session.source),
@@ -1298,19 +1379,23 @@ class _HermesSessionTile extends StatelessWidget {
               : strings.sessionModelNotReported,
         ),
       )
-      ..writeln('Active: $active')
-      ..writeln('Messages: ${session.messageCount}');
-    for (final line in _hermesExtendedSessionMetadataLines(session)) {
+      ..writeln(strings.chatRailDetailActiveLabel('$active'))
+      ..writeln(strings.chatRailDetailMessagesLabel(session.messageCount));
+    for (final line in _hermesExtendedSessionMetadataLines(strings, session)) {
       buffer.writeln(line);
     }
     if (session.parentSessionId != null) {
       buffer.writeln(
-        'Forked from: ${_safeHermesUiPreview(session.parentSessionId!, maxLength: 120)}',
+        strings.chatRailDetailForkedFromLabel(
+          _safeHermesUiPreview(session.parentSessionId!, maxLength: 120),
+        ),
       );
     }
     if (session.lastActive != null) {
       buffer.writeln(
-        'Last active: ${_safeHermesUiPreview(session.lastActive!, maxLength: 120)}',
+        strings.chatRailDetailLastActiveLabel(
+          _safeHermesUiPreview(session.lastActive!, maxLength: 120),
+        ),
       );
     }
     return buffer.toString().trimRight();

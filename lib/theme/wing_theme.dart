@@ -9,6 +9,49 @@ const wingHermesDarkCard = Color(0xff1b1d21);
 const wingHermesDarkCardHigh = Color(0xff24272d);
 const wingHermesDarkOutline = Color(0xff30343b);
 
+/// The five shipped color palettes (ROADMAP 5.1). [wing] is the default
+/// hand-tuned pair; the others derive both brightnesses from one seed
+/// through the same [_buildWingTheme] pipeline.
+enum WingThemePalette {
+  wing(wingTelegramBlue),
+  indigo(Color(0xff6366f1)),
+  forest(Color(0xff059669)),
+  amber(Color(0xffd97706)),
+  mulberry(Color(0xffbe185d));
+
+  const WingThemePalette(this.seed);
+
+  /// Representative swatch color shown in the theme picker.
+  final Color seed;
+}
+
+final _paletteThemes = <WingThemePalette, ({ThemeData light, ThemeData dark})>{
+  for (final palette in WingThemePalette.values)
+    palette: palette == WingThemePalette.wing
+        ? (light: wingLightTheme, dark: wingHermesDarkTheme)
+        : (
+            light: _buildWingTheme(
+              ColorScheme.fromSeed(seedColor: palette.seed),
+              selectedTileAlpha: 24,
+              dividerAlpha: 96,
+            ),
+            dark: _buildWingTheme(
+              ColorScheme.fromSeed(
+                seedColor: palette.seed,
+                brightness: Brightness.dark,
+              ),
+              selectedTileAlpha: 36,
+              dividerAlpha: 92,
+            ),
+          ),
+};
+
+/// The [ThemeData] for [palette] at [brightness].
+ThemeData wingThemeFor(WingThemePalette palette, Brightness brightness) {
+  final pair = _paletteThemes[palette]!;
+  return brightness == Brightness.dark ? pair.dark : pair.light;
+}
+
 final wingLightTheme = _buildTelegramLightTheme();
 final wingHermesDarkTheme = _buildHermesDarkTheme();
 

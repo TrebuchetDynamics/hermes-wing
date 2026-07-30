@@ -70,7 +70,9 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Hermes Agent dashboard'), findsNothing);
-    expect(find.text('Appearance'), findsNothing);
+    // ROADMAP 5.1 reintroduced Appearance as the theme picker; the legacy
+    // dashboard rows above must still stay gone.
+    expect(find.text('Appearance'), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-open-hermes')), findsNothing);
     expect(
       find.byKey(const ValueKey('voice-continuous-enabled')),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/settings/providers/theme_settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../router/app_router.dart';
 import '../theme/wing_theme.dart';
@@ -23,15 +24,16 @@ class _WingMaterialApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeSettings = ref.watch(wingThemeSettingsProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: wingLightTheme,
-      darkTheme: wingDarkTheme,
-      themeMode: ThemeMode.system,
+      theme: wingThemeFor(themeSettings.palette, Brightness.light),
+      darkTheme: wingThemeFor(themeSettings.palette, Brightness.dark),
+      themeMode: themeSettings.mode,
       routerConfig: router,
     );
   }

@@ -18,7 +18,9 @@ import '../../hermes_chat/diagnostics/hermes_diagnostics_export.dart';
 import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
+import '../../../theme/wing_theme.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
+import '../providers/theme_settings_provider.dart';
 import '../providers/voice_settings_provider.dart';
 
 part 'settings_diagnostics_screen.dart';
@@ -70,6 +72,64 @@ class SettingsScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Text(strings.settingsCredentialsNote),
+                  ),
+                ],
+              ),
+              _SettingsSectionCard(
+                title: strings.settingsAppearanceSection,
+                icon: Icons.palette_outlined,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    child: SegmentedButton<ThemeMode>(
+                      key: const ValueKey('settings-theme-mode'),
+                      segments: [
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          label: Text(strings.themeModeSystem),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          label: Text(strings.themeModeLight),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          label: Text(strings.themeModeDark),
+                        ),
+                      ],
+                      selected: {ref.watch(wingThemeSettingsProvider).mode},
+                      onSelectionChanged: (selection) => unawaited(
+                        ref
+                            .read(wingThemeSettingsProvider.notifier)
+                            .setMode(selection.single),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        for (final palette in WingThemePalette.values)
+                          ChoiceChip(
+                            key: ValueKey('settings-palette-${palette.name}'),
+                            avatar: CircleAvatar(
+                              backgroundColor: palette.seed,
+                              radius: 8,
+                            ),
+                            label: Text(_paletteLabel(strings, palette)),
+                            selected:
+                                ref.watch(wingThemeSettingsProvider).palette ==
+                                palette,
+                            onSelected: (_) => unawaited(
+                              ref
+                                  .read(wingThemeSettingsProvider.notifier)
+                                  .setPalette(palette),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -131,6 +191,15 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 }
+
+String _paletteLabel(AppLocalizations strings, WingThemePalette palette) =>
+    switch (palette) {
+      WingThemePalette.wing => strings.themePaletteWing,
+      WingThemePalette.indigo => strings.themePaletteIndigo,
+      WingThemePalette.forest => strings.themePaletteForest,
+      WingThemePalette.amber => strings.themePaletteAmber,
+      WingThemePalette.mulberry => strings.themePaletteMulberry,
+    };
 
 class _GatewaySettingsTile extends StatelessWidget {
   const _GatewaySettingsTile({required this.gateway, required this.directory});

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/app.dart';
 import 'package:wing/theme/wing_theme.dart';
 
@@ -119,6 +120,40 @@ void main() {
     },
   );
 
+  test('every palette provides Material 3 themes in both brightnesses', () {
+    expect(WingThemePalette.values, hasLength(5));
+    for (final palette in WingThemePalette.values) {
+      final light = wingThemeFor(palette, Brightness.light);
+      final dark = wingThemeFor(palette, Brightness.dark);
+      expect(light.colorScheme.brightness, Brightness.light);
+      expect(dark.colorScheme.brightness, Brightness.dark);
+      expect(light.useMaterial3, isTrue);
+      expect(dark.useMaterial3, isTrue);
+      // Every palette keeps the flat Telegram-like top bar.
+      expect(light.appBarTheme.elevation, 0);
+      expect(dark.appBarTheme.elevation, 0);
+    }
+  });
+
+  test('the Wing palette is the existing hand-tuned default pair', () {
+    expect(
+      wingThemeFor(WingThemePalette.wing, Brightness.light),
+      same(wingLightTheme),
+    );
+    expect(
+      wingThemeFor(WingThemePalette.wing, Brightness.dark),
+      same(wingHermesDarkTheme),
+    );
+  });
+
+  test('palettes are visually distinct', () {
+    final primaries = {
+      for (final palette in WingThemePalette.values)
+        wingThemeFor(palette, Brightness.light).colorScheme.primary,
+    };
+    expect(primaries, hasLength(WingThemePalette.values.length));
+  });
+
   testWidgets('WingApp exposes system light and dark themes', (tester) async {
     await tester.pumpWidget(const WingApp());
 
@@ -127,6 +162,29 @@ void main() {
     expect(app.themeMode, ThemeMode.system);
     expect(app.theme?.colorScheme.brightness, Brightness.light);
     expect(app.darkTheme?.colorScheme.brightness, Brightness.dark);
+  });
+
+  testWidgets('WingApp applies the persisted theme mode and palette', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'flutter.wing.theme.mode': 'dark',
+      'flutter.wing.theme.palette': 'forest',
+    });
+
+    await tester.pumpWidget(const WingApp());
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+    expect(
+      app.theme,
+      same(wingThemeFor(WingThemePalette.forest, Brightness.light)),
+    );
+    expect(
+      app.darkTheme,
+      same(wingThemeFor(WingThemePalette.forest, Brightness.dark)),
+    );
   });
 
   testWidgets('WingApp wraps routed content in a text selection area', (

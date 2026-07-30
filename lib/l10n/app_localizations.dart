@@ -4398,6 +4398,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 model available} other{{count} models available}}'**
   String credentialProbeModelCount(int count);
+
+  /// No description provided for @settingsAppearanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearanceSection;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// No description provided for @themePaletteWing.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing'**
+  String get themePaletteWing;
+
+  /// No description provided for @themePaletteIndigo.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get themePaletteIndigo;
+
+  /// No description provided for @themePaletteForest.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get themePaletteForest;
+
+  /// No description provided for @themePaletteAmber.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get themePaletteAmber;
+
+  /// No description provided for @themePaletteMulberry.
+  ///
+  /// In en, this message translates to:
+  /// **'Mulberry'**
+  String get themePaletteMulberry;
 }
 
 class _AppLocalizationsDelegate

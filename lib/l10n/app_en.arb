@@ -1708,5 +1708,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "settingsAppearanceSection": "Appearance",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "themePaletteWing": "Wing",
+  "themePaletteIndigo": "Indigo",
+  "themePaletteForest": "Forest",
+  "themePaletteAmber": "Amber",
+  "themePaletteMulberry": "Mulberry"
 }

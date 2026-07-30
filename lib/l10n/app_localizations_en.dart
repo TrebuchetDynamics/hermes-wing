@@ -2639,4 +2639,31 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsAppearanceSection => 'Appearance';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get themePaletteWing => 'Wing';
+
+  @override
+  String get themePaletteIndigo => 'Indigo';
+
+  @override
+  String get themePaletteForest => 'Forest';
+
+  @override
+  String get themePaletteAmber => 'Amber';
+
+  @override
+  String get themePaletteMulberry => 'Mulberry';
 }

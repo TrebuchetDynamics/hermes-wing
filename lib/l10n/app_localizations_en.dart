@@ -2608,4 +2608,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String chatRailDetailLastActiveLabel(String value) {
     return 'Last active: $value';
   }
+
+  @override
+  String get modelPresetsLabel => 'Presets';
+
+  @override
+  String get modelPresetSaveAction => 'Save preset';
+
+  @override
+  String get modelPresetSaveTitle => 'Save model preset';
+
+  @override
+  String get modelPresetNameLabel => 'Preset name';
+
+  @override
+  String get modelPresetUnavailableBody => 'Not in this gateway\'s catalog';
 }

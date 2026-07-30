@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
+import '../models/model_preset.dart';
+import '../models/model_preset_store.dart';
 
 const _knownAuxiliaryTasks = [
   'vision',
@@ -62,8 +66,10 @@ class ModelPickerSheet extends StatefulWidget {
 }
 
 class _ModelPickerSheetState extends State<ModelPickerSheet> {
+  final ModelPresetStore _presetStore = ModelPresetStore();
   late HermesModelInventory _inventory;
   late List<_SlotOption> _slots;
+  List<ModelPreset> _presets = const [];
   _SlotOption? _slot;
   String? _provider;
   String? _model;
@@ -77,6 +83,104 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
   void initState() {
     super.initState();
     _applyInventory(widget.inventory);
+    unawaited(
+      _presetStore.load().then((presets) {
+        if (mounted) setState(() => _presets = presets);
+      }),
+    );
+  }
+
+  /// The stored slot identifier for the current selection: `main` or the
+  /// auxiliary task name.
+  String? get _slotId =>
+      _slot == null ? null : (_slot!.scope == 'main' ? 'main' : _slot!.task);
+
+  /// Whether [preset] can be applied against the current catalog.
+  bool _presetAvailable(ModelPreset preset) {
+    for (final block in _catalog.providers) {
+      if (block.provider != preset.provider) continue;
+      return block.models.any((model) => model.id == preset.model);
+    }
+    return false;
+  }
+
+  void _applyPreset(ModelPreset preset) {
+    setState(() {
+      _slot = _slots.firstWhere(
+        (slot) => preset.slot == (slot.scope == 'main' ? 'main' : slot.task),
+        orElse: () => _slots.first,
+      );
+      _provider = preset.provider;
+      _model = preset.model;
+    });
+  }
+
+  Future<void> _savePreset() async {
+    final slotId = _slotId;
+    final provider = _provider;
+    final model = _model;
+    if (slotId == null || provider == null || model == null) return;
+    var draftName = model;
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          title: Text(strings.modelPresetSaveTitle),
+          content: TextFormField(
+            key: const ValueKey('model-preset-name-field'),
+            initialValue: draftName,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: strings.modelPresetNameLabel,
+            ),
+            onChanged: (value) => draftName = value,
+            onFieldSubmitted: (value) =>
+                Navigator.of(dialogContext).pop(value.trim()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('model-preset-save-confirm'),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(draftName.trim()),
+              child: Text(strings.saveAction),
+            ),
+          ],
+        );
+      },
+    );
+    if (name == null || name.isEmpty || !mounted) return;
+    final presets = await _presetStore.save(
+      ModelPreset(name: name, slot: slotId, provider: provider, model: model),
+    );
+    if (mounted) setState(() => _presets = presets);
+  }
+
+  /// One preset chip: body tap applies when available, the delete affordance
+  /// always works so stale presets can be cleaned up.
+  Widget _presetChip(ModelPreset preset) => InputChip(
+    key: ValueKey('model-preset-${preset.name}'),
+    label: Text(preset.name),
+    selected:
+        _slotId != null &&
+        preset.matches(
+          slot: _slotId!,
+          provider: _provider ?? '',
+          model: _model ?? '',
+        ),
+    onPressed: _busy || !_presetAvailable(preset)
+        ? null
+        : () => _applyPreset(preset),
+    onDeleted: _busy ? null : () => unawaited(_removePreset(preset)),
+  );
+
+  Future<void> _removePreset(ModelPreset preset) async {
+    final presets = await _presetStore.remove(preset.name);
+    if (mounted) setState(() => _presets = presets);
   }
 
   /// Derives the sheet's local slot/provider/model selection from
@@ -366,6 +470,38 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
                   ),
                 ),
               ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      strings.modelPresetsLabel,
+                      style: theme.textTheme.labelLarge,
+                    ),
+                  ),
+                  TextButton.icon(
+                    key: const ValueKey('model-preset-save'),
+                    onPressed: _busy || _model == null ? null : _savePreset,
+                    icon: const Icon(Icons.bookmark_add_outlined),
+                    label: Text(strings.modelPresetSaveAction),
+                  ),
+                ],
+              ),
+              if (_presets.isNotEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final preset in _presets)
+                      if (_presetAvailable(preset))
+                        _presetChip(preset)
+                      else
+                        Tooltip(
+                          message: strings.modelPresetUnavailableBody,
+                          child: _presetChip(preset),
+                        ),
+                  ],
+                ),
             ],
             if (_error != null) ...[
               const SizedBox(height: 12),

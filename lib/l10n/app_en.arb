@@ -1687,5 +1687,10 @@
         "type": "String"
       }
     }
-  }
+  },
+  "modelPresetsLabel": "Presets",
+  "modelPresetSaveAction": "Save preset",
+  "modelPresetSaveTitle": "Save model preset",
+  "modelPresetNameLabel": "Preset name",
+  "modelPresetUnavailableBody": "Not in this gateway's catalog"
 }

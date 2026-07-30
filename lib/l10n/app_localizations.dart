@@ -4356,6 +4356,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last active: {value}'**
   String chatRailDetailLastActiveLabel(String value);
+
+  /// No description provided for @modelPresetsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets'**
+  String get modelPresetsLabel;
+
+  /// No description provided for @modelPresetSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save preset'**
+  String get modelPresetSaveAction;
+
+  /// No description provided for @modelPresetSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save model preset'**
+  String get modelPresetSaveTitle;
+
+  /// No description provided for @modelPresetNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset name'**
+  String get modelPresetNameLabel;
+
+  /// No description provided for @modelPresetUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in this gateway\'s catalog'**
+  String get modelPresetUnavailableBody;
 }
 
 class _AppLocalizationsDelegate

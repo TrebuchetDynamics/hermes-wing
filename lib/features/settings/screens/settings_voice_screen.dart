@@ -44,21 +44,22 @@ class VoiceSettingsScreen extends ConsumerWidget {
     );
     final pocketSpeechVoices = ref.watch(pocketSpeechVoiceNamesProvider);
     final pocketSpeechPreviewing = ref.watch(_pocketSpeechPreviewingProvider);
+    final strings = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Voice & speech')),
+      appBar: AppBar(title: Text(strings.voiceSettingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _SettingsSectionCard(
-            title: 'Voice behavior',
+            title: strings.voiceBehaviorSection,
             icon: Icons.keyboard_voice_outlined,
             children: [
               _ConstrainedSettingsTile(
                 child: SwitchListTile(
                   key: const ValueKey('voice-continuous-enabled'),
-                  title: Text(_settingsPresentation.continuousVoiceTitle),
-                  subtitle: Text(_settingsPresentation.continuousVoiceSubtitle),
+                  title: Text(strings.voiceContinuousTitle),
+                  subtitle: Text(strings.voiceContinuousSubtitle),
                   value: settings.continuousVoiceEnabled,
                   onChanged: controller.setContinuousVoiceEnabled,
                 ),
@@ -66,8 +67,8 @@ class VoiceSettingsScreen extends ConsumerWidget {
               _ConstrainedSettingsTile(
                 child: SwitchListTile(
                   key: const ValueKey('voice-speak-replies-enabled'),
-                  title: Text(_settingsPresentation.speakRepliesTitle),
-                  subtitle: Text(_settingsPresentation.speakRepliesSubtitle),
+                  title: Text(strings.voiceSpeakRepliesTitle),
+                  subtitle: Text(strings.voiceSpeakRepliesSubtitle),
                   value: settings.speakRepliesEnabled,
                   onChanged: controller.setSpeakRepliesEnabled,
                 ),
@@ -83,16 +84,16 @@ class VoiceSettingsScreen extends ConsumerWidget {
             previewing: pocketSpeechPreviewing,
           ),
           _SettingsSectionCard(
-            title: 'Advanced',
+            title: strings.voiceAdvancedSection,
             icon: Icons.tune_outlined,
             children: [
               ExpansionTile(
                 key: const ValueKey('voice-advanced-expansion'),
-                title: const Text('Advanced'),
+                title: Text(strings.voiceAdvancedSection),
                 children: [
                   ListTile(
                     key: const ValueKey('settings-command-word'),
-                    title: Text(_settingsPresentation.commandWordTitle),
+                    title: Text(strings.voiceCommandWordTitle),
                     subtitle: Text(settings.commandWord),
                     trailing: const Icon(Icons.keyboard_voice),
                     onTap: () => _showCommandWordSheet(
@@ -131,20 +132,19 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final downloading = download != null;
+    final strings = AppLocalizations.of(context);
     return _SettingsSectionCard(
-      title: _settingsPresentation.localVoiceSectionTitle,
+      title: strings.voicePocketSpeechSection,
       icon: Icons.graphic_eq,
       children: [
         ListTile(
           key: const ValueKey('voice-pocket-speech-model'),
           leading: const Icon(Icons.graphic_eq),
-          title: const Text('Pocket Speech model'),
+          title: Text(strings.voicePocketSpeechModelTitle),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Choose a compact English pack or the larger bilingual pack',
-              ),
+              Text(strings.voicePocketSpeechModelSubtitle),
               Align(
                 alignment: Alignment.centerRight,
                 child: DropdownButton<PocketSpeechModel>(
@@ -172,7 +172,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                 ? Icons.check_circle_outline
                 : Icons.download_for_offline_outlined,
           ),
-          title: Text('${settings.pocketSpeechModel.label} voice pack'),
+          title: Text(strings.voicePackTitle(settings.pocketSpeechModel.label)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -198,7 +198,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                     children: [
                       if (settings.pocketSpeechVoicePackReady)
                         IconButton(
-                          tooltip: 'Remove downloaded voice pack',
+                          tooltip: strings.voiceRemovePackTooltip,
                           onPressed: downloader == null
                               ? null
                               : () => _deletePocketSpeechAssets(
@@ -226,8 +226,8 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                             : null,
                         child: Text(
                           settings.pocketSpeechVoicePackReady
-                              ? 'Update'
-                              : 'Download',
+                              ? strings.voiceUpdateAction
+                              : strings.voiceDownloadAction,
                         ),
                       ),
                     ],
@@ -239,11 +239,15 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
         _ConstrainedSettingsTile(
           child: SwitchListTile(
             key: const ValueKey('voice-pocket-speech-enabled'),
-            title: const Text('Use Pocket Speech for replies'),
+            title: Text(strings.voiceUsePocketSpeechTitle),
             subtitle: Text(
               settings.pocketSpeechVoicePackReady
-                  ? 'Use the installed ${settings.pocketSpeechModel.label} pack when Speak assistant replies is on'
-                  : 'Download ${settings.pocketSpeechModel.label} before enabling',
+                  ? strings.voiceUsePocketSpeechReadySubtitle(
+                      settings.pocketSpeechModel.label,
+                    )
+                  : strings.voiceUsePocketSpeechNotReadySubtitle(
+                      settings.pocketSpeechModel.label,
+                    ),
             ),
             value: settings.pocketSpeechTtsEnabled,
             onChanged: settings.pocketSpeechVoicePackReady
@@ -254,14 +258,14 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
         ListTile(
           key: const ValueKey('voice-pocket-speech-voice'),
           leading: const Icon(Icons.record_voice_over_outlined),
-          title: const Text('Offline voice'),
+          title: Text(strings.voiceOfflineVoiceTitle),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 settings.pocketSpeechVoicePackReady
-                    ? 'Voice used for Pocket Speech replies'
-                    : 'Available after the voice pack is downloaded',
+                    ? strings.voiceOfflineVoiceReadySubtitle
+                    : strings.voiceOfflineVoiceNotReadySubtitle,
               ),
               Align(
                 alignment: Alignment.centerRight,
@@ -273,11 +277,11 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                         : null;
                     return DropdownButton<String?>(
                       value: selected,
-                      hint: const Text('Default'),
+                      hint: Text(strings.voiceDefaultVoiceLabel),
                       items: [
-                        const DropdownMenuItem<String?>(
+                        DropdownMenuItem<String?>(
                           value: null,
-                          child: Text('Default'),
+                          child: Text(strings.voiceDefaultVoiceLabel),
                         ),
                         for (final voice in availableVoices)
                           DropdownMenuItem<String?>(
@@ -299,7 +303,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                     dimension: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  error: (_, _) => const Text('Unavailable'),
+                  error: (_, _) => Text(strings.voiceVoicesUnavailable),
                 ),
               ),
             ],
@@ -309,7 +313,9 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
           key: const ValueKey('voice-pocket-speech-speed'),
           leading: const Icon(Icons.speed_outlined),
           title: Text(
-            'Reply speed · ${settings.speechRate.clamp(0.5, 2.0).toStringAsFixed(2)}×',
+            strings.voiceReplySpeedTitle(
+              settings.speechRate.clamp(0.5, 2.0).toStringAsFixed(2),
+            ),
           ),
           subtitle: Slider(
             value: settings.speechRate.clamp(0.5, 2.0),
@@ -323,13 +329,11 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
         ListTile(
           key: const ValueKey('voice-pocket-speech-preview'),
           leading: const Icon(Icons.play_circle_outline),
-          title: const Text('Preview offline voice'),
+          title: Text(strings.voicePreviewTitle),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Play a local sample with the selected voice and speed',
-              ),
+              Text(strings.voicePreviewSubtitle),
               Align(
                 alignment: Alignment.centerRight,
                 child: previewing
@@ -342,7 +346,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                             ? () => _previewPocketSpeech(context, ref, settings)
                             : null,
                         icon: const Icon(Icons.play_arrow),
-                        label: const Text('Preview'),
+                        label: Text(strings.voicePreviewAction),
                       ),
               ),
             ],
@@ -408,6 +412,7 @@ Future<void> _downloadPocketSpeechAssets(
   }
   if (!context.mounted) return;
 
+  final strings = AppLocalizations.of(context);
   final downloading = ref.read(_pocketSpeechAssetDownloadingProvider.notifier);
   downloading.start(model);
   try {
@@ -420,9 +425,9 @@ Future<void> _downloadPocketSpeechAssets(
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${model.label} voice pack is ready'),
+          content: Text(strings.voicePackReadyNotice(model.label)),
           action: SnackBarAction(
-            label: 'Use for replies',
+            label: strings.voiceUseForRepliesAction,
             onPressed: () {
               controller.setPocketSpeechTtsEnabled(true);
               controller.setSpeakRepliesEnabled(true);
@@ -434,11 +439,7 @@ Future<void> _downloadPocketSpeechAssets(
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${model.label} download failed. Check the connection and free storage, then retry.',
-          ),
-        ),
+        SnackBar(content: Text(strings.voiceDownloadFailedNotice(model.label))),
       );
     }
   } finally {
@@ -449,27 +450,27 @@ Future<void> _downloadPocketSpeechAssets(
 Future<bool> _confirmLargePocketSpeechDownload(
   BuildContext context,
   PocketSpeechModel model,
-) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Download ${model.label}?'),
-        content: Text(
-          '${model.downloadSummary}. Keep Hermes Wing open until the verified download finishes.',
+) async {
+  final strings = AppLocalizations.of(context);
+  return await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(strings.voiceDownloadDialogTitle(model.label)),
+          content: Text(strings.voiceDownloadDialogBody(model.downloadSummary)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(strings.voiceDownloadAction),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Download'),
-          ),
-        ],
-      ),
-    ) ??
-    false;
+      ) ??
+      false;
+}
 
 Future<void> _deletePocketSpeechAssets(
   BuildContext context,
@@ -478,21 +479,20 @@ Future<void> _deletePocketSpeechAssets(
   PocketSpeechAssetDownloadService downloader,
   PocketSpeechModel model,
 ) async {
+  final strings = AppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Remove ${model.label} voice pack?'),
-      content: Text(
-        'This frees ${model.downloadSize} of app storage. You can download it again later.',
-      ),
+      title: Text(strings.voiceRemoveDialogTitle(model.label)),
+      content: Text(strings.voiceRemoveDialogBody(model.downloadSize)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(strings.cancelAction),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Remove'),
+          child: Text(strings.voiceRemoveAction),
         ),
       ],
     ),
@@ -505,13 +505,15 @@ Future<void> _deletePocketSpeechAssets(
     ref.invalidate(pocketSpeechVoiceNamesProvider);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${model.label} voice pack removed')),
+        SnackBar(content: Text(strings.voicePackRemovedNotice(model.label))),
       );
     }
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not remove ${model.label} voice pack')),
+        SnackBar(
+          content: Text(strings.voicePackRemoveFailedNotice(model.label)),
+        ),
       );
     }
   }
@@ -547,10 +549,8 @@ Future<void> _previewPocketSpeech(
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not preview this voice. Update the voice pack and try again.',
-          ),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).voicePreviewFailedNotice),
         ),
       );
     }
@@ -579,6 +579,7 @@ class _PocketSpeechAssetSubtitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     final activeProgress = progress?.model == model ? progress : null;
     if (activeProgress != null) {
       return Padding(
@@ -587,14 +588,21 @@ class _PocketSpeechAssetSubtitle extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${activeProgress.part.label} · ${_formatDownloadBytes(activeProgress.receivedBytes)} of ${_formatDownloadBytes(activeProgress.totalBytes)}',
+              strings.voiceDownloadProgress(
+                activeProgress.part.label,
+                _formatDownloadBytes(activeProgress.receivedBytes),
+                _formatDownloadBytes(activeProgress.totalBytes),
+              ),
             ),
             const SizedBox(height: 6),
             LinearProgressIndicator(
               value: activeProgress.fraction,
-              semanticsLabel: '${model.label} download progress',
-              semanticsValue:
-                  '${(activeProgress.fraction * 100).round()} percent',
+              semanticsLabel: strings.voiceDownloadProgressSemantics(
+                model.label,
+              ),
+              semanticsValue: strings.voicePercentSemantics(
+                (activeProgress.fraction * 100).round(),
+              ),
             ),
           ],
         ),
@@ -607,10 +615,10 @@ class _PocketSpeechAssetSubtitle extends StatelessWidget {
         Text(model.downloadSummary),
         Text(
           ready
-              ? 'Installed and stored on this device for offline use'
+              ? strings.voicePackInstalledSubtitle
               : configured
-              ? 'Verified download; stored on this device. Keep the app open.'
-              : 'Downloads are unavailable in this build',
+              ? strings.voicePackVerifiedSubtitle
+              : strings.voicePackUnavailableSubtitle,
         ),
       ],
     );
@@ -649,6 +657,7 @@ Future<void> _showCommandWordSheet(
   String commandWord,
   ValueChanged<String> onSave,
 ) async {
+  final strings = AppLocalizations.of(context);
   final controller = TextEditingController(text: commandWord);
   await showModalBottomSheet<void>(
     context: context,
@@ -659,7 +668,10 @@ Future<void> _showCommandWordSheet(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Command word', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              strings.voiceCommandWordTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             TextField(
               key: const ValueKey('settings-command-word-field'),
@@ -667,16 +679,16 @@ Future<void> _showCommandWordSheet(
               autofocus: true,
               autocorrect: false,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(labelText: 'Command word'),
+              decoration: InputDecoration(
+                labelText: strings.voiceCommandWordTitle,
+              ),
               onSubmitted: (value) {
                 onSave(value);
                 Navigator.of(context).pop();
               },
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.',
-            ),
+            Text(strings.voiceCommandWordHint),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
@@ -686,7 +698,7 @@ Future<void> _showCommandWordSheet(
                   onSave(controller.text);
                   Navigator.of(context).pop();
                 },
-                child: const Text('Save'),
+                child: Text(strings.saveAction),
               ),
             ),
           ],

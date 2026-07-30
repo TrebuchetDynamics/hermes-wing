@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('Pocket Speech settings explain downloads and playback choices', (
@@ -19,7 +20,13 @@ void main() {
     });
 
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: VoiceSettingsScreen())),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -52,6 +59,8 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: MediaQuery(
             data: MediaQueryData(
               size: Size(320, 700),
@@ -79,7 +88,13 @@ void main() {
     SharedPreferences.setMockInitialValues({});
 
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: VoiceSettingsScreen())),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 

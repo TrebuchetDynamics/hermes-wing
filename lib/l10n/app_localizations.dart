@@ -1755,6 +1755,839 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Curator'**
   String get auxiliaryTaskCurator;
+
+  /// No description provided for @diagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get diagnosticsTitle;
+
+  /// No description provided for @diagnosticsConnectionSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get diagnosticsConnectionSection;
+
+  /// No description provided for @diagnosticsStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get diagnosticsStatusLabel;
+
+  /// No description provided for @diagnosticsStatusDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get diagnosticsStatusDisconnected;
+
+  /// No description provided for @diagnosticsStatusConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get diagnosticsStatusConnecting;
+
+  /// No description provided for @diagnosticsStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get diagnosticsStatusConnected;
+
+  /// No description provided for @diagnosticsStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get diagnosticsStatusError;
+
+  /// No description provided for @diagnosticsModelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get diagnosticsModelLabel;
+
+  /// No description provided for @diagnosticsModelNotReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not reported'**
+  String get diagnosticsModelNotReported;
+
+  /// No description provided for @diagnosticsRunTransportLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Run transport'**
+  String get diagnosticsRunTransportLabel;
+
+  /// No description provided for @diagnosticsTransportNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected'**
+  String get diagnosticsTransportNotConnected;
+
+  /// No description provided for @diagnosticsTransportRunsSse.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs SSE enabled'**
+  String get diagnosticsTransportRunsSse;
+
+  /// No description provided for @diagnosticsTransportSessionStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Session chat streaming'**
+  String get diagnosticsTransportSessionStream;
+
+  /// No description provided for @diagnosticsTransportUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get diagnosticsTransportUnavailable;
+
+  /// No description provided for @diagnosticsVersionHealthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version / health'**
+  String get diagnosticsVersionHealthLabel;
+
+  /// No description provided for @diagnosticsNoHealthDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'No health details yet'**
+  String get diagnosticsNoHealthDetails;
+
+  /// No description provided for @diagnosticsUnknownVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'unknown version'**
+  String get diagnosticsUnknownVersion;
+
+  /// No description provided for @diagnosticsUnknownGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'unknown gateway'**
+  String get diagnosticsUnknownGateway;
+
+  /// No description provided for @diagnosticsHealthSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{version} • {gateway}'**
+  String diagnosticsHealthSummary(String version, String gateway);
+
+  /// No description provided for @diagnosticsInventorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get diagnosticsInventorySection;
+
+  /// No description provided for @diagnosticsResourcesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources'**
+  String get diagnosticsResourcesLabel;
+
+  /// No description provided for @diagnosticsResourcesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{models} models • {skills} skills • {toolsets} toolsets • {jobs} jobs'**
+  String diagnosticsResourcesSummary(
+    int models,
+    int skills,
+    int toolsets,
+    int jobs,
+  );
+
+  /// No description provided for @diagnosticsInventoryWarningsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory warnings'**
+  String get diagnosticsInventoryWarningsLabel;
+
+  /// No description provided for @diagnosticsUnavailableSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{resources} unavailable'**
+  String diagnosticsUnavailableSummary(String resources);
+
+  /// No description provided for @diagnosticsResourceHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'health'**
+  String get diagnosticsResourceHealth;
+
+  /// No description provided for @diagnosticsResourceModels.
+  ///
+  /// In en, this message translates to:
+  /// **'models'**
+  String get diagnosticsResourceModels;
+
+  /// No description provided for @diagnosticsResourceSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'skills'**
+  String get diagnosticsResourceSkills;
+
+  /// No description provided for @diagnosticsResourceToolsets.
+  ///
+  /// In en, this message translates to:
+  /// **'toolsets'**
+  String get diagnosticsResourceToolsets;
+
+  /// No description provided for @diagnosticsResourceJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'jobs'**
+  String get diagnosticsResourceJobs;
+
+  /// No description provided for @diagnosticsSessionsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get diagnosticsSessionsSection;
+
+  /// No description provided for @diagnosticsSessionsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sessions • active {active}'**
+  String diagnosticsSessionsSummary(int count, String active);
+
+  /// No description provided for @diagnosticsActiveYes.
+  ///
+  /// In en, this message translates to:
+  /// **'yes'**
+  String get diagnosticsActiveYes;
+
+  /// No description provided for @diagnosticsActiveNone.
+  ///
+  /// In en, this message translates to:
+  /// **'none'**
+  String get diagnosticsActiveNone;
+
+  /// No description provided for @diagnosticsExportSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get diagnosticsExportSection;
+
+  /// No description provided for @diagnosticsCopyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy diagnostics'**
+  String get diagnosticsCopyTitle;
+
+  /// No description provided for @diagnosticsCopySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe snapshot; excludes secrets, raw logs, transcripts, and local paths.'**
+  String get diagnosticsCopySubtitle;
+
+  /// No description provided for @diagnosticsCopiedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes diagnostics copied'**
+  String get diagnosticsCopiedNotice;
+
+  /// No description provided for @voiceSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice & speech'**
+  String get voiceSettingsTitle;
+
+  /// No description provided for @voiceBehaviorSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice behavior'**
+  String get voiceBehaviorSection;
+
+  /// No description provided for @voiceContinuousTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous voice'**
+  String get voiceContinuousTitle;
+
+  /// No description provided for @voiceContinuousSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow on-device STT transcripts to be sent to Hermes'**
+  String get voiceContinuousSubtitle;
+
+  /// No description provided for @voiceSpeakRepliesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak replies aloud'**
+  String get voiceSpeakRepliesTitle;
+
+  /// No description provided for @voiceSpeakRepliesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read Hermes replies aloud while the chat is open'**
+  String get voiceSpeakRepliesSubtitle;
+
+  /// No description provided for @voiceAdvancedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get voiceAdvancedSection;
+
+  /// No description provided for @voiceCommandWordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Command word'**
+  String get voiceCommandWordTitle;
+
+  /// No description provided for @voiceCommandWordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.'**
+  String get voiceCommandWordHint;
+
+  /// No description provided for @voicePocketSpeechSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Local voice preferences'**
+  String get voicePocketSpeechSection;
+
+  /// No description provided for @voicePocketSpeechModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pocket Speech model'**
+  String get voicePocketSpeechModelTitle;
+
+  /// No description provided for @voicePocketSpeechModelSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a compact English pack or the larger bilingual pack'**
+  String get voicePocketSpeechModelSubtitle;
+
+  /// No description provided for @voicePackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} voice pack'**
+  String voicePackTitle(String model);
+
+  /// No description provided for @voiceRemovePackTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove downloaded voice pack'**
+  String get voiceRemovePackTooltip;
+
+  /// No description provided for @voiceUpdateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get voiceUpdateAction;
+
+  /// No description provided for @voiceDownloadAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get voiceDownloadAction;
+
+  /// No description provided for @voiceRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get voiceRemoveAction;
+
+  /// No description provided for @voiceUsePocketSpeechTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Pocket Speech for replies'**
+  String get voiceUsePocketSpeechTitle;
+
+  /// No description provided for @voiceUsePocketSpeechReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the installed {model} pack when Speak assistant replies is on'**
+  String voiceUsePocketSpeechReadySubtitle(String model);
+
+  /// No description provided for @voiceUsePocketSpeechNotReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download {model} before enabling'**
+  String voiceUsePocketSpeechNotReadySubtitle(String model);
+
+  /// No description provided for @voiceOfflineVoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline voice'**
+  String get voiceOfflineVoiceTitle;
+
+  /// No description provided for @voiceOfflineVoiceReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice used for Pocket Speech replies'**
+  String get voiceOfflineVoiceReadySubtitle;
+
+  /// No description provided for @voiceOfflineVoiceNotReadySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Available after the voice pack is downloaded'**
+  String get voiceOfflineVoiceNotReadySubtitle;
+
+  /// No description provided for @voiceDefaultVoiceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get voiceDefaultVoiceLabel;
+
+  /// No description provided for @voiceVoicesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get voiceVoicesUnavailable;
+
+  /// No description provided for @voiceReplySpeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply speed · {rate}×'**
+  String voiceReplySpeedTitle(String rate);
+
+  /// No description provided for @voicePreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview offline voice'**
+  String get voicePreviewTitle;
+
+  /// No description provided for @voicePreviewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a local sample with the selected voice and speed'**
+  String get voicePreviewSubtitle;
+
+  /// No description provided for @voicePreviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get voicePreviewAction;
+
+  /// No description provided for @voicePackReadyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} voice pack is ready'**
+  String voicePackReadyNotice(String model);
+
+  /// No description provided for @voiceUseForRepliesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use for replies'**
+  String get voiceUseForRepliesAction;
+
+  /// No description provided for @voiceDownloadFailedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} download failed. Check the connection and free storage, then retry.'**
+  String voiceDownloadFailedNotice(String model);
+
+  /// No description provided for @voiceDownloadDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download {model}?'**
+  String voiceDownloadDialogTitle(String model);
+
+  /// No description provided for @voiceDownloadDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{summary}. Keep Hermes Wing open until the verified download finishes.'**
+  String voiceDownloadDialogBody(String summary);
+
+  /// No description provided for @voiceRemoveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {model} voice pack?'**
+  String voiceRemoveDialogTitle(String model);
+
+  /// No description provided for @voiceRemoveDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This frees {size} of app storage. You can download it again later.'**
+  String voiceRemoveDialogBody(String size);
+
+  /// No description provided for @voicePackRemovedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} voice pack removed'**
+  String voicePackRemovedNotice(String model);
+
+  /// No description provided for @voicePackRemoveFailedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove {model} voice pack'**
+  String voicePackRemoveFailedNotice(String model);
+
+  /// No description provided for @voicePreviewFailedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not preview this voice. Update the voice pack and try again.'**
+  String get voicePreviewFailedNotice;
+
+  /// No description provided for @voiceDownloadProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{part} · {received} of {total}'**
+  String voiceDownloadProgress(String part, String received, String total);
+
+  /// No description provided for @voiceDownloadProgressSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} download progress'**
+  String voiceDownloadProgressSemantics(String model);
+
+  /// No description provided for @voicePercentSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent} percent'**
+  String voicePercentSemantics(int percent);
+
+  /// No description provided for @voicePackInstalledSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed and stored on this device for offline use'**
+  String get voicePackInstalledSubtitle;
+
+  /// No description provided for @voicePackVerifiedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified download; stored on this device. Keep the app open.'**
+  String get voicePackVerifiedSubtitle;
+
+  /// No description provided for @voicePackUnavailableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads are unavailable in this build'**
+  String get voicePackUnavailableSubtitle;
+
+  /// No description provided for @settingsGatewaysSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateways'**
+  String get settingsGatewaysSection;
+
+  /// No description provided for @settingsNoSavedGateways.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved Hermes gateways'**
+  String get settingsNoSavedGateways;
+
+  /// No description provided for @settingsConnectAnotherGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect another gateway'**
+  String get settingsConnectAnotherGateway;
+
+  /// No description provided for @settingsScanPairingQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a Hermes pairing QR code'**
+  String get settingsScanPairingQr;
+
+  /// No description provided for @settingsCredentialsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Credentials stay in secure storage; values hidden'**
+  String get settingsCredentialsNote;
+
+  /// No description provided for @settingsVoiceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get settingsVoiceSection;
+
+  /// No description provided for @settingsVoiceLinkSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} • {status}'**
+  String settingsVoiceLinkSummary(String model, String status);
+
+  /// No description provided for @settingsVoiceInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'installed'**
+  String get settingsVoiceInstalled;
+
+  /// No description provided for @settingsVoiceNotInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'not installed'**
+  String get settingsVoiceNotInstalled;
+
+  /// No description provided for @settingsGatewayActionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway actions for {label}'**
+  String settingsGatewayActionsTooltip(String label);
+
+  /// No description provided for @settingsManageAgentsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage agents'**
+  String get settingsManageAgentsAction;
+
+  /// No description provided for @settingsRenameAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get settingsRenameAction;
+
+  /// No description provided for @settingsUpdateConnectionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update connection'**
+  String get settingsUpdateConnectionAction;
+
+  /// No description provided for @settingsReconnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get settingsReconnectAction;
+
+  /// No description provided for @settingsConnectGatewayError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to this gateway.'**
+  String get settingsConnectGatewayError;
+
+  /// No description provided for @settingsReconnectGatewayError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reconnect gateway.'**
+  String get settingsReconnectGatewayError;
+
+  /// No description provided for @settingsRenameGatewayError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rename gateway.'**
+  String get settingsRenameGatewayError;
+
+  /// No description provided for @settingsUpdateConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update gateway connection.'**
+  String get settingsUpdateConnectionError;
+
+  /// No description provided for @settingsRemoveGatewayError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove gateway.'**
+  String get settingsRemoveGatewayError;
+
+  /// No description provided for @settingsRenameGatewayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename gateway'**
+  String get settingsRenameGatewayTitle;
+
+  /// No description provided for @settingsGatewayNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway name'**
+  String get settingsGatewayNameLabel;
+
+  /// No description provided for @settingsUpdateConnectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update gateway connection'**
+  String get settingsUpdateConnectionTitle;
+
+  /// No description provided for @settingsGatewayUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes gateway URL'**
+  String get settingsGatewayUrlLabel;
+
+  /// No description provided for @settingsGatewayUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTPS or trusted private-network origin'**
+  String get settingsGatewayUrlHelper;
+
+  /// No description provided for @settingsNewTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New access token (optional)'**
+  String get settingsNewTokenLabel;
+
+  /// No description provided for @settingsNewTokenHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to keep the saved token. Its current value is never shown.'**
+  String get settingsNewTokenHelper;
+
+  /// No description provided for @settingsClearTokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved access token'**
+  String get settingsClearTokenTitle;
+
+  /// No description provided for @settingsClearTokenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use only when this gateway no longer requires it.'**
+  String get settingsClearTokenSubtitle;
+
+  /// No description provided for @settingsActiveGatewayNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to All chats before changing the active gateway connection.'**
+  String get settingsActiveGatewayNote;
+
+  /// No description provided for @settingsSaveAndReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and reconnect'**
+  String get settingsSaveAndReconnect;
+
+  /// No description provided for @settingsGatewayOriginError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an HTTP or HTTPS gateway origin.'**
+  String get settingsGatewayOriginError;
+
+  /// No description provided for @settingsRemoveGatewayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove gateway?'**
+  String get settingsRemoveGatewayTitle;
+
+  /// No description provided for @settingsRemoveGatewayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {label} and its saved credential from this device?'**
+  String settingsRemoveGatewayBody(String label);
+
+  /// No description provided for @enrollTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Hermes'**
+  String get enrollTitle;
+
+  /// No description provided for @enrollInvalidLink.
+  ///
+  /// In en, this message translates to:
+  /// **'This pairing link is not valid: {message}'**
+  String enrollInvalidLink(String message);
+
+  /// No description provided for @enrollCleartextDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair over plain HTTP?'**
+  String get enrollCleartextDialogTitle;
+
+  /// No description provided for @enrollCleartextDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
+  String enrollCleartextDialogBody(String host);
+
+  /// No description provided for @enrollContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get enrollContinueAction;
+
+  /// No description provided for @enrollScanPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR code shown by wing-cli.'**
+  String get enrollScanPrompt;
+
+  /// No description provided for @enrollVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying pairing code…'**
+  String get enrollVerifying;
+
+  /// No description provided for @enrollConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. Returning to Hermes…'**
+  String get enrollConnected;
+
+  /// No description provided for @enrollFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing failed.'**
+  String get enrollFailed;
+
+  /// No description provided for @enrollCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get enrollCloseAction;
+
+  /// No description provided for @enrollOpeningScanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening scanner…'**
+  String get enrollOpeningScanner;
+
+  /// No description provided for @enrollScanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get enrollScanQr;
+
+  /// No description provided for @enrollGrantQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Hermes Wing access to this Hermes endpoint?'**
+  String get enrollGrantQuestion;
+
+  /// No description provided for @enrollEndpointLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get enrollEndpointLabel;
+
+  /// No description provided for @enrollDeviceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Device label'**
+  String get enrollDeviceLabel;
+
+  /// No description provided for @enrollUnlabeled.
+  ///
+  /// In en, this message translates to:
+  /// **'(unlabeled)'**
+  String get enrollUnlabeled;
+
+  /// No description provided for @enrollRequestedAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested access'**
+  String get enrollRequestedAccess;
+
+  /// No description provided for @enrollScopesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'none'**
+  String get enrollScopesNone;
+
+  /// No description provided for @enrollExpiresLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get enrollExpiresLabel;
+
+  /// No description provided for @enrollExpiryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'unknown'**
+  String get enrollExpiryUnknown;
+
+  /// No description provided for @enrollCleartextNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This endpoint uses plain HTTP. Only continue on a trusted network.'**
+  String get enrollCleartextNotice;
+
+  /// No description provided for @enrollOriginMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'This pairing server reports a different address ({origin}) than the link you opened. Hermes Wing will connect to the link address shown above. Only continue if you trust it.'**
+  String enrollOriginMismatch(String origin);
+
+  /// No description provided for @enrollConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get enrollConnectAction;
 }
 
 class _AppLocalizationsDelegate

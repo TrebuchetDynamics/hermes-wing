@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../providers/hermes_enrollment_provider.dart';
@@ -58,9 +59,9 @@ class _HermesEnrollmentScreenState
       unawaited(_confirmCleartextOrigin(raw, error.origin));
     } on FormatException catch (error) {
       setState(
-        () => _payloadError =
-            'This pairing link is not valid: '
-            '${error.message}',
+        () => _payloadError = AppLocalizations.of(
+          context,
+        ).enrollInvalidLink(error.message),
       );
     }
   }
@@ -80,26 +81,23 @@ class _HermesEnrollmentScreenState
   }
 
   Future<void> _confirmCleartextOrigin(String raw, Uri origin) async {
+    final strings = AppLocalizations.of(context);
     final confirmed =
         await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
             key: const ValueKey('hermes-enrollment-cleartext-warning'),
-            title: const Text('Pair over plain HTTP?'),
-            content: Text(
-              'The endpoint ${origin.host} uses plain HTTP. Continue only '
-              'on a trusted VPN, Tailscale network, or isolated LAN. Prefer '
-              'HTTPS for remote Hermes endpoints.',
-            ),
+            title: Text(strings.enrollCleartextDialogTitle),
+            content: Text(strings.enrollCleartextDialogBody(origin.host)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Cancel'),
+                child: Text(strings.cancelAction),
               ),
               FilledButton(
                 key: const ValueKey('hermes-enrollment-cleartext-confirm'),
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Continue'),
+                child: Text(strings.enrollContinueAction),
               ),
             ],
           ),
@@ -135,7 +133,7 @@ class _HermesEnrollmentScreenState
       });
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Connect to Hermes')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).enrollTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -146,6 +144,7 @@ class _HermesEnrollmentScreenState
   }
 
   Widget _buildBody(HermesEnrollmentController controller) {
+    final strings = AppLocalizations.of(context);
     if (_payloadError != null) {
       return Center(
         child: Column(
@@ -168,9 +167,9 @@ class _HermesEnrollmentScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Scan the QR code shown by wing-cli.',
-                key: ValueKey('hermes-enrollment-idle'),
+              Text(
+                strings.enrollScanPrompt,
+                key: const ValueKey('hermes-enrollment-idle'),
               ),
               const SizedBox(height: 16),
               _scanButton(),
@@ -178,13 +177,13 @@ class _HermesEnrollmentScreenState
           ),
         );
       case HermesEnrollmentStatus.inspecting:
-        return const Center(
+        return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 12),
-              Text('Verifying pairing code…'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(strings.enrollVerifying),
             ],
           ),
         );
@@ -192,10 +191,10 @@ class _HermesEnrollmentScreenState
       case HermesEnrollmentStatus.confirming:
         return _buildPreview(controller);
       case HermesEnrollmentStatus.confirmed:
-        return const Center(
+        return Center(
           child: Text(
-            'Connected. Returning to Hermes…',
-            key: ValueKey('hermes-enrollment-confirmed'),
+            strings.enrollConnected,
+            key: const ValueKey('hermes-enrollment-confirmed'),
           ),
         );
       case HermesEnrollmentStatus.failed:
@@ -204,7 +203,7 @@ class _HermesEnrollmentScreenState
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                controller.errorMessage ?? 'Pairing failed.',
+                controller.errorMessage ?? strings.enrollFailed,
                 key: const ValueKey('hermes-enrollment-error'),
                 textAlign: TextAlign.center,
               ),
@@ -212,7 +211,7 @@ class _HermesEnrollmentScreenState
               FilledButton(
                 key: const ValueKey('hermes-enrollment-dismiss'),
                 onPressed: _cancel,
-                child: const Text('Close'),
+                child: Text(strings.enrollCloseAction),
               ),
             ],
           ),
@@ -221,6 +220,7 @@ class _HermesEnrollmentScreenState
   }
 
   Widget _scanButton() {
+    final strings = AppLocalizations.of(context);
     return FilledButton.icon(
       key: const ValueKey('hermes-enrollment-scan-qr'),
       onPressed: _scanning ? null : () => unawaited(_scanQrCode()),
@@ -231,11 +231,14 @@ class _HermesEnrollmentScreenState
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.qr_code_scanner),
-      label: Text(_scanning ? 'Opening scanner…' : 'Scan QR code'),
+      label: Text(
+        _scanning ? strings.enrollOpeningScanner : strings.enrollScanQr,
+      ),
     );
   }
 
   Widget _buildPreview(HermesEnrollmentController controller) {
+    final strings = AppLocalizations.of(context);
     final preview = controller.preview;
     if (preview == null) return const SizedBox.shrink();
     final confirming = controller.status == HermesEnrollmentStatus.confirming;
@@ -261,45 +264,45 @@ class _HermesEnrollmentScreenState
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Grant Hermes Wing access to this Hermes endpoint?',
+          strings.enrollGrantQuestion,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
         _PreviewRow(
-          label: 'Endpoint',
+          label: strings.enrollEndpointLabel,
           value: host,
           valueKey: 'hermes-enrollment-host',
         ),
         _PreviewRow(
-          label: 'Device label',
-          value: preview.label.isEmpty ? '(unlabeled)' : preview.label,
+          label: strings.enrollDeviceLabel,
+          value: preview.label.isEmpty
+              ? strings.enrollUnlabeled
+              : preview.label,
           valueKey: 'hermes-enrollment-label',
         ),
         _PreviewRow(
-          label: 'Requested access',
-          value: preview.scopes.isEmpty ? 'none' : preview.scopes.join(', '),
+          label: strings.enrollRequestedAccess,
+          value: preview.scopes.isEmpty
+              ? strings.enrollScopesNone
+              : preview.scopes.join(', '),
           valueKey: 'hermes-enrollment-scopes',
         ),
         _PreviewRow(
-          label: 'Expires',
-          value: _formatExpiry(preview.expiresAt),
+          label: strings.enrollExpiresLabel,
+          value: _formatExpiry(strings, preview.expiresAt),
           valueKey: 'hermes-enrollment-expiry',
         ),
         if (cleartext) ...[
           const SizedBox(height: 8),
-          const Text(
-            'This endpoint uses plain HTTP. Only continue on a trusted '
-            'network.',
-            key: ValueKey('hermes-enrollment-cleartext-notice'),
+          Text(
+            strings.enrollCleartextNotice,
+            key: const ValueKey('hermes-enrollment-cleartext-notice'),
           ),
         ],
         if (originMismatch) ...[
           const SizedBox(height: 8),
           Text(
-            'This pairing server reports a different address '
-            '(${preview.origin}) than the link you opened. Hermes Wing will '
-            'connect to the link address shown above. Only continue if you '
-            'trust it.',
+            strings.enrollOriginMismatch(preview.origin),
             key: const ValueKey('hermes-enrollment-origin-mismatch'),
             style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
@@ -310,7 +313,7 @@ class _HermesEnrollmentScreenState
             OutlinedButton(
               key: const ValueKey('hermes-enrollment-cancel'),
               onPressed: confirming ? null : _cancel,
-              child: const Text('Cancel'),
+              child: Text(strings.cancelAction),
             ),
             const SizedBox(width: 12),
             FilledButton(
@@ -324,7 +327,7 @@ class _HermesEnrollmentScreenState
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Connect'),
+                  : Text(strings.enrollConnectAction),
             ),
           ],
         ),
@@ -339,8 +342,8 @@ class _HermesEnrollmentScreenState
     return '${uri.scheme.toLowerCase()}://${uri.host.toLowerCase()}$port';
   }
 
-  String _formatExpiry(DateTime? expiresAt) {
-    if (expiresAt == null) return 'unknown';
+  String _formatExpiry(AppLocalizations strings, DateTime? expiresAt) {
+    if (expiresAt == null) return strings.enrollExpiryUnknown;
     final local = expiresAt.toLocal();
     String two(int value) => value.toString().padLeft(2, '0');
     return '${local.year}-${two(local.month)}-${two(local.day)} '

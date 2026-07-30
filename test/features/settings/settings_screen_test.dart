@@ -6,6 +6,7 @@ import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
@@ -53,7 +54,11 @@ void main() {
           hermesEndpointStoreProvider.overrideWithValue(store),
           hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
         ],
-        child: const MaterialApp(home: SettingsScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -166,7 +171,11 @@ void main() {
             hermesEndpointStoreProvider.overrideWithValue(store),
             hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
           ],
-          child: const MaterialApp(home: SettingsScreen()),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -265,6 +274,8 @@ void main() {
           hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(
               context,
@@ -319,7 +330,11 @@ void main() {
           hermesEndpointStoreProvider.overrideWithValue(store),
           hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
         ],
-        child: const MaterialApp(home: SettingsScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

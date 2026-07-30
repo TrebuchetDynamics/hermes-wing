@@ -432,5 +432,276 @@
   "auxiliaryTaskTriageSpecifier": "Triage specifier",
   "auxiliaryTaskKanbanDecomposer": "Kanban decomposer",
   "auxiliaryTaskProfileDescriber": "Profile describer",
-  "auxiliaryTaskCurator": "Curator"
+  "auxiliaryTaskCurator": "Curator",
+  "diagnosticsTitle": "Diagnostics",
+  "diagnosticsConnectionSection": "Connection",
+  "diagnosticsStatusLabel": "Status",
+  "diagnosticsStatusDisconnected": "Disconnected",
+  "diagnosticsStatusConnecting": "Connecting",
+  "diagnosticsStatusConnected": "Connected",
+  "diagnosticsStatusError": "Error",
+  "diagnosticsModelLabel": "Model",
+  "diagnosticsModelNotReported": "Not reported",
+  "diagnosticsRunTransportLabel": "Run transport",
+  "diagnosticsTransportNotConnected": "Not connected",
+  "diagnosticsTransportRunsSse": "Runs SSE enabled",
+  "diagnosticsTransportSessionStream": "Session chat streaming",
+  "diagnosticsTransportUnavailable": "Unavailable",
+  "diagnosticsVersionHealthLabel": "Version / health",
+  "diagnosticsNoHealthDetails": "No health details yet",
+  "diagnosticsUnknownVersion": "unknown version",
+  "diagnosticsUnknownGateway": "unknown gateway",
+  "diagnosticsHealthSummary": "{version} \u2022 {gateway}",
+  "@diagnosticsHealthSummary": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "gateway": {"type": "String"}
+    }
+  },
+  "diagnosticsInventorySection": "Inventory",
+  "diagnosticsResourcesLabel": "Resources",
+  "diagnosticsResourcesSummary": "{models} models \u2022 {skills} skills \u2022 {toolsets} toolsets \u2022 {jobs} jobs",
+  "@diagnosticsResourcesSummary": {
+    "placeholders": {
+      "models": {"type": "int"},
+      "skills": {"type": "int"},
+      "toolsets": {"type": "int"},
+      "jobs": {"type": "int"}
+    }
+  },
+  "diagnosticsInventoryWarningsLabel": "Inventory warnings",
+  "diagnosticsUnavailableSummary": "{resources} unavailable",
+  "@diagnosticsUnavailableSummary": {
+    "placeholders": {
+      "resources": {"type": "String"}
+    }
+  },
+  "diagnosticsResourceHealth": "health",
+  "diagnosticsResourceModels": "models",
+  "diagnosticsResourceSkills": "skills",
+  "diagnosticsResourceToolsets": "toolsets",
+  "diagnosticsResourceJobs": "jobs",
+  "diagnosticsSessionsSection": "Sessions",
+  "diagnosticsSessionsSummary": "{count} sessions \u2022 active {active}",
+  "@diagnosticsSessionsSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "active": {"type": "String"}
+    }
+  },
+  "diagnosticsActiveYes": "yes",
+  "diagnosticsActiveNone": "none",
+  "diagnosticsExportSection": "Export",
+  "diagnosticsCopyTitle": "Copy diagnostics",
+  "diagnosticsCopySubtitle": "Safe snapshot; excludes secrets, raw logs, transcripts, and local paths.",
+  "diagnosticsCopiedNotice": "Hermes diagnostics copied",
+  "voiceSettingsTitle": "Voice & speech",
+  "voiceBehaviorSection": "Voice behavior",
+  "voiceContinuousTitle": "Continuous voice",
+  "voiceContinuousSubtitle": "Allow on-device STT transcripts to be sent to Hermes",
+  "voiceSpeakRepliesTitle": "Speak replies aloud",
+  "voiceSpeakRepliesSubtitle": "Read Hermes replies aloud while the chat is open",
+  "voiceAdvancedSection": "Advanced",
+  "voiceCommandWordTitle": "Command word",
+  "voiceCommandWordHint": "Say this before \u201cstop\u201d, \u201cpause\u201d, \u201cmute\u201d, or \u201ccancel\u201d while the foreground voice loop is listening.",
+  "voicePocketSpeechSection": "Local voice preferences",
+  "voicePocketSpeechModelTitle": "Pocket Speech model",
+  "voicePocketSpeechModelSubtitle": "Choose a compact English pack or the larger bilingual pack",
+  "voicePackTitle": "{model} voice pack",
+  "@voicePackTitle": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceRemovePackTooltip": "Remove downloaded voice pack",
+  "voiceUpdateAction": "Update",
+  "voiceDownloadAction": "Download",
+  "voiceRemoveAction": "Remove",
+  "voiceUsePocketSpeechTitle": "Use Pocket Speech for replies",
+  "voiceUsePocketSpeechReadySubtitle": "Use the installed {model} pack when Speak assistant replies is on",
+  "@voiceUsePocketSpeechReadySubtitle": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceUsePocketSpeechNotReadySubtitle": "Download {model} before enabling",
+  "@voiceUsePocketSpeechNotReadySubtitle": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceOfflineVoiceTitle": "Offline voice",
+  "voiceOfflineVoiceReadySubtitle": "Voice used for Pocket Speech replies",
+  "voiceOfflineVoiceNotReadySubtitle": "Available after the voice pack is downloaded",
+  "voiceDefaultVoiceLabel": "Default",
+  "voiceVoicesUnavailable": "Unavailable",
+  "voiceReplySpeedTitle": "Reply speed \u00b7 {rate}\u00d7",
+  "@voiceReplySpeedTitle": {
+    "placeholders": {
+      "rate": {"type": "String"}
+    }
+  },
+  "voicePreviewTitle": "Preview offline voice",
+  "voicePreviewSubtitle": "Play a local sample with the selected voice and speed",
+  "voicePreviewAction": "Preview",
+  "voicePackReadyNotice": "{model} voice pack is ready",
+  "@voicePackReadyNotice": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceUseForRepliesAction": "Use for replies",
+  "voiceDownloadFailedNotice": "{model} download failed. Check the connection and free storage, then retry.",
+  "@voiceDownloadFailedNotice": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceDownloadDialogTitle": "Download {model}?",
+  "@voiceDownloadDialogTitle": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceDownloadDialogBody": "{summary}. Keep Hermes Wing open until the verified download finishes.",
+  "@voiceDownloadDialogBody": {
+    "placeholders": {
+      "summary": {"type": "String"}
+    }
+  },
+  "voiceRemoveDialogTitle": "Remove {model} voice pack?",
+  "@voiceRemoveDialogTitle": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voiceRemoveDialogBody": "This frees {size} of app storage. You can download it again later.",
+  "@voiceRemoveDialogBody": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "voicePackRemovedNotice": "{model} voice pack removed",
+  "@voicePackRemovedNotice": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voicePackRemoveFailedNotice": "Could not remove {model} voice pack",
+  "@voicePackRemoveFailedNotice": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voicePreviewFailedNotice": "Could not preview this voice. Update the voice pack and try again.",
+  "voiceDownloadProgress": "{part} \u00b7 {received} of {total}",
+  "@voiceDownloadProgress": {
+    "placeholders": {
+      "part": {"type": "String"},
+      "received": {"type": "String"},
+      "total": {"type": "String"}
+    }
+  },
+  "voiceDownloadProgressSemantics": "{model} download progress",
+  "@voiceDownloadProgressSemantics": {
+    "placeholders": {
+      "model": {"type": "String"}
+    }
+  },
+  "voicePercentSemantics": "{percent} percent",
+  "@voicePercentSemantics": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "voicePackInstalledSubtitle": "Installed and stored on this device for offline use",
+  "voicePackVerifiedSubtitle": "Verified download; stored on this device. Keep the app open.",
+  "voicePackUnavailableSubtitle": "Downloads are unavailable in this build",
+  "settingsGatewaysSection": "Gateways",
+  "settingsNoSavedGateways": "No saved Hermes gateways",
+  "settingsConnectAnotherGateway": "Connect another gateway",
+  "settingsScanPairingQr": "Scan a Hermes pairing QR code",
+  "settingsCredentialsNote": "Credentials stay in secure storage; values hidden",
+  "settingsVoiceSection": "Voice",
+  "settingsVoiceLinkSummary": "{model} \u2022 {status}",
+  "@settingsVoiceLinkSummary": {
+    "placeholders": {
+      "model": {"type": "String"},
+      "status": {"type": "String"}
+    }
+  },
+  "settingsVoiceInstalled": "installed",
+  "settingsVoiceNotInstalled": "not installed",
+  "settingsGatewayActionsTooltip": "Gateway actions for {label}",
+  "@settingsGatewayActionsTooltip": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "settingsManageAgentsAction": "Manage agents",
+  "settingsRenameAction": "Rename",
+  "settingsUpdateConnectionAction": "Update connection",
+  "settingsReconnectAction": "Reconnect",
+  "settingsConnectGatewayError": "Could not connect to this gateway.",
+  "settingsReconnectGatewayError": "Could not reconnect gateway.",
+  "settingsRenameGatewayError": "Could not rename gateway.",
+  "settingsUpdateConnectionError": "Could not update gateway connection.",
+  "settingsRemoveGatewayError": "Could not remove gateway.",
+  "settingsRenameGatewayTitle": "Rename gateway",
+  "settingsGatewayNameLabel": "Gateway name",
+  "settingsUpdateConnectionTitle": "Update gateway connection",
+  "settingsGatewayUrlLabel": "Hermes gateway URL",
+  "settingsGatewayUrlHelper": "HTTPS or trusted private-network origin",
+  "settingsNewTokenLabel": "New access token (optional)",
+  "settingsNewTokenHelper": "Leave blank to keep the saved token. Its current value is never shown.",
+  "settingsClearTokenTitle": "Remove saved access token",
+  "settingsClearTokenSubtitle": "Use only when this gateway no longer requires it.",
+  "settingsActiveGatewayNote": "Return to All chats before changing the active gateway connection.",
+  "settingsSaveAndReconnect": "Save and reconnect",
+  "settingsGatewayOriginError": "Enter an HTTP or HTTPS gateway origin.",
+  "settingsRemoveGatewayTitle": "Remove gateway?",
+  "settingsRemoveGatewayBody": "Remove {label} and its saved credential from this device?",
+  "@settingsRemoveGatewayBody": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "enrollTitle": "Connect to Hermes",
+  "enrollInvalidLink": "This pairing link is not valid: {message}",
+  "@enrollInvalidLink": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "enrollCleartextDialogTitle": "Pair over plain HTTP?",
+  "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
+  "@enrollCleartextDialogBody": {
+    "placeholders": {
+      "host": {"type": "String"}
+    }
+  },
+  "enrollContinueAction": "Continue",
+  "enrollScanPrompt": "Scan the QR code shown by wing-cli.",
+  "enrollVerifying": "Verifying pairing code\u2026",
+  "enrollConnected": "Connected. Returning to Hermes\u2026",
+  "enrollFailed": "Pairing failed.",
+  "enrollCloseAction": "Close",
+  "enrollOpeningScanner": "Opening scanner\u2026",
+  "enrollScanQr": "Scan QR code",
+  "enrollGrantQuestion": "Grant Hermes Wing access to this Hermes endpoint?",
+  "enrollEndpointLabel": "Endpoint",
+  "enrollDeviceLabel": "Device label",
+  "enrollUnlabeled": "(unlabeled)",
+  "enrollRequestedAccess": "Requested access",
+  "enrollScopesNone": "none",
+  "enrollExpiresLabel": "Expires",
+  "enrollExpiryUnknown": "unknown",
+  "enrollCleartextNotice": "This endpoint uses plain HTTP. Only continue on a trusted network.",
+  "enrollOriginMismatch": "This pairing server reports a different address ({origin}) than the link you opened. Hermes Wing will connect to the link address shown above. Only continue if you trust it.",
+  "@enrollOriginMismatch": {
+    "placeholders": {
+      "origin": {"type": "String"}
+    }
+  },
+  "enrollConnectAction": "Connect"
 }

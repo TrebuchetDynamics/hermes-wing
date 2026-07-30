@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../router/app_routes.dart';
@@ -18,13 +19,10 @@ import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
-import '../presentation/settings_screen_presentation.dart';
 import '../providers/voice_settings_provider.dart';
 
 part 'settings_diagnostics_screen.dart';
 part 'settings_voice_screen.dart';
-
-const _settingsPresentation = SettingsScreenPresentation();
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -36,8 +34,9 @@ class SettingsScreen extends ConsumerWidget {
     final channel = ref.watch(hermesChannelProvider);
     final gatewayDirectory = ref.watch(hermesGatewayDirectoryProvider);
 
+    final strings = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(_settingsPresentation.title)),
+      appBar: AppBar(title: Text(strings.settingsDestination)),
       body: AnimatedBuilder(
         animation: channel,
         builder: (context, _) {
@@ -46,14 +45,14 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               _SettingsSectionCard(
-                title: 'Gateways',
+                title: strings.settingsGatewaysSection,
                 icon: Icons.cable_outlined,
                 children: [
                   if (gatewayDirectory.gateways.isEmpty)
-                    const _StatusTile(
+                    _StatusTile(
                       icon: Icons.link_off,
-                      title: 'Gateways',
-                      value: 'No saved Hermes gateways',
+                      title: strings.settingsGatewaysSection,
+                      value: strings.settingsNoSavedGateways,
                     )
                   else
                     for (final gateway in gatewayDirectory.gateways)
@@ -64,45 +63,45 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     key: const ValueKey('settings-connect-another-gateway'),
                     leading: const Icon(Icons.add_link),
-                    title: const Text('Connect another gateway'),
-                    subtitle: const Text('Scan a Hermes pairing QR code'),
+                    title: Text(strings.settingsConnectAnotherGateway),
+                    subtitle: Text(strings.settingsScanPairingQr),
                     onTap: () => context.push(AppRoutes.enroll),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: Text(
-                      'Credentials stay in secure storage; values hidden',
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(strings.settingsCredentialsNote),
                   ),
                 ],
               ),
               _SettingsSectionCard(
-                title: 'Voice',
+                title: strings.settingsVoiceSection,
                 icon: Icons.keyboard_voice_outlined,
                 children: [
                   SwitchListTile(
                     key: const ValueKey('voice-continuous-enabled'),
-                    title: Text(_settingsPresentation.continuousVoiceTitle),
-                    subtitle: Text(
-                      _settingsPresentation.continuousVoiceSubtitle,
-                    ),
+                    title: Text(strings.voiceContinuousTitle),
+                    subtitle: Text(strings.voiceContinuousSubtitle),
                     value: settings.continuousVoiceEnabled,
                     onChanged: controller.setContinuousVoiceEnabled,
                   ),
                   SwitchListTile(
                     key: const ValueKey('voice-speak-replies-enabled'),
-                    title: Text(_settingsPresentation.speakRepliesTitle),
-                    subtitle: Text(_settingsPresentation.speakRepliesSubtitle),
+                    title: Text(strings.voiceSpeakRepliesTitle),
+                    subtitle: Text(strings.voiceSpeakRepliesSubtitle),
                     value: settings.speakRepliesEnabled,
                     onChanged: controller.setSpeakRepliesEnabled,
                   ),
                   ListTile(
                     key: const ValueKey('settings-voice-link'),
                     leading: const Icon(Icons.graphic_eq),
-                    title: const Text('Voice & speech'),
+                    title: Text(strings.voiceSettingsTitle),
                     subtitle: Text(
-                      '${settings.pocketSpeechModel.label} • '
-                      '${settings.pocketSpeechVoicePackReady ? 'installed' : 'not installed'}',
+                      strings.settingsVoiceLinkSummary(
+                        settings.pocketSpeechModel.label,
+                        settings.pocketSpeechVoicePackReady
+                            ? strings.settingsVoiceInstalled
+                            : strings.settingsVoiceNotInstalled,
+                      ),
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.settingsVoice),
@@ -110,14 +109,16 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
               _SettingsSectionCard(
-                title: 'Diagnostics',
+                title: strings.diagnosticsTitle,
                 icon: Icons.monitor_heart_outlined,
                 children: [
                   ListTile(
                     key: const ValueKey('settings-diagnostics-link'),
                     leading: const Icon(Icons.monitor_heart_outlined),
-                    title: const Text('Diagnostics'),
-                    subtitle: Text(_connectionStatusLabel(state.status)),
+                    title: Text(strings.diagnosticsTitle),
+                    subtitle: Text(
+                      _connectionStatusLabel(strings, state.status),
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.settingsDiagnostics),
                   ),
@@ -139,6 +140,7 @@ class _GatewaySettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return ListTile(
       leading: Icon(
         gateway.availability == GatewayAvailability.online
@@ -149,13 +151,13 @@ class _GatewaySettingsTile extends StatelessWidget {
       subtitle: Text('${gateway.baseUrl} · ${gateway.availability.name}'),
       trailing: PopupMenuButton<String>(
         key: ValueKey('settings-gateway-menu-${gateway.id}'),
-        tooltip: 'Gateway actions for ${gateway.label}',
+        tooltip: strings.settingsGatewayActionsTooltip(gateway.label),
         onSelected: (action) async {
           if (action == 'agents') {
             await _runGatewayAction(context, () async {
               await directory.activateGateway(gateway.id);
               if (context.mounted) context.go(AppRoutes.agents);
-            }, 'Could not connect to this gateway.');
+            }, strings.settingsConnectGatewayError);
           } else if (action == 'rename') {
             await _renameGateway(context, directory, gateway);
           } else if (action == 'connection') {
@@ -164,18 +166,33 @@ class _GatewaySettingsTile extends StatelessWidget {
             await _runGatewayAction(
               context,
               () => directory.reconnectGateway(gateway.id),
-              'Could not reconnect gateway.',
+              strings.settingsReconnectGatewayError,
             );
           } else if (action == 'remove') {
             await _removeGateway(context, directory, gateway);
           }
         },
-        itemBuilder: (_) => const [
-          PopupMenuItem(value: 'agents', child: Text('Manage agents')),
-          PopupMenuItem(value: 'rename', child: Text('Rename')),
-          PopupMenuItem(value: 'connection', child: Text('Update connection')),
-          PopupMenuItem(value: 'reconnect', child: Text('Reconnect')),
-          PopupMenuItem(value: 'remove', child: Text('Remove')),
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            value: 'agents',
+            child: Text(strings.settingsManageAgentsAction),
+          ),
+          PopupMenuItem(
+            value: 'rename',
+            child: Text(strings.settingsRenameAction),
+          ),
+          PopupMenuItem(
+            value: 'connection',
+            child: Text(strings.settingsUpdateConnectionAction),
+          ),
+          PopupMenuItem(
+            value: 'reconnect',
+            child: Text(strings.settingsReconnectAction),
+          ),
+          PopupMenuItem(
+            value: 'remove',
+            child: Text(strings.voiceRemoveAction),
+          ),
         ],
       ),
     );
@@ -187,26 +204,29 @@ Future<void> _renameGateway(
   HermesGatewayDirectory directory,
   GatewayOverview gateway,
 ) async {
+  final strings = AppLocalizations.of(context);
   var draftLabel = gateway.label;
   final label = await showDialog<String>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Rename gateway'),
+      title: Text(strings.settingsRenameGatewayTitle),
       content: TextFormField(
         key: const ValueKey('settings-gateway-rename-field'),
         initialValue: gateway.label,
         autofocus: true,
-        decoration: const InputDecoration(labelText: 'Gateway name'),
+        decoration: InputDecoration(
+          labelText: strings.settingsGatewayNameLabel,
+        ),
         onChanged: (value) => draftLabel = value,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text('Cancel'),
+          child: Text(strings.cancelAction),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(dialogContext, draftLabel),
-          child: const Text('Save'),
+          child: Text(strings.saveAction),
         ),
       ],
     ),
@@ -215,7 +235,7 @@ Future<void> _renameGateway(
   await _runGatewayAction(
     context,
     () => directory.renameGateway(gateway.id, label),
-    'Could not rename gateway.',
+    strings.settingsRenameGatewayError,
   );
 }
 
@@ -240,7 +260,7 @@ Future<void> _updateGatewayConnection(
       apiKey: result.apiKey,
       clearApiKey: result.clearApiKey,
     ),
-    'Could not update gateway connection.',
+    AppLocalizations.of(context).settingsUpdateConnectionError,
   );
 }
 
@@ -285,8 +305,9 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Update gateway connection'),
+      title: Text(strings.settingsUpdateConnectionTitle),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -300,11 +321,11 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
                 keyboardType: TextInputType.url,
                 autocorrect: false,
                 enableSuggestions: false,
-                decoration: const InputDecoration(
-                  labelText: 'Hermes gateway URL',
-                  helperText: 'HTTPS or trusted private-network origin',
+                decoration: InputDecoration(
+                  labelText: strings.settingsGatewayUrlLabel,
+                  helperText: strings.settingsGatewayUrlHelper,
                 ),
-                validator: _gatewayBaseUrlError,
+                validator: (value) => _gatewayBaseUrlError(strings, value),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -314,10 +335,9 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
                 autocorrect: false,
                 enableSuggestions: false,
                 enabled: !_clearApiKey,
-                decoration: const InputDecoration(
-                  labelText: 'New access token (optional)',
-                  helperText:
-                      'Leave blank to keep the saved token. Its current value is never shown.',
+                decoration: InputDecoration(
+                  labelText: strings.settingsNewTokenLabel,
+                  helperText: strings.settingsNewTokenHelper,
                   helperMaxLines: 2,
                 ),
               ),
@@ -325,21 +345,17 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
                 key: const ValueKey('settings-gateway-clear-api-key'),
                 contentPadding: EdgeInsets.zero,
                 value: _clearApiKey,
-                title: const Text('Remove saved access token'),
-                subtitle: const Text(
-                  'Use only when this gateway no longer requires it.',
-                ),
+                title: Text(strings.settingsClearTokenTitle),
+                subtitle: Text(strings.settingsClearTokenSubtitle),
                 onChanged: (value) => setState(() {
                   _clearApiKey = value ?? false;
                   if (_clearApiKey) _apiKeyController.clear();
                 }),
               ),
               if (widget.active)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Return to All chats before changing the active gateway connection.',
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(strings.settingsActiveGatewayNote),
                 ),
             ],
           ),
@@ -348,12 +364,12 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(strings.cancelAction),
         ),
         FilledButton(
           key: const ValueKey('settings-gateway-connection-save'),
           onPressed: widget.active ? null : _submit,
-          child: const Text('Save and reconnect'),
+          child: Text(strings.settingsSaveAndReconnect),
         ),
       ],
     );
@@ -370,14 +386,14 @@ class _GatewayConnectionDialogState extends State<_GatewayConnectionDialog> {
   }
 }
 
-String? _gatewayBaseUrlError(String? value) {
+String? _gatewayBaseUrlError(AppLocalizations strings, String? value) {
   final origin = hermesPublicEndpointBaseUrl(value ?? '');
   final uri = Uri.tryParse(origin);
   if (uri == null ||
       !uri.hasScheme ||
       uri.host.isEmpty ||
       (uri.scheme != 'http' && uri.scheme != 'https')) {
-    return 'Enter an HTTP or HTTPS gateway origin.';
+    return strings.settingsGatewayOriginError;
   }
   return null;
 }
@@ -387,23 +403,22 @@ Future<void> _removeGateway(
   HermesGatewayDirectory directory,
   GatewayOverview gateway,
 ) async {
+  final strings = AppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
       key: const ValueKey('settings-gateway-remove-dialog'),
-      title: const Text('Remove gateway?'),
-      content: Text(
-        'Remove ${gateway.label} and its saved credential from this device?',
-      ),
+      title: Text(strings.settingsRemoveGatewayTitle),
+      content: Text(strings.settingsRemoveGatewayBody(gateway.label)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancel'),
+          child: Text(strings.cancelAction),
         ),
         FilledButton(
           key: const ValueKey('settings-gateway-remove-confirm'),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Remove'),
+          child: Text(strings.voiceRemoveAction),
         ),
       ],
     ),
@@ -412,7 +427,7 @@ Future<void> _removeGateway(
   await _runGatewayAction(
     context,
     () => directory.removeGateway(gateway.id),
-    'Could not remove gateway.',
+    strings.settingsRemoveGatewayError,
   );
 }
 

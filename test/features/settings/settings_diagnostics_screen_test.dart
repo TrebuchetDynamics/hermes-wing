@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
@@ -25,7 +26,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: DiagnosticsSettingsScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: DiagnosticsSettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -60,7 +65,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: const MaterialApp(home: DiagnosticsSettingsScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: DiagnosticsSettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

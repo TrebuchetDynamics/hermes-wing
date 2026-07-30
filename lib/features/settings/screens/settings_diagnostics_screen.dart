@@ -6,8 +6,9 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final channel = ref.watch(hermesChannelProvider);
+    final strings = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Diagnostics')),
+      appBar: AppBar(title: Text(strings.diagnosticsTitle)),
       body: AnimatedBuilder(
         animation: channel,
         builder: (context, _) {
@@ -16,84 +17,92 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               _SettingsSectionCard(
-                title: 'Connection',
+                title: strings.diagnosticsConnectionSection,
                 icon: Icons.cable_outlined,
                 children: [
                   _StatusTile(
                     icon: Icons.circle,
-                    title: 'Status',
-                    value: _connectionStatusLabel(state.status),
+                    title: strings.diagnosticsStatusLabel,
+                    value: _connectionStatusLabel(strings, state.status),
                   ),
                   _StatusTile(
                     icon: Icons.memory_outlined,
-                    title: 'Model',
+                    title: strings.diagnosticsModelLabel,
                     value: state.models.isEmpty
-                        ? state.capabilities?.model ?? 'Not reported'
+                        ? state.capabilities?.model ??
+                              strings.diagnosticsModelNotReported
                         : state.models.first,
                   ),
                   _StatusTile(
                     icon: Icons.account_tree_outlined,
-                    title: 'Run transport',
-                    value: _runTransportLabel(state),
+                    title: strings.diagnosticsRunTransportLabel,
+                    value: _runTransportLabel(strings, state),
                   ),
                   _StatusTile(
                     icon: Icons.info_outline,
-                    title: 'Version / health',
-                    value: _healthLabel(state),
+                    title: strings.diagnosticsVersionHealthLabel,
+                    value: _healthLabel(strings, state),
                   ),
                 ],
               ),
               _SettingsSectionCard(
-                title: 'Inventory',
+                title: strings.diagnosticsInventorySection,
                 icon: Icons.checklist_outlined,
                 children: [
                   _StatusTile(
                     icon: Icons.inventory_2_outlined,
-                    title: 'Resources',
-                    value:
-                        '${state.models.length} models • ${state.skills.length} skills • ${state.enabledToolsets.length} toolsets • ${state.jobs.length} jobs',
+                    title: strings.diagnosticsResourcesLabel,
+                    value: strings.diagnosticsResourcesSummary(
+                      state.models.length,
+                      state.skills.length,
+                      state.enabledToolsets.length,
+                      state.jobs.length,
+                    ),
                   ),
                   if (state.optionalResourceErrors.isNotEmpty)
                     _StatusTile(
                       icon: Icons.warning_amber_outlined,
-                      title: 'Inventory warnings',
+                      title: strings.diagnosticsInventoryWarningsLabel,
                       value: _optionalResourceWarningLabel(
+                        strings,
                         state.optionalResourceErrors.keys,
                       ),
                     ),
                 ],
               ),
               _SettingsSectionCard(
-                title: 'Sessions',
+                title: strings.diagnosticsSessionsSection,
                 icon: Icons.chat_outlined,
                 children: [
                   _StatusTile(
                     icon: Icons.chat_outlined,
-                    title: 'Sessions',
-                    value:
-                        '${state.sessions.length} sessions • active ${state.activeSessionId == null ? 'none' : 'yes'}',
+                    title: strings.diagnosticsSessionsSection,
+                    value: strings.diagnosticsSessionsSummary(
+                      state.sessions.length,
+                      state.activeSessionId == null
+                          ? strings.diagnosticsActiveNone
+                          : strings.diagnosticsActiveYes,
+                    ),
                   ),
                 ],
               ),
               _SettingsSectionCard(
-                title: 'Export',
+                title: strings.diagnosticsExportSection,
                 icon: Icons.copy_outlined,
                 children: [
                   ListTile(
                     key: const ValueKey('settings-copy-diagnostics'),
                     leading: const Icon(Icons.copy_outlined),
-                    title: const Text('Copy diagnostics'),
-                    subtitle: const Text(
-                      'Safe snapshot; excludes secrets, raw logs, transcripts, and local paths.',
-                    ),
+                    title: Text(strings.diagnosticsCopyTitle),
+                    subtitle: Text(strings.diagnosticsCopySubtitle),
                     onTap: () async {
                       await Clipboard.setData(
                         ClipboardData(text: hermesDiagnosticsExport(state)),
                       );
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Hermes diagnostics copied'),
+                        SnackBar(
+                          content: Text(strings.diagnosticsCopiedNotice),
                         ),
                       );
                     },
@@ -108,47 +117,60 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
   }
 }
 
-String _connectionStatusLabel(HermesConnectionStatus status) =>
-    switch (status) {
-      HermesConnectionStatus.disconnected => 'Disconnected',
-      HermesConnectionStatus.connecting => 'Connecting',
-      HermesConnectionStatus.connected => 'Connected',
-      HermesConnectionStatus.error => 'Error',
-    };
+String _connectionStatusLabel(
+  AppLocalizations strings,
+  HermesConnectionStatus status,
+) => switch (status) {
+  HermesConnectionStatus.disconnected => strings.diagnosticsStatusDisconnected,
+  HermesConnectionStatus.connecting => strings.diagnosticsStatusConnecting,
+  HermesConnectionStatus.connected => strings.diagnosticsStatusConnected,
+  HermesConnectionStatus.error => strings.diagnosticsStatusError,
+};
 
-String _runTransportLabel(HermesChannelState state) {
+String _runTransportLabel(AppLocalizations strings, HermesChannelState state) {
   final capabilities = state.capabilities;
-  if (capabilities == null) return 'Not connected';
+  if (capabilities == null) return strings.diagnosticsTransportNotConnected;
   final policy = HermesTransportPolicy(capabilities);
-  if (policy.supportsRunsTransport) return 'Runs SSE enabled';
-  if (policy.supportsSessionChatStream) return 'Session chat streaming';
-  return 'Unavailable';
+  if (policy.supportsRunsTransport) return strings.diagnosticsTransportRunsSse;
+  if (policy.supportsSessionChatStream) {
+    return strings.diagnosticsTransportSessionStream;
+  }
+  return strings.diagnosticsTransportUnavailable;
 }
 
-String _healthLabel(HermesChannelState state) {
+String _healthLabel(AppLocalizations strings, HermesChannelState state) {
   final health = state.detailedHealth;
-  if (health == null) return state.errorMessage ?? 'No health details yet';
-  final version = health.version ?? 'unknown version';
-  final gateway = health.gatewayState ?? 'unknown gateway';
-  return '$version • $gateway';
+  if (health == null) {
+    return state.errorMessage ?? strings.diagnosticsNoHealthDetails;
+  }
+  final version = health.version ?? strings.diagnosticsUnknownVersion;
+  final gateway = health.gatewayState ?? strings.diagnosticsUnknownGateway;
+  return strings.diagnosticsHealthSummary(version, gateway);
 }
 
 String _optionalResourceWarningLabel(
+  AppLocalizations strings,
   Iterable<HermesOptionalResource> resources,
 ) {
   final labels =
       resources
           .map(
             (resource) => switch (resource) {
-              HermesOptionalResource.detailedHealth => 'health',
-              HermesOptionalResource.models => 'models',
-              HermesOptionalResource.skills => 'skills',
-              HermesOptionalResource.toolsets => 'toolsets',
-              HermesOptionalResource.jobs => 'jobs',
+              HermesOptionalResource.detailedHealth =>
+                strings.diagnosticsResourceHealth,
+              HermesOptionalResource.models =>
+                strings.diagnosticsResourceModels,
+              HermesOptionalResource.skills =>
+                strings.diagnosticsResourceSkills,
+              HermesOptionalResource.toolsets =>
+                strings.diagnosticsResourceToolsets,
+              HermesOptionalResource.jobs => strings.diagnosticsResourceJobs,
             },
           )
           .toList()
         ..sort();
   final summary = labels.join(', ');
-  return '${summary[0].toUpperCase()}${summary.substring(1)} unavailable';
+  return strings.diagnosticsUnavailableSummary(
+    '${summary[0].toUpperCase()}${summary.substring(1)}',
+  );
 }

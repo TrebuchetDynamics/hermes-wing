@@ -24,6 +24,7 @@ All notable user-visible changes will be documented here.
 - Routed every screen's text through AppLocalizations, preparing the baseline locale set for translation.
 - Expanded wing-cli with usage, version, model, skills, and persona commands plus polished help output.
 - Added client-side model presets: save the current slot/provider/model combo under a name in the model picker, recall it with one tap, and delete it; presets stay on this device and are never sent to Hermes.
+- Extended credential validation into a connection probe: the result now shows round-trip latency on success and failure, plus the provider's bounded model availability from the already-loaded catalog.
 - Announced hands-free voice state to assistive technology instead of showing it only visually, and bounded TTS and microphone-cancel failures so the voice loop recovers cleanly.
 
 ### Security

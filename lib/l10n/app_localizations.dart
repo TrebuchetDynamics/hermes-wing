@@ -4386,6 +4386,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not in this gateway\'s catalog'**
   String get modelPresetUnavailableBody;
+
+  /// No description provided for @credentialProbeLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'{ms} ms'**
+  String credentialProbeLatency(int ms);
+
+  /// No description provided for @credentialProbeModelCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 model available} other{{count} models available}}'**
+  String credentialProbeModelCount(int count);
 }
 
 class _AppLocalizationsDelegate

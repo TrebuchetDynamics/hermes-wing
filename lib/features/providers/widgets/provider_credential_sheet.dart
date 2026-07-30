@@ -32,6 +32,7 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
   String? _error;
   String? _validationDetail;
   bool _validationOk = false;
+  int? _validationLatencyMs;
   bool _busy = false;
 
   @override
@@ -94,12 +95,27 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
     );
   }
 
+  /// Model ids the already-loaded inventory advertises for this provider.
+  /// Read-only view of existing state; the probe makes no extra fetch.
+  List<String> get _probeModelIds {
+    final catalog = widget.channel.state.modelInventory?.catalog;
+    if (catalog == null) return const [];
+    for (final block in catalog.providers) {
+      if (block.provider == _provider.slug) {
+        return [for (final model in block.models) model.id];
+      }
+    }
+    return const [];
+  }
+
   Future<void> _validate() async {
     setState(() {
       _busy = true;
       _error = null;
       _validationDetail = null;
+      _validationLatencyMs = null;
     });
+    final stopwatch = Stopwatch()..start();
     try {
       final probe = await widget.channel.validateProviderCredential(
         slug: _provider.slug,
@@ -108,12 +124,14 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
       setState(() {
         _validationOk = probe.ok;
         _validationDetail = probe.detail;
+        _validationLatencyMs = stopwatch.elapsedMilliseconds;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(
-        () => _error = AppLocalizations.of(context).credentialOperationFailed,
-      );
+      setState(() {
+        _error = AppLocalizations.of(context).credentialOperationFailed;
+        _validationLatencyMs = stopwatch.elapsedMilliseconds;
+      });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -233,6 +251,26 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
                 child: Text(
                   _error!,
                   style: TextStyle(color: theme.colorScheme.error),
+                ),
+              ),
+            ],
+            if (_validationOk && _validationDetail != null)
+              if (_probeModelIds case final ids when ids.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(strings.credentialProbeModelCount(ids.length)),
+                Text(
+                  ids.take(8).join(', ') + (ids.length > 8 ? ', …' : ''),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            if (_validationLatencyMs != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                strings.credentialProbeLatency(_validationLatencyMs!),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

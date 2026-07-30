@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/core/hermes/models/hermes_provider.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/features/providers/widgets/provider_credential_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -123,4 +123,117 @@ void main() {
     expect(channel.validateProviderCredentialCalls, ['openai']);
     expect(find.textContaining('Credential accepted.'), findsOneWidget);
   });
+
+  testWidgets('validate reports the probe round-trip latency', (tester) async {
+    final channel = FakeHermesChannel(
+      providers: const [_configuredProvider],
+      validateProviderResult: const HermesCredentialProbe(
+        ok: true,
+        detail: 'Credential accepted.',
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+
+    expect(
+      _allRenderedText(
+        tester,
+      ).any((text) => RegExp(r'^\d+ ms$').hasMatch(text)),
+      isTrue,
+      reason: 'expected a latency reading like "12 ms"',
+    );
+  });
+
+  testWidgets('successful validation shows the provider model inventory', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      providers: const [_configuredProvider],
+      validateProviderResult: const HermesCredentialProbe(
+        ok: true,
+        detail: 'Credential accepted.',
+      ),
+      modelInventory: HermesModelInventory(
+        catalog: HermesModelCatalog.fromJson({
+          'providers': {
+            'openai': {
+              'models': [
+                {'id': 'gpt-5'},
+                {'id': 'gpt-5-mini'},
+              ],
+            },
+            'anthropic': {
+              'models': [
+                {'id': 'claude-sonnet'},
+              ],
+            },
+          },
+        }),
+        assignment: const HermesModelAssignment(
+          activeProvider: 'openai',
+          activeModel: 'gpt-5',
+          revision: 'rev-1',
+        ),
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 models available'), findsOneWidget);
+    expect(find.textContaining('gpt-5, gpt-5-mini'), findsOneWidget);
+    // Only this provider's models are disclosed.
+    expect(find.textContaining('claude-sonnet'), findsNothing);
+  });
+
+  testWidgets('a failed probe shows the bounded error with latency', (
+    tester,
+  ) async {
+    final channel = _ThrowingValidationChannel(
+      providers: const [_configuredProvider],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('The credential operation could not be completed.'),
+      findsOneWidget,
+    );
+    expect(
+      _allRenderedText(
+        tester,
+      ).any((text) => RegExp(r'^\d+ ms$').hasMatch(text)),
+      isTrue,
+    );
+    expect(find.textContaining('models available'), findsNothing);
+    // The raw failure never reaches the tree.
+    for (final text in _allRenderedText(tester)) {
+      expect(text.contains('secret-bearing-detail'), isFalse);
+    }
+  });
+}
+
+class _ThrowingValidationChannel extends FakeHermesChannel {
+  _ThrowingValidationChannel({required super.providers});
+
+  @override
+  Future<HermesCredentialProbe> validateProviderCredential({
+    required String slug,
+  }) async {
+    throw StateError('probe exploded with secret-bearing-detail');
+  }
 }

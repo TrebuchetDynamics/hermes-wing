@@ -2623,4 +2623,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modelPresetUnavailableBody => 'Not in this gateway\'s catalog';
+
+  @override
+  String credentialProbeLatency(int ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String credentialProbeModelCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count models available',
+      one: '1 model available',
+    );
+    return '$_temp0';
+  }
 }

@@ -133,12 +133,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doneAction => 'Done';
 
   @override
-  String get renameAgent => 'Rename agent';
-
-  @override
-  String get editPersona => 'Edit persona';
-
-  @override
   String get personaLabel => 'Persona';
 
   @override
@@ -161,9 +155,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteConfirmationLabel => 'Agent name';
 
   @override
-  String get deleteConfirmationMismatch => 'The name does not match.';
-
-  @override
   String get defaultAgentCannotDelete => 'The default agent cannot be deleted.';
 
   @override
@@ -176,9 +167,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchAgent => 'Switch agent';
-
-  @override
-  String get manageAgents => 'Manage agents';
 
   @override
   String get switchAgentTitle => 'Switch agent';
@@ -368,9 +356,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSkillsMatchBody => 'No installed skills match this search.';
 
   @override
-  String get toolsetsEmptyBody => 'No enabled toolsets were reported.';
-
-  @override
   String get skillsLoadFailedBody =>
       'Installed skills could not be loaded from Hermes.';
 
@@ -433,9 +418,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleCompleted => 'Completed';
-
-  @override
-  String get scheduleStateLabel => 'State';
 
   @override
   String get scheduleExpressionLabel => 'Schedule';

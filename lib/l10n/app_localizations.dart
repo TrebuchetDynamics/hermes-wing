@@ -316,18 +316,6 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get doneAction;
 
-  /// No description provided for @renameAgent.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename agent'**
-  String get renameAgent;
-
-  /// No description provided for @editPersona.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit persona'**
-  String get editPersona;
-
   /// No description provided for @personaLabel.
   ///
   /// In en, this message translates to:
@@ -364,12 +352,6 @@ abstract class AppLocalizations {
   /// **'Agent name'**
   String get deleteConfirmationLabel;
 
-  /// No description provided for @deleteConfirmationMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'The name does not match.'**
-  String get deleteConfirmationMismatch;
-
   /// No description provided for @defaultAgentCannotDelete.
   ///
   /// In en, this message translates to:
@@ -393,12 +375,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch agent'**
   String get switchAgent;
-
-  /// No description provided for @manageAgents.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage agents'**
-  String get manageAgents;
 
   /// No description provided for @switchAgentTitle.
   ///
@@ -700,12 +676,6 @@ abstract class AppLocalizations {
   /// **'No installed skills match this search.'**
   String get noSkillsMatchBody;
 
-  /// No description provided for @toolsetsEmptyBody.
-  ///
-  /// In en, this message translates to:
-  /// **'No enabled toolsets were reported.'**
-  String get toolsetsEmptyBody;
-
   /// No description provided for @skillsLoadFailedBody.
   ///
   /// In en, this message translates to:
@@ -813,12 +783,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed'**
   String get scheduleCompleted;
-
-  /// No description provided for @scheduleStateLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'State'**
-  String get scheduleStateLabel;
 
   /// No description provided for @scheduleExpressionLabel.
   ///

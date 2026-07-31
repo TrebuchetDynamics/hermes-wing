@@ -27,14 +27,17 @@ Keep them Agent-authoritative, not backend-duplicated.
 
 | # | Slice | Notes |
 |---|-------|-------|
-| 2.1 | **Skills management** — add advertised enable/disable actions to the existing list and search UI | Keep `/v1/skills` authoritative. No client-side skill state. |
+| 2.1 | **Skills management** — add advertised enable/disable actions to the existing list and search UI | Contract-blocked upstream: Hermes Agent (verified v0.19.0) advertises only `GET /v1/skills`, no mutation endpoint. Keep `/v1/skills` authoritative; no client-side skill state. |
 | 2.2 | **Memory browser** — list, search, delete memory entries | Paginated read from `/v1/memory`. Delete requires confirmation. |
 | 2.3 | **Schedule management** — add create, edit, delete, and run-now actions to the existing read-only jobs UI | Show actions only when the Agent advertises them. |
 | 2.4 | **File browser** — read/edit files in Hermes workspace | Uses Hermes resource handles, never raw client paths. |
 | 2.5 | **Config editor** — syntax-highlighted YAML editor for config.yaml | Read via Agent API, write back through domain revision `If-Match`. |
-| 2.6 | **Model presets** — save/load named model+config combos | Client-side only. Stored in `shared_preferences` or secure storage. |
-| 2.7 | **Provider diagnostics** — extend existing credential validation and model inventory with a connection probe | Show latency plus model list or a bounded error. |
 | 2.8 | **Logs viewer** — stream or tail Hermes Agent logs | If Agent exposes a log endpoint; otherwise skip until it does. |
+
+Shipped from this phase: 2.6 model presets (client-side `shared_preferences`
+store with save/load/apply, capped at 32) and 2.7 provider diagnostics (the
+credential validate action is a connection probe reporting round-trip latency
+plus the provider's model inventory or a bounded error, commit `55b3396`).
 
 ## Phase 3 — Distribution and host integration
 

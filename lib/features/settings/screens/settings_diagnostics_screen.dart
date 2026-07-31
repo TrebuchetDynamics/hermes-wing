@@ -22,6 +22,16 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
                 children: [
                   _StatusTile(
                     icon: Icons.circle,
+                    iconColor: switch (state.status) {
+                      HermesConnectionStatus.connected => Colors.green,
+                      HermesConnectionStatus.connecting => Colors.amber,
+                      HermesConnectionStatus.error => Theme.of(
+                        context,
+                      ).colorScheme.error,
+                      HermesConnectionStatus.disconnected => Theme.of(
+                        context,
+                      ).colorScheme.outline,
+                    },
                     title: strings.diagnosticsStatusLabel,
                     value: _connectionStatusLabel(strings, state.status),
                   ),

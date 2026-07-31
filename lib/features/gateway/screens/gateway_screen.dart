@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_health.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -177,24 +178,37 @@ class _GatewayBody extends StatelessWidget {
       );
     }
     if (state.status != HermesConnectionStatus.connected) {
-      return _CenteredMessage(
-        state.status == HermesConnectionStatus.error
-            ? strings.gatewayStatusConnectionErrorBody
-            : strings.gatewayStatusConnectionRequiredBody,
+      if (state.status == HermesConnectionStatus.error) {
+        return WingEmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: strings.gatewayStatusUnavailableTitle,
+          body: strings.gatewayStatusConnectionErrorBody,
+        );
+      }
+      return WingEmptyState(
+        icon: Icons.hub_outlined,
+        title: strings.gatewaySelectPromptTitle,
+        body: strings.gatewayStatusConnectionRequiredBody,
       );
     }
     if (!_detailedHealthAdvertised(state)) {
-      return _CenteredMessage(strings.gatewayStatusUnavailableBody);
+      return WingEmptyState(
+        icon: Icons.lock_outline,
+        title: strings.gatewayStatusUnavailableTitle,
+        body: strings.gatewayStatusUnavailableBody,
+      );
     }
+    final health = state.detailedHealth;
     if (refreshFailed ||
         state.optionalResourceErrors.containsKey(
           HermesOptionalResource.detailedHealth,
-        )) {
-      return _CenteredMessage(strings.gatewayStatusLoadFailedBody);
-    }
-    final health = state.detailedHealth;
-    if (health == null) {
-      return _CenteredMessage(strings.gatewayStatusLoadFailedBody);
+        ) ||
+        health == null) {
+      return WingEmptyState(
+        icon: Icons.sync_problem_outlined,
+        title: strings.gatewayStatusUnavailableTitle,
+        body: strings.gatewayStatusLoadFailedBody,
+      );
     }
 
     return ListView(
@@ -421,20 +435,6 @@ class _StatusRow extends StatelessWidget {
       const SizedBox(width: 8),
       Expanded(child: Text(value)),
     ],
-  );
-}
-
-class _CenteredMessage extends StatelessWidget {
-  const _CenteredMessage(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Text(message, textAlign: TextAlign.center),
-    ),
   );
 }
 

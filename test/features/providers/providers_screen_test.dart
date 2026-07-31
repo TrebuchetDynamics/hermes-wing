@@ -216,6 +216,21 @@ Widget _testApp(
 );
 
 void main() {
+  testWidgets(
+    'disconnected channel shows a neutral select-gateway prompt, not the '
+    'unavailable lock state',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Select a gateway'), findsOneWidget);
+      expect(find.text('Providers unavailable'), findsNothing);
+    },
+  );
+
   testWidgets('loads providers and models on mount', (tester) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(const [

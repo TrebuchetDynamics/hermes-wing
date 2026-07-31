@@ -436,6 +436,42 @@ abstract class AppLocalizations {
   /// **'Select gateway'**
   String get selectGatewayHint;
 
+  /// No description provided for @gatewaySelectPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a gateway'**
+  String get gatewaySelectPromptTitle;
+
+  /// No description provided for @toolsUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools unavailable'**
+  String get toolsUnavailableTitle;
+
+  /// No description provided for @schedulesUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedules unavailable'**
+  String get schedulesUnavailableTitle;
+
+  /// No description provided for @gatewayStatusUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway status unavailable'**
+  String get gatewayStatusUnavailableTitle;
+
+  /// No description provided for @agentsConnectionRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a saved gateway chat before managing its agents.'**
+  String get agentsConnectionRequiredBody;
+
+  /// No description provided for @providersConnectionRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a saved gateway chat before managing providers and models.'**
+  String get providersConnectionRequiredBody;
+
   /// No description provided for @toolsGatewayHelp.
   ///
   /// In en, this message translates to:

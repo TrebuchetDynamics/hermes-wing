@@ -6,6 +6,8 @@ All notable user-visible changes will be documented here.
 
 ### Changed
 
+- Unified the gateway-scoped screens (Agents, Providers, Tools, Schedules, Gateway) behind one empty-state pattern, and showed a neutral "Select a gateway" prompt instead of misleading unavailable/lock copy when no gateway is selected.
+- Replaced the microphone icon on the Settings tab with a settings icon, removed duplicated headings on the Tools page and the Settings diagnostics row, tinted skill category tags, and colored the diagnostics connection-status dot by state.
 - Renamed the project and its internal identifiers to Hermes Wing.
 - Reframed Hermes Wing as an alpha, source-distributed Hermes Agent client.
 - Qualified platform, speech-recognition, privacy, and transport claims.

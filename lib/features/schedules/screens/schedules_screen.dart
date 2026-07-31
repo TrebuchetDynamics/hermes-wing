@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_job.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -175,17 +176,33 @@ class _SchedulesBody extends StatelessWidget {
       return WingSkeletonList(semanticLabel: strings.schedulesLoading);
     }
     if (state.status != HermesConnectionStatus.connected) {
-      final message = state.status == HermesConnectionStatus.error
-          ? strings.schedulesConnectionErrorBody
-          : strings.schedulesConnectionRequiredBody;
-      return _CenteredMessage(message);
+      if (state.status == HermesConnectionStatus.error) {
+        return WingEmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: strings.schedulesUnavailableTitle,
+          body: strings.schedulesConnectionErrorBody,
+        );
+      }
+      return WingEmptyState(
+        icon: Icons.hub_outlined,
+        title: strings.gatewaySelectPromptTitle,
+        body: strings.schedulesConnectionRequiredBody,
+      );
     }
     if (!_jobsAdvertised(state)) {
-      return _CenteredMessage(strings.schedulesUnavailableBody);
+      return WingEmptyState(
+        icon: Icons.lock_outline,
+        title: strings.schedulesUnavailableTitle,
+        body: strings.schedulesUnavailableBody,
+      );
     }
     if (refreshFailed ||
         state.optionalResourceErrors.containsKey(HermesOptionalResource.jobs)) {
-      return _CenteredMessage(strings.schedulesLoadFailedBody);
+      return WingEmptyState(
+        icon: Icons.sync_problem_outlined,
+        title: strings.schedulesUnavailableTitle,
+        body: strings.schedulesLoadFailedBody,
+      );
     }
 
     final jobs = [...state.jobs]..sort(_compareJobs);
@@ -331,20 +348,6 @@ class _ScheduleDetail extends StatelessWidget {
       const SizedBox(width: 8),
       Expanded(child: Text(value)),
     ],
-  );
-}
-
-class _CenteredMessage extends StatelessWidget {
-  const _CenteredMessage(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Text(message, textAlign: TextAlign.center),
-    ),
   );
 }
 

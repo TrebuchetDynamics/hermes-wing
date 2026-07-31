@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_runtime_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../agents/providers/profile_selection_provider.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -186,15 +187,22 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       return WingSkeletonList(semanticLabel: strings.providersLoading);
     }
     if (state.status == HermesConnectionStatus.error) {
-      return _ProvidersMessage(
+      return WingEmptyState(
         icon: Icons.cloud_off_outlined,
         title: strings.providersConnectionError,
         body: state.errorMessage ?? strings.providerOperationFailed,
       );
     }
+    if (state.status != HermesConnectionStatus.connected) {
+      return WingEmptyState(
+        icon: Icons.hub_outlined,
+        title: strings.gatewaySelectPromptTitle,
+        body: strings.providersConnectionRequiredBody,
+      );
+    }
     if (!state.canReadProviders) {
       if (!state.canReadRuntimeModels) {
-        return _ProvidersMessage(
+        return WingEmptyState(
           icon: Icons.lock_outline,
           title: strings.providersUnavailableTitle,
           body: strings.providersUnavailableBody,
@@ -210,7 +218,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
             readOnlyLabel: strings.readOnlyAccess,
           ),
           const SizedBox(height: 20),
-          _ProvidersMessage(
+          WingEmptyState(
             icon: Icons.lock_outline,
             title: strings.providersUnavailableTitle,
             body: strings.providersUnavailableBody,
@@ -221,7 +229,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       );
     }
     if (_loadFailed) {
-      return _ProvidersMessage(
+      return WingEmptyState(
         icon: Icons.sync_problem_outlined,
         title: strings.providersConnectionError,
         body: strings.providerOperationFailed,
@@ -252,7 +260,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         ),
         const SizedBox(height: 20),
         if (providers.isEmpty)
-          _ProvidersMessage(
+          WingEmptyState(
             icon: Icons.key_off_outlined,
             title: strings.providersEmptyTitle,
             body: strings.providersEmptyBody,
@@ -623,55 +631,4 @@ String _boundedRuntimeModelLabel(String value) {
   const maximumLength = 120;
   if (normalized.length <= maximumLength) return normalized;
   return '${normalized.substring(0, maximumLength - 1)}…';
-}
-
-class _ProvidersMessage extends StatelessWidget {
-  const _ProvidersMessage({
-    required this.icon,
-    required this.title,
-    required this.body,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 44),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
-              ),
-              if (actionLabel != null) ...[
-                const SizedBox(height: 16),
-                FilledButton(onPressed: onAction, child: Text(actionLabel!)),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

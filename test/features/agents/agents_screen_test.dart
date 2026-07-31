@@ -102,6 +102,21 @@ Widget _agentsTestApp(
 );
 
 void main() {
+  testWidgets(
+    'disconnected channel shows a neutral select-gateway prompt, not the '
+    'unavailable lock state',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+
+      await tester.pumpWidget(_agentsTestApp(channel));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Select a gateway'), findsOneWidget);
+      expect(find.text('Agents unavailable'), findsNothing);
+    },
+  );
+
   testWidgets('gateway picker activates the selected gateway', (tester) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);

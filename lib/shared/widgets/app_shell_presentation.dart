@@ -81,7 +81,7 @@ class AppShellPresentation {
 
   AppShellDestination get _settingsDestination => AppShellDestination(
     path: AppRoutes.settings,
-    icon: Icons.keyboard_voice_outlined,
+    icon: Icons.settings_outlined,
     label: localizations.settingsDestination,
   );
 

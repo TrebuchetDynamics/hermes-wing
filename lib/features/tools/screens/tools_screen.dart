@@ -8,6 +8,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_skill.dart';
 import '../../../core/hermes/models/hermes_toolset.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -132,14 +133,17 @@ class _ToolsBody extends StatelessWidget {
       );
     }
     if (state.status != HermesConnectionStatus.connected) {
-      final message = state.status == HermesConnectionStatus.error
-          ? strings.toolsConnectionErrorBody
-          : strings.toolsConnectionRequiredBody;
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(message, textAlign: TextAlign.center),
-        ),
+      if (state.status == HermesConnectionStatus.error) {
+        return WingEmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: strings.toolsUnavailableTitle,
+          body: strings.toolsConnectionErrorBody,
+        );
+      }
+      return WingEmptyState(
+        icon: Icons.hub_outlined,
+        title: strings.gatewaySelectPromptTitle,
+        body: strings.toolsConnectionRequiredBody,
       );
     }
 
@@ -149,11 +153,6 @@ class _ToolsBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        Text(
-          strings.toolsTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 6),
         Text(strings.toolsSubtitle),
         const SizedBox(height: 24),
         _SkillsInventorySection(
@@ -311,7 +310,10 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
                           const SizedBox(height: 4),
                           Text(
                             skill.category,
-                            style: Theme.of(context).textTheme.labelMedium,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                           ),
                         ],
                       ],

@@ -204,6 +204,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectGatewayHint => 'Select gateway';
 
   @override
+  String get gatewaySelectPromptTitle => 'Select a gateway';
+
+  @override
+  String get toolsUnavailableTitle => 'Tools unavailable';
+
+  @override
+  String get schedulesUnavailableTitle => 'Schedules unavailable';
+
+  @override
+  String get gatewayStatusUnavailableTitle => 'Gateway status unavailable';
+
+  @override
+  String get agentsConnectionRequiredBody =>
+      'Open a saved gateway chat before managing its agents.';
+
+  @override
+  String get providersConnectionRequiredBody =>
+      'Open a saved gateway chat before managing providers and models.';
+
+  @override
   String get toolsGatewayHelp =>
       'View tool inventory from the selected gateway.';
 

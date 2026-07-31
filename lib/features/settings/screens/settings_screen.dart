@@ -175,7 +175,7 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     key: const ValueKey('settings-diagnostics-link'),
                     leading: const Icon(Icons.monitor_heart_outlined),
-                    title: Text(strings.diagnosticsTitle),
+                    title: Text(strings.chatConnectionDiagnosticsTitle),
                     subtitle: Text(
                       _connectionStatusLabel(strings, state.status),
                     ),
@@ -555,16 +555,18 @@ class _StatusTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
+    this.iconColor,
   });
 
   final IconData icon;
   final String title;
   final String value;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon),
+      leading: Icon(icon, color: iconColor),
       title: Text(title),
       subtitle: Text(value),
       dense: true,

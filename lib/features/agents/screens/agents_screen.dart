@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -56,14 +57,21 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
       return WingSkeletonList(semanticLabel: strings.agentsLoading);
     }
     if (state.status == HermesConnectionStatus.error) {
-      return _AgentsMessage(
+      return WingEmptyState(
         icon: Icons.cloud_off_outlined,
         title: strings.agentsConnectionError,
         body: state.errorMessage ?? strings.profileOperationFailed,
       );
     }
+    if (state.status != HermesConnectionStatus.connected) {
+      return WingEmptyState(
+        icon: Icons.hub_outlined,
+        title: strings.gatewaySelectPromptTitle,
+        body: strings.agentsConnectionRequiredBody,
+      );
+    }
     if (!_canReadProfiles(capabilities)) {
-      return _AgentsMessage(
+      return WingEmptyState(
         icon: Icons.lock_outline,
         title: strings.agentsUnavailableTitle,
         body: strings.agentsUnavailableBody,
@@ -114,7 +122,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
         ],
         const SizedBox(height: 20),
         if (profiles.isEmpty)
-          _AgentsMessage(
+          WingEmptyState(
             icon: Icons.support_agent_outlined,
             title: strings.agentsEmptyTitle,
             body: strings.agentsEmptyBody,
@@ -506,49 +514,6 @@ class _AgentCard extends StatelessWidget {
                       label: Text(strings.deleteAgent),
                     ),
                 ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AgentsMessage extends StatelessWidget {
-  const _AgentsMessage({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 44),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
               ),
             ],
           ),

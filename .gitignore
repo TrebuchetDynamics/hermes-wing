@@ -24,5 +24,6 @@ playwright/results.json
 playwright/test-results/
 playwright/screenshots/*.png
 phone-screenshot*.png
+/*.png
 test-results/
 test/tooling/failures/

@@ -153,8 +153,6 @@ class _ToolsBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        Text(strings.toolsSubtitle),
-        const SizedBox(height: 24),
         _SkillsInventorySection(
           advertised: skillsAdvertised,
           loadFailed: state.optionalResourceErrors.containsKey(

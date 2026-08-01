@@ -268,4 +268,31 @@ void main() {
     );
     expect(find.byKey(const ValueKey('chat-destination')), findsOneWidget);
   });
+
+  testWidgets('the Office title and agent count each render once', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha Gateway',
+          baseUrl: 'https://alpha',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': _summary(id: 'alice', name: 'Alice'),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+
+    await tester.pumpWidget(_testApp(channel: channel, directory: directory));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Office'), findsOneWidget);
+    expect(find.text('1 agent'), findsOneWidget);
+  });
 }

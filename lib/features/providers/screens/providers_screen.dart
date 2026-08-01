@@ -212,7 +212,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
           _ProvidersHeader(
-            title: strings.providersTitle,
             subtitle: strings.providersSubtitle,
             readOnly: true,
             readOnlyLabel: strings.readOnlyAccess,
@@ -253,7 +252,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
         _ProvidersHeader(
-          title: strings.providersTitle,
           subtitle: strings.providersSubtitle,
           readOnly: !canWriteProviders,
           readOnlyLabel: strings.readOnlyAccess,
@@ -317,13 +315,11 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
 
 class _ProvidersHeader extends StatelessWidget {
   const _ProvidersHeader({
-    required this.title,
     required this.subtitle,
     required this.readOnly,
     required this.readOnlyLabel,
   });
 
-  final String title;
   final String subtitle;
   final bool readOnly;
   final String readOnlyLabel;
@@ -336,8 +332,6 @@ class _ProvidersHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: 6),
           Text(subtitle, style: theme.textTheme.bodyLarge),
           if (readOnly) ...[
             const SizedBox(height: 10),

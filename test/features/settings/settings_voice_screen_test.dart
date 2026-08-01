@@ -110,4 +110,23 @@ void main() {
 
     expect(find.byKey(const ValueKey('settings-command-word')), findsOneWidget);
   });
+
+  testWidgets('the Advanced heading renders once', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('voice-advanced-expansion')),
+      300,
+    );
+    expect(find.text('Advanced'), findsOneWidget);
+  });
 }

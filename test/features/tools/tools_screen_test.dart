@@ -370,4 +370,25 @@ void main() {
     expect(find.text('stale-skill'), findsNothing);
     expect(find.text('stale-toolset'), findsNothing);
   });
+
+  testWidgets('the gateway helper is the only inventory scope description', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skills: const ['browser-use'],
+      enabledToolsets: const ['web'],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Installed skills and resolved toolsets advertised by this gateway.',
+      ),
+      findsNothing,
+    );
+  });
 }

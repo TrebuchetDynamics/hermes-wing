@@ -686,4 +686,21 @@ void main() {
     expect(find.text('Manage credential'), findsWidgets);
     expect(find.text('Choose model'), findsOneWidget);
   });
+
+  testWidgets('the Providers title renders once, in the app bar only', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(const ['providers:read', 'models:read']),
+      providers: const [_openAiProvider],
+      modelInventory: _inventory(),
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Providers'), findsOneWidget);
+  });
 }

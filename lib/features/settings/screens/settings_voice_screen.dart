@@ -83,28 +83,31 @@ class VoiceSettingsScreen extends ConsumerWidget {
             voices: pocketSpeechVoices,
             previewing: pocketSpeechPreviewing,
           ),
-          _SettingsSectionCard(
-            title: strings.voiceAdvancedSection,
-            icon: Icons.tune_outlined,
-            children: [
-              ExpansionTile(
-                key: const ValueKey('voice-advanced-expansion'),
-                title: Text(strings.voiceAdvancedSection),
-                children: [
-                  ListTile(
-                    key: const ValueKey('settings-command-word'),
-                    title: Text(strings.voiceCommandWordTitle),
-                    subtitle: Text(settings.commandWord),
-                    trailing: const Icon(Icons.keyboard_voice),
-                    onTap: () => _showCommandWordSheet(
-                      context,
-                      settings.commandWord,
-                      controller.setCommandWord,
-                    ),
-                  ),
-                ],
+          Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: ExpansionTile(
+              key: const ValueKey('voice-advanced-expansion'),
+              leading: const Icon(Icons.tune_outlined),
+              title: Text(
+                strings.voiceAdvancedSection,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
-            ],
+              children: [
+                ListTile(
+                  key: const ValueKey('settings-command-word'),
+                  title: Text(strings.voiceCommandWordTitle),
+                  subtitle: Text(settings.commandWord),
+                  trailing: const Icon(Icons.keyboard_voice),
+                  onTap: () => _showCommandWordSheet(
+                    context,
+                    settings.commandWord,
+                    controller.setCommandWord,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

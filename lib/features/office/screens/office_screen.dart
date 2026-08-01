@@ -110,12 +110,7 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          _OfficeHeader(
-            title: strings.officeTitle,
-            subtitle: strings.officeSubtitle,
-            countLabel: strings.officeAgentCount(contacts.length),
-            refreshing: directory.refreshing,
-          ),
+          _OfficeHeader(subtitle: strings.officeSubtitle),
           if (contacts.isNotEmpty) ...[
             const SizedBox(height: 16),
             TextField(
@@ -221,17 +216,9 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
 }
 
 class _OfficeHeader extends StatelessWidget {
-  const _OfficeHeader({
-    required this.title,
-    required this.subtitle,
-    required this.countLabel,
-    required this.refreshing,
-  });
+  const _OfficeHeader({required this.subtitle});
 
-  final String title;
   final String subtitle;
-  final String countLabel;
-  final bool refreshing;
 
   @override
   Widget build(BuildContext context) {
@@ -248,26 +235,7 @@ class _OfficeHeader extends StatelessWidget {
               child: Icon(Icons.apartment_outlined, color: colors.primary),
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 4),
-                  Text(subtitle),
-                  const SizedBox(height: 12),
-                  Chip(
-                    avatar: refreshing
-                        ? const SizedBox.square(
-                            dimension: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.groups_outlined, size: 18),
-                    label: Text(countLabel),
-                  ),
-                ],
-              ),
-            ),
+            Expanded(child: Text(subtitle)),
           ],
         ),
       ),

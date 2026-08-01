@@ -2052,7 +2052,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceSpeakRepliesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Read Hermes replies aloud while the chat is open'**
+  /// **'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off'**
   String get voiceSpeakRepliesSubtitle;
 
   /// No description provided for @voiceAdvancedSection.
@@ -2130,7 +2130,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceUsePocketSpeechReadySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Use the installed {model} pack when Speak assistant replies is on'**
+  /// **'Use the installed {model} pack when Speak replies aloud is on'**
   String voiceUsePocketSpeechReadySubtitle(String model);
 
   /// No description provided for @voiceUsePocketSpeechNotReadySubtitle.

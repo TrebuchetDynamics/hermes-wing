@@ -608,7 +608,7 @@
   "voiceContinuousTitle": "Continuous voice",
   "voiceContinuousSubtitle": "Allow on-device STT transcripts to be sent to Hermes",
   "voiceSpeakRepliesTitle": "Speak replies aloud",
-  "voiceSpeakRepliesSubtitle": "Read Hermes replies aloud while the chat is open",
+  "voiceSpeakRepliesSubtitle": "Allow hands-free voice to speak Hermes replies aloud; the chat's hands-free switch turns this on and off",
   "voiceAdvancedSection": "Advanced",
   "voiceCommandWordTitle": "Command word",
   "voiceCommandWordHint": "Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.",
@@ -628,7 +628,7 @@
   "voiceDownloadAction": "Download",
   "voiceRemoveAction": "Remove",
   "voiceUsePocketSpeechTitle": "Use Pocket Speech for replies",
-  "voiceUsePocketSpeechReadySubtitle": "Use the installed {model} pack when Speak assistant replies is on",
+  "voiceUsePocketSpeechReadySubtitle": "Use the installed {model} pack when Speak replies aloud is on",
   "@voiceUsePocketSpeechReadySubtitle": {
     "placeholders": {
       "model": {

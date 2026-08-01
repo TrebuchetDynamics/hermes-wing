@@ -1144,7 +1144,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceSpeakRepliesSubtitle =>
-      'Read Hermes replies aloud while the chat is open';
+      'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off';
 
   @override
   String get voiceAdvancedSection => 'Advanced';
@@ -1188,7 +1188,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String voiceUsePocketSpeechReadySubtitle(String model) {
-    return 'Use the installed $model pack when Speak assistant replies is on';
+    return 'Use the installed $model pack when Speak replies aloud is on';
   }
 
   @override

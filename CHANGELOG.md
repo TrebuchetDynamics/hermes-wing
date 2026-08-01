@@ -16,6 +16,11 @@ All notable user-visible changes will be documented here.
   the hands-free voice consent, and the chat's hands-free switch turns it
   on and off. The Pocket Speech replies toggle now names that setting
   exactly instead of "Speak assistant replies".
+- A running offline-voice preview can now be stopped: the spinner is a
+  "Stop preview" button while the sample plays.
+- Long-pressing the mic dictates into the composer for review instead of
+  sending immediately, restoring the review-first path the voice tip and
+  README promise; the tip now describes both gestures.
 
 - Unified the gateway-scoped screens (Agents, Providers, Tools, Schedules, Gateway) behind one empty-state pattern, and showed a neutral "Select a gateway" prompt instead of misleading unavailable/lock copy when no gateway is selected.
 - Replaced the microphone icon on the Settings tab with a settings icon, removed duplicated headings on the Tools page and the Settings diagnostics row, tinted skill category tags, and colored the diagnostics connection-status dot by state.

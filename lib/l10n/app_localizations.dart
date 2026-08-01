@@ -2193,6 +2193,12 @@ abstract class AppLocalizations {
   /// **'Preview'**
   String get voicePreviewAction;
 
+  /// No description provided for @voicePreviewStopAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop preview'**
+  String get voicePreviewStopAction;
+
   /// No description provided for @voicePackReadyNotice.
   ///
   /// In en, this message translates to:
@@ -4498,7 +4504,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipVoice.
   ///
   /// In en, this message translates to:
-  /// **'Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.'**
+  /// **'Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.'**
   String get tipVoice;
 
   /// No description provided for @tipApprovals.

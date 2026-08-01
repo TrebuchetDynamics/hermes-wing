@@ -1229,6 +1229,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voicePreviewAction => 'Preview';
 
   @override
+  String get voicePreviewStopAction => 'Stop preview';
+
+  @override
   String voicePackReadyNotice(String model) {
     return '$model voice pack is ready';
   }
@@ -2693,7 +2696,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipVoice =>
-      'Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.';
+      'Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.';
 
   @override
   String get tipApprovals =>

@@ -340,9 +340,16 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: previewing
-                    ? const SizedBox.square(
-                        dimension: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? OutlinedButton.icon(
+                        key: const ValueKey('voice-preview-stop'),
+                        onPressed: () => unawaited(
+                          _activePreviewService?.stop() ?? Future.value(),
+                        ),
+                        icon: const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        label: Text(strings.voicePreviewStopAction),
                       )
                     : OutlinedButton.icon(
                         onPressed: settings.pocketSpeechVoicePackReady
@@ -522,6 +529,14 @@ Future<void> _deletePocketSpeechAssets(
   }
 }
 
+/// Test seam: overrides the Pocket Speech service the offline preview uses.
+@visibleForTesting
+TextToSpeechService? Function(WingVoiceSettings settings)?
+debugPocketSpeechPreviewServiceFactory;
+
+/// The service behind an in-flight preview, so the stop control can end it.
+TextToSpeechService? _activePreviewService;
+
 Future<void> _previewPocketSpeech(
   BuildContext context,
   WidgetRef ref,
@@ -534,12 +549,15 @@ Future<void> _previewPocketSpeech(
   TextToSpeechService? service;
   previewing.setPreviewing(true);
   try {
-    service = createPocketSpeechTextToSpeechService(
-      enabled: true,
-      voicePack: voicePack,
-      settings: () => ref.read(wingVoiceSettingsProvider),
-    );
+    service =
+        debugPocketSpeechPreviewServiceFactory?.call(settings) ??
+        createPocketSpeechTextToSpeechService(
+          enabled: true,
+          voicePack: voicePack,
+          settings: () => ref.read(wingVoiceSettingsProvider),
+        );
     if (service == null) throw StateError('Pocket Speech preview unavailable');
+    _activePreviewService = service;
     final spanishVoice =
         settings.pocketSpeechModel == PocketSpeechModel.kokoro &&
         (settings.ttsVoiceName?.startsWith('ef_') == true ||
@@ -558,6 +576,7 @@ Future<void> _previewPocketSpeech(
       );
     }
   } finally {
+    _activePreviewService = null;
     try {
       await service?.dispose();
     } catch (_) {

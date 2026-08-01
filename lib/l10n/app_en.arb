@@ -660,6 +660,7 @@
   "voicePreviewTitle": "Preview offline voice",
   "voicePreviewSubtitle": "Play a local sample with the selected voice and speed",
   "voicePreviewAction": "Preview",
+  "voicePreviewStopAction": "Stop preview",
   "voicePackReadyNotice": "{model} voice pack is ready",
   "@voicePackReadyNotice": {
     "placeholders": {
@@ -1725,7 +1726,7 @@
   "themePaletteAmber": "Amber",
   "themePaletteMulberry": "Mulberry",
   "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.",
-  "tipVoice": "Use Speak and send to dictate. You review the transcript in the composer before it goes to Hermes.",
+  "tipVoice": "Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.",
   "tipApprovals": "Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.",
   "tipDismissTooltip": "Dismiss tip",
   "toolsLoading": "Loading tools",

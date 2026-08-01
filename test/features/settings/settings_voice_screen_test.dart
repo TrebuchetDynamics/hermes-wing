@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
 
 void main() {
   testWidgets('Pocket Speech settings explain downloads and playback choices', (
@@ -129,4 +132,67 @@ void main() {
     );
     expect(find.text('Advanced'), findsOneWidget);
   });
+
+  testWidgets('a running offline preview exposes a stop control that ends it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'wing.voice.pocket_speech_model': 'kitten',
+      'wing.voice.kokoro_model_path': '/models/kitten/model.onnx',
+      'wing.voice.kokoro_voices_path': '/models/kitten/voices.json',
+    });
+    final fake = _FakePreviewTtsService();
+    debugPocketSpeechPreviewServiceFactory = (_) => fake;
+    addTearDown(() => debugPocketSpeechPreviewServiceFactory = null);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Preview'), 300);
+    await tester.ensureVisible(find.text('Preview'));
+    await tester.pump();
+    await tester.tap(find.text('Preview'));
+    await tester.pump();
+
+    final stop = find.byKey(const ValueKey('voice-preview-stop'));
+    expect(stop, findsOneWidget);
+
+    await tester.tap(stop);
+    await tester.pumpAndSettle();
+
+    expect(fake.stopped, isTrue);
+    expect(find.text('Preview'), findsOneWidget);
+    expect(stop, findsNothing);
+  });
+}
+
+class _FakePreviewTtsService implements TextToSpeechService {
+  final _speaking = Completer<void>();
+  bool stopped = false;
+
+  @override
+  Future<void> speak(String text) => _speaking.future;
+
+  @override
+  Future<void> stop() async {
+    stopped = true;
+    if (!_speaking.isCompleted) _speaking.complete();
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (!_speaking.isCompleted) _speaking.complete();
+  }
 }

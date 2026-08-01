@@ -430,6 +430,42 @@ void main() {
     );
   });
 
+  testWidgets('long-pressing the mic dictates into the composer for review', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final channel = FakeHermesChannel();
+    final capture = _ControlledVoiceCaptureService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.pump();
+    expect(capture.captureCalls, 1);
+
+    capture.complete('dictated for review');
+    await tester.pumpAndSettle();
+
+    // The transcript lands in the composer for review; nothing was sent.
+    expect(find.text('dictated for review'), findsOneWidget);
+    expect(channel.state.voiceRuns, isEmpty);
+    expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
+  });
+
   testWidgets('hands-free voice state is announced, not shown only', (
     tester,
   ) async {

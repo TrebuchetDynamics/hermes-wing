@@ -1410,20 +1410,33 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         (settings) => settings.continuousVoiceEnabled,
       ),
     );
-    return IconButton(
-      key: const ValueKey('hermes-mic-button'),
-      tooltip: AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip,
-      icon: _voiceInputController.capturing
-          ? const SizedBox(
-              height: 18,
-              width: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : const Icon(Icons.mic_none_outlined),
-      onPressed:
-          _voiceInputController.capturing || !canSendTurns || !voiceEnabled
-          ? null
-          : () => unawaited(_voiceInputController.captureAndSend()),
+    // The tooltip must not own the long-press gesture: long-press dictates
+    // into the composer for review instead of sending immediately, so the
+    // tooltip is hover/manual only.
+    final micButton = Tooltip(
+      message: AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip,
+      triggerMode: TooltipTriggerMode.manual,
+      child: IconButton(
+        key: const ValueKey('hermes-mic-button'),
+        icon: _voiceInputController.capturing
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.mic_none_outlined),
+        onPressed:
+            _voiceInputController.capturing || !canSendTurns || !voiceEnabled
+            ? null
+            : () => unawaited(_voiceInputController.captureAndSend()),
+      ),
+    );
+    if (_voiceInputController.capturing || !canSendTurns || !voiceEnabled) {
+      return micButton;
+    }
+    return GestureDetector(
+      onLongPress: () => unawaited(_voiceInputController.captureDraft()),
+      child: micButton,
     );
   }
 

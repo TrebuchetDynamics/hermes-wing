@@ -34,7 +34,7 @@ Hermes backend.
 | **Office** | Responsive 2D workspace of authoritative gateway contacts with availability, session counts, and direct chat |
 | **Endpoint management** | Advertised agents, profiles, providers, model assignments, and bounded runtime model inspection |
 | **Inventory** | Installed-skill metadata, toolset labels, scheduled jobs, gateway workload, readiness, and messaging-platform state |
-| **Device speech** | On-device speech-to-text with review before sending; optional reply TTS via Pocket Speech voice packs |
+| **Device speech** | On-device speech-to-text with one-step speak-and-send or long-press dictation for review before sending; optional reply TTS via Pocket Speech voice packs |
 | **Adaptive layouts** | Compact mobile flow and desktop workspace from one adaptive codebase |
 
 ## From source to first session

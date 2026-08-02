@@ -466,6 +466,37 @@ void main() {
     expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
   });
 
+  testWidgets('the mic button carries its name into the semantics tree', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // A screen reader must announce more than "button": the visual tooltip
+    // moved onto a wrapper so long-press could dictate, which silently
+    // stripped the name off the button's own node.
+    final mic = tester.getSemantics(
+      find.byKey(const ValueKey('hermes-mic-button')),
+    );
+    expect('${mic.label} ${mic.tooltip}', contains('Speak and send'));
+  });
+
   testWidgets('hands-free voice state is announced, not shown only', (
     tester,
   ) async {

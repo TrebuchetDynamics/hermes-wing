@@ -1412,9 +1412,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
     // The tooltip must not own the long-press gesture: long-press dictates
     // into the composer for review instead of sending immediately, so the
-    // tooltip is hover/manual only.
+    // tooltip is hover/manual only. Because that moves the tooltip off the
+    // button, the icon carries the accessible name so the button node keeps
+    // announcing more than "button".
+    final micLabel = AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip;
     final micButton = Tooltip(
-      message: AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip,
+      message: micLabel,
       triggerMode: TooltipTriggerMode.manual,
       child: IconButton(
         key: const ValueKey('hermes-mic-button'),
@@ -1424,7 +1427,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 width: 18,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Icon(Icons.mic_none_outlined),
+            : Icon(Icons.mic_none_outlined, semanticLabel: micLabel),
         onPressed:
             _voiceInputController.capturing || !canSendTurns || !voiceEnabled
             ? null

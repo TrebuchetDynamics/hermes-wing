@@ -7,6 +7,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
+import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -37,7 +38,14 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
         animation: Listenable.merge([channel, directory]),
         builder: (context, _) => Column(
           children: [
-            if (directory.gateways.isNotEmpty) _buildGatewayPicker(directory),
+            if (directory.gateways.isNotEmpty)
+              WingGatewayPicker(
+                fieldKey: const ValueKey('agents-gateway-picker'),
+                directory: directory,
+                helpText: AppLocalizations.of(context).agentsGatewayPickerHelp,
+                enabled: _switchingGatewayId == null,
+                onSelected: (id) => unawaited(_selectGateway(directory, id)),
+              ),
             Expanded(child: _buildBody(context, channel, strings)),
           ],
         ),
@@ -192,50 +200,6 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
             ),
           ],
       ],
-    );
-  }
-
-  Widget _buildGatewayPicker(HermesGatewayDirectory directory) {
-    final strings = AppLocalizations.of(context);
-    final selectedId = directory.activeContactId?.gatewayId;
-    final selected = directory.gateways.any((item) => item.id == selectedId)
-        ? selectedId
-        : null;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            key: const ValueKey('agents-gateway-picker'),
-            child: DropdownButtonFormField<String>(
-              key: ValueKey('agents-gateway-picker-$selected'),
-              initialValue: selected,
-              decoration: InputDecoration(
-                labelText: strings.gatewayLabel,
-                border: const OutlineInputBorder(),
-              ),
-              hint: Text(strings.agentsSelectGatewayHint),
-              items: [
-                for (final gateway in directory.gateways)
-                  DropdownMenuItem(
-                    value: gateway.id,
-                    child: Text(gateway.label),
-                  ),
-              ],
-              onChanged: _switchingGatewayId == null
-                  ? (gatewayId) {
-                      if (gatewayId != null && gatewayId != selected) {
-                        unawaited(_selectGateway(directory, gatewayId));
-                      }
-                    }
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(strings.agentsGatewayPickerHelp),
-        ],
-      ),
     );
   }
 

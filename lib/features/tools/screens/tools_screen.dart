@@ -9,6 +9,7 @@ import '../../../core/hermes/models/hermes_skill.dart';
 import '../../../core/hermes/models/hermes_toolset.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
+import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -39,7 +40,14 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
         builder: (context, _) => Column(
           children: [
             if (directory.gateways.isNotEmpty)
-              _buildGatewayPicker(directory, strings),
+              WingGatewayPicker(
+                fieldKey: const ValueKey('tools-gateway-picker'),
+                directory: directory,
+                helpText: strings.toolsGatewayHelp,
+                enabled: _switchingGatewayId == null,
+                onSelected: (id) =>
+                    unawaited(_selectGateway(directory, id, strings)),
+              ),
             if (_actionError != null)
               MaterialBanner(
                 content: Text(_actionError!),
@@ -55,47 +63,6 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGatewayPicker(
-    HermesGatewayDirectory directory,
-    AppLocalizations strings,
-  ) {
-    final selectedId = directory.activeContactId?.gatewayId;
-    final selected =
-        directory.gateways.any((gateway) => gateway.id == selectedId)
-        ? selectedId
-        : null;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DropdownButtonFormField<String>(
-            key: const ValueKey('tools-gateway-picker'),
-            initialValue: selected,
-            decoration: InputDecoration(
-              labelText: strings.gatewayLabel,
-              border: const OutlineInputBorder(),
-            ),
-            hint: Text(strings.selectGatewayHint),
-            items: [
-              for (final gateway in directory.gateways)
-                DropdownMenuItem(value: gateway.id, child: Text(gateway.label)),
-            ],
-            onChanged: _switchingGatewayId == null
-                ? (gatewayId) {
-                    if (gatewayId != null && gatewayId != selected) {
-                      unawaited(_selectGateway(directory, gatewayId, strings));
-                    }
-                  }
-                : null,
-          ),
-          const SizedBox(height: 6),
-          Text(strings.toolsGatewayHelp),
-        ],
       ),
     );
   }

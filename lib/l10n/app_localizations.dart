@@ -2643,12 +2643,6 @@ abstract class AppLocalizations {
   /// **'Route not found: {path}'**
   String routeNotFound(String path);
 
-  /// No description provided for @agentsSelectGatewayHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Select gateway'**
-  String get agentsSelectGatewayHint;
-
   /// No description provided for @agentsGatewayPickerHelp.
   ///
   /// In en, this message translates to:

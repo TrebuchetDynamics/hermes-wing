@@ -1504,9 +1504,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get agentsSelectGatewayHint => 'Select gateway';
-
-  @override
   String get agentsGatewayPickerHelp =>
       'Add and edit profiles on the selected gateway.';
 

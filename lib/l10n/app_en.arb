@@ -870,7 +870,6 @@
       }
     }
   },
-  "agentsSelectGatewayHint": "Select gateway",
   "agentsGatewayPickerHelp": "Add and edit profiles on the selected gateway.",
   "gatewayContactsEmptyTitle": "No Hermes gateways yet",
   "gatewayContactsConnectAction": "Connect gateway",

@@ -64,6 +64,61 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     },
   );
+
+  test(
+    'a hung engine cancel cannot strand the capture past its timeout',
+    () async {
+      // Android's recognizer can leave `cancel()` pending forever after it
+      // reports NO_SPEECH_DETECTED. The capture must still time out, or the mic
+      // spins with no transcript and no error.
+      final service = SpeechToTextVoiceCaptureService(
+        engine: _UncancellableHangingSpeechToTextEngine(),
+      );
+
+      await expectLater(
+        service
+            .capture(timeout: const Duration(milliseconds: 50))
+            .timeout(
+              const Duration(seconds: 5),
+              onTimeout: () =>
+                  throw StateError('capture stranded past timeout'),
+            ),
+        throwsA(isA<VoiceCaptureTimeout>()),
+      );
+    },
+  );
+}
+
+/// Never resolves `listen`, and its `cancel()` hangs forever.
+class _UncancellableHangingSpeechToTextEngine implements SpeechToTextEngine {
+  final _neverCancels = Completer<void>();
+
+  @override
+  Future<bool?> hasPermission() async => true;
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async => true;
+
+  @override
+  Future<SpeechToTextLocale?> systemLocale() async => null;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> cancel() => _neverCancels.future;
 }
 
 /// Mirrors a recognizer that is already gone, so cancelling it fails.

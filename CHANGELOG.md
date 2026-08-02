@@ -4,6 +4,14 @@ All notable user-visible changes will be documented here.
 
 ## Unreleased
 
+### Fixed
+
+- Speech-to-text no longer strands the microphone. When Android's recognizer
+  reported no speech and left its cancel pending forever, the capture timeout
+  never fired: the mic spun indefinitely, no transcript arrived, and no error
+  was shown. The timeout now stops waiting on the engine cancel, so capture
+  always ends with a transcript or an actionable error.
+
 ### Changed
 
 - Removed duplicated page headings and counts left by the last audit: the

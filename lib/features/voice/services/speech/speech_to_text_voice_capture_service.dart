@@ -192,8 +192,11 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
       }
       return operation.timeout(
         remaining,
-        onTimeout: () async {
-          await _engine.cancel();
+        onTimeout: () {
+          // Never await the cancel: Android leaves it pending forever after
+          // the recognizer reports NO_SPEECH_DETECTED, which would strand the
+          // capture with a spinning mic and no error.
+          fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
           throw const VoiceCaptureTimeout();
         },
       );

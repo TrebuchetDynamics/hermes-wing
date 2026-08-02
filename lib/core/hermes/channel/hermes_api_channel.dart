@@ -17,6 +17,7 @@ import '../models/hermes_skill.dart';
 import '../models/hermes_toolset.dart';
 import '../policy/hermes_transport_policy.dart';
 import '../../../shared/async/fire_and_forget.dart';
+import '../../../shared/security/wing_redaction.dart';
 import '../setup/hermes_endpoint_store.dart';
 import '../sse/hermes_sse_event_decoder.dart';
 import 'hermes_channel.dart';

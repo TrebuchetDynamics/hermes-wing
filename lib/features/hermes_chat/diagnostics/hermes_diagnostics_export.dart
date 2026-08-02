@@ -2,6 +2,7 @@ import '../../../core/hermes/channel/hermes_channel_state.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../core/hermes/policy/hermes_surface_readiness.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
+import '../../../shared/security/wing_redaction.dart';
 
 /// Builds a bounded, copyable Hermes operator diagnostic snapshot.
 ///
@@ -131,74 +132,5 @@ String _safeDiagnosticsEndpointRoutes(
   return remaining > 0 ? '$safe, +$remaining more' : safe;
 }
 
-String _safeDiagnosticsText(String text, {int maxLength = 120}) {
-  var safe = text.replaceAll(
-    RegExp(r'bearer\s+\S+', caseSensitive: false),
-    'Bearer [redacted]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(r'(authorization\s*[:=]\s*basic\s+)\S+', caseSensitive: false),
-    (match) => '${match[1]}[redacted]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(r'(authorization\s*[:=]\s*)\S+', caseSensitive: false),
-    (match) => '${match[1]}[redacted]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(r'Basic\s+[^\s,;]+', caseSensitive: false),
-    (_) => 'Basic [redacted]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(
-      r'((?:Cookie|Set-Cookie|X-API-Key|X-Auth-Token)\s*[:=]\s*)[^\n\r,;]+',
-      caseSensitive: false,
-    ),
-    (match) => '${match[1]}[redacted]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(r'([a-z][a-z0-9+.-]*://)([^/\s@]+@)', caseSensitive: false),
-    (match) => '${match[1]}[redacted]@',
-  );
-  safe = safe.replaceAll(
-    RegExp(r'\b[A-Z]:\\[^\s,;]+', caseSensitive: false),
-    '[redacted-path]',
-  );
-  safe = safe.replaceAll(RegExp(r'\\\\[^\s,;]+'), '[redacted-path]');
-  safe = safe.replaceAll(
-    RegExp(r'/(?:home|Users|var|private|mnt|Volumes)/[^\s,;]+'),
-    '[redacted-path]',
-  );
-  safe = safe.replaceAllMapped(
-    RegExp(
-      r'((?:api[-_ ]?key|auth[-_ ]?token|token|secret|password|passwd|pwd|credential)\s*[:=]\s*)\S+',
-      caseSensitive: false,
-    ),
-    (match) => '${match[1]}[redacted]',
-  );
-  safe = safe
-      .replaceAll(
-        RegExp(r'sk-[a-z0-9_-]{12,}', caseSensitive: false),
-        'sk-[redacted]',
-      )
-      .replaceAll(
-        RegExp(r'gh[pousr]_[a-z0-9_]{20,}', caseSensitive: false),
-        'ghp_[redacted]',
-      )
-      .replaceAll(
-        RegExp(r'xox[abprs]-[a-z0-9-]{20,}', caseSensitive: false),
-        'xox-[redacted]',
-      )
-      .replaceAll(
-        RegExp(
-          r'eyJ[a-z0-9_-]{8,}\.[a-z0-9_-]{8,}\.[a-z0-9_-]{8,}',
-          caseSensitive: false,
-        ),
-        '[redacted-jwt]',
-      )
-      .replaceAll(
-        RegExp(r'secret[-_a-z0-9.]*', caseSensitive: false),
-        '[redacted]',
-      );
-  if (safe.length <= maxLength) return safe;
-  return '${safe.substring(0, maxLength).trimRight()}…';
-}
+String _safeDiagnosticsText(String text, {int maxLength = 120}) =>
+    wingRedactedPreview(text, maxLength: maxLength);

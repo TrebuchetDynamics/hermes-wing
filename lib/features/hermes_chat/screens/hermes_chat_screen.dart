@@ -19,6 +19,7 @@ import '../../../core/hermes/policy/hermes_endpoint_security.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/security/wing_redaction.dart';
 import '../../../l10n/app_localizations_en.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../agents/providers/profile_selection_provider.dart';

@@ -62,6 +62,11 @@ All notable user-visible changes will be documented here.
 
 ### Security
 
+- Consolidated credential and local-path redaction into one implementation
+  shared by the Hermes channel, the chat surfaces, and the diagnostics export.
+  The three copies had already drifted once; every path now applies the union
+  of their rules, so a pattern added later covers all of them.
+
 - Excluded recognized words from speech diagnostics.
 - Required explicit confirmation for API keys sent over remote plaintext HTTP.
 - Documented platform-dependent secure-storage guarantees and trust boundaries.

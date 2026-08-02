@@ -6,6 +6,10 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Hermes connection errors no longer show local filesystem paths. The chat
+  transcript and diagnostics export already stripped them, but the channel's
+  own redaction did not, and Agents, Providers, and Diagnostics render that
+  text verbatim.
 - Speech-to-text no longer strands the microphone. When Android's recognizer
   reported no speech and left its cancel pending forever, the capture timeout
   never fired: the mic spun indefinitely, no transcript arrived, and no error

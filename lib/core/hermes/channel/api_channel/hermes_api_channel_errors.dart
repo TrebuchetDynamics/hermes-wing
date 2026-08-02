@@ -28,6 +28,18 @@ String _safeHermesError(Object error) {
     ),
     (match) => '${match[1]}${match[2]}[redacted]',
   );
+  // Local paths are excluded data, and Agents, Providers, and Diagnostics
+  // render this text verbatim — the chat UI and diagnostics export strip
+  // these already, so this path must not be the weak one.
+  text = text.replaceAll(
+    RegExp(r'\b[A-Z]:\\[^\s,;]+', caseSensitive: false),
+    '[redacted-path]',
+  );
+  text = text.replaceAll(RegExp(r'\\\\[^\s,;]+'), '[redacted-path]');
+  text = text.replaceAll(
+    RegExp(r'/(?:home|Users|var|private|mnt|Volumes)/[^\s,;]+'),
+    '[redacted-path]',
+  );
   text = text
       .replaceAll(
         RegExp(r'sk-[a-z0-9_-]{12,}', caseSensitive: false),

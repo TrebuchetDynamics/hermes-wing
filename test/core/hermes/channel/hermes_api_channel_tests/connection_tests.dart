@@ -481,6 +481,26 @@ void _hermesApiChannelConnectionTests() {
     expect(channel.state.errorMessage, contains('offline'));
   });
 
+  test('connect redacts local filesystem paths from stored errors', () async {
+    // The chat UI and diagnostics export both strip local paths; the channel
+    // path must too, because Agents, Providers, and Diagnostics render
+    // state.errorMessage verbatim.
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => throw StateError(
+          'config missing at /home/operator/.hermes/profiles/link/.env '
+          'and C:\\Users\\operator\\hermes\\config.yaml',
+        ),
+      ),
+    );
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.errorMessage, isNot(contains('/home/operator')));
+    expect(channel.state.errorMessage, isNot(contains('C:\\Users')));
+  });
+
   test('connect redacts and bounds secret-looking stored errors', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(

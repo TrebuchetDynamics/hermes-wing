@@ -6,6 +6,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Voice capture now says when the device has no offline language for speech
+  recognition, instead of advising you to install a recognizer that is already
+  installed. Wing asks Android for on-device-only recognition, so a missing
+  language pack fails every capture, and Android reports that case distinctly.
+
 - Hermes connection errors no longer show local filesystem paths. The chat
   transcript and diagnostics export already stripped them, but the channel's
   own redaction did not, and Agents, Providers, and Diagnostics render that

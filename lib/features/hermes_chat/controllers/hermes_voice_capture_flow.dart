@@ -74,8 +74,11 @@ class HermesVoiceCaptureFlow {
 }
 
 String _deviceSpeechUnavailableMessage(String reason) {
-  return canonicalVoiceUnavailableReason(reason) ==
-          microphonePermissionDeniedReason
-      ? microphonePermissionDeniedVoiceCaptureMessage
-      : deviceSpeechUnavailableVoiceCaptureMessage;
+  return switch (canonicalVoiceUnavailableReason(reason)) {
+    microphonePermissionDeniedReason =>
+      microphonePermissionDeniedVoiceCaptureMessage,
+    deviceSttLanguageUnavailableReason =>
+      deviceSpeechLanguageUnavailableVoiceCaptureMessage,
+    _ => deviceSpeechUnavailableVoiceCaptureMessage,
+  };
 }

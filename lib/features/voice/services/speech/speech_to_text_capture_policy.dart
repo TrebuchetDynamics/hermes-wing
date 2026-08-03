@@ -38,6 +38,9 @@ String speechToTextDeviceUnavailableReasonFromMessage(String message) {
   if (signal.indicatesPermissionDenied) {
     return microphonePermissionDeniedReason;
   }
+  if (signal.indicatesLanguageUnavailable) {
+    return deviceSttLanguageUnavailableReason;
+  }
   return deviceSttUnavailableReason;
 }
 
@@ -57,6 +60,13 @@ class SpeechToTextAvailabilityMessageSignal {
 
   final String normalized;
   final String compact;
+
+  /// Android reports a missing or unsupported offline language distinctly,
+  /// and on-device-only capture cannot fall back to a network recognizer.
+  bool get indicatesLanguageUnavailable {
+    return normalized.contains('language_unavailable') ||
+        normalized.contains('language_not_supported');
+  }
 
   bool get indicatesPermissionDenied {
     return normalized.contains('permission') ||

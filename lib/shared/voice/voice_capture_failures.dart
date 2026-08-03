@@ -4,6 +4,10 @@ const noSpeechDetectedVoiceCaptureMessage =
     'No speech was recognized. Tap Speak, wait for Listening, then speak clearly and close to the microphone.';
 const deviceSpeechUnavailableVoiceCaptureMessage =
     'Device speech recognition is unavailable. Install or enable device speech recognition, then return to Hermes Wing.';
+const deviceSpeechLanguageUnavailableVoiceCaptureMessage =
+    'Device speech recognition has no offline language for this device'
+    " locale. Install that language's offline speech data in Android"
+    ' settings, then return to Hermes Wing.';
 const microphonePermissionDeniedVoiceCaptureMessage =
     'Microphone permission denied. Grant microphone permission in Android App info, then return to Hermes Wing.';
 

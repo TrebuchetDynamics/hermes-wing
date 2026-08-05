@@ -6,6 +6,18 @@ build/
 android/.kotlin/
 coverage/
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
 # IDE
 .idea/
 *.iml
@@ -13,7 +25,7 @@ coverage/
 # Agent artifacts
 .pi/
 **/.pi/
-.understand-anything/**
+.understand-anything/
 codebase-map-understand.md
 .claude/
 **/.claude/
@@ -25,5 +37,12 @@ playwright/test-results/
 playwright/screenshots/*.png
 phone-screenshot*.png
 /*.png
+!/hermes-wing-icon.png
+
+# Wing Link build outputs
+/wing_link/wing-link
+/wing_link/*.test
+/wing_link/coverage.out
+
 test-results/
 test/tooling/failures/

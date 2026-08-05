@@ -1,58 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
-  <title id="title">Hermes Wing runtime flow</title>
-  <desc id="desc">A five-stage flow from device speech or typing through operator-reviewed text, a Hermes session, streamed run events, and approval or stop controls.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">Hermes Wing trust and runtime path</title>
+  <desc id="desc">A five-stage flow from a reviewed private endpoint through capability negotiation, a durable Hermes session, streamed run events, and visible approval or stop controls.</desc>
 
-  <rect width="1200" height="320" rx="24" fill="#111214"/>
-  <text x="52" y="38" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="30" font-weight="750">One trusted path from input to controlled execution</text>
-  <text x="52" y="82" dominant-baseline="hanging" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" letter-spacing="1.2">DEVICE INPUT → OPERATOR REVIEW → HERMES AUTHORITY</text>
+  <rect width="1200" height="340" rx="24" fill="#111214"/>
+  <text x="52" y="38" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="30" font-weight="750">Hermes stays authoritative. Wing stays in reach.</text>
+  <text x="52" y="82" dominant-baseline="hanging" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" letter-spacing="1.2">PRIVATE ORIGIN → ADVERTISED CAPABILITIES → OPERATOR CONTROL</text>
 
-  <path d="M152 176H1048" stroke="#30343b" stroke-width="4" stroke-linecap="round"/>
+  <path d="M144 181H1056" stroke="#30343b" stroke-width="4" stroke-linecap="round"/>
 
   <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
-    <g transform="translate(70 130)">
-      <circle cx="74" cy="46" r="42" fill="#1b1d21" stroke="#565b65"/>
-      <path d="M63 29v23a11 11 0 0 0 22 0V29" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round"/>
-      <path d="M55 49a19 19 0 0 0 38 0M74 68v12M63 80h22" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round"/>
-      <text x="74" y="105" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Speak or type</text>
-      <text x="74" y="129" text-anchor="middle" fill="#8f96a3" font-size="13">device input</text>
+    <g transform="translate(68 135)">
+      <circle cx="76" cy="46" r="42" fill="#1b1d21" stroke="#565b65"/>
+      <path d="M57 45h38v27H57zM64 45v-9a12 12 0 0 1 24 0v9" fill="none" stroke="#7dd3fc" stroke-width="3.5" stroke-linejoin="round"/>
+      <text x="76" y="108" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Trusted origin</text>
+      <text x="76" y="132" text-anchor="middle" fill="#8f96a3" font-size="13">review endpoint</text>
     </g>
 
-    <g transform="translate(292 130)">
-      <circle cx="74" cy="46" r="42" fill="#1b1d21" stroke="#565b65"/>
-      <rect x="51" y="28" width="46" height="36" rx="7" fill="none" stroke="#7dd3fc" stroke-width="3"/>
-      <path d="M59 39h30M59 49h23" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round"/>
-      <text x="74" y="105" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Review text</text>
-      <text x="74" y="129" text-anchor="middle" fill="#8f96a3" font-size="13">before sending</text>
+    <g transform="translate(290 135)">
+      <circle cx="76" cy="46" r="42" fill="#1b1d21" stroke="#565b65"/>
+      <path d="M55 31h42M55 45h30M55 59h36" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="97" cy="59" r="5" fill="#3b82f6"/>
+      <text x="76" y="108" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Capabilities</text>
+      <text x="76" y="132" text-anchor="middle" fill="#8f96a3" font-size="13">enable only advertised APIs</text>
     </g>
 
-    <g transform="translate(514 130)">
-      <circle cx="74" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
-      <path d="M53 31h42v30H70l-12 10V61h-5z" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linejoin="round"/>
-      <text x="74" y="105" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Hermes session</text>
-      <text x="74" y="129" text-anchor="middle" fill="#8f96a3" font-size="13">durable context</text>
+    <g transform="translate(512 135)">
+      <circle cx="76" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M55 31h42v30H72L60 71V61h-5z" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linejoin="round"/>
+      <text x="76" y="108" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Hermes session</text>
+      <text x="76" y="132" text-anchor="middle" fill="#8f96a3" font-size="13">durable context</text>
     </g>
 
-    <g transform="translate(736 130)">
-      <circle cx="74" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
-      <path d="M49 54h10l8-21 12 37 9-23h12" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="74" y="105" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Stream run</text>
-      <text x="74" y="129" text-anchor="middle" fill="#8f96a3" font-size="13">events + tools</text>
+    <g transform="translate(734 135)">
+      <circle cx="76" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M51 54h10l8-21 12 37 9-23h12" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="76" y="108" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Stream events</text>
+      <text x="76" y="132" text-anchor="middle" fill="#8f96a3" font-size="13">runs, tools, usage</text>
     </g>
 
-    <g transform="translate(958 130)">
-      <circle cx="74" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
-      <path d="M53 47l13 13 29-31" fill="none" stroke="#7dd3fc" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="74" y="105" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Approve or stop</text>
-      <text x="74" y="129" text-anchor="middle" fill="#8f96a3" font-size="13">operator control</text>
+    <g transform="translate(956 135)">
+      <circle cx="76" cy="46" r="42" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M55 47l13 13 29-31" fill="none" stroke="#7dd3fc" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="76" y="108" text-anchor="middle" fill="#f4f4f5" font-size="16" font-weight="700">Approve or stop</text>
+      <text x="76" y="132" text-anchor="middle" fill="#8f96a3" font-size="13">operator decides</text>
     </g>
   </g>
 
   <g fill="#3b82f6">
-    <path d="M242 176l-12-7v14z"/>
-    <path d="M464 176l-12-7v14z"/>
-    <path d="M686 176l-12-7v14z"/>
-    <path d="M908 176l-12-7v14z"/>
+    <path d="M244 181l-12-7v14z"/>
+    <path d="M466 181l-12-7v14z"/>
+    <path d="M688 181l-12-7v14z"/>
+    <path d="M910 181l-12-7v14z"/>
   </g>
 
-  <text x="52" y="286" dominant-baseline="hanging" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">Voice path: recognized text is submitted; captured microphone audio is not sent through this flow.</text>
+  <text x="52" y="305" dominant-baseline="hanging" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">HTTP carries commands and resources. SSE carries typed run events. Wing never becomes a second Hermes backend.</text>
 </svg>

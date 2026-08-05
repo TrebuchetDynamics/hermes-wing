@@ -1,68 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
-  <title id="title">Hermes Wing — a trusted Hermes Agent client for every screen</title>
-  <desc id="desc">Hermes Wing pairs an Android device through a short-lived wing-cli handoff, then runs capability-negotiated Hermes sessions across mobile, web, and desktop.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
+  <title id="title">Hermes Wing — Hermes Agent sessions on every screen</title>
+  <desc id="desc">A dark technical title board beside a live Hermes session trace showing capability negotiation, tool activity, and an operator approval checkpoint.</desc>
 
-  <defs>
-    <linearGradient id="accent-line" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#7dd3fc"/>
-    </linearGradient>
-  </defs>
+  <rect width="1200" height="410" rx="26" fill="#0c0e12"/>
+  <path d="M670 32V378" stroke="#23262e"/>
 
-  <rect width="1200" height="380" rx="26" fill="#0c0e12"/>
-  <path d="M0 312H1200" stroke="#1e2026" stroke-width="1"/>
-  <path d="M704 0V380" stroke="#1e2026" stroke-width="1"/>
-
-  <g id="title-block" transform="translate(58 44)">
-    <text x="0" y="0" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="2.4">HERMES AGENT · CROSS-PLATFORM CLIENT</text>
-    <text x="0" y="52" dominant-baseline="hanging" fill="#f0f1f3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="72" font-weight="800" letter-spacing="-3">HERMES</text>
-    <text x="0" y="122" dominant-baseline="hanging" fill="#3b82f6" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="72" font-weight="800" letter-spacing="-3">WING</text>
-    <text x="2" y="218" dominant-baseline="hanging" fill="#d1d5dc" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="23" font-weight="600">Pair once. Run Hermes from any screen.</text>
-    <text x="2" y="258" dominant-baseline="hanging" fill="#7a8090" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16">Sessions, approvals, agents, speech — one Flutter client.</text>
+  <g id="title-block" transform="translate(58 48)">
+    <text x="0" y="0" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="2.2">CROSS-PLATFORM HERMES AGENT CLIENT</text>
+    <text x="0" y="50" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="72" font-weight="800" letter-spacing="-3">HERMES</text>
+    <text x="0" y="119" dominant-baseline="hanging" fill="#3b82f6" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="72" font-weight="800" letter-spacing="-3">WING</text>
+    <text x="2" y="220" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="24" font-weight="650">Stream runs. Inspect tools. Approve work.</text>
+    <text x="2" y="260" dominant-baseline="hanging" fill="#8f96a3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="17">One trusted session model across Android, web, and desktop.</text>
   </g>
 
-  <g id="proof-panel" transform="translate(742 30)">
-    <rect width="400" height="268" rx="20" fill="#13151a" stroke="#23262e" stroke-width="1"/>
+  <g id="session-trace" transform="translate(708 32)">
+    <rect width="438" height="346" rx="20" fill="#13151a" stroke="#30343b"/>
+    <circle cx="24" cy="22" r="5" fill="#3b82f6"/>
+    <text x="40" y="15" dominant-baseline="hanging" fill="#c4c8cf" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4">SESSION TRACE · LIVE</text>
+    <text x="414" y="15" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">ATTACHED</text>
+    <path d="M0 44H438" stroke="#30343b"/>
 
-    <rect x="0" y="0" width="400" height="44" rx="20" fill="#181b21"/>
-    <rect x="0" y="24" width="400" height="20" fill="#181b21"/>
-    <circle cx="26" cy="22" r="5" fill="#3b82f6"/>
-    <text x="42" y="15" dominant-baseline="hanging" fill="#7a8090" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.6">WING-CLI · PAIRING FLOW</text>
-    <path d="M0 44H400" stroke="#23262e" stroke-width="1"/>
+    <path d="M30 76V292" stroke="#30343b" stroke-width="2"/>
 
-    <g transform="translate(24 62)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
-      <text x="0" y="0" dominant-baseline="hanging" fill="#7dd3fc" font-size="16" font-weight="700">$ wing-cli qr</text>
+    <circle cx="30" cy="86" r="8" fill="#13151a" stroke="#3b82f6" stroke-width="2"/>
+    <rect x="54" y="62" width="352" height="56" rx="12" fill="#1b1d21" stroke="#30343b"/>
+    <text x="70" y="75" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">CONNECTED</text>
+    <text x="70" y="94" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Capabilities negotiated with Hermes Agent</text>
 
-      <g transform="translate(0 36)">
-        <circle cx="12" cy="12" r="12" fill="#1e2026" stroke="#3b82f6" stroke-width="1.5"/>
-        <text x="12" y="7" dominant-baseline="hanging" text-anchor="middle" fill="#7dd3fc" font-size="9" font-weight="700">1</text>
-        <text x="36" y="3" dominant-baseline="hanging" fill="#f0f1f3" font-size="13" font-weight="700">PRIVATE ORIGIN</text>
-        <text x="36" y="20" dominant-baseline="hanging" fill="#7a8090" font-size="11">Tailscale or HTTPS endpoint</text>
-      </g>
+    <circle cx="30" cy="166" r="8" fill="#3b82f6"/>
+    <rect x="54" y="136" width="352" height="66" rx="12" fill="#1b1d21" stroke="#30343b"/>
+    <text x="70" y="149" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">RUNNING</text>
+    <text x="70" y="169" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Tool activity · bash</text>
+    <text x="390" y="169" dominant-baseline="hanging" text-anchor="end" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">session attached</text>
 
-      <path d="M12 106V126" stroke="#3b4050" stroke-width="1.5" stroke-dasharray="3 3"/>
-
-      <g transform="translate(0 126)">
-        <circle cx="12" cy="12" r="12" fill="#1e2026" stroke="#3b82f6" stroke-width="1.5"/>
-        <text x="12" y="7" dominant-baseline="hanging" text-anchor="middle" fill="#7dd3fc" font-size="9" font-weight="700">2</text>
-        <text x="36" y="3" dominant-baseline="hanging" fill="#f0f1f3" font-size="13" font-weight="700">ONE-TIME HANDOFF</text>
-        <text x="36" y="20" dominant-baseline="hanging" fill="#7a8090" font-size="11">API key never appears in the QR</text>
-      </g>
-
-      <path d="M12 196V216" stroke="#3b4050" stroke-width="1.5" stroke-dasharray="3 3"/>
-
-      <g transform="translate(0 216)">
-        <circle cx="12" cy="12" r="12" fill="#3b82f6"/>
-        <path d="M7 12l3 3 6-7" fill="none" stroke="#f0f1f3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="36" y="3" dominant-baseline="hanging" fill="#f0f1f3" font-size="13" font-weight="700">REVIEW + CONNECT</text>
-        <text x="36" y="20" dominant-baseline="hanging" fill="#7a8090" font-size="11">Endpoint and access stay visible</text>
-      </g>
-    </g>
+    <circle cx="30" cy="260" r="8" fill="#f4f4f5" stroke="#b91c1c" stroke-width="3"/>
+    <rect x="54" y="220" width="352" height="102" rx="12" fill="#4b0b11" stroke="#b91c1c"/>
+    <text x="70" y="235" dominant-baseline="hanging" fill="#fecaca" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">APPROVAL REQUIRED</text>
+    <text x="70" y="257" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Sensitive work waits for the operator</text>
+    <rect x="70" y="286" width="70" height="22" rx="11" fill="none" stroke="#7dd3fc"/>
+    <text x="105" y="291" dominant-baseline="hanging" text-anchor="middle" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">REVIEW</text>
+    <rect x="148" y="286" width="103" height="22" rx="11" fill="#3b82f6"/>
+    <text x="199.5" y="291" dominant-baseline="hanging" text-anchor="middle" fill="#ffffff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">APPROVE ONCE</text>
+    <text x="390" y="291" dominant-baseline="hanging" text-anchor="end" fill="#fecaca" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">DENY / STOP</text>
   </g>
 
-  <g id="metadata" transform="translate(58 338)">
-    <text x="0" y="0" dominant-baseline="hanging" fill="#5a6070" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">ALPHA · SOURCE BUILDS · ANDROID / WEB / DESKTOP</text>
-    <circle cx="880" cy="7" r="4" fill="#3b82f6"/>
-    <text x="894" y="0" dominant-baseline="hanging" fill="#7a8090" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">FLUTTER 3.44</text>
+  <g id="metadata" transform="translate(58 373)">
+    <text x="0" y="0" dominant-baseline="hanging" fill="#5f6672" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">ALPHA · SOURCE BUILDS · FLUTTER 3.44</text>
+    <text x="1088" y="0" dominant-baseline="hanging" text-anchor="end" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">HERMES REMAINS AUTHORITATIVE</text>
   </g>
 </svg>

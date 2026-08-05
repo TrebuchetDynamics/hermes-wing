@@ -129,10 +129,12 @@ test('Voice settings exposes keyboard-accessible local preference switches', asy
 test('Diagnostics reports connected inventory and confirms redacted export', async ({ page }) => {
   await openConnected(page, '/settings/diagnostics');
 
-  const diagnostics = page.getByRole('group').filter({ hasText: 'Connection' }).last();
-  await expect(diagnostics).toContainText('Status Connected');
-  await expect(diagnostics).toContainText('Runs SSE enabled');
-  await expect(diagnostics).toContainText('1 models • 2 skills • 1 toolsets • 1 jobs');
+  await expect(page.getByRole('heading', { name: 'Connection' })).toBeVisible();
+  await expect(page.getByText('Status Connected', { exact: true })).toBeVisible();
+  await expect(page.getByText('Runs SSE enabled', { exact: false })).toBeVisible();
+  await expect(
+    page.getByRole('group', { name: 'Resources 1 models • 2 skills • 1 toolsets • 1 jobs' }),
+  ).toBeVisible();
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.getByRole('button', { name: /Copy diagnostics/ }).click();
   await expect(page.getByText('Hermes diagnostics copied').last()).toBeVisible();

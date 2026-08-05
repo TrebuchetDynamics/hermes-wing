@@ -537,7 +537,8 @@ class _SettingsSectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Semantics(
-            header: true,
+            container: true,
+            headingLevel: 2,
             child: Container(
               color: colors.surfaceContainerLow,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),

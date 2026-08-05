@@ -74,6 +74,8 @@ void main() {
     // dashboard rows above must still stay gone.
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-open-hermes')), findsNothing);
+    final voiceLink = find.byKey(const ValueKey('settings-voice-link'));
+    await tester.scrollUntilVisible(voiceLink, 300);
     expect(
       find.byKey(const ValueKey('voice-continuous-enabled')),
       findsOneWidget,
@@ -82,7 +84,7 @@ void main() {
       find.byKey(const ValueKey('voice-speak-replies-enabled')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
+    expect(voiceLink, findsOneWidget);
     expect(
       find.text('Credentials stay in secure storage; values hidden'),
       findsOneWidget,

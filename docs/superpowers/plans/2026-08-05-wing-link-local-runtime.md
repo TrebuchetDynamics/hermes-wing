@@ -143,7 +143,7 @@ Move Roadmap installer work directly after signed artifacts; retain ADR 0038 ver
 
 Run Task 1’s test. Expected: PASS.
 
-- [ ] **Step 6: Reviewer checkpoint**
+- [x] **Step 6: Reviewer checkpoint**
 
 Confirm only “desktop-only bootstrap” wording changes; Hermes authority and verified-install requirements remain stronger than the new ADR.
 
@@ -157,7 +157,7 @@ Confirm only “desktop-only bootstrap” wording changes; Hermes authority and 
 
 **Interfaces:** Produces protocol version `1`, `Component`, `RuntimeState`, `InstallRequest`, `InstallStatus`, `OperationEvent`, `APIError`.
 
-- [ ] **Step 1: Write failing protocol tests**
+- [x] **Step 1: Write failing protocol tests**
 
 ```go
 package main
@@ -181,7 +181,7 @@ func TestOperationEventJSONIsBounded(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 ```bash
 cd wing_link && go test ./...
@@ -189,7 +189,7 @@ cd wing_link && go test ./...
 
 Expected: module/type failure.
 
-- [ ] **Step 3: Add module and exact protocol**
+- [x] **Step 3: Add module and exact protocol**
 
 ```go
 module github.com/TrebuchetDynamics/hermes-wing/wing-link
@@ -246,7 +246,7 @@ type OperationEvent struct {
 
 `InstallRequest.Validate()` accepts only unique `hermes`/`omniroute`, requires Hermes when OmniRoute is present, and requires explicit OmniRoute consent.
 
-- [ ] **Step 4: Add fixed CLI dispatch**
+- [x] **Step 4: Add fixed CLI dispatch**
 
 ```go
 switch os.Args[1] {
@@ -258,7 +258,7 @@ default: usage(os.Stderr); os.Exit(2)
 
 No command accepts shell text.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 ```bash
 cd wing_link && gofmt -w *.go && go test ./... && go vet ./...

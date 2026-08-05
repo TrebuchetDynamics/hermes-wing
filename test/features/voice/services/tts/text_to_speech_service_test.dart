@@ -51,6 +51,15 @@ void main() {
     },
   );
 
+  test('detects and applies the language of a short incoming reply', () async {
+    final engine = _FakeFlutterTtsEngine();
+    final service = FlutterTextToSpeechService(engine: engine);
+
+    await service.speak('Hola, ¿cómo estás?');
+
+    expect(engine.calls, contains('setLanguage:es'));
+  });
+
   test('sets the detected reply language before speaking', () async {
     final engine = _FakeFlutterTtsEngine();
     final service = FlutterTextToSpeechService(

@@ -16,6 +16,8 @@ class DefaultVoiceTextLanguageDetector implements VoiceTextLanguageDetector {
   @override
   String? detect(String text) {
     final trimmed = text.trim();
+    final hint = _shortTextLanguageHint(trimmed);
+    if (hint != null) return hint;
     if (trimmed.runes.where(_isLetter).length < 12) return null;
     return switch (_detector.detect(trimmed)) {
       Detected(:final best, :final ranked)
@@ -25,6 +27,38 @@ class DefaultVoiceTextLanguageDetector implements VoiceTextLanguageDetector {
       _ => null,
     };
   }
+
+  String? _shortTextLanguageHint(String text) {
+    if (text.contains('¿') || text.contains('¡')) return 'es';
+    if (RegExp(r'[\u3040-\u30ff]').hasMatch(text)) return 'ja';
+    if (RegExp(r'[\uac00-\ud7af]').hasMatch(text)) return 'ko';
+
+    final words = RegExp(
+      r"[a-zÀ-ÿ']+",
+      caseSensitive: false,
+    ).allMatches(text.toLowerCase()).map((match) => match.group(0)!).toSet();
+    for (final entry in _shortTextMarkers.entries) {
+      if (words.intersection(entry.value).length >= 2) return entry.key;
+    }
+    return null;
+  }
+
+  static const _shortTextMarkers = <String, Set<String>>{
+    'es': {
+      'hola',
+      'cómo',
+      'estás',
+      'puedo',
+      'ayudarte',
+      'gracias',
+      'qué',
+      'sí',
+    },
+    'fr': {'bonjour', 'merci', 'je', 'vous', 'peux', 'aider', 'comment', 'oui'},
+    'de': {'hallo', 'danke', 'ich', 'kann', 'ihnen', 'helfen', 'nicht'},
+    'pt': {'olá', 'você', 'posso', 'ajudar', 'obrigado', 'obrigada', 'não'},
+    'it': {'ciao', 'grazie', 'posso', 'aiutarti', 'come', 'sono'},
+  };
 
   bool _isLetter(int rune) =>
       (rune >= 0x41 && rune <= 0x5a) ||

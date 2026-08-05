@@ -16,6 +16,12 @@ void main() {
     expect(detector.detect('こんにちは、お手伝いできますか？'), 'ja');
   });
 
+  test('identifies short replies with strong language signals', () {
+    expect(detector.detect('Hola, ¿cómo estás?'), 'es');
+    expect(detector.detect('Je peux vous aider.'), 'fr');
+    expect(detector.detect('こんにちは'), 'ja');
+  });
+
   test('keeps the device TTS language for ambiguous short text', () {
     expect(detector.detect('2'), isNull);
     expect(detector.detect('ok'), isNull);

@@ -14,8 +14,8 @@ Users can't adopt what they can't install.
 | # | Slice | Why now |
 |---|-------|---------|
 | 1.1 | **Signed release artifacts** — AAB for Play Store, APK for sideload, notarized DMG, MSIX, APT/DEB | No signed binaries = no users. Wingman ships APKs today. |
-| 1.2 | **Full Agent configuration** — add/remove providers, switch models, manage skills, edit config.yaml, manage memory, manage cron, manage gateway platforms — all from the GUI. No CLI required. | The entire `hermes setup` surface lives in the app. This is the table stakes. |
-| 1.3 | **Agent installer (optional)** — detect, download, install Hermes Agent locally on Termux Android, Linux, Windows. No remote installs. Only needed if Agent isn't already present. | Nice-to-have for new users. Configuration is mandatory; installation is not. |
+| 1.2 | **Wing Link local runtime** — ship the signed Go host supervisor, then detect, adopt, verify, install, start, stop, update, repair, and diagnose Hermes locally on Android/Termux, Linux, Windows, and macOS. No remote installs. | Guided local installation is the primary Android onboarding path and the desktop replacement path; signed artifacts must land first. |
+| 1.3 | **Full Agent configuration** — add/remove providers, switch models, manage skills, edit config through Agent contracts, manage memory, manage cron, manage gateway platforms — all from the GUI. No human CLI-output parsing. | The entire `hermes setup` outcome lives in the app while Hermes Agent remains authoritative. |
 | 1.4 | **LAN discovery** — mDNS/UDP broadcast or subnet scan for Hermes Agent port 8642 | Mobile users shouldn't type IPs. Wingman auto-scans for 9120. |
 | 1.5 | **System tray** — minimize-to-tray on desktop, tray menu for quick actions | Desktop parity. Trivial with `tray_manager` or `system_tray`. |
 | 1.6 | **CI release pipeline** — GitHub Actions build matrix: Android, iOS, Linux, macOS, Windows, web | Manual builds don't scale. One tag → all artifacts. |
@@ -44,7 +44,7 @@ plus the provider's model inventory or a bounded error, commit `55b3396`).
 | # | Slice | Notes |
 |---|-------|-------|
 | 3.1 | **Web distribution** — publish the existing tested Flutter web build | Same codebase, zero new backend. |
-| 3.2 | **Host adapter polish** — process lifecycle (start/stop/restart), auto-update Agent, health checks | Install is Phase 1. This is the ongoing management layer. Local only. |
+| 3.2 | **Wing Link lifecycle polish** — harden service restart, rollback, diagnostics, and independently recoverable optional components | Core install/lifecycle is Phase 1. This keeps the local-only supervisor reliable without growing a domain backend. |
 | 3.3 | **iOS signed build** — TestFlight or App Store | Requires Apple Developer account + Xcode CI. |
 
 ## Phase 4 — Differentiate (things you have that Wingman doesn't)
@@ -74,12 +74,13 @@ Double down on your advantages.
 
 ## What's explicitly NOT on this roadmap
 
-- **Backend server** — there is no backend. Hermes Wing never ships a backend.
-  Hermes Agent IS the backend. The app manages it locally.
+- **Second domain backend** — Hermes Agent is authoritative. Wing Link is a
+  loopback-only host supervisor and never proxies chat or domain operations.
 - **Remote Agent installs** — install target is local only: Termux Android,
-  Linux, Windows. No SSH installs, no remote deployment. Also, the installer
-  is optional — users may bring their own Agent.
+  Linux, Windows, and macOS. No SSH installs or remote deployment. Users may
+  bring an existing Agent; Android presents local setup first but retains remote pairing.
 - **Rails web dashboard** — Flutter web covers this. Second framework = second maintenance burden.
 - **29 themes** — YAGNI. 5 good ones > 29 mediocre ones.
 - **Client-side config parsing** — Agent owns config. Client reads advertised interfaces only.
-- **Bundled Agent** — per CONTEXT.md: "It is not embedded in the Hermes Wing application package."
+- **Bundled runtime stack** — packages may include Wing Link, but never Hermes
+  Agent, Python, Node, or OmniRoute. External runtime data survives ordinary uninstall.

@@ -3,7 +3,7 @@
 Status: accepted
 Date: 2026-07-13
 
-Desktop host adapters install or update the external Hermes Agent runtime only from authenticated, version-pinned release metadata. They never execute a script streamed from a URL, fetch installer code from a mutable branch, invoke a shell command assembled from downloaded or user-provided text, hide privilege escalation, or collect an administrator password inside Hermes Wing.
+Wing Link and supported platform host adapters install or update the external Hermes Agent runtime only from authenticated, version-pinned release metadata. They never execute a script streamed from a URL, fetch installer code from a mutable branch, invoke a shell command assembled from downloaded or user-provided text, hide privilege escalation, or collect an administrator password inside Hermes Wing.
 
 ## Release metadata
 
@@ -18,7 +18,7 @@ Unknown keys, invalid or expired metadata, digest or size mismatches, unsupporte
 - If an OS dependency genuinely requires elevation, Hermes Wing previews the exact reason and bounded action, then delegates authentication to the operating system's native elevation broker. Cancellation leaves the prior installation unchanged.
 - Hermes Wing never receives, proxies, stores, logs, or replays an administrator password and does not add a `sudo` shim or bypass script-execution policy.
 - Installer arguments are fixed and typed. User-selected locations are validated as paths and passed as arguments, never interpolated into a shell program.
-- Remote SSH bootstrap follows ADR 0037 and executes only the same verified, pinned installer operation; it does not pipe remote network content into a shell.
+- Wing Link never performs remote SSH installation or deployment. Any separately retained SSH tunnel is transport-only under ADR 0037 and cannot invoke this installer lifecycle.
 
 ## Update and rollback lifecycle
 
@@ -28,4 +28,4 @@ Rollback is a signed, explicitly selected release operation, not arbitrary versi
 
 ## Evidence
 
-Linux, Windows, and macOS receipts cover existing-runtime adoption, clean per-user install, signed update, tampered manifest and artifact rejection, wrong key/channel/architecture rejection, cancelled elevation, no-elevation install, injected path values, active-work drain, failed-health rollback, retained data, explicit cleanup, and successful post-install health and capability verification.
+Android/Termux, Linux, Windows, and macOS receipts cover existing-runtime adoption, clean per-user install, signed update, tampered manifest and artifact rejection, wrong key/channel/architecture rejection, cancelled elevation where relevant, no-elevation install, injected path values, active-work drain, failed-health rollback, retained data, explicit cleanup, and successful post-install health and capability verification.

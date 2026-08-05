@@ -9,6 +9,7 @@ Status: alpha baseline, not an independent security assessment.
 - Backup archives, recovery passphrases, archive handles, and restore checkpoints
 - SSH host trust, private-key paths, and forwarded Hermes traffic
 - Hermes Agent release manifests, installer artifacts, runtime selection, and elevation boundary
+- Wing Link control tokens, one-time bootstrap codes, component state, and local process authority
 - Hermes Wing package identity, repository metadata, signing lineage, maintainer scripts, and upgrade state
 - Session transcripts, prompts, tool activity, approval decisions, attachments, context resources, and filesystem grants
 - Microphone input and completed speech transcripts
@@ -35,6 +36,10 @@ Status: alpha baseline, not an independent security assessment.
    an independent OAuth credential. Hermes chat does not depend on this service.
 6. **Downloaded speech assets.** Pocket Speech assets are fetched only from
    HTTPS URLs and checked against configured SHA-256 digests.
+7. **Wing Link host supervisor.** The persistent service can install and control
+   local processes but binds only authenticated management to `127.0.0.1:8654`.
+   Hermes domain requests never transit through it. Android reaches the fixed
+   executable through the user-approved Termux `RUN_COMMAND` boundary.
 
 ## Current controls
 
@@ -64,7 +69,11 @@ Status: alpha baseline, not an independent security assessment.
 - Localized templates keep dynamic values separate and bidirectionally isolated; translations cannot construct routes, URLs, commands, or authorization decisions.
 - Backup/restore is server-owned and handle-based; portable archives exclude secrets and private paths, recovery archives require authenticated passphrase encryption, and restore validates fully before all-or-rollback apply.
 - Desktop SSH requires explicit first-use fingerprint confirmation, app-owned strict host-key state, hard failure on key changes, argument-vector execution, and loopback-only forwarding.
-- Desktop runtime installation verifies signed version-pinned metadata and complete artifacts, defaults to per-user installation, delegates elevation to the OS, activates only healthy runtimes, and retains a verified rollback target.
+- Wing Link runtime installation verifies signed version-pinned metadata and complete artifacts, defaults to per-user installation, delegates elevation to the OS, activates only healthy runtimes, and retains a verified rollback target.
+- Wing Link management is loopback-only and requires a random control token after one-time five-minute enrollment; Flutter stores the token in platform secure storage and Wing Link stores only its hash.
+- Wing Link accepts fixed operation names and argument vectors only, never a client-provided executable, shell command, installer URL, or mutable release reference.
+- Android calls only the fixed Wing Link executable through Termux `RUN_COMMAND`; initial Termux installation, external-app access, and permission approval remain visible user actions.
+- Optional OmniRoute installation is pinned, verified, loopback-only, separately consented, and independently recoverable; its failure does not roll back Hermes.
 - Canonical platform packages are signed, preserve stable application and secure-storage identity, contain no Hermes runtime, perform no network install scripts, and preserve Hermes data on ordinary uninstall.
 
 ## Assumptions
@@ -100,7 +109,8 @@ Status: alpha baseline, not an independent security assessment.
 - Server-advertised, endpoint-opt-in, content-redacted run notifications and their token lifecycle remain to be designed and implemented; no notification is required for detached-run correctness.
 - Current Hermes backup/import creates and overlays unencrypted path-based full-home ZIP files; the versioned handle-based archive contract, encryption, inspection, and rollback-safe restore remain to be implemented.
 - The Flutter desktop SSH host adapter and cross-platform trust, rotation, injection, and forwarding receipts remain to be implemented; Hermes Desktop currently uses automatic `accept-new` first trust.
-- Hermes Agent signed release metadata and the verified cross-platform runtime installer/updater remain to be implemented; Hermes Desktop currently downloads mutable `main` installer scripts, pipes the Unix script into a shell, and brokers `sudo` passwords itself.
+- Hermes Agent signed release metadata and Wing Link’s verified cross-platform runtime installer/updater remain to be implemented; Hermes Desktop currently downloads mutable `main` installer scripts, pipes the Unix script into a shell, and brokers `sudo` passwords itself.
+- Wing Link’s authenticated loopback service, token lifecycle, Termux bootstrap and permission receipts, desktop service hosting, rollback evidence, and optional OmniRoute isolation are design commitments without implementation evidence yet.
 - Canonical AAB/APK, APT/RPM, MSIX, and notarized DMG pipelines and their migration, upgrade, uninstall, identity, and package-script receipts remain incomplete.
 - No ordinary-CI physical microphone test.
 - On-device speech is requested but offline execution depends on platform and
@@ -111,8 +121,8 @@ Status: alpha baseline, not an independent security assessment.
 ## Diagnostic policy
 
 Never log these secrets. Diagnostic exports must not contain raw API keys,
-authorization headers, wallet recovery phrases, wallet-export passphrases,
-backup passphrases, archive handles, SSH hosts, usernames, fingerprints, push-registration tokens,
+authorization headers, Wing Link control tokens or bootstrap codes, wallet recovery phrases,
+wallet-export passphrases, backup passphrases, archive handles, SSH hosts, usernames, fingerprints, push-registration tokens,
 notification routing identifiers, recognized words, transcripts, approval
 payloads, pairing or device-authorization codes, or private filesystem paths.
 Operational diagnostics may include bounded status names, counts, timings,

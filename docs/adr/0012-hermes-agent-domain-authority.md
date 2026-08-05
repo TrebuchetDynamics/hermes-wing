@@ -9,6 +9,6 @@ Hermes Agent is the sole authority for profiles, configuration, memory, skills, 
 
 - Missing parity contracts are added to Hermes Agent before their Flutter surfaces.
 - `HermesChannel` remains the Flutter application seam and can grow by cohesive capability areas without introducing another service locator.
-- Desktop host adapters are limited to installation, process lifecycle, SSH tunnelling, secure storage, filesystem selection, application updates, and window integration.
-- Bootstrap may discover an existing installation, invoke the official installer, or start Hermes, but Hermes Wing packages do not embed Python or Hermes Agent and domain operations move through Hermes interfaces once the service is available.
+- Host adapters, including Wing Link on supported PCs and Android/Termux, are limited to installation, process lifecycle, SSH tunnelling, secure storage, filesystem selection, application updates, and window integration.
+- Bootstrap may discover an existing installation, invoke a signed and verified official installer, or start Hermes, but Hermes Wing packages do not embed Python or Hermes Agent and domain operations move through Hermes interfaces once the service is available.
 - Contract tests must cover capability discovery, authorization, payloads, errors, and streaming behavior before parity is claimed.

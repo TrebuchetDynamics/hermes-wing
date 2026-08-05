@@ -1,6 +1,6 @@
 # Hermes Wing Context
 
-Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. Product language, routes, tests, and docs should describe Hermes endpoints, Hermes sessions, Hermes runs, local device speech-to-text, approvals, tool progress, and platform-gated administration.
+Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. Product language, routes, tests, and docs should describe Hermes endpoints, sessions, runs, local speech-to-text, approvals, tool progress, and platform-gated administration. Wing Link is its local host supervisor, not a second backend.
 
 ## Product language
 
@@ -25,7 +25,7 @@ The release criterion requiring frozen-baseline capability parity on Linux, Wind
 _Avoid_: Linux complete, route complete
 
 **Host capability**:
-A feature that manages the machine running Hermes, such as installation, local files, processes, SSH, gateway lifecycle, or application updates. Host capabilities may be desktop-only.
+A feature that manages the machine running Hermes, such as installation, local files, processes, SSH, gateway lifecycle, or application updates. Availability is platform-gated; Android/Termux supports the bounded Wing Link installation path.
 _Avoid_: universal client feature
 
 **Hermes Agent authority**:
@@ -60,8 +60,12 @@ _Avoid_: Hermes Wing wallet, portable wallet store
 A platform-specific client boundary for bootstrap and machine integration, limited to installation, process lifecycle, SSH tunnelling, secure storage, filesystem selection, updates, and window behavior.
 _Avoid_: domain service
 
+**Wing Link**:
+The loopback-only host supervisor that installs, adopts, updates, starts, stops, repairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. Hermes Agent remains authoritative for domain behavior.
+_Avoid_: backend, domain proxy, remote administration service
+
 **Managed Hermes runtime**:
-An external Hermes Agent installation discovered or installed by a desktop host adapter and verified through health and capabilities. It is not embedded in the Hermes Wing application package.
+An external Hermes Agent installation discovered or installed by Wing Link on a supported host and verified through health and capabilities. It is not embedded in the Hermes Wing application package.
 _Avoid_: bundled Agent, Flutter backend
 
 **Scoped operator token**:
@@ -113,7 +117,7 @@ The canonical host, port, key algorithm, and SHA-256 fingerprint explicitly trus
 _Avoid_: accept-new, SSH credential
 
 **Managed runtime release**:
-An exact Hermes Agent version and platform artifact authenticated by signed release metadata before a desktop host adapter installs or activates it.
+An exact Hermes Agent version and platform artifact authenticated by signed release metadata before Wing Link installs or activates it.
 _Avoid_: latest main, install script URL
 
 **Canonical package matrix**:
@@ -177,13 +181,13 @@ Use **rich transcript** for selectable GitHub-flavored Markdown in Hermes-author
 
 ## Security posture
 
-API keys, scoped operator tokens, and unredeemed pairing codes are secrets. Endpoint URLs are non-secret metadata but still operator-controlled. Prefer loopback or HTTPS; use plaintext LAN only inside a trusted encrypted VPN or isolated network after explicit confirmation. Authorization is enforced by Hermes Agent, not hidden controls alone. Secret administration may set or remove values but never returns raw secret values. Bearer tokens must not appear in URLs, QR payloads, shared text, logs, or clipboards. Do not log credentials, pairing codes, recognized words, or transcripts.
+API keys, scoped operator tokens, Wing Link control tokens, and unredeemed pairing codes are secrets. Endpoint URLs are non-secret metadata but still operator-controlled. Prefer loopback or HTTPS; use plaintext LAN only inside a trusted encrypted VPN or isolated network after explicit confirmation. Authorization is enforced by Hermes Agent, not hidden controls alone. Secret administration may set or remove values but never returns raw secret values. Bearer tokens must not appear in URLs, QR payloads, shared text, logs, or clipboards. Do not log credentials, pairing codes, recognized words, or transcripts.
 
 ## Example
 
-Developer: “Does capability parity require the mobile app to install Hermes locally?”
+Developer: “Does capability parity require every mobile platform to install Hermes locally?”
 
-Owner: “No. Local installation is a host capability on supported desktop platforms; mobile reaches the same Hermes outcomes through a trusted remote endpoint.”
+Owner: “No. Android may use guided local installation through Wing Link and Termux; iOS and web use trusted remote endpoints. Manual remote connection remains available everywhere it is supported.”
 
 Developer: “Should Flutter parse Hermes configuration or Kanban storage?”
 

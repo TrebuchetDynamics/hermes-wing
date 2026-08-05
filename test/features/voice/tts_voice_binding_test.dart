@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
+import 'package:wing/shared/voice/voice_text_language_detector.dart';
 
 /// Constructs the flutter_tts-backed [TextToSpeechService] under test. This
 /// stands in for `buildFlutterTtsService` in the plan skeleton — the real
@@ -9,7 +10,11 @@ import 'package:wing/shared/voice/voice_settings.dart';
 TextToSpeechService buildFlutterTtsService({
   required FlutterTtsEngine engine,
   required TtsSettingsReader settings,
-}) => FlutterTextToSpeechService(engine: engine, settings: settings);
+}) => FlutterTextToSpeechService(
+  engine: engine,
+  settings: settings,
+  languageDetector: const _NoLanguageDetector(),
+);
 
 class _RecordingEngine implements FlutterTtsEngine {
   final calls = <String>[];
@@ -60,6 +65,19 @@ class _RecordingEngine implements FlutterTtsEngine {
     }
     calls.add('voice:$name');
   }
+
+  @override
+  Future<String?> voiceLocale(String name) async => 'en-US';
+
+  @override
+  Future<String?> defaultLanguage() async => null;
+}
+
+class _NoLanguageDetector implements VoiceTextLanguageDetector {
+  const _NoLanguageDetector();
+
+  @override
+  String? detect(String text) => null;
 }
 
 /// Scripted [FlutterTts] whose getVoices returns the queued responses in

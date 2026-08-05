@@ -352,18 +352,18 @@ void main() {
     expect(controller.error, isNull);
   });
 
-  test('commandWord stop pauses continuous mode', () async {
+  test('multi-word command phrase stops continuous mode', () async {
     final channel = FakeHermesChannel();
     final controller = HermesVoiceInputController(
       channel: () => channel,
       captureService: () => FakeVoiceCaptureService(
         audio: Uint8List(0),
-        transcript: 'navi stop',
+        transcript: 'hey navi stop',
         duration: const Duration(seconds: 1),
         confidence: 0.9,
       ),
       textToSpeechService: () => null,
-      settings: () => const WingVoiceSettings(),
+      settings: () => const WingVoiceSettings(commandWord: 'hey navi'),
       onDraft: (_) {},
     );
     addTearDown(controller.dispose);

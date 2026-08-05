@@ -27,6 +27,11 @@ abstract interface class VoiceCaptureProgressService {
   Stream<String> get partialTranscripts;
 }
 
+/// Optional microphone levels for a live capture indicator.
+abstract interface class VoiceCaptureSoundLevelService {
+  Stream<double> get soundLevels;
+}
+
 class VoiceCaptureTimeout implements Exception {
   const VoiceCaptureTimeout();
 

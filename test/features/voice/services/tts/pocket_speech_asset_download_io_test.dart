@@ -117,6 +117,41 @@ void main() {
     expect(File(pack.voicesPath).readAsBytesSync(), fixture.voices);
   });
 
+  test('an installed pack can be rediscovered without a download', () async {
+    final fixture = healthySpec();
+    final service = serviceFor(fixture.spec);
+    await withHttp(() => service.download(PocketSpeechModel.kitten));
+    requested.clear();
+
+    final restored = await service.installedPack(PocketSpeechModel.kitten);
+
+    expect(restored?.modelPath, endsWith('/pocket_speech/kitten/model.onnx'));
+    expect(restored?.voicesPath, endsWith('/pocket_speech/kitten/voices.json'));
+    expect(requested, isEmpty);
+  });
+
+  test('a tampered installed pack is not restored', () async {
+    final fixture = healthySpec();
+    final service = serviceFor(fixture.spec);
+    final pack = await withHttp(
+      () => service.download(PocketSpeechModel.kitten),
+    );
+    await File(pack.modelPath).writeAsBytes(utf8.encode('onnx-model-EVIL!'));
+
+    expect(await service.installedPack(PocketSpeechModel.kitten), isNull);
+  });
+
+  test('installed-pack discovery contains storage failures', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (_) async => throw PlatformException(code: 'storage_unavailable'),
+        );
+    final service = serviceFor(healthySpec().spec);
+
+    expect(await service.installedPack(PocketSpeechModel.kitten), isNull);
+  });
+
   test('an unconfigured model refuses to download', () async {
     final service = serviceFor(healthySpec().spec);
 

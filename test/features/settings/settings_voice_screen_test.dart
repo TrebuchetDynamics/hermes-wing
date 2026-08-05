@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/features/voice/services/tts/pocket_speech_asset_download_service.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
@@ -42,7 +43,19 @@ void main() {
     final speed = find.byKey(const ValueKey('voice-pocket-speech-speed'));
     await tester.scrollUntilVisible(speed, 300);
 
-    expect(find.byKey(const ValueKey('voice-pocket-speech-voice')), findsOne);
+    final voicePicker = find.byKey(const ValueKey('voice-pocket-speech-voice'));
+    expect(voicePicker, findsOne);
+    await tester.ensureVisible(voicePicker);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: voicePicker,
+        matching: find.byType(DropdownButton<String?>),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Jasper'), findsOneWidget);
+    expect(find.text('Bella'), findsNothing);
     final preview = find.byKey(const ValueKey('voice-pocket-speech-preview'));
     expect(preview, findsOne);
     expect(
@@ -54,7 +67,7 @@ void main() {
       isNotNull,
     );
     expect(speed, findsOne);
-    expect(find.text('About 26 MB · English · 8 voices'), findsOneWidget);
+    expect(find.text('About 26 MB · English · 1 voice'), findsOneWidget);
     expect(find.textContaining('stored on this device'), findsOneWidget);
   });
 
@@ -83,7 +96,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Kitten · About 26 MB · English · 8 voices'),
+        find.text('Kitten · About 26 MB · English · 1 voice'),
         findsOneWidget,
       );
       expect(
@@ -92,6 +105,41 @@ void main() {
       );
     },
   );
+
+  testWidgets('selecting a model restores its verified installed pack', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'wing.voice.pocket_speech_model': 'kokoro',
+    });
+    debugPocketSpeechAssetDownloadService = _FakeAssetDownloadService();
+    addTearDown(() => debugPocketSpeechAssetDownloadService = null);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('voice-pocket-speech-model')),
+        matching: find.byType(DropdownButton<PocketSpeechModel>),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.text('Kitten · About 26 MB · English · 1 voice').last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('stored on this device'), findsOneWidget);
+  });
 
   testWidgets('large text stays usable on a narrow phone', (tester) async {
     tester.view.physicalSize = const Size(320, 700);
@@ -116,7 +164,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    expect(tester.takeException(), isNull);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('voice-advanced-expansion')),
+      300,
+    );
+    await tester.tap(find.byKey(const ValueKey('voice-advanced-expansion')));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
@@ -217,6 +271,30 @@ void main() {
     expect(find.text('Preview'), findsOneWidget);
     expect(stop, findsNothing);
   });
+}
+
+class _FakeAssetDownloadService implements PocketSpeechAssetDownloadService {
+  @override
+  bool isConfigured(PocketSpeechModel model) => true;
+
+  @override
+  Future<PocketSpeechVoicePack?> installedPack(PocketSpeechModel model) async =>
+      model == PocketSpeechModel.kitten
+      ? const PocketSpeechVoicePack(
+          model: PocketSpeechModel.kitten,
+          modelPath: '/models/kitten/model.onnx',
+          voicesPath: '/models/kitten/voices.json',
+        )
+      : null;
+
+  @override
+  Future<PocketSpeechVoicePack> download(
+    PocketSpeechModel model, {
+    PocketSpeechDownloadProgressCallback? onProgress,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> delete(PocketSpeechModel model) async {}
 }
 
 class _FakePreviewTtsService implements TextToSpeechService {

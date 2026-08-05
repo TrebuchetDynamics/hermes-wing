@@ -18,7 +18,13 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyTtsVoiceName = 'tts_voice_name';
 
   SharedPreferences? _prefs;
+  final _voicePacks = <PocketSpeechModel, PocketSpeechVoicePack>{};
   int _mutationGeneration = 0;
+
+  static String _modelPathKey(PocketSpeechModel model) =>
+      'wing.voice.pocket_speech_${model.name}_model_path';
+  static String _voicesPathKey(PocketSpeechModel model) =>
+      'wing.voice.pocket_speech_${model.name}_voices_path';
 
   @override
   WingVoiceSettings build() {
@@ -30,6 +36,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
     final loadGeneration = _mutationGeneration;
     try {
       _prefs = await SharedPreferences.getInstance();
+      if (!ref.mounted) return;
       if (loadGeneration != _mutationGeneration) {
         await _save();
         return;
@@ -48,54 +55,95 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
             ? PocketSpeechModel.kokoro
             : PocketSpeechModel.kitten,
       );
-      final voicePack =
-          modelPath?.isNotEmpty == true && voicesPath?.isNotEmpty == true
-          ? PocketSpeechVoicePack(
-              model: model,
-              modelPath: modelPath!,
-              voicesPath: voicesPath!,
-            )
-          : null;
+      _voicePacks.clear();
+      for (final candidate in PocketSpeechModel.values) {
+        final savedModelPath = _prefs?.getString(_modelPathKey(candidate));
+        final savedVoicesPath = _prefs?.getString(_voicesPathKey(candidate));
+        if (savedModelPath?.isNotEmpty == true &&
+            savedVoicesPath?.isNotEmpty == true) {
+          _voicePacks[candidate] = PocketSpeechVoicePack(
+            model: candidate,
+            modelPath: savedModelPath!,
+            voicesPath: savedVoicesPath!,
+          );
+        }
+      }
+      if (modelPath?.isNotEmpty == true && voicesPath?.isNotEmpty == true) {
+        _voicePacks.putIfAbsent(
+          model,
+          () => PocketSpeechVoicePack(
+            model: model,
+            modelPath: modelPath!,
+            voicesPath: voicesPath!,
+          ),
+        );
+      }
       final commandWord = _prefs?.getString(_keyCommandWord) ?? 'navi';
       final speechRate = _prefs?.getDouble(_keySpeechRate) ?? 1.0;
       final ttsVoiceName = _prefs?.getString(_keyTtsVoiceName);
       state = WingVoiceSettings(
         continuousVoiceEnabled: enabled,
         speakRepliesEnabled: speakReplies,
-        pocketSpeechTtsEnabled: pocketSpeechEnabled,
+        pocketSpeechTtsEnabled:
+            pocketSpeechEnabled && _voicePacks.containsKey(model),
         pocketSpeechModel: model,
-        pocketSpeechVoicePack: voicePack,
+        pocketSpeechVoicePack: _voicePacks[model],
         commandWord: commandWord,
         speechRate: speechRate,
         ttsVoiceName: ttsVoiceName,
       );
     } catch (_) {
-      state = const WingVoiceSettings();
+      if (ref.mounted) state = const WingVoiceSettings();
     }
   }
 
   Future<void> _save() async {
     final prefs = _prefs;
     if (prefs == null) return;
-    await prefs.setBool(_keyVoiceEnabled, state.continuousVoiceEnabled);
-    await prefs.setBool(_keySpeakReplies, state.speakRepliesEnabled);
-    await prefs.setBool(_keyPocketSpeechEnabled, state.pocketSpeechTtsEnabled);
-    await prefs.setString(_keyPocketSpeechModel, state.pocketSpeechModel.name);
-    final voicePack = state.pocketSpeechVoicePack;
-    if (voicePack == null) {
-      await prefs.remove(_keyModelPath);
-      await prefs.remove(_keyVoicesPath);
-    } else {
-      await prefs.setString(_keyModelPath, voicePack.modelPath);
-      await prefs.setString(_keyVoicesPath, voicePack.voicesPath);
-    }
-    await prefs.setString(_keyCommandWord, state.commandWord);
-    await prefs.setDouble(_keySpeechRate, state.speechRate);
-    final ttsVoiceName = state.ttsVoiceName;
-    if (ttsVoiceName == null) {
-      await prefs.remove(_keyTtsVoiceName);
-    } else {
-      await prefs.setString(_keyTtsVoiceName, ttsVoiceName);
+    final settings = state;
+    final voicePacks = Map.of(_voicePacks);
+    try {
+      await prefs.setBool(_keyVoiceEnabled, settings.continuousVoiceEnabled);
+      await prefs.setBool(_keySpeakReplies, settings.speakRepliesEnabled);
+      await prefs.setBool(
+        _keyPocketSpeechEnabled,
+        settings.pocketSpeechTtsEnabled,
+      );
+      await prefs.setString(
+        _keyPocketSpeechModel,
+        settings.pocketSpeechModel.name,
+      );
+      final voicePack = settings.pocketSpeechVoicePack;
+      if (voicePack == null) {
+        await prefs.remove(_keyModelPath);
+        await prefs.remove(_keyVoicesPath);
+      } else {
+        await prefs.setString(_keyModelPath, voicePack.modelPath);
+        await prefs.setString(_keyVoicesPath, voicePack.voicesPath);
+      }
+      for (final model in PocketSpeechModel.values) {
+        final savedVoicePack = voicePacks[model];
+        if (savedVoicePack == null) {
+          await prefs.remove(_modelPathKey(model));
+          await prefs.remove(_voicesPathKey(model));
+        } else {
+          await prefs.setString(_modelPathKey(model), savedVoicePack.modelPath);
+          await prefs.setString(
+            _voicesPathKey(model),
+            savedVoicePack.voicesPath,
+          );
+        }
+      }
+      await prefs.setString(_keyCommandWord, settings.commandWord);
+      await prefs.setDouble(_keySpeechRate, settings.speechRate);
+      final ttsVoiceName = settings.ttsVoiceName;
+      if (ttsVoiceName == null) {
+        await prefs.remove(_keyTtsVoiceName);
+      } else {
+        await prefs.setString(_keyTtsVoiceName, ttsVoiceName);
+      }
+    } catch (_) {
+      // Settings remain usable in memory when platform persistence is down.
     }
   }
 
@@ -121,10 +169,12 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   void setPocketSpeechModel(PocketSpeechModel model) {
     if (model == state.pocketSpeechModel) return;
     _mutationGeneration += 1;
+    final voicePack = _voicePacks[model];
     state = state.copyWith(
       pocketSpeechModel: model,
       pocketSpeechTtsEnabled: false,
-      clearPocketSpeechVoicePack: true,
+      pocketSpeechVoicePack: voicePack,
+      clearPocketSpeechVoicePack: voicePack == null,
       clearTtsVoiceName: true,
     );
     _save();
@@ -132,6 +182,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
 
   void setPocketSpeechVoicePack(PocketSpeechVoicePack voicePack) {
     _mutationGeneration += 1;
+    _voicePacks[voicePack.model] = voicePack;
     final modelChanged = voicePack.model != state.pocketSpeechModel;
     state = state.copyWith(
       pocketSpeechModel: voicePack.model,
@@ -141,19 +192,25 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
     _save();
   }
 
-  void clearPocketSpeechVoicePack() {
+  void clearPocketSpeechVoicePack(PocketSpeechModel model) {
     _mutationGeneration += 1;
-    state = state.copyWith(
-      pocketSpeechTtsEnabled: false,
-      clearPocketSpeechVoicePack: true,
-      clearTtsVoiceName: true,
-    );
+    _voicePacks.remove(model);
+    if (model == state.pocketSpeechModel) {
+      state = state.copyWith(
+        pocketSpeechTtsEnabled: false,
+        clearPocketSpeechVoicePack: true,
+        clearTtsVoiceName: true,
+      );
+    }
     _save();
   }
 
   void setCommandWord(String value) {
-    final normalized = value.trim().toLowerCase();
-    if (normalized.isEmpty || normalized.contains(RegExp(r'\s'))) return;
+    final normalized = value.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
+    if (normalized.isEmpty) return;
     _mutationGeneration += 1;
     state = state.copyWith(commandWord: normalized);
     _save();

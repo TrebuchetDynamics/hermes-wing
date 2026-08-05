@@ -89,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.4.1"
+  betto_lang_detector:
+    dependency: "direct main"
+    description:
+      name: betto_lang_detector
+      sha256: f422a48cc61f933c81af4e1e3a82ae6ac0ae2f7d10036dd2fa738a87cc54de64
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0-dev.1"
   boolean_selector:
     dependency: transitive
     description:

@@ -8,8 +8,8 @@ import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../../shared/voice/text_to_speech_service.dart';
 import '../../../../shared/voice/voice_settings.dart';
-import 'text_to_speech_service.dart'
-    show FallbackTextToSpeechService, TtsSettingsReader;
+import '../../../../shared/voice/voice_text_language_detector.dart';
+import 'text_to_speech_service.dart' show TtsSettingsReader;
 
 abstract interface class PocketSpeechEngine {
   Future<Uint8List> synthesizeWav(
@@ -207,6 +207,53 @@ class PocketSpeechTextToSpeechService implements TextToSpeechService {
   }
 }
 
+/// Routes non-English replies to [fallback], because the shipped Pocket
+/// Speech voice packs contain English voices only.
+class _PocketSpeechLanguageRouter implements TextToSpeechService {
+  _PocketSpeechLanguageRouter({
+    required this.primary,
+    required this.fallback,
+    VoiceTextLanguageDetector? languageDetector,
+  }) : _languageDetector =
+           languageDetector ?? DefaultVoiceTextLanguageDetector();
+
+  final TextToSpeechService primary;
+  final TextToSpeechService fallback;
+  final VoiceTextLanguageDetector _languageDetector;
+
+  @override
+  Future<void> speak(String text) async {
+    final language = _languageDetector.detect(text);
+    if (language != null && language != 'en') {
+      await fallback.speak(text);
+      return;
+    }
+    try {
+      await primary.speak(text);
+    } catch (_) {
+      await fallback.speak(text);
+    }
+  }
+
+  @override
+  Future<void> stop() async {
+    try {
+      await primary.stop();
+    } finally {
+      await fallback.stop();
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    try {
+      await primary.dispose();
+    } finally {
+      await fallback.dispose();
+    }
+  }
+}
+
 TextToSpeechService? createPocketSpeechTextToSpeechService({
   bool enabled = false,
   PocketSpeechVoicePack? voicePack,
@@ -215,18 +262,32 @@ TextToSpeechService? createPocketSpeechTextToSpeechService({
   bool useDefaultAudioSink = true,
   TtsSettingsReader? settings,
   TextToSpeechService? fallback,
+  VoiceTextLanguageDetector? languageDetector,
 }) {
   if (!enabled || (voicePack == null && engine == null)) return null;
   final effectiveSink =
       audioSink ??
       (useDefaultAudioSink ? AudioPlayersPocketSpeechAudioSink() : null);
   if (effectiveSink == null) return null;
+  final effectiveSettings = switch ((voicePack?.model, settings)) {
+    (PocketSpeechModel.kitten, final settings?) => () {
+      final value = settings();
+      return value.ttsVoiceName == null || value.ttsVoiceName == 'Jasper'
+          ? value
+          : value.copyWith(clearTtsVoiceName: true);
+    },
+    _ => settings,
+  };
   final primary = PocketSpeechTextToSpeechService(
     engine: engine ?? PackagePocketSpeechEngine(voicePack!),
     audioSink: effectiveSink,
-    settings: settings,
+    settings: effectiveSettings,
   );
   return fallback == null
       ? primary
-      : FallbackTextToSpeechService(primary, fallback);
+      : _PocketSpeechLanguageRouter(
+          primary: primary,
+          fallback: fallback,
+          languageDetector: languageDetector,
+        );
 }

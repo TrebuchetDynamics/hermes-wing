@@ -25,6 +25,19 @@ void main() {
     expect(engine.lastPauseFor, const Duration(seconds: 4));
   });
 
+  test(
+    'forwards live microphone levels when the engine exposes them',
+    () async {
+      final engine = _SoundLevelSpeechToTextEngine('hello');
+      final service = SpeechToTextVoiceCaptureService(engine: engine);
+      final level = service.soundLevels.first;
+
+      await service.capture(timeout: const Duration(seconds: 1));
+
+      expect(await level, 10);
+    },
+  );
+
   test('stops after partial transcript inactivity', () async {
     final engine = _PartialResultSpeechToTextEngine();
     final service = SpeechToTextVoiceCaptureService(
@@ -255,6 +268,34 @@ class _FakeSpeechToTextEngine implements SpeechToTextEngine {
 
   @override
   Future<void> cancel() async {}
+}
+
+class _SoundLevelSpeechToTextEngine extends _FakeSpeechToTextEngine
+    implements SpeechToTextSoundLevelEngine {
+  _SoundLevelSpeechToTextEngine(super.words);
+
+  final _soundLevels = StreamController<double>.broadcast();
+
+  @override
+  Stream<double> get soundLevels => _soundLevels.stream;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    _soundLevels.add(10);
+    await super.listen(
+      onResult: onResult,
+      listenFor: listenFor,
+      pauseFor: pauseFor,
+      localeId: localeId,
+      onDevice: onDevice,
+    );
+  }
 }
 
 class _InitializeOnceSpeechToTextEngine implements SpeechToTextEngine {

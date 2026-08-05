@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../../shared/voice/text_to_speech_service.dart';
 import '../../../../shared/voice/voice_settings.dart';
+import '../../../../shared/voice/voice_text_language_detector.dart';
 import '../platform/voice_capture_platform.dart';
 
 export '../../../../shared/voice/text_to_speech_service.dart';
@@ -29,6 +30,12 @@ abstract interface class FlutterTtsEngine {
   /// Selects a voice by the name returned from [voiceNames]. Throws if the
   /// name is unknown — callers must treat that as non-fatal.
   Future<void> setVoiceByName(String name);
+
+  /// Locale paired with a voice returned by [voiceNames], if known.
+  Future<String?> voiceLocale(String name);
+
+  /// The platform's selected TTS locale, if exposed by the engine.
+  Future<String?> defaultLanguage();
 }
 
 class PluginFlutterTtsEngine implements FlutterTtsEngine {
@@ -101,19 +108,28 @@ class PluginFlutterTtsEngine implements FlutterTtsEngine {
 
   @override
   Future<void> setVoiceByName(String name) async {
+    final locale = await voiceLocale(name);
+    if (locale == null) throw StateError('Unknown TTS voice: $name');
+    await _flutterTts.setVoice({'name': name, 'locale': locale});
+  }
+
+  @override
+  Future<String?> voiceLocale(String name) async {
     final voices = await _voices();
     final match = voices.firstWhere(
       (voice) => voice['name'] == name,
       orElse: () => const {},
     );
-    if (match.isEmpty) {
-      throw StateError('Unknown TTS voice: $name');
-    }
     final locale = match['locale'];
-    await _flutterTts.setVoice({
-      'name': name,
-      'locale': locale is String ? locale : '',
-    });
+    return locale is String && locale.isNotEmpty ? locale : null;
+  }
+
+  @override
+  Future<String?> defaultLanguage() async {
+    final voice = await _flutterTts.getDefaultVoice;
+    if (voice is! Map) return null;
+    final locale = voice['locale'];
+    return locale is String && locale.isNotEmpty ? locale : null;
   }
 
   /// Fetches and caches `getVoices` so each [setVoiceByName] call can resolve
@@ -182,11 +198,15 @@ class FlutterTextToSpeechService implements TextToSpeechService {
     this.volume = 1,
     this.pitch = 1,
     TtsSettingsReader? settings,
+    VoiceTextLanguageDetector? languageDetector,
   }) : _engine = engine ?? PluginFlutterTtsEngine(),
+       _languageDetector =
+           languageDetector ?? DefaultVoiceTextLanguageDetector(),
        // ignore: prefer_initializing_formals
        _settings = settings;
 
   final FlutterTtsEngine _engine;
+  final VoiceTextLanguageDetector _languageDetector;
 
   /// Null preserves the platform's selected default TTS language.
   final String? language;
@@ -201,23 +221,49 @@ class FlutterTextToSpeechService implements TextToSpeechService {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
     await _configure();
-    await _applySettings();
+    await _applySettings(_languageDetector.detect(trimmed));
     await _engine.speak(trimmed);
   }
 
-  /// Applies the live voice-settings rate/voice before every utterance.
-  /// A bad/unknown voice name must never prevent speech, so [setVoiceByName]
-  /// failures are swallowed.
-  Future<void> _applySettings() async {
+  /// Applies the reply language before the selected voice so speech follows
+  /// incoming text while a compatible user-selected voice stays in use.
+  Future<void> _applySettings(String? detectedLanguage) async {
     final settings = _settings?.call();
-    if (settings == null) return;
-    // Scale from this service's own baseline rate (the constructor default,
-    // 0.45) rather than a hardcoded factor, so default settings speak at
-    // the same rate as the pre-existing feature-OFF baseline.
-    final rate = (speechRate * settings.speechRate).clamp(0.0, 1.0);
-    await _engine.setSpeechRate(rate);
-    final voiceName = settings.ttsVoiceName;
-    if (voiceName != null) {
+    if (settings != null) {
+      // Scale from this service's own baseline rate (the constructor default,
+      // 0.45) rather than a hardcoded factor, so default settings speak at
+      // the same rate as the pre-existing feature-OFF baseline.
+      final rate = (speechRate * settings.speechRate).clamp(0.0, 1.0);
+      await _engine.setSpeechRate(rate);
+    }
+
+    // Reset to the system language first. An unavailable detected language
+    // then leaves the engine at its known-good default rather than the locale
+    // used for the previous reply.
+    String? defaultLanguage;
+    try {
+      defaultLanguage = await _engine.defaultLanguage();
+      if (defaultLanguage != null) {
+        await _engine.setLanguage(defaultLanguage);
+      }
+    } catch (_) {
+      // Some platforms do not expose a system TTS voice.
+    }
+    final language = detectedLanguage ?? defaultLanguage;
+    if (detectedLanguage != null &&
+        _languageCode(detectedLanguage) !=
+            _languageCode(defaultLanguage ?? '')) {
+      try {
+        await _engine.setLanguage(detectedLanguage);
+      } catch (_) {
+        // A missing language pack must not silence the reply.
+      }
+    }
+
+    final voiceName = settings?.ttsVoiceName;
+    if (voiceName != null &&
+        (language == null ||
+            await _voiceMatchesLanguage(voiceName, language))) {
       try {
         await _engine.setVoiceByName(voiceName);
       } catch (_) {
@@ -225,6 +271,19 @@ class FlutterTextToSpeechService implements TextToSpeechService {
       }
     }
   }
+
+  Future<bool> _voiceMatchesLanguage(String voiceName, String language) async {
+    try {
+      final voiceLocale = await _engine.voiceLocale(voiceName);
+      return voiceLocale != null &&
+          _languageCode(voiceLocale) == _languageCode(language);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  String _languageCode(String locale) =>
+      locale.split(RegExp('[-_]')).first.toLowerCase();
 
   @override
   Future<void> stop() => _engine.stop();

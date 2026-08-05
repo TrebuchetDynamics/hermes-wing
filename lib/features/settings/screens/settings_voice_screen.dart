@@ -10,7 +10,7 @@ final pocketSpeechVoiceNamesProvider = FutureProvider<List<String>>((ref) {
     ),
   );
   return switch (model) {
-    PocketSpeechModel.kitten => Future.value(KittenCatalog.voices),
+    PocketSpeechModel.kitten => Future.value(const ['Jasper']),
     PocketSpeechModel.kokoro => _kokoroVoiceNames(path),
   };
 });
@@ -47,7 +47,10 @@ class VoiceSettingsScreen extends ConsumerWidget {
     final strings = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.voiceSettingsTitle)),
+      appBar: AppBar(
+        title: Text(strings.voiceSettingsTitle),
+        actions: const [AppShellMenuButton()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -151,6 +154,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: DropdownButton<PocketSpeechModel>(
+                  isExpanded: true,
                   value: settings.pocketSpeechModel,
                   items: [
                     for (final model in PocketSpeechModel.values)
@@ -169,7 +173,15 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                       ? null
                       : (model) {
                           if (model != null) {
-                            controller.setPocketSpeechModel(model);
+                            unawaited(
+                              _selectPocketSpeechModel(
+                                context,
+                                ref,
+                                controller,
+                                downloader,
+                                model,
+                              ),
+                            );
                           }
                         },
                 ),
@@ -288,6 +300,7 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                         ? settings.ttsVoiceName
                         : null;
                     return DropdownButton<String?>(
+                      isExpanded: true,
                       value: selected,
                       hint: Text(strings.voiceDefaultVoiceLabel),
                       items: [
@@ -376,10 +389,35 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
   }
 }
 
+/// Test seam for installed-pack recovery without platform storage.
+@visibleForTesting
+PocketSpeechAssetDownloadService? debugPocketSpeechAssetDownloadService;
+
 final _pocketSpeechAssetDownloadServiceProvider =
     Provider<PocketSpeechAssetDownloadService?>(
-      (_) => createDefaultPocketSpeechAssetDownloadService(),
+      (_) =>
+          debugPocketSpeechAssetDownloadService ??
+          createDefaultPocketSpeechAssetDownloadService(),
     );
+
+Future<void> _selectPocketSpeechModel(
+  BuildContext context,
+  WidgetRef ref,
+  WingVoiceSettingsController controller,
+  PocketSpeechAssetDownloadService? downloader,
+  PocketSpeechModel model,
+) async {
+  controller.setPocketSpeechModel(model);
+  if (ref.read(wingVoiceSettingsProvider).pocketSpeechVoicePackReady) return;
+  final installed = await downloader?.installedPack(model);
+  if (installed == null ||
+      !context.mounted ||
+      ref.read(wingVoiceSettingsProvider).pocketSpeechModel != model) {
+    return;
+  }
+  controller.setPocketSpeechVoicePack(installed);
+  ref.invalidate(pocketSpeechVoiceNamesProvider);
+}
 
 class _PocketSpeechPreviewingController extends Notifier<bool> {
   @override
@@ -520,7 +558,7 @@ Future<void> _deletePocketSpeechAssets(
 
   try {
     await downloader.delete(model);
-    controller.clearPocketSpeechVoicePack();
+    controller.clearPocketSpeechVoicePack(model);
     ref.invalidate(pocketSpeechVoiceNamesProvider);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

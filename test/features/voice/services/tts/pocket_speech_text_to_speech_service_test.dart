@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
+import 'package:wing/shared/voice/voice_text_language_detector.dart';
 import 'package:pocket_speech/src/kokoro_engine/src/tokenizer.dart';
 
 void main() {
@@ -64,6 +65,45 @@ void main() {
 
     expect(fallback.spoken, ['hello from Hermes']);
   });
+
+  test('non-English replies use the platform fallback', () async {
+    final engine = _FakePocketSpeechEngine();
+    final fallback = FakeTextToSpeechService();
+    final service = createPocketSpeechTextToSpeechService(
+      enabled: true,
+      engine: engine,
+      audioSink: _FakePocketSpeechAudioSink(),
+      fallback: fallback,
+      languageDetector: const _FixedLanguageDetector('es'),
+    );
+
+    await service!.speak('Hola, ¿cómo puedo ayudarte hoy?');
+
+    expect(engine.calls, isEmpty);
+    expect(fallback.spoken, ['Hola, ¿cómo puedo ayudarte hoy?']);
+  });
+
+  test(
+    'Kitten ignores a persisted voice missing from its pinned pack',
+    () async {
+      final engine = _FakePocketSpeechEngine();
+      final service = createPocketSpeechTextToSpeechService(
+        enabled: true,
+        voicePack: const PocketSpeechVoicePack(
+          model: PocketSpeechModel.kitten,
+          modelPath: '/models/kitten/model.onnx',
+          voicesPath: '/models/kitten/voices.json',
+        ),
+        engine: engine,
+        audioSink: _FakePocketSpeechAudioSink(),
+        settings: () => const WingVoiceSettings(ttsVoiceName: 'Bella'),
+      );
+
+      await service!.speak('Hermes Wing is ready to speak.');
+
+      expect(engine.selectedVoices, [isNull]);
+    },
+  );
 
   test('speak trims text, synthesizes wav, and sends it to the sink', () async {
     final engine = _FakePocketSpeechEngine(wav: Uint8List.fromList([1, 2, 3]));
@@ -152,6 +192,15 @@ void main() {
   });
 }
 
+class _FixedLanguageDetector implements VoiceTextLanguageDetector {
+  const _FixedLanguageDetector(this.language);
+
+  final String? language;
+
+  @override
+  String? detect(String text) => language;
+}
+
 class _FailingPocketSpeechEngine implements PocketSpeechEngine {
   @override
   Future<Uint8List> synthesizeWav(
@@ -170,6 +219,7 @@ class _FakePocketSpeechEngine implements PocketSpeechEngine {
 
   final Uint8List wav;
   final calls = <String>[];
+  final selectedVoices = <String?>[];
   int disposeCalls = 0;
 
   @override
@@ -179,6 +229,7 @@ class _FakePocketSpeechEngine implements PocketSpeechEngine {
     double speed = 1.0,
   }) async {
     calls.add(text);
+    selectedVoices.add(voice);
     return wav;
   }
 

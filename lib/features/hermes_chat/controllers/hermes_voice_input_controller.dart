@@ -63,12 +63,15 @@ class HermesVoiceInputController extends ChangeNotifier {
   String? _lastSpokenTurnId;
   String? _lastSpokenReply;
   String? _liveTranscript;
+  double? _soundLevel;
   VoiceCaptureService? _activeCaptureService;
   TextToSpeechService? _activeTextToSpeechService;
   StreamSubscription<String>? _partialTranscriptSubscription;
+  StreamSubscription<double>? _soundLevelSubscription;
 
   bool get capturing => _capturing;
   String? get liveTranscript => _liveTranscript;
+  double? get soundLevel => _soundLevel;
   bool get continuousEnabled => _continuousEnabled;
   String? get error => _error;
   bool get speaking => _speaking;
@@ -118,7 +121,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     _capturing = true;
     _error = null;
     _liveTranscript = null;
+    _soundLevel = null;
     unawaited(_partialTranscriptSubscription?.cancel());
+    unawaited(_soundLevelSubscription?.cancel());
     final VoiceCaptureProgressService? progressService =
         service is VoiceCaptureProgressService
         ? service as VoiceCaptureProgressService
@@ -134,6 +139,15 @@ class HermesVoiceInputController extends ChangeNotifier {
         notifyListeners();
       },
     );
+    final VoiceCaptureSoundLevelService? soundLevelService =
+        service is VoiceCaptureSoundLevelService
+        ? service as VoiceCaptureSoundLevelService
+        : null;
+    _soundLevelSubscription = soundLevelService?.soundLevels.listen((level) {
+      if (_disposed || operationGeneration != _operationGeneration) return;
+      _soundLevel = level;
+      notifyListeners();
+    });
     notifyListeners();
 
     final outcome = await const HermesVoiceCaptureFlow().capture(
@@ -145,6 +159,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     _activeCaptureService = null;
     unawaited(_partialTranscriptSubscription?.cancel());
     _partialTranscriptSubscription = null;
+    unawaited(_soundLevelSubscription?.cancel());
+    _soundLevelSubscription = null;
+    _soundLevel = null;
     if (!channel.state.isConnected ||
         channel.state.activeSessionId != captureSessionId) {
       _capturing = false;
@@ -365,6 +382,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     unawaited(_partialTranscriptSubscription?.cancel());
     _partialTranscriptSubscription = null;
     _liveTranscript = null;
+    _soundLevel = null;
+    unawaited(_soundLevelSubscription?.cancel());
+    _soundLevelSubscription = null;
     fireAndForget(service?.cancel(), 'voice capture cancel on pause');
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
@@ -390,6 +410,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     _activeCaptureService = null;
     unawaited(_partialTranscriptSubscription?.cancel());
     _partialTranscriptSubscription = null;
+    unawaited(_soundLevelSubscription?.cancel());
+    _soundLevelSubscription = null;
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
     fireAndForget(tts?.stop(), 'speech stop on dispose');

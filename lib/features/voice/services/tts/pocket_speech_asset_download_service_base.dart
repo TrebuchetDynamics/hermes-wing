@@ -147,5 +147,6 @@ abstract interface class PocketSpeechAssetDownloadService {
     PocketSpeechModel model, {
     PocketSpeechDownloadProgressCallback? onProgress,
   });
+  Future<PocketSpeechVoicePack?> installedPack(PocketSpeechModel model);
   Future<void> delete(PocketSpeechModel model);
 }

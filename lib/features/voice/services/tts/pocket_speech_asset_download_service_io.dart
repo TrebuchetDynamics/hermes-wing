@@ -26,8 +26,7 @@ class IoPocketSpeechAssetDownloadService
     if (!spec.isConfigured) {
       throw StateError('${model.label} download is not configured.');
     }
-    final base = await getApplicationSupportDirectory();
-    final dir = Directory('${base.path}/pocket_speech/${model.name}');
+    final dir = await _modelDirectory(model);
     await dir.create(recursive: true);
     final modelFile = File('${dir.path}/model.onnx');
     final voicesFile = File('${dir.path}/voices.json');
@@ -85,11 +84,48 @@ class IoPocketSpeechAssetDownloadService
   }
 
   @override
+  Future<PocketSpeechVoicePack?> installedPack(PocketSpeechModel model) async {
+    final spec = config.specFor(model);
+    if (!spec.isConfigured) return null;
+    try {
+      final dir = await _modelDirectory(model);
+      final modelFile = File('${dir.path}/model.onnx');
+      final voicesFile = File('${dir.path}/voices.json');
+      if (!await _matches(modelFile, spec.modelBytes, spec.modelSha256) ||
+          !await _matches(
+            voicesFile,
+            spec.voicesJsonBytes,
+            spec.voicesJsonSha256,
+          ) ||
+          jsonDecode(await voicesFile.readAsString()) is! Map) {
+        return null;
+      }
+      return PocketSpeechVoicePack(
+        model: model,
+        modelPath: modelFile.path,
+        voicesPath: voicesFile.path,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<void> delete(PocketSpeechModel model) async {
-    final base = await getApplicationSupportDirectory();
-    final dir = Directory('${base.path}/pocket_speech/${model.name}');
+    final dir = await _modelDirectory(model);
     if (await dir.exists()) await dir.delete(recursive: true);
   }
+
+  Future<Directory> _modelDirectory(PocketSpeechModel model) async {
+    final base = await getApplicationSupportDirectory();
+    return Directory('${base.path}/pocket_speech/${model.name}');
+  }
+
+  Future<bool> _matches(File file, int bytes, String expectedSha256) async =>
+      await file.exists() &&
+      await file.length() == bytes &&
+      (await sha256.bind(file.openRead()).first).toString().toLowerCase() ==
+          expectedSha256.trim().toLowerCase();
 
   Future<void> _download(
     HttpClient client,

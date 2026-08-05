@@ -1142,7 +1142,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
         child: Row(
           children: [
-            Icon(icon, color: colors.onPrimaryContainer),
+            if (_voiceInputController.capturing)
+              _VoiceWaveform(level: _voiceInputController.soundLevel)
+            else
+              Icon(icon, color: colors.onPrimaryContainer),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1537,4 +1540,51 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         _buildMicButton(canSendTurns),
         _buildSendButton(channel, canSendTurns),
       ];
+}
+
+class _VoiceWaveform extends StatelessWidget {
+  const _VoiceWaveform({this.level});
+
+  final double? level;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onPrimaryContainer;
+    final activity = _normalizedLevel(level);
+    return ExcludeSemantics(
+      child: SizedBox(
+        key: const ValueKey('hermes-voice-waveform'),
+        width: 28,
+        height: 28,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [0.55, 0.8, 1.0, 0.8, 0.55]
+              .map(
+                (weight) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 90),
+                  curve: Curves.easeOut,
+                  constraints: BoxConstraints.tightFor(
+                    width: 3,
+                    height: 5 + 19 * activity * weight,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              )
+              .toList(growable: false),
+        ),
+      ),
+    );
+  }
+
+  double _normalizedLevel(double? value) {
+    if (value == null) return 0;
+    // speech_to_text reports Android RMS dB near -2..10 and iOS average
+    // power below -20 dB.
+    final normalized = value < -20 ? (value + 60) / 60 : (value + 2) / 12;
+    return normalized.clamp(0.0, 1.0);
+  }
 }

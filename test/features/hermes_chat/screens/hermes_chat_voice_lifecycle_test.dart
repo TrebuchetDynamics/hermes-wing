@@ -274,6 +274,24 @@ void main() {
         find.byKey(const ValueKey('hermes-voice-mode-end-button')),
         findsOneWidget,
       );
+      final waveformBars = find.descendant(
+        of: find.byKey(const ValueKey('hermes-voice-waveform')),
+        matching: find.byType(AnimatedContainer),
+      );
+      expect(waveformBars, findsNWidgets(5));
+      final quietHeight = tester
+          .widget<AnimatedContainer>(waveformBars.first)
+          .constraints!
+          .minHeight;
+      capture.emitLevel(10);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        tester
+            .widget<AnimatedContainer>(waveformBars.first)
+            .constraints!
+            .minHeight,
+        greaterThan(quietHeight),
+      );
       capture.emit('testing one two');
       await tester.pump();
       expect(find.text('testing one two'), findsOneWidget);
@@ -573,14 +591,21 @@ void main() {
 }
 
 class _ControlledVoiceCaptureService
-    implements VoiceCaptureService, VoiceCaptureProgressService {
+    implements
+        VoiceCaptureService,
+        VoiceCaptureProgressService,
+        VoiceCaptureSoundLevelService {
   final _completion = Completer<VoiceCapture>();
   final _partialTranscripts = StreamController<String>.broadcast();
+  final _soundLevels = StreamController<double>.broadcast();
   int captureCalls = 0;
   int cancelCalls = 0;
 
   @override
   Stream<String> get partialTranscripts => _partialTranscripts.stream;
+
+  @override
+  Stream<double> get soundLevels => _soundLevels.stream;
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) {
@@ -594,6 +619,8 @@ class _ControlledVoiceCaptureService
   }
 
   void emit(String transcript) => _partialTranscripts.add(transcript);
+
+  void emitLevel(double level) => _soundLevels.add(level);
 
   void complete(String transcript) {
     if (_completion.isCompleted) return;

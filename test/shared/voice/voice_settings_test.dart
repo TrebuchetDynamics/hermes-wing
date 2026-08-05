@@ -8,7 +8,7 @@ void main() {
     expect(defaults.pocketSpeechModel, PocketSpeechModel.kitten);
     expect(
       PocketSpeechModel.kitten.downloadSummary,
-      'About 26 MB · English · 8 voices',
+      'About 26 MB · English · 1 voice',
     );
     expect(PocketSpeechModel.kokoro.downloadBytes, 331147356);
     expect(defaults.pocketSpeechTtsEnabled, isFalse);

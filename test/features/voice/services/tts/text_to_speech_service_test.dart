@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/voice/services/platform/voice_capture_platform.dart';
 import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_text_language_detector.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 void main() {
   test('speak configures flutter_tts once and trims text', () async {
@@ -49,6 +51,60 @@ void main() {
     },
   );
 
+  test('sets the detected reply language before speaking', () async {
+    final engine = _FakeFlutterTtsEngine();
+    final service = FlutterTextToSpeechService(
+      engine: engine,
+      languageDetector: const _FixedLanguageDetector('es'),
+    );
+
+    await service.speak('Hola, ¿cómo puedo ayudarte hoy?');
+
+    expect(engine.calls, [
+      'awaitSpeakCompletion:true',
+      'setSpeechRate:0.45',
+      'setVolume:1.0',
+      'setPitch:1.0',
+      'setLanguage:es',
+      'speak:Hola, ¿cómo puedo ayudarte hoy?',
+    ]);
+  });
+
+  test(
+    'resets to the system language before switching reply language',
+    () async {
+      final engine = _FakeFlutterTtsEngine(systemLanguage: 'en-US');
+      final service = FlutterTextToSpeechService(
+        engine: engine,
+        languageDetector: const _FixedLanguageDetector('es'),
+      );
+
+      await service.speak('Hola, ¿cómo puedo ayudarte hoy?');
+
+      expect(
+        engine.calls,
+        containsAllInOrder(['setLanguage:en-US', 'setLanguage:es']),
+      );
+    },
+  );
+
+  test(
+    'does not override a detected language with an incompatible voice',
+    () async {
+      final engine = _FakeFlutterTtsEngine();
+      final service = FlutterTextToSpeechService(
+        engine: engine,
+        settings: () => const WingVoiceSettings(ttsVoiceName: 'english-voice'),
+        languageDetector: const _FixedLanguageDetector('es'),
+      );
+
+      await service.speak('Hola, ¿cómo puedo ayudarte hoy?');
+
+      expect(engine.calls, contains('setLanguage:es'));
+      expect(engine.calls, isNot(contains('setVoiceByName:english-voice')));
+    },
+  );
+
   test('stop forwards to flutter_tts engine', () async {
     final engine = _FakeFlutterTtsEngine();
     final service = FlutterTextToSpeechService(engine: engine);
@@ -93,10 +149,14 @@ void main() {
 }
 
 class _FakeFlutterTtsEngine implements FlutterTtsEngine {
-  _FakeFlutterTtsEngine({this.failNextSetLanguage = false});
+  _FakeFlutterTtsEngine({
+    this.failNextSetLanguage = false,
+    this.systemLanguage,
+  });
 
   final calls = <String>[];
   bool failNextSetLanguage;
+  final String? systemLanguage;
 
   @override
   Future<void> awaitSpeakCompletion(bool awaitCompletion) async {
@@ -147,4 +207,19 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
   Future<void> setVoiceByName(String name) async {
     calls.add('setVoiceByName:$name');
   }
+
+  @override
+  Future<String?> voiceLocale(String name) async => 'en-US';
+
+  @override
+  Future<String?> defaultLanguage() async => systemLanguage;
+}
+
+class _FixedLanguageDetector implements VoiceTextLanguageDetector {
+  const _FixedLanguageDetector(this.language);
+
+  final String? language;
+
+  @override
+  String? detect(String text) => language;
 }

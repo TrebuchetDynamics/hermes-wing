@@ -47,7 +47,12 @@ abstract interface class SpeechToTextEngine {
   Future<void> cancel();
 }
 
-class PluginSpeechToTextEngine implements SpeechToTextEngine {
+abstract interface class SpeechToTextSoundLevelEngine {
+  Stream<double> get soundLevels;
+}
+
+class PluginSpeechToTextEngine
+    implements SpeechToTextEngine, SpeechToTextSoundLevelEngine {
   PluginSpeechToTextEngine({
     stt.SpeechToText? speechToText,
     this.androidIntentLookup = false,
@@ -55,8 +60,12 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
   }) : _speechToText = speechToText ?? stt.SpeechToText();
 
   final stt.SpeechToText _speechToText;
+  final _soundLevels = StreamController<double>.broadcast();
   final bool androidIntentLookup;
   final bool androidNoBluetooth;
+
+  @override
+  Stream<double> get soundLevels => _soundLevels.stream;
 
   @override
   Future<bool?> hasPermission() => _speechToText.hasPermission;
@@ -93,6 +102,7 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
     required bool onDevice,
   }) async {
     await _speechToText.listen(
+      onSoundLevelChange: _soundLevels.add,
       onResult: (SpeechRecognitionResult result) => onResult(
         SpeechToTextSnapshot(
           words: result.recognizedWords,
@@ -120,7 +130,10 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
 }
 
 class SpeechToTextVoiceCaptureService
-    implements VoiceCaptureService, VoiceCaptureProgressService {
+    implements
+        VoiceCaptureService,
+        VoiceCaptureProgressService,
+        VoiceCaptureSoundLevelService {
   factory SpeechToTextVoiceCaptureService({
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
@@ -164,12 +177,16 @@ class SpeechToTextVoiceCaptureService
   final Duration partialResultPauseFor;
   final bool onDeviceOnly;
   final _partialTranscripts = StreamController<String>.broadcast(sync: true);
+  final _soundLevels = StreamController<double>.broadcast(sync: true);
   bool _initialized = false;
   void Function(Object error)? _onError;
   void Function(String status)? _onStatus;
 
   @override
   Stream<String> get partialTranscripts => _partialTranscripts.stream;
+
+  @override
+  Stream<double> get soundLevels => _soundLevels.stream;
 
   @override
   Future<void> cancel() => _engine.cancel();
@@ -188,6 +205,11 @@ class SpeechToTextVoiceCaptureService
     SpeechToTextSnapshot? latestTranscript;
     Timer? partialResultTimer;
     var listening = false;
+    final soundLevelSubscription =
+        (_engine is SpeechToTextSoundLevelEngine
+                ? (_engine as SpeechToTextSoundLevelEngine).soundLevels
+                : null)
+            ?.listen(_soundLevels.add);
 
     void cancelPartialResultTimer() => partialResultTimer?.cancel();
 
@@ -340,6 +362,8 @@ class SpeechToTextVoiceCaptureService
       if (normalized is DeviceSpeechUnavailable) throw normalized;
       if (normalized is SpeechToTextCaptureFailure) throw normalized;
       throw SpeechToTextCaptureFailure(error);
+    } finally {
+      await soundLevelSubscription?.cancel();
     }
   }
 

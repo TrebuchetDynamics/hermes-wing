@@ -1,5 +1,5 @@
 enum PocketSpeechModel {
-  kitten('Kitten', 'About 26 MB', 26453800, 'English · 8 voices'),
+  kitten('Kitten', 'About 26 MB', 26453800, 'English · 1 voice'),
   kokoro('Kokoro', 'About 331 MB', 331147356, 'English · 2 voices');
 
   const PocketSpeechModel(

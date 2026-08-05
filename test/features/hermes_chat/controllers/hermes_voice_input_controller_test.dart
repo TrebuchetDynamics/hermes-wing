@@ -228,7 +228,8 @@ void main() {
       final channel = FakeHermesChannel();
       final capture = _TranscriptQueueThenBlockService([
         'hello Hermes',
-        'echo hello Hermes',
+        'echo hello Hermes from the speaker output',
+        'echo hello Hermes from the speaker output',
       ]);
       final controller = HermesVoiceInputController(
         channel: () => channel,
@@ -248,7 +249,9 @@ void main() {
       await pumpEventQueue();
 
       expect(channel.sentVoiceTranscripts, ['hello Hermes']);
-      expect(capture.captureCalls, 3);
+      // The same tail audio can be finalized twice by Android. Neither result
+      // may become a new Hermes turn.
+      expect(capture.captureCalls, 4);
     },
   );
 

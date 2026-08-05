@@ -180,8 +180,10 @@ class HermesVoiceInputController extends ChangeNotifier {
         final capture = outcome.capture!;
         final transcript = capture.transcript.trim();
         if (continuous && _isSpokenReplyEcho(transcript)) {
+          // Keep the reply fingerprint for the next capture too. Android can
+          // return the same speaker playback in more than one recognition
+          // result while its acoustic echo canceller settles.
           _capturing = false;
-          _lastSpokenReply = null;
           notifyListeners();
           unawaited(_rearmContinuousCapture());
           return;
@@ -318,7 +320,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     final candidate = _voiceEchoKey(transcript);
     final reply = _voiceEchoKey(spokenReply);
     return candidate.length >= 12 &&
-        (candidate == reply || reply.contains(candidate));
+        (candidate == reply ||
+            reply.contains(candidate) ||
+            candidate.contains(reply));
   }
 
   String _voiceEchoKey(String text) => text

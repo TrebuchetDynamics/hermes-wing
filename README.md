@@ -11,19 +11,23 @@
 </p>
 
 <p align="center">
-  <img src="./assets/readme/showcase.png" width="100%" alt="Deterministic Hermes Wing desktop and mobile interfaces showing streamed tool activity, inline approval, and an adaptive session layout">
+  <img src="./assets/readme/showcase.png" width="100%" alt="Real Hermes Wing desktop and mobile interfaces showing streamed tool activity, inline approval, and gateway tool inventory">
 </p>
 
-<p align="center"><sub>Real repository fixtures: desktop run controls and the mobile session surface.</sub></p>
+<p align="center"><sub>Real repository fixtures: desktop run controls and mobile gateway inventory.</sub></p>
 
 > [!IMPORTANT]
 > Hermes Wing is independent, source-distributed alpha software. There are no
 > signed public binaries or store releases yet.
 
-Hermes Wing is a cross-platform Flutter client for trusted
-[Hermes Agent](docs/product/hermes-compatibility.md) endpoints. It keeps sessions,
-streamed runs, tool activity, approvals, profiles, and optional device speech in
-reach without reading Hermes files or becoming a second backend.
+Hermes Wing is an independent cross-platform Flutter client for trusted
+[Hermes Agent](https://github.com/NousResearch/hermes-agent) endpoints. It keeps
+sessions, streamed runs, tool activity, approvals, profiles, and optional device
+speech in reach without reading Hermes files or becoming a second backend.
+Inspired by [Hermes Desktop](https://github.com/fathah/hermes-desktop)'s
+operator-first breadth, Wing adapts that idea to Android, web, and desktop while
+keeping Hermes Agent authoritative through its
+[advertised compatibility contract](docs/product/hermes-compatibility.md).
 
 ## Why Wing
 
@@ -33,6 +37,20 @@ reach without reading Hermes files or becoming a second backend.
 | **Keep control visible**     | Shows reasoning bounds, tool events, usage, approvals, retry, diagnostics, and stop controls in the owning session |
 | **Use the device you have**  | Adapts one client to compact mobile chat and desktop workspaces, with review-first local voice input               |
 | **Respect server authority** | Negotiates `/v1/capabilities` and hides or isolates operations the endpoint did not advertise                      |
+
+## Trust path
+
+<p align="center">
+  <picture>
+    <source media="(max-width: 600px)" srcset="./assets/readme/runtime-flow-mobile.svg">
+    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Hermes Wing reviews a trusted origin, negotiates capabilities, opens a durable Hermes session, streams run events, and keeps approval or stop controls visible">
+  </picture>
+</p>
+
+HTTP carries commands and resources; SSE carries typed run events. Hermes Agent
+remains authoritative for sessions, tools, profiles, runs, approvals, and
+configuration. Reconnect refreshes capabilities and authoritative state instead
+of replaying local mutations.
 
 ## Start from source
 
@@ -84,20 +102,6 @@ enrollment, use `wing-cli link` to request a short-lived scoped `wing://` link.
 The helper uses Bash and Python 3. Run `wing-cli help` for origin, label, scope,
 and environment overrides. See the [Android setup guide](docs/runbooks/android-hermes-setup.md)
 for the full path.
-
-## Trust path
-
-<p align="center">
-  <picture>
-    <source media="(max-width: 600px)" srcset="./assets/readme/runtime-flow-mobile.svg">
-    <img src="./assets/readme/runtime-flow.svg" width="100%" alt="Hermes Wing reviews a trusted origin, negotiates capabilities, opens a durable Hermes session, streams run events, and keeps approval or stop controls visible">
-  </picture>
-</p>
-
-HTTP carries commands and resources; SSE carries typed run events. Hermes Agent
-remains authoritative for sessions, tools, profiles, runs, approvals, and
-configuration. Reconnect refreshes capabilities and authoritative state instead
-of replaying local mutations.
 
 ## Capabilities today
 

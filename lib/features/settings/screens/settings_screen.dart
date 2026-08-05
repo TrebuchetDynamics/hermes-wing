@@ -14,6 +14,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../router/app_routes.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../hermes_chat/diagnostics/hermes_diagnostics_export.dart';
 import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -38,7 +39,10 @@ class SettingsScreen extends ConsumerWidget {
 
     final strings = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(strings.settingsDestination)),
+      appBar: AppBar(
+        title: Text(strings.settingsDestination),
+        actions: const [AppShellMenuButton()],
+      ),
       body: AnimatedBuilder(
         animation: channel,
         builder: (context, _) {

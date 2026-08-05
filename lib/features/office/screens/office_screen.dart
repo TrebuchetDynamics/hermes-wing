@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../../router/app_routes.dart';
 import '../../hermes_chat/gateways/gateway_contact.dart';
@@ -51,6 +52,7 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
                 : () => unawaited(directory.refresh()),
             icon: const Icon(Icons.refresh),
           ),
+          const AppShellMenuButton(),
         ],
       ),
       body: AnimatedBuilder(

@@ -196,6 +196,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     await channel.disconnect();
     _connectionForm.baseUrl.text = baseUrl;
     _connectionForm.apiKey.clear();
+    _setState(() => _editingConnection = true);
     _refreshEndpointProfiles();
   }
 
@@ -218,6 +219,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       return;
     }
     if (persistOnSuccess) {
+      _setState(() => _editingConnection = false);
       await ref
           .read(hermesEndpointStoreProvider)
           .save(

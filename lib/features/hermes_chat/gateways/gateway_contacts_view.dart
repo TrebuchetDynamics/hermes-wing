@@ -22,32 +22,68 @@ class GatewayContactsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (contacts.isEmpty) {
+      final theme = Theme.of(context);
+      final colors = theme.colorScheme;
+      final strings = AppLocalizations.of(context);
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           children: [
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.65,
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.sizeOf(context).height * 0.68,
+              ),
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).gatewayContactsEmptyTitle,
-                    ),
-                    if (onConnect != null) ...[
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: onConnect,
-                        child: Text(
-                          AppLocalizations.of(
-                            context,
-                          ).gatewayContactsConnectAction,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    key: const ValueKey('gateway-contacts-empty'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.primaryContainer,
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Icon(
+                            Icons.support_agent_rounded,
+                            size: 36,
+                            color: colors.onPrimaryContainer,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      Text(
+                        strings.gatewayContactsEmptyTitle,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        strings.gatewayContactsEmptyBody,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                      if (onConnect != null) ...[
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          key: const ValueKey('gateway-contacts-add'),
+                          onPressed: onConnect,
+                          icon: const Icon(Icons.add_rounded),
+                          label: Text(strings.gatewayContactsConnectAction),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),

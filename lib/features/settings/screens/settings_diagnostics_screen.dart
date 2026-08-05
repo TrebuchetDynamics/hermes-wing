@@ -8,7 +8,10 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
     final channel = ref.watch(hermesChannelProvider);
     final strings = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(strings.diagnosticsTitle)),
+      appBar: AppBar(
+        title: Text(strings.diagnosticsTitle),
+        actions: const [AppShellMenuButton()],
+      ),
       body: AnimatedBuilder(
         animation: channel,
         builder: (context, _) {

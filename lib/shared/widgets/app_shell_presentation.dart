@@ -19,20 +19,6 @@ class AppShellPresentation {
     _settingsDestination,
   ];
 
-  List<AppShellDestination> get mobileNavigationDestinations => [
-    _hermesDestination,
-    _settingsDestination,
-  ];
-
-  List<AppShellDestination> get mobileOverflowDestinations => [
-    _officeDestination,
-    _agentsDestination,
-    _providersDestination,
-    _toolsDestination,
-    _schedulesDestination,
-    _gatewayDestination,
-  ];
-
   String get mobileOverflowLabel => localizations.moreDestinations;
 
   String get mobileOverflowTooltip => localizations.openMoreDestinations;
@@ -96,10 +82,7 @@ class AppShellPresentation {
     final selected = selectedIndex < 0 ? 0 : selectedIndex;
     return AppShellNavigationState(
       destinations: allDestinations,
-      mobileNavigationDestinations: mobileNavigationDestinations,
-      mobileOverflowDestinations: mobileOverflowDestinations,
       selectedIndex: selected,
-      showNavigationMenu: true,
     );
   }
 }
@@ -107,31 +90,11 @@ class AppShellPresentation {
 class AppShellNavigationState {
   const AppShellNavigationState({
     required this.destinations,
-    required this.mobileNavigationDestinations,
-    required this.mobileOverflowDestinations,
     required this.selectedIndex,
-    required this.showNavigationMenu,
   });
 
   final List<AppShellDestination> destinations;
-  final List<AppShellDestination> mobileNavigationDestinations;
-  final List<AppShellDestination> mobileOverflowDestinations;
   final int selectedIndex;
-  final bool showNavigationMenu;
-
-  AppShellDestination get selectedDestination => destinations[selectedIndex];
-
-  int get selectedMobileIndex {
-    final selectedPath = selectedDestination.path;
-    final primaryIndex = mobileNavigationDestinations.indexWhere(
-      (destination) => AppRoutes.isNavigationDestinationLocation(
-        location: selectedPath,
-        destinationPath: destination.path,
-      ),
-    );
-    if (primaryIndex >= 0) return primaryIndex;
-    return mobileNavigationDestinations.length;
-  }
 }
 
 class AppShellDestination {

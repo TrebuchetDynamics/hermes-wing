@@ -8,6 +8,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_skill.dart';
 import '../../../core/hermes/models/hermes_toolset.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
@@ -34,7 +35,10 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
     final directory = ref.watch(hermesGatewayDirectoryProvider);
     final strings = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(strings.toolsTitle)),
+      appBar: AppBar(
+        title: Text(strings.toolsTitle),
+        actions: const [AppShellMenuButton()],
+      ),
       body: AnimatedBuilder(
         animation: Listenable.merge([channel, directory]),
         builder: (context, _) => Column(

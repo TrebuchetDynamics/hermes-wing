@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/wing_theme.dart';
-import '../tips/wing_tip_card.dart';
-import '../tips/wing_tips.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
@@ -19,183 +17,60 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shellPresentation = AppShellPresentation(
+    final presentation = AppShellPresentation(
       AppLocalizations.of(context),
-    );
-    final presentation = shellPresentation.stateForLocation(location);
+    ).stateForLocation(location);
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: appShellNavigationVisible,
-      builder: (context, navigationVisible, _) => LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth >= 600) {
-            return _DesktopShell(
-              destinations: presentation.destinations,
-              selectedIndex: presentation.selectedIndex,
-              onSelected: (index) =>
-                  context.go(presentation.destinations[index].path),
-              child: child,
-            );
-          }
-          return _MobileShell(
-            mobileNavigationDestinations:
-                presentation.mobileNavigationDestinations,
-            mobileOverflowDestinations: presentation.mobileOverflowDestinations,
-            selectedIndex: presentation.selectedMobileIndex,
-            selectedPath: presentation.selectedDestination.path,
-            showNavigationMenu:
-                presentation.showNavigationMenu && navigationVisible,
-            mobileOverflowLabel: shellPresentation.mobileOverflowLabel,
-            mobileOverflowTooltip: shellPresentation.mobileOverflowTooltip,
-            onSelected: (destination) => context.go(destination.path),
-            child: child,
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) return child;
+        return _DesktopShell(
+          destinations: presentation.destinations,
+          selectedIndex: presentation.selectedIndex,
+          onSelected: (index) =>
+              context.go(presentation.destinations[index].path),
+          child: child,
+        );
+      },
     );
   }
 }
 
-class _MobileShell extends StatelessWidget {
-  const _MobileShell({
-    required this.child,
-    required this.mobileNavigationDestinations,
-    required this.mobileOverflowDestinations,
-    required this.selectedIndex,
-    required this.selectedPath,
-    required this.showNavigationMenu,
-    required this.mobileOverflowLabel,
-    required this.mobileOverflowTooltip,
-    required this.onSelected,
-  });
-
-  final Widget child;
-  final List<AppShellDestination> mobileNavigationDestinations;
-  final List<AppShellDestination> mobileOverflowDestinations;
-  final int selectedIndex;
-  final String selectedPath;
-  final bool showNavigationMenu;
-  final String mobileOverflowLabel;
-  final String mobileOverflowTooltip;
-  final ValueChanged<AppShellDestination> onSelected;
+class AppShellMenuButton extends StatelessWidget {
+  const AppShellMenuButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      body: child,
-      bottomNavigationBar:
-          showNavigationMenu && MediaQuery.viewInsetsOf(context).bottom == 0
-          ? SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (mobileOverflowDestinations.isNotEmpty)
-                    WingTipCard(
-                      tip: WingTip.moreDestinations,
-                      text: AppLocalizations.of(context).tipMoreDestinations,
-                    ),
-                  DecoratedBox(
-                    key: const ValueKey('mobile-navigation-surface'),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      border: Border(
-                        top: BorderSide(color: colorScheme.outlineVariant),
-                      ),
-                    ),
-                    child: NavigationBarTheme(
-                      data: NavigationBarThemeData(
-                        backgroundColor: Colors.transparent,
-                        indicatorColor: colorScheme.primary.withValues(
-                          alpha: 0.14,
-                        ),
-                        indicatorShape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        labelTextStyle: WidgetStateProperty.resolveWith((
-                          states,
-                        ) {
-                          final selected = states.contains(
-                            WidgetState.selected,
-                          );
-                          return theme.textTheme.labelSmall?.copyWith(
-                            color: selected
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                          );
-                        }),
-                        iconTheme: WidgetStateProperty.resolveWith((states) {
-                          final selected = states.contains(
-                            WidgetState.selected,
-                          );
-                          return IconThemeData(
-                            color: selected
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                            size: 23,
-                          );
-                        }),
-                      ),
-                      child: NavigationBar(
-                        height: 64,
-                        elevation: 0,
-                        selectedIndex: selectedIndex,
-                        labelBehavior:
-                            NavigationDestinationLabelBehavior.alwaysShow,
-                        onDestinationSelected: (index) {
-                          if (index < mobileNavigationDestinations.length) {
-                            onSelected(mobileNavigationDestinations[index]);
-                            return;
-                          }
-                          _showOverflowMenu(context);
-                        },
-                        destinations: [
-                          for (final destination
-                              in mobileNavigationDestinations)
-                            NavigationDestination(
-                              icon: Icon(destination.icon),
-                              label: destination.label,
-                            ),
-                          if (mobileOverflowDestinations.isNotEmpty)
-                            NavigationDestination(
-                              icon: const Icon(Icons.more_horiz),
-                              label: mobileOverflowLabel,
-                              tooltip: mobileOverflowTooltip,
-                            ),
-                        ],
-                      ),
-                    ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: appShellNavigationVisible,
+      builder: (context, visible, _) {
+        if (!visible || MediaQuery.sizeOf(context).width >= 600) {
+          return const SizedBox.shrink();
+        }
+        final presentation = AppShellPresentation(AppLocalizations.of(context));
+        return IconButton(
+          key: const ValueKey('app-shell-menu-button'),
+          tooltip: presentation.mobileOverflowTooltip,
+          icon: const Icon(Icons.apps_outlined),
+          onPressed: () => showSheet(
+            context,
+            ActionSheet(
+              presentation.mobileOverflowLabel,
+              rows: [
+                for (final destination in presentation.destinations)
+                  SheetActionRow(
+                    destination.icon,
+                    destination.label,
+                    onTap: (sheetContext) {
+                      Navigator.of(sheetContext).pop();
+                      context.go(destination.path);
+                    },
                   ),
-                ],
-              ),
-            )
-          : null,
-    );
-  }
-
-  void _showOverflowMenu(BuildContext context) {
-    showSheet(
-      context,
-      ActionSheet(
-        mobileOverflowLabel,
-        rows: [
-          for (final destination in mobileOverflowDestinations)
-            SheetActionRow(
-              destination.icon,
-              destination.label,
-              onTap: (sheetContext) {
-                Navigator.of(sheetContext).pop();
-                onSelected(destination);
-              },
+              ],
             ),
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -167,11 +167,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _notify();
     try {
       final issued = await _exchange(origin: exchangeOrigin, code: code);
-      await _store.save(
-        baseUrl: origin.toString(),
-        apiKey: issued.token,
-        label: preview.label,
-      );
+      await _store.save(baseUrl: origin.toString(), apiKey: issued.token);
       if (generation != _generation) return;
       _origin = null;
       _exchangeOrigin = null;

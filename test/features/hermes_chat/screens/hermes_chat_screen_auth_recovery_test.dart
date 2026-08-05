@@ -10,7 +10,6 @@ import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 
 import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
-import '../support/fake_hermes_gateway_directory.dart';
 
 void main() {
   testWidgets('auth failures ask for a new key without deleting VPN profile', (
@@ -71,124 +70,6 @@ void main() {
           ?.text,
       isEmpty,
     );
-  });
-
-  testWidgets('profile labels persist and presets clear secret fields', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel.disconnected();
-    final store = FakeHermesEndpointStore();
-    final directory = directoryFor(
-      configs: const [],
-      loader: FakeGatewaySummaryLoader({}),
-      activeChannel: channel,
-    );
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          hermesChannelProvider.overrideWithValue(channel),
-          hermesEndpointStoreProvider.overrideWithValue(store),
-          hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Connect to your Hermes VPS'), findsOneWidget);
-    expect(find.text('VPS connection'), findsOneWidget);
-    expect(
-      tester
-          .widget<TextField>(
-            find.byKey(const ValueKey('hermes-base-url-field')),
-          )
-          .controller
-          ?.text,
-      isEmpty,
-    );
-    expect(
-      find.textContaining('stored in secure device storage'),
-      findsOneWidget,
-    );
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.byKey(const ValueKey('hermes-connect-button')),
-          )
-          .onPressed,
-      isNull,
-    );
-    expect(
-      tester
-          .widget<TextField>(find.byKey(const ValueKey('hermes-api-key-field')))
-          .obscureText,
-      isTrue,
-    );
-    await tester.tap(find.byKey(const ValueKey('hermes-api-key-visibility')));
-    await tester.pump();
-    expect(
-      tester
-          .widget<TextField>(find.byKey(const ValueKey('hermes-api-key-field')))
-          .obscureText,
-      isFalse,
-    );
-
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-api-key-field')),
-      'private-key',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-profile-label-field')),
-      'Local agent',
-    );
-    final developerShortcuts = find.byKey(
-      const ValueKey('hermes-developer-shortcuts'),
-    );
-    await tester.ensureVisible(developerShortcuts);
-    await tester.tap(developerShortcuts);
-    await tester.pumpAndSettle();
-    final clearServerDetails = find.byKey(
-      const ValueKey('hermes-preset-remote'),
-    );
-    await tester.ensureVisible(clearServerDetails);
-    await tester.tap(clearServerDetails);
-    await tester.pump();
-    expect(
-      tester
-          .widget<TextField>(find.byKey(const ValueKey('hermes-api-key-field')))
-          .controller
-          ?.text,
-      isEmpty,
-    );
-    expect(
-      tester
-          .widget<TextField>(
-            find.byKey(const ValueKey('hermes-profile-label-field')),
-          )
-          .controller
-          ?.text,
-      isEmpty,
-    );
-
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-base-url-field')),
-      'http://127.0.0.1:8642',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-profile-label-field')),
-      'Local agent',
-    );
-    final connectButton = find.byKey(const ValueKey('hermes-connect-button'));
-    expect(tester.widget<FilledButton>(connectButton).onPressed, isNotNull);
-    tester.widget<FilledButton>(connectButton).onPressed?.call();
-    await tester.pumpAndSettle();
-
-    expect(store.saveCalls.single.label, 'Local agent');
   });
 
   testWidgets('approval failures remain visible to the operator', (

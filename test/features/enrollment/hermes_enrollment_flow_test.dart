@@ -107,7 +107,8 @@ void main() {
       expect(store.saveCalls, hasLength(1));
       expect(store.saveCalls.single.apiKey, _secretToken);
       expect(store.saveCalls.single.baseUrl, 'https://hermes.example');
-      expect(store.saveCalls.single.label, 'Galaxy S24');
+      expect(store.saveCalls.single.label, isNull);
+      expect(store.saveCalls.single.displayLabel, 'https://hermes.example');
     });
 
     test(

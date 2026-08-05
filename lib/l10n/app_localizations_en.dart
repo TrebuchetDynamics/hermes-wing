@@ -1508,10 +1508,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add and edit profiles on the selected gateway.';
 
   @override
-  String get gatewayContactsEmptyTitle => 'No Hermes gateways yet';
+  String get gatewayContactsEmptyTitle => 'Add your first Hermes agent';
 
   @override
-  String get gatewayContactsConnectAction => 'Connect gateway';
+  String get gatewayContactsEmptyBody =>
+      'Connect a gateway to see its agent profiles and start a conversation.';
+
+  @override
+  String get gatewayContactsConnectAction => 'Add gateway or agent';
 
   @override
   String chatQueuedCancelTitle(int count) {
@@ -2075,7 +2079,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatShellHermesTitle => 'Hermes';
 
   @override
-  String get chatShellConnectAnotherGatewayTooltip => 'Connect another gateway';
+  String get chatShellConnectAnotherGatewayTooltip => 'Add gateway or agent';
 
   @override
   String get chatShellSessionsLabel => 'Sessions';

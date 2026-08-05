@@ -2652,13 +2652,19 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayContactsEmptyTitle.
   ///
   /// In en, this message translates to:
-  /// **'No Hermes gateways yet'**
+  /// **'Add your first Hermes agent'**
   String get gatewayContactsEmptyTitle;
+
+  /// No description provided for @gatewayContactsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a gateway to see its agent profiles and start a conversation.'**
+  String get gatewayContactsEmptyBody;
 
   /// No description provided for @gatewayContactsConnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Connect gateway'**
+  /// **'Add gateway or agent'**
   String get gatewayContactsConnectAction;
 
   /// No description provided for @chatQueuedCancelTitle.
@@ -3586,7 +3592,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatShellConnectAnotherGatewayTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Connect another gateway'**
+  /// **'Add gateway or agent'**
   String get chatShellConnectAnotherGatewayTooltip;
 
   /// No description provided for @chatShellSessionsLabel.

@@ -182,6 +182,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   );
   final HermesChannelObservation _observation = HermesChannelObservation();
   bool _reconnectingOnResume = false;
+  bool _editingConnection = false;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
 
@@ -568,7 +569,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         directory.contacts.isNotEmpty || directory.hasSavedGateways;
     final legacyConnected = state.isConnected && !hasGateways;
     final showingDirectory =
-        hasGateways && directory.activeContactId == null && !legacyConnected;
+        !_editingConnection &&
+        directory.activeContactId == null &&
+        (hasGateways || !state.isConnected) &&
+        !legacyConnected;
     final activeContact = directory.activeContact;
     _requestShellNavigation(activeContact == null);
     final desktopShortcuts = <ShortcutActivator, Intent>{
@@ -601,7 +605,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         title: activeContact == null
             ? Text(
                 showingDirectory
-                    ? strings.chatShellHermesTitle
+                    ? strings.agentsTitle
                     : _safeHermesUiPreview(
                         activeSession?.title ?? strings.chatShellHermesTitle,
                         maxLength: 96,
@@ -678,7 +682,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               key: const ValueKey('hermes-connect-another-gateway'),
               tooltip: strings.chatShellConnectAnotherGatewayTooltip,
               onPressed: () => context.push(AppRoutes.enroll),
-              icon: const Icon(Icons.add_link),
+              icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
           if (!showingDirectory && state.isConnected) ...[
             if (activeContact == null && state.profiles.isNotEmpty)
@@ -793,12 +797,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               ),
             ],
           ],
+          const AppShellMenuButton(),
         ],
       ),
-      body: !hasGateways
-          ? state.isConnected
-                ? _buildChat(context, channel, state)
-                : _buildConnectForm(context, channel, state)
+      body: _editingConnection
+          ? _buildConnectForm(context, channel, state)
           : showingDirectory
           ? GatewayContactsView(
               contacts: directory.contacts,

@@ -84,12 +84,48 @@ void main() {
     );
 
     await tester.pumpWidget(view());
-    expect(find.text('No Hermes gateways yet'), findsOneWidget);
-    expect(find.text('Connect gateway'), findsNothing);
+    expect(find.text('Add your first Hermes agent'), findsOneWidget);
+    expect(
+      find.text(
+        'Connect a gateway to see its agent profiles and start a conversation.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Add gateway or agent'), findsNothing);
 
     await tester.pumpWidget(view(() => connectCalls++));
-    await tester.tap(find.text('Connect gateway'));
+    await tester.tap(find.byKey(const ValueKey('gateway-contacts-add')));
     expect(connectCalls, 1);
+  });
+
+  testWidgets('empty onboarding remains usable at 200% text scale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: const [],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            onConnect: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('gateway-contacts-add')), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('refreshing shows list and contact progress affordances', (

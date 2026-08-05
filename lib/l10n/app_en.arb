@@ -871,8 +871,9 @@
     }
   },
   "agentsGatewayPickerHelp": "Add and edit profiles on the selected gateway.",
-  "gatewayContactsEmptyTitle": "No Hermes gateways yet",
-  "gatewayContactsConnectAction": "Connect gateway",
+  "gatewayContactsEmptyTitle": "Add your first Hermes agent",
+  "gatewayContactsEmptyBody": "Connect a gateway to see its agent profiles and start a conversation.",
+  "gatewayContactsConnectAction": "Add gateway or agent",
   "chatQueuedCancelTitle": "{count, plural, one{Cancel {count} queued follow-up?} other{Cancel {count} queued follow-ups?}}",
   "@chatQueuedCancelTitle": {
     "placeholders": {
@@ -1182,7 +1183,7 @@
   "chatShellContactSwitchedBody": "Switched Hermes contact.",
   "chatShellAllChatsTooltip": "All chats",
   "chatShellHermesTitle": "Hermes",
-  "chatShellConnectAnotherGatewayTooltip": "Connect another gateway",
+  "chatShellConnectAnotherGatewayTooltip": "Add gateway or agent",
   "chatShellSessionsLabel": "Sessions",
   "chatShellNewSessionLabel": "New session",
   "chatShellMoreActionsTooltip": "More actions",

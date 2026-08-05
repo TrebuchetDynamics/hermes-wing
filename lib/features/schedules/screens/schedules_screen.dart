@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_job.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
@@ -55,6 +56,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                         )
                       : const Icon(Icons.refresh),
                 ),
+              const AppShellMenuButton(),
             ],
           ),
           body: Column(

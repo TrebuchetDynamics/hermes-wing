@@ -10,8 +10,9 @@ const ProtocolVersion = 1
 type Component string
 
 const (
-	ComponentHermes    Component = "hermes"
-	ComponentOmniRoute Component = "omniroute"
+	ComponentHermes         Component = "hermes"
+	ComponentOmniRoute      Component = "omniroute"
+	ComponentStarterProfile Component = "starter_profile"
 )
 
 type RuntimeState string
@@ -28,18 +29,22 @@ const (
 type InstallRequest struct {
 	Components                   []Component `json:"components"`
 	AcceptCommunityProviderTerms bool        `json:"accept_community_provider_terms"`
+	AcceptStarterProfileTerms    bool        `json:"accept_starter_profile_terms"`
 }
 
 type InstallStatus struct {
-	ProtocolVersion    int          `json:"protocol_version"`
-	State              RuntimeState `json:"state"`
-	HermesInstalled    bool         `json:"hermes_installed"`
-	HermesHealthy      bool         `json:"hermes_healthy"`
-	HermesVersion      string       `json:"hermes_version,omitempty"`
-	OmniRouteInstalled bool         `json:"omniroute_installed"`
-	OmniRouteHealthy   bool         `json:"omniroute_healthy"`
-	ActiveOperationID  string       `json:"active_operation_id,omitempty"`
-	PairingURI         string       `json:"pairing_uri,omitempty"`
+	ProtocolVersion             int          `json:"protocol_version"`
+	State                       RuntimeState `json:"state"`
+	HermesInstalled             bool         `json:"hermes_installed"`
+	HermesHealthy               bool         `json:"hermes_healthy"`
+	HermesVersion               string       `json:"hermes_version,omitempty"`
+	StarterProfileInstalled     bool         `json:"starter_profile_installed"`
+	StarterProfileName          string       `json:"starter_profile_name,omitempty"`
+	StarterProfileBlockedReason string       `json:"starter_profile_blocked_reason,omitempty"`
+	OmniRouteInstalled          bool         `json:"omniroute_installed"`
+	OmniRouteHealthy            bool         `json:"omniroute_healthy"`
+	ActiveOperationID           string       `json:"active_operation_id,omitempty"`
+	PairingURI                  string       `json:"pairing_uri,omitempty"`
 }
 
 type APIError struct {
@@ -86,7 +91,7 @@ func (request InstallRequest) Validate() error {
 	}
 	seen := make(map[Component]struct{}, len(request.Components))
 	for _, component := range request.Components {
-		if component != ComponentHermes && component != ComponentOmniRoute {
+		if component != ComponentHermes && component != ComponentOmniRoute && component != ComponentStarterProfile {
 			return fmt.Errorf("unsupported component: %s", component)
 		}
 		if _, exists := seen[component]; exists {
@@ -100,6 +105,14 @@ func (request InstallRequest) Validate() error {
 		}
 		if !request.AcceptCommunityProviderTerms {
 			return fmt.Errorf("community provider consent is required")
+		}
+	}
+	if _, hasStarterProfile := seen[ComponentStarterProfile]; hasStarterProfile {
+		if _, hasHermes := seen[ComponentHermes]; !hasHermes {
+			return fmt.Errorf("hermes is required with the starter profile")
+		}
+		if !request.AcceptStarterProfileTerms {
+			return fmt.Errorf("starter profile consent is required")
 		}
 	}
 	return nil

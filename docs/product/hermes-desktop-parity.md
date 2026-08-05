@@ -73,7 +73,7 @@ Android-first does not move Hermes domain authority into the client. Android’s
 
 Android uses Chat, Discover, Office, and Tasks as primary destinations plus More for administrative destinations. Before endpoint enrollment, supported Android builds present guided local installation as the primary path and retain remote pairing as an alternative. The same route tree later maps to desktop navigation; routes land only with working slices, not placeholders.
 
-Wing Link is a cross-cutting host slice, not a new domain milestone. It remains `host-blocked` until its signed binary, authenticated loopback API, verified Hermes install/adoption lifecycle, Android Termux bridge, desktop launchers, and clean/adopted/rollback receipts pass. OmniRoute remains a separately consented optional component and cannot advance Hermes bootstrap status.
+Wing Link is a cross-cutting host slice, not a new domain milestone. It remains `host-blocked` until its signed binary, authenticated loopback API, verified Hermes install/adoption lifecycle, Android Termux bridge, desktop launchers, and clean/adopted/rollback receipts pass. The recommended Donna starter profile requires a separately disclosed, pinned, Hermes-compatible distribution and must not overwrite an existing profile. Donna and OmniRoute failures cannot prevent a healthy Hermes bootstrap from advancing.
 
 ## Program roadmap
 

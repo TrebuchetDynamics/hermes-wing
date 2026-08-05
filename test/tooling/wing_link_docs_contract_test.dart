@@ -11,6 +11,8 @@ void main() {
     expect(adr, contains('Hermes Agent remains authoritative'));
     expect(adr, contains('Termux RUN_COMMAND'));
     expect(adr, contains('OmniRoute is optional'));
+    expect(adr, contains('Recommended Donna starter profile'));
+    expect(adr, contains('lacks the `distribution.yaml`'));
     expect(adr, isNot(contains('Wing Link proxies Hermes chat')));
     expect(File('CONTEXT.md').readAsStringSync(), contains('host supervisor'));
     expect(

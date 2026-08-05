@@ -63,6 +63,29 @@ func TestInstallRequestAcceptsSupportedComponents(t *testing.T) {
 	}
 }
 
+func TestInstallRequestRequiresStarterProfileConsent(t *testing.T) {
+	request := InstallRequest{
+		Components: []Component{ComponentHermes, ComponentStarterProfile},
+	}
+	if err := request.Validate(); err == nil {
+		t.Fatal("expected starter profile consent requirement")
+	}
+	request.AcceptStarterProfileTerms = true
+	if err := request.Validate(); err != nil {
+		t.Fatalf("consented starter profile rejected: %v", err)
+	}
+}
+
+func TestInstallRequestRequiresHermesForStarterProfile(t *testing.T) {
+	request := InstallRequest{
+		Components:                []Component{ComponentStarterProfile},
+		AcceptStarterProfileTerms: true,
+	}
+	if err := request.Validate(); err == nil {
+		t.Fatal("expected Hermes requirement")
+	}
+}
+
 func TestOperationEventJSON(t *testing.T) {
 	event := OperationEvent{
 		ProtocolVersion: 1,
@@ -110,8 +133,45 @@ func TestInstallStatusJSONOmitsEmptyOptionalFields(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const want = `{"protocol_version":1,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"omniroute_installed":false,"omniroute_healthy":false}`
+	const want = `{"protocol_version":1,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"starter_profile_installed":false,"omniroute_installed":false,"omniroute_healthy":false}`
 	if string(got) != want {
+		t.Fatalf("got %s", got)
+	}
+}
+
+func TestInstallStatusReportsStarterProfile(t *testing.T) {
+	got, err := json.Marshal(InstallStatus{
+		ProtocolVersion:         ProtocolVersion,
+		State:                   RuntimeHealthy,
+		HermesInstalled:         true,
+		HermesHealthy:           true,
+		StarterProfileInstalled: true,
+		StarterProfileName:      "donna",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded map[string]any
+	if err := json.Unmarshal(got, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if decoded["starter_profile_installed"] != true || decoded["starter_profile_name"] != "donna" {
+		t.Fatalf("got %s", got)
+	}
+}
+
+func TestInstallStatusReportsStarterProfileBlocker(t *testing.T) {
+	got, err := json.Marshal(InstallStatus{
+		ProtocolVersion:             ProtocolVersion,
+		State:                       RuntimeHealthy,
+		HermesInstalled:             true,
+		HermesHealthy:               true,
+		StarterProfileBlockedReason: "missing_distribution_manifest",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(got), `"starter_profile_blocked_reason":"missing_distribution_manifest"`) {
 		t.Fatalf("got %s", got)
 	}
 }

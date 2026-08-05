@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let a user install Hermes Wing, choose **Install Hermes on this device**, and reach a healthy local Hermes Agent on PC or Android/Termux, with an explicit optional OmniRoute quick-start path for community free-tier providers.
+**Goal:** Let a user install Hermes Wing, choose **Install Hermes on this device**, and reach a healthy local Hermes Agent on PC or Android/Termux with the recommended Donna starter profile, plus an explicit optional OmniRoute quick-start path for community free-tier providers.
 
-**Architecture:** Replace the Bash `wing-cli` helper with a small Go host supervisor named **Wing Link**. Wing Link owns only verified installation, process lifecycle, local health, and secure bootstrap into Hermes Agent’s existing enrollment API; Hermes Agent remains authoritative for chat and every domain operation. Desktop Wing launches the bundled binary, while Android uses Termux’s official `RUN_COMMAND` intent after one guided bootstrap and then talks to Wing Link over an authenticated loopback-only management API.
+**Architecture:** Replace the Bash `wing-cli` helper with a small Go host supervisor named **Wing Link**. Wing Link owns only verified installation, process lifecycle, local health, starter-profile staging through Hermes’s official distribution installer, and secure bootstrap into Hermes Agent’s existing enrollment API; Hermes Agent remains authoritative for chat and every domain operation. Desktop Wing launches the bundled binary, while Android uses Termux’s official `RUN_COMMAND` intent after one guided bootstrap and then talks to Wing Link over an authenticated loopback-only management API.
 
-**Tech Stack:** Go 1.26 and the Go standard library (`golang.org/x/sys/windows/svc` only for Windows service hosting); Flutter 3.44.2/Dart 3.12, Riverpod 3, go_router 17, flutter_secure_storage; Android Kotlin/Java 17 and Termux `RUN_COMMAND`; existing Hermes HTTP/SSE and enrollment APIs; OmniRoute npm 3.8.49.
+**Tech Stack:** Go 1.26 and the Go standard library (`golang.org/x/sys/windows/svc` only for Windows service hosting); Flutter 3.44.2/Dart 3.12, Riverpod 3, go_router 17, flutter_secure_storage; Android Kotlin/Java 17 and Termux `RUN_COMMAND`; existing Hermes HTTP/SSE, enrollment, and profile-distribution interfaces; Donna starter profile; OmniRoute npm 3.8.49.
 
 ## Global Constraints
 
@@ -14,7 +14,7 @@
 - Hermes Agent remains authoritative for profiles, providers, models, memory, skills, tools, schedules, sessions, runs, approvals, gateway state, and configuration after bootstrap.
 - Flutter never parses Hermes files, databases, human CLI output, or OmniRoute state.
 - Wing Link invokes only fixed installer/lifecycle/configuration commands with argument arrays; it never accepts arbitrary command text from Flutter, HTTP, QR payloads, or remote input.
-- The only domain-setting exception is explicit fresh-install OmniRoute quick start. It invokes fixed `hermes config set` commands, verifies through Hermes HTTP, and never overwrites an adopted/configured installation.
+- The only domain-setting exceptions are the consented starter-profile install through fixed `hermes profile install` arguments and explicit fresh-install OmniRoute configuration through fixed `hermes config set` arguments. Neither path parses human output or overwrites an adopted configuration.
 - The management API binds to `127.0.0.1:8654` only—never LAN, VPN, Tailscale, wildcard, or public interfaces.
 - Every management request except `/healthz` and one-time enrollment exchange requires a random Wing Link control token stored by Flutter secure storage; Wing Link stores only SHA-256 token hashes.
 - Wing Link enrollment codes expire after five minutes and are single-use. Bearer credentials never appear in URLs, QR codes, logs, diagnostics, clipboard content, or process arguments.
@@ -25,6 +25,9 @@
 - ADR 0038 remains authoritative: an embedded trusted Ed25519 public key verifies the complete release manifest before any component download; HTTPS, an embedded unsigned catalog, or an adjacent checksum is insufficient release authority.
 - Pin the POSIX installer to 144190 bytes and SHA-256 `45f589461248c7a6ec3aecd7522a69dd49c5c8dbf4798ba1296af5c0c5e7ccd3`.
 - Pin the Windows installer to 194624 bytes and SHA-256 `4dcbf2b665750cb578f69a6efa40770659e21821a463746f86da68af0d2bb31c`.
+- The recommended Donna starter profile is selected by default but deselectable, requires explicit disclosure acceptance, and is pinned to commit `63845c197483d7bb24638a593436e5000891a134`, archive size 3985986, and SHA-256 `11002a2a8a3e91e2ec8e20a13c89ceb8324762528dc3e2263126c27700bfeb7b`.
+- Donna installs only through Hermes’s profile-distribution interface. The current pinned commit lacks `distribution.yaml`, so production installation stays disabled until a reviewed signed-manifest update pins a compatible commit; direct cloning into Hermes state is prohibited.
+- An existing `donna` profile is adopted without overwrite or automatic update. Starter-profile failure leaves Hermes healthy and the default profile usable.
 - OmniRoute is optional, explicitly consented, and pinned to `omniroute@3.8.49` with SRI `sha512-8D+vfSVzn5LLYPdYrufe/pOGTiyMqd6D1BgE2v7FxoAhcSir3R2BSH8m80KuXHyuTz66N46+uSB4s7eGUviMFQ==`.
 - Never promise unlimited or guaranteed-free AI. State that quotas, availability, privacy policies, and provider terms vary and prompts leave the device.
 - OmniRoute failure never rolls back a healthy Hermes installation.
@@ -42,7 +45,7 @@
 - `wing_link/state.go` — owner-only state, one-time enrollment, hashed control tokens.
 - `wing_link/process.go`, `operation.go` — safe subprocess execution and one-active-operation progress.
 - `wing_link/components.manifest.json`, `components.manifest.sig`, `release_keys.go`, `components.go` — signed pins, trusted release keys, download, size, SHA-256, and SRI verification.
-- `wing_link/hermes.go`, `omniroute.go` — component install/lifecycle behavior.
+- `wing_link/hermes.go`, `starter_profile.go`, `omniroute.go` — component install/lifecycle behavior.
 - `wing_link/server.go` — authenticated loopback HTTP/SSE management API.
 - `wing_link/service_unix.go`, `service_windows.go` — platform service hosting.
 - Matching `*_test.go` files beside each responsibility.
@@ -203,6 +206,7 @@ require golang.org/x/sys v0.35.0
 type Component string
 const (
   ComponentHermes Component = "hermes"
+  ComponentStarterProfile Component = "starter_profile"
   ComponentOmniRoute Component = "omniroute"
 )
 
@@ -218,6 +222,7 @@ const (
 
 type InstallRequest struct {
   Components []Component `json:"components"`
+  AcceptStarterProfileTerms bool `json:"accept_starter_profile_terms"`
   AcceptCommunityProviderTerms bool `json:"accept_community_provider_terms"`
 }
 
@@ -227,6 +232,9 @@ type InstallStatus struct {
   HermesInstalled bool `json:"hermes_installed"`
   HermesHealthy bool `json:"hermes_healthy"`
   HermesVersion string `json:"hermes_version,omitempty"`
+  StarterProfileInstalled bool `json:"starter_profile_installed"`
+  StarterProfileName string `json:"starter_profile_name,omitempty"`
+  StarterProfileBlockedReason string `json:"starter_profile_blocked_reason,omitempty"`
   OmniRouteInstalled bool `json:"omniroute_installed"`
   OmniRouteHealthy bool `json:"omniroute_healthy"`
   ActiveOperationID string `json:"active_operation_id,omitempty"`
@@ -244,7 +252,7 @@ type OperationEvent struct {
 }
 ```
 
-`InstallRequest.Validate()` accepts only unique `hermes`/`omniroute`, requires Hermes when OmniRoute is present, and requires explicit OmniRoute consent.
+`InstallRequest.Validate()` accepts only unique `hermes`/`starter_profile`/`omniroute`, requires Hermes for either optional component, and requires each component’s explicit disclosure acceptance.
 
 - [x] **Step 4: Add fixed CLI dispatch**
 
@@ -449,6 +457,16 @@ The signed payload pins these exact component values:
       "sha256": "4dcbf2b665750cb578f69a6efa40770659e21821a463746f86da68af0d2bb31c"
     }
   },
+  "starter_profile": {
+    "name": "donna",
+    "source": "https://github.com/AtlasOmnia/donna-starter",
+    "commit": "63845c197483d7bb24638a593436e5000891a134",
+    "archive_url": "https://codeload.github.com/AtlasOmnia/donna-starter/tar.gz/63845c197483d7bb24638a593436e5000891a134",
+    "size": 3985986,
+    "sha256": "11002a2a8a3e91e2ec8e20a13c89ceb8324762528dc3e2263126c27700bfeb7b",
+    "installable": false,
+    "blocked_reason": "missing_distribution_manifest"
+  },
   "omniroute": {
     "version": "3.8.49",
     "url": "https://registry.npmjs.org/omniroute/-/omniroute-3.8.49.tgz",
@@ -461,7 +479,7 @@ The release ceremony adds concrete `issued_at` and `expires_at` fields before si
 
 - [ ] **Step 4: Add artifact tamper tests and download verification**
 
-Test wrong/unknown key IDs, expired/future manifests, malformed signatures, mutable hosts, size mismatch, SHA-256 mismatch, SRI mismatch, and redirects away from the allowlisted origin. Use HTTPS only, host-locked redirects, streamed hashing, exact byte count, owner-only temp files, and deletion on failure.
+Test wrong/unknown key IDs, expired/future manifests, malformed signatures, mutable hosts, size mismatch, SHA-256 mismatch, SRI mismatch, non-installable component rejection, and redirects away from the allowlisted origin. Use HTTPS only, host-locked redirects, streamed hashing, exact byte count, owner-only temp files, and deletion on failure.
 
 ```go
 var ErrArtifactVerification = errors.New("artifact verification failed")
@@ -584,7 +602,93 @@ Adoption must not mutate existing install/config; failures leave prior process/d
 
 ---
 
-### Task 7: Add explicit optional OmniRoute quick start
+### Task 7: Install the pinned Donna starter profile through Hermes
+
+**Files:**
+
+- Create: `wing_link/starter_profile.go`, `starter_profile_test.go`
+
+**Interfaces:** `StarterProfileManager.Inspect()`, `.Install()`, and `.Verify()`; consumes only the signed component-manifest entry and Hermes’s profile-distribution CLI.
+
+- [ ] **Step 1: Write failing compatibility and independence tests**
+
+```go
+func TestStarterProfileRejectsCurrentIncompatiblePinBeforeExecution(t *testing.T) {
+  fake := newFakeCommandRunner()
+  manager := newTestStarterProfileManager(t, fake, ComponentArtifact{
+    Commit: "63845c197483d7bb24638a593436e5000891a134",
+    Installable: false,
+    BlockedReason: "missing_distribution_manifest",
+  })
+  _, err := manager.Install(context.Background(), true, func(OperationEvent) {})
+  if !errors.Is(err, ErrStarterProfileIncompatible) { t.Fatalf("got %v", err) }
+  if fake.CallCount() != 0 { t.Fatal("incompatible profile reached execution") }
+}
+
+func TestStarterProfileFailureKeepsHermesHealthy(t *testing.T) {
+  result := composeInstallResult(healthyHermesResult(), failedStarterProfileResult())
+  if !result.HermesHealthy || result.StarterProfileInstalled { t.Fatalf("%#v", result) }
+}
+```
+
+Add tests for missing disclosure acceptance, existing-profile adoption without install/update, archive size/digest mismatch, traversal, absolute paths, symlinks, hardlinks, device entries, missing `distribution.yaml`, fixed CLI arguments, and post-install profile verification.
+
+- [ ] **Step 2: Verify RED**
+
+```bash
+cd wing_link && go test ./... -run StarterProfile
+```
+
+Expected: missing starter-profile manager symbols.
+
+- [ ] **Step 3: Implement the fail-closed compatibility gate**
+
+```go
+var ErrStarterProfileIncompatible = errors.New("starter profile is not a compatible Hermes distribution")
+
+type StarterProfileInspection struct {
+  Installed bool
+  Name string
+  Compatible bool
+  BlockedReason string
+}
+
+func (m *StarterProfileManager) Inspect(ctx context.Context) (StarterProfileInspection, error)
+func (m *StarterProfileManager) Install(ctx context.Context, accepted bool, emit func(OperationEvent)) (StarterProfileInspection, error)
+func (m *StarterProfileManager) Verify(ctx context.Context) error
+```
+
+The production manifest initially records Donna commit `63845c197483d7bb24638a593436e5000891a134` as `installable: false` because its archive has `profile.yaml` but no `distribution.yaml`. Return `starter_profile_incompatible` before download or execution. Do not clone the repository directly into Hermes state and do not synthesize a distribution manifest.
+
+A later reviewed Wing Link release may switch `installable` to `true` only after the signed component manifest pins a Donna commit whose verified archive contains a regular root `distribution.yaml` accepted by the pinned Hermes version.
+
+- [ ] **Step 4: Stage and install a compatible pinned distribution**
+
+Download only the signed-manifest archive URL and verify exact size and SHA-256 through Task 5. Extract with `archive/tar` and `compress/gzip` into an owner-only temporary directory; reject absolute paths, `..`, symlinks, hardlinks, devices, more than 20000 entries, or more than 128 MiB expanded data.
+
+If fixed command `hermes profile info donna` succeeds, adopt the profile and perform no install or update. Otherwise invoke exactly:
+
+```text
+hermes profile install <verified-staged-directory> --name donna --alias --yes
+```
+
+Check exit status only; never parse human output. Restart the tracked Hermes gateway if required, verify `donna` through the advertised Hermes profile inventory, and let Flutter select it through the existing profile controller. Never change the global active profile or overwrite/update an existing `donna` profile.
+
+Starter-profile failure produces a bounded warning and leaves healthy Hermes plus its default profile available. No automatic profile updates ship in this slice.
+
+- [ ] **Step 5: Verify GREEN**
+
+```bash
+cd wing_link && go test -race ./... -run 'StarterProfile|CompositeInstaller'
+```
+
+- [ ] **Step 6: Reviewer checkpoint**
+
+Confirm the current incompatible pin fails before network or command execution, a compatible fixture uses only the official Hermes installer, and no path writes directly under `~/.hermes/profiles`.
+
+---
+
+### Task 8: Add explicit optional OmniRoute quick start
 
 **Files:**
 
@@ -606,7 +710,7 @@ func TestOmniRouteFailureKeepsHermesSuccess(t *testing.T) {
 }
 ```
 
-Add exact version, SRI-before-npm, secrets-in-env-not-argv, and no-overwrite-existing-provider tests.
+Add exact version, SRI-before-npm, secrets-in-env-not-argv, no-overwrite-existing-provider tests, and a test proving fresh Donna receives OmniRoute configuration when the starter profile installed.
 
 - [ ] **Step 2: Install prerequisites after consent**
 
@@ -628,15 +732,17 @@ npm install --global --prefix <WingLinkHome>/components/omniroute <verified-tarb
 
 Generate `INITIAL_PASSWORD`, `JWT_SECRET`, `API_KEY_SECRET`, `STORAGE_ENCRYPTION_KEY` with `crypto/rand`, store mode `0600`, and run `omniroute setup --non-interactive` with secrets in environment. Start with `PORT=20128`, `HOSTNAME=127.0.0.1`, fixed `DATA_DIR`; poll `/v1/models` for 45 seconds.
 
-- [ ] **Step 4: Configure only fresh Hermes**
+- [ ] **Step 4: Configure only the fresh setup profile**
+
+When Donna installed in the same operation, use fixed arguments against that profile:
 
 ```text
-hermes config set model.provider custom --force
-hermes config set model.base_url http://127.0.0.1:20128/v1 --force
-hermes config set model.default auto --force
+hermes --profile donna config set model.provider custom --force
+hermes --profile donna config set model.base_url http://127.0.0.1:20128/v1 --force
+hermes --profile donna config set model.default auto --force
 ```
 
-Start Hermes with `OPENAI_API_KEY=omniroute-local`, verify one bounded test completion through Hermes. Failure leaves Hermes usable and reports `community_provider_setup_failed` with provider-choice recovery. Never run on adopted/configured installs.
+When the operator deselected Donna, apply the same three settings to the fresh default profile without `--profile donna`. Start Hermes with `OPENAI_API_KEY=omniroute-local`, select Donna through Hermes’s profile interface when present, and verify one bounded test completion through Hermes. Failure leaves Hermes usable and reports `community_provider_setup_failed` with provider-choice recovery. Never run on adopted/configured installs.
 
 - [ ] **Step 5: Verify GREEN**
 
@@ -652,7 +758,7 @@ Consent cannot be implicit; OmniRoute binds loopback; no provider content or sec
 
 ## Phase 3 — Service API and launch
 
-### Task 8: Expose authenticated loopback management API
+### Task 9: Expose authenticated loopback management API
 
 **Files:**
 
@@ -729,7 +835,7 @@ Manual `ss`/`netstat` proves loopback-only; no query-string token is accepted.
 
 ---
 
-### Task 9: Add services and one-command Termux bootstrap
+### Task 10: Add services and one-command Termux bootstrap
 
 **Files:**
 
@@ -777,7 +883,7 @@ Disposable-prefix rerun preserves state, uses no root, and installs neither Herm
 
 ## Phase 4 — Flutter and Android onboarding
 
-### Task 10: Implement Dart protocol, secure store, and HTTP/SSE client
+### Task 11: Implement Dart protocol, secure store, and HTTP/SSE client
 
 **Files:**
 
@@ -810,7 +916,7 @@ abstract interface class WingLinkControlStore {
 }
 ```
 
-`SecureWingLinkControlStore` uses secure key `wing_link_control_token_v1`. Reject protocol !=1, non-loopback origins, unknown state, invalid `op_` ID, incoming event >4 KiB, non-`wing://connect` pairing URI.
+`SecureWingLinkControlStore` uses secure key `wing_link_control_token_v1`. Parse bounded starter-profile installed/name/blocker fields. Reject protocol !=1, non-loopback origins, unknown state, invalid `op_` ID, incoming event >4 KiB, non-`wing://connect` pairing URI, or an unknown starter-profile blocker.
 
 - [ ] **Step 3: Implement client**
 
@@ -818,7 +924,7 @@ abstract interface class WingLinkControlStore {
 abstract interface class WingLinkClient {
   Future<String> exchangeEnrollment({required String code});
   Future<WingLinkStatus> status();
-  Future<String> install({required bool includeOmniRoute, required bool acceptedCommunityTerms});
+  Future<String> install({required bool includeStarterProfile, required bool acceptedStarterProfileTerms, required bool includeOmniRoute, required bool acceptedCommunityTerms});
   Stream<WingLinkOperationEvent> operationEvents(String operationId);
   Future<Uri> createHermesPairing();
   Future<void> startHermes();
@@ -842,7 +948,7 @@ Captured requests show token only in Authorization, never URI/body/error/diagnos
 
 ---
 
-### Task 11: Add desktop launcher and Android Termux adapter
+### Task 12: Add desktop launcher and Android Termux adapter
 
 **Files:**
 
@@ -890,7 +996,7 @@ Use documented extras and stable errors: `termux_missing`, `run_command_permissi
 
 - [ ] **Step 5: Verify GREEN**
 
-Run Task 11 tests. Expected: PASS.
+Run Task 12 tests. Expected: PASS.
 
 - [ ] **Step 6: Reviewer checkpoint**
 
@@ -898,7 +1004,7 @@ Inspect intent; no command, URL, token, provider input, or path crosses from Dar
 
 ---
 
-### Task 12: Build resumable local setup state
+### Task 13: Build resumable local setup state
 
 **Files:**
 
@@ -920,24 +1026,24 @@ test('Hermes success survives OmniRoute failure', () async {
 });
 ```
 
-Add double-tap one operation, resume existing operation, stale event, invalid pairing URI, Termux missing/permission, token clear tests.
+Add double-tap one operation, resume existing operation, stale event, invalid pairing URI, Termux missing/permission, token clear, starter-profile incompatibility, existing Donna adoption, and Hermes-success/Donna-failure tests.
 
 - [ ] **Step 2: Implement exact state**
 
 ```dart
-enum LocalSetupPhase { checking, termuxRequired, permissionRequired, wingLinkRequired, ready, installingHermes, installingOmniRoute, startingHermes, pairing, complete, failed }
+enum LocalSetupPhase { checking, termuxRequired, permissionRequired, wingLinkRequired, ready, installingHermes, installingStarterProfile, installingOmniRoute, startingHermes, pairing, complete, failed }
 final class LocalSetupState {
-  const LocalSetupState({required this.phase, this.percent=0, this.message='', this.hermesReady=false, this.omniRouteReady=false, this.omniRouteWarning, this.errorCode});
+  const LocalSetupState({required this.phase, this.percent=0, this.message='', this.hermesReady=false, this.starterProfileReady=false, this.omniRouteReady=false, this.starterProfileWarning, this.omniRouteWarning, this.errorCode});
   final LocalSetupPhase phase;
   final int percent;
   final String message;
-  final bool hermesReady, omniRouteReady;
-  final String? omniRouteWarning, errorCode;
+  final bool hermesReady, starterProfileReady, omniRouteReady;
+  final String? starterProfileWarning, omniRouteWarning, errorCode;
   bool get canContinue => hermesReady;
 }
 ```
 
-Flow: probe health; fixed launcher start; exchange local code/save token; fetch/resume status; start one install; request Hermes pairing; feed existing enrollment; reload gateway; route Chat. Disposal detaches UI only—never cancels install/stops Hermes.
+Flow: probe health; fixed launcher start; exchange local code/save token; fetch/resume status; start one install; request Hermes pairing; feed existing enrollment; reload gateway; select `donna` through the existing profile controller when installed; route Chat. Disposal detaches UI only—never cancels install/stops Hermes.
 
 - [ ] **Step 3: Verify GREEN**
 
@@ -951,7 +1057,7 @@ Background/recreation resumes authoritative operation state without duplicate in
 
 ---
 
-### Task 13: Make local install primary onboarding
+### Task 14: Make local install primary onboarding
 
 **Files:**
 
@@ -973,7 +1079,7 @@ testWidgets('Android presents install before remote connection', (tester) async 
 });
 ```
 
-Add OmniRoute unchecked/disclosure, Termux guidance, progress/retry, partial success, 200% scale, semantics, 320 px no-overflow tests.
+Add Donna selected-by-default/disclosure/opt-out/incompatibility, OmniRoute unchecked/disclosure, Termux guidance, progress/retry, partial success, 200% scale, semantics, and 320 px no-overflow tests.
 
 - [ ] **Step 2: Add route outside shell**
 
@@ -1005,7 +1111,7 @@ Keep manual endpoint/QR alternatives.
 
 - [ ] **Step 4: Build guided screen**
 
-Render Termux missing, permission missing, bootstrap command, ready options, resumable semantic progress, partial OmniRoute warning, and completion. OmniRoute starts unchecked and displays:
+Render Termux missing, permission missing, bootstrap command, ready options, resumable semantic progress, independent Donna/OmniRoute warnings, and completion. Donna starts selected with source, persona/skills/plugins/defaults, MIT license, and compatibility status disclosed; the user may deselect it. If the pinned commit remains incompatible, disable its selection with a clear upstream-manifest explanation rather than bypassing Hermes. OmniRoute starts unchecked and displays:
 
 ```text
 OmniRoute is an independent MIT-licensed project. Free-tier quotas, availability, privacy policies, and provider terms vary. Prompts are sent to the providers OmniRoute selects.
@@ -1023,13 +1129,13 @@ flutter analyze
 
 - [ ] **Step 6: Reviewer checkpoint**
 
-Android/desktop visual check confirms “guided local installation,” not zero-interaction; OmniRoute not preselected.
+Android/desktop visual check confirms “guided local installation,” not zero-interaction; Donna is disclosed and deselectable, and OmniRoute is not preselected.
 
 ---
 
 ## Phase 5 — Packaging, migration, evidence
 
-### Task 14: Build and bundle target binaries
+### Task 15: Build and bundle target binaries
 
 **Files:**
 
@@ -1052,10 +1158,13 @@ test('desktop packaging names Wing Link', () {
 - [ ] **Step 2: Implement deterministic build**
 
 ```bash
-CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
-  (cd wing_link && go build -trimpath -buildvcs=true \
-    -ldflags "-s -w -X main.version=$version" \
-    -o "$output" .)
+(
+  cd wing_link
+  CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+    go build -trimpath -buildvcs=true \
+      -ldflags "-s -w -X main.version=$version" \
+      -o "$output" .
+)
 ```
 
 Build Android as `GOOS=android GOARCH=arm64`. Native packaging includes only matching binary. First launch copies to Wing-owned app data, verifies release digest, chmods POSIX, then executes.
@@ -1070,11 +1179,11 @@ flutter build linux --release
 
 - [ ] **Step 4: Reviewer checkpoint**
 
-Package contains no Agent/Python/Node/OmniRoute archive/.env/token/private key.
+Package contains no Agent/Python/Node/Donna archive/OmniRoute archive/.env/token/private key.
 
 ---
 
-### Task 15: Rename `wing-cli` after Go parity
+### Task 16: Rename `wing-cli` after Go parity
 
 **Files:**
 
@@ -1095,7 +1204,7 @@ test('wing-cli is a bounded compatibility shim', () {
 });
 ```
 
-Keep current security tests until Go Tasks 3/6/8 cover them.
+Keep current security tests until Go Tasks 3/6/9 cover them.
 
 - [ ] **Step 2: Replace only after parity**
 
@@ -1122,7 +1231,7 @@ Manually compare dirty `wing-cli`; preserve any security behavior not covered by
 
 ---
 
-### Task 16: Add CI, smokes, and physical receipt
+### Task 17: Add CI, smokes, and physical receipt
 
 **Files:**
 
@@ -1157,7 +1266,7 @@ Cross-build/upload Android arm64, Linux amd64/arm64, Windows amd64, macOS amd64/
 
 - [ ] **Step 3: Add deterministic smoke**
 
-Use temporary `WING_LINK_HOME` and fake verified installer/health servers to prove local enrollment, authenticated status, one operation, SSE reconnect, concurrent 409, Hermes success despite OmniRoute failure, no secret in logs, loopback-only listener.
+Use temporary `WING_LINK_HOME` and fake verified installer/health servers to prove local enrollment, authenticated status, one operation, SSE reconnect, concurrent 409, current Donna incompatibility before execution, existing Donna adoption, Hermes success despite Donna or OmniRoute failure, no secret in logs, and a loopback-only listener.
 
 - [ ] **Step 4: Define physical receipt**
 
@@ -1170,6 +1279,10 @@ Use temporary `WING_LINK_HOME` and fake verified installer/health servers to pro
   "wing_link_loopback_healthy": true,
   "hermes_installed": true,
   "hermes_capabilities_verified": true,
+  "starter_profile_selected": false,
+  "starter_profile_installed": false,
+  "starter_profile_name": "",
+  "starter_profile_blocker": "missing_distribution_manifest",
   "wing_enrollment_completed": true,
   "provider_test_turn_completed": true,
   "omniroute_selected": false,
@@ -1177,7 +1290,7 @@ Use temporary `WING_LINK_HOME` and fake verified installer/health servers to pro
 }
 ```
 
-A separate receipt may set OmniRoute true only after disclosure and real provider completion. No transcript/token/private path/provider payload/raw command output.
+Until a compatible pinned Donna distribution exists, the physical receipt records `starter_profile_selected: false`, `starter_profile_installed: false`, and the bounded compatibility blocker instead of claiming installation. A later receipt may set Donna true only after official Hermes installation and profile-inventory verification. A separate receipt may set OmniRoute true only after disclosure and real provider completion. No transcript/token/private path/provider payload/raw command output.
 
 - [ ] **Step 5: Run full validation**
 
@@ -1198,7 +1311,7 @@ Web/iOS must hide local install and retain remote Hermes.
 
 - [ ] **Step 6: Record physical flow**
 
-On clean physical Android: install Wing; choose local install; install/open Termux; run bootstrap; grant permission; install Hermes without OmniRoute; enroll; complete one turn; kill/reopen Wing; verify health; rerun setup and verify adoption; optionally repeat with OmniRoute consent.
+On clean physical Android: install Wing; choose local install; review Donna disclosure and compatibility; install/open Termux; run bootstrap; grant permission; install Hermes without OmniRoute; verify Donna through Hermes when a compatible pin exists or record the fail-closed blocker; enroll; complete one turn; kill/reopen Wing; verify health; rerun setup and verify adoption; optionally repeat with OmniRoute consent.
 
 - [ ] **Step 7: Reviewer checkpoint**
 
@@ -1208,27 +1321,31 @@ Do not publicly claim “install Hermes on your phone” until signed package an
 
 ## Acceptance Matrix
 
-| Scenario                               | Required result                                                    |
-| -------------------------------------- | ------------------------------------------------------------------ |
-| Existing healthy Hermes                | Adopt without installer/config mutation                            |
-| Fresh PC install                       | Verified pinned installer, per-user runtime, health + capabilities |
-| Fresh Termux install                   | One bootstrap, explicit permission, rootless install, local health |
-| Missing Termux                         | Guided official install; no silent APK install                     |
-| Background during install              | Wing Link continues; UI resumes events                             |
-| Duplicate install tap                  | One operation; second gets conflict                                |
-| Tampered installer                     | Reject before execution and delete staged file                     |
-| OmniRoute not selected                 | No npm download/process/files                                      |
-| OmniRoute selected                     | Exact 3.8.49, disclosure, loopback only                            |
-| OmniRoute failure                      | Hermes usable; provider recovery shown                             |
-| Existing configured Hermes + OmniRoute | Active provider unchanged                                          |
-| Secure pairing                         | One-time code only; scoped Hermes token stored by Wing             |
-| Wing Link token                        | Secure storage + Authorization header only                         |
-| Wing uninstall/reinstall               | Runtime/data preserved and rediscovered                            |
-| Web/iOS                                | Local controls hidden; remote Hermes works                         |
+| Scenario                               | Required result                                                      |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| Existing healthy Hermes                | Adopt without installer/config mutation                              |
+| Fresh PC install                       | Verified pinned installer, per-user runtime, health + capabilities   |
+| Fresh Termux install                   | One bootstrap, explicit permission, rootless install, local health   |
+| Missing Termux                         | Guided official install; no silent APK install                       |
+| Background during install              | Wing Link continues; UI resumes events                               |
+| Duplicate install tap                  | One operation; second gets conflict                                  |
+| Tampered installer                     | Reject before execution and delete staged file                       |
+| Current Donna pin                      | Disabled/fails before download because `distribution.yaml` is absent |
+| Compatible Donna selected              | Verified archive; official Hermes install; profile `donna` selected  |
+| Existing Donna                         | Adopt without overwrite or automatic update                          |
+| Donna failure                          | Hermes/default profile remain usable                                 |
+| OmniRoute not selected                 | No npm download/process/files                                        |
+| OmniRoute selected                     | Exact 3.8.49, disclosure, loopback only                              |
+| OmniRoute failure                      | Hermes usable; provider recovery shown                               |
+| Existing configured Hermes + OmniRoute | Active provider unchanged                                            |
+| Secure pairing                         | One-time code only; scoped Hermes token stored by Wing               |
+| Wing Link token                        | Secure storage + Authorization header only                           |
+| Wing uninstall/reinstall               | Runtime/data preserved and rediscovered                              |
+| Web/iOS                                | Local controls hidden; remote Hermes works                           |
 
 ## Plan Self-Review
 
-- **Coverage:** Wing Link rename/service, PC and Termux installation, `RUN_COMMAND`, bootstrap, Android onboarding, secure enrollment, optional OmniRoute, packaging, migration, CI, and physical evidence map to Tasks 1–16.
+- **Coverage:** Wing Link rename/service, PC and Termux installation, `RUN_COMMAND`, bootstrap, Android onboarding, secure enrollment, pinned Donna starter profile, optional OmniRoute, packaging, migration, CI, and physical evidence map to Tasks 1–17.
 - **YAGNI:** no remote Wing Link listener, chat proxy, embedded runtime, generic command API, or automatic third-party install.
 - **Security:** pinned artifacts, loopback+bearer management, one-time enrollment, no arbitrary execution/superuser handoff.
 - **Consistency:** protocol `1`, port `8654`, `wlc_` token, `op_` operation, `/setup/local`, `WingLinkClient`, and `LocalSetupController` remain fixed.
@@ -1238,7 +1355,8 @@ Do not publicly claim “install Hermes on your phone” until signed package an
 
 1. Complete Tasks 1–5 before executing downloads.
 2. Complete Task 6 security review before exposing installation in Flutter.
-3. Complete Task 8 before clients receive a Wing Link token.
-4. Complete Tasks 10–13 before making install primary onboarding.
-5. Complete signed packaging and physical Termux receipt before public release claims.
-6. OmniRoute is independently feature-flagged off if its install or terms review is incomplete; Hermes installation still ships.
+3. Complete Task 9 before clients receive a Wing Link token.
+4. Complete Tasks 11–14 before making install primary onboarding.
+5. Keep Donna installation disabled until the signed manifest pins a reviewed archive with a valid `distribution.yaml`; never substitute a mutable or direct clone.
+6. Complete signed packaging and physical Termux receipt before public release claims.
+7. Donna and OmniRoute remain independently recoverable; either may be unavailable without blocking a healthy Hermes installation.

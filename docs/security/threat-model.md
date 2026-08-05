@@ -10,6 +10,7 @@ Status: alpha baseline, not an independent security assessment.
 - SSH host trust, private-key paths, and forwarded Hermes traffic
 - Hermes Agent release manifests, installer artifacts, runtime selection, and elevation boundary
 - Wing Link control tokens, one-time bootstrap codes, component state, and local process authority
+- Starter-profile provenance, reviewed persona and skill content, plugin code, and existing local profile customizations
 - Hermes Wing package identity, repository metadata, signing lineage, maintainer scripts, and upgrade state
 - Session transcripts, prompts, tool activity, approval decisions, attachments, context resources, and filesystem grants
 - Microphone input and completed speech transcripts
@@ -73,6 +74,7 @@ Status: alpha baseline, not an independent security assessment.
 - Wing Link management is loopback-only and requires a random control token after one-time five-minute enrollment; Flutter stores the token in platform secure storage and Wing Link stores only its hash.
 - Wing Link accepts fixed operation names and argument vectors only, never a client-provided executable, shell command, installer URL, or mutable release reference.
 - Android calls only the fixed Wing Link executable through Termux `RUN_COMMAND`; initial Termux installation, external-app access, and permission approval remain visible user actions.
+- The recommended Donna starter profile is disclosed and deselectable, pinned by commit and signed-manifest archive digest, and installed only through Hermes’s distribution interface; existing profiles are never overwritten or silently updated.
 - Optional OmniRoute installation is pinned, verified, loopback-only, separately consented, and independently recoverable; its failure does not roll back Hermes.
 - Canonical platform packages are signed, preserve stable application and secure-storage identity, contain no Hermes runtime, perform no network install scripts, and preserve Hermes data on ordinary uninstall.
 
@@ -111,6 +113,7 @@ Status: alpha baseline, not an independent security assessment.
 - The Flutter desktop SSH host adapter and cross-platform trust, rotation, injection, and forwarding receipts remain to be implemented; Hermes Desktop currently uses automatic `accept-new` first trust.
 - Hermes Agent signed release metadata and Wing Link’s verified cross-platform runtime installer/updater remain to be implemented; Hermes Desktop currently downloads mutable `main` installer scripts, pipes the Unix script into a shell, and brokers `sudo` passwords itself.
 - Wing Link’s authenticated loopback service, token lifecycle, Termux bootstrap and permission receipts, desktop service hosting, rollback evidence, and optional OmniRoute isolation are design commitments without implementation evidence yet.
+- Donna commit `63845c197483d7bb24638a593436e5000891a134` lacks Hermes’s required `distribution.yaml`; starter-profile installation remains fail-closed until a newly reviewed pinned commit satisfies that contract.
 - Canonical AAB/APK, APT/RPM, MSIX, and notarized DMG pipelines and their migration, upgrade, uninstall, identity, and package-script receipts remain incomplete.
 - No ordinary-CI physical microphone test.
 - On-device speech is requested but offline execution depends on platform and

@@ -14,7 +14,7 @@ Users can't adopt what they can't install.
 | # | Slice | Why now |
 |---|-------|---------|
 | 1.1 | **Signed release artifacts** — AAB for Play Store, APK for sideload, notarized DMG, MSIX, APT/DEB | No signed binaries = no users. Wingman ships APKs today. |
-| 1.2 | **Wing Link local runtime** — ship the signed Go host supervisor, then detect, adopt, verify, install, start, stop, update, repair, and diagnose Hermes locally on Android/Termux, Linux, Windows, and macOS. No remote installs. | Guided local installation is the primary Android onboarding path and the desktop replacement path; signed artifacts must land first. |
+| 1.2 | **Wing Link local runtime** — ship the signed Go host supervisor, then detect, adopt, verify, install, start, stop, update, repair, and diagnose Hermes locally on Android/Termux, Linux, Windows, and macOS. Offer the pinned Donna starter profile through Hermes’s distribution installer. No remote installs. | Guided local installation is the primary Android onboarding path and the desktop replacement path; signed artifacts and a compatible Donna distribution manifest must land first. |
 | 1.3 | **Full Agent configuration** — add/remove providers, switch models, manage skills, edit config through Agent contracts, manage memory, manage cron, manage gateway platforms — all from the GUI. No human CLI-output parsing. | The entire `hermes setup` outcome lives in the app while Hermes Agent remains authoritative. |
 | 1.4 | **LAN discovery** — mDNS/UDP broadcast or subnet scan for Hermes Agent port 8642 | Mobile users shouldn't type IPs. Wingman auto-scans for 9120. |
 | 1.5 | **System tray** — minimize-to-tray on desktop, tray menu for quick actions | Desktop parity. Trivial with `tray_manager` or `system_tray`. |

@@ -33,6 +33,14 @@ Android uses a guided local installation because the application sandbox cannot 
 
 After bootstrap, Hermes Wing invokes only the fixed Wing Link executable through Termux RUN_COMMAND with allowlisted argument vectors. No arbitrary command text, client-selected executable, or provider secret crosses the Flutter/Kotlin boundary.
 
+## Recommended Donna starter profile
+
+Local setup recommends the third-party Donna starter profile and selects it by default, but the operator may deselect it. The disclosure names its persona, curated skills, plugins, defaults, source, and independent MIT license.
+
+The signed Wing Link component manifest pins the exact reviewed Donna commit and complete archive digest. Wing Link stages the verified archive and invokes Hermes Agent’s official profile-distribution installer with fixed arguments. It never clones mutable `main` content directly into `~/.hermes/profiles`, overwrites an existing `donna` profile, or silently updates a locally customized profile.
+
+The current reviewed Donna commit lacks the `distribution.yaml` required by Hermes’s installer. The production option therefore remains compatibility-gated until a reviewed pinned commit supplies a valid distribution manifest; Wing Link does not bypass the gate with direct filesystem copying. Profile failure leaves Hermes healthy and the default profile available.
+
 ## Optional OmniRoute quick start
 
 OmniRoute is optional and independently recoverable. Wing Link downloads and installs it only after explicit disclosure and consent, pins and verifies the exact package, binds it to loopback, and never describes community providers as unlimited or guaranteed-free.

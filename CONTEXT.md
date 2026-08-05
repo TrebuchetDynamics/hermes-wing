@@ -64,6 +64,10 @@ _Avoid_: domain service
 The loopback-only host supervisor that installs, adopts, updates, starts, stops, repairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. Hermes Agent remains authoritative for domain behavior.
 _Avoid_: backend, domain proxy, remote administration service
 
+**Starter profile**:
+The consented, version-pinned Donna profile distribution offered during local setup. Hermes Agent’s profile-distribution interface installs it; Wing Link never clones mutable profile content directly into Hermes state.
+_Avoid_: bundled profile, silent persona replacement, mutable main clone
+
 **Managed Hermes runtime**:
 An external Hermes Agent installation discovered or installed by Wing Link on a supported host and verified through health and capabilities. It is not embedded in the Hermes Wing application package.
 _Avoid_: bundled Agent, Flutter backend

@@ -1,0 +1,21 @@
+appId: com.trebuchetdynamics.hermes.wing
+name: Hermes continuous voice smoke
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "How can Hermes help today?"
+    timeout: 30000
+- tapOn: "Chat menu"
+- tapOn: "Hands-free voice"
+- extendedWaitUntil:
+    visible: "(?s).*android first voice.*"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "(?s).*echo: android second voice.*"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Continuous voice paused by local command."
+    timeout: 30000

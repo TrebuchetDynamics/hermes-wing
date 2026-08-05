@@ -1027,6 +1027,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final strings = AppLocalizations.of(context);
+    if (_voiceInputController.continuousEnabled) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (strip != null) ...[strip, const SizedBox(height: 6)],
+          _buildVoiceModeSurface(context),
+        ],
+      );
+    }
     final hasPayload =
         _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return Column(
@@ -1101,6 +1111,70 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVoiceModeSurface(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final strings = AppLocalizations.of(context);
+    final phase = _voiceInputController.capturing
+        ? strings.chatLayoutListeningLabel
+        : _voiceInputController.speaking
+        ? strings.chatLayoutSpeakingLabel
+        : strings.chatLayoutHandsFreeLabel;
+    final icon = _voiceInputController.capturing
+        ? Icons.mic_rounded
+        : _voiceInputController.speaking
+        ? Icons.volume_up_rounded
+        : Icons.record_voice_over_rounded;
+    final liveTranscript = _voiceInputController.liveTranscript;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: '${strings.chatLayoutHandsFreeVoiceLabel}: $phase',
+      child: Container(
+        key: const ValueKey('hermes-voice-mode-surface'),
+        decoration: BoxDecoration(
+          color: colors.primaryContainer,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.38)),
+        ),
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        child: Row(
+          children: [
+            Icon(icon, color: colors.onPrimaryContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.chatLayoutHandsFreeVoiceLabel,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                  Text(
+                    liveTranscript ?? phase,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton.filled(
+              key: const ValueKey('hermes-voice-mode-end-button'),
+              tooltip: strings.closeAction,
+              icon: const Icon(Icons.close_rounded),
+              onPressed: _voiceInputController.pause,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1397,6 +1471,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildMicButton(bool canSendTurns) {
+    if (_voiceInputController.capturing) {
+      return IconButton.filled(
+        key: const ValueKey('hermes-mic-button'),
+        tooltip: AppLocalizations.of(context).chatLayoutHandsFreeLabel,
+        icon: const Icon(Icons.stop_rounded),
+        onPressed: _voiceInputController.pause,
+      );
+    }
     if (_voiceInputController.speaking) {
       return IconButton.filledTonal(
         key: const ValueKey('hermes-tts-stop-button'),
@@ -1419,19 +1501,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final micButton = Tooltip(
       message: micLabel,
       triggerMode: TooltipTriggerMode.manual,
-      child: IconButton(
+      child: IconButton.filledTonal(
         key: const ValueKey('hermes-mic-button'),
-        icon: _voiceInputController.capturing
-            ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Icon(Icons.mic_none_outlined, semanticLabel: micLabel),
-        onPressed:
-            _voiceInputController.capturing || !canSendTurns || !voiceEnabled
+        icon: Icon(Icons.mic_rounded, semanticLabel: micLabel),
+        onPressed: !canSendTurns || !voiceEnabled
             ? null
-            : () => unawaited(_voiceInputController.captureAndSend()),
+            : () => _setContinuousVoice(true),
       ),
     );
     if (_voiceInputController.capturing || !canSendTurns || !voiceEnabled) {

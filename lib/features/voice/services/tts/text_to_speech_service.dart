@@ -177,7 +177,7 @@ class FallbackTextToSpeechService implements TextToSpeechService {
 class FlutterTextToSpeechService implements TextToSpeechService {
   FlutterTextToSpeechService({
     FlutterTtsEngine? engine,
-    this.language = 'en-US',
+    this.language,
     this.speechRate = 0.45,
     this.volume = 1,
     this.pitch = 1,
@@ -187,7 +187,9 @@ class FlutterTextToSpeechService implements TextToSpeechService {
        _settings = settings;
 
   final FlutterTtsEngine _engine;
-  final String language;
+
+  /// Null preserves the platform's selected default TTS language.
+  final String? language;
   final double speechRate;
   final double volume;
   final double pitch;
@@ -233,7 +235,8 @@ class FlutterTextToSpeechService implements TextToSpeechService {
   Future<void> _configure() async {
     if (_configured) return;
     await _engine.awaitSpeakCompletion(true);
-    await _engine.setLanguage(language);
+    final language = this.language;
+    if (language != null) await _engine.setLanguage(language);
     await _engine.setSpeechRate(speechRate);
     await _engine.setVolume(volume);
     await _engine.setPitch(pitch);

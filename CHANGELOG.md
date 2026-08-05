@@ -6,6 +6,8 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Android 11+ builds now declare TTS engine discovery, so continuous voice can
+  speak Hermes replies and re-arm when an installed engine is available.
 - Voice capture now says when the device has no offline language for speech
   recognition, instead of advising you to install a recognizer that is already
   installed. Wing asks Android for on-device-only recognition, so a missing

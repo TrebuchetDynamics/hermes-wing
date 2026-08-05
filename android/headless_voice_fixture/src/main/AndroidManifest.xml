@@ -1,0 +1,35 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <queries>
+        <package android:name="com.trebuchetdynamics.hermes.wing" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:label="Hermes Wing headless voice fixture"
+        android:supportsRtl="true">
+        <service
+            android:name=".HeadlessSpeechRecognitionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_SPEECH_RECOGNITION_SERVICE">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech"
+                android:resource="@xml/headless_speech_recognition_service" />
+        </service>
+        <service
+            android:name=".HeadlessTextToSpeechService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech.tts"
+                android:resource="@xml/headless_tts_engine" />
+        </service>
+    </application>
+</manifest>

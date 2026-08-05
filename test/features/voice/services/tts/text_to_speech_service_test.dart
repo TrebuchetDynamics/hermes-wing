@@ -12,7 +12,6 @@ void main() {
 
     expect(engine.calls, [
       'awaitSpeakCompletion:true',
-      'setLanguage:en-US',
       'setSpeechRate:0.45',
       'setVolume:1.0',
       'setPitch:1.0',
@@ -30,19 +29,25 @@ void main() {
     expect(engine.calls, isEmpty);
   });
 
-  test('configuration failures are retried on the next speak', () async {
-    final engine = _FakeFlutterTtsEngine(failNextSetLanguage: true);
-    final service = FlutterTextToSpeechService(engine: engine);
+  test(
+    'an explicit language configuration is retried on the next speak',
+    () async {
+      final engine = _FakeFlutterTtsEngine(failNextSetLanguage: true);
+      final service = FlutterTextToSpeechService(
+        engine: engine,
+        language: 'en-US',
+      );
 
-    await expectLater(service.speak('first'), throwsStateError);
-    await service.speak('second');
+      await expectLater(service.speak('first'), throwsStateError);
+      await service.speak('second');
 
-    expect(
-      engine.calls.where((call) => call == 'setLanguage:en-US'),
-      hasLength(2),
-    );
-    expect(engine.calls.last, 'speak:second');
-  });
+      expect(
+        engine.calls.where((call) => call == 'setLanguage:en-US'),
+        hasLength(2),
+      );
+      expect(engine.calls.last, 'speak:second');
+    },
+  );
 
   test('stop forwards to flutter_tts engine', () async {
     final engine = _FakeFlutterTtsEngine();

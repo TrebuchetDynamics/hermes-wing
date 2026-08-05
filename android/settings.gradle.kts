@@ -23,4 +23,4 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
-include(":app")
+include(":app", ":headless_voice_fixture")

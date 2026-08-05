@@ -156,6 +156,9 @@ void main() {
 
     pickTextFile = true;
     await tester.tap(find.byKey(const ValueKey('hermes-attachment-button')));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
     await tester.pump();
     expect(pickerCalls, 2);
     expect(find.text('notes.md'), findsOneWidget);
@@ -189,7 +192,7 @@ void main() {
     expect(find.textContaining('Continuous voice paused'), findsNothing);
   });
 
-  testWidgets('voice icon sends the transcript immediately', (tester) async {
+  testWidgets('voice icon starts continuous conversation', (tester) async {
     final channel = FakeHermesChannel();
     final capture = FakeVoiceCaptureService(
       audio: Uint8List(0),
@@ -223,11 +226,23 @@ void main() {
     expect(composer.controller?.text, 'existing draft');
     expect(channel.sentVoiceTranscripts, ['draft from voice']);
     expect(channel.state.activeMessages, isNotEmpty);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    expect(
+      container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
+      isTrue,
+    );
   });
 
   testWidgets(
-    'turning continuous voice off cancels capture and drops its late result',
+    'ending mobile voice mode cancels capture and drops its late result',
     (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final channel = FakeHermesChannel();
       final capture = _ControlledVoiceCaptureService();
       final tts = _RecordingTextToSpeechService();
@@ -247,17 +262,28 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final voiceSwitch = find.byKey(
-        const ValueKey('hermes-continuous-voice-switch'),
-      );
-      await tester.tap(voiceSwitch);
+      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
       await tester.pump();
       expect(capture.captureCalls, 1);
       expect(find.text('Listening'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-voice-mode-surface')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+        findsOneWidget,
+      );
 
-      await tester.tap(voiceSwitch);
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+      );
       await tester.pump();
       expect(capture.cancelCalls, 1);
+      expect(
+        find.byKey(const ValueKey('hermes-voice-mode-surface')),
+        findsNothing,
+      );
 
       capture.complete('must not be sent');
       await tester.pumpAndSettle();

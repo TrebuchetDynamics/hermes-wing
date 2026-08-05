@@ -13,13 +13,29 @@ void main() {
       engine: engine,
       diagnosticLog: logs.add,
     );
+    final partialTranscript = service.partialTranscripts.first;
 
     final capture = await service.capture(timeout: const Duration(seconds: 5));
 
+    expect(await partialTranscript, 'my private transcript');
     expect(capture.transcript, 'my private transcript');
     expect(logs.join('\n'), isNot(contains('my private transcript')));
     expect(logs.join('\n'), contains('result wordsLength=21'));
     expect(engine.lastOnDevice, isTrue);
+    expect(engine.lastPauseFor, const Duration(seconds: 4));
+  });
+
+  test('stops after partial transcript inactivity', () async {
+    final engine = _PartialResultSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(
+      engine: engine,
+      partialResultPauseFor: Duration.zero,
+    );
+
+    final capture = await service.capture(timeout: const Duration(seconds: 1));
+
+    expect(capture.transcript, 'hello');
+    expect(engine.stopCalls, greaterThanOrEqualTo(1));
   });
 
   test(
@@ -151,11 +167,58 @@ class _UncancellableSpeechToTextEngine implements SpeechToTextEngine {
   Future<void> cancel() async => throw StateError('recognizer unavailable');
 }
 
+class _PartialResultSpeechToTextEngine implements SpeechToTextEngine {
+  void Function(String status)? _onStatus;
+  int stopCalls = 0;
+
+  @override
+  Future<bool?> hasPermission() async => true;
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async {
+    _onStatus = onStatus;
+    return true;
+  }
+
+  @override
+  Future<SpeechToTextLocale?> systemLocale() async => null;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    onResult(
+      const SpeechToTextSnapshot(
+        words: 'hello',
+        confidence: 0.9,
+        finalResult: false,
+      ),
+    );
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+    _onStatus?.call('done');
+  }
+
+  @override
+  Future<void> cancel() async {}
+}
+
 class _FakeSpeechToTextEngine implements SpeechToTextEngine {
   _FakeSpeechToTextEngine(this.words);
 
   final String words;
   bool? lastOnDevice;
+  Duration? lastPauseFor;
 
   @override
   Future<bool?> hasPermission() async => true;
@@ -181,6 +244,7 @@ class _FakeSpeechToTextEngine implements SpeechToTextEngine {
     required bool onDevice,
   }) async {
     lastOnDevice = onDevice;
+    lastPauseFor = pauseFor;
     onResult(
       SpeechToTextSnapshot(words: words, confidence: 0.9, finalResult: true),
     );

@@ -7,6 +7,7 @@ import '../../../core/hermes/models/hermes_chat_turn.dart';
 import '../../../core/protocol/voice/models/wing_voice_run.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
+import '../../../shared/voice/voice_capture_failures.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/voice/voice_settings.dart';
 import 'hermes_continuous_voice_reply_policy.dart';
@@ -26,12 +27,14 @@ class HermesVoiceInputController extends ChangeNotifier {
     required TextToSpeechServiceReader textToSpeechService,
     required VoiceSettingsReader settings,
     required ValueChanged<String> onDraft,
+    Duration rearmDelay = const Duration(milliseconds: 750),
   }) => HermesVoiceInputController._(
     channel,
     captureService,
     textToSpeechService,
     settings,
     onDraft,
+    rearmDelay,
   );
 
   HermesVoiceInputController._(
@@ -40,6 +43,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     this._textToSpeechService,
     this._settings,
     this._onDraft,
+    this._rearmDelay,
   );
 
   final HermesChannelReader _channel;
@@ -47,6 +51,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   final TextToSpeechServiceReader _textToSpeechService;
   final VoiceSettingsReader _settings;
   final ValueChanged<String> _onDraft;
+  final Duration _rearmDelay;
 
   bool _capturing = false;
   bool _continuousEnabled = false;
@@ -56,10 +61,14 @@ class HermesVoiceInputController extends ChangeNotifier {
   int _operationGeneration = 0;
   String? _error;
   String? _lastSpokenTurnId;
+  String? _lastSpokenReply;
+  String? _liveTranscript;
   VoiceCaptureService? _activeCaptureService;
   TextToSpeechService? _activeTextToSpeechService;
+  StreamSubscription<String>? _partialTranscriptSubscription;
 
   bool get capturing => _capturing;
+  String? get liveTranscript => _liveTranscript;
   bool get continuousEnabled => _continuousEnabled;
   String? get error => _error;
   bool get speaking => _speaking;
@@ -87,6 +96,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   void _baselineAssistantReplies() {
+    _lastSpokenReply = null;
     _lastSpokenTurnId = null;
     for (final turn in _channel().state.activeMessages) {
       if (turn.author == HermesTurnAuthor.assistant) {
@@ -107,6 +117,23 @@ class HermesVoiceInputController extends ChangeNotifier {
     _activeCaptureService = service;
     _capturing = true;
     _error = null;
+    _liveTranscript = null;
+    unawaited(_partialTranscriptSubscription?.cancel());
+    final VoiceCaptureProgressService? progressService =
+        service is VoiceCaptureProgressService
+        ? service as VoiceCaptureProgressService
+        : null;
+    _partialTranscriptSubscription = progressService?.partialTranscripts.listen(
+      (transcript) {
+        if (_disposed || operationGeneration != _operationGeneration) {
+          return;
+        }
+        final trimmed = transcript.trim();
+        if (trimmed.isEmpty) return;
+        _liveTranscript = trimmed;
+        notifyListeners();
+      },
+    );
     notifyListeners();
 
     final outcome = await const HermesVoiceCaptureFlow().capture(
@@ -116,6 +143,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (_disposed || operationGeneration != _operationGeneration) return;
 
     _activeCaptureService = null;
+    unawaited(_partialTranscriptSubscription?.cancel());
+    _partialTranscriptSubscription = null;
     if (!channel.state.isConnected ||
         channel.state.activeSessionId != captureSessionId) {
       _capturing = false;
@@ -136,17 +165,32 @@ class HermesVoiceInputController extends ChangeNotifier {
         );
       case HermesVoiceCaptureStatus.failed:
         _capturing = false;
+        if (continuous &&
+            outcome.error is SpeechToTextCaptureFailure &&
+            (outcome.error! as SpeechToTextCaptureFailure).isNoTranscript) {
+          notifyListeners();
+          unawaited(_capture(autoSend: true, continuous: true));
+          return;
+        }
         _recordCaptureFailure(
           outcome.errorMessage ?? 'Voice capture failed.',
           continuous: continuous,
         );
       case HermesVoiceCaptureStatus.captured:
         final capture = outcome.capture!;
-        if (continuous && _handleLocalCommand(capture.transcript)) {
+        final transcript = capture.transcript.trim();
+        if (continuous && _isSpokenReplyEcho(transcript)) {
+          _capturing = false;
+          _lastSpokenReply = null;
+          notifyListeners();
+          unawaited(_capture(autoSend: true, continuous: true));
+          return;
+        }
+        _lastSpokenReply = null;
+        if (continuous && _handleLocalCommand(transcript)) {
           // pause() inside _handleLocalCommand already reset _capturing.
           break;
         }
-        final transcript = capture.transcript.trim();
         _capturing = false;
         if (!autoSend) {
           _onDraft(transcript);
@@ -199,6 +243,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       return;
     }
     final channel = _channel();
+    if (channel.state.activeVoiceRun != null) return;
     final reply = hermesContinuousVoiceReplyToSpeak(
       turns: channel.state.activeMessages,
       enabled: true,
@@ -224,6 +269,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     notifyListeners();
     try {
       await tts.speak(reply.text);
+      _lastSpokenReply = reply.text;
+      await Future<void>.delayed(_rearmDelay);
     } catch (_) {
       if (_disposed || operationGeneration != _operationGeneration) return;
       final continuous = _continuousEnabled;
@@ -259,6 +306,21 @@ class HermesVoiceInputController extends ChangeNotifier {
     unawaited(_capture(autoSend: true, continuous: true));
   }
 
+  bool _isSpokenReplyEcho(String transcript) {
+    final spokenReply = _lastSpokenReply;
+    if (spokenReply == null) return false;
+    final candidate = _voiceEchoKey(transcript);
+    final reply = _voiceEchoKey(spokenReply);
+    return candidate.length >= 12 &&
+        (candidate == reply || reply.contains(candidate));
+  }
+
+  String _voiceEchoKey(String text) => text
+      .toLowerCase()
+      .replaceAll(RegExp(r'[.,!?;:]+'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+
   bool _handleLocalCommand(String transcript) {
     final commandWord = _settings().commandWord.trim().toLowerCase();
     if (commandWord.isEmpty) return false;
@@ -290,12 +352,16 @@ class HermesVoiceInputController extends ChangeNotifier {
     _operationGeneration += 1;
     final service = _activeCaptureService;
     _activeCaptureService = null;
+    unawaited(_partialTranscriptSubscription?.cancel());
+    _partialTranscriptSubscription = null;
+    _liveTranscript = null;
     fireAndForget(service?.cancel(), 'voice capture cancel on pause');
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
     fireAndForget(tts?.stop(), 'speech stop on pause');
     _continuousEnabled = false;
     _speakNextReply = false;
+    _lastSpokenReply = null;
     _capturing = false;
     _speaking = false;
     _error = notice;
@@ -312,6 +378,8 @@ class HermesVoiceInputController extends ChangeNotifier {
       'voice capture cancel on dispose',
     );
     _activeCaptureService = null;
+    unawaited(_partialTranscriptSubscription?.cancel());
+    _partialTranscriptSubscription = null;
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
     fireAndForget(tts?.stop(), 'speech stop on dispose');

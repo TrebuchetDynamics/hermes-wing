@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_settings.dart';
 
 void main() {
   testWidgets('Pocket Speech settings explain downloads and playback choices', (
@@ -33,6 +34,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(
+      find.text('Choose a compact English pack or the larger English pack'),
+      findsOneWidget,
+    );
+
     final speed = find.byKey(const ValueKey('voice-pocket-speech-speed'));
     await tester.scrollUntilVisible(speed, 300);
 
@@ -51,6 +57,41 @@ void main() {
     expect(find.text('About 26 MB · English · 8 voices'), findsOneWidget);
     expect(find.textContaining('stored on this device'), findsOneWidget);
   });
+
+  testWidgets(
+    'model picker shows download size and language coverage before selection',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: VoiceSettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('voice-pocket-speech-model')),
+          matching: find.byType(DropdownButton<PocketSpeechModel>),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Kitten · About 26 MB · English · 8 voices'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Kokoro · About 331 MB · English · 2 voices'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('large text stays usable on a narrow phone', (tester) async {
     tester.view.physicalSize = const Size(320, 700);

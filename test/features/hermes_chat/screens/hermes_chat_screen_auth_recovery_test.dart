@@ -10,6 +10,7 @@ import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 
 import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
+import '../support/fake_hermes_gateway_directory.dart';
 
 void main() {
   testWidgets('auth failures ask for a new key without deleting VPN profile', (
@@ -77,12 +78,18 @@ void main() {
   ) async {
     final channel = FakeHermesChannel.disconnected();
     final store = FakeHermesEndpointStore();
+    final directory = directoryFor(
+      configs: const [],
+      loader: FakeGatewaySummaryLoader({}),
+      activeChannel: channel,
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
+          hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
         ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,

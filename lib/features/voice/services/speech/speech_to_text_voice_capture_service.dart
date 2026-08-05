@@ -48,10 +48,15 @@ abstract interface class SpeechToTextEngine {
 }
 
 class PluginSpeechToTextEngine implements SpeechToTextEngine {
-  PluginSpeechToTextEngine({stt.SpeechToText? speechToText})
-    : _speechToText = speechToText ?? stt.SpeechToText();
+  PluginSpeechToTextEngine({
+    stt.SpeechToText? speechToText,
+    this.androidIntentLookup = false,
+    this.androidNoBluetooth = false,
+  }) : _speechToText = speechToText ?? stt.SpeechToText();
 
   final stt.SpeechToText _speechToText;
+  final bool androidIntentLookup;
+  final bool androidNoBluetooth;
 
   @override
   Future<bool?> hasPermission() => _speechToText.hasPermission;
@@ -61,9 +66,14 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
     required void Function(Object error) onError,
     required void Function(String status) onStatus,
   }) {
+    final options = [
+      if (androidIntentLookup) stt.SpeechToText.androidIntentLookup,
+      if (androidNoBluetooth) stt.SpeechToText.androidNoBluetooth,
+    ];
     return _speechToText.initialize(
       onError: (SpeechRecognitionError error) => onError(error),
       onStatus: onStatus,
+      options: options.isEmpty ? null : options,
     );
   }
 
@@ -109,7 +119,8 @@ class PluginSpeechToTextEngine implements SpeechToTextEngine {
   Future<void> cancel() => _speechToText.cancel();
 }
 
-class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
+class SpeechToTextVoiceCaptureService
+    implements VoiceCaptureService, VoiceCaptureProgressService {
   factory SpeechToTextVoiceCaptureService({
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
@@ -118,6 +129,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
         const SpeechToTextCaptureCoordinator(),
     String? localeId,
     Duration pauseFor = const Duration(seconds: 4),
+    Duration partialResultPauseFor = const Duration(milliseconds: 2500),
     bool onDeviceOnly = true,
   }) {
     return SpeechToTextVoiceCaptureService._(
@@ -127,6 +139,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
       coordinator: coordinator,
       localeId: localeId,
       pauseFor: pauseFor,
+      partialResultPauseFor: partialResultPauseFor,
       onDeviceOnly: onDeviceOnly,
     );
   }
@@ -138,6 +151,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
     required this._coordinator,
     this.localeId,
     required this.pauseFor,
+    required this.partialResultPauseFor,
     required this.onDeviceOnly,
   });
 
@@ -147,10 +161,15 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
   final SpeechToTextCaptureCoordinator _coordinator;
   final String? localeId;
   final Duration pauseFor;
+  final Duration partialResultPauseFor;
   final bool onDeviceOnly;
+  final _partialTranscripts = StreamController<String>.broadcast(sync: true);
   bool _initialized = false;
   void Function(Object error)? _onError;
   void Function(String status)? _onStatus;
+
+  @override
+  Stream<String> get partialTranscripts => _partialTranscripts.stream;
 
   @override
   Future<void> cancel() => _engine.cancel();
@@ -167,7 +186,10 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
       ),
     );
     SpeechToTextSnapshot? latestTranscript;
+    Timer? partialResultTimer;
     var listening = false;
+
+    void cancelPartialResultTimer() => partialResultTimer?.cancel();
 
     void log(String message) {
       try {
@@ -178,6 +200,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
     }
 
     void completeWithError(Object error) {
+      cancelPartialResultTimer();
       log(_coordinator.errorDiagnostic(error));
       if (!completion.isCompleted) {
         completion.completeError(_coordinator.normalizeError(error));
@@ -221,6 +244,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
               case IgnoreSpeechToTextTerminalStatusPlan():
                 break;
               case CompleteSpeechToTextTerminalStatusPlan(:final snapshot):
+                cancelPartialResultTimer();
                 completion.complete(snapshot);
               case FailSpeechToTextTerminalStatusPlan(:final error):
                 completion.completeError(error);
@@ -256,17 +280,30 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
               'result wordsLength=${snapshot.words.length} '
               'confidence=${snapshot.confidence} finalResult=${snapshot.finalResult}',
             );
+            final transcript = snapshot.words.trim();
+            if (transcript.isNotEmpty) _partialTranscripts.add(transcript);
             latestTranscript = _coordinator.latestUsableTranscript(
               current: latestTranscript,
               candidate: snapshot,
             );
             if (snapshot.finalResult && !completion.isCompleted) {
+              cancelPartialResultTimer();
               completion.complete(
                 _coordinator.completionTranscript(
                   terminalSnapshot: snapshot,
                   latestUsableSnapshot: latestTranscript,
                 ),
               );
+            } else if (snapshot.words.trim().isNotEmpty) {
+              cancelPartialResultTimer();
+              partialResultTimer = Timer(partialResultPauseFor, () {
+                if (!completion.isCompleted) {
+                  fireAndForget(
+                    _engine.stop(),
+                    'speech engine stop after partial transcript inactivity',
+                  );
+                }
+              });
             }
           },
         ),
@@ -274,6 +311,7 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
       listening = true;
 
       final snapshot = await bounded(completion.future);
+      cancelPartialResultTimer();
       listening = false;
       await bounded(_engine.stop());
 
@@ -289,8 +327,10 @@ class SpeechToTextVoiceCaptureService implements VoiceCaptureService {
         confidence: snapshot.confidence,
       );
     } on VoiceCaptureTimeout {
+      cancelPartialResultTimer();
       rethrow;
     } catch (error) {
+      cancelPartialResultTimer();
       if (listening) await _engine.cancel();
       if (error is DeviceSpeechUnavailable ||
           error is SpeechToTextCaptureFailure) {

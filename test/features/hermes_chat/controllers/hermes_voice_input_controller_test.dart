@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/hermes_chat/controllers/hermes_voice_input_controller.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
+import 'package:wing/shared/voice/voice_capture_failures.dart';
 import 'package:wing/shared/voice/voice_capture_service.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
 
@@ -104,6 +105,26 @@ void main() {
     },
   );
 
+  test('voice input exposes interim speech while listening', () async {
+    final channel = FakeHermesChannel();
+    final capture = _PartialTranscriptCaptureService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => capture,
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    unawaited(controller.captureDraft());
+    await pumpEventQueue();
+    capture.emit('hello Hermes');
+    await pumpEventQueue();
+
+    expect(controller.liveTranscript, 'hello Hermes');
+  });
+
   test('continuous voice allows long dictation before timing out', () async {
     final channel = FakeHermesChannel();
     final capture = _RecordingVoiceCaptureService();
@@ -169,6 +190,69 @@ void main() {
   });
 
   test(
+    'continuous voice waits for speaker audio to clear before rearming',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _FirstCaptureThenBlockService('hello Hermes');
+      final tts = _ControlledTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: const Duration(milliseconds: 20),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.enableContinuous();
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+      expect(capture.captureCalls, 1);
+
+      tts.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(capture.captureCalls, 1);
+      await Future<void>.delayed(const Duration(milliseconds: 25));
+
+      expect(capture.captureCalls, 2);
+    },
+  );
+
+  test(
+    'continuous voice discards a transcript echoed from its spoken reply',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _TranscriptQueueThenBlockService([
+        'hello Hermes',
+        'echo hello Hermes',
+      ]);
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => FakeTextToSpeechService(),
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.enableContinuous();
+      await controller.maybeContinue();
+      await pumpEventQueue();
+
+      expect(channel.sentVoiceTranscripts, ['hello Hermes']);
+      expect(capture.captureCalls, 3);
+    },
+  );
+
+  test(
     'continuous voice speaks only the reply to the new transcript',
     () async {
       final channel = FakeHermesChannel();
@@ -200,6 +284,27 @@ void main() {
     },
   );
 
+  test('voice waits for an active Hermes run before speaking', () async {
+    final channel = FakeHermesChannel();
+    await channel.sendText('first question');
+    final tts = FakeTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    controller.speakNextReply();
+    await channel.sendText('second question');
+    channel.startVoiceRun();
+    await controller.maybeContinue();
+
+    expect(tts.spoken, isEmpty);
+  });
+
   test('continuous voice pauses when capture fails', () async {
     final channel = FakeHermesChannel();
     final controller = HermesVoiceInputController(
@@ -218,6 +323,27 @@ void main() {
       controller.error,
       'Voice capture timed out. Continuous voice paused.',
     );
+  });
+
+  test('continuous voice re-arms after no speech', () async {
+    final channel = FakeHermesChannel();
+    final capture = _FirstNoSpeechThenBlockService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => capture,
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    await controller.enableContinuous();
+    await pumpEventQueue();
+
+    expect(capture.captureCalls, 2);
+    expect(controller.continuousEnabled, isTrue);
+    expect(controller.capturing, isTrue);
+    expect(controller.error, isNull);
   });
 
   test('commandWord stop pauses continuous mode', () async {
@@ -260,6 +386,26 @@ void main() {
 
 /// Mirrors a platform speech engine whose cancel fails while a capture is
 /// still active, which is what happens when the recognizer is already gone.
+class _PartialTranscriptCaptureService
+    implements VoiceCaptureService, VoiceCaptureProgressService {
+  final _partialTranscripts = StreamController<String>.broadcast();
+  final _capture = Completer<VoiceCapture>();
+
+  @override
+  Stream<String> get partialTranscripts => _partialTranscripts.stream;
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) => _capture.future;
+
+  @override
+  Future<void> cancel() async {
+    if (!_capture.isCompleted) _capture.completeError(StateError('cancelled'));
+    await _partialTranscripts.close();
+  }
+
+  void emit(String transcript) => _partialTranscripts.add(transcript);
+}
+
 class _UncancellableVoiceCaptureService implements VoiceCaptureService {
   const _UncancellableVoiceCaptureService();
 
@@ -315,6 +461,52 @@ class _ControlledVoiceCaptureService implements VoiceCaptureService {
   }
 }
 
+class _ControlledTextToSpeechService implements TextToSpeechService {
+  final _completion = Completer<void>();
+
+  @override
+  Future<void> speak(String text) => _completion.future;
+
+  @override
+  Future<void> stop() async {
+    complete();
+  }
+
+  @override
+  Future<void> dispose() => stop();
+
+  void complete() {
+    if (!_completion.isCompleted) _completion.complete();
+  }
+}
+
+class _TranscriptQueueThenBlockService implements VoiceCaptureService {
+  _TranscriptQueueThenBlockService(this._transcripts);
+
+  final List<String> _transcripts;
+  final _pending = Completer<VoiceCapture>();
+  int captureCalls = 0;
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) {
+    captureCalls++;
+    if (_transcripts.isEmpty) return _pending.future;
+    return Future.value(
+      VoiceCapture(
+        audio: Uint8List(0),
+        transcript: _transcripts.removeAt(0),
+        duration: const Duration(seconds: 1),
+        confidence: 1,
+      ),
+    );
+  }
+
+  @override
+  Future<void> cancel() async {
+    if (!_pending.isCompleted) _pending.completeError(StateError('cancelled'));
+  }
+}
+
 class _FirstCaptureThenBlockService implements VoiceCaptureService {
   _FirstCaptureThenBlockService(this.firstTranscript);
 
@@ -338,6 +530,27 @@ class _FirstCaptureThenBlockService implements VoiceCaptureService {
 
   @override
   Future<void> cancel() async {}
+}
+
+class _FirstNoSpeechThenBlockService implements VoiceCaptureService {
+  final Completer<VoiceCapture> _pending = Completer<VoiceCapture>();
+  int captureCalls = 0;
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) {
+    captureCalls++;
+    if (captureCalls == 1) {
+      throw const SpeechToTextCaptureFailure('no transcript');
+    }
+    return _pending.future;
+  }
+
+  @override
+  Future<void> cancel() async {
+    if (!_pending.isCompleted) {
+      _pending.completeError(StateError('cancelled'));
+    }
+  }
 }
 
 class _FailingVoiceCaptureService implements VoiceCaptureService {

@@ -12,6 +12,7 @@
     "hermes:server-audio-receipt": "./scripts/record_hermes_server_audio_receipt.sh",
     "android:voice-smoke": "./scripts/run_android_voice_smoke.sh",
     "android:hermes-voice-loop-smoke": "./scripts/run_android_hermes_voice_loop_smoke.sh",
+    "android:waydroid-voice-maestro": "./scripts/run_waydroid_hermes_voice_maestro.sh",
     "android:durable-key-smoke": "./scripts/run_android_durable_key_smoke.sh",
     "android:live-mic-prep": "./scripts/prepare_android_live_mic_smoke.sh",
     "android:live-mic-receipt": "./scripts/record_android_live_mic_receipt.sh",

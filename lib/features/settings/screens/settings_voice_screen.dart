@@ -154,7 +154,16 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                   value: settings.pocketSpeechModel,
                   items: [
                     for (final model in PocketSpeechModel.values)
-                      DropdownMenuItem(value: model, child: Text(model.label)),
+                      DropdownMenuItem(
+                        value: model,
+                        child: Text(
+                          '${model.label} · ${model.downloadSummary}',
+                        ),
+                      ),
+                  ],
+                  selectedItemBuilder: (context) => [
+                    for (final model in PocketSpeechModel.values)
+                      Text(model.label, overflow: TextOverflow.ellipsis),
                   ],
                   onChanged: downloading
                       ? null

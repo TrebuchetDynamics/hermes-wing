@@ -334,11 +334,14 @@ void main() {
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
+      rearmDelay: const Duration(milliseconds: 20),
     );
     addTearDown(controller.dispose);
 
     await controller.enableContinuous();
     await pumpEventQueue();
+    expect(capture.captureCalls, 1);
+    await Future<void>.delayed(const Duration(milliseconds: 25));
 
     expect(capture.captureCalls, 2);
     expect(controller.continuousEnabled, isTrue);

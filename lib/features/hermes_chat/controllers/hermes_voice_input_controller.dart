@@ -169,7 +169,7 @@ class HermesVoiceInputController extends ChangeNotifier {
             outcome.error is SpeechToTextCaptureFailure &&
             (outcome.error! as SpeechToTextCaptureFailure).isNoTranscript) {
           notifyListeners();
-          unawaited(_capture(autoSend: true, continuous: true));
+          unawaited(_rearmContinuousCapture());
           return;
         }
         _recordCaptureFailure(
@@ -183,7 +183,7 @@ class HermesVoiceInputController extends ChangeNotifier {
           _capturing = false;
           _lastSpokenReply = null;
           notifyListeners();
-          unawaited(_capture(autoSend: true, continuous: true));
+          unawaited(_rearmContinuousCapture());
           return;
         }
         _lastSpokenReply = null;
@@ -304,6 +304,12 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     notifyListeners();
     unawaited(_capture(autoSend: true, continuous: true));
+  }
+
+  Future<void> _rearmContinuousCapture() async {
+    await Future<void>.delayed(_rearmDelay);
+    if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
+    await _capture(autoSend: true, continuous: true);
   }
 
   bool _isSpokenReplyEcho(String transcript) {

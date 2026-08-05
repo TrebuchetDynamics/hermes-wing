@@ -160,8 +160,18 @@ import time
 import urllib.parse
 
 origin, label, bind_host, raw_timeout = sys.argv[1:]
-timeout = max(30, min(int(raw_timeout), 600))
-parts = urllib.parse.urlsplit(origin)
+try:
+    timeout = max(30, min(int(raw_timeout), 600))
+except ValueError:
+    raise SystemExit("WING_CLI_BROKER_TIMEOUT must be an integer number of seconds")
+try:
+    parts = urllib.parse.urlsplit(origin)
+except ValueError:
+    raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
+try:
+    port = parts.port
+except ValueError:
+    raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
 if (
     parts.scheme not in {"http", "https"}
     or not parts.hostname
@@ -170,11 +180,12 @@ if (
     or parts.path not in {"", "/"}
     or parts.query
     or parts.fragment
+    or port == 0
 ):
     raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
 
 host = f"[{parts.hostname}]" if ":" in parts.hostname else parts.hostname
-netloc = f"{host}:{parts.port}" if parts.port else host
+netloc = f"{host}:{port}" if port else host
 origin = urllib.parse.urlunsplit((parts.scheme, netloc, "", "", ""))
 token = os.fdopen(3, encoding="utf-8").read().strip()
 code = secrets.token_urlsafe(32)
@@ -252,7 +263,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
 
-server = Broker((bind_host, 0), Handler)
+try:
+    server = Broker((bind_host, 0), Handler)
+except OSError:
+    raise SystemExit("WING_CLI_BROKER_HOST could not be bound")
 broker = f"http://{bind_host}:{server.server_port}"
 query = urllib.parse.urlencode({"origin": origin, "broker": broker, "code": code})
 print(urllib.parse.urlunsplit(("wing", "connect", "", query, "")), flush=True)
@@ -272,6 +286,7 @@ create_pairing_link() {
   local origin="$1" label="$2" scopes="$3" token
   token="$(api_token)"
   python3 - "$origin" "$label" "$scopes" 3<<<"$token" <<'PY'
+import http.client
 import json
 import os
 import sys
@@ -280,7 +295,14 @@ import urllib.parse
 import urllib.request
 
 origin, label, raw_scopes = sys.argv[1:]
-parts = urllib.parse.urlsplit(origin)
+try:
+    parts = urllib.parse.urlsplit(origin)
+except ValueError:
+    raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
+try:
+    port = parts.port
+except ValueError:
+    raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
 if (
     parts.scheme not in {"http", "https"}
     or not parts.hostname
@@ -289,11 +311,12 @@ if (
     or parts.path not in {"", "/"}
     or parts.query
     or parts.fragment
+    or port == 0
 ):
     raise SystemExit("--origin must be an http(s) origin without credentials, path, query, or fragment")
 
 host = f"[{parts.hostname}]" if ":" in parts.hostname else parts.hostname
-netloc = f"{host}:{parts.port}" if parts.port else host
+netloc = f"{host}:{port}" if port else host
 origin = urllib.parse.urlunsplit((parts.scheme, netloc, "", "", ""))
 scopes = [scope.strip() for scope in raw_scopes.split(",") if scope.strip()]
 valid_domains = {"chat", "sessions", "profiles", "providers", "skills", "tools", "memory", "tasks", "gateway", "settings", "models"}
@@ -310,8 +333,11 @@ request = urllib.request.Request(
     headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
     method="POST",
 )
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *_):
+        return None
 try:
-    with urllib.request.urlopen(request, timeout=10) as response:
+    with urllib.request.build_opener(NoRedirect).open(request, timeout=10) as response:
         payload = json.load(response)
 except urllib.error.HTTPError as error:
     if error.code == 404:
@@ -320,12 +346,18 @@ except urllib.error.HTTPError as error:
             "(/v1/operator/enrollments returned 404). Update Hermes Agent; "
             "access tokens are intentionally never placed in QR codes."
         ) from None
-    detail = error.read(500).decode("utf-8", "replace")
-    raise SystemExit(f"Hermes enrollment failed ({error.code}): {detail}") from None
+    raise SystemExit(f"Hermes enrollment failed ({error.code}).") from None
 except urllib.error.URLError as error:
     raise SystemExit(f"Could not reach Hermes at {origin}: {error.reason}") from None
+except (OSError, UnicodeDecodeError, json.JSONDecodeError, http.client.IncompleteRead):
+    raise SystemExit("Hermes enrollment response was not valid JSON") from None
+if not isinstance(payload, dict):
+    raise SystemExit("Hermes enrollment response was not an object")
 
-pairing = urllib.parse.urlsplit(str(payload.get("pairing_uri", "")))
+try:
+    pairing = urllib.parse.urlsplit(str(payload.get("pairing_uri", "")))
+except ValueError:
+    raise SystemExit("Hermes enrollment response did not include a valid pairing URI")
 code = urllib.parse.parse_qs(pairing.query).get("code", [""])[0]
 if not code:
     raise SystemExit("Hermes enrollment response did not include a pairing code")

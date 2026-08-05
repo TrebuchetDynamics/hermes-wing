@@ -718,7 +718,7 @@ void _hermesApiChannelRunTransportTests() {
     },
   );
 
-  test('sendText ignores stream errors after terminal success', () async {
+  test('sendText ignores error events after terminal success', () async {
     var messagesRequests = 0;
     final stream = StreamController<String>();
     addTearDown(stream.close);
@@ -752,8 +752,10 @@ void _hermesApiChannelRunTransportTests() {
     final send = channel.sendText('finish run');
     await pumpEventQueue();
     stream.add('event: message.delta\ndata: {"delta":"local"}\n\n');
-    stream.add('event: run.completed\ndata: {}\n\n');
-    stream.addError(StateError('late stream drop'));
+    stream.add(
+      'event: run.completed\ndata: {}\n\n'
+      'event: error\ndata: {"message":"late stream drop"}\n\n',
+    );
     await send;
     await pumpEventQueue();
 

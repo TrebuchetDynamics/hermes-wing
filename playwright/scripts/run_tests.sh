@@ -1,20 +1,25 @@
 #!/bin/bash
 # Run Hermes Wing Playwright E2E tests
-set -e
+set -euo pipefail
 
 echo "=== Hermes Wing Playwright E2E Tests ==="
 echo ""
 
-# Kill any existing server on port 8767
-kill $(lsof -ti:8767) 2>/dev/null || true
-sleep 1
-
-# Build the Flutter web app if not already built or if --rebuild flag is passed
-if [ ! -f "build/web/main.dart.js" ] || [ "$1" == "--rebuild" ]; then
-  echo "Building Flutter web e2e app..."
-  flutter build web --release -t lib/main_e2e.dart 2>&1 | tail -3
-  echo ""
+if ! node -e "const { existsSync } = require('node:fs'); const { chromium } = require('@playwright/test'); const browser = process.env.CHROME_EXECUTABLE; process.exit((browser && existsSync(browser)) || existsSync(chromium.executablePath()) ? 0 : 1)"; then
+  echo "ERROR: No Chromium executable found. Set CHROME_EXECUTABLE or run 'npx playwright install chromium'."
+  exit 1
 fi
+
+# Never kill an existing listener; it may belong to another local workflow.
+if lsof -ti:8767 >/dev/null 2>&1; then
+  echo "ERROR: Port 8767 is already in use; stop its owner before running E2E tests." >&2
+  exit 1
+fi
+
+# The regular and e2e Flutter builds share build/web; always rebuild the e2e entrypoint.
+echo "Building Flutter web e2e app..."
+flutter build web --release -t lib/main_e2e.dart 2>&1 | tail -3
+echo ""
 
 cleanup() {
   echo ""

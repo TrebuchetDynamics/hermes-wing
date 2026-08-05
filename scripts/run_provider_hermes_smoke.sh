@@ -13,6 +13,12 @@ EOF
   exit 2
 fi
 
+# Never run browser assertions against a listener owned by another workflow.
+if lsof -ti:8767 >/dev/null 2>&1; then
+  echo "Port 8767 is already in use; stop its owner before running the provider smoke." >&2
+  exit 1
+fi
+
 for cmd in flutter node npx curl python3; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "$cmd is required for the provider-backed Hermes smoke." >&2

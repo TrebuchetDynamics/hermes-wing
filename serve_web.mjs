@@ -1,29 +1,32 @@
 // Simple HTTP server that serves Flutter web build with proper CORS and no-cache
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import http from "http";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, 'build/web');
+const root = path.resolve(__dirname, "build/web");
 const configuredPort = Number(process.env.PORT ?? 8767);
-const port = Number.isInteger(configuredPort) && configuredPort > 0 && configuredPort <= 65535
-  ? configuredPort
-  : 8767;
+const port =
+  Number.isInteger(configuredPort) &&
+  configuredPort > 0 &&
+  configuredPort <= 65535
+    ? configuredPort
+    : 8767;
 
 const MIME = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.mjs': 'application/javascript',
-  '.wasm': 'application/wasm',
-  '.css': 'text/css',
-  '.png': 'image/png',
-  '.svg': 'image/svg+xml',
-  '.json': 'application/json',
-  '.otf': 'font/otf',
-  '.woff2': 'font/woff2',
-  '.ico': 'image/x-icon',
-  '.map': 'application/json',
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".mjs": "application/javascript",
+  ".wasm": "application/wasm",
+  ".css": "text/css",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".json": "application/json",
+  ".otf": "font/otf",
+  ".woff2": "font/woff2",
+  ".ico": "image/x-icon",
+  ".map": "application/json",
 };
 
 const hermesState = {
@@ -37,18 +40,18 @@ const hermesState = {
 };
 
 function resetHermesState() {
-  for (const run of hermesState.runs.values()) run.release?.('reset');
+  for (const run of hermesState.runs.values()) run.release?.("reset");
   hermesState.sessions = [
     {
-      id: 'e2e-hermes-session',
-      source: 'e2e',
-      model: 'hermes-agent',
-      title: 'E2E Hermes Session',
+      id: "e2e-hermes-session",
+      source: "e2e",
+      model: "hermes-agent",
+      title: "E2E Hermes Session",
       messages: [
         {
-          id: 'assistant-welcome',
-          role: 'assistant',
-          content: 'E2E Hermes is ready.',
+          id: "assistant-welcome",
+          role: "assistant",
+          content: "E2E Hermes is ready.",
         },
       ],
     },
@@ -64,7 +67,7 @@ function resetHermesState() {
 resetHermesState();
 
 async function readJsonBody(req) {
-  let body = '';
+  let body = "";
   for await (const chunk of req) body += chunk;
   return body ? JSON.parse(body) : {};
 }
@@ -72,12 +75,12 @@ async function readJsonBody(req) {
 function json(res, status, body) {
   const data = Buffer.from(JSON.stringify(body));
   res.writeHead(status, {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS',
-    'Cache-Control': 'no-store',
-    'Content-Length': data.length,
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
+    "Cache-Control": "no-store",
+    "Content-Length": data.length,
   });
   res.end(data);
 }
@@ -87,41 +90,41 @@ function findHermesSession(id) {
 }
 
 async function handleHermesApi(req, res, url) {
-  if (req.method === 'OPTIONS') return json(res, 204, {});
-  if (req.method === 'POST' && url === '/e2e/hermes/reset') {
+  if (req.method === "OPTIONS") return json(res, 204, {});
+  if (req.method === "POST" && url === "/e2e/hermes/reset") {
     resetHermesState();
     return json(res, 200, { reset: true });
   }
-  if (req.method === 'GET' && url === '/e2e/hermes/stop-count') {
+  if (req.method === "GET" && url === "/e2e/hermes/stop-count") {
     return json(res, 200, { stopCount: hermesState.stopCount });
   }
-  if (req.method === 'GET' && url === '/e2e/hermes/run-count') {
+  if (req.method === "GET" && url === "/e2e/hermes/run-count") {
     return json(res, 200, { runCount: hermesState.runs.size });
   }
-  if (req.method === 'GET' && url === '/e2e/hermes/decisions') {
+  if (req.method === "GET" && url === "/e2e/hermes/decisions") {
     return json(res, 200, { decisions: hermesState.decisions });
   }
-  if (req.method === 'GET' && url === '/health') {
-    return json(res, 200, { status: 'ok', platform: 'hermes-agent' });
+  if (req.method === "GET" && url === "/health") {
+    return json(res, 200, { status: "ok", platform: "hermes-agent" });
   }
-  if (req.method === 'GET' && url === '/health/detailed') {
+  if (req.method === "GET" && url === "/health/detailed") {
     return json(res, 200, {
-      status: 'ok',
-      platform: 'hermes-agent',
-      version: '0.16.0',
-      gateway_state: 'running',
+      status: "ok",
+      platform: "hermes-agent",
+      version: "0.16.0",
+      gateway_state: "running",
       active_agents: 0,
     });
   }
-  if (req.method === 'GET' && url === '/v1/capabilities') {
+  if (req.method === "GET" && url === "/v1/capabilities") {
     return json(res, 200, {
-      object: 'hermes.api_server.capabilities',
-      platform: 'hermes-agent',
-      model: 'hermes-agent',
+      object: "hermes.api_server.capabilities",
+      platform: "hermes-agent",
+      model: "hermes-agent",
       auth: {
-        type: 'bearer',
+        type: "bearer",
         required: false,
-        granted_scopes: ['gateway:read', 'tasks:read'],
+        granted_scopes: ["gateway:read", "tasks:read"],
       },
       features: {
         session_chat_streaming: true,
@@ -135,121 +138,157 @@ async function handleHermesApi(req, res, url) {
       },
       endpoints: {
         health_detailed: {
-          method: 'GET',
-          path: '/health/detailed',
-          required_scopes: ['gateway:read'],
+          method: "GET",
+          path: "/health/detailed",
+          required_scopes: ["gateway:read"],
         },
-        sessions: { method: 'GET', path: '/api/sessions' },
-        session_create: { method: 'POST', path: '/api/sessions' },
-        session_messages: { method: 'GET', path: '/api/sessions/{session_id}/messages' },
-        session_chat_stream: { method: 'POST', path: '/api/sessions/{session_id}/chat/stream' },
-        session_update: { method: 'PATCH', path: '/api/sessions/{session_id}' },
-        session_delete: { method: 'DELETE', path: '/api/sessions/{session_id}' },
-        session_fork: { method: 'POST', path: '/api/sessions/{session_id}/fork' },
-        models: { method: 'GET', path: '/v1/models' },
-        skills: { method: 'GET', path: '/v1/skills' },
-        toolsets: { method: 'GET', path: '/v1/toolsets' },
+        sessions: { method: "GET", path: "/api/sessions" },
+        session_create: { method: "POST", path: "/api/sessions" },
+        session_messages: {
+          method: "GET",
+          path: "/api/sessions/{session_id}/messages",
+        },
+        session_chat_stream: {
+          method: "POST",
+          path: "/api/sessions/{session_id}/chat/stream",
+        },
+        session_update: { method: "PATCH", path: "/api/sessions/{session_id}" },
+        session_delete: {
+          method: "DELETE",
+          path: "/api/sessions/{session_id}",
+        },
+        session_fork: {
+          method: "POST",
+          path: "/api/sessions/{session_id}/fork",
+        },
+        models: { method: "GET", path: "/v1/models" },
+        skills: { method: "GET", path: "/v1/skills" },
+        toolsets: { method: "GET", path: "/v1/toolsets" },
         jobs: {
-          method: 'GET',
-          path: '/api/jobs',
-          required_scopes: ['tasks:read'],
+          method: "GET",
+          path: "/api/jobs",
+          required_scopes: ["tasks:read"],
         },
-        runs: { method: 'POST', path: '/v1/runs' },
-        run_status: { method: 'GET', path: '/v1/runs/{run_id}' },
-        run_events: { method: 'GET', path: '/v1/runs/{run_id}/events' },
-        run_approval: { method: 'POST', path: '/v1/runs/{run_id}/approval' },
-        run_stop: { method: 'POST', path: '/v1/runs/{run_id}/stop' },
+        runs: { method: "POST", path: "/v1/runs" },
+        run_status: { method: "GET", path: "/v1/runs/{run_id}" },
+        run_events: { method: "GET", path: "/v1/runs/{run_id}/events" },
+        run_approval: { method: "POST", path: "/v1/runs/{run_id}/approval" },
+        run_stop: { method: "POST", path: "/v1/runs/{run_id}/stop" },
       },
     });
   }
-  if (req.method === 'GET' && url === '/v1/models') {
+  if (req.method === "GET" && url === "/v1/models") {
     return json(res, 200, {
-      object: 'list',
-      data: [{ id: 'hermes-agent', owned_by: 'hermes' }],
+      object: "list",
+      data: [{ id: "hermes-agent", owned_by: "hermes" }],
     });
   }
-  if (req.method === 'GET' && url === '/v1/skills') {
+  if (req.method === "GET" && url === "/v1/skills") {
     return json(res, 200, {
-      object: 'list',
+      object: "list",
       data: [
-        { name: 'github', description: 'GitHub workflow skill', category: 'github' },
-        { name: 'ascii-art', description: 'ASCII art generation', category: 'creative' },
-      ],
-    });
-  }
-  if (req.method === 'GET' && url === '/v1/toolsets') {
-    return json(res, 200, {
-      object: 'list',
-      platform: 'api_server',
-      data: [
-        { name: 'default', label: 'Default Tools', enabled: true, configured: true, tools: ['read_file'] },
-        { name: 'web', label: 'Web Tools', enabled: false, configured: true, tools: ['web_search'] },
-      ],
-    });
-  }
-  if (req.method === 'GET' && url === '/api/jobs') {
-    return json(res, 200, {
-      jobs: [
         {
-          id: 'job_1',
-          name: 'Morning check',
-          enabled: true,
-          state: 'scheduled',
-          schedule_display: 'Every day at 09:00',
+          name: "github",
+          description: "GitHub workflow skill",
+          category: "github",
+        },
+        {
+          name: "ascii-art",
+          description: "ASCII art generation",
+          category: "creative",
         },
       ],
     });
   }
-  if (req.method === 'GET' && url === '/api/sessions') {
+  if (req.method === "GET" && url === "/v1/toolsets") {
     return json(res, 200, {
-      object: 'list',
+      object: "list",
+      platform: "api_server",
+      data: [
+        {
+          name: "default",
+          label: "Default Tools",
+          enabled: true,
+          configured: true,
+          tools: ["read_file"],
+        },
+        {
+          name: "web",
+          label: "Web Tools",
+          enabled: false,
+          configured: true,
+          tools: ["web_search"],
+        },
+      ],
+    });
+  }
+  if (req.method === "GET" && url === "/api/jobs") {
+    return json(res, 200, {
+      jobs: [
+        {
+          id: "job_1",
+          name: "Morning check",
+          enabled: true,
+          state: "scheduled",
+          schedule_display: "Every day at 09:00",
+        },
+      ],
+    });
+  }
+  if (req.method === "GET" && url === "/api/sessions") {
+    return json(res, 200, {
+      object: "list",
       data: hermesState.sessions.map(({ messages, ...session }) => ({
         ...session,
         message_count: messages.length,
-        preview: messages.at(-1)?.content ?? '',
+        preview: messages.at(-1)?.content ?? "",
       })),
     });
   }
-  if (req.method === 'POST' && url === '/api/sessions') {
+  if (req.method === "POST" && url === "/api/sessions") {
     const body = await readJsonBody(req);
     const session = {
       id: body.id || `e2e-hermes-session-${hermesState.nextSessionNumber}`,
-      source: 'e2e',
-      model: 'hermes-agent',
+      source: "e2e",
+      model: "hermes-agent",
       title: `E2E Hermes Session ${hermesState.nextSessionNumber++}`,
       messages: [],
     };
     hermesState.sessions.push(session);
     const { messages, ...wireSession } = session;
-    return json(res, 200, { object: 'hermes.session', session: wireSession });
+    return json(res, 200, { object: "hermes.session", session: wireSession });
   }
   const sessionMatch = url.match(/^\/api\/sessions\/([^/]+)$/);
-  if (req.method === 'DELETE' && sessionMatch) {
+  if (req.method === "DELETE" && sessionMatch) {
     const sessionId = decodeURIComponent(sessionMatch[1]);
     const before = hermesState.sessions.length;
-    hermesState.sessions = hermesState.sessions.filter((session) => session.id !== sessionId);
+    hermesState.sessions = hermesState.sessions.filter(
+      (session) => session.id !== sessionId,
+    );
     return json(res, 200, {
-      object: 'hermes.session.deleted',
+      object: "hermes.session.deleted",
       id: sessionId,
       deleted: hermesState.sessions.length < before,
     });
   }
-  if (req.method === 'PATCH' && sessionMatch) {
+  if (req.method === "PATCH" && sessionMatch) {
     const session = findHermesSession(decodeURIComponent(sessionMatch[1]));
-    if (!session) return json(res, 404, { error: { message: 'session not found' } });
+    if (!session)
+      return json(res, 404, { error: { message: "session not found" } });
     const body = await readJsonBody(req);
-    if (Object.hasOwn(body, 'title')) session.title = String(body.title ?? '');
+    if (Object.hasOwn(body, "title")) session.title = String(body.title ?? "");
     const { messages, ...wireSession } = session;
-    return json(res, 200, { object: 'hermes.session', session: wireSession });
+    return json(res, 200, { object: "hermes.session", session: wireSession });
   }
   const forkMatch = url.match(/^\/api\/sessions\/([^/]+)\/fork$/);
-  if (req.method === 'POST' && forkMatch) {
+  if (req.method === "POST" && forkMatch) {
     const source = findHermesSession(decodeURIComponent(forkMatch[1]));
-    if (!source) return json(res, 404, { error: { message: 'session not found' } });
+    if (!source)
+      return json(res, 404, { error: { message: "session not found" } });
     const body = await readJsonBody(req);
     const fork = {
       id: body.id || `e2e-hermes-session-${hermesState.nextSessionNumber}`,
-      source: 'e2e',
+      source: "e2e",
       model: source.model,
       title: body.title || `${source.title} fork`,
       parent_session_id: source.id,
@@ -257,14 +296,14 @@ async function handleHermesApi(req, res, url) {
     };
     hermesState.sessions.push(fork);
     const { messages, ...wireSession } = fork;
-    return json(res, 201, { object: 'hermes.session', session: wireSession });
+    return json(res, 201, { object: "hermes.session", session: wireSession });
   }
   const messagesMatch = url.match(/^\/api\/sessions\/([^/]+)\/messages$/);
-  if (req.method === 'GET' && messagesMatch) {
+  if (req.method === "GET" && messagesMatch) {
     const session = findHermesSession(decodeURIComponent(messagesMatch[1]));
     return json(res, 200, {
-      object: 'list',
-      session_id: session?.id ?? '',
+      object: "list",
+      session_id: session?.id ?? "",
       data: (session?.messages ?? []).map((message) => ({
         id: message.id,
         session_id: session.id,
@@ -273,7 +312,7 @@ async function handleHermesApi(req, res, url) {
       })),
     });
   }
-  if (req.method === 'POST' && url === '/v1/runs') {
+  if (req.method === "POST" && url === "/v1/runs") {
     const body = await readJsonBody(req);
     const session = findHermesSession(body.session_id);
     const runId = `run_${hermesState.nextRunId++}`;
@@ -281,7 +320,7 @@ async function handleHermesApi(req, res, url) {
     if (session) {
       session.messages.push({
         id: `msg_${hermesState.nextMessageId++}`,
-        role: 'user',
+        role: "user",
         content: body.message,
       });
     }
@@ -293,33 +332,33 @@ async function handleHermesApi(req, res, url) {
       release: null,
     });
     return json(res, 200, {
-      object: 'hermes.run',
+      object: "hermes.run",
       run: { id: runId, session_id: body.session_id },
     });
   }
   const runEventsMatch = url.match(/^\/v1\/runs\/([^/]+)\/events$/);
-  if (req.method === 'GET' && runEventsMatch) {
+  if (req.method === "GET" && runEventsMatch) {
     const run = hermesState.runs.get(decodeURIComponent(runEventsMatch[1]));
     res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-store',
+      "Content-Type": "text/event-stream",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "no-store",
     });
     res.write(
       `event: approval.request\ndata: ${JSON.stringify({
-        approval_id: run?.approval_id ?? 'approval_missing',
-        tool_call_id: 'tool_e2e',
-        prompt: 'Approve e2e browser run?',
-        risk: 'low',
+        approval_id: run?.approval_id ?? "approval_missing",
+        tool_call_id: "tool_e2e",
+        prompt: "Approve e2e browser run?",
+        risk: "low",
       })}\n\n`,
     );
     const decision = await new Promise((resolve) => {
-      if (!run) return resolve('missing');
+      if (!run) return resolve("missing");
       run.release = resolve;
-      res.once('close', () => resolve('closed'));
+      res.once("close", () => resolve("closed"));
     });
-    if (res.writableEnded || decision === 'closed') return;
-    if (decision === 'stop' || decision === 'reset' || decision === 'deny') {
+    if (res.writableEnded || decision === "closed") return;
+    if (decision === "stop" || decision === "reset" || decision === "deny") {
       res.end(
         `event: run.completed\ndata: ${JSON.stringify({ status: decision })}\n\n` +
           `data: [DONE]\n\n`,
@@ -330,76 +369,89 @@ async function handleHermesApi(req, res, url) {
     if (session) {
       session.messages.push({
         id: `msg_${hermesState.nextMessageId++}`,
-        role: 'assistant',
+        role: "assistant",
         content: run.reply,
       });
     }
     res.end(
       `event: tool.started\ndata: ${JSON.stringify({
-        tool: 'bash',
-        preview: 'echo e2e',
+        tool: "bash",
+        preview: "echo e2e",
       })}\n\n` +
         `event: tool.completed\ndata: ${JSON.stringify({
-          tool: 'bash',
-          result_text: 'tool complete',
+          tool: "bash",
+          result_text: "tool complete",
         })}\n\n` +
-        `event: message.delta\ndata: ${JSON.stringify({ delta: run?.reply ?? '' })}\n\n` +
-        `event: run.completed\ndata: ${JSON.stringify({ status: 'completed' })}\n\n` +
+        `event: message.delta\ndata: ${JSON.stringify({ delta: run?.reply ?? "" })}\n\n` +
+        `event: run.completed\ndata: ${JSON.stringify({ status: "completed" })}\n\n` +
         `data: [DONE]\n\n`,
     );
     return;
   }
   const runActionMatch = url.match(/^\/v1\/runs\/([^/]+)\/(approval|stop)$/);
-  if (req.method === 'POST' && runActionMatch) {
+  if (req.method === "POST" && runActionMatch) {
     const body = await readJsonBody(req);
     const run = hermesState.runs.get(decodeURIComponent(runActionMatch[1]));
     const action = runActionMatch[2];
-    if (action === 'stop') {
+    if (action === "stop") {
       hermesState.stopCount += 1;
     } else {
       hermesState.decisions.push(body.decision);
     }
-    run?.release?.(action === 'stop' ? 'stop' : body.decision);
+    run?.release?.(action === "stop" ? "stop" : body.decision);
     return json(res, 200, {});
   }
   return false;
 }
 
 const server = http.createServer(async (req, res) => {
-  let url = req.url.split('?')[0];
-  const handled = await handleHermesApi(req, res, url);
-  if (handled !== false) return;
-  if (url === '/') url = '/index.html';
-  
-  const filePath = path.join(root, url);
-  
-  // Security: prevent directory traversal
-  if (!filePath.startsWith(root)) {
-    res.writeHead(403);
-    res.end('Forbidden');
-    return;
-  }
-  
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
+  try {
+    let url = req.url.split("?")[0];
+    const handled = await handleHermesApi(req, res, url);
+    if (handled !== false) return;
+    if (url === "/") url = "/index.html";
+
+    const filePath = path.join(root, url);
+    const relativePath = path.relative(root, filePath);
+
+    // Security: prevent directory traversal and sibling-prefix escapes.
+    if (
+      relativePath === ".." ||
+      relativePath.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relativePath)
+    ) {
+      res.writeHead(403);
+      res.end("Forbidden");
       return;
     }
-    
-    const ext = path.extname(filePath);
-    res.writeHead(200, {
-      'Content-Type': MIME[ext] || 'application/octet-stream',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'Content-Length': data.length,
+
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+
+      const ext = path.extname(filePath);
+      res.writeHead(200, {
+        "Content-Type": MIME[ext] || "application/octet-stream",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "Content-Length": data.length,
+      });
+      res.end(data);
     });
-    res.end(data);
-  });
+  } catch {
+    if (!res.headersSent) {
+      json(res, 400, { error: { message: "Invalid JSON request body" } });
+    } else {
+      res.destroy();
+    }
+  }
 });
 
-server.listen(port, () => {
+server.listen(port, "127.0.0.1", () => {
   console.log(`Server running at http://127.0.0.1:${port}/`);
 });

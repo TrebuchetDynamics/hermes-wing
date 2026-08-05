@@ -1,11 +1,11 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './playwright/tests',
+  testDir: "./playwright/tests",
   timeout: 60000,
   expect: { timeout: 10000 },
   retries: 1,
-  preserveOutput: 'always',
+  preserveOutput: "always",
   // The local Hermes API mock is intentionally stateful across each user flow.
   workers: 1,
   use: {
@@ -13,18 +13,21 @@ export default defineConfig({
     viewport: { width: 1280, height: 900 },
     actionTimeout: 8000,
     launchOptions: {
+      ...(process.env.CHROME_EXECUTABLE
+        ? { executablePath: process.env.CHROME_EXECUTABLE }
+        : {}),
       args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--ignore-gpu-blocklist',
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--ignore-gpu-blocklist",
       ],
     },
   },
   projects: [
     {
-      name: 'chromium',
-      use: { browserName: 'chromium' },
+      name: "chromium",
+      use: { browserName: "chromium" },
     },
   ],
-  reporter: [['list'], ['json', { outputFile: 'playwright/results.json' }]],
+  reporter: [["list"], ["json", { outputFile: "playwright/results.json" }]],
 });

@@ -13,6 +13,12 @@ for cmd in flutter node npx curl python3; do
   fi
 done
 
+# Never run browser assertions against a listener owned by another workflow.
+if lsof -ti:8767 >/dev/null 2>&1; then
+  echo "Port 8767 is already in use; stop its owner before running the live Hermes smoke." >&2
+  exit 1
+fi
+
 port="${WING_LIVE_HERMES_PORT:-18642}"
 host="${WING_LIVE_HERMES_HOST:-127.0.0.1}"
 api_key="${WING_LIVE_HERMES_API_KEY:-$(python3 - <<'PY'
@@ -28,8 +34,14 @@ hermes_log="${WING_LIVE_HERMES_LOG:-/tmp/wing-live-hermes.log}"
 hermes_pid=""
 web_pid=""
 cleanup() {
-  if [ -n "$web_pid" ]; then kill "$web_pid" 2>/dev/null || true; fi
-  if [ -n "$hermes_pid" ]; then kill "$hermes_pid" 2>/dev/null || true; fi
+  if [ -n "$web_pid" ]; then
+    kill "$web_pid" 2>/dev/null || true
+    wait "$web_pid" 2>/dev/null || true
+  fi
+  if [ -n "$hermes_pid" ]; then
+    kill "$hermes_pid" 2>/dev/null || true
+    wait "$hermes_pid" 2>/dev/null || true
+  fi
   if [ -z "${WING_LIVE_HERMES_HOME:-}" ]; then rm -rf "$hermes_home"; fi
 }
 trap cleanup EXIT

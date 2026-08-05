@@ -6,6 +6,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('package scripts expose Hermes and platform closeout helpers', () {
+    final serveWeb = File('serve_web.mjs').readAsStringSync();
+    expect(
+      serveWeb,
+      contains('const relativePath = path.relative(root, filePath)'),
+    );
+    expect(serveWeb, contains(r'relativePath.startsWith(`..${path.sep}`)'));
+    expect(serveWeb, isNot(contains('filePath.startsWith(root)')));
+    expect(serveWeb, contains('Invalid JSON request body'));
+    expect(serveWeb, contains('server.listen(port, "127.0.0.1"'));
+
     final packageJson =
         jsonDecode(File('package.json').readAsStringSync())
             as Map<String, Object?>;
@@ -235,6 +245,11 @@ void main() {
     final liveSmoke = File(
       'scripts/run_live_hermes_smoke.sh',
     ).readAsStringSync();
+    expect(liveSmoke, contains('lsof -ti:8767'));
+    expect(
+      liveSmoke,
+      contains('stop its owner before running the live Hermes smoke'),
+    );
     expect(liveSmoke, contains('API connect/session rendering only'));
     expect(liveSmoke, contains('not provider/model evidence'));
     expect(liveSmoke, contains('not a chat/voice provider smoke'));
@@ -257,6 +272,11 @@ void main() {
     expect(providerSmoke, contains('provider-backed Hermes typed text turn'));
     expect(providerSmoke, contains('deterministic transcript voice turn'));
     expect(providerSmoke, contains('safe_receipt_base_url'));
+    expect(providerSmoke, contains('lsof -ti:8767'));
+    expect(
+      providerSmoke,
+      contains('stop its owner before running the provider smoke'),
+    );
     expect(providerSmoke, contains('urlsplit'));
     expect(
       providerSmoke,

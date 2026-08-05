@@ -274,6 +274,9 @@ void main() {
         find.byKey(const ValueKey('hermes-voice-mode-end-button')),
         findsOneWidget,
       );
+      capture.emit('testing one two');
+      await tester.pump();
+      expect(find.text('testing one two'), findsOneWidget);
 
       await tester.tap(
         find.byKey(const ValueKey('hermes-voice-mode-end-button')),
@@ -569,10 +572,15 @@ void main() {
   });
 }
 
-class _ControlledVoiceCaptureService implements VoiceCaptureService {
+class _ControlledVoiceCaptureService
+    implements VoiceCaptureService, VoiceCaptureProgressService {
   final _completion = Completer<VoiceCapture>();
+  final _partialTranscripts = StreamController<String>.broadcast();
   int captureCalls = 0;
   int cancelCalls = 0;
+
+  @override
+  Stream<String> get partialTranscripts => _partialTranscripts.stream;
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) {
@@ -584,6 +592,8 @@ class _ControlledVoiceCaptureService implements VoiceCaptureService {
   Future<void> cancel() async {
     cancelCalls += 1;
   }
+
+  void emit(String transcript) => _partialTranscripts.add(transcript);
 
   void complete(String transcript) {
     if (_completion.isCompleted) return;

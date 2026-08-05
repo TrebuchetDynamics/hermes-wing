@@ -2088,7 +2088,7 @@ abstract class AppLocalizations {
   /// No description provided for @voicePocketSpeechModelSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose a compact English pack or the larger bilingual pack'**
+  /// **'Choose a compact English pack or the larger English pack'**
   String get voicePocketSpeechModelSubtitle;
 
   /// No description provided for @voicePackTitle.

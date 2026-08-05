@@ -1164,7 +1164,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voicePocketSpeechModelSubtitle =>
-      'Choose a compact English pack or the larger bilingual pack';
+      'Choose a compact English pack or the larger English pack';
 
   @override
   String voicePackTitle(String model) {

@@ -22,6 +22,11 @@ abstract interface class VoiceCaptureService {
   Future<void> cancel();
 }
 
+/// Optional live recognition updates from a [VoiceCaptureService].
+abstract interface class VoiceCaptureProgressService {
+  Stream<String> get partialTranscripts;
+}
+
 class VoiceCaptureTimeout implements Exception {
   const VoiceCaptureTimeout();
 

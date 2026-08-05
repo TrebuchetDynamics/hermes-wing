@@ -614,7 +614,7 @@
   "voiceCommandWordHint": "Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.",
   "voicePocketSpeechSection": "Local voice preferences",
   "voicePocketSpeechModelTitle": "Pocket Speech model",
-  "voicePocketSpeechModelSubtitle": "Choose a compact English pack or the larger bilingual pack",
+  "voicePocketSpeechModelSubtitle": "Choose a compact English pack or the larger English pack",
   "voicePackTitle": "{model} voice pack",
   "@voicePackTitle": {
     "placeholders": {

@@ -39,7 +39,9 @@ type pairingBroker struct {
 
 func (broker *pairingBroker) Close() {
 	broker.closeOnce.Do(func() {
-		_ = broker.server.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		_ = broker.server.Shutdown(ctx)
 		_ = broker.listener.Close()
 	})
 }
@@ -120,7 +122,7 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 		}
 		decoder := json.NewDecoder(request.Body)
 		decoder.DisallowUnknownFields()
-		if err := decoder.Decode(&payload); err != nil || payload.Origin != options.Origin.String() || !matchesHash(payload.Code, hashSecret(code)) || !time.Now().Before(expiresAt) {
+		if err := decoder.Decode(&payload); err != nil || payload.Origin != brokerOrigin || !matchesHash(payload.Code, hashSecret(code)) || !time.Now().Before(expiresAt) {
 			writePairJSON(writer, http.StatusNotFound, map[string]any{"error": "pairing code unavailable"})
 			return
 		}
@@ -297,6 +299,9 @@ func normalizeOrigin(value string) (*url.URL, error) {
 	}
 	if origin.Port() == "0" {
 		return nil, errors.New("origin must use a valid TCP port")
+	}
+	if ip := net.ParseIP(origin.Hostname()); ip != nil && ip.IsUnspecified() {
+		return nil, errors.New("origin must identify one interface, not a wildcard address")
 	}
 	return &url.URL{Scheme: origin.Scheme, Host: origin.Host}, nil
 }

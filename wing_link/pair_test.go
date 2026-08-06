@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"io"
@@ -34,15 +35,15 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 		t.Fatalf("pairing URI = %s", payload)
 	}
 
-	inspect := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/inspect", origin.String(), code)
+	inspect := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/inspect", brokerOrigin, code)
 	if inspect.StatusCode != http.StatusOK || !strings.Contains(string(inspect.Body), `"label":"phone"`) {
 		t.Fatalf("inspect = %d %s", inspect.StatusCode, inspect.Body)
 	}
-	exchange := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", origin.String(), code)
+	exchange := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", brokerOrigin, code)
 	if exchange.StatusCode != http.StatusOK || !strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) {
 		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
 	}
-	replay := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", origin.String(), code)
+	replay := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", brokerOrigin, code)
 	if replay.StatusCode != http.StatusGone {
 		t.Fatalf("replay status = %d", replay.StatusCode)
 	}
@@ -50,6 +51,54 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 	case <-broker.Done:
 	case <-time.After(time.Second):
 		t.Fatal("broker did not report exchange")
+	}
+}
+
+func TestPairCommandCompletesAfterTokenResponseIsDelivered(t *testing.T) {
+	t.Setenv("WING_HERMES_URL", "http://127.0.0.1:8642")
+	t.Setenv("WING_HERMES_TOKEN", "superuser-secret")
+	reader, writer := io.Pipe()
+	result := make(chan int, 1)
+	go func() {
+		result <- pairCommand(io.Discard, writer, nil)
+		_ = writer.Close()
+	}()
+
+	scanner := bufio.NewScanner(reader)
+	var exchangeEndpoint, code string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "code valid") {
+			fields := strings.Fields(line)
+			exchangeEndpoint = fields[len(fields)-1]
+		}
+		if strings.HasPrefix(line, "pair: code: ") {
+			code = strings.TrimPrefix(line, "pair: code: ")
+			break
+		}
+	}
+	if exchangeEndpoint == "" || code == "" {
+		t.Fatalf("endpoint=%q code=%q", exchangeEndpoint, code)
+	}
+	brokerOrigin := strings.TrimSuffix(exchangeEndpoint, "/v1/operator/enrollments/exchange")
+	inspect := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/inspect", brokerOrigin, code)
+	if inspect.StatusCode != http.StatusOK {
+		t.Fatalf("inspect status = %d", inspect.StatusCode)
+	}
+	exchange := postPairBroker(t, exchangeEndpoint, brokerOrigin, code)
+	if exchange.StatusCode != http.StatusOK || !strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) {
+		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
+	}
+	if !scanner.Scan() || !strings.Contains(scanner.Text(), "pairing complete") {
+		t.Fatalf("completion message = %q", scanner.Text())
+	}
+	select {
+	case exitCode := <-result:
+		if exitCode != 0 {
+			t.Fatalf("exit code = %d", exitCode)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("pair command did not finish")
 	}
 }
 
@@ -72,6 +121,14 @@ func TestPairingBrokerRejectsWrongOriginAndCode(t *testing.T) {
 		response := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/inspect", request.origin, request.code)
 		if response.StatusCode != http.StatusNotFound {
 			t.Fatalf("status = %d", response.StatusCode)
+		}
+	}
+}
+
+func TestNormalizeOriginRejectsWildcardHosts(t *testing.T) {
+	for _, origin := range []string{"http://0.0.0.0:8642", "http://[::]:8642"} {
+		if _, err := normalizeOrigin(origin); err == nil {
+			t.Fatalf("wildcard origin accepted: %s", origin)
 		}
 	}
 }

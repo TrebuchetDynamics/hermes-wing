@@ -21,6 +21,7 @@ abstract interface class FlutterTtsEngine {
   Future<void> setSpeechRate(double rate);
   Future<void> setVolume(double volume);
   Future<void> setPitch(double pitch);
+  Future<void> resetToDefaultVoice();
   Future<void> speak(String text);
   Future<void> stop();
 
@@ -60,7 +61,10 @@ class PluginFlutterTtsEngine implements FlutterTtsEngine {
 
   @override
   Future<void> setLanguage(String language) async {
-    await _flutterTts.setLanguage(language);
+    final result = await _flutterTts.setLanguage(language);
+    if (result == 0 || result == false) {
+      throw StateError('TTS language unavailable: $language');
+    }
   }
 
   @override
@@ -76,6 +80,11 @@ class PluginFlutterTtsEngine implements FlutterTtsEngine {
   @override
   Future<void> setPitch(double pitch) async {
     await _flutterTts.setPitch(pitch);
+  }
+
+  @override
+  Future<void> resetToDefaultVoice() async {
+    await _flutterTts.clearVoice();
   }
 
   @override
@@ -215,6 +224,7 @@ class FlutterTextToSpeechService implements TextToSpeechService {
   final double pitch;
   final TtsSettingsReader? _settings;
   bool _configured = false;
+  String? _lastAppliedLanguage;
 
   @override
   Future<void> speak(String text) async {
@@ -241,6 +251,16 @@ class FlutterTextToSpeechService implements TextToSpeechService {
     // then leaves the engine at its known-good default rather than the locale
     // used for the previous reply.
     String? defaultLanguage;
+    if (_lastAppliedLanguage != null &&
+        _languageCode(detectedLanguage ?? '') !=
+            _languageCode(_lastAppliedLanguage!)) {
+      try {
+        await _engine.resetToDefaultVoice();
+        _lastAppliedLanguage = null;
+      } catch (_) {
+        // Keep the prior locale recorded so the next reply retries the reset.
+      }
+    }
     try {
       defaultLanguage = await _engine.defaultLanguage();
       if (defaultLanguage != null) {
@@ -255,8 +275,10 @@ class FlutterTextToSpeechService implements TextToSpeechService {
             _languageCode(defaultLanguage ?? '')) {
       try {
         await _engine.setLanguage(detectedLanguage);
+        _lastAppliedLanguage = detectedLanguage;
       } catch (_) {
-        // A missing language pack must not silence the reply.
+        // A missing language pack must not silence the reply. Keep the prior
+        // locale recorded so a later ambiguous reply can still reset it.
       }
     }
 

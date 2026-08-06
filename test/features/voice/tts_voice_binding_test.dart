@@ -46,6 +46,11 @@ class _RecordingEngine implements FlutterTtsEngine {
   }
 
   @override
+  Future<void> resetToDefaultVoice() async {
+    calls.add('resetToDefaultVoice');
+  }
+
+  @override
   Future<void> speak(String text) async {
     calls.add('speak');
   }
@@ -80,6 +85,11 @@ class _NoLanguageDetector implements VoiceTextLanguageDetector {
   String? detect(String text) => null;
 }
 
+class _RejectingFlutterTts extends FlutterTts {
+  @override
+  Future<dynamic> setLanguage(String language) async => 0;
+}
+
 /// Scripted [FlutterTts] whose getVoices returns the queued responses in
 /// order (repeating the last one). Exercises [PluginFlutterTtsEngine]'s
 /// voice-list caching against the real plugin surface.
@@ -101,6 +111,12 @@ class _ScriptedFlutterTts extends FlutterTts {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('rejected platform language is surfaced as unavailable', () async {
+    final engine = PluginFlutterTtsEngine(flutterTts: _RejectingFlutterTts());
+
+    await expectLater(engine.setLanguage('fa'), throwsStateError);
+  });
 
   test(
     'empty cold-start voice list is not cached; next call re-fetches',

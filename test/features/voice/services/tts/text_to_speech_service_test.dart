@@ -80,6 +80,60 @@ void main() {
   });
 
   test(
+    'ambiguous reply does not inherit the previous foreign locale',
+    () async {
+      final engine = _FakeFlutterTtsEngine();
+      final service = FlutterTextToSpeechService(engine: engine);
+
+      await service.speak('Hola, ¿cómo puedo ayudarte hoy?');
+      expect(engine.currentLanguage, 'es');
+
+      await service.speak('OK');
+
+      expect(engine.currentLanguage, isNull);
+    },
+  );
+
+  test('retries a failed default-voice reset on the next reply', () async {
+    final engine = _FakeFlutterTtsEngine();
+    final service = FlutterTextToSpeechService(engine: engine);
+
+    await service.speak('Hola, ¿cómo puedo ayudarte hoy?');
+    engine.failNextReset = true;
+    await service.speak('OK');
+    expect(engine.currentLanguage, 'es');
+
+    await service.speak('OK');
+
+    expect(engine.currentLanguage, isNull);
+    expect(
+      engine.calls.where((call) => call == 'resetToDefaultVoice'),
+      hasLength(2),
+    );
+  });
+
+  test(
+    'rejected language does not retain the previous foreign locale',
+    () async {
+      final engine = _FakeFlutterTtsEngine();
+      final detector = _MutableLanguageDetector('es');
+      final service = FlutterTextToSpeechService(
+        engine: engine,
+        languageDetector: detector,
+      );
+
+      await service.speak('Hola, puedo ayudarte.');
+      expect(engine.currentLanguage, 'es');
+
+      detector.language = 'fa';
+      engine.failNextSetLanguage = true;
+      await service.speak('سلام، می‌توانم کمک کنم.');
+
+      expect(engine.currentLanguage, isNull);
+    },
+  );
+
+  test(
     'resets to the system language before switching reply language',
     () async {
       final engine = _FakeFlutterTtsEngine(systemLanguage: 'en-US');
@@ -165,7 +219,9 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
 
   final calls = <String>[];
   bool failNextSetLanguage;
+  bool failNextReset = false;
   final String? systemLanguage;
+  String? currentLanguage;
 
   @override
   Future<void> awaitSpeakCompletion(bool awaitCompletion) async {
@@ -179,11 +235,22 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
       failNextSetLanguage = false;
       throw StateError('language unavailable');
     }
+    currentLanguage = language;
   }
 
   @override
   Future<void> setPitch(double pitch) async {
     calls.add('setPitch:$pitch');
+  }
+
+  @override
+  Future<void> resetToDefaultVoice() async {
+    calls.add('resetToDefaultVoice');
+    if (failNextReset) {
+      failNextReset = false;
+      throw StateError('default voice unavailable');
+    }
+    currentLanguage = null;
   }
 
   @override
@@ -222,6 +289,15 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
 
   @override
   Future<String?> defaultLanguage() async => systemLanguage;
+}
+
+class _MutableLanguageDetector implements VoiceTextLanguageDetector {
+  _MutableLanguageDetector(this.language);
+
+  String? language;
+
+  @override
+  String? detect(String text) => language;
 }
 
 class _FixedLanguageDetector implements VoiceTextLanguageDetector {

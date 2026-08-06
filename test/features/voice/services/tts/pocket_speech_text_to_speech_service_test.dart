@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/voice/services/tts/pocket_speech_text_to_speech_service.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
-import 'package:wing/shared/voice/voice_text_language_detector.dart';
 import 'package:pocket_speech/src/kokoro_engine/src/tokenizer.dart';
 
 void main() {
@@ -74,13 +73,12 @@ void main() {
       engine: engine,
       audioSink: _FakePocketSpeechAudioSink(),
       fallback: fallback,
-      languageDetector: const _FixedLanguageDetector('es'),
     );
 
-    await service!.speak('Hola, ¿cómo puedo ayudarte hoy?');
+    await service!.speak('Hola, ¿cómo estás?');
 
     expect(engine.calls, isEmpty);
-    expect(fallback.spoken, ['Hola, ¿cómo puedo ayudarte hoy?']);
+    expect(fallback.spoken, ['Hola, ¿cómo estás?']);
   });
 
   test(
@@ -190,15 +188,6 @@ void main() {
     expect(player.stopCalls, greaterThanOrEqualTo(1));
     expect(player.disposeCalls, 1);
   });
-}
-
-class _FixedLanguageDetector implements VoiceTextLanguageDetector {
-  const _FixedLanguageDetector(this.language);
-
-  final String? language;
-
-  @override
-  String? detect(String text) => language;
 }
 
 class _FailingPocketSpeechEngine implements PocketSpeechEngine {

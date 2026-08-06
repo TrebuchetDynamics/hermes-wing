@@ -12,8 +12,12 @@ async function open(page, route) {
 
 test("Hermes connect screen screenshot", async ({ page }, testInfo) => {
   await open(page, "#/hermes");
+  await page
+    .getByRole("button", { name: "Add gateway or agent" })
+    .first()
+    .click();
   await expect(
-    page.getByText("Connect to your Hermes VPS").first(),
+    page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("hermes-connect.png"),

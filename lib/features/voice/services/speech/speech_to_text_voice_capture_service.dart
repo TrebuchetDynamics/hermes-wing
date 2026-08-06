@@ -353,7 +353,12 @@ class SpeechToTextVoiceCaptureService
       rethrow;
     } catch (error) {
       cancelPartialResultTimer();
-      if (listening) await _engine.cancel();
+      if (listening) {
+        fireAndForget(
+          _engine.cancel(),
+          'speech engine cancel after capture failure',
+        );
+      }
       if (error is DeviceSpeechUnavailable ||
           error is SpeechToTextCaptureFailure) {
         rethrow;

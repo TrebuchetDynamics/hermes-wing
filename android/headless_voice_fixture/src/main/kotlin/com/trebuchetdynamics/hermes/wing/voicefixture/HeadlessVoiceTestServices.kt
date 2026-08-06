@@ -27,8 +27,10 @@ class HeadlessSpeechRecognitionService : RecognitionService() {
         ).getOrElse(index) { "navi stop listening" }
 
         callback.readyForSpeech(Bundle())
+        callback.rmsChanged(1.5f)
         handler.postDelayed({
             callback.beginningOfSpeech()
+            callback.rmsChanged(8.0f)
             callback.endOfSpeech()
             callback.results(Bundle().apply {
                 putStringArrayList(

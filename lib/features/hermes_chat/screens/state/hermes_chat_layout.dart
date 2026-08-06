@@ -1142,7 +1142,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
         child: Row(
           children: [
-            if (_voiceInputController.capturing)
+            if (_voiceInputController.capturing &&
+                _voiceInputController.soundLevel?.isNaN == false)
               _VoiceWaveform(level: _voiceInputController.soundLevel)
             else
               Icon(icon, color: colors.onPrimaryContainer),
@@ -1582,9 +1583,12 @@ class _VoiceWaveform extends StatelessWidget {
 
   double _normalizedLevel(double? value) {
     if (value == null) return 0;
-    // speech_to_text reports Android RMS dB near -2..10 and iOS average
-    // power below -20 dB.
-    final normalized = value < -20 ? (value + 60) / 60 : (value + 2) / 12;
+    // Darwin reports average power in dB; Android and other backends expose
+    // their own RMS-like scale.
+    final normalized = switch (defaultTargetPlatform) {
+      TargetPlatform.iOS || TargetPlatform.macOS => (value + 60) / 60,
+      _ => (value + 2) / 12,
+    };
     return normalized.clamp(0.0, 1.0);
   }
 }

@@ -94,6 +94,22 @@ void main() {
     },
   );
 
+  test('a hung cancel after recognition error cannot strand capture', () async {
+    final service = SpeechToTextVoiceCaptureService(
+      engine: _ErrorThenHungCancelSpeechToTextEngine(),
+    );
+
+    await expectLater(
+      service
+          .capture(timeout: const Duration(seconds: 1))
+          .timeout(
+            const Duration(milliseconds: 100),
+            onTimeout: () => throw StateError('capture stranded after error'),
+          ),
+      throwsA(isA<SpeechToTextCaptureFailure>()),
+    );
+  });
+
   test(
     'a hung engine cancel cannot strand the capture past its timeout',
     () async {
@@ -116,6 +132,45 @@ void main() {
       );
     },
   );
+}
+
+class _ErrorThenHungCancelSpeechToTextEngine implements SpeechToTextEngine {
+  final _neverCancels = Completer<void>();
+  void Function(Object error)? _onError;
+
+  @override
+  Future<bool?> hasPermission() async => true;
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async {
+    _onError = onError;
+    return true;
+  }
+
+  @override
+  Future<SpeechToTextLocale?> systemLocale() async => null;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    scheduleMicrotask(
+      () => _onError?.call(SpeechRecognitionError('error_no_match', true)),
+    );
+  }
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> cancel() => _neverCancels.future;
 }
 
 /// Never resolves `listen`, and its `cancel()` hangs forever.

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -240,8 +240,10 @@ void main() {
     (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1;
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
       final channel = FakeHermesChannel();
       final capture = _ControlledVoiceCaptureService();
@@ -278,11 +280,30 @@ void main() {
         of: find.byKey(const ValueKey('hermes-voice-waveform')),
         matching: find.byType(AnimatedContainer),
       );
+      expect(waveformBars, findsNothing);
+      capture.emitLevel(double.nan);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(waveformBars, findsNothing);
+      capture.emitLevel(-21);
+      await tester.pump(const Duration(milliseconds: 100));
       expect(waveformBars, findsNWidgets(5));
       final quietHeight = tester
           .widget<AnimatedContainer>(waveformBars.first)
           .constraints!
           .minHeight;
+      final minusTwentyOneHeight = tester
+          .widget<AnimatedContainer>(waveformBars.first)
+          .constraints!
+          .minHeight;
+      capture.emitLevel(-20);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        tester
+            .widget<AnimatedContainer>(waveformBars.first)
+            .constraints!
+            .minHeight,
+        greaterThanOrEqualTo(minusTwentyOneHeight),
+      );
       capture.emitLevel(10);
       await tester.pump(const Duration(milliseconds: 100));
       expect(
@@ -311,6 +332,7 @@ void main() {
 
       expect(channel.sentVoiceTranscripts, isEmpty);
       expect(tts.spoken, isEmpty);
+      debugDefaultTargetPlatformOverride = null;
     },
   );
 

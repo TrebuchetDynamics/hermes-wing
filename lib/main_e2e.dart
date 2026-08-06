@@ -5,6 +5,7 @@ import 'dart:js_interop';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web/web.dart' as web;
 
 import 'core/hermes/channel/hermes_api_channel.dart';
 import 'features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -29,7 +30,7 @@ void main() {
   _wingE2EHermesConnect = (([JSString? baseUrl, JSString? apiKey]) {
     unawaited(
       hermesChannel.connect(
-        baseUrl: baseUrl?.toDart ?? 'http://127.0.0.1:8767',
+        baseUrl: baseUrl?.toDart ?? web.window.location.origin,
         apiKey: apiKey?.toDart,
       ),
     );

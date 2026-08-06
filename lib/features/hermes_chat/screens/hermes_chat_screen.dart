@@ -64,15 +64,21 @@ final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
 );
 
 final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
-  final settings = ref.watch(wingVoiceSettingsProvider);
+  final (pocketSpeechEnabled, voicePack) = ref.watch(
+    wingVoiceSettingsProvider.select(
+      (settings) => (
+        settings.pocketSpeechTtsEnabled && settings.pocketSpeechVoicePackReady,
+        settings.pocketSpeechVoicePack,
+      ),
+    ),
+  );
   final platformService = createDefaultTextToSpeechService(
     settings: () => ref.read(wingVoiceSettingsProvider),
   );
-  final service =
-      settings.pocketSpeechTtsEnabled && settings.pocketSpeechVoicePackReady
+  final service = pocketSpeechEnabled && voicePack != null
       ? createPocketSpeechTextToSpeechService(
           enabled: true,
-          voicePack: settings.pocketSpeechVoicePack!,
+          voicePack: voicePack,
           settings: () => ref.read(wingVoiceSettingsProvider),
           fallback: platformService,
         )

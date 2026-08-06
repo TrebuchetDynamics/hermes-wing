@@ -443,10 +443,19 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             if (_voiceInputController.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  _voiceInputController.error!,
+                child: Semantics(
                   key: const ValueKey('hermes-voice-error'),
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  container: true,
+                  liveRegion: true,
+                  label: _voiceInputController.error!,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      _voiceInputController.error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             if (_followUps.isNotEmpty)
@@ -1189,6 +1198,17 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool canSendTurns,
     Widget strip,
   ) {
+    if (_voiceInputController.continuousEnabled) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          strip,
+          const SizedBox(height: 6),
+          _buildVoiceModeSurface(context),
+        ],
+      );
+    }
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final strings = AppLocalizations.of(context);
@@ -1510,7 +1530,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         icon: Icon(Icons.mic_rounded, semanticLabel: micLabel),
         onPressed: !canSendTurns || !voiceEnabled
             ? null
-            : () => _setContinuousVoice(true),
+            : () => unawaited(_voiceInputController.captureAndSend()),
       ),
     );
     if (_voiceInputController.capturing || !canSendTurns || !voiceEnabled) {

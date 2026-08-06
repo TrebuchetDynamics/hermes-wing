@@ -10,6 +10,7 @@ import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
 import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/enrollment/services/hermes_connect_intent_source.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/router/providers/app_router.dart';
 import 'package:wing/router/routes/app_routes.dart';
 
@@ -378,6 +379,50 @@ void main() {
       expect(source.scanCalls, 1);
       expect(controller.status, HermesEnrollmentStatus.ready);
       expect(find.text('hermes.example'), findsOneWidget);
+    });
+
+    testWidgets('invalid pairing links offer manual gateway setup', (
+      tester,
+    ) async {
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        initial: 'wing://connect?code=missing-origin',
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-payload-error')),
+        findsOneWidget,
+      );
+      expect(find.text('Pairing link couldn’t be opened'), findsOneWidget);
+      expect(
+        find.text('Scan a new QR code or enter the gateway manually.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HermesChatScreen), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        findsNothing,
+      );
     });
 
     testWidgets(

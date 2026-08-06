@@ -9,6 +9,7 @@ class DeviceSpeechDiagnosticsTest {
         val diagnostics = DeviceSpeechDiagnostics(
             recognitionServices = listOf("pkg.one/Service", "pkg.two/Service"),
             microphonePermissionGranted = true,
+            onDeviceRecognitionAvailable = true,
         )
 
         assertEquals(
@@ -16,6 +17,7 @@ class DeviceSpeechDiagnosticsTest {
                 "recognitionServiceCount" to 2,
                 "recognitionServices" to listOf("pkg.one/Service", "pkg.two/Service"),
                 "microphonePermissionGranted" to true,
+                "onDeviceRecognitionAvailable" to true,
             ),
             diagnostics.toMethodChannelMap(),
         )
@@ -28,6 +30,7 @@ class DeviceSpeechDiagnosticsTest {
         val diagnostics = DeviceSpeechDiagnostics(
             recognitionServices = serviceIds,
             microphonePermissionGranted = false,
+            onDeviceRecognitionAvailable = false,
         ).toMethodChannelMap()
 
         assertEquals(12, diagnostics["recognitionServiceCount"])

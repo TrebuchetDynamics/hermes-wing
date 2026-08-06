@@ -640,6 +640,36 @@ void main() {
     expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
   });
 
+  testWidgets(
+    'run failures show redacted server detail without opening a sheet',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      channel.addFailedExchange(
+        'Run it.',
+        errorMessage:
+            'Hermes run failed: provider_error: Quota exceeded for api_key=secret-key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('hermes-chat-error-summary')),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('provider_error: Quota exceeded'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('secret-key'), findsNothing);
+    },
+  );
+
   testWidgets('structured assistant errors render as readable messages', (
     tester,
   ) async {

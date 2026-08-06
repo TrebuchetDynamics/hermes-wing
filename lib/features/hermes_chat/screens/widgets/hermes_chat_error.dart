@@ -68,6 +68,7 @@ class _HermesChatError extends StatelessWidget {
             strings.chatErrorStreamDroppedBody,
           )
         : (strings.chatErrorGenericTitle, strings.chatErrorGenericBody);
+    final summary = _hermesErrorSummary(error, title: title);
     final colorScheme = Theme.of(context).colorScheme;
     return _AssistantTimelineItem(
       child: Align(
@@ -97,6 +98,18 @@ class _HermesChatError extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(recovery),
+                  if (summary != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      strings.chatErrorRedactedDetailsLabel,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 2),
+                    SelectableText(
+                      summary,
+                      key: const ValueKey('hermes-chat-error-summary'),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
@@ -247,6 +260,20 @@ String _safeHermesUiText(String text) => wingRedactSensitiveText(text);
 
 String _safeHermesUiPreview(String text, {int maxLength = 80}) =>
     wingRedactedPreview(text, maxLength: maxLength);
+
+String? _hermesErrorSummary(String error, {required String title}) {
+  var summary = _safeHermesUiPreview(
+    _safeHermesUiText(error),
+    maxLength: 320,
+  ).trim();
+  final titleStem = title.trim().replaceFirst(RegExp(r'[.!?]+$'), '');
+  if (summary.toLowerCase().startsWith(titleStem.toLowerCase())) {
+    summary = summary
+        .substring(titleStem.length)
+        .replaceFirst(RegExp(r'^[\s:;.!?-]+'), '');
+  }
+  return summary.isEmpty ? null : summary;
+}
 
 class _EndpointProfileChips extends StatelessWidget {
   const _EndpointProfileChips({

@@ -302,6 +302,37 @@ void main() {
     expect(channel.connectCalls.last.baseUrl, 'https://beta');
   });
 
+  testWidgets('disconnect keeps the saved gateway available', (tester) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-confirm')));
+    await tester.pumpAndSettle();
+
+    expect(channel.disconnectCalls, 1);
+    expect(directory.activeContactId, isNull);
+    expect(directory.gateways.map((gateway) => gateway.id), contains('alpha'));
+  });
+
   testWidgets('retains gateway status at 200% text scale', (tester) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(),

@@ -302,7 +302,7 @@ extension _MessagingExtension on HermesApiChannel {
             List.of(turns),
             errorMessage: _isCancelledTerminalRunEvent(event.name)
                 ? 'Hermes run was cancelled.'
-                : 'Hermes run failed.',
+                : _runFailureMessage(event),
           );
           if (!completer.isCompleted) completer.complete();
         }
@@ -614,21 +614,38 @@ extension _MessagingExtension on HermesApiChannel {
     return 'Hermes stream reported an error: ${_safeHermesError(detail)}';
   }
 
+  String _runFailureMessage(HermesStreamEvent event) {
+    final detail = _streamErrorDetail(event.payload)?.trim();
+    return detail == null || detail.isEmpty
+        ? 'Hermes run failed.'
+        : 'Hermes run failed: ${_safeHermesError(detail)}';
+  }
+
   String? _streamErrorDetail(Map<String, Object?> payload) {
-    final topLevel =
+    final code = wingOptionalStringFromJson(payload['code']);
+    final message =
         wingOptionalStringFromJson(payload['message']) ??
-        wingOptionalStringFromJson(payload['detail']);
-    if (topLevel != null) return topLevel;
+        wingOptionalStringFromJson(payload['detail']) ??
+        wingOptionalStringFromJson(payload['reason']);
+    if (code != null && message != null) return '$code: $message';
+    if (message != null) return message;
     final nested = wingMapFromJson(payload['error']);
     if (nested.isNotEmpty) {
-      final code = wingOptionalStringFromJson(nested['code']);
-      final message =
+      final nestedCode =
+          wingOptionalStringFromJson(nested['code']) ??
+          wingOptionalStringFromJson(nested['type']);
+      final nestedMessage =
           wingOptionalStringFromJson(nested['message']) ??
-          wingOptionalStringFromJson(nested['detail']);
-      if (code != null && message != null) return '$code: $message';
-      return message ?? code;
+          wingOptionalStringFromJson(nested['detail']) ??
+          wingOptionalStringFromJson(nested['reason']);
+      if (nestedCode != null && nestedMessage != null) {
+        return '$nestedCode: $nestedMessage';
+      }
+      return nestedMessage ?? nestedCode;
     }
-    return wingOptionalStringFromJson(payload['error']);
+    final error = wingOptionalStringFromJson(payload['error']);
+    if (code != null && error != null) return '$code: $error';
+    return error ?? code;
   }
 
   bool _isSuccessfulTerminalRunEvent(String name) {

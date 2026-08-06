@@ -17,7 +17,10 @@ Use local device packages for voice:
 - Continuous voice is a separate opt-in mode that submits the transcript,
   speaks the completed Hermes reply, and then re-arms capture.
 - Recognition requests set `onDevice: true`; unsupported on-device recognition
-  fails closed instead of silently using a network recognizer.
+  fails closed instead of silently using a network recognizer. Browser STT is
+  disabled because the web adapter cannot enforce local recognition, the
+  current Windows adapter is disabled because it logs transcripts, and Android
+  readiness requires the OS on-device recognizer API.
 - `flutter_tts` speaks assistant replies when the platform supports it.
 - `pocket_speech` runs the selected model entirely on device: Kitten nano-int8
   (about 26 MB) or Kokoro (about 365 MB including voices).

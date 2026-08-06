@@ -58,11 +58,7 @@ class _HermesEnrollmentScreenState
     } on HermesEnrollmentCleartextOriginRequired catch (error) {
       unawaited(_confirmCleartextOrigin(raw, error.origin));
     } on FormatException catch (error) {
-      setState(
-        () => _payloadError = AppLocalizations.of(
-          context,
-        ).enrollInvalidLink(error.message),
-      );
+      setState(() => _payloadError = error.message);
     }
   }
 
@@ -123,6 +119,11 @@ class _HermesEnrollmentScreenState
     }
   }
 
+  void _openManualConnection() {
+    ref.read(hermesEnrollmentControllerProvider).cancel();
+    context.go(AppRoutes.hermes);
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(hermesEnrollmentControllerProvider);
@@ -146,18 +147,35 @@ class _HermesEnrollmentScreenState
   Widget _buildBody(HermesEnrollmentController controller) {
     final strings = AppLocalizations.of(context);
     if (_payloadError != null) {
+      final colors = Theme.of(context).colorScheme;
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _payloadError!,
-              key: const ValueKey('hermes-enrollment-payload-error'),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            _scanButton(),
-          ],
+        child: Semantics(
+          liveRegion: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.link_off, size: 48, color: colors.error),
+              const SizedBox(height: 12),
+              Text(
+                strings.enrollInvalidLinkTitle,
+                key: const ValueKey('hermes-enrollment-payload-error'),
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(strings.enrollInvalidLinkBody, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(
+                strings.enrollInvalidLinkDetail(_payloadError!),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              _entryActions(),
+            ],
+          ),
         ),
       );
     }
@@ -172,7 +190,7 @@ class _HermesEnrollmentScreenState
                 key: const ValueKey('hermes-enrollment-idle'),
               ),
               const SizedBox(height: 16),
-              _scanButton(),
+              _entryActions(),
             ],
           ),
         );
@@ -217,6 +235,24 @@ class _HermesEnrollmentScreenState
           ),
         );
     }
+  }
+
+  Widget _entryActions() {
+    final strings = AppLocalizations.of(context);
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        _scanButton(),
+        OutlinedButton.icon(
+          key: const ValueKey('hermes-enrollment-manual-connect'),
+          onPressed: _scanning ? null : _openManualConnection,
+          icon: const Icon(Icons.link_outlined),
+          label: Text(strings.enrollManualConnectAction),
+        ),
+      ],
+    );
   }
 
   Widget _scanButton() {

@@ -224,14 +224,18 @@ class FlutterTextToSpeechService implements TextToSpeechService {
   final double pitch;
   final TtsSettingsReader? _settings;
   bool _configured = false;
+  int _operationGeneration = 0;
   String? _lastAppliedLanguage;
 
   @override
   Future<void> speak(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
+    final operationGeneration = ++_operationGeneration;
     await _configure();
+    if (operationGeneration != _operationGeneration) return;
     await _applySettings(_languageDetector.detect(trimmed));
+    if (operationGeneration != _operationGeneration) return;
     await _engine.speak(trimmed);
   }
 
@@ -308,7 +312,10 @@ class FlutterTextToSpeechService implements TextToSpeechService {
       locale.split(RegExp('[-_]')).first.toLowerCase();
 
   @override
-  Future<void> stop() => _engine.stop();
+  Future<void> stop() {
+    _operationGeneration += 1;
+    return _engine.stop();
+  }
 
   @override
   Future<void> dispose() => stop();

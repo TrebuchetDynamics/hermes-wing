@@ -6,6 +6,20 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Failed Hermes runs now show the redacted server or provider reason inline
+  instead of repeating only “Hermes run failed.”
+- Gateway status now has an explicit Disconnect action that closes the active
+  connection without deleting the saved gateway or API key.
+- Invalid or incomplete pairing links now offer manual gateway setup instead
+  of leaving QR scanning as the only recovery path.
+- Voice input now fails closed when local recognition cannot be guaranteed:
+  browser STT and the transcript-logging Windows adapter are disabled, while
+  Android requires an on-device recognizer before capture starts instead of
+  allowing the plugin's network-capable fallback.
+- Cancelling voice input now completes the active capture even when the speech
+  engine emits no terminal event, and setup failures always release the mic.
+- Stopping TTS during configuration or offline synthesis no longer allows late
+  audio or a delayed fallback voice to start after pause or navigation.
 - Android 11+ builds now declare TTS engine discovery, so continuous voice can
   speak Hermes replies and re-arm when an installed engine is available.
 - Voice capture now says when the device has no offline language for speech
@@ -25,6 +39,13 @@ All notable user-visible changes will be documented here.
 
 ### Changed
 
+- The composer mic once again sends and speaks one turn; hands-free re-arming
+  remains a separate switch. Desktop hands-free mode now shows the same live
+  transcript, waveform, and stop surface as mobile, and voice errors are
+  announced to assistive technology.
+- Pocket Speech now routes Spanish replies to a selected Spanish Kokoro voice,
+  advertises its English and Spanish coverage accurately, installs model/voice
+  updates as one directory transaction, and stops previews when Settings closes.
 - Removed duplicated page headings and counts left by the last audit: the
   Providers and Office bodies no longer repeat the page title, the Office hero
   no longer repeats the agent count, and the Tools page drops its redundant

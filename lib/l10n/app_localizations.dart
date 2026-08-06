@@ -484,6 +484,24 @@ abstract class AppLocalizations {
   /// **'Could not connect to this gateway.'**
   String get gatewayConnectFailed;
 
+  /// No description provided for @gatewayDisconnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect from this gateway?'**
+  String get gatewayDisconnectTitle;
+
+  /// No description provided for @gatewayDisconnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Wing will close this connection. The saved gateway and API key stay on this device so you can reconnect later.'**
+  String get gatewayDisconnectBody;
+
+  /// No description provided for @gatewayDisconnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not disconnect from this gateway.'**
+  String get gatewayDisconnectFailed;
+
   /// No description provided for @officeTitle.
   ///
   /// In en, this message translates to:
@@ -2499,11 +2517,23 @@ abstract class AppLocalizations {
   /// **'Connect to Hermes'**
   String get enrollTitle;
 
-  /// No description provided for @enrollInvalidLink.
+  /// No description provided for @enrollInvalidLinkTitle.
   ///
   /// In en, this message translates to:
-  /// **'This pairing link is not valid: {message}'**
-  String enrollInvalidLink(String message);
+  /// **'Pairing link couldn’t be opened'**
+  String get enrollInvalidLinkTitle;
+
+  /// No description provided for @enrollInvalidLinkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a new QR code or enter the gateway manually.'**
+  String get enrollInvalidLinkBody;
+
+  /// No description provided for @enrollInvalidLinkDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Details: {message}'**
+  String enrollInvalidLinkDetail(String message);
 
   /// No description provided for @enrollCleartextDialogTitle.
   ///
@@ -2564,6 +2594,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan QR code'**
   String get enrollScanQr;
+
+  /// No description provided for @enrollManualConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter gateway manually'**
+  String get enrollManualConnectAction;
 
   /// No description provided for @enrollGrantQuestion.
   ///

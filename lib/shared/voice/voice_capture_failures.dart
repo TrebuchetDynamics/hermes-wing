@@ -9,7 +9,7 @@ const deviceSpeechLanguageUnavailableVoiceCaptureMessage =
     " locale. Install that language's offline speech data in Android"
     ' settings, then return to Hermes Wing.';
 const microphonePermissionDeniedVoiceCaptureMessage =
-    'Microphone permission denied. Grant microphone permission in Android App info, then return to Hermes Wing.';
+    'Microphone permission denied. Grant microphone access in system settings, then return to Hermes Wing.';
 
 class DeviceSpeechUnavailable implements Exception {
   const DeviceSpeechUnavailable([this.message = deviceSttUnavailableReason]);

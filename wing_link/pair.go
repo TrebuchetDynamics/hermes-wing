@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -15,6 +14,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mdp/qrterminal/v3"
@@ -23,18 +23,25 @@ import (
 
 var errPairUsage = errors.New("invalid pair arguments")
 
-var pairingScopes = []string{
-	"chat:read",
-	"chat:write",
-	"sessions:read",
-	"sessions:write",
-	"profiles:read",
-}
-
 type pairOptions struct {
 	Origin *url.URL
 	Label  string
 	Token  string
+}
+
+type pairingBroker struct {
+	PairingURI *url.URL
+	Done       <-chan struct{}
+	server     *http.Server
+	listener   net.Listener
+	closeOnce  sync.Once
+}
+
+func (broker *pairingBroker) Close() {
+	broker.closeOnce.Do(func() {
+		_ = broker.server.Close()
+		_ = broker.listener.Close()
+	})
 }
 
 func pairCommand(stdout, stderr io.Writer, args []string) int {
@@ -46,20 +53,124 @@ func pairCommand(stdout, stderr io.Writer, args []string) int {
 		}
 		return 1
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	pairing, err := createHermesPairing(ctx, http.DefaultClient, options)
+	broker, err := startPairingBroker(options)
 	if err != nil {
 		_, _ = fmt.Fprintf(stderr, "pair: %v\n", err)
 		return 1
 	}
-	_, _ = fmt.Fprintf(stderr, "pair: one-time Hermes enrollment for %s\n", options.Origin)
+	defer broker.Close()
+	expiresAt := time.Now().Add(5 * time.Minute)
+	_, _ = fmt.Fprintf(stderr, "pair: code valid for 5m0s at %s/v1/operator/enrollments/exchange\n", broker.PairingURI.Query().Get("broker"))
 	if options.Origin.Scheme == "http" && !isLoopbackHost(options.Origin.Hostname()) {
 		_, _ = fmt.Fprintln(stderr, "pair: plaintext HTTP requires confirmation in Wing; prefer a trusted VPN")
 	}
-	qrterminal.GenerateHalfBlock(pairing.String(), qr.M, stdout)
-	_, _ = fmt.Fprintf(stderr, "pair: code: %s\n", pairing.Query().Get("code"))
-	return 0
+	qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
+	_, _ = fmt.Fprintf(stderr, "pair: code: %s\n", broker.PairingURI.Query().Get("code"))
+
+	timer := time.NewTimer(time.Until(expiresAt))
+	defer timer.Stop()
+	select {
+	case <-broker.Done:
+		_, _ = fmt.Fprintln(stderr, "pair: pairing complete")
+		return 0
+	case <-timer.C:
+		_, _ = fmt.Fprintln(stderr, "pair: timed out without redemption")
+		return 1
+	}
+}
+
+func startPairingBroker(options pairOptions) (*pairingBroker, error) {
+	code, err := randomSecret(24, "")
+	if err != nil {
+		return nil, err
+	}
+	expiresAt := time.Now().Add(5 * time.Minute)
+	listener, err := net.Listen("tcp", net.JoinHostPort(options.Origin.Hostname(), "0"))
+	if err != nil {
+		return nil, errors.New("could not bind the Hermes LAN/VPN address; use --origin with a local interface address")
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	brokerOrigin := (&url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort(options.Origin.Hostname(), strconv.Itoa(port)),
+	}).String()
+	query := url.Values{
+		"origin": {options.Origin.String()},
+		"broker": {brokerOrigin},
+		"code":   {code},
+	}
+	done := make(chan struct{})
+	state := struct {
+		sync.Mutex
+		consumed bool
+	}{}
+	var signalOnce sync.Once
+	mux := http.NewServeMux()
+	handler := func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Cache-Control", "no-store")
+		writer.Header().Set("Content-Type", "application/json")
+		if request.Method != http.MethodPost {
+			writePairJSON(writer, http.StatusMethodNotAllowed, map[string]any{"error": "invalid request"})
+			return
+		}
+		request.Body = http.MaxBytesReader(writer, request.Body, 4<<10)
+		var payload struct {
+			Origin string `json:"origin"`
+			Code   string `json:"code"`
+		}
+		decoder := json.NewDecoder(request.Body)
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&payload); err != nil || payload.Origin != options.Origin.String() || !matchesHash(payload.Code, hashSecret(code)) || !time.Now().Before(expiresAt) {
+			writePairJSON(writer, http.StatusNotFound, map[string]any{"error": "pairing code unavailable"})
+			return
+		}
+		state.Lock()
+		defer state.Unlock()
+		if state.consumed {
+			writePairJSON(writer, http.StatusGone, map[string]any{"error": "pairing code already used"})
+			return
+		}
+		switch request.URL.Path {
+		case "/v1/operator/enrollments/inspect":
+			writePairJSON(writer, http.StatusOK, map[string]any{
+				"label":      options.Label,
+				"origin":     options.Origin.String(),
+				"scopes":     []string{"*"},
+				"expires_at": expiresAt.Unix(),
+			})
+		case "/v1/operator/enrollments/exchange":
+			state.consumed = true
+			writePairJSON(writer, http.StatusOK, map[string]any{
+				"token":         options.Token,
+				"label":         options.Label,
+				"credential_id": "api_server_key",
+			})
+			signalOnce.Do(func() { close(done) })
+		default:
+			writePairJSON(writer, http.StatusNotFound, map[string]any{"error": "not found"})
+		}
+	}
+	mux.HandleFunc("/v1/operator/enrollments/inspect", handler)
+	mux.HandleFunc("/v1/operator/enrollments/exchange", handler)
+	server := &http.Server{
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+	}
+	broker := &pairingBroker{
+		PairingURI: &url.URL{Scheme: "wing", Host: "connect", RawQuery: query.Encode()},
+		Done:       done,
+		server:     server,
+		listener:   listener,
+	}
+	go func() { _ = server.Serve(listener) }()
+	return broker, nil
+}
+
+func writePairJSON(writer http.ResponseWriter, status int, payload map[string]any) {
+	writer.WriteHeader(status)
+	_ = json.NewEncoder(writer).Encode(payload)
 }
 
 func parsePairOptions(args []string) (pairOptions, error) {
@@ -188,61 +299,6 @@ func normalizeOrigin(value string) (*url.URL, error) {
 		return nil, errors.New("origin must use a valid TCP port")
 	}
 	return &url.URL{Scheme: origin.Scheme, Host: origin.Host}, nil
-}
-
-func createHermesPairing(ctx context.Context, client *http.Client, options pairOptions) (*url.URL, error) {
-	body, err := json.Marshal(map[string]any{
-		"label":  options.Label,
-		"origin": options.Origin.String(),
-		"scopes": pairingScopes,
-	})
-	if err != nil {
-		return nil, errors.New("could not encode enrollment request")
-	}
-	endpoint := options.Origin.ResolveReference(&url.URL{Path: "/v1/operator/enrollments"})
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, errors.New("could not create enrollment request")
-	}
-	request.Header.Set("Authorization", "Bearer "+options.Token)
-	request.Header.Set("Content-Type", "application/json")
-
-	lockedClient := *client
-	lockedClient.CheckRedirect = func(*http.Request, []*http.Request) error {
-		return http.ErrUseLastResponse
-	}
-	response, err := lockedClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("could not reach Hermes at %s", options.Origin)
-	}
-	defer func() { _ = response.Body.Close() }()
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, fmt.Errorf("hermes enrollment failed (%d)", response.StatusCode)
-	}
-	var payload struct {
-		PairingURI string `json:"pairing_uri"`
-	}
-	decoder := json.NewDecoder(io.LimitReader(response.Body, 64<<10))
-	if err := decoder.Decode(&payload); err != nil {
-		return nil, errors.New("hermes enrollment response was not valid JSON")
-	}
-	pairing, err := url.Parse(payload.PairingURI)
-	if err != nil || pairing.Scheme != "wing" || pairing.Host != "connect" || pairing.User != nil || pairing.Fragment != "" {
-		return nil, errors.New("hermes enrollment response did not include a valid pairing URI")
-	}
-	query := pairing.Query()
-	if len(query["origin"]) != 1 || len(query["code"]) != 1 || len(query["token"]) != 0 || len(query["broker"]) > 1 {
-		return nil, errors.New("hermes enrollment response contained ambiguous pairing parameters")
-	}
-	code := query.Get("code")
-	if code == "" || len(code) > 128 {
-		return nil, errors.New("hermes enrollment response did not include a valid pairing code")
-	}
-	pairingOrigin, err := normalizeOrigin(query.Get("origin"))
-	if err != nil || pairingOrigin.String() != options.Origin.String() {
-		return nil, errors.New("hermes enrollment response origin did not match the request")
-	}
-	return pairing, nil
 }
 
 // advertiseIP prefers Tailscale, then the first non-loopback IPv4.

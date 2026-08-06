@@ -93,6 +93,9 @@
   "providersConnectionRequiredBody": "Open a saved gateway chat before managing providers and models.",
   "toolsGatewayHelp": "View tool inventory from the selected gateway.",
   "gatewayConnectFailed": "Could not connect to this gateway.",
+  "gatewayDisconnectTitle": "Disconnect from this gateway?",
+  "gatewayDisconnectBody": "Hermes Wing will close this connection. The saved gateway and API key stay on this device so you can reconnect later.",
+  "gatewayDisconnectFailed": "Could not disconnect from this gateway.",
   "officeTitle": "Office",
   "officeSubtitle": "An accessible 2D workspace for agents advertised by your saved Hermes gateways.",
   "officeAgentCount": "{count, plural, =1{1 agent} other{{count} agents}}",
@@ -818,8 +821,10 @@
     }
   },
   "enrollTitle": "Connect to Hermes",
-  "enrollInvalidLink": "This pairing link is not valid: {message}",
-  "@enrollInvalidLink": {
+  "enrollInvalidLinkTitle": "Pairing link couldn’t be opened",
+  "enrollInvalidLinkBody": "Scan a new QR code or enter the gateway manually.",
+  "enrollInvalidLinkDetail": "Details: {message}",
+  "@enrollInvalidLinkDetail": {
     "placeholders": {
       "message": {
         "type": "String"
@@ -843,6 +848,7 @@
   "enrollCloseAction": "Close",
   "enrollOpeningScanner": "Opening scanner…",
   "enrollScanQr": "Scan QR code",
+  "enrollManualConnectAction": "Enter gateway manually",
   "enrollGrantQuestion": "Grant Hermes Wing access to this Hermes endpoint?",
   "enrollEndpointLabel": "Endpoint",
   "enrollDeviceLabel": "Device label",

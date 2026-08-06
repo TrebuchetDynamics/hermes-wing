@@ -911,6 +911,35 @@ void _hermesApiChannelRunTransportTests() {
     expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
   });
 
+  test('sendText preserves redacted run failure details', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+        getStream: (uri, headers) => Stream.fromIterable(const [
+          'event: run.failed\ndata: {"code":"provider_error","reason":"Quota exceeded for api_key=secret-key"}\n\n',
+        ]),
+      ),
+    );
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('fail with details');
+
+    expect(
+      channel.state.errorMessage,
+      'Hermes run failed: provider_error: Quota exceeded for api_key=[redacted]',
+    );
+    expect(channel.state.errorMessage, isNot(contains('secret-key')));
+  });
+
   test(
     'sendText keeps local failed assistant turn when run failed event arrives',
     () async {

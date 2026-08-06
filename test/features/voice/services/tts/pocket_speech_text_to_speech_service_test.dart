@@ -65,6 +65,28 @@ void main() {
     expect(fallback.spoken, ['hello from Hermes']);
   });
 
+  test(
+    'stop prevents a delayed synthesis failure from starting fallback',
+    () async {
+      final engine = _DelayedFailingPocketSpeechEngine();
+      final fallback = FakeTextToSpeechService();
+      final service = createPocketSpeechTextToSpeechService(
+        enabled: true,
+        engine: engine,
+        audioSink: _FakePocketSpeechAudioSink(),
+        fallback: fallback,
+      )!;
+      final speaking = service.speak('hello from Hermes');
+      await Future<void>.delayed(Duration.zero);
+
+      await service.stop();
+      engine.fail();
+      await speaking;
+
+      expect(fallback.spoken, isEmpty);
+    },
+  );
+
   test('non-English replies use the platform fallback', () async {
     final engine = _FakePocketSpeechEngine();
     final fallback = FakeTextToSpeechService();
@@ -80,6 +102,36 @@ void main() {
     expect(engine.calls, isEmpty);
     expect(fallback.spoken, ['Hola, ¿cómo estás?']);
   });
+
+  test(
+    'selected Spanish Kokoro voice speaks Spanish replies offline',
+    () async {
+      const pack = PocketSpeechVoicePack(
+        model: PocketSpeechModel.kokoro,
+        modelPath: '/models/kokoro/model.onnx',
+        voicesPath: '/models/kokoro/voices.json',
+      );
+      final engine = _FakePocketSpeechEngine();
+      final fallback = FakeTextToSpeechService();
+      final service = createPocketSpeechTextToSpeechService(
+        enabled: true,
+        voicePack: pack,
+        engine: engine,
+        audioSink: _FakePocketSpeechAudioSink(),
+        fallback: fallback,
+        settings: () => const WingVoiceSettings(
+          pocketSpeechModel: PocketSpeechModel.kokoro,
+          pocketSpeechVoicePack: pack,
+          ttsVoiceName: 'ef_dora',
+        ),
+      );
+
+      await service!.speak('Hola, ¿cómo estás?');
+
+      expect(engine.selectedVoices, ['ef_dora']);
+      expect(fallback.spoken, isEmpty);
+    },
+  );
 
   test(
     'Kitten ignores a persisted voice missing from its pinned pack',
@@ -131,6 +183,23 @@ void main() {
     await service.speak('hello');
 
     expect(engine.calls, ['hello']);
+    expect(sink.played, isEmpty);
+  });
+
+  test('stop prevents delayed synthesis from starting playback', () async {
+    final engine = _DelayedPocketSpeechEngine();
+    final sink = _FakePocketSpeechAudioSink();
+    final service = PocketSpeechTextToSpeechService(
+      engine: engine,
+      audioSink: sink,
+    );
+    final speaking = service.speak('hello');
+    await Future<void>.delayed(Duration.zero);
+
+    await service.stop();
+    engine.complete();
+    await speaking;
+
     expect(sink.played, isEmpty);
   });
 
@@ -188,6 +257,38 @@ void main() {
     expect(player.stopCalls, greaterThanOrEqualTo(1));
     expect(player.disposeCalls, 1);
   });
+}
+
+class _DelayedFailingPocketSpeechEngine implements PocketSpeechEngine {
+  final _wav = Completer<Uint8List>();
+
+  @override
+  Future<Uint8List> synthesizeWav(
+    String text, {
+    String? voice,
+    double speed = 1.0,
+  }) => _wav.future;
+
+  @override
+  Future<void> dispose() async {}
+
+  void fail() => _wav.completeError(StateError('synthesis failed'));
+}
+
+class _DelayedPocketSpeechEngine implements PocketSpeechEngine {
+  final _wav = Completer<Uint8List>();
+
+  @override
+  Future<Uint8List> synthesizeWav(
+    String text, {
+    String? voice,
+    double speed = 1.0,
+  }) => _wav.future;
+
+  @override
+  Future<void> dispose() async {}
+
+  void complete() => _wav.complete(Uint8List.fromList([1]));
 }
 
 class _FailingPocketSpeechEngine implements PocketSpeechEngine {

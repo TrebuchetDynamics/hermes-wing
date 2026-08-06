@@ -344,6 +344,24 @@ void main() {
     });
   });
 
+  test('a failed update preserves the installed voice pack', () async {
+    final fixture = healthySpec();
+    final service = serviceFor(fixture.spec);
+    final installed = await withHttp(
+      () => service.download(PocketSpeechModel.kitten),
+    );
+    replies['https://cdn.example/voices.json'] = _Reply(statusCode: 500);
+
+    await expectLater(
+      withHttp(() => service.download(PocketSpeechModel.kitten)),
+      throwsA(isA<HttpException>()),
+    );
+
+    expect(File(installed.modelPath).readAsBytesSync(), fixture.model);
+    expect(File(installed.voicesPath).readAsBytesSync(), fixture.voices);
+    expect(await service.installedPack(PocketSpeechModel.kitten), isNotNull);
+  });
+
   test('a failed download leaves no partial files behind', () async {
     final fixture = healthySpec();
     replies['https://cdn.example/voices.json'] = _Reply(statusCode: 500);

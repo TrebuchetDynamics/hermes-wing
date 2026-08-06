@@ -35,5 +35,11 @@ void main() {
       reason:
           'Grant RECORD_AUDIO before running the Android voice smoke so real capture can proceed.',
     );
+    expect(
+      diagnostics.onDeviceRecognitionAvailable,
+      isTrue,
+      reason:
+          'Hermes Wing requires Android on-device recognition and never falls back to a network recognizer.',
+    );
   });
 }

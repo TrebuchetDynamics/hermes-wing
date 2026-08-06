@@ -192,7 +192,9 @@ void main() {
     expect(find.textContaining('Continuous voice paused'), findsNothing);
   });
 
-  testWidgets('voice icon starts continuous conversation', (tester) async {
+  testWidgets('voice icon sends one turn without enabling hands-free', (
+    tester,
+  ) async {
     final channel = FakeHermesChannel();
     final capture = FakeVoiceCaptureService(
       audio: Uint8List(0),
@@ -231,7 +233,7 @@ void main() {
     );
     expect(
       container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
-      isTrue,
+      isFalse,
     );
   });
 
@@ -264,7 +266,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-menu-button')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.ancestor(
+          of: find.text('Hands-free voice'),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is CheckedPopupMenuItem,
+          ),
+        ),
+      );
       await tester.pump();
       expect(capture.captureCalls, 1);
       expect(find.text('Listening'), findsOneWidget);
@@ -335,6 +348,44 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     },
   );
+
+  testWidgets('desktop hands-free mode shows live voice controls', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final channel = FakeHermesChannel();
+    final capture = _ControlledVoiceCaptureService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-continuous-voice-switch')),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-voice-mode-surface')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('backgrounding cancels capture and pauses continuous voice', (
     tester,
@@ -610,6 +661,46 @@ void main() {
 
     semantics.dispose();
   });
+
+  testWidgets('voice failures are announced as live status', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: _FailingVoiceCaptureService(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.pumpAndSettle();
+
+    final error = tester.getSemantics(
+      find.byKey(const ValueKey('hermes-voice-error')),
+    );
+    expect(error.label, contains('timed out'));
+    expect(error.flagsCollection.isLiveRegion, isTrue);
+    semantics.dispose();
+  });
+}
+
+class _FailingVoiceCaptureService implements VoiceCaptureService {
+  const _FailingVoiceCaptureService();
+
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) async =>
+      throw const VoiceCaptureTimeout();
+
+  @override
+  Future<void> cancel() async {}
 }
 
 class _ControlledVoiceCaptureService

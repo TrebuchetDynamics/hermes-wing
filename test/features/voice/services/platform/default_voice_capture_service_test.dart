@@ -8,8 +8,6 @@ void main() {
       VoiceCapturePlatform(isAndroid: true),
       VoiceCapturePlatform(isAndroid: false, isIOS: true),
       VoiceCapturePlatform(isAndroid: false, isMacOS: true),
-      VoiceCapturePlatform(isAndroid: false, isWindows: true),
-      VoiceCapturePlatform(isAndroid: false, isWeb: true),
     ]) {
       expect(
         createDefaultVoiceCaptureService(
@@ -21,14 +19,20 @@ void main() {
     }
   });
 
-  test('leaves unsupported platforms without default STT', () {
-    expect(
-      createDefaultVoiceCaptureService(
-        platform: const VoiceCapturePlatform(isAndroid: false),
-        speechToTextServiceFactory: _FakeVoiceCaptureService.new,
-      ),
-      isNull,
-    );
+  test('leaves non-private STT platforms unsupported', () {
+    for (final platform in const [
+      VoiceCapturePlatform(isAndroid: false),
+      VoiceCapturePlatform(isAndroid: false, isWindows: true),
+      VoiceCapturePlatform(isAndroid: false, isWeb: true),
+    ]) {
+      expect(
+        createDefaultVoiceCaptureService(
+          platform: platform,
+          speechToTextServiceFactory: _FakeVoiceCaptureService.new,
+        ),
+        isNull,
+      );
+    }
   });
 }
 

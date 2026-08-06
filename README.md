@@ -104,8 +104,10 @@ for the full path.
 | **Device speech**          | One-step speak-and-send or long-press dictation for review, plus optional reply TTS and Pocket Speech voice packs                             |
 | **Adaptive client**        | Android, web, Linux, Windows, iOS, and macOS targets from one Flutter codebase with light/dark palette support                                |
 
-Voice input requests the operating system recognizer and submits completed text,
-not captured microphone audio. Optional local TTS uses the pinned
+Voice input uses locally enforceable on-device recognition and submits completed
+text, not captured microphone audio. Browser STT, the transcript-logging Windows
+adapter, and Android devices without an on-device recognizer fail closed instead
+of weakening the local-only privacy boundary. Optional local TTS uses the pinned
 [`pocket_speech`](https://github.com/TrebuchetDynamics/pocket-speech-dart)
 package with operator-selected Kitten or Kokoro voice packs.
 

@@ -16,6 +16,7 @@ export '../../../../shared/voice/voice_capture_failures.dart';
 export 'speech_to_text_capture_policy.dart' show SpeechToTextSnapshot;
 
 typedef SpeechToTextDiagnosticLog = void Function(String message);
+typedef SpeechToTextReadinessCheck = Future<String?> Function();
 
 class SpeechToTextLocale {
   const SpeechToTextLocale({required this.localeId, required this.name});
@@ -138,6 +139,7 @@ class SpeechToTextVoiceCaptureService
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
     SpeechToTextDiagnosticLog? diagnosticLog,
+    SpeechToTextReadinessCheck? readinessCheck,
     SpeechToTextCaptureCoordinator coordinator =
         const SpeechToTextCaptureCoordinator(),
     String? localeId,
@@ -149,6 +151,7 @@ class SpeechToTextVoiceCaptureService
       engine: engine ?? PluginSpeechToTextEngine(),
       clock: clock ?? DateTime.now,
       diagnosticLog: diagnosticLog ?? _defaultDiagnosticLog,
+      readinessCheck: readinessCheck,
       coordinator: coordinator,
       localeId: localeId,
       pauseFor: pauseFor,
@@ -161,6 +164,7 @@ class SpeechToTextVoiceCaptureService
     required this._engine,
     required this._clock,
     required this._diagnosticLog,
+    required this._readinessCheck,
     required this._coordinator,
     this.localeId,
     required this.pauseFor,
@@ -171,6 +175,7 @@ class SpeechToTextVoiceCaptureService
   final SpeechToTextEngine _engine;
   final DateTime Function() _clock;
   final SpeechToTextDiagnosticLog _diagnosticLog;
+  final SpeechToTextReadinessCheck? _readinessCheck;
   final SpeechToTextCaptureCoordinator _coordinator;
   final String? localeId;
   final Duration pauseFor;
@@ -179,6 +184,8 @@ class SpeechToTextVoiceCaptureService
   final _partialTranscripts = StreamController<String>.broadcast(sync: true);
   final _soundLevels = StreamController<double>.broadcast(sync: true);
   bool _initialized = false;
+  Completer<void>? _activeCancellation;
+  Completer<SpeechToTextSnapshot>? _activeCompletion;
   void Function(Object error)? _onError;
   void Function(String status)? _onStatus;
 
@@ -189,13 +196,28 @@ class SpeechToTextVoiceCaptureService
   Stream<double> get soundLevels => _soundLevels.stream;
 
   @override
-  Future<void> cancel() => _engine.cancel();
+  Future<void> cancel() {
+    final cancellation = _activeCancellation;
+    if (cancellation != null && !cancellation.isCompleted) {
+      cancellation.complete();
+    }
+    final completion = _activeCompletion;
+    if (completion != null && !completion.isCompleted) {
+      completion.completeError(
+        const SpeechToTextCaptureFailure('capture cancelled'),
+      );
+    }
+    return _engine.cancel();
+  }
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
     final startedAt = _clock();
     final elapsed = Stopwatch()..start();
+    final cancellation = Completer<void>();
     final completion = Completer<SpeechToTextSnapshot>();
+    _activeCancellation = cancellation;
+    _activeCompletion = completion;
     unawaited(
       completion.future.then<void>(
         (_) {},
@@ -204,7 +226,7 @@ class SpeechToTextVoiceCaptureService
     );
     SpeechToTextSnapshot? latestTranscript;
     Timer? partialResultTimer;
-    var listening = false;
+    var recognitionStarted = false;
     final soundLevelSubscription =
         (_engine is SpeechToTextSoundLevelEngine
                 ? (_engine as SpeechToTextSoundLevelEngine).soundLevels
@@ -232,7 +254,9 @@ class SpeechToTextVoiceCaptureService
     Future<T> bounded<T>(Future<T> operation) {
       final remaining = timeout - elapsed.elapsed;
       if (remaining <= Duration.zero) {
-        fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+        if (!cancellation.isCompleted) {
+          fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+        }
         throw const VoiceCaptureTimeout();
       }
       return operation.timeout(
@@ -241,24 +265,46 @@ class SpeechToTextVoiceCaptureService
           // Never await the cancel: Android leaves it pending forever after
           // the recognizer reports NO_SPEECH_DETECTED, which would strand the
           // capture with a spinning mic and no error.
-          fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+          if (!cancellation.isCompleted) {
+            fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+          }
           throw const VoiceCaptureTimeout();
         },
       );
     }
 
+    Future<T> cancellable<T>(Future<T> operation) => Future.any([
+      bounded(operation),
+      cancellation.future.then<T>(
+        (_) => throw const SpeechToTextCaptureFailure('capture cancelled'),
+      ),
+    ]);
+
     try {
-      final permissionBeforeInitialize = await bounded(
+      final unavailableReason = await cancellable(
+        _readinessCheck?.call() ?? Future<String?>.value(),
+      );
+      if (unavailableReason != null) {
+        throw DeviceSpeechUnavailable(unavailableReason);
+      }
+      final permissionBeforeInitialize = await cancellable(
         _readPermissionDiagnostic(log),
       );
       log('hasPermission=$permissionBeforeInitialize before initialize');
 
-      final available = await bounded(
+      final available = await cancellable(
         _initialize(
           onError: completeWithError,
           onStatus: (status) {
             log('status=$status');
             if (completion.isCompleted) return;
+            final normalizedStatus = status.trim().toLowerCase();
+            if (normalizedStatus == 'listening') recognitionStarted = true;
+            if (isTerminalSpeechToTextStatus(status) &&
+                !recognitionStarted &&
+                latestTranscript == null) {
+              return;
+            }
             switch (_coordinator.terminalStatusPlan(
               status: status,
               latestTranscript: latestTranscript,
@@ -284,20 +330,21 @@ class SpeechToTextVoiceCaptureService
       }
 
       final effectiveLocaleId =
-          localeId ?? await bounded(_readSystemLocale(log));
+          localeId ?? await cancellable(_readSystemLocale(log));
       log(
         'listen locale=${effectiveLocaleId ?? 'system default'} '
         'listenFor=${timeout.inMilliseconds}ms '
         'pauseFor=${pauseFor.inMilliseconds}ms partialResults=true '
         'onDevice=$onDeviceOnly',
       );
-      await bounded(
+      await cancellable(
         _engine.listen(
           listenFor: timeout,
           pauseFor: pauseFor,
           localeId: effectiveLocaleId,
           onDevice: onDeviceOnly,
           onResult: (snapshot) {
+            recognitionStarted = true;
             log(
               'result wordsLength=${snapshot.words.length} '
               'confidence=${snapshot.confidence} finalResult=${snapshot.finalResult}',
@@ -330,12 +377,10 @@ class SpeechToTextVoiceCaptureService
           },
         ),
       );
-      listening = true;
 
       final snapshot = await bounded(completion.future);
       cancelPartialResultTimer();
-      listening = false;
-      await bounded(_engine.stop());
+      await cancellable(_engine.stop());
 
       final transcript = snapshot.words.trim();
       if (transcript.isEmpty) {
@@ -353,7 +398,7 @@ class SpeechToTextVoiceCaptureService
       rethrow;
     } catch (error) {
       cancelPartialResultTimer();
-      if (listening) {
+      if (!cancellation.isCompleted) {
         fireAndForget(
           _engine.cancel(),
           'speech engine cancel after capture failure',
@@ -368,6 +413,10 @@ class SpeechToTextVoiceCaptureService
       if (normalized is SpeechToTextCaptureFailure) throw normalized;
       throw SpeechToTextCaptureFailure(error);
     } finally {
+      if (identical(_activeCancellation, cancellation)) {
+        _activeCancellation = null;
+      }
+      if (identical(_activeCompletion, completion)) _activeCompletion = null;
       await soundLevelSubscription?.cancel();
     }
   }

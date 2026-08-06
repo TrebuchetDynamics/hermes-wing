@@ -17,23 +17,32 @@ final pocketSpeechVoiceNamesProvider = FutureProvider<List<String>>((ref) {
 
 Future<List<String>> _kokoroVoiceNames(String? path) async {
   if (path == null) return const [];
-  try {
-    return await Isolate.run(() {
-      final decoded = jsonDecode(File(path).readAsStringSync());
-      return decoded is Map
-          ? decoded.keys.map((key) => key.toString()).toList()
-          : <String>[];
-    });
-  } catch (_) {
-    return const [];
-  }
+  return Isolate.run(() {
+    final decoded = jsonDecode(File(path).readAsStringSync());
+    return decoded is Map
+        ? decoded.keys.map((key) => key.toString()).toList()
+        : <String>[];
+  });
 }
 
-class VoiceSettingsScreen extends ConsumerWidget {
+class VoiceSettingsScreen extends ConsumerStatefulWidget {
   const VoiceSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VoiceSettingsScreen> createState() =>
+      _VoiceSettingsScreenState();
+}
+
+class _VoiceSettingsScreenState extends ConsumerState<VoiceSettingsScreen> {
+  @override
+  void dispose() {
+    final service = _activePreviewService;
+    if (service != null) unawaited(service.stop());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final controller = ref.read(wingVoiceSettingsProvider.notifier);
     final pocketSpeechDownloader = ref.watch(
@@ -423,7 +432,9 @@ class _PocketSpeechPreviewingController extends Notifier<bool> {
   @override
   bool build() => false;
 
-  void setPreviewing(bool value) => state = value;
+  void setPreviewing(bool value) {
+    if (ref.mounted) state = value;
+  }
 }
 
 final _pocketSpeechPreviewingProvider =
@@ -623,13 +634,15 @@ Future<void> _previewPocketSpeech(
       );
     }
   } finally {
-    _activePreviewService = null;
-    try {
-      await service?.dispose();
-    } catch (_) {
-      // Preview cleanup must not replace the actionable synthesis error.
+    if (identical(_activePreviewService, service)) {
+      _activePreviewService = null;
+      try {
+        await service?.dispose();
+      } catch (_) {
+        // Preview cleanup must not replace the actionable synthesis error.
+      }
+      previewing.setPreviewing(false);
     }
-    previewing.setPreviewing(false);
   }
 }
 

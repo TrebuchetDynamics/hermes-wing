@@ -28,6 +28,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   String? _actionError;
   bool _refreshing = false;
   bool _refreshFailed = false;
+  bool _disconnecting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +67,31 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   fieldKey: const ValueKey('gateway-status-picker'),
                   directory: directory,
                   helpText: strings.gatewayStatusHelp,
-                  enabled: _switchingGatewayId == null,
+                  enabled: _switchingGatewayId == null && !_disconnecting,
                   onSelected: (id) =>
                       unawaited(_selectGateway(directory, id, strings)),
+                ),
+              if (channel.state.isConnected)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('gateway-disconnect-button'),
+                      onPressed: _disconnecting
+                          ? null
+                          : () => unawaited(
+                              _confirmDisconnect(directory, strings),
+                            ),
+                      icon: _disconnecting
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.link_off),
+                      label: Text(strings.chatConnectionDisconnectAction),
+                    ),
+                  ),
                 ),
               if (_actionError != null)
                 MaterialBanner(
@@ -110,6 +133,44 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
     } finally {
       if (mounted) setState(() => _switchingGatewayId = null);
+    }
+  }
+
+  Future<void> _confirmDisconnect(
+    HermesGatewayDirectory directory,
+    AppLocalizations strings,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(strings.gatewayDisconnectTitle),
+        content: Text(strings.gatewayDisconnectBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(strings.cancelAction),
+          ),
+          FilledButton(
+            key: const ValueKey('gateway-disconnect-confirm'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(strings.chatConnectionDisconnectAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      _disconnecting = true;
+      _actionError = null;
+    });
+    try {
+      await directory.showDirectory();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _actionError = strings.gatewayDisconnectFailed);
+      }
+    } finally {
+      if (mounted) setState(() => _disconnecting = false);
     }
   }
 

@@ -27,11 +27,13 @@ class IoPocketSpeechAssetDownloadService
       throw StateError('${model.label} download is not configured.');
     }
     final dir = await _modelDirectory(model);
-    await dir.create(recursive: true);
+    final staging = Directory('${dir.path}.download');
+    if (await staging.exists()) await staging.delete(recursive: true);
+    await staging.create(recursive: true);
     final modelFile = File('${dir.path}/model.onnx');
     final voicesFile = File('${dir.path}/voices.json');
-    final modelTemp = File('${modelFile.path}.download');
-    final voicesTemp = File('${voicesFile.path}.download');
+    final modelTemp = File('${staging.path}/model.onnx');
+    final voicesTemp = File('${staging.path}/voices.json');
     final client = HttpClient()
       ..connectionTimeout = const Duration(seconds: 20);
     try {
@@ -69,12 +71,10 @@ class IoPocketSpeechAssetDownloadService
       if (decoded is! Map) {
         throw const FormatException('Pocket Speech voices must be JSON.');
       }
-      await _replace(modelTemp, modelFile);
-      await _replace(voicesTemp, voicesFile);
+      await _replaceDirectory(staging, dir);
     } finally {
       client.close(force: true);
-      if (await modelTemp.exists()) await modelTemp.delete();
-      if (await voicesTemp.exists()) await voicesTemp.delete();
+      if (await staging.exists()) await staging.delete(recursive: true);
     }
     return PocketSpeechVoicePack(
       model: model,
@@ -202,16 +202,24 @@ class IoPocketSpeechAssetDownloadService
     throw StateError('Pocket Speech asset redirected too many times.');
   }
 
-  Future<void> _replace(File source, File destination) async {
-    final backup = File('${destination.path}.backup');
-    if (await backup.exists()) await backup.delete();
-    final hadDestination = await destination.exists();
-    if (hadDestination) await destination.rename(backup.path);
+  Future<void> _replaceDirectory(
+    Directory source,
+    Directory destination,
+  ) async {
+    final backup = Directory('${destination.path}.backup');
+    if (await backup.exists()) {
+      if (await destination.exists()) {
+        await backup.delete(recursive: true);
+      } else {
+        await backup.rename(destination.path);
+      }
+    }
+    if (await destination.exists()) await destination.rename(backup.path);
     try {
       await source.rename(destination.path);
-      if (await backup.exists()) await backup.delete();
+      if (await backup.exists()) await backup.delete(recursive: true);
     } catch (_) {
-      if (await destination.exists()) await destination.delete();
+      if (await destination.exists()) await destination.delete(recursive: true);
       if (await backup.exists()) await backup.rename(destination.path);
       rethrow;
     }

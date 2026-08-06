@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/voice/services/platform/voice_capture_platform.dart';
 import 'package:wing/features/voice/services/tts/text_to_speech_service.dart';
@@ -168,6 +170,19 @@ void main() {
     },
   );
 
+  test('stop prevents delayed configuration from starting speech', () async {
+    final engine = _DelayedConfigureFlutterTtsEngine();
+    final service = FlutterTextToSpeechService(engine: engine);
+    final speaking = service.speak('hello');
+    await Future<void>.delayed(Duration.zero);
+
+    await service.stop();
+    engine.completeConfiguration();
+    await speaking;
+
+    expect(engine.calls, isNot(contains('speak:hello')));
+  });
+
   test('stop forwards to flutter_tts engine', () async {
     final engine = _FakeFlutterTtsEngine();
     final service = FlutterTextToSpeechService(engine: engine);
@@ -209,6 +224,18 @@ void main() {
       isNull,
     );
   });
+}
+
+class _DelayedConfigureFlutterTtsEngine extends _FakeFlutterTtsEngine {
+  final _configuration = Completer<void>();
+
+  @override
+  Future<void> awaitSpeakCompletion(bool awaitCompletion) {
+    calls.add('awaitSpeakCompletion:$awaitCompletion');
+    return _configuration.future;
+  }
+
+  void completeConfiguration() => _configuration.complete();
 }
 
 class _FakeFlutterTtsEngine implements FlutterTtsEngine {

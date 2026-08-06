@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:wing/core/protocol/voice_unavailable_reason.dart';
 import 'package:wing/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
 import 'package:wing/shared/voice/voice_capture_service.dart';
 
@@ -68,6 +69,81 @@ void main() {
     },
   );
 
+  test(
+    'readiness failure blocks capture before plugin initialization',
+    () async {
+      final engine = _InitializeOnceSpeechToTextEngine();
+      final service = SpeechToTextVoiceCaptureService(
+        engine: engine,
+        readinessCheck: () async => deviceSttUnavailableReason,
+      );
+
+      await expectLater(
+        service.capture(timeout: const Duration(seconds: 1)),
+        throwsA(
+          isA<DeviceSpeechUnavailable>().having(
+            (error) => error.message,
+            'message',
+            deviceSttUnavailableReason,
+          ),
+        ),
+      );
+
+      expect(engine.initializeCalls, 0);
+    },
+  );
+
+  test('cancel during readiness cannot start the recognizer later', () async {
+    final readiness = Completer<String?>();
+    final engine = _InitializeOnceSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(
+      engine: engine,
+      readinessCheck: () => readiness.future,
+    );
+    final capture = service.capture(timeout: const Duration(seconds: 1));
+    await Future<void>.delayed(Duration.zero);
+
+    unawaited(service.cancel());
+
+    await expectLater(
+      capture.timeout(
+        const Duration(milliseconds: 100),
+        onTimeout: () => throw StateError('cancel waited for readiness'),
+      ),
+      throwsA(isA<SpeechToTextCaptureFailure>()),
+    );
+    readiness.complete(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(engine.initializeCalls, 0);
+  });
+
+  test('cancelled setup timeout cannot cancel replacement capture', () async {
+    final firstReadiness = Completer<String?>();
+    var readinessCalls = 0;
+    final engine = _CancelRecordingSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(
+      engine: engine,
+      readinessCheck: () {
+        readinessCalls += 1;
+        return readinessCalls == 1
+            ? firstReadiness.future
+            : Future<String?>.value();
+      },
+    );
+    final first = service.capture(timeout: const Duration(milliseconds: 30));
+    await Future<void>.delayed(Duration.zero);
+    await service.cancel();
+    await expectLater(first, throwsA(isA<SpeechToTextCaptureFailure>()));
+
+    final second = service.capture(timeout: const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(engine.cancelCalls, 1);
+    await service.cancel();
+    await expectLater(second, throwsA(isA<SpeechToTextCaptureFailure>()));
+    firstReadiness.complete(null);
+  });
+
   test('capture timeout also bounds speech engine initialization', () async {
     final engine = _HangingSpeechToTextEngine();
     final service = SpeechToTextVoiceCaptureService(engine: engine);
@@ -108,6 +184,56 @@ void main() {
           ),
       throwsA(isA<SpeechToTextCaptureFailure>()),
     );
+  });
+
+  test(
+    'cancel ends capture even when the engine emits no terminal event',
+    () async {
+      final service = SpeechToTextVoiceCaptureService(
+        engine: _UncancellableHangingSpeechToTextEngine(),
+      );
+      final capture = service.capture(timeout: const Duration(seconds: 1));
+      await Future<void>.delayed(Duration.zero);
+
+      unawaited(service.cancel());
+
+      await expectLater(
+        capture.timeout(
+          const Duration(milliseconds: 100),
+          onTimeout: () => throw StateError('cancelled capture stayed pending'),
+        ),
+        throwsA(isA<SpeechToTextCaptureFailure>()),
+      );
+    },
+  );
+
+  test('stale terminal status cannot fail a replacement capture', () async {
+    final engine = _StaleTerminalSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(engine: engine);
+    final first = service.capture(timeout: const Duration(seconds: 1));
+    await Future<void>.delayed(Duration.zero);
+    unawaited(service.cancel());
+    await expectLater(first, throwsA(isA<SpeechToTextCaptureFailure>()));
+
+    final second = service.capture(timeout: const Duration(seconds: 1));
+    await Future<void>.delayed(Duration.zero);
+    engine.emitStatus('done');
+    engine.emitResult('replacement transcript');
+
+    expect((await second).transcript, 'replacement transcript');
+  });
+
+  test('listen setup failure still releases the speech engine', () async {
+    final engine = _ListenFailingSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(engine: engine);
+
+    await expectLater(
+      service.capture(timeout: const Duration(seconds: 1)),
+      throwsA(isA<SpeechToTextCaptureFailure>()),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(engine.cancelCalls, 1);
   });
 
   test(
@@ -323,6 +449,79 @@ class _FakeSpeechToTextEngine implements SpeechToTextEngine {
 
   @override
   Future<void> cancel() async {}
+}
+
+class _CancelRecordingSpeechToTextEngine extends _FakeSpeechToTextEngine {
+  _CancelRecordingSpeechToTextEngine() : super('');
+
+  int cancelCalls = 0;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {}
+
+  @override
+  Future<void> cancel() async {
+    cancelCalls += 1;
+  }
+}
+
+class _StaleTerminalSpeechToTextEngine extends _FakeSpeechToTextEngine {
+  _StaleTerminalSpeechToTextEngine() : super('');
+
+  void Function(String status)? _onStatus;
+  void Function(SpeechToTextSnapshot result)? _onResult;
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async {
+    _onStatus = onStatus;
+    return true;
+  }
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    _onResult = onResult;
+  }
+
+  void emitStatus(String status) => _onStatus?.call(status);
+
+  void emitResult(String words) => _onResult?.call(
+    SpeechToTextSnapshot(words: words, confidence: 1, finalResult: true),
+  );
+}
+
+class _ListenFailingSpeechToTextEngine extends _FakeSpeechToTextEngine {
+  _ListenFailingSpeechToTextEngine() : super('');
+
+  int cancelCalls = 0;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async => throw StateError('recognizer start failed');
+
+  @override
+  Future<void> cancel() async {
+    cancelCalls += 1;
+  }
 }
 
 class _SoundLevelSpeechToTextEngine extends _FakeSpeechToTextEngine

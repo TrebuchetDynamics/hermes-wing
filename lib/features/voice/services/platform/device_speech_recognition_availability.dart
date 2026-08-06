@@ -7,11 +7,13 @@ class DeviceSpeechRecognitionDiagnostics {
   const DeviceSpeechRecognitionDiagnostics({
     required this.recognitionServiceCount,
     this.microphonePermissionGranted,
+    this.onDeviceRecognitionAvailable,
     this.recognitionServices = const <String>[],
   });
 
   final int recognitionServiceCount;
   final bool? microphonePermissionGranted;
+  final bool? onDeviceRecognitionAvailable;
   final List<String> recognitionServices;
 
   bool get hasRecognitionService => recognitionServiceCount > 0;
@@ -73,6 +75,8 @@ class MethodChannelDeviceSpeechRecognitionDiagnosticsProbe
     return DeviceSpeechRecognitionDiagnostics(
       recognitionServiceCount: _intValue(map['recognitionServiceCount']),
       microphonePermissionGranted: map['microphonePermissionGranted'] as bool?,
+      onDeviceRecognitionAvailable:
+          map['onDeviceRecognitionAvailable'] as bool?,
       recognitionServices: _stringList(map['recognitionServices']),
     );
   }
@@ -84,11 +88,7 @@ Future<VoiceCaptureReadiness> checkDefaultVoiceCaptureReadiness({
 }) async {
   final effectivePlatform = platform ?? currentVoiceCapturePlatform();
   if (!effectivePlatform.isAndroid) {
-    final supported =
-        effectivePlatform.isIOS ||
-        effectivePlatform.isMacOS ||
-        effectivePlatform.isWindows ||
-        effectivePlatform.isWeb;
+    final supported = effectivePlatform.isIOS || effectivePlatform.isMacOS;
     return supported
         ? const VoiceCaptureReadiness.available()
         : const VoiceCaptureReadiness.unavailable(deviceSttUnavailableReason);
@@ -99,9 +99,16 @@ Future<VoiceCaptureReadiness> checkDefaultVoiceCaptureReadiness({
         await (diagnosticsProbe ??
                 const MethodChannelDeviceSpeechRecognitionDiagnosticsProbe())
             .read();
-    if (!diagnostics.hasRecognitionService) {
+    if (!diagnostics.hasRecognitionService ||
+        diagnostics.onDeviceRecognitionAvailable != true) {
       return VoiceCaptureReadiness.unavailable(
         deviceSttUnavailableReason,
+        diagnostics: diagnostics,
+      );
+    }
+    if (diagnostics.microphonePermissionGranted == false) {
+      return VoiceCaptureReadiness.unavailable(
+        microphonePermissionDeniedReason,
         diagnostics: diagnostics,
       );
     }

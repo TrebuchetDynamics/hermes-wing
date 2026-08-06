@@ -168,11 +168,13 @@ class PocketSpeechTextToSpeechService implements TextToSpeechService {
   final PocketSpeechEngine _engine;
   final PocketSpeechAudioSink _audioSink;
   final TtsSettingsReader? _settings;
+  int _operationGeneration = 0;
 
   @override
   Future<void> speak(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
+    final operationGeneration = ++_operationGeneration;
     final settings = _settings?.call();
     // pocket_speech's KokoroCatalog.speed.check rejects values outside
     // 0.5-2.0; the app-level 0.25-3.0 clamp is wider by design for
@@ -190,15 +192,19 @@ class PocketSpeechTextToSpeechService implements TextToSpeechService {
       // already treats speak failures.
       wav = await _engine.synthesizeWav(trimmed);
     }
-    if (wav.isEmpty) return;
+    if (operationGeneration != _operationGeneration || wav.isEmpty) return;
     await _audioSink.playWav(wav);
   }
 
   @override
-  Future<void> stop() => _audioSink.stop();
+  Future<void> stop() {
+    _operationGeneration += 1;
+    return _audioSink.stop();
+  }
 
   @override
   Future<void> dispose() async {
+    _operationGeneration += 1;
     try {
       await _audioSink.dispose();
     } finally {
@@ -207,36 +213,51 @@ class PocketSpeechTextToSpeechService implements TextToSpeechService {
   }
 }
 
-/// Routes non-English replies to [fallback], because the shipped Pocket
-/// Speech voice packs contain English voices only.
+/// Routes replies that do not match the selected offline voice to [fallback].
 class _PocketSpeechLanguageRouter implements TextToSpeechService {
   _PocketSpeechLanguageRouter({
     required this.primary,
     required this.fallback,
+    required TtsSettingsReader? settings,
     VoiceTextLanguageDetector? languageDetector,
-  }) : _languageDetector =
+  }) : _settings = settings,
+       _languageDetector =
            languageDetector ?? DefaultVoiceTextLanguageDetector();
 
   final TextToSpeechService primary;
   final TextToSpeechService fallback;
+  final TtsSettingsReader? _settings;
   final VoiceTextLanguageDetector _languageDetector;
+  int _operationGeneration = 0;
 
   @override
   Future<void> speak(String text) async {
+    final operationGeneration = ++_operationGeneration;
     final language = _languageDetector.detect(text);
-    if (language != null && language != 'en') {
+    if (language != null && language != _offlineVoiceLanguage()) {
       await fallback.speak(text);
       return;
     }
     try {
       await primary.speak(text);
     } catch (_) {
-      await fallback.speak(text);
+      if (operationGeneration == _operationGeneration) {
+        await fallback.speak(text);
+      }
     }
+  }
+
+  String _offlineVoiceLanguage() {
+    final voice = _settings?.call().ttsVoiceName;
+    if (voice != null && KokoroCatalog.supportsVoice(voice)) {
+      return KokoroCatalog.voice(voice).languageCode.split('-').first;
+    }
+    return 'en';
   }
 
   @override
   Future<void> stop() async {
+    _operationGeneration += 1;
     try {
       await primary.stop();
     } finally {
@@ -246,6 +267,7 @@ class _PocketSpeechLanguageRouter implements TextToSpeechService {
 
   @override
   Future<void> dispose() async {
+    _operationGeneration += 1;
     try {
       await primary.dispose();
     } finally {
@@ -288,6 +310,7 @@ TextToSpeechService? createPocketSpeechTextToSpeechService({
       : _PocketSpeechLanguageRouter(
           primary: primary,
           fallback: fallback,
+          settings: effectiveSettings,
           languageDetector: languageDetector,
         );
 }

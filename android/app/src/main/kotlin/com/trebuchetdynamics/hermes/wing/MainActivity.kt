@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionService
+import android.speech.SpeechRecognizer
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -120,6 +121,7 @@ class MainActivity : FlutterActivity() {
                 "${info.packageName}/${info.name}"
             },
             microphonePermissionGranted = isMicrophonePermissionGranted(),
+            onDeviceRecognitionAvailable = isOnDeviceRecognitionAvailable(),
         ).toMethodChannelMap()
     }
 
@@ -134,6 +136,11 @@ class MainActivity : FlutterActivity() {
             @Suppress("DEPRECATION")
             packageManager.queryIntentServices(recognitionIntent, 0)
         }
+    }
+
+    private fun isOnDeviceRecognitionAvailable(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
     }
 
     private fun isMicrophonePermissionGranted(): Boolean {

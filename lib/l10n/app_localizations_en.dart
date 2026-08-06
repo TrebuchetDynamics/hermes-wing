@@ -231,6 +231,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayConnectFailed => 'Could not connect to this gateway.';
 
   @override
+  String get gatewayDisconnectTitle => 'Disconnect from this gateway?';
+
+  @override
+  String get gatewayDisconnectBody =>
+      'Hermes Wing will close this connection. The saved gateway and API key stay on this device so you can reconnect later.';
+
+  @override
+  String get gatewayDisconnectFailed =>
+      'Could not disconnect from this gateway.';
+
+  @override
   String get officeTitle => 'Office';
 
   @override
@@ -1422,8 +1433,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollTitle => 'Connect to Hermes';
 
   @override
-  String enrollInvalidLink(String message) {
-    return 'This pairing link is not valid: $message';
+  String get enrollInvalidLinkTitle => 'Pairing link couldn’t be opened';
+
+  @override
+  String get enrollInvalidLinkBody =>
+      'Scan a new QR code or enter the gateway manually.';
+
+  @override
+  String enrollInvalidLinkDetail(String message) {
+    return 'Details: $message';
   }
 
   @override
@@ -1457,6 +1475,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollScanQr => 'Scan QR code';
+
+  @override
+  String get enrollManualConnectAction => 'Enter gateway manually';
 
   @override
   String get enrollGrantQuestion =>

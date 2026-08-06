@@ -12,6 +12,8 @@ All notable user-visible changes will be documented here.
   connection without deleting the saved gateway or API key.
 - Invalid or incomplete pairing links now offer manual gateway setup instead
   of leaving QR scanning as the only recovery path.
+- Chat contacts now prefix every agent name with its gateway, so duplicate
+  profiles such as “Default agent” remain distinguishable.
 - Voice input now fails closed when local recognition cannot be guaranteed:
   browser STT and the transcript-logging Windows adapter are disabled, while
   Android requires an on-device recognizer before capture starts instead of

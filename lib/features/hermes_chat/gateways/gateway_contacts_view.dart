@@ -107,7 +107,7 @@ class GatewayContactsView extends StatelessWidget {
                   'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
                 label:
-                    '${contact.profileName}, ${contact.gatewayLabel}, ${contact.availability.name}',
+                    '${contact.gatewayLabel}, ${contact.profileName}, ${contact.availability.name}',
                 child: ListTile(
                   key: const ValueKey('gateway-contact-row'),
                   leading: CircleAvatar(
@@ -122,7 +122,7 @@ class GatewayContactsView extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    contact.profileName,
+                    _contactTitle(contact),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -130,7 +130,7 @@ class GatewayContactsView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${contact.gatewayLabel} · ${contact.availability.name}',
+                        contact.availability.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -159,6 +159,14 @@ class GatewayContactsView extends StatelessWidget {
       ],
     );
   }
+}
+
+String _contactTitle(GatewayContact contact) {
+  final gateway = contact.gatewayLabel.trim();
+  final profile = contact.profileName.trim();
+  if (gateway.isEmpty) return profile;
+  if (profile.isEmpty) return gateway;
+  return '$gateway · $profile';
 }
 
 class _ContactStatus extends StatelessWidget {

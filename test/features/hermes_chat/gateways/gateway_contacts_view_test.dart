@@ -34,10 +34,48 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
-    expect(find.text('Alpha · online'), findsNWidgets(3));
-    expect(find.text('Beta · online'), findsNWidgets(2));
-    await tester.tap(find.text('Agent B2'));
+    expect(find.text('Alpha · Agent A1'), findsOneWidget);
+    expect(find.text('Beta · Agent B2'), findsOneWidget);
+    expect(find.text('online'), findsNWidgets(5));
+    await tester.tap(find.text('Beta · Agent B2'));
     expect(opened, const GatewayContactId(gatewayId: 'b', profileId: 'b2'));
+  });
+
+  testWidgets('prefixes duplicate profile names with their gateway', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'alpha',
+                'default',
+                'Default agent',
+                'Home',
+                '2026-07-16T05:00:00Z',
+              ),
+              _contact(
+                'beta',
+                'default',
+                'Default agent',
+                'Cloud',
+                '2026-07-16T04:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Home · Default agent'), findsOneWidget);
+    expect(find.text('Cloud · Default agent'), findsOneWidget);
   });
 
   testWidgets('pull to refresh invokes the refresh callback', (tester) async {
@@ -157,7 +195,8 @@ void main() {
 
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text('Alpha · refreshing'), findsOneWidget);
+    expect(find.text('Alpha · Agent A1'), findsOneWidget);
+    expect(find.text('refreshing'), findsOneWidget);
   });
 
   testWidgets('avatar uses the first trimmed grapheme or question fallback', (
@@ -281,7 +320,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Agent A1'), findsOneWidget);
+    expect(find.text('Alpha · Agent A1'), findsOneWidget);
     expect(
       tester
           .getSemantics(find.byKey(const ValueKey('gateway-contact-a-a1')))

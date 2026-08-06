@@ -81,26 +81,16 @@ to a non-loopback plaintext HTTP endpoint.
 Install the host helper on the machine running Hermes Agent:
 
 ```bash
-./install-wing-cli.sh
-wing-cli info
-wing-cli qr
+./install-wing-link.sh
+wing-link pair
 ```
 
 Then open **Connect to Hermes → Scan QR code**, review the endpoint and access,
-and connect. `wing-cli qr` uses a short-lived, single-use compatibility handoff:
-the QR does not contain the API key, but the resulting credential has the
-configured `API_SERVER_KEY` superuser access. If the endpoint advertises scoped
-enrollment, use `wing-cli link` to request a short-lived scoped `wing://` link.
-
-| Helper command   | Purpose                                                              |
-| ---------------- | -------------------------------------------------------------------- |
-| `wing-cli info`  | Show the Tailscale address and endpoint without revealing a token    |
-| `wing-cli qr`    | Render the temporary Android pairing handoff                         |
-| `wing-cli link`  | Request a scoped pairing link from an advertised enrollment endpoint |
-| `wing-cli token` | Explicitly reveal the superuser key for manual developer setup       |
-
-The helper uses Bash and Python 3. Run `wing-cli help` for origin, label, scope,
-and environment overrides. See the [Android setup guide](docs/runbooks/android-hermes-setup.md)
+and connect. `wing-link pair` requests a short-lived, single-use enrollment from
+the local Hermes and renders a `wing://connect` QR that never contains the API
+key. The binary is a small Go supervisor; run `wing-link help` for origin,
+label, and environment overrides (`WING_HERMES_URL`, `WING_HERMES_PORT`,
+`WING_HERMES_TOKEN`). See the [Android setup guide](docs/runbooks/android-hermes-setup.md)
 for the full path.
 
 ## Capabilities today

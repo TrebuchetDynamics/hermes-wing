@@ -272,9 +272,9 @@ No command accepts shell text.
 cd wing_link && gofmt -w *.go && go test ./... && go vet ./...
 ```
 
-- [ ] **Step 6: Reviewer checkpoint**
+- [x] **Step 6: Reviewer checkpoint**
 
-Confirm protocol fields contain no transcript, provider key, arbitrary path, arbitrary command, or remote-origin value.
+Confirmed protocol fields contain no transcript, provider key, arbitrary path, arbitrary command, or remote-origin value.
 
 ---
 
@@ -286,7 +286,7 @@ Confirm protocol fields contain no transcript, provider key, arbitrary path, arb
 
 **Interfaces:** `StateStore.CreateEnrollment()`, `.ExchangeEnrollment()`, `.Authorize()`, `.RevokeAll()`; `<WingLinkHome>/state.json` mode `0600`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```go
 func TestEnrollmentExchangesOnceAndStoresHashes(t *testing.T) {
@@ -304,13 +304,13 @@ func TestEnrollmentExchangesOnceAndStoresHashes(t *testing.T) {
 
 Add expiry after five minutes, mode `0600`, malformed-state fail-closed, and changed-token rejection.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 ```bash
 cd wing_link && go test ./... -run Enrollment
 ```
 
-- [ ] **Step 3: Implement exact surface**
+- [x] **Step 3: Implement exact surface**
 
 ```go
 var ErrEnrollmentUnavailable = errors.New("enrollment unavailable")
@@ -324,15 +324,15 @@ func (s *StateStore) RevokeAll() error
 
 Generate 24-byte codes and 32-byte `wlc_` tokens with `crypto/rand`. Persist SHA-256 hex only, compare constant-time, write sibling temp `0600`, fsync, rename. Reject symlinks/non-regular state paths.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 ```bash
 cd wing_link && go test ./... -run 'Enrollment|StateStore'
 ```
 
-- [ ] **Step 5: Reviewer checkpoint**
+- [x] **Step 5: Reviewer checkpoint**
 
-Inspect fixtures and confirm no raw code/token appears.
+Confirmed fixtures and persisted state contain no raw code/token; independent review passed.
 
 ---
 
@@ -344,7 +344,7 @@ Inspect fixtures and confirm no raw code/token appears.
 
 **Interfaces:** `CommandSpec`, `runProcess()`, `OperationManager.Start()`, `.Snapshot()`, `.Subscribe()`.
 
-- [ ] **Step 1: Write failing safety tests**
+- [x] **Step 1: Write failing safety tests**
 
 ```go
 func TestArgumentsStayLiteral(t *testing.T) {
@@ -367,13 +367,13 @@ func TestManagerRejectsConcurrentInstall(t *testing.T) {
 
 Add timeout, ANSI stripping, 240-character bounds, secret redaction, SSE slow-subscriber, and final-event retention tests.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 ```bash
 cd wing_link && go test ./... -run 'Arguments|Manager'
 ```
 
-- [ ] **Step 3: Implement process contract**
+- [x] **Step 3: Implement process contract**
 
 ```go
 type CommandSpec struct { Path string; Args []string; Dir string; Env []string; Timeout time.Duration }
@@ -383,27 +383,27 @@ func runProcess(ctx context.Context, spec CommandSpec, onLine func(string)) Proc
 
 Use `exec.CommandContext(spec.Path, spec.Args...)`; never `sh -c`, `bash -c`, `cmd /c`, or PowerShell command text. Redact bearer/API-key/token/password/URL-userinfo patterns before emitting.
 
-- [ ] **Step 4: Implement operation manager**
+- [x] **Step 4: Implement operation manager**
 
 ```go
 var ErrOperationInProgress = errors.New("operation already in progress")
 func NewOperationManager() *OperationManager
 func (m *OperationManager) Start(kind string, work func(context.Context, func(OperationEvent)) error) (string, error)
-func (m *OperationManager) Snapshot(id string) (InstallStatus, bool)
+func (m *OperationManager) Snapshot(id string) (OperationEvent, bool)
 func (m *OperationManager) Subscribe(id string) (<-chan OperationEvent, func(), bool)
 ```
 
 Use random `op_` IDs and capacity-16 subscribers. Intermediate progress may drop; terminal events may not.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 ```bash
 cd wing_link && gofmt -w *.go && go test -race ./...
 ```
 
-- [ ] **Step 6: Reviewer checkpoint**
+- [x] **Step 6: Reviewer checkpoint**
 
-Search for shell command composition; only verified local installer files may run through Bash/PowerShell.
+Confirmed no shell command composition; process arguments remain literal, secrets/output are sanitized, and process trees are bounded on supported platforms.
 
 ---
 
@@ -419,11 +419,11 @@ Search for shell command composition; only verified local installer files may ru
 
 **Interfaces:** `VerifyComponentManifest()`, `ComponentCatalog`, `ArtifactFor()`, `downloadVerified()`.
 
-- [ ] **Step 1: Write one failing signature test**
+- [x] **Step 1: Write one failing signature test**
 
 Generate an ephemeral Ed25519 key in the test, sign a fixed manifest fixture, and prove `VerifyComponentManifest()` accepts it. Then mutate one manifest byte and prove the same signature returns `ErrManifestSignature`. The expected result comes from Go’s `crypto/ed25519`, not production implementation logic.
 
-- [ ] **Step 2: Implement signature verification and make the test GREEN**
+- [x] **Step 2: Implement signature verification and make the test GREEN**
 
 ```go
 var ErrManifestSignature = errors.New("component manifest signature invalid")

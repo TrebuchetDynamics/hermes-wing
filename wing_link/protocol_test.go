@@ -225,13 +225,31 @@ func TestRunPrintsVersion(t *testing.T) {
 }
 
 func TestRunRecognizesOnlyFixedCommands(t *testing.T) {
-	for _, command := range []string{"serve", "status", "pair", "start", "stop", "restart"} {
+	for _, command := range []string{"serve", "status", "start", "stop", "restart"} {
 		var stdout, stderr bytes.Buffer
 		if code := run([]string{command}, &stdout, &stderr); code != 1 {
 			t.Fatalf("%s exit code = %d", command, code)
 		}
 		if stdout.Len() != 0 || !strings.Contains(stderr.String(), command+" is unavailable") {
 			t.Fatalf("%s stdout=%q stderr=%q", command, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestRunRejectsExtraArguments(t *testing.T) {
+	for _, test := range []struct {
+		args    []string
+		message string
+	}{
+		{args: []string{"pair", "version"}, message: "unknown option version"},
+		{args: []string{"serve", "--port", "9000"}, message: "usage: wing-link"},
+	} {
+		var stdout, stderr bytes.Buffer
+		if code := run(test.args, &stdout, &stderr); code != 2 {
+			t.Fatalf("%v exit code = %d", test.args, code)
+		}
+		if stdout.Len() != 0 || !strings.Contains(stderr.String(), test.message) {
+			t.Fatalf("%v stdout=%q stderr=%q", test.args, stdout.String(), stderr.String())
 		}
 	}
 }

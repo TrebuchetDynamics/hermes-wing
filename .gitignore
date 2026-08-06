@@ -25,6 +25,8 @@ Thumbs.db
 # Agent artifacts
 .pi/
 **/.pi/
+.pi-subagents/
+**/.pi-subagents/
 .understand-anything/
 codebase-map-understand.md
 .claude/

@@ -507,30 +507,24 @@ void main() {
     }
   });
 
-  test('wing-cli installer creates a runnable global command', () async {
+  test('wing-link installer creates a runnable global command', () async {
     final installDir = await Directory.systemTemp.createTemp(
-      'wing-cli-install-',
+      'wing-link-install-',
     );
     addTearDown(() => installDir.delete(recursive: true));
 
-    final install = await Process.run('./install-wing-cli.sh', [
+    final install = await Process.run('./install-wing-link.sh', [
       '--prefix',
       installDir.path,
     ]);
     expect(install.exitCode, 0, reason: install.stderr as String);
 
-    final installed = File('${installDir.path}/wing-cli');
+    final installed = File('${installDir.path}/wing-link');
     expect(installed.existsSync(), isTrue);
     expect(installed.statSync().mode & 0x49, isNonZero);
-    expect(
-      File('${installDir.path}/.wing-cli/qrcodegen.py').existsSync(),
-      isTrue,
-    );
 
-    final help = await Process.run(installed.path, ['--help']);
-    expect(help.exitCode, 0);
-    expect(help.stdout, contains('Hermes Wing CLI'));
-    expect(help.stdout, contains('wing-cli [info|token|link|qr]'));
-    expect(help.stdout, contains('Examples:'));
+    final version = await Process.run(installed.path, ['version']);
+    expect(version.exitCode, 0);
+    expect(version.stdout, contains('dev'));
   });
 }

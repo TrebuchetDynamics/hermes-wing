@@ -240,6 +240,28 @@ void main() {
       expect(controller.preview, isNull);
     });
 
+    test('cancel during exchange does not save a stale token', () async {
+      final exchange = Completer<HermesIssuedOperatorToken>();
+      final store = FakeHermesEndpointStore();
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) =>
+            exchange.future,
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      final confirmation = controller.confirm();
+      await Future<void>.delayed(Duration.zero);
+      controller.cancel();
+      exchange.complete(_issued);
+      await confirmation;
+
+      expect(store.saveCalls, isEmpty);
+      expect(controller.status, HermesEnrollmentStatus.idle);
+    });
+
     test(
       'successful enrollment appends and reloads without deletion',
       () async {

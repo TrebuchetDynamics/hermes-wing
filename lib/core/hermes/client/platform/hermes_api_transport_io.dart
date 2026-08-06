@@ -47,7 +47,7 @@ Stream<String> _requestStream({
     request.followRedirects = false;
     headers.forEach(request.headers.set);
     final payload = body;
-    if (payload != null) request.write(payload);
+    if (payload != null) request.add(utf8.encode(payload));
     final response = await request.close();
     if (!hermesApiIsSuccessStatus(response.statusCode)) {
       throw HttpException(
@@ -73,7 +73,7 @@ Future<String> _request({
     request.followRedirects = false;
     headers.forEach(request.headers.set);
     final payload = body;
-    if (payload != null) request.write(payload);
+    if (payload != null) request.add(utf8.encode(payload));
     final response = await request.close();
     final responseBody = await utf8.decoder.bind(response).join();
     if (!hermesApiIsSuccessStatus(response.statusCode)) {

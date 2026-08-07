@@ -39,33 +39,36 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
         title: Text(strings.toolsTitle),
         actions: const [AppShellMenuButton()],
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([channel, directory]),
-        builder: (context, _) => Column(
-          children: [
-            if (directory.gateways.isNotEmpty)
-              WingGatewayPicker(
-                fieldKey: const ValueKey('tools-gateway-picker'),
-                directory: directory,
-                helpText: strings.toolsGatewayHelp,
-                enabled: _switchingGatewayId == null,
-                onSelected: (id) =>
-                    unawaited(_selectGateway(directory, id, strings)),
+      body: SafeArea(
+        top: false,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([channel, directory]),
+          builder: (context, _) => Column(
+            children: [
+              if (directory.gateways.isNotEmpty)
+                WingGatewayPicker(
+                  fieldKey: const ValueKey('tools-gateway-picker'),
+                  directory: directory,
+                  helpText: strings.toolsGatewayHelp,
+                  enabled: _switchingGatewayId == null,
+                  onSelected: (id) =>
+                      unawaited(_selectGateway(directory, id, strings)),
+                ),
+              if (_actionError != null)
+                MaterialBanner(
+                  content: Text(_actionError!),
+                  actions: [
+                    TextButton(
+                      onPressed: () => setState(() => _actionError = null),
+                      child: Text(strings.doneAction),
+                    ),
+                  ],
+                ),
+              Expanded(
+                child: _ToolsBody(state: channel.state, strings: strings),
               ),
-            if (_actionError != null)
-              MaterialBanner(
-                content: Text(_actionError!),
-                actions: [
-                  TextButton(
-                    onPressed: () => setState(() => _actionError = null),
-                    child: Text(strings.doneAction),
-                  ),
-                ],
-              ),
-            Expanded(
-              child: _ToolsBody(state: channel.state, strings: strings),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

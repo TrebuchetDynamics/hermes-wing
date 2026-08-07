@@ -34,12 +34,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Agents'), findsOneWidget);
+    expect(find.text('Profiles'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('gateway-contacts-empty')),
       findsOneWidget,
     );
-    expect(find.text('Add gateway or agent'), findsOneWidget);
+    expect(find.text('Add gateway or profile'), findsOneWidget);
     expect(find.text('Connect to your Hermes VPS'), findsNothing);
     expect(find.byKey(const ValueKey('hermes-base-url-field')), findsNothing);
   });

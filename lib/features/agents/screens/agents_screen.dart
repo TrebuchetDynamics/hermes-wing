@@ -75,20 +75,25 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
         title: Text(strings.agentsTitle),
         actions: const [AppShellMenuButton()],
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([channel, directory]),
-        builder: (context, _) => Column(
-          children: [
-            if (directory.gateways.isNotEmpty)
-              WingGatewayPicker(
-                fieldKey: const ValueKey('agents-gateway-picker'),
-                directory: directory,
-                helpText: AppLocalizations.of(context).agentsGatewayPickerHelp,
-                enabled: _switchingGatewayId == null,
-                onSelected: (id) => unawaited(_selectGateway(directory, id)),
-              ),
-            Expanded(child: _buildBody(context, channel, directory, strings)),
-          ],
+      body: SafeArea(
+        top: false,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([channel, directory]),
+          builder: (context, _) => Column(
+            children: [
+              if (directory.gateways.isNotEmpty)
+                WingGatewayPicker(
+                  fieldKey: const ValueKey('agents-gateway-picker'),
+                  directory: directory,
+                  helpText: AppLocalizations.of(
+                    context,
+                  ).agentsGatewayPickerHelp,
+                  enabled: _switchingGatewayId == null,
+                  onSelected: (id) => unawaited(_selectGateway(directory, id)),
+                ),
+              Expanded(child: _buildBody(context, channel, directory, strings)),
+            ],
+          ),
         ),
       ),
     );

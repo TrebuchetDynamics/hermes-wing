@@ -55,22 +55,25 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
           const AppShellMenuButton(),
         ],
       ),
-      body: AnimatedBuilder(
-        animation: directory,
-        builder: (context, _) => Column(
-          children: [
-            if (_openFailed)
-              MaterialBanner(
-                content: Text(strings.officeOpenFailed),
-                actions: [
-                  TextButton(
-                    onPressed: () => setState(() => _openFailed = false),
-                    child: Text(strings.doneAction),
-                  ),
-                ],
-              ),
-            Expanded(child: _buildBody(context, directory, strings)),
-          ],
+      body: SafeArea(
+        top: false,
+        child: AnimatedBuilder(
+          animation: directory,
+          builder: (context, _) => Column(
+            children: [
+              if (_openFailed)
+                MaterialBanner(
+                  content: Text(strings.officeOpenFailed),
+                  actions: [
+                    TextButton(
+                      onPressed: () => setState(() => _openFailed = false),
+                      child: Text(strings.doneAction),
+                    ),
+                  ],
+                ),
+              Expanded(child: _buildBody(context, directory, strings)),
+            ],
+          ),
         ),
       ),
     );
@@ -205,7 +208,7 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
       if (directory.activeContactId != id) await directory.activate(id);
       final connected = ref.read(hermesChannelProvider).state.isConnected;
       if (directory.activeContactId != id || !connected) {
-        throw StateError('Hermes agent activation did not connect.');
+        throw StateError('Hermes profile activation did not connect.');
       }
       if (!context.mounted) return;
       context.go(AppRoutes.hermes);
@@ -334,6 +337,8 @@ class _OfficeAgentCard extends StatelessWidget {
                   ),
                   if (contact.isFallbackProfile)
                     Chip(label: Text(strings.officeGatewayDefault)),
+                  if (!contact.chatAvailable)
+                    Chip(label: Text(strings.officeProfileManagementOnly)),
                 ],
               ),
               const SizedBox(height: 14),
@@ -341,7 +346,7 @@ class _OfficeAgentCard extends StatelessWidget {
                 key: ValueKey(
                   'office-open-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
-                onPressed: opening ? null : onOpen,
+                onPressed: opening || !contact.chatAvailable ? null : onOpen,
                 icon: opening
                     ? const SizedBox.square(
                         dimension: 18,
@@ -353,7 +358,11 @@ class _OfficeAgentCard extends StatelessWidget {
                             : Icons.chat_bubble_outline,
                       ),
                 label: Text(
-                  current ? strings.officeReturnToChat : strings.officeOpenChat,
+                  !contact.chatAvailable
+                      ? strings.officeProfileManagementOnly
+                      : current
+                      ? strings.officeReturnToChat
+                      : strings.officeOpenChat,
                 ),
               ),
               if (current) ...[

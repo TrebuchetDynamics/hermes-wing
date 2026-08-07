@@ -34,6 +34,7 @@ extension _ApprovalsExtension on HermesApiChannel {
         runId: runId,
         approvalId: trimmedApprovalId,
         decision: decision.name,
+        profile: _state.selectedProfileId,
       );
       _approvalRunIds.remove(trimmedApprovalId);
     } catch (error) {

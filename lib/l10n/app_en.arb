@@ -2,20 +2,20 @@
   "@@locale": "en",
   "appTitle": "Hermes Wing",
   "hermesDestination": "Hermes",
-  "agentsDestination": "Agents",
+  "agentsDestination": "Profiles",
   "officeDestination": "Office",
   "settingsDestination": "Settings",
   "moreDestinations": "More",
   "openMoreDestinations": "Open more destinations",
-  "agentsTitle": "Agents",
-  "agentsSubtitle": "Choose how Hermes works for each role.",
-  "newAgent": "New Agent",
-  "agentsLoading": "Loading agents",
-  "agentsEmptyTitle": "No agents available",
-  "agentsEmptyBody": "Connect with profile access to view Hermes agents.",
-  "agentsUnavailableTitle": "Agents unavailable",
+  "agentsTitle": "Profiles",
+  "agentsSubtitle": "Choose how Hermes works for each profile.",
+  "newAgent": "New Profile",
+  "agentsLoading": "Loading profiles",
+  "agentsEmptyTitle": "No profiles available",
+  "agentsEmptyBody": "Connect with profile access to view Hermes profiles.",
+  "agentsUnavailableTitle": "Profiles unavailable",
   "agentsUnavailableBody": "Update Hermes Agent and reconnect this gateway with profile permissions.",
-  "agentsConnectionError": "Agents could not be loaded from Hermes.",
+  "agentsConnectionError": "Profiles could not be loaded from Hermes.",
   "selectedAgent": "Selected",
   "defaultAgent": "Default",
   "readOnlyAccess": "Read-only access",
@@ -40,10 +40,11 @@
   "agentGatewayUnknown": "Gateway state unknown",
   "managedByWingLink": "Managed by Wing Link",
   "agentNoModel": "No model selected",
-  "agentsLocalLoadError": "Could not load local agents.",
+  "agentsLocalLoadError": "Could not load local profiles.",
   "agentsGatewayConnectError": "Could not connect to this gateway.",
   "profileStableNameHint": "Use 1–64 lowercase letters, numbers, _ or -.",
   "chatWithAgent": "Chat",
+  "profileChatUnavailable": "Management only — this Hermes endpoint does not advertise profile chat context.",
   "chatWithNamedAgent": "Chat with {name}",
   "@chatWithNamedAgent": {
     "placeholders": {
@@ -62,9 +63,9 @@
       }
     }
   },
-  "createAgentTitle": "Create agent",
-  "agentDisplayName": "Agent name",
-  "agentNameRequired": "Enter an agent name.",
+  "createAgentTitle": "Create profile",
+  "agentDisplayName": "Profile name",
+  "agentNameRequired": "Enter a profile name.",
   "cloneFromAgent": "Clone from",
   "startFresh": "Start fresh",
   "createAction": "Create",
@@ -73,8 +74,8 @@
   "saveAction": "Save",
   "doneAction": "Done",
   "personaLabel": "Persona",
-  "personaHint": "Describe this agent’s role, voice, and working style.",
-  "deleteAgent": "Delete agent",
+  "personaHint": "Describe this profile’s role, voice, and working style.",
+  "deleteAgent": "Delete profile",
   "deleteNamedAgent": "Delete {name}",
   "@deleteNamedAgent": {
     "placeholders": {
@@ -91,14 +92,14 @@
       }
     }
   },
-  "deleteAgentBody": "This permanently deletes the agent from Hermes. Type its display name to confirm.",
-  "deleteConfirmationLabel": "Agent name",
-  "defaultAgentCannotDelete": "The default agent cannot be deleted.",
+  "deleteAgentBody": "This permanently deletes the profile from Hermes. Type its display name to confirm.",
+  "deleteConfirmationLabel": "Profile name",
+  "defaultAgentCannotDelete": "The default profile cannot be deleted.",
   "profileOperationFailed": "Hermes could not complete that profile change.",
-  "profileRevisionConflict": "This agent changed elsewhere. The latest version has been loaded; review it before trying again.",
-  "switchAgent": "Switch agent",
-  "switchAgentTitle": "Switch agent",
-  "switchAgentFailed": "Could not switch agent: {message}",
+  "profileRevisionConflict": "This profile changed elsewhere. The latest version has been loaded; review it before trying again.",
+  "switchAgent": "Switch profile",
+  "switchAgentTitle": "Switch profile",
+  "switchAgentFailed": "Could not switch profile: {message}",
   "@switchAgentFailed": {
     "placeholders": {
       "message": {
@@ -118,7 +119,7 @@
   "toolsUnavailableTitle": "Tools unavailable",
   "schedulesUnavailableTitle": "Schedules unavailable",
   "gatewayStatusUnavailableTitle": "Gateway status unavailable",
-  "agentsConnectionRequiredBody": "Open a saved gateway chat before managing its agents.",
+  "agentsConnectionRequiredBody": "Open a saved gateway chat before managing its profiles.",
   "providersConnectionRequiredBody": "Open a saved gateway chat before managing providers and models.",
   "toolsGatewayHelp": "View tool inventory from the selected gateway.",
   "gatewayConnectFailed": "Could not connect to this gateway.",
@@ -126,8 +127,8 @@
   "gatewayDisconnectBody": "Hermes Wing will close this connection. The saved gateway and API key stay on this device so you can reconnect later.",
   "gatewayDisconnectFailed": "Could not disconnect from this gateway.",
   "officeTitle": "Office",
-  "officeSubtitle": "An accessible 2D workspace for agents advertised by your saved Hermes gateways.",
-  "officeAgentCount": "{count, plural, =1{1 agent} other{{count} agents}}",
+  "officeSubtitle": "An accessible 2D workspace for profiles advertised by your saved Hermes gateways.",
+  "officeAgentCount": "{count, plural, =1{1 profile} other{{count} profiles}}",
   "@officeAgentCount": {
     "placeholders": {
       "count": {
@@ -135,9 +136,9 @@
       }
     }
   },
-  "officeSearchLabel": "Search agents and gateways",
+  "officeSearchLabel": "Search profiles and gateways",
   "officeClearSearch": "Clear search",
-  "officeShowingCount": "Showing {visible} of {total} agents",
+  "officeShowingCount": "Showing {visible} of {total} profiles",
   "@officeShowingCount": {
     "placeholders": {
       "visible": {
@@ -148,15 +149,16 @@
       }
     }
   },
-  "officeNoAgentsTitle": "No Hermes agents available",
+  "officeNoAgentsTitle": "No Hermes profiles available",
   "officeNoAgentsBody": "Connect or refresh a saved gateway to populate the Office.",
   "officeOpenSettings": "Open settings",
-  "officeNoMatches": "No agents match this search.",
+  "officeNoMatches": "No profiles match this search.",
   "officeRefresh": "Refresh Office",
   "officeOpenChat": "Open chat",
+  "officeProfileManagementOnly": "Management only",
   "officeCurrentChat": "Current chat",
   "officeReturnToChat": "Return to chat",
-  "officeOpenFailed": "Could not open this Hermes agent. Refresh and try again.",
+  "officeOpenFailed": "Could not open this Hermes profile. Refresh and try again.",
   "officeGatewayDefault": "Gateway default contact",
   "officeSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
   "@officeSessionCount": {
@@ -198,13 +200,13 @@
   "toolsetsLoadFailedBody": "Enabled toolsets could not be loaded from Hermes.",
   "schedulesDestination": "Schedules",
   "schedulesTitle": "Schedules",
-  "schedulesSubtitle": "Scheduled jobs advertised by the selected gateway and agent.",
+  "schedulesSubtitle": "Scheduled jobs advertised by the selected gateway and profile.",
   "schedulesGatewayHelp": "View schedules from the selected gateway.",
   "schedulesConnectionRequiredBody": "Open a saved gateway chat before viewing its schedules.",
   "schedulesConnectionErrorBody": "Schedules could not be loaded from Hermes.",
   "schedulesUnavailableBody": "This gateway did not advertise scheduled-job inventory.",
   "schedulesLoadFailedBody": "Schedules could not be loaded from Hermes.",
-  "schedulesEmptyBody": "No scheduled jobs were reported for this agent.",
+  "schedulesEmptyBody": "No scheduled jobs were reported for this profile.",
   "schedulesReadOnlyNote": "Read-only schedule inventory. Create, pause, trigger, and delete remain hidden until this gateway advertises exact scoped administration contracts.",
   "schedulesRefreshTooltip": "Refresh schedules",
   "scheduleEnabled": "Enabled",
@@ -233,7 +235,7 @@
   "gatewayPlatformLabel": "Platform",
   "gatewayVersionLabel": "Version",
   "gatewayRuntimeStateLabel": "Runtime state",
-  "gatewayActiveAgentsLabel": "Active agents",
+  "gatewayActiveAgentsLabel": "Active profiles",
   "gatewayWorkStateLabel": "Work state",
   "gatewayBusy": "Busy",
   "gatewayIdle": "Idle",
@@ -285,7 +287,7 @@
     }
   },
   "providersTitle": "Providers",
-  "providersSubtitle": "Set provider credentials and choose models for this agent.",
+  "providersSubtitle": "Set provider credentials and choose models for this profile.",
   "providersGatewayHelp": "Manage providers and models on the selected gateway.",
   "providersLoading": "Loading providers",
   "providersConnectionError": "Providers could not be loaded from Hermes.",
@@ -445,12 +447,12 @@
   "localCommandToolsDescription": "Open installed skills and toolsets.",
   "localCommandSkillsDescription": "Open installed skills.",
   "localCommandGatewayDescription": "Open gateway status.",
-  "localCommandOfficeDescription": "Open the accessible agent workspace.",
-  "localCommandAgentsDescription": "Open gateway-scoped agents.",
+  "localCommandOfficeDescription": "Open the accessible profile workspace.",
+  "localCommandAgentsDescription": "Open gateway-scoped profiles.",
   "localCommandProvidersDescription": "Open providers and models.",
   "localCommandModelDescription": "Open provider and model management.",
   "localCommandSchedulesDescription": "Open gateway schedules.",
-  "localCommandPersonaDescription": "Show the selected agent persona.",
+  "localCommandPersonaDescription": "Show the selected profile persona.",
   "localCommandVersionDescription": "Show the connected gateway version.",
   "gatewayVersionSummary": "Gateway version: {platform} {version}",
   "@gatewayVersionSummary": {
@@ -473,7 +475,7 @@
       }
     }
   },
-  "profilePersonaEmptyBody": "This agent has no persona content.",
+  "profilePersonaEmptyBody": "This profile has no persona content.",
   "profilePersonaLoadFailed": "Persona could not be loaded: {error}",
   "@profilePersonaLoadFailed": {
     "placeholders": {
@@ -821,7 +823,7 @@
       }
     }
   },
-  "settingsManageAgentsAction": "Manage agents",
+  "settingsManageAgentsAction": "Manage profiles",
   "settingsRenameAction": "Rename",
   "settingsUpdateConnectionAction": "Update connection",
   "settingsReconnectAction": "Reconnect",
@@ -908,9 +910,9 @@
     }
   },
   "agentsGatewayPickerHelp": "Add and edit profiles on the selected gateway.",
-  "gatewayContactsEmptyTitle": "Add your first Hermes agent",
-  "gatewayContactsEmptyBody": "Connect a gateway to see its agent profiles and start a conversation.",
-  "gatewayContactsConnectAction": "Add gateway or agent",
+  "gatewayContactsEmptyTitle": "Add your first Hermes profile",
+  "gatewayContactsEmptyBody": "Connect a gateway to see its profiles and start a conversation.",
+  "gatewayContactsConnectAction": "Add gateway or profile",
   "chatQueuedCancelTitle": "{count, plural, one{Cancel {count} queued follow-up?} other{Cancel {count} queued follow-ups?}}",
   "@chatQueuedCancelTitle": {
     "placeholders": {
@@ -1206,7 +1208,7 @@
   "chatLayoutSpeakAndSendTooltip": "Speak and send",
   "chatLayoutSendTooltip": "Send",
   "chatShellVoicePausedBackgroundBody": "Continuous voice paused while Hermes Wing is not in the foreground.",
-  "chatShellVoicePausedSwitchingAgentsBody": "Continuous voice paused while switching agents.",
+  "chatShellVoicePausedSwitchingAgentsBody": "Continuous voice paused while switching profiles.",
   "chatShellApprovalAnswerFailedBody": "Could not answer Hermes approval: {message}",
   "@chatShellApprovalAnswerFailedBody": {
     "placeholders": {
@@ -1223,7 +1225,7 @@
   "chatShellContactSwitchedBody": "Switched Hermes contact.",
   "chatShellAllChatsTooltip": "All chats",
   "chatShellHermesTitle": "Hermes",
-  "chatShellConnectAnotherGatewayTooltip": "Add gateway or agent",
+  "chatShellConnectAnotherGatewayTooltip": "Add gateway or profile",
   "chatShellSessionsLabel": "Sessions",
   "chatShellNewSessionLabel": "New session",
   "chatShellMoreActionsTooltip": "More actions",
@@ -1330,7 +1332,7 @@
       }
     }
   },
-  "chatStatusActiveAgentsLabel": "Active agents: {count}",
+  "chatStatusActiveAgentsLabel": "Active profiles: {count}",
   "@chatStatusActiveAgentsLabel": {
     "placeholders": {
       "count": {
@@ -1765,7 +1767,7 @@
   "themePaletteForest": "Forest",
   "themePaletteAmber": "Amber",
   "themePaletteMulberry": "Mulberry",
-  "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.",
+  "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.",
   "tipVoice": "Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.",
   "tipApprovals": "Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.",
   "tipDismissTooltip": "Dismiss tip",

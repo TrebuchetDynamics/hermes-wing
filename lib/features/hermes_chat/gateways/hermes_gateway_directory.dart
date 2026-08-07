@@ -19,11 +19,13 @@ class GatewaySummary {
     required this.profiles,
     required this.sessionsByProfile,
     this.unscopedSessions = const [],
+    this.profileContextAvailable = false,
   });
 
   final List<HermesProfile> profiles;
   final Map<String, List<HermesSession>> sessionsByProfile;
   final List<HermesSession> unscopedSessions;
+  final bool profileContextAvailable;
 }
 
 typedef GatewayPeriodicTimerFactory =
@@ -35,6 +37,8 @@ abstract interface class GatewaySummaryLoader {
 
 typedef PendingWingLinkCredentialRecovery =
     Future<bool> Function(HermesEndpointConfig config);
+typedef WingLinkProfileLoader =
+    Future<List<WingLinkProfile>> Function(HermesEndpointConfig config);
 
 class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
   const HermesApiGatewaySummaryLoader({this.clientBuilder});
@@ -51,9 +55,11 @@ class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
         clientBuilder?.call(apiConfig) ?? HermesApiClient(config: apiConfig);
     await client.health();
     final capabilities = await client.capabilities();
-    final supportsProfiles =
+    final supportsProfileContext =
         capabilities.supportsSchema &&
-        capabilities.profileContext.isSupportedQueryContext &&
+        capabilities.profileContext.isSupportedQueryContext;
+    final supportsProfiles =
+        supportsProfileContext &&
         capabilities.auth.allows('profiles:read') &&
         capabilities.advertisesScopedEndpoint(
           'profiles',
@@ -65,12 +71,18 @@ class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
       return GatewaySummary(
         profiles: const [],
         sessionsByProfile: const {},
-        unscopedSessions: await client.listSessions(),
+        unscopedSessions: await client.listSessions(
+          profile: supportsProfileContext
+              ? capabilities.profileContext.defaultProfileId
+              : null,
+        ),
+        profileContextAvailable: supportsProfileContext,
       );
     }
     final profiles = await client.listProfiles();
     return GatewaySummary(
       profiles: profiles,
+      profileContextAvailable: true,
       sessionsByProfile: {
         for (final profile in profiles)
           profile.id: await client.listSessions(profile: profile.id),
@@ -89,6 +101,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     DateTime Function()? now,
     GatewayPeriodicTimerFactory? periodicTimer,
     PendingWingLinkCredentialRecovery? pendingCredentialRecovery,
+    WingLinkProfileLoader? wingLinkProfileLoader,
     this.maxConcurrent = 3,
   }) : assert(maxConcurrent > 0),
        _store = store,
@@ -98,7 +111,8 @@ class HermesGatewayDirectory extends ChangeNotifier
        _now = now ?? DateTime.now,
        _periodicTimer = periodicTimer ?? Timer.periodic,
        _pendingCredentialRecovery =
-           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential;
+           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential,
+       _wingLinkProfileLoader = wingLinkProfileLoader ?? _loadWingLinkProfiles;
 
   final HermesEndpointStore _store;
   final GatewayContactCache _cache;
@@ -107,6 +121,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   final DateTime Function() _now;
   final GatewayPeriodicTimerFactory _periodicTimer;
   final PendingWingLinkCredentialRecovery _pendingCredentialRecovery;
+  final WingLinkProfileLoader _wingLinkProfileLoader;
   final int maxConcurrent;
   final Map<String, HermesEndpointConfig> _configsById = {};
   final Map<String, int> _gatewayRefreshGenerations = {};
@@ -247,6 +262,15 @@ class HermesGatewayDirectory extends ChangeNotifier
     }
   }
 
+  static Future<List<WingLinkProfile>> _loadWingLinkProfiles(
+    HermesEndpointConfig config,
+  ) async {
+    final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
+    final token = config.wingLinkToken ?? '';
+    if (origin == null || origin.host.isEmpty || token.isEmpty) return const [];
+    return WingLinkClient(origin: origin, token: token).listProfiles();
+  }
+
   static Future<bool> _verifyAndAcknowledgePendingCredential(
     HermesEndpointConfig config,
   ) async {
@@ -306,9 +330,22 @@ class HermesGatewayDirectory extends ChangeNotifier
         _gatewayRefreshGenerations[gatewayId] == gatewayGeneration;
     try {
       final summary = await _loader.load(config);
+      List<WingLinkProfile> wingLinkProfiles = const [];
+      try {
+        wingLinkProfiles = await _wingLinkProfileLoader(config);
+      } catch (_) {
+        // Chat remains usable when the independent management plane is down.
+      }
       if (!isCurrent()) return;
       final refreshedAt = _now().toUtc();
-      final projected = summary.profiles.isEmpty
+      final apiProfiles = {
+        for (final profile in summary.profiles) profile.id: profile,
+      };
+      final localProfiles = {
+        for (final profile in wingLinkProfiles) profile.id: profile,
+      };
+      final profileIds = {...apiProfiles.keys, ...localProfiles.keys};
+      final projected = profileIds.isEmpty
           ? [
               GatewayContact(
                 id: GatewayContactId(
@@ -316,7 +353,7 @@ class HermesGatewayDirectory extends ChangeNotifier
                   profileId: 'default',
                 ),
                 gatewayLabel: config.displayLabel,
-                profileName: 'Default agent',
+                profileName: 'Default profile',
                 latestSession: _latestSession(summary.unscopedSessions),
                 sessionCount: summary.unscopedSessions.length,
                 availability: GatewayAvailability.online,
@@ -325,21 +362,36 @@ class HermesGatewayDirectory extends ChangeNotifier
               ),
             ]
           : [
-              for (final profile in summary.profiles)
+              for (final profileId in profileIds)
                 GatewayContact(
                   id: GatewayContactId(
                     gatewayId: gatewayId,
-                    profileId: profile.id,
+                    profileId: profileId,
                   ),
                   gatewayLabel: config.displayLabel,
-                  profileName: profile.displayName,
+                  profileName:
+                      apiProfiles[profileId]?.displayName ??
+                      (profileId == 'default'
+                          ? 'Default profile'
+                          : localProfiles[profileId]?.name ?? profileId),
                   latestSession: _latestSession(
-                    summary.sessionsByProfile[profile.id] ?? const [],
+                    summary.sessionsByProfile[profileId] ??
+                        (profileId == 'default'
+                            ? summary.unscopedSessions
+                            : const []),
                   ),
                   sessionCount:
-                      summary.sessionsByProfile[profile.id]?.length ?? 0,
+                      summary.sessionsByProfile[profileId]?.length ??
+                      (profileId == 'default'
+                          ? summary.unscopedSessions.length
+                          : 0),
                   availability: GatewayAvailability.online,
                   lastRefreshedAt: refreshedAt,
+                  isFallbackProfile:
+                      profileId == 'default' &&
+                      !apiProfiles.containsKey(profileId),
+                  chatAvailable:
+                      profileId == 'default' || summary.profileContextAvailable,
                 ),
             ];
       _replaceGatewayContacts(gatewayId, projected);
@@ -552,10 +604,10 @@ class HermesGatewayDirectory extends ChangeNotifier
     try {
       final currentId = _activeContactId;
       if (currentId == null) {
-        throw StateError('Select a gateway before selecting an agent.');
+        throw StateError('Select a gateway before selecting a profile.');
       }
       if (_activeChannel.state.hasStreamingSessions) {
-        throw StateError('Stop active replies before switching agents.');
+        throw StateError('Stop active replies before switching profiles.');
       }
       final nativeProfile = _activeChannel.state.profiles
           .where((profile) => profile.id == profileId)
@@ -615,7 +667,9 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (generation != _activationGeneration ||
         _activeContactId != expectedContact ||
         _activeChannel.state.selectedProfileId != profileId) {
-      throw StateError('The active gateway changed while selecting the agent.');
+      throw StateError(
+        'The active gateway changed while selecting the profile.',
+      );
     }
   }
 
@@ -641,6 +695,9 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   Future<void> activate(GatewayContactId id) async {
     final contact = _contacts.firstWhere((item) => item.id == id);
+    if (!contact.chatAvailable) {
+      throw StateError('This Hermes profile is not available for chat.');
+    }
     final config = _configsById[id.gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');
     final generation = ++_activationGeneration;
@@ -668,7 +725,10 @@ class HermesGatewayDirectory extends ChangeNotifier
         return;
       }
       if (!contact.isFallbackProfile) {
-        await _activeChannel.selectProfile(contact.id.profileId);
+        await _activeChannel.selectProfile(
+          contact.id.profileId,
+          allowDiscovered: true,
+        );
       }
       if (generation != _activationGeneration) return;
 

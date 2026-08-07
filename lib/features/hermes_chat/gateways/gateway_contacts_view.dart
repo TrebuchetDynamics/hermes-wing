@@ -107,7 +107,8 @@ class GatewayContactsView extends StatelessWidget {
                   'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
                 label:
-                    '${contact.gatewayLabel}, ${contact.profileName}, ${contact.availability.name}',
+                    '${contact.gatewayLabel}, ${contact.profileName}, '
+                    '${contact.chatAvailable ? contact.availability.name : AppLocalizations.of(context).profileChatUnavailable}',
                 child: ListTile(
                   key: const ValueKey('gateway-contact-row'),
                   leading: CircleAvatar(
@@ -130,7 +131,11 @@ class GatewayContactsView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        contact.availability.name,
+                        contact.chatAvailable
+                            ? contact.availability.name
+                            : AppLocalizations.of(
+                                context,
+                              ).profileChatUnavailable,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -143,7 +148,9 @@ class GatewayContactsView extends StatelessWidget {
                     ],
                   ),
                   trailing: _ContactStatus(contact: contact),
-                  onTap: () => onOpen(contact.id),
+                  onTap: contact.chatAvailable
+                      ? () => onOpen(contact.id)
+                      : null,
                 ),
               );
             },
@@ -182,16 +189,24 @@ class _ContactStatus extends StatelessWidget {
         child: CircularProgressIndicator(strokeWidth: 2),
       );
     }
-    final activity = contact.latestActivity;
+    final activity = contact.latestActivity?.toLocal();
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          contact.availability == GatewayAvailability.online
+          !contact.chatAvailable
+              ? Icons.settings_outlined
+              : contact.availability == GatewayAvailability.online
               ? Icons.circle
               : Icons.cloud_off_outlined,
-          size: contact.availability == GatewayAvailability.online ? 10 : 18,
-          color: contact.availability == GatewayAvailability.online
+          size:
+              contact.chatAvailable &&
+                  contact.availability == GatewayAvailability.online
+              ? 10
+              : 18,
+          color:
+              contact.chatAvailable &&
+                  contact.availability == GatewayAvailability.online
               ? Colors.green
               : Theme.of(context).colorScheme.onSurfaceVariant,
         ),

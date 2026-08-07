@@ -96,7 +96,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(gatewayMenu);
     await tester.pumpAndSettle();
-    expect(find.text('Manage agents'), findsOneWidget);
+    expect(find.text('Manage profiles'), findsOneWidget);
     await tester.tap(find.text('Rename'));
     await tester.pumpAndSettle();
     await tester.enterText(

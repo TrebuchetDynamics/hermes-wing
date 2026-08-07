@@ -15,7 +15,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hermesDestination => 'Hermes';
 
   @override
-  String get agentsDestination => 'Agents';
+  String get agentsDestination => 'Profiles';
 
   @override
   String get officeDestination => 'Office';
@@ -30,33 +30,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openMoreDestinations => 'Open more destinations';
 
   @override
-  String get agentsTitle => 'Agents';
+  String get agentsTitle => 'Profiles';
 
   @override
-  String get agentsSubtitle => 'Choose how Hermes works for each role.';
+  String get agentsSubtitle => 'Choose how Hermes works for each profile.';
 
   @override
-  String get newAgent => 'New Agent';
+  String get newAgent => 'New Profile';
 
   @override
-  String get agentsLoading => 'Loading agents';
+  String get agentsLoading => 'Loading profiles';
 
   @override
-  String get agentsEmptyTitle => 'No agents available';
+  String get agentsEmptyTitle => 'No profiles available';
 
   @override
   String get agentsEmptyBody =>
-      'Connect with profile access to view Hermes agents.';
+      'Connect with profile access to view Hermes profiles.';
 
   @override
-  String get agentsUnavailableTitle => 'Agents unavailable';
+  String get agentsUnavailableTitle => 'Profiles unavailable';
 
   @override
   String get agentsUnavailableBody =>
       'Update Hermes Agent and reconnect this gateway with profile permissions.';
 
   @override
-  String get agentsConnectionError => 'Agents could not be loaded from Hermes.';
+  String get agentsConnectionError =>
+      'Profiles could not be loaded from Hermes.';
 
   @override
   String get selectedAgent => 'Selected';
@@ -100,7 +101,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentNoModel => 'No model selected';
 
   @override
-  String get agentsLocalLoadError => 'Could not load local agents.';
+  String get agentsLocalLoadError => 'Could not load local profiles.';
 
   @override
   String get agentsGatewayConnectError => 'Could not connect to this gateway.';
@@ -111,6 +112,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatWithAgent => 'Chat';
+
+  @override
+  String get profileChatUnavailable =>
+      'Management only — this Hermes endpoint does not advertise profile chat context.';
 
   @override
   String chatWithNamedAgent(String name) {
@@ -129,13 +134,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get createAgentTitle => 'Create agent';
+  String get createAgentTitle => 'Create profile';
 
   @override
-  String get agentDisplayName => 'Agent name';
+  String get agentDisplayName => 'Profile name';
 
   @override
-  String get agentNameRequired => 'Enter an agent name.';
+  String get agentNameRequired => 'Enter a profile name.';
 
   @override
   String get cloneFromAgent => 'Clone from';
@@ -163,10 +168,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personaHint =>
-      'Describe this agent’s role, voice, and working style.';
+      'Describe this profile’s role, voice, and working style.';
 
   @override
-  String get deleteAgent => 'Delete agent';
+  String get deleteAgent => 'Delete profile';
 
   @override
   String deleteNamedAgent(String name) {
@@ -180,13 +185,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAgentBody =>
-      'This permanently deletes the agent from Hermes. Type its display name to confirm.';
+      'This permanently deletes the profile from Hermes. Type its display name to confirm.';
 
   @override
-  String get deleteConfirmationLabel => 'Agent name';
+  String get deleteConfirmationLabel => 'Profile name';
 
   @override
-  String get defaultAgentCannotDelete => 'The default agent cannot be deleted.';
+  String get defaultAgentCannotDelete =>
+      'The default profile cannot be deleted.';
 
   @override
   String get profileOperationFailed =>
@@ -194,17 +200,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileRevisionConflict =>
-      'This agent changed elsewhere. The latest version has been loaded; review it before trying again.';
+      'This profile changed elsewhere. The latest version has been loaded; review it before trying again.';
 
   @override
-  String get switchAgent => 'Switch agent';
+  String get switchAgent => 'Switch profile';
 
   @override
-  String get switchAgentTitle => 'Switch agent';
+  String get switchAgentTitle => 'Switch profile';
 
   @override
   String switchAgentFailed(String message) {
-    return 'Could not switch agent: $message';
+    return 'Could not switch profile: $message';
   }
 
   @override
@@ -248,7 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentsConnectionRequiredBody =>
-      'Open a saved gateway chat before managing its agents.';
+      'Open a saved gateway chat before managing its profiles.';
 
   @override
   String get providersConnectionRequiredBody =>
@@ -277,32 +283,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get officeSubtitle =>
-      'An accessible 2D workspace for agents advertised by your saved Hermes gateways.';
+      'An accessible 2D workspace for profiles advertised by your saved Hermes gateways.';
 
   @override
   String officeAgentCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count agents',
-      one: '1 agent',
+      other: '$count profiles',
+      one: '1 profile',
     );
     return '$_temp0';
   }
 
   @override
-  String get officeSearchLabel => 'Search agents and gateways';
+  String get officeSearchLabel => 'Search profiles and gateways';
 
   @override
   String get officeClearSearch => 'Clear search';
 
   @override
   String officeShowingCount(int visible, int total) {
-    return 'Showing $visible of $total agents';
+    return 'Showing $visible of $total profiles';
   }
 
   @override
-  String get officeNoAgentsTitle => 'No Hermes agents available';
+  String get officeNoAgentsTitle => 'No Hermes profiles available';
 
   @override
   String get officeNoAgentsBody =>
@@ -312,13 +318,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get officeOpenSettings => 'Open settings';
 
   @override
-  String get officeNoMatches => 'No agents match this search.';
+  String get officeNoMatches => 'No profiles match this search.';
 
   @override
   String get officeRefresh => 'Refresh Office';
 
   @override
   String get officeOpenChat => 'Open chat';
+
+  @override
+  String get officeProfileManagementOnly => 'Management only';
 
   @override
   String get officeCurrentChat => 'Current chat';
@@ -328,7 +337,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get officeOpenFailed =>
-      'Could not open this Hermes agent. Refresh and try again.';
+      'Could not open this Hermes profile. Refresh and try again.';
 
   @override
   String get officeGatewayDefault => 'Gateway default contact';
@@ -433,7 +442,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesSubtitle =>
-      'Scheduled jobs advertised by the selected gateway and agent.';
+      'Scheduled jobs advertised by the selected gateway and profile.';
 
   @override
   String get schedulesGatewayHelp =>
@@ -457,7 +466,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesEmptyBody =>
-      'No scheduled jobs were reported for this agent.';
+      'No scheduled jobs were reported for this profile.';
 
   @override
   String get schedulesReadOnlyNote =>
@@ -553,7 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayRuntimeStateLabel => 'Runtime state';
 
   @override
-  String get gatewayActiveAgentsLabel => 'Active agents';
+  String get gatewayActiveAgentsLabel => 'Active profiles';
 
   @override
   String get gatewayWorkStateLabel => 'Work state';
@@ -630,7 +639,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get providersSubtitle =>
-      'Set provider credentials and choose models for this agent.';
+      'Set provider credentials and choose models for this profile.';
 
   @override
   String get providersGatewayHelp =>
@@ -918,10 +927,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localCommandOfficeDescription =>
-      'Open the accessible agent workspace.';
+      'Open the accessible profile workspace.';
 
   @override
-  String get localCommandAgentsDescription => 'Open gateway-scoped agents.';
+  String get localCommandAgentsDescription => 'Open gateway-scoped profiles.';
 
   @override
   String get localCommandProvidersDescription => 'Open providers and models.';
@@ -935,7 +944,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localCommandPersonaDescription =>
-      'Show the selected agent persona.';
+      'Show the selected profile persona.';
 
   @override
   String get localCommandVersionDescription =>
@@ -958,7 +967,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get profilePersonaEmptyBody => 'This agent has no persona content.';
+  String get profilePersonaEmptyBody => 'This profile has no persona content.';
 
   @override
   String profilePersonaLoadFailed(String error) {
@@ -1391,7 +1400,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsManageAgentsAction => 'Manage agents';
+  String get settingsManageAgentsAction => 'Manage profiles';
 
   @override
   String get settingsRenameAction => 'Rename';
@@ -1568,14 +1577,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add and edit profiles on the selected gateway.';
 
   @override
-  String get gatewayContactsEmptyTitle => 'Add your first Hermes agent';
+  String get gatewayContactsEmptyTitle => 'Add your first Hermes profile';
 
   @override
   String get gatewayContactsEmptyBody =>
-      'Connect a gateway to see its agent profiles and start a conversation.';
+      'Connect a gateway to see its profiles and start a conversation.';
 
   @override
-  String get gatewayContactsConnectAction => 'Add gateway or agent';
+  String get gatewayContactsConnectAction => 'Add gateway or profile';
 
   @override
   String chatQueuedCancelTitle(int count) {
@@ -2117,7 +2126,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatShellVoicePausedSwitchingAgentsBody =>
-      'Continuous voice paused while switching agents.';
+      'Continuous voice paused while switching profiles.';
 
   @override
   String chatShellApprovalAnswerFailedBody(String message) {
@@ -2150,7 +2159,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatShellHermesTitle => 'Hermes';
 
   @override
-  String get chatShellConnectAnotherGatewayTooltip => 'Add gateway or agent';
+  String get chatShellConnectAnotherGatewayTooltip => 'Add gateway or profile';
 
   @override
   String get chatShellSessionsLabel => 'Sessions';
@@ -2289,7 +2298,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatStatusActiveAgentsLabel(int count) {
-    return 'Active agents: $count';
+    return 'Active profiles: $count';
   }
 
   @override
@@ -2764,7 +2773,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipMoreDestinations =>
-      'Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.';
+      'Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.';
 
   @override
   String get tipVoice =>

@@ -1612,34 +1612,38 @@ void _hermesApiChannelProviderModelTests() {
     expect(wrote, isFalse);
   });
 
-  test('provider/model operations require a selected profile before any '
-      'network call', () async {
-    var touched = false;
+  test('connect selects the advertised default profile context', () async {
+    final requests = <Uri>[];
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(
         config: config,
         get: (uri, headers) async {
-          if (uri.path == '/api/providers' || uri.path == '/api/models') {
-            touched = true;
-          }
+          requests.add(uri);
           return switch (uri.path) {
             '/health' => '{"status":"ok"}',
-            '/v1/capabilities' => _providerModelCapabilitiesFixture,
+            '/v1/capabilities' => _profileCapabilitiesFixture,
             '/api/sessions' => _sessionsFixture,
             '/api/sessions/sess_1/messages' => _messagesFixture,
-            '/api/profiles' => _profilesFixture,
             _ => throw StateError('unexpected GET $uri'),
           };
         },
       ),
     );
     addTearDown(channel.dispose);
-    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
-    // No selectProfile: selectedProfileId is null.
 
-    await expectLater(channel.loadProviders(), throwsStateError);
-    await expectLater(channel.loadModels(), throwsStateError);
-    expect(touched, isFalse);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.selectedProfileId, 'default');
+    expect(
+      requests
+          .where(
+            (uri) =>
+                uri.path == '/api/sessions' ||
+                uri.path == '/api/sessions/sess_1/messages',
+          )
+          .every((uri) => uri.queryParameters['profile'] == 'default'),
+      isTrue,
+    );
   });
 
   test('the fake channel exposes the provider/model seam with call '

@@ -49,6 +49,7 @@ class GatewayContact {
     this.latestSession,
     this.lastRefreshedAt,
     this.isFallbackProfile = false,
+    this.chatAvailable = true,
   });
 
   final GatewayContactId id;
@@ -59,6 +60,7 @@ class GatewayContact {
   final GatewayAvailability availability;
   final DateTime? lastRefreshedAt;
   final bool isFallbackProfile;
+  final bool chatAvailable;
 
   DateTime? get latestActivity =>
       DateTime.tryParse(latestSession?.lastActive ?? '')?.toUtc();
@@ -76,6 +78,7 @@ class GatewayContact {
     availability: availability ?? this.availability,
     lastRefreshedAt: lastRefreshedAt ?? this.lastRefreshedAt,
     isFallbackProfile: isFallbackProfile,
+    chatAvailable: chatAvailable,
   );
 
   Map<String, Object?> toJson() => {
@@ -87,6 +90,7 @@ class GatewayContact {
     'availability': availability.name,
     'lastRefreshedAt': lastRefreshedAt?.toUtc().toIso8601String(),
     'isFallbackProfile': isFallbackProfile,
+    'chatAvailable': chatAvailable,
     if (latestSession case final session?)
       'latestSession': {
         'id': session.id,
@@ -114,6 +118,7 @@ class GatewayContact {
         json['lastRefreshedAt']?.toString() ?? '',
       )?.toUtc(),
       isFallbackProfile: json['isFallbackProfile'] == true,
+      chatAvailable: json['chatAvailable'] != false,
       latestSession: latestMap == null
           ? null
           : HermesSession(

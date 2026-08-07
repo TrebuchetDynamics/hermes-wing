@@ -787,6 +787,7 @@ void main() {
   ) async {
     final harness = await _pumpGatewayChat(tester);
     harness.loader.results['a'] = const GatewaySummary(
+      profileContextAvailable: true,
       profiles: [
         HermesProfile(id: 'agent-a', displayName: 'AGENT-A', revision: 'r'),
       ],

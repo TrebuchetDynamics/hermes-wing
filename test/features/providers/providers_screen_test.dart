@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_runtime_model.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/providers/screens/providers_screen.dart';
@@ -196,11 +198,16 @@ Widget _testApp(
   FakeHermesChannel channel, {
   double textScale = 1.0,
   HermesGatewayDirectory? directory,
+  ProvidersWingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
     if (directory != null)
       hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+    if (wingLinkClientBuilder != null)
+      providersWingLinkClientBuilderProvider.overrideWithValue(
+        wingLinkClientBuilder,
+      ),
   ],
   child: MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -395,6 +402,191 @@ void main() {
       expect(find.text('Anthropic'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'Wing Link CRUDs custom providers when Hermes omits provider APIs',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://alpha',
+            wingLinkOrigin: 'https://alpha:8654',
+            wingLinkToken: 'wing-link-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+
+      final providers = <String, Map<String, Object?>>{
+        'acme': {
+          'id': 'acme',
+          'base_url': 'https://api.acme.test/v1',
+          'model': 'v1',
+          'revision': 'rev-1',
+        },
+      };
+      final requests = <String>[];
+      var providerReads = 0;
+      WingLinkClient builder({required Uri origin, required String token}) =>
+          WingLinkClient(
+            origin: origin,
+            token: token,
+            get: (uri, headers) async {
+              expect(uri.queryParameters['profile'], 'default');
+              providerReads++;
+              if (providerReads > 1) {
+                throw StateError('post-mutation refresh must not run');
+              }
+              return jsonEncode({
+                'providers': providers.values.toList(growable: false),
+              });
+            },
+            post: (uri, headers, body) async {
+              final value = jsonDecode(body) as Map<String, dynamic>;
+              final id = value['id'] as String;
+              requests.add('POST $id');
+              providers[id] = {...value, 'revision': 'rev-created'};
+              return jsonEncode({'provider': providers[id]});
+            },
+            patch: (uri, headers, body) async {
+              final id = uri.pathSegments.last;
+              final value = jsonDecode(body) as Map<String, dynamic>;
+              requests.add('PATCH $id');
+              providers[id] = {
+                'id': id,
+                'base_url': value['base_url'],
+                'model': value['model'],
+                'revision': 'rev-updated',
+              };
+              return jsonEncode({'provider': providers[id]});
+            },
+            delete: (uri, headers) async {
+              final id = uri.pathSegments.last;
+              requests.add('DELETE $id ${headers['If-Match']}');
+              providers.remove(id);
+              return '{}';
+            },
+          );
+
+      await tester.pumpWidget(
+        _testApp(channel, directory: directory, wingLinkClientBuilder: builder),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('acme'), findsOneWidget);
+      expect(find.text('Providers unavailable'), findsNothing);
+
+      await tester.tap(find.text('Create'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('wing-link-provider-id')),
+        'new-provider',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('wing-link-provider-endpoint')),
+        'https://new.example.test/v1',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('wing-link-provider-model')),
+        'new-model',
+      );
+      await tester.tap(find.byKey(const ValueKey('wing-link-provider-save')));
+      await tester.pumpAndSettle();
+      expect(requests, contains('POST new-provider'));
+      expect(find.text('new-provider'), findsOneWidget);
+
+      var editProvider = find.byKey(
+        const ValueKey('wing-link-provider-edit-new-provider'),
+      );
+      await tester.ensureVisible(editProvider);
+      await tester.pumpAndSettle();
+      await tester.tap(editProvider);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('wing-link-provider-model')),
+        'updated-model',
+      );
+      await tester.tap(find.byKey(const ValueKey('wing-link-provider-save')));
+      await tester.pumpAndSettle();
+      expect(requests, contains('PATCH new-provider'));
+      expect(find.text('Model: updated-model'), findsOneWidget);
+
+      editProvider = find.byKey(
+        const ValueKey('wing-link-provider-edit-new-provider'),
+      );
+      await tester.ensureVisible(editProvider);
+      await tester.pumpAndSettle();
+      await tester.tap(editProvider);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('wing-link-provider-delete')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('wing-link-provider-delete-confirm')),
+      );
+      await tester.pumpAndSettle();
+      expect(requests, contains('DELETE new-provider rev-updated'));
+      expect(providerReads, 1);
+      expect(find.text('new-provider'), findsNothing);
+    },
+  );
+
+  testWidgets('direct Hermes provider API does not depend on Wing Link', (
+    tester,
+  ) async {
+    final channel = _GatewaySwitchingProviderChannel();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+          wingLinkOrigin: 'https://alpha:8654',
+          wingLinkToken: 'wing-link-secret',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    var wingLinkReads = 0;
+
+    await tester.pumpWidget(
+      _testApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: ({required origin, required token}) =>
+            WingLinkClient(
+              origin: origin,
+              token: token,
+              get: (uri, headers) async {
+                wingLinkReads++;
+                throw StateError('Wing Link unavailable');
+              },
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(wingLinkReads, 0);
+    expect(find.text('OpenAI'), findsOneWidget);
+    expect(
+      find.text('Providers could not be loaded from Hermes.'),
+      findsNothing,
+    );
+  });
 
   testWidgets('shows friendly labels for known auxiliary tasks', (
     tester,

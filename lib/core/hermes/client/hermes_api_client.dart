@@ -135,6 +135,7 @@ class HermesApiClient {
     String? title,
     String? model,
     String? systemPrompt,
+    String? profile,
   }) async {
     final body = <String, Object?>{
       'id': id.trim(),
@@ -144,12 +145,20 @@ class HermesApiClient {
         'system_prompt': systemPrompt,
       }),
     };
-    final response = await _postJson(config.sessionsUri, body);
+    final response = await _postJson(
+      _scoped(config.sessionsUri, profile),
+      body,
+    );
     return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
-  Future<List<HermesMessage>> sessionMessages(String sessionId) async {
-    final body = await _getJson(config.sessionMessagesUri(sessionId));
+  Future<List<HermesMessage>> sessionMessages(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final body = await _getJson(
+      _scoped(config.sessionMessagesUri(sessionId), profile),
+    );
     return wingMapListFromJson(
       body['data'],
     ).map(HermesMessage.fromJson).toList(growable: false);
@@ -158,16 +167,20 @@ class HermesApiClient {
   Future<HermesSession> updateSessionTitle(
     String sessionId, {
     required String title,
+    String? profile,
   }) async {
-    final response = await _patchJson(config.sessionUri(sessionId), {
-      'title': title.trim(),
-    });
+    final response = await _patchJson(
+      _scoped(config.sessionUri(sessionId), profile),
+      {'title': title.trim()},
+    );
     return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
-  Future<void> deleteSession(String sessionId) async {
+  Future<void> deleteSession(String sessionId, {String? profile}) async {
     final trimmed = sessionId.trim();
-    final response = await _deleteJson(config.sessionUri(trimmed));
+    final response = await _deleteJson(
+      _scoped(config.sessionUri(trimmed), profile),
+    );
     final id = wingOptionalStringFromJson(response['id']);
     final deleted = wingBoolFromJson(response['deleted']);
     if (id != trimmed || !deleted) {
@@ -179,17 +192,22 @@ class HermesApiClient {
     String sourceSessionId, {
     required String id,
     String? title,
+    String? profile,
   }) async {
-    final response = await _postJson(config.sessionForkUri(sourceSessionId), {
-      'id': id.trim(),
-      ...wingTrimmedStringFields({'title': title}),
-    });
+    final response = await _postJson(
+      _scoped(config.sessionForkUri(sourceSessionId), profile),
+      {
+        'id': id.trim(),
+        ...wingTrimmedStringFields({'title': title}),
+      },
+    );
     return HermesSession.fromJson(wingMapFieldFromJson(response, 'session'));
   }
 
   Stream<HermesStreamEvent> streamSessionChat(
     String sessionId, {
     required Object message,
+    String? profile,
   }) {
     final headers = <String, String>{
       ...config.headers,
@@ -199,7 +217,7 @@ class HermesApiClient {
     };
     final body = jsonEncode({'message': message});
     final chunks = _postStream(
-      config.sessionChatStreamUri(sessionId),
+      _scoped(config.sessionChatStreamUri(sessionId), profile),
       headers,
       body,
     );
@@ -209,13 +227,14 @@ class HermesApiClient {
   Future<HermesRun> startRun({
     required String sessionId,
     required Object message,
+    String? profile,
   }) async {
     final input = message is String
         ? message
         : [
             {'role': 'user', 'content': message},
           ];
-    final response = await _postJson(config.runsUri, {
+    final response = await _postJson(_scoped(config.runsUri, profile), {
       'session_id': sessionId,
       // Hermes Agent 0.18 accepts `input`; older test fixtures accepted
       // `message`. Send both so the client remains compatible across the
@@ -229,17 +248,22 @@ class HermesApiClient {
     return HermesRun.fromJson(run);
   }
 
-  Future<HermesRun> getRunStatus(String runId) async {
-    return HermesRun.fromJson(await _getJson(config.runUri(runId)));
+  Future<HermesRun> getRunStatus(String runId, {String? profile}) async {
+    return HermesRun.fromJson(
+      await _getJson(_scoped(config.runUri(runId), profile)),
+    );
   }
 
-  Stream<HermesStreamEvent> runEvents(String runId) {
+  Stream<HermesStreamEvent> runEvents(String runId, {String? profile}) {
     final headers = <String, String>{
       ...config.headers,
       hermesApiAcceptHeader: hermesApiEventStreamContentType,
       hermesApiCacheControlHeader: hermesApiNoCache,
     };
-    final chunks = _getStream(config.runEventsUri(runId), headers);
+    final chunks = _getStream(
+      _scoped(config.runEventsUri(runId), profile),
+      headers,
+    );
     return const HermesSseEventDecoder().decodeJsonEventStream(chunks);
   }
 
@@ -247,15 +271,16 @@ class HermesApiClient {
     required String runId,
     required String approvalId,
     required String decision,
+    String? profile,
   }) async {
-    await _postJson(config.runApprovalUri(runId), {
+    await _postJson(_scoped(config.runApprovalUri(runId), profile), {
       'approval_id': approvalId,
       'decision': decision,
     });
   }
 
-  Future<void> stopRun(String runId) async {
-    await _postJson(config.runStopUri(runId), const {});
+  Future<void> stopRun(String runId, {String? profile}) async {
+    await _postJson(_scoped(config.runStopUri(runId), profile), const {});
   }
 
   /// Inspects a one-time pairing code against the operator-supplied

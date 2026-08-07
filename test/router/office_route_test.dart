@@ -43,7 +43,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Office'), findsWidgets);
-    expect(find.text('No Hermes agents available'), findsOneWidget);
+    expect(find.text('No Hermes profiles available'), findsOneWidget);
     expect(find.text('HERMES ONE'), findsOneWidget);
   });
 }

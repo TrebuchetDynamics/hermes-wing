@@ -16,6 +16,7 @@ extension _SessionsExtension on HermesApiChannel {
       throw StateError('Hermes channel is not connected.');
     }
     _requireKnownSession(sessionId);
+    final profileId = _state.selectedProfileId;
     final baseUrl = _state.connectedBaseUrl;
     final capabilities = _state.capabilities;
     final detachedRunStillActive = baseUrl != null && capabilities != null
@@ -23,14 +24,14 @@ extension _SessionsExtension on HermesApiChannel {
             client: client,
             capabilities: capabilities,
             baseUrl: baseUrl,
-            profileId: _state.selectedProfileId,
+            profileId: profileId,
             sessionId: sessionId,
           )
         : false;
     final turns = _state.isSessionStreaming(sessionId)
         ? List<HermesChatTurn>.from(_state.messages[sessionId] ?? const [])
-        : await _fetchTurns(client, sessionId);
-    if (!_isConnectedClient(client)) return;
+        : await _fetchTurns(client, sessionId, profileId: profileId);
+    if (!_isConnectedProfile(client, profileId)) return;
     _setState(
       _state.copyWith(
         activeSessionId: sessionId,
@@ -48,6 +49,7 @@ extension _SessionsExtension on HermesApiChannel {
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
     }
+    final profileId = _state.selectedProfileId;
     _requireAdvertisedEndpoint(
       'session_create',
       'POST',
@@ -57,10 +59,11 @@ extension _SessionsExtension on HermesApiChannel {
     final created = await client.createSession(
       id: _sessionIdFactory(),
       title: title,
+      profile: profileId,
     );
-    if (!_isConnectedClient(client)) return;
-    final turns = await _fetchTurns(client, created.id);
-    if (!_isConnectedClient(client)) return;
+    if (!_isConnectedProfile(client, profileId)) return;
+    final turns = await _fetchTurns(client, created.id, profileId: profileId);
+    if (!_isConnectedProfile(client, profileId)) return;
     _setState(
       _state.copyWith(
         sessions: [..._state.sessions, created],
@@ -86,6 +89,7 @@ extension _SessionsExtension on HermesApiChannel {
         'Session title cannot be empty.',
       );
     }
+    final profileId = _state.selectedProfileId;
     _requireAdvertisedEndpoint(
       'session_update',
       'PATCH',
@@ -93,8 +97,12 @@ extension _SessionsExtension on HermesApiChannel {
       'rename sessions',
     );
     _requireKnownSession(sessionId);
-    final updated = await client.updateSessionTitle(sessionId, title: trimmed);
-    if (!_isConnectedClient(client)) return;
+    final updated = await client.updateSessionTitle(
+      sessionId,
+      title: trimmed,
+      profile: profileId,
+    );
+    if (!_isConnectedProfile(client, profileId)) return;
     _setState(
       _state.copyWith(
         sessions: [
@@ -110,6 +118,7 @@ extension _SessionsExtension on HermesApiChannel {
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
     }
+    final profileId = _state.selectedProfileId;
     _requireAdvertisedEndpoint(
       'session_delete',
       'DELETE',
@@ -125,8 +134,8 @@ extension _SessionsExtension on HermesApiChannel {
     final wasActive = _state.activeSessionId == sessionId;
     _finishSessionTurnLocally(sessionId);
     try {
-      await client.deleteSession(sessionId);
-      if (!_isConnectedClient(client)) return;
+      await client.deleteSession(sessionId, profile: profileId);
+      if (!_isConnectedProfile(client, profileId)) return;
       final remaining = [
         for (final session in _state.sessions)
           if (session.id != sessionId) session,
@@ -140,11 +149,16 @@ extension _SessionsExtension on HermesApiChannel {
           nextActiveId != null &&
           !messages.containsKey(nextActiveId)) {
         try {
-          messages[nextActiveId] = await _fetchTurns(client, nextActiveId);
+          messages[nextActiveId] = await _fetchTurns(
+            client,
+            nextActiveId,
+            profileId: profileId,
+          );
         } catch (_) {
           messages[nextActiveId] = const [];
         }
       }
+      if (!_isConnectedProfile(client, profileId)) return;
       _setState(
         _state.copyWith(
           sessions: remaining,
@@ -165,6 +179,7 @@ extension _SessionsExtension on HermesApiChannel {
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
     }
+    final profileId = _state.selectedProfileId;
     _requireAdvertisedEndpoint(
       'session_fork',
       'POST',
@@ -190,18 +205,19 @@ extension _SessionsExtension on HermesApiChannel {
         sessionId,
         id: _sessionIdFactory(),
         title: title,
+        profile: profileId,
       );
-      if (!_isConnectedClient(client)) return;
+      if (!_isConnectedProfile(client, profileId)) return;
       List<HermesChatTurn> turns;
       try {
-        turns = await _fetchTurns(client, fork.id);
+        turns = await _fetchTurns(client, fork.id, profileId: profileId);
       } catch (_) {
         // The fork mutation is already durable on Hermes. Keep the accepted
         // child visible and inherit the locally loaded source transcript rather
         // than reporting a failure that could prompt a duplicate retry.
         turns = inheritedTurns;
       }
-      if (!_isConnectedClient(client)) return;
+      if (!_isConnectedProfile(client, profileId)) return;
       _setState(
         _state.copyWith(
           sessions: [..._state.sessions, fork],

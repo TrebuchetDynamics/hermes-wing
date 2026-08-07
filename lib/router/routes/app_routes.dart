@@ -3,7 +3,9 @@ import 'app_route_location_patterns.dart';
 abstract final class AppRoutes {
   static const hermes = '/hermes';
   static const office = '/office';
-  static const agents = '/agents';
+  static const profiles = '/profiles';
+  static const agents = profiles;
+  static const legacyAgents = '/agents';
   static const providers = '/providers';
   static const tools = '/tools';
   static const schedules = '/tasks';

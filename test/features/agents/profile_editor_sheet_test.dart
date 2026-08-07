@@ -32,13 +32,13 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Delete agent'));
+    await tester.tap(find.text('Delete profile'));
     await tester.pumpAndSettle();
     expect(find.text('Delete Coding Agent?'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).last, 'Coding Agent');
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Delete agent'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
     await tester.pumpAndSettle();
 
     expect(channel.deleteProfileCalls, [
@@ -69,7 +69,7 @@ void main() {
 
     await tester.tap(find.text('Create'));
     await tester.pump();
-    expect(find.text('Enter an agent name.'), findsOneWidget);
+    expect(find.text('Enter a profile name.'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, 'Coding Agent');
     await tester.tap(find.text('Create'));
@@ -179,7 +179,10 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('This agent changed elsewhere'), findsOneWidget);
+    expect(
+      find.textContaining('This profile changed elsewhere'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a non-conflict mutation failure shows the generic message', (
@@ -236,7 +239,7 @@ void main() {
       ),
     );
 
-    expect(find.text('The default agent cannot be deleted.'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Delete agent'), findsNothing);
+    expect(find.text('The default profile cannot be deleted.'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Delete profile'), findsNothing);
   });
 }

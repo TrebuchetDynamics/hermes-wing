@@ -47,7 +47,7 @@ void main() {
     for (final label in [
       'Hermes',
       'Office',
-      'Agents',
+      'Profiles',
       'Providers',
       'Tools',
       'Schedules',

@@ -57,6 +57,7 @@ class FakeGatewaySummaryLoader implements GatewaySummaryLoader {
 }
 
 GatewaySummary gatewaySummary(List<String> profileIds) => GatewaySummary(
+  profileContextAvailable: profileIds.isNotEmpty,
   profiles: [
     for (final id in profileIds)
       HermesProfile(id: id, displayName: id.toUpperCase(), revision: 'r-$id'),

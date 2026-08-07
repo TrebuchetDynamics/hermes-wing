@@ -343,7 +343,7 @@ void main() {
     expect(find.text('Work'), findsOneWidget);
   });
 
-  testWidgets('disconnect keeps the saved gateway available', (tester) async {
+  testWidgets('disconnect forgets the saved gateway', (tester) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);
     final directory = directoryFor(
@@ -371,7 +371,7 @@ void main() {
 
     expect(channel.disconnectCalls, 1);
     expect(directory.activeContactId, isNull);
-    expect(directory.gateways.map((gateway) => gateway.id), contains('alpha'));
+    expect(directory.gateways, isEmpty);
   });
 
   testWidgets('retains gateway status at 200% text scale', (tester) async {

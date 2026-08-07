@@ -129,6 +129,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final List<String> deleteSessionCalls = [];
   final List<String> forkSessionCalls = [];
   final List<String> selectProfileCalls = [];
+  final List<bool> selectProfileAllowDiscoveredCalls = [];
   final List<Map<String, String?>> createProfileCalls = [];
   final List<Map<String, String>> renameProfileCalls = [];
   final List<Map<String, String>> deleteProfileCalls = [];
@@ -347,6 +348,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     bool allowDiscovered = false,
   }) async {
     selectProfileCalls.add(profileId);
+    selectProfileAllowDiscoveredCalls.add(allowDiscovered);
     _setState(_state.copyWith(selectedProfileId: profileId));
   }
 

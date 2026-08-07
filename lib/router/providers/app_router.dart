@@ -64,7 +64,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
-            path: AppRoutes.agents,
+            path: AppRoutes.profiles,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
               child: const AgentsScreen(),
@@ -120,6 +120,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.legacyAgents,
+        redirect: (_, _) => AppRoutes.profiles,
       ),
       // Reached only via an Android connect intent
       // (wing://connect?...); deliberately outside the ShellRoute since

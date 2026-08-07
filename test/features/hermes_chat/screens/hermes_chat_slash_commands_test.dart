@@ -51,7 +51,7 @@ Widget _routerTestApp(FakeHermesChannel channel) {
       ),
       GoRoute(
         path: AppRoutes.agents,
-        builder: (_, _) => const Scaffold(body: Text('Agents destination')),
+        builder: (_, _) => const Scaffold(body: Text('Profiles destination')),
       ),
       GoRoute(
         path: AppRoutes.providers,
@@ -303,15 +303,15 @@ void main() {
 
     await tester.enterText(
       find.byKey(const ValueKey('hermes-composer-field')),
-      '/agents',
+      '/profiles',
     );
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Agents destination'), findsOneWidget);
+    expect(find.text('Profiles destination'), findsOneWidget);
     expect(
-      channel.state.activeMessages.where((turn) => turn.text == '/agents'),
+      channel.state.activeMessages.where((turn) => turn.text == '/profiles'),
       isEmpty,
     );
   });

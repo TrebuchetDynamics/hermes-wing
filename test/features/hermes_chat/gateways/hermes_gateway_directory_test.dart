@@ -7,6 +7,7 @@ import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 
@@ -77,6 +78,116 @@ void main() {
     },
   );
 
+  test('Wing Link supplements every local profile in the directory', () async {
+    const config = HermesEndpointConfig(
+      id: 'home',
+      label: 'Home',
+      baseUrl: 'https://home.example',
+      wingLinkOrigin: 'https://home.example:8654',
+      wingLinkToken: 'control-token',
+    );
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: const [config]),
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'home': const GatewaySummary(
+          profiles: [],
+          sessionsByProfile: {},
+          unscopedSessions: [],
+        ),
+      }),
+      activeChannel: channel,
+      wingLinkProfileLoader: (_) async => const [
+        WingLinkProfile(
+          id: 'default',
+          name: 'default',
+          revision: 'r1',
+          source: 'local',
+          gatewayState: 'running',
+        ),
+        WingLinkProfile(
+          id: 'link',
+          name: 'link',
+          revision: 'r1',
+          source: 'local',
+          gatewayState: 'running',
+        ),
+        WingLinkProfile(
+          id: 'mineru',
+          name: 'mineru',
+          revision: 'r1',
+          source: 'local',
+          gatewayState: 'stopped',
+        ),
+      ],
+    );
+    addTearDown(directory.dispose);
+
+    await directory.refresh();
+
+    expect(directory.contacts.map((contact) => contact.id.profileId), [
+      'default',
+      'link',
+      'mineru',
+    ]);
+    expect(directory.contacts.first.chatAvailable, isTrue);
+    expect(
+      directory.contacts.skip(1).every((contact) => !contact.chatAvailable),
+      isTrue,
+    );
+    await expectLater(
+      directory.activate(
+        const GatewayContactId(gatewayId: 'home', profileId: 'link'),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('Wing Link-only profile uses advertised profile context', () async {
+    const config = HermesEndpointConfig(
+      id: 'home',
+      label: 'Home',
+      baseUrl: 'https://home.example',
+      wingLinkOrigin: 'https://home.example:8654',
+      wingLinkToken: 'control-token',
+    );
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: const [config]),
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'home': const GatewaySummary(
+          profiles: [],
+          sessionsByProfile: {},
+          profileContextAvailable: true,
+        ),
+      }),
+      activeChannel: channel,
+      wingLinkProfileLoader: (_) async => const [
+        WingLinkProfile(
+          id: 'link',
+          name: 'link',
+          revision: 'r1',
+          source: 'local',
+          gatewayState: 'running',
+        ),
+      ],
+    );
+    addTearDown(directory.dispose);
+
+    await directory.refresh();
+    await directory.activate(
+      const GatewayContactId(gatewayId: 'home', profileId: 'link'),
+    );
+
+    expect(directory.contacts.single.chatAvailable, isTrue);
+    expect(channel.selectProfileCalls, ['link']);
+    expect(channel.selectProfileAllowDiscoveredCalls, [isTrue]);
+  });
+
   test(
     'API summary loader does not probe profiles without profiles read scope',
     () async {
@@ -92,6 +203,7 @@ void main() {
                 '''
 {
   "schema_version": 1,
+  "profile_context": {"type": "query", "name": "profile", "required": true, "default_profile_id": "default"},
   "auth": {"type": "bearer", "required": true, "granted_scopes": []},
   "endpoints": {
     "profiles": {
@@ -102,7 +214,10 @@ void main() {
   }
 }
 ''',
-              '/api/sessions' => '{"object":"list","data":[]}',
+              '/api/sessions' => () {
+                expect(uri.queryParameters['profile'], 'default');
+                return '{"object":"list","data":[]}';
+              }(),
               '/api/profiles' => throw StateError('must not be requested'),
               _ => throw StateError('unexpected GET $uri'),
             };
@@ -121,6 +236,7 @@ void main() {
       expect(requestedPaths, isNot(contains('/api/profiles')));
       expect(summary.profiles, isEmpty);
       expect(summary.sessionsByProfile, isEmpty);
+      expect(summary.profileContextAvailable, isTrue);
     },
   );
 
@@ -257,6 +373,7 @@ void main() {
       ],
       loader: FakeGatewaySummaryLoader(const {
         'beta': GatewaySummary(
+          profileContextAvailable: true,
           profiles: [
             HermesProfile(
               id: 'agent-2',

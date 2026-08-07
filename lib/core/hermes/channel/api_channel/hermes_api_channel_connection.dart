@@ -20,6 +20,10 @@ extension _ConnectionExtension on HermesApiChannel {
       final basicHealth = await client.health();
       if (!_isCurrentConnection(generation, client)) return;
       final capabilities = await client.capabilities();
+      final initialProfileId =
+          capabilities.profileContext.isSupportedQueryContext
+          ? capabilities.profileContext.defaultProfileId
+          : null;
       final optionalResourceErrors = <HermesOptionalResource, String>{};
       final detailedHealthFuture = _loadOptional<HermesHealthStatus>(
         advertised:
@@ -42,7 +46,7 @@ extension _ConnectionExtension on HermesApiChannel {
           '/v1/models',
         ),
         resource: HermesOptionalResource.models,
-        load: client.listRuntimeModels,
+        load: () => client!.listRuntimeModels(profile: initialProfileId),
         errors: optionalResourceErrors,
       );
       final skillsFuture = _loadOptional<List<HermesSkill>>(
@@ -53,7 +57,7 @@ extension _ConnectionExtension on HermesApiChannel {
           '/v1/skills',
         ),
         resource: HermesOptionalResource.skills,
-        load: client.listSkillDetails,
+        load: () => client!.listSkillDetails(profile: initialProfileId),
         errors: optionalResourceErrors,
       );
       final toolsetsFuture = _loadOptional<List<HermesToolset>>(
@@ -64,7 +68,7 @@ extension _ConnectionExtension on HermesApiChannel {
           '/v1/toolsets',
         ),
         resource: HermesOptionalResource.toolsets,
-        load: client.listToolsets,
+        load: () => client!.listToolsets(profile: initialProfileId),
         errors: optionalResourceErrors,
       );
       final jobsFuture = _loadOptional<List<HermesJob>>(
@@ -77,23 +81,27 @@ extension _ConnectionExtension on HermesApiChannel {
               'tasks:read',
             ),
         resource: HermesOptionalResource.jobs,
-        load: client.listJobs,
+        load: () => client!.listJobs(profile: initialProfileId),
         errors: optionalResourceErrors,
       );
-      final sessions = await client.listSessions();
+      final sessions = await client.listSessions(profile: initialProfileId);
       if (!_isCurrentConnection(generation, client)) return;
       final detachedActiveId = await _recoverActiveDetachedSession(
         client: client,
         capabilities: capabilities,
         baseUrl: baseUrl,
-        profileId: null,
+        profileId: initialProfileId,
         sessionIds: sessions.map((session) => session.id),
       );
       final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
       final detachedRunStillActive = detachedActiveId != null;
       List<HermesChatTurn>? messages;
       if (activeId != null) {
-        messages = await _fetchTurns(client, activeId);
+        messages = await _fetchTurns(
+          client,
+          activeId,
+          profileId: initialProfileId,
+        );
       }
       if (!_isCurrentConnection(generation, client)) return;
       final detailedHealth = await detailedHealthFuture;
@@ -127,6 +135,7 @@ extension _ConnectionExtension on HermesApiChannel {
           jobs: jobs,
           optionalResourceErrors: optionalResourceErrors,
           sessions: sessions,
+          selectedProfileId: initialProfileId,
           activeSessionId: activeId,
           clearActiveSessionId: activeId == null,
           connectedBaseUrl: baseUrl,
@@ -161,6 +170,10 @@ extension _ConnectionExtension on HermesApiChannel {
   bool _isConnectedClient(HermesApiClient client) {
     return identical(_client, client) &&
         _state.status == HermesConnectionStatus.connected;
+  }
+
+  bool _isConnectedProfile(HermesApiClient client, String? profileId) {
+    return _isConnectedClient(client) && _state.selectedProfileId == profileId;
   }
 
   Future<T?> _loadOptional<T>({
@@ -240,7 +253,10 @@ extension _ConnectionExtension on HermesApiChannel {
     String sessionId, {
     String? profileId,
   }) async {
-    final history = await client.sessionMessages(sessionId);
+    final history = await client.sessionMessages(
+      sessionId,
+      profile: profileId ?? _state.selectedProfileId,
+    );
     final fetchedAt = DateTime.now();
     final resolvedProfile = profileId ?? _state.selectedProfileId ?? 'default';
     final cacheKey = _recentTurnKey(

@@ -36,7 +36,7 @@ class AppShellPresentation {
   );
 
   AppShellDestination get _agentsDestination => AppShellDestination(
-    path: AppRoutes.agents,
+    path: AppRoutes.profiles,
     icon: Icons.support_agent_outlined,
     label: localizations.agentsDestination,
   );

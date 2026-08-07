@@ -20,6 +20,7 @@ GatewaySummary _summary({
   required String name,
   String? preview,
 }) => GatewaySummary(
+  profileContextAvailable: true,
   profiles: [HermesProfile(id: id, displayName: name, revision: 'r-$id')],
   sessionsByProfile: {
     id: [
@@ -100,7 +101,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Office'), findsWidgets);
-      expect(find.text('2 agents'), findsWidgets);
+      expect(find.text('2 profiles'), findsWidgets);
       expect(find.text('Alice'), findsOneWidget);
       expect(find.text('Bob'), findsOneWidget);
       expect(find.text('Alpha Gateway'), findsOneWidget);
@@ -120,7 +121,7 @@ void main() {
 
       expect(find.text('Alice'), findsNothing);
       expect(find.text('Bob'), findsOneWidget);
-      expect(find.text('Showing 1 of 2 agents'), findsOneWidget);
+      expect(find.text('Showing 1 of 2 profiles'), findsOneWidget);
     },
   );
 
@@ -166,7 +167,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Default agent'), findsOneWidget);
+    expect(find.text('Default profile'), findsOneWidget);
     expect(find.text('Gateway default contact'), findsOneWidget);
     expect(find.text('1 session'), findsWidgets);
     expect(find.textContaining('Wallet'), findsNothing);
@@ -199,7 +200,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Could not open this Hermes agent. Refresh and try again.'),
+      find.text('Could not open this Hermes profile. Refresh and try again.'),
       findsOneWidget,
     );
     expect(
@@ -293,6 +294,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Office'), findsOneWidget);
-    expect(find.text('1 agent'), findsOneWidget);
+    expect(find.text('1 profile'), findsOneWidget);
   });
 }

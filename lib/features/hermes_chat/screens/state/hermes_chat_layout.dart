@@ -756,8 +756,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         context.go(AppRoutes.gateway);
       case 'office':
         context.go(AppRoutes.office);
-      case 'agents':
-        context.go(AppRoutes.agents);
+      case 'profiles':
+        context.go(AppRoutes.profiles);
       case 'providers' || 'model':
         context.go(AppRoutes.providers);
       case 'schedules':
@@ -991,8 +991,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       icon: Icons.apartment_outlined,
     ),
     _LocalSlashCommand(
-      id: 'agents',
-      command: '/agents',
+      id: 'profiles',
+      command: '/profiles',
       description: strings.localCommandAgentsDescription,
       icon: Icons.support_agent_outlined,
     ),

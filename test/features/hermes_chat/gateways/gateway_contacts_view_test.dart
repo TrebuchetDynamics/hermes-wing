@@ -54,14 +54,14 @@ void main() {
               _contact(
                 'alpha',
                 'default',
-                'Default agent',
+                'Default profile',
                 'Home',
                 '2026-07-16T05:00:00Z',
               ),
               _contact(
                 'beta',
                 'default',
-                'Default agent',
+                'Default profile',
                 'Cloud',
                 '2026-07-16T04:00:00Z',
               ),
@@ -74,8 +74,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Home · Default agent'), findsOneWidget);
-    expect(find.text('Cloud · Default agent'), findsOneWidget);
+    expect(find.text('Home · Default profile'), findsOneWidget);
+    expect(find.text('Cloud · Default profile'), findsOneWidget);
   });
 
   testWidgets('pull to refresh invokes the refresh callback', (tester) async {
@@ -122,10 +122,10 @@ void main() {
     );
 
     await tester.pumpWidget(view());
-    expect(find.text('Add your first Hermes agent'), findsOneWidget);
+    expect(find.text('Add your first Hermes profile'), findsOneWidget);
     expect(
       find.text(
-        'Connect a gateway to see its agent profiles and start a conversation.',
+        'Connect a gateway to see its profiles and start a conversation.',
       ),
       findsOneWidget,
     );
@@ -264,7 +264,7 @@ void main() {
     expect(previewText.overflow, TextOverflow.ellipsis);
   });
 
-  testWidgets('timestamp renders normalized UTC hour and minute', (
+  testWidgets('timestamp renders the device-local hour and minute', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -290,7 +290,52 @@ void main() {
       ),
     );
 
-    expect(find.text('05:09'), findsOneWidget);
+    final local = DateTime.parse('2026-07-16T07:09:00+02:00').toLocal();
+    expect(
+      find.text(
+        '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('management-only profile is visible but cannot open chat', (
+    tester,
+  ) async {
+    var opened = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'a',
+                'local',
+                'Local profile',
+                'Alpha',
+                '2026-07-16T05:00:00Z',
+                chatAvailable: false,
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) => opened = true,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text(
+        'Management only — this Hermes endpoint does not advertise profile chat context.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Alpha · Local profile'));
+    expect(opened, isFalse);
   });
 
   testWidgets('offline contact stays visible and announces its status', (
@@ -338,6 +383,7 @@ GatewayContact _contact(
   String lastActive, {
   GatewayAvailability availability = GatewayAvailability.online,
   String preview = 'Latest message',
+  bool chatAvailable = true,
 }) => GatewayContact(
   id: GatewayContactId(gatewayId: gatewayId, profileId: profileId),
   gatewayLabel: gatewayLabel,
@@ -350,4 +396,5 @@ GatewayContact _contact(
   ),
   sessionCount: 1,
   availability: availability,
+  chatAvailable: chatAvailable,
 );

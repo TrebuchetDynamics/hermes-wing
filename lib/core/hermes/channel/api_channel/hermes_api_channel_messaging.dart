@@ -54,15 +54,20 @@ extension _MessagingExtension on HermesApiChannel {
         : requestText;
     final client = _client;
     final sessionId = _state.activeSessionId;
+    final profileId = _state.selectedProfileId;
     if (client == null || sessionId == null) {
       throw StateError('Hermes channel is not connected to a session.');
     }
     await _ensureDetachedRunsLoaded();
+    if (!_isConnectedProfile(client, profileId) ||
+        _state.activeSessionId != sessionId) {
+      return;
+    }
     final connectedBaseUrl = _state.connectedBaseUrl;
     if (connectedBaseUrl != null &&
         _hasDetachedRun(
           baseUrl: connectedBaseUrl,
-          profileId: _state.selectedProfileId,
+          profileId: profileId,
           sessionId: sessionId,
         )) {
       const message =
@@ -113,6 +118,11 @@ extension _MessagingExtension on HermesApiChannel {
 
     final streamGeneration = ++_nextStreamGeneration;
     _sessionStreamGenerations[sessionId] = streamGeneration;
+    bool isCurrentStream() =>
+        identical(_client, client) &&
+        _state.status == HermesConnectionStatus.connected &&
+        _state.selectedProfileId == profileId &&
+        _sessionStreamGenerations[sessionId] == streamGeneration;
     Stream<HermesStreamEvent>? events;
     String? runId;
     try {
@@ -120,16 +130,25 @@ extension _MessagingExtension on HermesApiChannel {
         final run = await client.startRun(
           sessionId: sessionId,
           message: requestMessage,
+          profile: profileId,
         );
         runId = run.id;
-        await _trackDetachedRun(runId: runId, sessionId: sessionId);
+        await _trackDetachedRun(
+          runId: runId,
+          sessionId: sessionId,
+          profileId: profileId,
+        );
       } else {
-        events = client.streamSessionChat(sessionId, message: requestMessage);
+        events = client.streamSessionChat(
+          sessionId,
+          message: requestMessage,
+          profile: profileId,
+        );
       }
     } catch (error) {
       if (!identical(_client, client) ||
           _state.status != HermesConnectionStatus.connected ||
-          _sessionStreamGenerations[sessionId] != streamGeneration) {
+          !isCurrentStream()) {
         return;
       }
       assistantTurn = assistantTurn.copyWith(status: HermesTurnStatus.failed);
@@ -140,16 +159,16 @@ extension _MessagingExtension on HermesApiChannel {
 
     if (!identical(_client, client) ||
         _state.status != HermesConnectionStatus.connected ||
-        _sessionStreamGenerations[sessionId] != streamGeneration) {
+        !isCurrentStream()) {
       return;
     }
 
     try {
-      events ??= client.runEvents(runId!);
+      events ??= client.runEvents(runId!, profile: profileId);
     } catch (error) {
       if (!identical(_client, client) ||
           _state.status != HermesConnectionStatus.connected ||
-          _sessionStreamGenerations[sessionId] != streamGeneration) {
+          !isCurrentStream()) {
         return;
       }
       assistantTurn = assistantTurn.copyWith(status: HermesTurnStatus.failed);
@@ -172,8 +191,7 @@ extension _MessagingExtension on HermesApiChannel {
     void armIdleTimer() {
       idleTimer?.cancel();
       idleTimer = Timer(streamIdleTimeout, () {
-        if (_sessionStreamGenerations[sessionId] != streamGeneration ||
-            completer.isCompleted) {
+        if (!isCurrentStream() || completer.isCompleted) {
           return;
         }
         streamFailed = true;
@@ -195,8 +213,7 @@ extension _MessagingExtension on HermesApiChannel {
     late final StreamSubscription<HermesStreamEvent> subscription;
     subscription = events.listen(
       (event) {
-        if (_sessionStreamGenerations[sessionId] != streamGeneration ||
-            terminalRunEventReceived) {
+        if (!isCurrentStream() || terminalRunEventReceived) {
           return;
         }
         armIdleTimer();
@@ -309,8 +326,7 @@ extension _MessagingExtension on HermesApiChannel {
       },
       onError: (Object error) {
         idleTimer?.cancel();
-        if (_sessionStreamGenerations[sessionId] != streamGeneration ||
-            terminalRunEventReceived) {
+        if (!isCurrentStream() || terminalRunEventReceived) {
           return;
         }
         streamFailed = true;
@@ -326,7 +342,7 @@ extension _MessagingExtension on HermesApiChannel {
       },
       onDone: () {
         idleTimer?.cancel();
-        if (_sessionStreamGenerations[sessionId] != streamGeneration) return;
+        if (!isCurrentStream()) return;
         if (!terminalRunEventReceived) {
           streamFailed = true;
           streamEndedBeforeTerminal = true;
@@ -348,7 +364,7 @@ extension _MessagingExtension on HermesApiChannel {
     armIdleTimer();
     await completer.future;
     idleTimer?.cancel();
-    if (_sessionStreamGenerations[sessionId] != streamGeneration) {
+    if (!isCurrentStream()) {
       return;
     }
     if (terminalRunEventReceived) {
@@ -369,10 +385,7 @@ extension _MessagingExtension on HermesApiChannel {
         await _releaseDetachedRun(runId);
       }
     }
-    if (!identical(_client, client) ||
-        _state.status != HermesConnectionStatus.connected) {
-      return;
-    }
+    if (!isCurrentStream()) return;
     final canReadRunStatus =
         runId != null &&
         capabilities != null &&
@@ -380,7 +393,8 @@ extension _MessagingExtension on HermesApiChannel {
     HermesRun? recoveredRun;
     if (canReadRunStatus && (streamFailed || runUsage == null)) {
       try {
-        recoveredRun = await client.getRunStatus(runId);
+        recoveredRun = await client.getRunStatus(runId, profile: profileId);
+        if (!isCurrentStream()) return;
         runUsage ??= recoveredRun.usage;
         final recoveredError = recoveredRun.error?.trim();
         final currentError = _state.errorMessage ?? '';
@@ -408,7 +422,7 @@ extension _MessagingExtension on HermesApiChannel {
       }
       if (!identical(_client, client) ||
           _state.status != HermesConnectionStatus.connected ||
-          _sessionStreamGenerations[sessionId] != streamGeneration) {
+          !isCurrentStream()) {
         return;
       }
     }
@@ -446,7 +460,12 @@ extension _MessagingExtension on HermesApiChannel {
       }
       if (recoveredRun?.status
           case HermesRunLifecycle.running || HermesRunLifecycle.queued) {
-        await _trackDetachedRun(runId: runId!, sessionId: sessionId);
+        await _trackDetachedRun(
+          runId: runId!,
+          sessionId: sessionId,
+          profileId: profileId,
+        );
+        if (!isCurrentStream()) return;
         _setTurns(
           sessionId,
           List.of(turns),
@@ -456,10 +475,14 @@ extension _MessagingExtension on HermesApiChannel {
         return;
       }
       try {
-        final serverTurns = await _fetchTurns(client, sessionId);
+        final serverTurns = await _fetchTurns(
+          client,
+          sessionId,
+          profileId: profileId,
+        );
         if (!identical(_client, client) ||
             _state.status != HermesConnectionStatus.connected ||
-            _sessionStreamGenerations[sessionId] != streamGeneration) {
+            !isCurrentStream()) {
           return;
         }
         if (_serverHistoryHasAssistantReplyForCurrentTurn(
@@ -477,10 +500,14 @@ extension _MessagingExtension on HermesApiChannel {
 
     if (!streamFailed) {
       try {
-        final serverTurns = await _fetchTurns(client, sessionId);
+        final serverTurns = await _fetchTurns(
+          client,
+          sessionId,
+          profileId: profileId,
+        );
         if (!identical(_client, client) ||
             _state.status != HermesConnectionStatus.connected ||
-            _sessionStreamGenerations[sessionId] != streamGeneration) {
+            !isCurrentStream()) {
           return;
         }
         if (!_serverHistoryDropsStreamedAssistant(
@@ -860,6 +887,7 @@ extension _MessagingExtension on HermesApiChannel {
   Future<void> _trackDetachedRun({
     required String runId,
     required String sessionId,
+    required String? profileId,
   }) async {
     await _ensureDetachedRunsLoaded();
     final baseUrl = _state.connectedBaseUrl;
@@ -868,7 +896,7 @@ extension _MessagingExtension on HermesApiChannel {
       runId: runId,
       sessionId: sessionId,
       baseUrl: _detachedRunBaseUrl(baseUrl),
-      profileId: _state.selectedProfileId,
+      profileId: profileId,
       createdAt: DateTime.now().toUtc(),
     );
     while (_detachedRuns.length > 16) {
@@ -955,7 +983,10 @@ extension _MessagingExtension on HermesApiChannel {
     var changed = false;
     for (final detached in matches) {
       try {
-        final run = await client.getRunStatus(detached.runId);
+        final run = await client.getRunStatus(
+          detached.runId,
+          profile: profileId,
+        );
         if (run.status == HermesRunLifecycle.completed ||
             run.status == HermesRunLifecycle.failed ||
             run.status == HermesRunLifecycle.cancelled) {
@@ -964,9 +995,16 @@ extension _MessagingExtension on HermesApiChannel {
         } else {
           stillActive = true;
         }
-      } catch (_) {
-        // Fail closed: a transient status failure must not authorize a retry.
-        stillActive = true;
+      } catch (error) {
+        if (error.toString().contains(hermesApiHttpStatusMessage(404))) {
+          // The run registry is process-local; a gateway restart makes an old
+          // lease authoritatively absent rather than indefinitely active.
+          _detachedRuns.remove(detached.runId);
+          changed = true;
+        } else {
+          // Fail closed: a transient status failure must not authorize a retry.
+          stillActive = true;
+        }
       }
     }
     if (changed) await _saveDetachedRuns();
@@ -1016,7 +1054,9 @@ extension _MessagingExtension on HermesApiChannel {
         : HermesTransportPolicy(capabilities).supportsRunStop;
     if (client != null && runId != null && canStopRun) {
       fireAndForget(
-        client.stopRun(runId).then((_) => _releaseDetachedRun(runId)),
+        client
+            .stopRun(runId, profile: _state.selectedProfileId)
+            .then((_) => _releaseDetachedRun(runId)),
         'stop detached run',
       );
     }

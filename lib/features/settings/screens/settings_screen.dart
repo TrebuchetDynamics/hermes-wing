@@ -229,7 +229,7 @@ class _GatewaySettingsTile extends StatelessWidget {
           if (action == 'agents') {
             await _runGatewayAction(context, () async {
               await directory.activateGateway(gateway.id);
-              if (context.mounted) context.go(AppRoutes.agents);
+              if (context.mounted) context.go(AppRoutes.profiles);
             }, strings.settingsConnectGatewayError);
           } else if (action == 'rename') {
             await _renameGateway(context, directory, gateway);

@@ -109,7 +109,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsDestination.
   ///
   /// In en, this message translates to:
-  /// **'Agents'**
+  /// **'Profiles'**
   String get agentsDestination;
 
   /// No description provided for @officeDestination.
@@ -139,43 +139,43 @@ abstract class AppLocalizations {
   /// No description provided for @agentsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Agents'**
+  /// **'Profiles'**
   String get agentsTitle;
 
   /// No description provided for @agentsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose how Hermes works for each role.'**
+  /// **'Choose how Hermes works for each profile.'**
   String get agentsSubtitle;
 
   /// No description provided for @newAgent.
   ///
   /// In en, this message translates to:
-  /// **'New Agent'**
+  /// **'New Profile'**
   String get newAgent;
 
   /// No description provided for @agentsLoading.
   ///
   /// In en, this message translates to:
-  /// **'Loading agents'**
+  /// **'Loading profiles'**
   String get agentsLoading;
 
   /// No description provided for @agentsEmptyTitle.
   ///
   /// In en, this message translates to:
-  /// **'No agents available'**
+  /// **'No profiles available'**
   String get agentsEmptyTitle;
 
   /// No description provided for @agentsEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Connect with profile access to view Hermes agents.'**
+  /// **'Connect with profile access to view Hermes profiles.'**
   String get agentsEmptyBody;
 
   /// No description provided for @agentsUnavailableTitle.
   ///
   /// In en, this message translates to:
-  /// **'Agents unavailable'**
+  /// **'Profiles unavailable'**
   String get agentsUnavailableTitle;
 
   /// No description provided for @agentsUnavailableBody.
@@ -187,7 +187,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsConnectionError.
   ///
   /// In en, this message translates to:
-  /// **'Agents could not be loaded from Hermes.'**
+  /// **'Profiles could not be loaded from Hermes.'**
   String get agentsConnectionError;
 
   /// No description provided for @selectedAgent.
@@ -253,7 +253,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsLocalLoadError.
   ///
   /// In en, this message translates to:
-  /// **'Could not load local agents.'**
+  /// **'Could not load local profiles.'**
   String get agentsLocalLoadError;
 
   /// No description provided for @agentsGatewayConnectError.
@@ -273,6 +273,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chat'**
   String get chatWithAgent;
+
+  /// No description provided for @profileChatUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Management only — this Hermes endpoint does not advertise profile chat context.'**
+  String get profileChatUnavailable;
 
   /// No description provided for @chatWithNamedAgent.
   ///
@@ -301,19 +307,19 @@ abstract class AppLocalizations {
   /// No description provided for @createAgentTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create agent'**
+  /// **'Create profile'**
   String get createAgentTitle;
 
   /// No description provided for @agentDisplayName.
   ///
   /// In en, this message translates to:
-  /// **'Agent name'**
+  /// **'Profile name'**
   String get agentDisplayName;
 
   /// No description provided for @agentNameRequired.
   ///
   /// In en, this message translates to:
-  /// **'Enter an agent name.'**
+  /// **'Enter a profile name.'**
   String get agentNameRequired;
 
   /// No description provided for @cloneFromAgent.
@@ -367,13 +373,13 @@ abstract class AppLocalizations {
   /// No description provided for @personaHint.
   ///
   /// In en, this message translates to:
-  /// **'Describe this agent’s role, voice, and working style.'**
+  /// **'Describe this profile’s role, voice, and working style.'**
   String get personaHint;
 
   /// No description provided for @deleteAgent.
   ///
   /// In en, this message translates to:
-  /// **'Delete agent'**
+  /// **'Delete profile'**
   String get deleteAgent;
 
   /// No description provided for @deleteNamedAgent.
@@ -391,19 +397,19 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAgentBody.
   ///
   /// In en, this message translates to:
-  /// **'This permanently deletes the agent from Hermes. Type its display name to confirm.'**
+  /// **'This permanently deletes the profile from Hermes. Type its display name to confirm.'**
   String get deleteAgentBody;
 
   /// No description provided for @deleteConfirmationLabel.
   ///
   /// In en, this message translates to:
-  /// **'Agent name'**
+  /// **'Profile name'**
   String get deleteConfirmationLabel;
 
   /// No description provided for @defaultAgentCannotDelete.
   ///
   /// In en, this message translates to:
-  /// **'The default agent cannot be deleted.'**
+  /// **'The default profile cannot be deleted.'**
   String get defaultAgentCannotDelete;
 
   /// No description provided for @profileOperationFailed.
@@ -415,25 +421,25 @@ abstract class AppLocalizations {
   /// No description provided for @profileRevisionConflict.
   ///
   /// In en, this message translates to:
-  /// **'This agent changed elsewhere. The latest version has been loaded; review it before trying again.'**
+  /// **'This profile changed elsewhere. The latest version has been loaded; review it before trying again.'**
   String get profileRevisionConflict;
 
   /// No description provided for @switchAgent.
   ///
   /// In en, this message translates to:
-  /// **'Switch agent'**
+  /// **'Switch profile'**
   String get switchAgent;
 
   /// No description provided for @switchAgentTitle.
   ///
   /// In en, this message translates to:
-  /// **'Switch agent'**
+  /// **'Switch profile'**
   String get switchAgentTitle;
 
   /// No description provided for @switchAgentFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not switch agent: {message}'**
+  /// **'Could not switch profile: {message}'**
   String switchAgentFailed(String message);
 
   /// No description provided for @providersDestination.
@@ -511,7 +517,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsConnectionRequiredBody.
   ///
   /// In en, this message translates to:
-  /// **'Open a saved gateway chat before managing its agents.'**
+  /// **'Open a saved gateway chat before managing its profiles.'**
   String get agentsConnectionRequiredBody;
 
   /// No description provided for @providersConnectionRequiredBody.
@@ -559,19 +565,19 @@ abstract class AppLocalizations {
   /// No description provided for @officeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'An accessible 2D workspace for agents advertised by your saved Hermes gateways.'**
+  /// **'An accessible 2D workspace for profiles advertised by your saved Hermes gateways.'**
   String get officeSubtitle;
 
   /// No description provided for @officeAgentCount.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 agent} other{{count} agents}}'**
+  /// **'{count, plural, =1{1 profile} other{{count} profiles}}'**
   String officeAgentCount(int count);
 
   /// No description provided for @officeSearchLabel.
   ///
   /// In en, this message translates to:
-  /// **'Search agents and gateways'**
+  /// **'Search profiles and gateways'**
   String get officeSearchLabel;
 
   /// No description provided for @officeClearSearch.
@@ -583,13 +589,13 @@ abstract class AppLocalizations {
   /// No description provided for @officeShowingCount.
   ///
   /// In en, this message translates to:
-  /// **'Showing {visible} of {total} agents'**
+  /// **'Showing {visible} of {total} profiles'**
   String officeShowingCount(int visible, int total);
 
   /// No description provided for @officeNoAgentsTitle.
   ///
   /// In en, this message translates to:
-  /// **'No Hermes agents available'**
+  /// **'No Hermes profiles available'**
   String get officeNoAgentsTitle;
 
   /// No description provided for @officeNoAgentsBody.
@@ -607,7 +613,7 @@ abstract class AppLocalizations {
   /// No description provided for @officeNoMatches.
   ///
   /// In en, this message translates to:
-  /// **'No agents match this search.'**
+  /// **'No profiles match this search.'**
   String get officeNoMatches;
 
   /// No description provided for @officeRefresh.
@@ -621,6 +627,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open chat'**
   String get officeOpenChat;
+
+  /// No description provided for @officeProfileManagementOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Management only'**
+  String get officeProfileManagementOnly;
 
   /// No description provided for @officeCurrentChat.
   ///
@@ -637,7 +649,7 @@ abstract class AppLocalizations {
   /// No description provided for @officeOpenFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not open this Hermes agent. Refresh and try again.'**
+  /// **'Could not open this Hermes profile. Refresh and try again.'**
   String get officeOpenFailed;
 
   /// No description provided for @officeGatewayDefault.
@@ -805,7 +817,7 @@ abstract class AppLocalizations {
   /// No description provided for @schedulesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Scheduled jobs advertised by the selected gateway and agent.'**
+  /// **'Scheduled jobs advertised by the selected gateway and profile.'**
   String get schedulesSubtitle;
 
   /// No description provided for @schedulesGatewayHelp.
@@ -841,7 +853,7 @@ abstract class AppLocalizations {
   /// No description provided for @schedulesEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'No scheduled jobs were reported for this agent.'**
+  /// **'No scheduled jobs were reported for this profile.'**
   String get schedulesEmptyBody;
 
   /// No description provided for @schedulesReadOnlyNote.
@@ -1015,7 +1027,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayActiveAgentsLabel.
   ///
   /// In en, this message translates to:
-  /// **'Active agents'**
+  /// **'Active profiles'**
   String get gatewayActiveAgentsLabel;
 
   /// No description provided for @gatewayWorkStateLabel.
@@ -1151,7 +1163,7 @@ abstract class AppLocalizations {
   /// No description provided for @providersSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Set provider credentials and choose models for this agent.'**
+  /// **'Set provider credentials and choose models for this profile.'**
   String get providersSubtitle;
 
   /// No description provided for @providersGatewayHelp.
@@ -1655,13 +1667,13 @@ abstract class AppLocalizations {
   /// No description provided for @localCommandOfficeDescription.
   ///
   /// In en, this message translates to:
-  /// **'Open the accessible agent workspace.'**
+  /// **'Open the accessible profile workspace.'**
   String get localCommandOfficeDescription;
 
   /// No description provided for @localCommandAgentsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Open gateway-scoped agents.'**
+  /// **'Open gateway-scoped profiles.'**
   String get localCommandAgentsDescription;
 
   /// No description provided for @localCommandProvidersDescription.
@@ -1685,7 +1697,7 @@ abstract class AppLocalizations {
   /// No description provided for @localCommandPersonaDescription.
   ///
   /// In en, this message translates to:
-  /// **'Show the selected agent persona.'**
+  /// **'Show the selected profile persona.'**
   String get localCommandPersonaDescription;
 
   /// No description provided for @localCommandVersionDescription.
@@ -1721,7 +1733,7 @@ abstract class AppLocalizations {
   /// No description provided for @profilePersonaEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'This agent has no persona content.'**
+  /// **'This profile has no persona content.'**
   String get profilePersonaEmptyBody;
 
   /// No description provided for @profilePersonaLoadFailed.
@@ -2436,7 +2448,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsManageAgentsAction.
   ///
   /// In en, this message translates to:
-  /// **'Manage agents'**
+  /// **'Manage profiles'**
   String get settingsManageAgentsAction;
 
   /// No description provided for @settingsRenameAction.
@@ -2748,19 +2760,19 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayContactsEmptyTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add your first Hermes agent'**
+  /// **'Add your first Hermes profile'**
   String get gatewayContactsEmptyTitle;
 
   /// No description provided for @gatewayContactsEmptyBody.
   ///
   /// In en, this message translates to:
-  /// **'Connect a gateway to see its agent profiles and start a conversation.'**
+  /// **'Connect a gateway to see its profiles and start a conversation.'**
   String get gatewayContactsEmptyBody;
 
   /// No description provided for @gatewayContactsConnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Add gateway or agent'**
+  /// **'Add gateway or profile'**
   String get gatewayContactsConnectAction;
 
   /// No description provided for @chatQueuedCancelTitle.
@@ -3646,7 +3658,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatShellVoicePausedSwitchingAgentsBody.
   ///
   /// In en, this message translates to:
-  /// **'Continuous voice paused while switching agents.'**
+  /// **'Continuous voice paused while switching profiles.'**
   String get chatShellVoicePausedSwitchingAgentsBody;
 
   /// No description provided for @chatShellApprovalAnswerFailedBody.
@@ -3706,7 +3718,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatShellConnectAnotherGatewayTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Add gateway or agent'**
+  /// **'Add gateway or profile'**
   String get chatShellConnectAnotherGatewayTooltip;
 
   /// No description provided for @chatShellSessionsLabel.
@@ -3928,7 +3940,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatStatusActiveAgentsLabel.
   ///
   /// In en, this message translates to:
-  /// **'Active agents: {count}'**
+  /// **'Active profiles: {count}'**
   String chatStatusActiveAgentsLabel(int count);
 
   /// No description provided for @chatStatusModelsChipLabel.
@@ -4612,7 +4624,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipMoreDestinations.
   ///
   /// In en, this message translates to:
-  /// **'Chat, Discover, Office, and Tasks are below. Agents, Providers, Tools, Memory, and Gateway administration live under More.'**
+  /// **'Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.'**
   String get tipMoreDestinations;
 
   /// No description provided for @tipVoice.

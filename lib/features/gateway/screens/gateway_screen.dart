@@ -102,7 +102,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   onSelected: (id) =>
                       unawaited(_selectGateway(directory, id, strings)),
                 ),
-              if (channel.state.isConnected)
+              if (channel.state.isConnected && activeGatewayId != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                   child: Align(
@@ -112,7 +112,12 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                       onPressed: _disconnecting
                           ? null
                           : () => unawaited(
-                              _confirmDisconnect(directory, strings),
+                              _confirmDisconnect(
+                                directory,
+                                activeGatewayId,
+                                activeGateway?.label ?? activeGatewayId,
+                                strings,
+                              ),
                             ),
                       icon: _disconnecting
                           ? const SizedBox.square(
@@ -219,13 +224,15 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
 
   Future<void> _confirmDisconnect(
     HermesGatewayDirectory directory,
+    String gatewayId,
+    String gatewayLabel,
     AppLocalizations strings,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(strings.gatewayDisconnectTitle),
-        content: Text(strings.gatewayDisconnectBody),
+        title: Text(strings.settingsRemoveGatewayTitle),
+        content: Text(strings.settingsRemoveGatewayBody(gatewayLabel)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -234,7 +241,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
           FilledButton(
             key: const ValueKey('gateway-disconnect-confirm'),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(strings.chatConnectionDisconnectAction),
+            child: Text(strings.voiceRemoveAction),
           ),
         ],
       ),
@@ -245,10 +252,10 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       _actionError = null;
     });
     try {
-      await directory.showDirectory();
+      await directory.removeGateway(gatewayId);
     } catch (_) {
       if (mounted) {
-        setState(() => _actionError = strings.gatewayDisconnectFailed);
+        setState(() => _actionError = strings.settingsRemoveGatewayError);
       }
     } finally {
       if (mounted) setState(() => _disconnecting = false);

@@ -63,6 +63,28 @@ class WingLinkProfile {
   bool get canDelete => deleteRevision?.isNotEmpty ?? false;
 }
 
+class WingLinkProvider {
+  const WingLinkProvider({
+    required this.id,
+    required this.baseUrl,
+    required this.model,
+    required this.revision,
+  });
+
+  factory WingLinkProvider.fromJson(Map<String, Object?> json) =>
+      WingLinkProvider(
+        id: json['id']?.toString() ?? '',
+        baseUrl: json['base_url']?.toString() ?? '',
+        model: json['model']?.toString() ?? '',
+        revision: json['revision']?.toString() ?? '',
+      );
+
+  final String id;
+  final String baseUrl;
+  final String model;
+  final String revision;
+}
+
 class WingLinkException implements Exception {
   const WingLinkException(this.message);
 
@@ -120,6 +142,59 @@ class WingLinkClient {
     ];
   }
 
+  Future<List<WingLinkProvider>> listProviders({
+    required String profile,
+  }) async {
+    final json = _decode(
+      await _get(_profileUri('/v1/providers', profile), _headers),
+    );
+    final providers = json['providers'];
+    if (providers is! List) {
+      throw const WingLinkException('Wing Link returned invalid data');
+    }
+    return [
+      for (final provider in providers)
+        if (provider is Map)
+          WingLinkProvider.fromJson(provider.cast<String, Object?>()),
+    ];
+  }
+
+  Future<WingLinkProvider> createProvider({
+    required String profile,
+    required String id,
+    required String baseUrl,
+    required String model,
+  }) => _mutateProvider(
+    'POST',
+    '/v1/providers',
+    profile: profile,
+    body: {'id': id, 'base_url': baseUrl, 'model': model},
+  );
+
+  Future<WingLinkProvider> updateProvider({
+    required String profile,
+    required String id,
+    required String baseUrl,
+    required String model,
+    required String revision,
+  }) => _mutateProvider(
+    'PATCH',
+    '/v1/providers/${Uri.encodeComponent(id)}',
+    profile: profile,
+    body: {'base_url': baseUrl, 'model': model, 'revision': revision},
+  );
+
+  Future<void> deleteProvider({
+    required String profile,
+    required String id,
+    required String revision,
+  }) async {
+    await _delete(
+      _profileUri('/v1/providers/${Uri.encodeComponent(id)}', profile),
+      {..._headers, 'If-Match': revision},
+    );
+  }
+
   Future<WingLinkProfile> createProfile({
     required String name,
     String? cloneFrom,
@@ -170,6 +245,25 @@ class WingLinkClient {
     return WingLinkProfile.fromJson(profile.cast<String, Object?>());
   }
 
+  Future<WingLinkProvider> _mutateProvider(
+    String method,
+    String path, {
+    required String profile,
+    required Map<String, Object?> body,
+  }) async {
+    final payload = jsonEncode(body);
+    final response = switch (method) {
+      'POST' => await _post(_profileUri(path, profile), _headers, payload),
+      'PATCH' => await _patch(_profileUri(path, profile), _headers, payload),
+      _ => throw const WingLinkException('Unsupported Wing Link request'),
+    };
+    final provider = _decode(response)['provider'];
+    if (provider is! Map) {
+      throw const WingLinkException('Wing Link returned invalid data');
+    }
+    return WingLinkProvider.fromJson(provider.cast<String, Object?>());
+  }
+
   Map<String, String> get _headers => {
     'Authorization': 'Bearer $_token',
     'Accept': 'application/json',
@@ -178,6 +272,9 @@ class WingLinkClient {
 
   Uri _uri(String path) =>
       _origin.replace(path: path, query: null, fragment: null);
+
+  Uri _profileUri(String path, String profile) =>
+      _uri(path).replace(queryParameters: {'profile': profile});
 
   Map<String, Object?> _decode(String body) {
     final Object? decoded;

@@ -637,6 +637,78 @@ void _hermesApiChannelRunFailureTests() {
     },
   );
 
+  test(
+    'reconnect releases a detached run missing after server restart',
+    () async {
+      final store = _MemoryDetachedRunStore()
+        ..leases = [
+          HermesDetachedRunLease(
+            runId: 'run_gone',
+            sessionId: 'sess_1',
+            baseUrl: 'http://127.0.0.1:8642',
+            createdAt: DateTime.now().toUtc(),
+          ),
+        ];
+      final channel = HermesApiChannel(
+        detachedRunStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/v1/runs/run_gone' => throw StateError(
+              'Hermes API returned HTTP 404',
+            ),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      expect(channel.state.errorMessage, isNull);
+      expect(store.leases, isEmpty);
+    },
+  );
+
+  test('reconnect keeps a detached run on transient status failure', () async {
+    final store = _MemoryDetachedRunStore()
+      ..leases = [
+        HermesDetachedRunLease(
+          runId: 'run_unknown',
+          sessionId: 'sess_1',
+          baseUrl: 'http://127.0.0.1:8642',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_unknown' => throw StateError('network unavailable'),
+          _ => throw StateError('unexpected GET $uri'),
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(
+      channel.state.errorMessage,
+      'Hermes run is still active. Reconnect later before retrying.',
+    );
+    expect(store.leases.single.runId, 'run_unknown');
+  });
+
   test('reconnect releases a detached run after terminal status', () async {
     var runSubmissions = 0;
     var runOneStatusRequests = 0;

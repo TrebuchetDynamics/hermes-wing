@@ -59,35 +59,38 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
               const AppShellMenuButton(),
             ],
           ),
-          body: Column(
-            children: [
-              if (directory.gateways.isNotEmpty)
-                WingGatewayPicker(
-                  fieldKey: const ValueKey('schedules-gateway-picker'),
-                  directory: directory,
-                  helpText: strings.schedulesGatewayHelp,
-                  enabled: _switchingGatewayId == null,
-                  onSelected: (id) =>
-                      unawaited(_selectGateway(directory, id, strings)),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                if (directory.gateways.isNotEmpty)
+                  WingGatewayPicker(
+                    fieldKey: const ValueKey('schedules-gateway-picker'),
+                    directory: directory,
+                    helpText: strings.schedulesGatewayHelp,
+                    enabled: _switchingGatewayId == null,
+                    onSelected: (id) =>
+                        unawaited(_selectGateway(directory, id, strings)),
+                  ),
+                if (_actionError != null)
+                  MaterialBanner(
+                    content: Text(_actionError!),
+                    actions: [
+                      TextButton(
+                        onPressed: () => setState(() => _actionError = null),
+                        child: Text(strings.doneAction),
+                      ),
+                    ],
+                  ),
+                Expanded(
+                  child: _SchedulesBody(
+                    state: channel.state,
+                    strings: strings,
+                    refreshFailed: _refreshFailed,
+                  ),
                 ),
-              if (_actionError != null)
-                MaterialBanner(
-                  content: Text(_actionError!),
-                  actions: [
-                    TextButton(
-                      onPressed: () => setState(() => _actionError = null),
-                      child: Text(strings.doneAction),
-                    ),
-                  ],
-                ),
-              Expanded(
-                child: _SchedulesBody(
-                  state: channel.state,
-                  strings: strings,
-                  refreshFailed: _refreshFailed,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

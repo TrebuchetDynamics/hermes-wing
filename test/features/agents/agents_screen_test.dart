@@ -123,7 +123,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Select a gateway'), findsOneWidget);
-      expect(find.text('Agents unavailable'), findsNothing);
+      expect(find.text('Profiles unavailable'), findsNothing);
     },
   );
 
@@ -229,7 +229,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('link', skipOffstage: false), findsWidgets);
-      expect(find.text('New Agent'), findsOneWidget);
+      expect(find.text('New Profile'), findsOneWidget);
       final linkChat = find.descendant(
         of: find.bySemanticsLabel('Chat with link', skipOffstage: false),
         matching: find.byType(FilledButton, skipOffstage: false),
@@ -239,7 +239,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(channel.state.selectedProfileId, 'link');
 
-      await tester.tap(find.text('New Agent'));
+      await tester.tap(find.text('New Profile'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).first, 'qa');
       await tester.tap(find.text('Create'));
@@ -270,10 +270,10 @@ void main() {
 
     await tester.pumpWidget(_agentsTestApp(channel));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('New Agent'));
+    await tester.tap(find.text('New Profile'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Create agent'), findsOneWidget);
+    expect(find.text('Create profile'), findsOneWidget);
     expect(find.text('Clone from'), findsOneWidget);
   });
 
@@ -298,8 +298,8 @@ void main() {
     expect(find.text('Coding Agent'), findsOneWidget);
     expect(find.text('ID: coder'), findsOneWidget);
     expect(find.text('Selected'), findsOneWidget);
-    expect(find.text('New Agent'), findsNothing);
-    expect(find.text('Delete agent'), findsNothing);
+    expect(find.text('New Profile'), findsNothing);
+    expect(find.text('Delete profile'), findsNothing);
     expect(find.text('Edit'), findsNothing);
   });
 
@@ -320,7 +320,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
-    expect(find.text('Delete agent'), findsOneWidget);
+    expect(find.text('Delete profile'), findsOneWidget);
     expect(find.bySemanticsLabel('Chat with Coding Agent'), findsOneWidget);
     expect(find.bySemanticsLabel('Edit Coding Agent'), findsOneWidget);
     expect(find.bySemanticsLabel('Delete Coding Agent'), findsOneWidget);
@@ -346,7 +346,7 @@ void main() {
     await tester.tap(find.widgetWithText(OutlinedButton, 'Edit'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Delete agent'), findsNothing);
+    expect(find.text('Delete profile'), findsNothing);
   });
 
   testWidgets('shows a loading indicator while connecting', (tester) async {
@@ -361,7 +361,7 @@ void main() {
     expect(find.byType(WingSkeletonList), findsOneWidget);
     expect(
       tester.getSemantics(find.byType(WingSkeletonList)).label,
-      contains('Loading agents'),
+      contains('Loading profiles'),
     );
   });
 
@@ -378,7 +378,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Agents could not be loaded from Hermes.'),
+      find.text('Profiles could not be loaded from Hermes.'),
       findsOneWidget,
     );
   });
@@ -392,7 +392,7 @@ void main() {
     await tester.pumpWidget(_agentsTestApp(channel));
     await tester.pumpAndSettle();
 
-    expect(find.text('Agents unavailable'), findsOneWidget);
+    expect(find.text('Profiles unavailable'), findsOneWidget);
   });
 
   testWidgets('shows an empty state with read access but no agents', (
@@ -407,7 +407,7 @@ void main() {
     await tester.pumpWidget(_agentsTestApp(channel));
     await tester.pumpAndSettle();
 
-    expect(find.text('No agents available'), findsOneWidget);
+    expect(find.text('No profiles available'), findsOneWidget);
   });
 
   testWidgets('seeds the default profile as selected on mount', (tester) async {
@@ -480,8 +480,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Only the non-default agent exposes a delete affordance.
-    expect(find.text('Delete agent'), findsOneWidget);
-    expect(find.text('New Agent'), findsOneWidget);
+    expect(find.text('Delete profile'), findsOneWidget);
+    expect(find.text('New Profile'), findsOneWidget);
   });
 
   testWidgets('tapping Chat selects the profile client-side', (tester) async {
@@ -653,7 +653,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Coding Agent'), findsOneWidget);
-    expect(find.text('New Agent'), findsOneWidget);
+    expect(find.text('New Profile'), findsOneWidget);
     expect(find.text('Chat'), findsOneWidget);
   });
 }

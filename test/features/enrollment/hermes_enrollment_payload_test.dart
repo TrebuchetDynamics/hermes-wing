@@ -29,6 +29,24 @@ void main() {
     );
   });
 
+  test('accepts a same-host Wing Link control origin', () {
+    final payload = HermesEnrollmentPayload.parse(
+      'wing://connect?origin=https%3A%2F%2Fhermes.example%3A8642'
+      '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+    );
+    expect(payload.wingLinkOrigin, Uri.parse('https://hermes.example:8654'));
+  });
+
+  test('rejects a Wing Link control origin on a different host', () {
+    expect(
+      () => HermesEnrollmentPayload.parse(
+        'wing://connect?origin=https%3A%2F%2Fhermes.example'
+        '&control=https%3A%2F%2Fevil.example%3A8654&code=one-time',
+      ),
+      throwsFormatException,
+    );
+  });
+
   test('rejects bearer token query parameters', () {
     expect(
       () => HermesEnrollmentPayload.parse(

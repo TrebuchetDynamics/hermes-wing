@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
+import '../../../core/wing_link/wing_link_client.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../services/hermes_connect_intent_source.dart';
@@ -30,6 +31,24 @@ final hermesEnrollmentControllerProvider =
             HermesApiClient(
               config: HermesApiConfig.fromBaseUrl(origin.toString()),
             ).exchangeEnrollment(origin: origin, code: code),
+        verifyEnrollment:
+            ({
+              required hermesOrigin,
+              required hermesToken,
+              required wingLinkOrigin,
+              required wingLinkToken,
+            }) async {
+              await HermesApiClient(
+                config: HermesApiConfig.fromBaseUrl(
+                  hermesOrigin.toString(),
+                  apiKey: hermesToken,
+                ),
+              ).health();
+              await WingLinkClient(
+                origin: wingLinkOrigin,
+                token: wingLinkToken,
+              ).verifyPendingCredential();
+            },
         endpointStore: store,
         connectSavedEndpoint: () =>
             ref.read(hermesGatewayDirectoryProvider).reload(),
@@ -51,6 +70,19 @@ typedef HermesEnrollmentExchange =
 /// Reconnects the shared Hermes channel to the endpoint just saved by a
 /// successful enrollment, so `/hermes` lands connected rather than idle.
 typedef HermesEnrollmentConnect = Future<void> Function();
+typedef HermesEnrollmentVerify =
+    Future<void> Function({
+      required Uri hermesOrigin,
+      required String hermesToken,
+      required Uri wingLinkOrigin,
+      required String wingLinkToken,
+    });
+typedef WingLinkCredentialAcknowledge =
+    Future<void> Function({
+      required Uri origin,
+      required String token,
+      required String credentialId,
+    });
 
 enum HermesEnrollmentStatus {
   idle,
@@ -60,6 +92,20 @@ enum HermesEnrollmentStatus {
   confirmed,
   failed,
 }
+
+String _safeEnrollmentLabel(String value) => String.fromCharCodes(
+  value.runes
+      .where(
+        (rune) =>
+            rune >= 0x20 &&
+            !(rune >= 0x7f && rune <= 0x9f) &&
+            rune != 0x061c &&
+            !(rune >= 0x200b && rune <= 0x200f) &&
+            !(rune >= 0x2028 && rune <= 0x202e) &&
+            !(rune >= 0x2060 && rune <= 0x206f),
+      )
+      .take(80),
+).trim();
 
 /// Owns the review-before-exchange one-time pairing lifecycle: [inspect] a
 /// pairing code against the operator-supplied origin so the operator can
@@ -72,14 +118,33 @@ class HermesEnrollmentController extends ChangeNotifier {
     required HermesEnrollmentInspect inspectEnrollment,
     required HermesEnrollmentExchange exchangeEnrollment,
     required HermesEndpointStore endpointStore,
+    HermesEnrollmentVerify? verifyEnrollment,
+    WingLinkCredentialAcknowledge? acknowledgeWingLinkCredential,
     this._connectSavedEndpoint,
   }) : _inspect = inspectEnrollment,
        _exchange = exchangeEnrollment,
-       _store = endpointStore;
+       _store = endpointStore,
+       _verifyEnrollment =
+           verifyEnrollment ??
+           (({
+             required hermesOrigin,
+             required hermesToken,
+             required wingLinkOrigin,
+             required wingLinkToken,
+           }) async {}),
+       _acknowledgeWingLinkCredential =
+           acknowledgeWingLinkCredential ??
+           (({required origin, required token, required credentialId}) =>
+               WingLinkClient(
+                 origin: origin,
+                 token: token,
+               ).acknowledgeCredential(credentialId));
 
   final HermesEnrollmentInspect _inspect;
   final HermesEnrollmentExchange _exchange;
   final HermesEndpointStore _store;
+  final HermesEnrollmentVerify _verifyEnrollment;
+  final WingLinkCredentialAcknowledge _acknowledgeWingLinkCredential;
   final HermesEnrollmentConnect? _connectSavedEndpoint;
 
   HermesEnrollmentStatus _status = HermesEnrollmentStatus.idle;
@@ -87,6 +152,7 @@ class HermesEnrollmentController extends ChangeNotifier {
   String? _errorMessage;
   Uri? _origin;
   Uri? _exchangeOrigin;
+  Uri? _wingLinkOrigin;
   String? _code;
   bool _exchangeAttempted = false;
   int _generation = 0;
@@ -120,6 +186,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     final generation = ++_generation;
     _origin = payload.origin;
     _exchangeOrigin = payload.brokerOrigin ?? payload.origin;
+    _wingLinkOrigin = payload.wingLinkOrigin;
     _code = payload.code;
     _exchangeAttempted = false;
     _preview = null;
@@ -132,7 +199,12 @@ class HermesEnrollmentController extends ChangeNotifier {
         code: payload.code,
       );
       if (generation != _generation) return;
-      _preview = preview;
+      _preview = HermesEnrollmentPreview(
+        label: _safeEnrollmentLabel(preview.label),
+        origin: preview.origin,
+        scopes: preview.scopes,
+        expiresAt: preview.expiresAt,
+      );
       _status = HermesEnrollmentStatus.ready;
     } catch (_) {
       if (generation != _generation) return;
@@ -154,6 +226,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     final origin = _origin;
     final exchangeOrigin = _exchangeOrigin;
     final code = _code;
+    final wingLinkOrigin = _wingLinkOrigin;
     final preview = _preview;
     if (origin == null ||
         exchangeOrigin == null ||
@@ -168,10 +241,47 @@ class HermesEnrollmentController extends ChangeNotifier {
     try {
       final issued = await _exchange(origin: exchangeOrigin, code: code);
       if (generation != _generation) return;
-      await _store.save(baseUrl: origin.toString(), apiKey: issued.token);
+      if (wingLinkOrigin != null &&
+          (issued.wingLinkToken.isEmpty ||
+              issued.wingLinkCredentialId.isEmpty ||
+              issued.wingLinkOrigin != wingLinkOrigin.toString())) {
+        throw const FormatException('Wing Link credential did not match');
+      }
+      await _store.save(
+        baseUrl: origin.toString(),
+        apiKey: issued.token,
+        label: preview.label,
+        wingLinkOrigin: wingLinkOrigin?.toString(),
+        wingLinkToken: wingLinkOrigin == null ? null : issued.wingLinkToken,
+        wingLinkPendingCredentialId: wingLinkOrigin == null
+            ? null
+            : issued.wingLinkCredentialId,
+      );
+      if (wingLinkOrigin != null) {
+        await _verifyEnrollment(
+          hermesOrigin: origin,
+          hermesToken: issued.token,
+          wingLinkOrigin: wingLinkOrigin,
+          wingLinkToken: issued.wingLinkToken,
+        );
+        await _acknowledgeWingLinkCredential(
+          origin: wingLinkOrigin,
+          token: issued.wingLinkToken,
+          credentialId: issued.wingLinkCredentialId,
+        );
+        await _store.save(
+          baseUrl: origin.toString(),
+          apiKey: issued.token,
+          label: preview.label,
+          wingLinkOrigin: wingLinkOrigin.toString(),
+          wingLinkToken: issued.wingLinkToken,
+          wingLinkPendingCredentialId: '',
+        );
+      }
       if (generation != _generation) return;
       _origin = null;
       _exchangeOrigin = null;
+      _wingLinkOrigin = null;
       _code = null;
       _status = HermesEnrollmentStatus.confirmed;
       _notify();
@@ -192,6 +302,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _generation++;
     _origin = null;
     _exchangeOrigin = null;
+    _wingLinkOrigin = null;
     _code = null;
     _preview = null;
     _errorMessage = null;

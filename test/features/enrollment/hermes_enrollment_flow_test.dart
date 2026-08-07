@@ -108,8 +108,34 @@ void main() {
       expect(store.saveCalls, hasLength(1));
       expect(store.saveCalls.single.apiKey, _secretToken);
       expect(store.saveCalls.single.baseUrl, 'https://hermes.example');
-      expect(store.saveCalls.single.label, isNull);
-      expect(store.saveCalls.single.displayLabel, 'https://hermes.example');
+      expect(store.saveCalls.single.label, 'Galaxy S24');
+      expect(store.saveCalls.single.displayLabel, 'Galaxy S24');
+    });
+
+    test('hostile labels are bounded before review and persistence', () async {
+      final store = FakeHermesEndpointStore();
+      final preview = HermesEnrollmentPreview(
+        label: 'Trusted\u202e\u2028\n${List.filled(100, 'x').join()}',
+        origin: 'https://hermes.example',
+        scopes: const ['chat:write'],
+      );
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      final reviewedLabel = controller.preview!.label;
+      expect(reviewedLabel.runes, hasLength(80));
+      expect(reviewedLabel, isNot(contains('\u202e')));
+      expect(reviewedLabel, isNot(contains('\u2028')));
+      expect(reviewedLabel, isNot(contains('\n')));
+
+      await controller.confirm();
+
+      expect(store.saveCalls.single.label, reviewedLabel);
     });
 
     test(
@@ -143,6 +169,62 @@ void main() {
         );
         expect(store.saveCalls.single.baseUrl, 'https://hermes.example');
         expect(store.saveCalls.single.apiKey, _secretToken);
+      },
+    );
+
+    test(
+      'Wing Link control token is acknowledged before secure persistence',
+      () async {
+        final events = <String>[];
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              const HermesIssuedOperatorToken(
+                token: _secretToken,
+                wingLinkOrigin: 'https://hermes.example:8654',
+                wingLinkToken: 'wlc-control-secret',
+                wingLinkCredentialId: 'cred_123',
+              ),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {
+                events.add('verified');
+              },
+          acknowledgeWingLinkCredential:
+              ({required origin, required token, required credentialId}) async {
+                events.add('$origin|$token|$credentialId');
+              },
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(events, [
+          'verified',
+          'https://hermes.example:8654|wlc-control-secret|cred_123',
+        ]);
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+        expect(store.saveCalls, hasLength(2));
+        expect(store.saveCalls.first.wingLinkPendingCredentialId, 'cred_123');
+        expect(
+          store.saveCalls.last.wingLinkOrigin,
+          'https://hermes.example:8654',
+        );
+        expect(store.saveCalls.last.wingLinkToken, 'wlc-control-secret');
+        expect(store.saveCalls.last.wingLinkPendingCredentialId, '');
       },
     );
 

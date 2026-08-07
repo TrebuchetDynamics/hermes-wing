@@ -1502,7 +1502,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       return IconButton.filled(
         key: const ValueKey('hermes-mic-button'),
         tooltip: AppLocalizations.of(context).chatLayoutHandsFreeLabel,
-        icon: const Icon(Icons.stop_rounded),
+        icon: _VoiceWaveform(
+          level: _voiceInputController.soundLevel,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
         onPressed: _voiceInputController.pause,
       );
     }
@@ -1567,13 +1570,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 }
 
 class _VoiceWaveform extends StatelessWidget {
-  const _VoiceWaveform({this.level});
+  const _VoiceWaveform({this.level, this.color});
 
   final double? level;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onPrimaryContainer;
+    final barColor = color ?? Theme.of(context).colorScheme.onPrimaryContainer;
     final activity = _normalizedLevel(level);
     return ExcludeSemantics(
       child: SizedBox(
@@ -1593,7 +1597,7 @@ class _VoiceWaveform extends StatelessWidget {
                     height: 5 + 19 * activity * weight,
                   ),
                   decoration: BoxDecoration(
-                    color: color,
+                    color: barColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

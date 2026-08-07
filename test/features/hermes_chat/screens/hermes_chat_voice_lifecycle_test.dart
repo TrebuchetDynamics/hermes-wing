@@ -237,6 +237,61 @@ void main() {
     );
   });
 
+  testWidgets('one-shot Speak shows a live waveform while capturing', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final channel = FakeHermesChannel();
+    final capture = _ControlledVoiceCaptureService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.pump();
+
+    final waveform = find.descendant(
+      of: find.byKey(const ValueKey('hermes-mic-button')),
+      matching: find.byKey(const ValueKey('hermes-voice-waveform')),
+    );
+    final bars = find.descendant(
+      of: waveform,
+      matching: find.byType(AnimatedContainer),
+    );
+    expect(capture.captureCalls, 1);
+    expect(waveform, findsOneWidget);
+    expect(bars, findsNWidgets(5));
+    final quietHeight = tester
+        .widget<AnimatedContainer>(bars.first)
+        .constraints!
+        .minHeight;
+
+    capture.emitLevel(10);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(
+      tester.widget<AnimatedContainer>(bars.first).constraints!.minHeight,
+      greaterThan(quietHeight),
+    );
+
+    capture.complete('waveform restored');
+    await tester.pumpAndSettle();
+    expect(waveform, findsNothing);
+    expect(channel.sentVoiceTranscripts, ['waveform restored']);
+  });
+
   testWidgets(
     'ending mobile voice mode cancels capture and drops its late result',
     (tester) async {

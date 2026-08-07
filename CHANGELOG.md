@@ -14,6 +14,14 @@ All notable user-visible changes will be documented here.
   of leaving QR scanning as the only recovery path.
 - Chat contacts now prefix every agent name with its gateway, so duplicate
   profiles such as “Default agent” remain distinguishable.
+- Connected gateways now show their basic `/health` result when detailed health
+  is unsupported or temporarily fails, instead of appearing unavailable, and
+  active saved gateways can be renamed directly from the gateway screen.
+- Run failures now recover redacted string, structured, and legacy failure
+  details from pollable status; usage-limit and HTTP 429 errors prompt operators
+  to switch provider or model instead of offering a futile retry.
+- One-shot Speak capture now restores the live input waveform instead of
+  replacing it with a static stop icon.
 - Voice input now fails closed when local recognition cannot be guaranteed:
   browser STT and the transcript-logging Windows adapter are disabled, while
   Android requires an on-device recognizer before capture starts instead of

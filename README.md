@@ -82,15 +82,24 @@ Install the host helper on the machine running Hermes Agent:
 
 ```bash
 ./install-wing-link.sh
-wing-link pair
+WING_HERMES_URL=http://<trusted-vpn-ip>:8642 \
+WING_LINK_URL=http://<trusted-vpn-ip>:8654 wing-link pair
 ```
 
 Then open **Connect to Hermes → Scan QR code**, review the endpoint and access,
-and connect. `wing-link pair` requests a short-lived, single-use enrollment from
-the local Hermes and renders a `wing://connect` QR that never contains the API
-key. The binary is a small Go supervisor; run `wing-link help` for origin,
-label, and environment overrides (`WING_HERMES_URL`, `WING_HERMES_PORT`,
-`WING_HERMES_TOKEN`). See the [Android setup guide](docs/runbooks/android-hermes-setup.md)
+and connect. `wing-link pair` installs, starts, and verifies the per-user
+service; no separate `serve` command is needed. Chat, sessions, and runs stay
+direct to Hermes, while Wing Link exposes only authenticated profile topology
+management. The one-time broker
+returns separate Hermes and Wing Link credentials, and Wing acknowledges the
+pending control credential before it becomes authoritative. The QR never
+contains either credential. Local-only profiles support list/create/clone/
+rename/delete; Chat stays disabled until Hermes advertises usable profile
+context. Run `wing-link help` for options and environment overrides
+(`WING_HERMES_URL`, `WING_LINK_URL`, `WING_LINK_LISTEN`, `WING_LINK_STATE`,
+`WING_HERMES_HOME`, `WING_HERMES_TOKEN`). Wing Link rejects wildcard/public
+listen addresses; bind only to loopback, a private LAN, or Tailscale and prefer
+HTTPS outside one. See the [Android setup guide](docs/runbooks/android-hermes-setup.md)
 for the full path.
 
 ## Capabilities today

@@ -4,6 +4,13 @@ All notable user-visible changes will be documented here.
 
 ## Unreleased
 
+### Added
+
+- Wing Link can run as a persistent Linux user service with separate direct
+  Hermes and acknowledged management credentials. Its private/VPN profile API
+  merges Agent-advertised rows with validated local profiles and supports
+  revisioned create/clone/rename/delete without proxying Hermes traffic.
+
 ### Fixed
 
 - Failed Hermes runs now show the redacted server or provider reason inline

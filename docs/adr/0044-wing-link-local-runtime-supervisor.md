@@ -9,9 +9,9 @@ Hermes Wing needs a bounded, cross-platform way to prepare and maintain a local 
 
 Wing Link is a small persistent host supervisor for supported PCs and Android/Termux. It installs, adopts, starts, stops, updates, verifies, repairs, and diagnoses an external Hermes Agent runtime.
 
-Wing Link exposes an authenticated management API only on `127.0.0.1:8654`. Hermes Agent remains authoritative for every domain operation after bootstrap, including chat, sessions, profiles, providers, models, memory, skills, tools, schedules, approvals, and gateway state.
+Wing Link exposes its authenticated management API on `127.0.0.1:8654` and, after explicit pairing setup, on one selected current RFC 1918, CGNAT/Tailscale, or IPv6 ULA interface. Wildcard, public, multicast, broadcast, unspecified, and link-local listeners remain prohibited. Hermes Agent remains authoritative for runtime domain operations including chat, sessions, providers, models, memory, skills, tools, schedules, approvals, and gateway state.
 
-Wing Link does not proxy Hermes chat, duplicate Hermes authorization, expose a remote control plane, parse human CLI output, or embed Hermes Agent. Flutter reaches Hermes domain behavior through the existing capability-advertised Hermes interfaces.
+Wing Link does not proxy Hermes traffic, duplicate Hermes runtime state, parse human CLI output, or embed Hermes Agent. It may bridge profile **topology** only: API-first inventory and mutations, validated local profile discovery, and fixed Hermes CLI create/clone/rename/delete vectors when the Agent does not advertise the corresponding API action. API errors never fall back to CLI. Flutter sends all paired topology mutations to Wing Link but continues to send chat/session/run traffic directly to Hermes.
 
 ## Installation and lifecycle boundary
 
@@ -23,9 +23,9 @@ Ordinary Hermes Wing or Wing Link uninstall preserves external Hermes and OmniRo
 
 ## Local management authorization
 
-The management listener is loopback-only, but loopback is not treated as authorization. A five-minute, single-use bootstrap code exchanges for a random Wing Link control token. Flutter stores that token in platform secure storage; Wing Link stores only its cryptographic hash.
+Neither loopback nor an eligible VPN/LAN interface is treated as authorization. A five-minute, single-use bootstrap transaction stages a random Wing Link control token. Flutter stores the pending credential securely, verifies direct Hermes plus Wing Link status/inventory, and acknowledges it; only then may the token authorize mutations. Wing Link stores cryptographic token hashes, never raw control tokens.
 
-Wing Link creates a scoped Hermes enrollment through Hermes Agent’s existing enrollment API and returns only the one-time `wing://connect` pairing payload. It never returns, proxies, logs, or persists the Hermes superuser API key.
+Wing Link prefers scoped Hermes enrollment when Hermes advertises it. When scoped enrollment is absent, a reviewed compatibility broker may read the existing local `API_SERVER_KEY`, label review **Full Hermes access**, and return it once over the trusted pairing channel after explicit confirmation. This is the narrow exception to the earlier superuser-key prohibition: the key stays memory-only in Wing Link, is never accepted by the management API, and is stored by Flutter only as the separate Hermes credential. The `wing://connect` payload itself contains no bearer credential.
 
 ## Android and Termux
 

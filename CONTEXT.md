@@ -61,8 +61,8 @@ A platform-specific client boundary for bootstrap and machine integration, limit
 _Avoid_: domain service
 
 **Wing Link**:
-The loopback-only host supervisor that installs, adopts, updates, starts, stops, repairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. Hermes Agent remains authoritative for domain behavior.
-_Avoid_: backend, domain proxy, remote administration service
+The independently authenticated host supervisor that installs, adopts, updates, starts, stops, repairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. It listens on loopback plus one explicitly selected private/VPN interface and may bridge API-first local profile topology with fixed Hermes CLI vectors. Hermes Agent remains authoritative for runtime behavior, and chat/session/run traffic never transits Wing Link.
+_Avoid_: domain backend, Hermes proxy, public administration service
 
 **Starter profile**:
 The consented, version-pinned Donna profile distribution offered during local setup. Hermes Agent’s profile-distribution interface installs it; Wing Link never clones mutable profile content directly into Hermes state.

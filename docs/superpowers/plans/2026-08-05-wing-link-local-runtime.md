@@ -1,5 +1,11 @@
 # Wing Link Local Runtime Bootstrap Implementation Plan
 
+> **2026-08-07 amendment:** the accepted multi-agent design extends this plan
+> with an independent acknowledged control credential, a persistent per-user
+> service, loopback plus one selected private/VPN listener, and an API-first
+> profile-topology bridge. Chat/session/run traffic remains direct to Hermes;
+> see `../specs/2026-08-06-wing-link-multi-agent-management-design.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a user install Hermes Wing, choose **Install Hermes on this device**, and reach a healthy local Hermes Agent on PC or Android/Termux with the recommended Donna starter profile, plus an explicit optional OmniRoute quick-start path for community free-tier providers.

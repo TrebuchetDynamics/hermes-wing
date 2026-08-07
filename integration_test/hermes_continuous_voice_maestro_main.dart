@@ -11,10 +11,8 @@ void main() {
   final channel = AndroidHermesVoiceSmokeChannel();
   final capture = SpeechToTextVoiceCaptureService(
     localeId: 'en_US',
-    engine: PluginSpeechToTextEngine(
-      androidIntentLookup: true,
-      androidNoBluetooth: true,
-    ),
+    onDeviceOnly: false,
+    engine: PluginSpeechToTextEngine(androidNoBluetooth: true),
   );
   runApp(
     ProviderScope(

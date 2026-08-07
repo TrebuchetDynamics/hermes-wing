@@ -227,6 +227,7 @@ class SpeechToTextVoiceCaptureService
     SpeechToTextSnapshot? latestTranscript;
     Timer? partialResultTimer;
     var recognitionStarted = false;
+    var recognitionStopAttempted = false;
     final soundLevelSubscription =
         (_engine is SpeechToTextSoundLevelEngine
                 ? (_engine as SpeechToTextSoundLevelEngine).soundLevels
@@ -331,15 +332,25 @@ class SpeechToTextVoiceCaptureService
 
       final effectiveLocaleId =
           localeId ?? await cancellable(_readSystemLocale(log));
+      final remainingListenBudget = timeout - elapsed.elapsed;
+      if (remainingListenBudget <= Duration.zero) {
+        fireAndForget(_engine.cancel(), 'speech engine cancel before listen');
+        throw const VoiceCaptureTimeout();
+      }
+      // ponytail: 250ms is callback headroom; raise only if devices exceed it.
+      final listenFor =
+          remainingListenBudget > const Duration(milliseconds: 500)
+          ? remainingListenBudget - const Duration(milliseconds: 250)
+          : remainingListenBudget;
       log(
         'listen locale=${effectiveLocaleId ?? 'system default'} '
-        'listenFor=${timeout.inMilliseconds}ms '
+        'listenFor=${listenFor.inMilliseconds}ms '
         'pauseFor=${pauseFor.inMilliseconds}ms partialResults=true '
         'onDevice=$onDeviceOnly',
       );
       await cancellable(
         _engine.listen(
-          listenFor: timeout,
+          listenFor: listenFor,
           pauseFor: pauseFor,
           localeId: effectiveLocaleId,
           onDevice: onDeviceOnly,
@@ -370,9 +381,19 @@ class SpeechToTextVoiceCaptureService
                     ? pauseFor
                     : partialResultPauseFor,
                 () {
-                  if (!completion.isCompleted) {
+                  if (!completion.isCompleted && !recognitionStopAttempted) {
+                    recognitionStopAttempted = true;
                     fireAndForget(
-                      _engine.stop(),
+                      _engine.stop().whenComplete(() async {
+                        // ponytail: one short grace lets Android flush its final callback.
+                        await Future<void>.delayed(
+                          const Duration(milliseconds: 100),
+                        );
+                        final transcript = latestTranscript;
+                        if (!completion.isCompleted && transcript != null) {
+                          completion.complete(transcript);
+                        }
+                      }),
                       'speech engine stop after partial transcript inactivity',
                     );
                   }
@@ -385,7 +406,7 @@ class SpeechToTextVoiceCaptureService
 
       final snapshot = await bounded(completion.future);
       cancelPartialResultTimer();
-      await cancellable(_engine.stop());
+      if (!recognitionStopAttempted) await cancellable(_engine.stop());
 
       final transcript = snapshot.words.trim();
       if (transcript.isEmpty) {

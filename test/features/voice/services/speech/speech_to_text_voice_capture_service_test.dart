@@ -53,6 +53,56 @@ void main() {
     expect(engine.stopCalls, greaterThanOrEqualTo(1));
   });
 
+  test('silent engine stop completes with the latest transcript', () async {
+    final engine = _SilentStopAfterPartialSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(
+      engine: engine,
+      pauseFor: Duration.zero,
+      partialResultPauseFor: Duration.zero,
+    );
+
+    final capture = await service
+        .capture(timeout: const Duration(seconds: 1))
+        .timeout(
+          const Duration(milliseconds: 250),
+          onTimeout: () => throw StateError('capture stranded after stop'),
+        );
+
+    expect(capture.transcript, 'hello');
+  });
+
+  test(
+    'failed engine stop still completes with the latest transcript',
+    () async {
+      final service = SpeechToTextVoiceCaptureService(
+        engine: _FailingStopAfterPartialSpeechToTextEngine(),
+        pauseFor: Duration.zero,
+        partialResultPauseFor: Duration.zero,
+      );
+
+      final capture = await service
+          .capture(timeout: const Duration(seconds: 1))
+          .timeout(
+            const Duration(milliseconds: 250),
+            onTimeout: () => throw StateError('capture stranded after stop'),
+          );
+
+      expect(capture.transcript, 'hello');
+    },
+  );
+
+  test('engine stop can flush a newer partial transcript', () async {
+    final service = SpeechToTextVoiceCaptureService(
+      engine: _FlushingStopSpeechToTextEngine(),
+      pauseFor: Duration.zero,
+      partialResultPauseFor: Duration.zero,
+    );
+
+    final capture = await service.capture(timeout: const Duration(seconds: 1));
+
+    expect(capture.transcript, 'hello world');
+  });
+
   test('does not stop before the configured speech pause', () async {
     final engine = _PartialResultSpeechToTextEngine();
     final service = SpeechToTextVoiceCaptureService(
@@ -68,6 +118,21 @@ void main() {
     unawaited(service.cancel());
     await expectLater(capture, throwsA(isA<SpeechToTextCaptureFailure>()));
   });
+
+  test(
+    'recognizer listen window fits inside the whole capture budget',
+    () async {
+      final service = SpeechToTextVoiceCaptureService(
+        engine: _DelayedFinalSpeechToTextEngine(),
+      );
+
+      final capture = await service.capture(
+        timeout: const Duration(seconds: 1),
+      );
+
+      expect(capture.transcript, 'late final transcript');
+    },
+  );
 
   test(
     'reuses initialization while routing errors to the current capture',
@@ -424,6 +489,59 @@ class _PartialResultSpeechToTextEngine implements SpeechToTextEngine {
   Future<void> cancel() async {}
 }
 
+class _SilentStopAfterPartialSpeechToTextEngine
+    extends _PartialResultSpeechToTextEngine {
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+  }
+}
+
+class _FailingStopAfterPartialSpeechToTextEngine
+    extends _PartialResultSpeechToTextEngine {
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+    throw StateError('recognizer stop failed');
+  }
+}
+
+class _FlushingStopSpeechToTextEngine extends _PartialResultSpeechToTextEngine {
+  void Function(SpeechToTextSnapshot result)? _onResult;
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    _onResult = onResult;
+    await super.listen(
+      onResult: onResult,
+      listenFor: listenFor,
+      pauseFor: pauseFor,
+      localeId: localeId,
+      onDevice: onDevice,
+    );
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+    Timer.run(
+      () => _onResult?.call(
+        const SpeechToTextSnapshot(
+          words: 'hello world',
+          confidence: 0.9,
+          finalResult: false,
+        ),
+      ),
+    );
+  }
+}
+
 class _FakeSpeechToTextEngine implements SpeechToTextEngine {
   _FakeSpeechToTextEngine(this.words);
 
@@ -605,6 +723,35 @@ class _InitializeOnceSpeechToTextEngine implements SpeechToTextEngine {
 
   @override
   Future<void> cancel() async {}
+}
+
+class _DelayedFinalSpeechToTextEngine extends _FakeSpeechToTextEngine {
+  _DelayedFinalSpeechToTextEngine() : super('late final transcript');
+
+  @override
+  Future<bool> initialize({
+    required void Function(Object error) onError,
+    required void Function(String status) onStatus,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    return true;
+  }
+
+  @override
+  Future<void> listen({
+    required void Function(SpeechToTextSnapshot result) onResult,
+    required Duration listenFor,
+    required Duration pauseFor,
+    required String? localeId,
+    required bool onDevice,
+  }) async {
+    Timer(
+      listenFor,
+      () => onResult(
+        SpeechToTextSnapshot(words: words, confidence: 0.9, finalResult: true),
+      ),
+    );
+  }
 }
 
 class _HangingSpeechToTextEngine implements SpeechToTextEngine {

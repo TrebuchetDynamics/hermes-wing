@@ -1,9 +1,6 @@
 appId: com.trebuchetdynamics.hermes.wing
 name: Hermes continuous voice smoke
 ---
-- launchApp:
-    clearState: false
-    stopApp: true
 - setOrientation: PORTRAIT
 - extendedWaitUntil:
     visible: "How can Hermes help today?"

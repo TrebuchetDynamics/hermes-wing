@@ -12,11 +12,25 @@ name: chat_ux_qa
     commands:
       - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- assertVisible: "(?s).*Settings.*"
+- assertVisible: "Open more destinations"
 - tapOn: "(?s).*Default agent.*"
 - assertVisible: "(?s).*online.*"
 - assertVisible: "(?s).*Message Hermes….*"
-- assertNotVisible: "(?s).*Settings.*"
+- assertNotVisible: "Open more destinations"
+# A preceding process-recovery receipt intentionally leaves an accepted run
+# lease. Reconcile and stop it before requiring a fresh empty session.
+- runFlow:
+    when:
+      visible: "Reconnect"
+    commands:
+      - tapOn: "Reconnect"
+      - extendedWaitUntil:
+          visible: "Stop"
+          timeout: 60000
+      - tapOn: "Stop"
+      - extendedWaitUntil:
+          notVisible: "Stop"
+          timeout: 60000
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
@@ -59,13 +73,16 @@ name: chat_ux_qa
     timeout: 120000
 - assertVisible: "(?s).*Token usage:.*total.*"
 - hideKeyboard
-- takeScreenshot: 03_live_response
 - runFlow:
     when:
-      visible: "(?s).*Settings.*"
+      visible: "Open more destinations"
     commands:
       - tapOn: "(?s).*Default agent.*"
       - assertVisible: "(?s).*Message Hermes….*"
+- assertNotVisible: "Open more destinations"
+- assertVisible: "(?s)^white.*"
+- assertVisible: "(?s).*Token usage:.*total.*"
+- takeScreenshot: 03_live_response
 
 # Exercise explicit transcript export without exposing clipboard contents.
 - tapOn: "(?s).*More actions.*"
@@ -83,7 +100,7 @@ name: chat_ux_qa
 - assertVisible: "(?s).*Search sessions.*"
 - tapOn: "(?s).*Search sessions.*"
 - inputText: "qa_no_matching_session_98765"
-- assertVisible: "(?s).*No Hermes sessions match.*"
+- assertVisible: "(?s).*Showing 0 of [1-9][0-9]* sessions.*"
 - takeScreenshot: 04_session_search_empty
 - hideKeyboard
 - pressKey: back
@@ -91,11 +108,12 @@ name: chat_ux_qa
 # Verify navigation does not lose the completed live turn.
 - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- assertVisible: "(?s).*Settings.*"
+- assertVisible: "Open more destinations"
 - tapOn: "(?s).*Default agent.*"
-- assertNotVisible: "(?s).*Settings.*"
+- assertNotVisible: "Open more destinations"
 - assertVisible: "(?s)^white.*"
+- assertVisible: "(?s).*Token usage:.*101 total.*"
 - takeScreenshot: 05_reopened_chat_retains_turn
 - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- assertVisible: "(?s).*Settings.*"
+- assertVisible: "Open more destinations"

@@ -196,7 +196,10 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> forkSession(String sessionId, {String? title}) async {}
 
   @override
-  Future<void> selectProfile(String profileId) async {}
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {}
 
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) async {}

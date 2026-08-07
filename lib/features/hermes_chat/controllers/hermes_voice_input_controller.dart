@@ -152,9 +152,12 @@ class HermesVoiceInputController extends ChangeNotifier {
 
     final outcome = await const HermesVoiceCaptureFlow().capture(
       service: service,
-      timeout: Duration(seconds: continuous ? 30 : 12),
+      timeout: continuous
+          ? const Duration(minutes: 5)
+          : const Duration(seconds: 12),
     );
     if (_disposed || operationGeneration != _operationGeneration) return;
+    final effectiveContinuous = continuous || _continuousEnabled;
 
     _activeCaptureService = null;
     unawaited(_partialTranscriptSubscription?.cancel());
@@ -167,7 +170,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       _capturing = false;
       _recordCaptureFailure(
         'Voice capture was discarded because the Hermes session changed.',
-        continuous: continuous,
+        continuous: effectiveContinuous,
       );
       notifyListeners();
       return;
@@ -178,25 +181,27 @@ class HermesVoiceInputController extends ChangeNotifier {
         _capturing = false;
         _recordCaptureFailure(
           'Voice input is not available here.',
-          continuous: continuous,
+          continuous: effectiveContinuous,
         );
       case HermesVoiceCaptureStatus.failed:
         _capturing = false;
-        if (continuous &&
-            outcome.error is SpeechToTextCaptureFailure &&
-            (outcome.error! as SpeechToTextCaptureFailure).isNoTranscript) {
+        if (effectiveContinuous &&
+            (outcome.error is VoiceCaptureTimeout ||
+                outcome.error is SpeechToTextCaptureFailure &&
+                    (outcome.error! as SpeechToTextCaptureFailure)
+                        .isNoTranscript)) {
           notifyListeners();
           unawaited(_rearmContinuousCapture());
           return;
         }
         _recordCaptureFailure(
           outcome.errorMessage ?? 'Voice capture failed.',
-          continuous: continuous,
+          continuous: effectiveContinuous,
         );
       case HermesVoiceCaptureStatus.captured:
         final capture = outcome.capture!;
         final transcript = capture.transcript.trim();
-        if (continuous && _isSpokenReplyEcho(transcript)) {
+        if (effectiveContinuous && _isSpokenReplyEcho(transcript)) {
           // Keep the reply fingerprint for the next capture too. Android can
           // return the same speaker playback in more than one recognition
           // result while its acoustic echo canceller settles.
@@ -206,16 +211,19 @@ class HermesVoiceInputController extends ChangeNotifier {
           return;
         }
         _lastSpokenReply = null;
-        if (continuous && _handleLocalCommand(transcript)) {
+        if (effectiveContinuous && _handleLocalCommand(transcript)) {
           // pause() inside _handleLocalCommand already reset _capturing.
           break;
         }
         _capturing = false;
         if (!autoSend) {
           _onDraft(transcript);
+          if (_continuousEnabled && !continuous) {
+            unawaited(_rearmContinuousCapture());
+          }
           break;
         }
-        if (continuous &&
+        if (effectiveContinuous &&
             captureSessionId != null &&
             channel.state.isSessionStreaming(captureSessionId)) {
           channel.stopActiveTurn();
@@ -232,12 +240,9 @@ class HermesVoiceInputController extends ChangeNotifier {
         if (run?.status == WingVoiceRunStatus.failed) {
           _recordCaptureFailure(
             run?.reason ?? 'Voice turn could not be sent.',
-            continuous: continuous,
+            continuous: _continuousEnabled,
           );
-        } else if (continuous &&
-            (channel.state.activeVoiceRun != null ||
-                captureSessionId != null &&
-                    channel.state.isSessionStreaming(captureSessionId))) {
+        } else if (_continuousEnabled) {
           unawaited(_rearmContinuousCapture());
         }
     }

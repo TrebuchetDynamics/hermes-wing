@@ -952,7 +952,7 @@ void _hermesApiChannelRunTransportTests() {
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
           '/v1/runs/run_1' =>
-            '{"object":"hermes.run","run_id":"run_1","session_id":"sess_1","status":"failed","error":{"type":"authentication_error","message":"Provider rejected the API key"}}',
+            '{"object":"hermes.run","run_id":"run_1","session_id":"sess_1","status":"failed","error":{"type":"authentication_error","message":"Provider rejected api_key=secret-key"}}',
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async =>
@@ -967,8 +967,9 @@ void _hermesApiChannelRunTransportTests() {
 
     expect(
       channel.state.errorMessage,
-      'Hermes run failed: authentication_error: Provider rejected the API key',
+      'Hermes run failed: authentication_error: Provider rejected api_key=[redacted]',
     );
+    expect(channel.state.errorMessage, isNot(contains('secret-key')));
   });
 
   test('sendText preserves redacted run failure details', () async {

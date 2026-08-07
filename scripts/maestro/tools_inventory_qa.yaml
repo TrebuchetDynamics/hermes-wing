@@ -13,7 +13,7 @@ name: tools_inventory_qa
       visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - tapOn: "Open more destinations"
 - tapOn: "^Tools$"
 - assertVisible: "(?s).*Select gateway.*"

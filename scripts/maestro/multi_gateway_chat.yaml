@@ -8,11 +8,11 @@ appId: com.trebuchetdynamics.hermes.wing
     stopApp: true
 - setOrientation: PORTRAIT
 - extendedWaitUntil:
-    visible: "(?s).*Default agent.*"
+    visible: "(?s).*Default profile.*"
     timeout: 60000
 - assertVisible: "(?s).*online.*"
 - takeScreenshot: gateway_contacts
-- tapOn: "(?s).*Default agent.*"
+- tapOn: "(?s).*Default profile.*"
 - extendedWaitUntil:
     visible: "(?s).*Message Hermes….*"
     timeout: 60000
@@ -25,5 +25,5 @@ appId: com.trebuchetdynamics.hermes.wing
 - takeScreenshot: gateway_chat
 - tapOn: "(?s).*All chats.*"
 - extendedWaitUntil:
-    visible: "(?s).*Default agent.*"
+    visible: "(?s).*Default profile.*"
     timeout: 30000

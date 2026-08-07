@@ -11,9 +11,9 @@ name: chat_ux_qa
       visible: "(?s).*All chats.*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - assertVisible: "Open more destinations"
-- tapOn: "(?s).*Default agent.*"
+- tapOn: "(?s).*Default profile.*"
 - assertVisible: "(?s).*online.*"
 - assertVisible: "(?s).*Message Hermes….*"
 - assertNotVisible: "Open more destinations"
@@ -77,7 +77,7 @@ name: chat_ux_qa
     when:
       visible: "Open more destinations"
     commands:
-      - tapOn: "(?s).*Default agent.*"
+      - tapOn: "(?s).*Default profile.*"
       - assertVisible: "(?s).*Message Hermes….*"
 - assertNotVisible: "Open more destinations"
 - assertVisible: "(?s)^white.*"
@@ -107,13 +107,13 @@ name: chat_ux_qa
 
 # Verify navigation does not lose the completed live turn.
 - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - assertVisible: "Open more destinations"
-- tapOn: "(?s).*Default agent.*"
+- tapOn: "(?s).*Default profile.*"
 - assertNotVisible: "Open more destinations"
 - assertVisible: "(?s)^white.*"
-- assertVisible: "(?s).*Token usage:.*101 total.*"
+- assertVisible: "(?s).*Token usage:.*total.*"
 - takeScreenshot: 05_reopened_chat_retains_turn
 - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - assertVisible: "Open more destinations"

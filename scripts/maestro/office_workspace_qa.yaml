@@ -12,15 +12,15 @@ name: office_workspace_qa
       visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - tapOn: "Open more destinations"
 - tapOn: "^Office$"
 - assertVisible: "(?s).*accessible 2D workspace.*"
-- assertVisible: "(?s).*[1-9][0-9]* agent.*"
-- assertVisible: "(?s).*Search agents and gateways.*"
-- tapOn: "(?s).*Search agents and gateways.*"
-- inputText: "qa_no_office_agent_match_98765"
-- assertVisible: "(?s).*No agents match this search.*"
+- assertVisible: "(?s).*[1-9][0-9]* profile.*"
+- assertVisible: "(?s).*Search profiles and gateways.*"
+- tapOn: "(?s).*Search profiles and gateways.*"
+- inputText: "qa_no_office_profile_match_98765"
+- assertVisible: "(?s).*No profiles match this search.*"
 - eraseText: 100
 - hideKeyboard
 - assertVisible: "^Open chat$"

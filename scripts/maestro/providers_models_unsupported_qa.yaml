@@ -1,7 +1,7 @@
 # Static validation: maestro check-syntax scripts/maestro/providers_models_unsupported_qa.yaml
 # Physical-device receipt for a saved gateway that does not advertise provider
-# or model administration. Proves write-only credential/model controls stay
-# hidden while advertised runtime models remain readable. Pass the saved label
+# or model administration. Proves Wing Link provider creation remains available
+# while advertised runtime models stay read-only. Pass the saved label
 # with `-e WING_QA_GATEWAY_LABEL="<saved gateway label>"`.
 appId: com.trebuchetdynamics.hermes.wing
 name: providers_models_unsupported_qa
@@ -14,21 +14,30 @@ name: providers_models_unsupported_qa
       visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
 - tapOn: "Open more destinations"
 - tapOn: "^Providers$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
 - extendedWaitUntil:
-    visible: "(?s).*Providers unavailable.*"
+    visible: "(?s).*No providers available.*"
     timeout: 60000
-- assertVisible: "(?s).*Hermes did not advertise provider access for this connection.*"
+- assertVisible: "(?s).*Set provider credentials and choose models for this profile.*"
+- assertVisible: "^Create$"
 - assertVisible: "(?s).*Runtime models.*"
 - assertVisible: "(?s).*Read-only models advertised by this gateway.*"
 - assertVisible: "(?s).*Primary runtime model.*"
-- assertNotVisible: "(?s).*Manage credential.*"
+- assertNotVisible: "^Manage credential$"
 # Match the mutation button label exactly; the read-only explanatory copy says
 # "choose models" and must not be mistaken for an enabled control.
 - assertNotVisible: "^Choose model$"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*Primary runtime model.*"
+    direction: DOWN
+    timeout: 30000
+- swipe:
+    direction: UP
+    duration: 250
 - takeScreenshot: providers_models_fail_closed

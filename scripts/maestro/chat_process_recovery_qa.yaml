@@ -9,14 +9,13 @@ name: chat_process_recovery_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "^Profiles$"
     commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s).*Default agent.*"
+      - tapOn: "(?s).*Default profile.*"
 - extendedWaitUntil:
     visible: "(?s).*online.*"
     timeout: 60000
+- assertVisible: "(?s).*Message Hermes….*"
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
@@ -34,11 +33,9 @@ name: chat_process_recovery_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "^Profiles$"
     commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s).*Default agent.*"
+      - tapOn: "(?s).*Default profile.*"
 - extendedWaitUntil:
     visible: "(?s).*Hermes run is still active.*"
     timeout: 60000

@@ -15,12 +15,12 @@ name: gateway_profiles_qa
     commands:
       - tapOn: "(?s).*All chats.*"
 - tapOn: "Open more destinations"
-- tapOn: "^Agents$"
+- tapOn: "^Profiles$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
 - extendedWaitUntil:
-    visible: "(?s).*New Agent.*"
+    visible: "(?s).*New Profile.*"
     timeout: 60000
 - assertVisible: "(?s).*default.*"
 - assertVisible: "(?s).*link.*"
@@ -29,22 +29,25 @@ name: gateway_profiles_qa
       text: "(?s).*mineru.*"
     direction: DOWN
     timeout: 30000
+- swipe:
+    direction: UP
+    duration: 400
 - takeScreenshot: gateway_profiles_inventory
 
 # Create a real Hermes profile cloned from default.
 - scrollUntilVisible:
     element:
-      text: "New Agent"
+      text: "New Profile"
     direction: UP
     timeout: 30000
-- tapOn: "New Agent"
-- assertVisible: "Create agent"
-- tapOn: "Agent name"
+- tapOn: "New Profile"
+- assertVisible: "Create profile"
+- tapOn: "Profile name"
 - inputText: "maestroqa"
 - hideKeyboard
 - tapOn: "^Create$"
 - extendedWaitUntil:
-    notVisible: "Create agent"
+    notVisible: "Create profile"
     timeout: 90000
 - scrollUntilVisible:
     element:
@@ -54,12 +57,12 @@ name: gateway_profiles_qa
 - swipe:
     direction: UP
     duration: 600
-# Chat/SOUL remain unavailable for local-only rows on legacy Agents that do
+# Chat/SOUL remain unavailable for local-only rows on legacy Hermes endpoints that do
 # not advertise profile context. Widget/channel tests cover use when advertised.
 # Rename the real stable profile ID. SOUL remains gated by Agent capabilities.
 - tapOn: "Edit maestroqa"
 - assertVisible: "^Edit$"
-- tapOn: "Agent name"
+- tapOn: "Profile name"
 - eraseText: 20
 - inputText: "maestroqa2"
 - hideKeyboard
@@ -79,12 +82,20 @@ name: gateway_profiles_qa
 # Local-only profiles are manageable but are not routed through Wing Link chat.
 # Delete the temporary profile with typed confirmation.
 - tapOn: "Delete maestroqa2"
-- tapOn: "^Delete agent$"
+- tapOn: "^Delete profile$"
 - assertVisible: "(?s).*Delete maestroqa2.*"
 - inputText: "maestroqa2"
 - hideKeyboard
-- tapOn: "^Delete agent$"
+- tapOn: "^Delete profile$"
 - extendedWaitUntil:
     notVisible: "(?s).*maestroqa2.*"
     timeout: 90000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*mineru.*"
+    direction: DOWN
+    timeout: 30000
+- swipe:
+    direction: UP
+    duration: 400
 - takeScreenshot: gateway_profile_status_deleted

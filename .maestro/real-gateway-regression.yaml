@@ -16,8 +16,8 @@ tags:
       visible: "All chats"
     commands:
       - tapOn: "All chats"
-- assertVisible: "(?s).*Default agent.*online.*"
-- tapOn: "(?s).*Default agent.*online.*"
+- assertVisible: "(?s).*Default profile.*online.*"
+- tapOn: "(?s).*Default profile.*online.*"
 - extendedWaitUntil:
     visible: "Message Hermes…"
     timeout: 60000
@@ -74,20 +74,28 @@ tags:
 - launchApp
 - runFlow:
     when:
-      visible: "(?s).*Default agent.*online.*"
+      visible: "(?s).*Default profile.*online.*"
     commands:
-      - tapOn: "(?s).*Default agent.*online.*"
+      - tapOn: "(?s).*Default profile.*online.*"
 - extendedWaitUntil:
     visible: "(?s).*REAL-WING-RECOVERED.*"
     timeout: 60000
-- assertVisible: "(?s).*REAL-WING-RUN-OK.*"
-- assertVisible: "(?s).*REAL-WING-CONTEXT-OK.*"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*REAL-WING-CONTEXT-OK.*"
+    direction: UP
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*REAL-WING-RUN-OK.*"
+    direction: UP
+    timeout: 30000
 - assertNotVisible: "(?s).*HttpException.*"
 
 # Leave and reopen the contact to cover directory-to-session restoration.
 - tapOn: "All chats"
-- assertVisible: "(?s).*Default agent.*online.*"
-- tapOn: "(?s).*Default agent.*online.*"
+- assertVisible: "(?s).*Default profile.*online.*"
+- tapOn: "(?s).*Default profile.*online.*"
 - extendedWaitUntil:
     visible: "(?s).*REAL-WING-RECOVERED.*"
     timeout: 60000

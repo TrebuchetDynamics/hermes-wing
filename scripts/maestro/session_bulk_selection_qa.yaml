@@ -12,8 +12,8 @@ name: session_bulk_selection_qa
       visible: "(?s).*All chats.*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s).*Default agent.*"
+- assertVisible: "(?s).*Default profile.*"
+- tapOn: "(?s).*Default profile.*"
 - assertVisible: "(?s).*Message Hermes….*"
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s)^Sessions.*"

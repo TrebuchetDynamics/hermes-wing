@@ -442,6 +442,10 @@ void main() {
 
       expect(find.byType(HermesChatScreen), findsOneWidget);
       expect(
+        find.byKey(const ValueKey('hermes-base-url-field')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsNothing,
       );

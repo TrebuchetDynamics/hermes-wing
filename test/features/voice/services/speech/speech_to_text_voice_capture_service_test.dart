@@ -43,6 +43,7 @@ void main() {
     final engine = _PartialResultSpeechToTextEngine();
     final service = SpeechToTextVoiceCaptureService(
       engine: engine,
+      pauseFor: Duration.zero,
       partialResultPauseFor: Duration.zero,
     );
 
@@ -50,6 +51,22 @@ void main() {
 
     expect(capture.transcript, 'hello');
     expect(engine.stopCalls, greaterThanOrEqualTo(1));
+  });
+
+  test('does not stop before the configured speech pause', () async {
+    final engine = _PartialResultSpeechToTextEngine();
+    final service = SpeechToTextVoiceCaptureService(
+      engine: engine,
+      pauseFor: const Duration(milliseconds: 50),
+      partialResultPauseFor: const Duration(milliseconds: 10),
+    );
+    final capture = service.capture(timeout: const Duration(seconds: 1));
+
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    expect(engine.stopCalls, 0);
+    unawaited(service.cancel());
+    await expectLater(capture, throwsA(isA<SpeechToTextCaptureFailure>()));
   });
 
   test(

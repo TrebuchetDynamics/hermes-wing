@@ -365,14 +365,19 @@ class SpeechToTextVoiceCaptureService
               );
             } else if (snapshot.words.trim().isNotEmpty) {
               cancelPartialResultTimer();
-              partialResultTimer = Timer(partialResultPauseFor, () {
-                if (!completion.isCompleted) {
-                  fireAndForget(
-                    _engine.stop(),
-                    'speech engine stop after partial transcript inactivity',
-                  );
-                }
-              });
+              partialResultTimer = Timer(
+                partialResultPauseFor < pauseFor
+                    ? pauseFor
+                    : partialResultPauseFor,
+                () {
+                  if (!completion.isCompleted) {
+                    fireAndForget(
+                      _engine.stop(),
+                      'speech engine stop after partial transcript inactivity',
+                    );
+                  }
+                },
+              );
             }
           },
         ),

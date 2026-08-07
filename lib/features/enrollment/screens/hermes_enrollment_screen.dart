@@ -121,7 +121,7 @@ class _HermesEnrollmentScreenState
 
   void _openManualConnection() {
     ref.read(hermesEnrollmentControllerProvider).cancel();
-    context.go(AppRoutes.hermes);
+    context.go('${AppRoutes.hermes}?connect=1');
   }
 
   @override

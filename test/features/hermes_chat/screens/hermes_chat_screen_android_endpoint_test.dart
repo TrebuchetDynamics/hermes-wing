@@ -43,4 +43,32 @@ void main() {
     expect(find.text('Connect to your Hermes VPS'), findsNothing);
     expect(find.byKey(const ValueKey('hermes-base-url-field')), findsNothing);
   });
+
+  testWidgets('manual setup can open on an existing chat screen', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    final store = FakeHermesEndpointStore();
+
+    Widget app({required bool editingConnection}) => ProviderScope(
+      overrides: [
+        hermesChannelProvider.overrideWithValue(channel),
+        hermesEndpointStoreProvider.overrideWithValue(store),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: HermesChatScreen(initiallyEditingConnection: editingConnection),
+      ),
+    );
+
+    await tester.pumpWidget(app(editingConnection: false));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('hermes-base-url-field')), findsNothing);
+
+    await tester.pumpWidget(app(editingConnection: true));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('hermes-base-url-field')), findsOneWidget);
+  });
 }

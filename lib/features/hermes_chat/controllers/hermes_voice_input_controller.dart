@@ -215,6 +215,11 @@ class HermesVoiceInputController extends ChangeNotifier {
           _onDraft(transcript);
           break;
         }
+        if (continuous &&
+            captureSessionId != null &&
+            channel.state.isSessionStreaming(captureSessionId)) {
+          channel.stopActiveTurn();
+        }
         final voiceRunId = channel.startVoiceRun();
         channel.stageVoiceRunTranscript(
           voiceRunId: voiceRunId,
@@ -229,6 +234,11 @@ class HermesVoiceInputController extends ChangeNotifier {
             run?.reason ?? 'Voice turn could not be sent.',
             continuous: continuous,
           );
+        } else if (continuous &&
+            (channel.state.activeVoiceRun != null ||
+                captureSessionId != null &&
+                    channel.state.isSessionStreaming(captureSessionId))) {
+          unawaited(_rearmContinuousCapture());
         }
     }
     if (_disposed) return;
@@ -327,6 +337,8 @@ class HermesVoiceInputController extends ChangeNotifier {
 
   Future<void> _rearmContinuousCapture() async {
     await Future<void>.delayed(_rearmDelay);
+    if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
+    if (_settings().speakRepliesEnabled) await maybeContinue();
     if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
     await _capture(autoSend: true, continuous: true);
   }

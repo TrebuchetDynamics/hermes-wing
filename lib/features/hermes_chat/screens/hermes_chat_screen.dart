@@ -162,11 +162,13 @@ class HermesChatScreen extends ConsumerStatefulWidget {
   const HermesChatScreen({
     this.voiceCaptureServiceOverride,
     this.textToSpeechServiceOverride,
+    this.initiallyEditingConnection = false,
     super.key,
   });
 
   final VoiceCaptureService? voiceCaptureServiceOverride;
   final TextToSpeechService? textToSpeechServiceOverride;
+  final bool initiallyEditingConnection;
 
   @override
   ConsumerState<HermesChatScreen> createState() => _HermesChatScreenState();
@@ -188,7 +190,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   );
   final HermesChannelObservation _observation = HermesChannelObservation();
   bool _reconnectingOnResume = false;
-  bool _editingConnection = false;
+  late bool _editingConnection;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
 
@@ -196,6 +198,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _editingConnection = widget.initiallyEditingConnection;
     _connectionForm = HermesConnectionForm(
       normalizeBaseUrl: hermesPublicEndpointBaseUrl,
       sanitizeLabel: _safeHermesUiText,
@@ -224,6 +227,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       fireImmediately: true,
     );
     _endpointProfilesFuture = _loadEndpointProfiles();
+  }
+
+  @override
+  void didUpdateWidget(covariant HermesChatScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initiallyEditingConnection &&
+        !oldWidget.initiallyEditingConnection) {
+      _editingConnection = true;
+    }
   }
 
   @override

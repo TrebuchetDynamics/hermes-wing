@@ -50,7 +50,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.hermes,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
-              child: const HermesChatScreen(),
+              child: HermesChatScreen(
+                initiallyEditingConnection:
+                    state.uri.queryParameters['connect'] == '1',
+              ),
             ),
           ),
           GoRoute(

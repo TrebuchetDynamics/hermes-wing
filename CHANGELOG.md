@@ -20,6 +20,8 @@ All notable user-visible changes will be documented here.
 - Run failures now recover redacted string, structured, and legacy failure
   details from pollable status; usage-limit and HTTP 429 errors prompt operators
   to switch provider or model instead of offering a futile retry.
+- Fresh installs can open manual gateway setup instead of looping back to the
+  empty agent directory.
 - One-shot Speak capture now restores the live input waveform instead of
   replacing it with a static stop icon.
 - Voice input now fails closed when local recognition cannot be guaranteed:

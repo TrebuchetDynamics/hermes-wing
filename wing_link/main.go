@@ -31,37 +31,32 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "pair":
 		return pairCommand(stdout, stderr, args[1:])
-	case "serve", "status", "start", "stop", "restart":
+	case "serve":
+		return serveCommand(stdout, stderr, args[1:])
+	case "status", "start", "stop", "restart":
 		if len(args) != 1 {
 			usage(stderr)
 			return 2
 		}
-		return unavailable(args[0], stderr)
+		if err := WingLinkServiceCommand(args[0], stdout); err != nil {
+			_, _ = fmt.Fprintf(stderr, "%s: %v\n", args[0], err)
+			return 1
+		}
+		return 0
 	default:
 		usage(stderr)
 		return 2
 	}
 }
 
-func unavailable(command string, stderr io.Writer) int {
-	notes := map[string]string{
-		"serve":   "the Wing Link daemon is not implemented yet (ROADMAP 1.2)",
-		"status":  "daemon state reporting lands with serve (ROADMAP 1.2)",
-		"start":   "daemon lifecycle lands with serve (ROADMAP 1.2)",
-		"stop":    "daemon lifecycle lands with serve (ROADMAP 1.2)",
-		"restart": "daemon lifecycle lands with serve (ROADMAP 1.2)",
-	}
-	_, _ = fmt.Fprintf(stderr, "%s is unavailable in this build: %s.\n", command, notes[command])
-	return 1
-}
-
 func usage(writer io.Writer) {
 	_, _ = fmt.Fprintln(writer, `usage: wing-link <command>
 
 Commands:
-  serve     Run the device daemon (enrollment + command server).
+  serve     Run the independent Wing Link profile control plane.
+            Options: --listen HOST:PORT
   status    Report daemon and runtime state.
-  pair      Create a scoped Hermes enrollment for LAN/VPN pairing.
+  pair      Pair direct Hermes and independent Wing Link credentials.
   start     Start the daemon if it is not running.
   stop      Stop the running daemon.
   restart   Stop, then start, the daemon.

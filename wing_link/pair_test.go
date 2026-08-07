@@ -7,6 +7,8 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,11 +17,9 @@ import (
 )
 
 func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
-	origin, err := normalizeOrigin("http://127.0.0.1:8642")
-	if err != nil {
-		t.Fatal(err)
-	}
-	broker, err := startPairingBroker(pairOptions{Origin: origin, Label: "phone", Token: "superuser-secret"})
+	options := testPairOptions(t, "superuser-secret")
+	origin := options.Origin
+	broker, err := startPairingBroker(options)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,12 +40,30 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 		t.Fatalf("inspect = %d %s", inspect.StatusCode, inspect.Body)
 	}
 	exchange := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", brokerOrigin, code)
-	if exchange.StatusCode != http.StatusOK || !strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) {
+	if exchange.StatusCode != http.StatusOK ||
+		!strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) ||
+		!strings.Contains(string(exchange.Body), `"wing_link_token":"wlc_`) {
 		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
 	}
+	var issued map[string]any
+	if err := json.Unmarshal(exchange.Body, &issued); err != nil {
+		t.Fatal(err)
+	}
+	controlToken, _ := issued["wing_link_token"].(string)
+	credentialID, _ := issued["wing_link_credential_id"].(string)
+	if options.ControlState.Authorize(controlToken) ||
+		!options.ControlState.AuthorizePending(credentialID, controlToken) {
+		t.Fatal("control token became authoritative before acknowledgment")
+	}
 	replay := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/exchange", brokerOrigin, code)
-	if replay.StatusCode != http.StatusGone {
-		t.Fatalf("replay status = %d", replay.StatusCode)
+	if replay.StatusCode != http.StatusOK || !bytes.Equal(replay.Body, exchange.Body) {
+		t.Fatalf("idempotent replay = %d %s", replay.StatusCode, replay.Body)
+	}
+	if err := options.ControlState.AcknowledgeControlToken(credentialID, controlToken); err != nil {
+		t.Fatal(err)
+	}
+	if !options.ControlState.Authorize(controlToken) {
+		t.Fatal("acknowledged control token was not authorized")
 	}
 	select {
 	case <-broker.Done:
@@ -54,9 +72,23 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 	}
 }
 
-func TestPairCommandCompletesAfterTokenResponseIsDelivered(t *testing.T) {
-	t.Setenv("WING_HERMES_URL", "http://127.0.0.1:8642")
+func TestPairCommandCompletesOnlyAfterControlCredentialAcknowledgment(t *testing.T) {
+	statePath := filepath.Join(t.TempDir(), "state.json")
+	controlState := &StateStore{path: statePath}
+	controlHandler := newWingLinkServer(&profileBackend{}, controlState)
+	healthServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == "/v1/capabilities" {
+			writePairJSON(writer, http.StatusOK, map[string]any{"endpoints": map[string]any{}})
+			return
+		}
+		controlHandler.ServeHTTP(writer, request)
+	}))
+	defer healthServer.Close()
+	t.Setenv("WING_HERMES_URL", healthServer.URL)
 	t.Setenv("WING_HERMES_TOKEN", "superuser-secret")
+	t.Setenv("WING_LINK_URL", healthServer.URL)
+	t.Setenv("WING_LINK_SERVICE", "external")
+	t.Setenv("WING_LINK_STATE", statePath)
 	reader, writer := io.Pipe()
 	result := make(chan int, 1)
 	go func() {
@@ -89,6 +121,32 @@ func TestPairCommandCompletesAfterTokenResponseIsDelivered(t *testing.T) {
 	if exchange.StatusCode != http.StatusOK || !strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) {
 		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
 	}
+	var issued map[string]any
+	if err := json.Unmarshal(exchange.Body, &issued); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case exitCode := <-result:
+		t.Fatalf("pair exited before acknowledgment with %d", exitCode)
+	case <-time.After(250 * time.Millisecond):
+	}
+	ackRequest, err := http.NewRequest(
+		http.MethodPost,
+		healthServer.URL+"/v1/auth/credentials/"+issued["wing_link_credential_id"].(string)+"/ack",
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ackRequest.Header.Set("Authorization", "Bearer "+issued["wing_link_token"].(string))
+	ackResponse, err := http.DefaultClient.Do(ackRequest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = ackResponse.Body.Close()
+	if ackResponse.StatusCode != http.StatusOK {
+		t.Fatalf("ack status = %d", ackResponse.StatusCode)
+	}
 	if !scanner.Scan() || !strings.Contains(scanner.Text(), "pairing complete") {
 		t.Fatalf("completion message = %q", scanner.Text())
 	}
@@ -103,11 +161,9 @@ func TestPairCommandCompletesAfterTokenResponseIsDelivered(t *testing.T) {
 }
 
 func TestPairingBrokerRejectsWrongOriginAndCode(t *testing.T) {
-	origin, err := normalizeOrigin("http://127.0.0.1:8642")
-	if err != nil {
-		t.Fatal(err)
-	}
-	broker, err := startPairingBroker(pairOptions{Origin: origin, Label: "phone", Token: "secret"})
+	options := testPairOptions(t, "secret")
+	origin := options.Origin
+	broker, err := startPairingBroker(options)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,6 +179,71 @@ func TestPairingBrokerRejectsWrongOriginAndCode(t *testing.T) {
 			t.Fatalf("status = %d", response.StatusCode)
 		}
 	}
+}
+
+func TestScopedHermesCapabilityFailureDoesNotFallBackToFullAccess(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+	origin, err := normalizeOrigin(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, advertised, err := createScopedHermesEnrollment(origin, "full-key", "phone"); err == nil || advertised {
+		t.Fatalf("advertised=%v err=%v", advertised, err)
+	}
+}
+
+func TestScopedHermesEnrollmentIsPreferredWhenAdvertised(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/v1/capabilities":
+			writePairJSON(writer, http.StatusOK, map[string]any{
+				"endpoints": map[string]any{
+					"operator_enrollment_create": map[string]any{
+						"method": "POST", "path": "/v1/operator/enrollments",
+					},
+				},
+			})
+		case "/v1/operator/enrollments":
+			if request.Header.Get("Authorization") != "Bearer full-key" {
+				writer.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			writePairJSON(writer, http.StatusCreated, map[string]any{
+				"pairing_uri": "wing://connect?origin=" + url.QueryEscape(serverURL(request)) + "&code=scoped-code",
+			})
+		case "/v1/operator/enrollments/exchange":
+			writePairJSON(writer, http.StatusOK, map[string]any{
+				"token": "hop_scoped", "credential_id": "hoc_scoped",
+			})
+		default:
+			writer.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+	origin, err := normalizeOrigin(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, advertised, err := createScopedHermesEnrollment(origin, "full-key", "phone")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !advertised || code != "scoped-code" {
+		t.Fatalf("advertised=%v code=%q", advertised, code)
+	}
+	token, credentialID, err := exchangeScopedHermesEnrollment(pairOptions{
+		Origin: origin, ScopedEnrollmentCode: code,
+	})
+	if err != nil || token != "hop_scoped" || credentialID != "hoc_scoped" {
+		t.Fatalf("token=%q credential=%q err=%v", token, credentialID, err)
+	}
+}
+
+func serverURL(request *http.Request) string {
+	return "http://" + request.Host
 }
 
 func TestNormalizeOriginRejectsWildcardHosts(t *testing.T) {
@@ -144,6 +265,15 @@ func TestPreferredPairingIPPrefersTailscale(t *testing.T) {
 	}
 	if got != "100.90.80.70" {
 		t.Fatalf("address = %s", got)
+	}
+}
+
+func TestPreferredPairingIPRejectsPublicOnlyAddresses(t *testing.T) {
+	_, err := preferredPairingIP([]net.Addr{
+		&net.IPNet{IP: net.ParseIP("8.8.8.8"), Mask: net.CIDRMask(24, 32)},
+	})
+	if err == nil {
+		t.Fatal("public address accepted")
 	}
 }
 
@@ -174,15 +304,45 @@ func TestPairOperationalErrorIsActionableWithoutGlobalHelp(t *testing.T) {
 	}
 }
 
-func TestPairOptionsDefaultToReachableNetwork(t *testing.T) {
-	t.Setenv("WING_HERMES_URL", "http://100.100.100.100:8642")
+func TestPairOptionsRejectPublicOrigins(t *testing.T) {
+	t.Setenv("WING_HERMES_URL", "http://8.8.8.8:8642")
 	t.Setenv("WING_HERMES_TOKEN", "secret")
+	if _, err := parsePairOptions(nil); err == nil {
+		t.Fatal("public pairing origin accepted")
+	}
+}
+
+func TestPairOptionsAcceptExplicitLocalOrigin(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writePairJSON(writer, http.StatusOK, map[string]any{"endpoints": map[string]any{}})
+	}))
+	defer server.Close()
+	t.Setenv("WING_HERMES_URL", server.URL)
+	t.Setenv("WING_HERMES_TOKEN", "secret")
+	t.Setenv("WING_LINK_STATE", filepath.Join(t.TempDir(), "state.json"))
 	options, err := parsePairOptions(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if options.Origin.String() != "http://100.100.100.100:8642" {
+	if options.Origin.String() != server.URL {
 		t.Fatalf("origin = %s", options.Origin)
+	}
+}
+
+func testPairOptions(t *testing.T, token string) pairOptions {
+	t.Helper()
+	origin, err := normalizeOrigin("http://127.0.0.1:8642")
+	if err != nil {
+		t.Fatal(err)
+	}
+	controlOrigin, err := normalizeOrigin("http://127.0.0.1:8654")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return pairOptions{
+		Origin: origin, ControlOrigin: controlOrigin,
+		ControlState: &StateStore{path: filepath.Join(t.TempDir(), "state.json")},
+		Label:        "phone", Token: token,
 	}
 }
 

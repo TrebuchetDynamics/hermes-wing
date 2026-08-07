@@ -29,9 +29,15 @@ type Enrollment struct {
 }
 
 type StateStore struct {
-	path string
-	now  func() time.Time
-	mu   sync.Mutex
+	path    string
+	now     func() time.Time
+	mu      sync.Mutex
+	pending map[string]pendingControlToken
+}
+
+type pendingControlToken struct {
+	Hash      string `json:"hash"`
+	ExpiresAt int64  `json:"expires_at"`
 }
 
 type persistedState struct {
@@ -64,6 +70,21 @@ func (s *StateStore) CreateEnrollment() (Enrollment, error) {
 }
 
 func (s *StateStore) ExchangeEnrollment(code string) (string, error) {
+	return s.issueControlToken(func(state *persistedState) error {
+		if state.EnrollmentHash == "" || !s.currentTime().Before(time.Unix(state.EnrollmentExpires, 0)) || !matchesHash(code, state.EnrollmentHash) {
+			return ErrEnrollmentUnavailable
+		}
+		state.EnrollmentHash = ""
+		state.EnrollmentExpires = 0
+		return nil
+	})
+}
+
+func (s *StateStore) IssueControlToken() (string, error) {
+	return s.issueControlToken(func(*persistedState) error { return nil })
+}
+
+func (s *StateStore) issueControlToken(validate func(*persistedState) error) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -73,15 +94,13 @@ func (s *StateStore) ExchangeEnrollment(code string) (string, error) {
 		if err != nil {
 			return err
 		}
-		if state.EnrollmentHash == "" || !s.currentTime().Before(time.Unix(state.EnrollmentExpires, 0)) || !matchesHash(code, state.EnrollmentHash) {
-			return ErrEnrollmentUnavailable
+		if err := validate(&state); err != nil {
+			return err
 		}
 		token, err = randomSecret(32, "wlc_")
 		if err != nil {
 			return err
 		}
-		state.EnrollmentHash = ""
-		state.EnrollmentExpires = 0
 		state.ControlTokenHashes = append(state.ControlTokenHashes, hashSecret(token))
 		if len(state.ControlTokenHashes) > maxControlTokens {
 			state.ControlTokenHashes = state.ControlTokenHashes[len(state.ControlTokenHashes)-maxControlTokens:]
@@ -92,6 +111,87 @@ func (s *StateStore) ExchangeEnrollment(code string) (string, error) {
 		return "", err
 	}
 	return token, nil
+}
+
+func (s *StateStore) StageControlToken() (string, string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.removeExpiredPendingLocked()
+	if len(s.pending) >= maxControlTokens {
+		return "", "", errors.New("too many pending control tokens")
+	}
+	id, err := randomSecret(16, "cred_")
+	if err != nil {
+		return "", "", err
+	}
+	token, err := randomSecret(32, "wlc_")
+	if err != nil {
+		return "", "", err
+	}
+	if s.pending == nil {
+		s.pending = make(map[string]pendingControlToken)
+	}
+	s.pending[id] = pendingControlToken{
+		Hash: hashSecret(token), ExpiresAt: s.currentTime().Add(5 * time.Minute).Unix(),
+	}
+	return id, token, nil
+}
+
+func (s *StateStore) AcknowledgeControlToken(id, token string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.removeExpiredPendingLocked()
+	pending, ok := s.pending[id]
+	if !ok || !matchesHash(token, pending.Hash) {
+		return ErrEnrollmentUnavailable
+	}
+	if err := s.withFileLock(func() error {
+		state, err := s.load()
+		if err != nil {
+			return err
+		}
+		state.ControlTokenHashes = append(state.ControlTokenHashes, pending.Hash)
+		if len(state.ControlTokenHashes) > maxControlTokens {
+			state.ControlTokenHashes = state.ControlTokenHashes[len(state.ControlTokenHashes)-maxControlTokens:]
+		}
+		return s.save(state)
+	}); err != nil {
+		return err
+	}
+	delete(s.pending, id)
+	return nil
+}
+
+func (s *StateStore) AuthorizePending(id, token string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.removeExpiredPendingLocked()
+	pending, ok := s.pending[id]
+	return ok && matchesHash(token, pending.Hash)
+}
+
+func (s *StateStore) AuthorizePendingToken(token string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.removeExpiredPendingLocked()
+	for _, pending := range s.pending {
+		if matchesHash(token, pending.Hash) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *StateStore) removeExpiredPendingLocked() {
+	for id, pending := range s.pending {
+		if !s.currentTime().Before(time.Unix(pending.ExpiresAt, 0)) {
+			delete(s.pending, id)
+		}
+	}
 }
 
 func (s *StateStore) Authorize(token string) bool {
@@ -126,6 +226,7 @@ func (s *StateStore) RevokeAll() error {
 		state.EnrollmentHash = ""
 		state.EnrollmentExpires = 0
 		state.ControlTokenHashes = nil
+		s.pending = nil
 		return s.save(state)
 	})
 }

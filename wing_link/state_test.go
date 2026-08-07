@@ -42,6 +42,40 @@ func TestEnrollmentExchangesOnceAndStoresHashes(t *testing.T) {
 	}
 }
 
+func TestPendingControlCredentialStaysInMemoryUntilAcknowledged(t *testing.T) {
+	now := time.Unix(1000, 0)
+	store := newTestStateStore(t, func() time.Time { return now })
+	id, token, err := store.StageControlToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(store.path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("pending state was persisted: %v", err)
+	}
+	if !store.AuthorizePending(id, token) || (&StateStore{path: store.path}).AuthorizePending(id, token) {
+		t.Fatal("pending credential escaped its staging process")
+	}
+	if err := store.AcknowledgeControlToken(id, token); err != nil {
+		t.Fatal(err)
+	}
+	if !store.Authorize(token) {
+		t.Fatal("acknowledged credential was not persisted")
+	}
+}
+
+func TestExpiredPendingControlCredentialIsErasedOnAccess(t *testing.T) {
+	now := time.Unix(1000, 0)
+	store := newTestStateStore(t, func() time.Time { return now })
+	id, token, err := store.StageControlToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	now = now.Add(5 * time.Minute)
+	if store.AuthorizePending(id, token) || len(store.pending) != 0 {
+		t.Fatal("expired pending credential remained available")
+	}
+}
+
 func TestEnrollmentExpiresAfterFiveMinutes(t *testing.T) {
 	now := time.Unix(1000, 0)
 	store := newTestStateStore(t, func() time.Time { return now })

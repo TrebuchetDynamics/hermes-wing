@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -24,9 +25,13 @@ import (
 var errPairUsage = errors.New("invalid pair arguments")
 
 type pairOptions struct {
-	Origin *url.URL
-	Label  string
-	Token  string
+	Origin               *url.URL
+	ControlOrigin        *url.URL
+	ControlState         *StateStore
+	Label                string
+	Token                string
+	ScopedEnrollmentCode string
+	CredentialMode       string
 }
 
 type pairingBroker struct {
@@ -53,6 +58,10 @@ func pairCommand(stdout, stderr io.Writer, args []string) int {
 		if errors.Is(err, errPairUsage) {
 			return 2
 		}
+		return 1
+	}
+	if err := EnsureWingLinkService(options.ControlOrigin, options.Origin); err != nil {
+		_, _ = fmt.Fprintf(stderr, "pair: wing_link_service_unavailable: %v\n", err)
 		return 1
 	}
 	broker, err := startPairingBroker(options)
@@ -97,16 +106,22 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 		Host:   net.JoinHostPort(options.Origin.Hostname(), strconv.Itoa(port)),
 	}).String()
 	query := url.Values{
-		"origin": {options.Origin.String()},
-		"broker": {brokerOrigin},
-		"code":   {code},
+		"origin":  {options.Origin.String()},
+		"broker":  {brokerOrigin},
+		"control": {options.ControlOrigin.String()},
+		"code":    {code},
 	}
 	done := make(chan struct{})
+	type issuedPairing struct {
+		credentialID string
+		controlToken string
+		response     map[string]any
+	}
 	state := struct {
 		sync.Mutex
-		consumed bool
+		issued *issuedPairing
 	}{}
-	var signalOnce sync.Once
+	var watchOnce sync.Once
 	mux := http.NewServeMux()
 	handler := func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Cache-Control", "no-store")
@@ -128,26 +143,65 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 		}
 		state.Lock()
 		defer state.Unlock()
-		if state.consumed {
-			writePairJSON(writer, http.StatusGone, map[string]any{"error": "pairing code already used"})
-			return
-		}
 		switch request.URL.Path {
 		case "/v1/operator/enrollments/inspect":
+			scopes := []string{"Full Hermes access", "Wing Link profile management"}
+			accessLabel := "Full Hermes access"
+			if options.CredentialMode == "scoped" {
+				scopes = append(append([]string(nil), wingScopedHermesScopes...), "Wing Link profile management")
+				accessLabel = "Scoped Hermes access"
+			}
 			writePairJSON(writer, http.StatusOK, map[string]any{
-				"label":      options.Label,
-				"origin":     options.Origin.String(),
-				"scopes":     []string{"*"},
-				"expires_at": expiresAt.Unix(),
+				"label":            options.Label,
+				"origin":           options.Origin.String(),
+				"wing_link_origin": options.ControlOrigin.String(),
+				"credential_mode":  options.CredentialMode,
+				"access_label":     accessLabel,
+				"scopes":           scopes,
+				"expires_at":       expiresAt.Unix(),
 			})
 		case "/v1/operator/enrollments/exchange":
-			state.consumed = true
-			writePairJSON(writer, http.StatusOK, map[string]any{
-				"token":         options.Token,
-				"label":         options.Label,
-				"credential_id": "api_server_key",
+			if state.issued == nil {
+				hermesToken := options.Token
+				hermesCredentialID := "api_server_key"
+				if options.CredentialMode == "scoped" {
+					var err error
+					hermesToken, hermesCredentialID, err = exchangeScopedHermesEnrollment(options)
+					if err != nil {
+						writePairJSON(writer, http.StatusBadGateway, map[string]any{"error": "could not exchange scoped Hermes enrollment"})
+						return
+					}
+				}
+				var controlCredentialID, controlToken string
+				var err error
+				if options.ControlState != nil {
+					controlCredentialID, controlToken, err = options.ControlState.StageControlToken()
+				} else {
+					controlCredentialID, controlToken, err = stageControlCredential(options.ControlOrigin)
+				}
+				if err != nil {
+					writePairJSON(writer, http.StatusInternalServerError, map[string]any{"error": "could not issue Wing Link control token"})
+					return
+				}
+				state.issued = &issuedPairing{
+					credentialID: controlCredentialID,
+					controlToken: controlToken,
+					response: map[string]any{
+						"token":                   hermesToken,
+						"label":                   options.Label,
+						"credential_id":           hermesCredentialID,
+						"wing_link_origin":        options.ControlOrigin.String(),
+						"wing_link_token":         controlToken,
+						"wing_link_credential_id": controlCredentialID,
+						"wing_link_scopes":        []string{"profiles:read", "profiles:write"},
+					},
+				}
+			}
+			issued := state.issued
+			writePairJSON(writer, http.StatusOK, issued.response)
+			watchOnce.Do(func() {
+				go waitForControlAcknowledgment(options, issued.controlToken, expiresAt, done)
 			})
-			signalOnce.Do(func() { close(done) })
 		default:
 			writePairJSON(writer, http.StatusNotFound, map[string]any{"error": "not found"})
 		}
@@ -168,6 +222,38 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 	}
 	go func() { _ = server.Serve(listener) }()
 	return broker, nil
+}
+
+func waitForControlAcknowledgment(options pairOptions, token string, expiresAt time.Time, done chan<- struct{}) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+	for time.Now().Before(expiresAt) {
+		authorized := false
+		if options.ControlState != nil {
+			authorized = options.ControlState.Authorize(token)
+		} else {
+			authorized = controlTokenAuthorized(options.ControlOrigin, token)
+		}
+		if authorized {
+			close(done)
+			return
+		}
+		<-ticker.C
+	}
+}
+
+func controlTokenAuthorized(controlOrigin *url.URL, token string) bool {
+	request, err := http.NewRequest(http.MethodGet, controlOrigin.ResolveReference(&url.URL{Path: "/v1/pairing/acknowledged"}).String(), nil)
+	if err != nil {
+		return false
+	}
+	request.Header.Set("Authorization", "Bearer "+token)
+	response, err := (&http.Client{Timeout: 2 * time.Second}).Do(request)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = response.Body.Close() }()
+	return response.StatusCode == http.StatusOK
 }
 
 func writePairJSON(writer http.ResponseWriter, status int, payload map[string]any) {
@@ -228,11 +314,148 @@ func parsePairOptions(args []string) (pairOptions, error) {
 	if err != nil {
 		return pairOptions{}, err
 	}
+	if err := requireTrustedOriginHost(origin.Hostname()); err != nil {
+		return pairOptions{}, err
+	}
+	controlValue := strings.TrimSpace(os.Getenv("WING_LINK_URL"))
+	if controlValue == "" {
+		controlValue = origin.Scheme + "://" + net.JoinHostPort(origin.Hostname(), strconv.Itoa(defaultWingLinkPort))
+	}
+	controlOrigin, err := normalizeOrigin(controlValue)
+	if err != nil {
+		return pairOptions{}, fmt.Errorf("invalid Wing Link control origin: %w", err)
+	}
+	if !strings.EqualFold(controlOrigin.Hostname(), origin.Hostname()) {
+		return pairOptions{}, errors.New("control origin must use the Hermes host")
+	}
+	externalService := strings.EqualFold(strings.TrimSpace(os.Getenv("WING_LINK_SERVICE")), "external")
+	if controlOrigin.Port() != strconv.Itoa(defaultWingLinkPort) && !externalService {
+		return pairOptions{}, fmt.Errorf("wing link control origin must use port %d", defaultWingLinkPort)
+	}
+	if controlOrigin.Scheme == "https" && !externalService {
+		return pairOptions{}, errors.New("https wing link origins require an externally managed TLS service")
+	}
+	if err := requireTrustedOriginHost(controlOrigin.Hostname()); err != nil {
+		return pairOptions{}, err
+	}
 	token, err := discoverHermesToken()
 	if err != nil {
 		return pairOptions{}, err
 	}
-	return pairOptions{Origin: origin, Label: label, Token: token}, nil
+	scopedCode, scopedAdvertised, err := createScopedHermesEnrollment(origin, token, label)
+	if err != nil {
+		return pairOptions{}, err
+	}
+	credentialMode := "compatibility_full_access"
+	if scopedAdvertised {
+		credentialMode = "scoped"
+	}
+	return pairOptions{
+		Origin: origin, ControlOrigin: controlOrigin,
+		Label: label, Token: token,
+		ScopedEnrollmentCode: scopedCode, CredentialMode: credentialMode,
+	}, nil
+}
+
+var wingScopedHermesScopes = []string{
+	"chat:write", "sessions:read", "sessions:write", "runs:read", "runs:write",
+	"approvals:write", "profiles:read", "profiles:write", "providers:read",
+	"providers:write", "models:read", "models:write", "skills:read",
+	"tools:read", "jobs:read", "health:read",
+}
+
+func createScopedHermesEnrollment(origin *url.URL, token, label string) (string, bool, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	var capabilities struct {
+		Endpoints map[string]apiEndpoint `json:"endpoints"`
+	}
+	if err := pairJSONRequest(client, origin, token, http.MethodGet, "/v1/capabilities", nil, &capabilities); err != nil {
+		return "", false, fmt.Errorf("inspect Hermes enrollment capabilities: %w", err)
+	}
+	endpoint, advertised := capabilities.Endpoints["operator_enrollment_create"]
+	if !advertised || endpoint.Method != http.MethodPost || endpoint.Path != "/v1/operator/enrollments" {
+		return "", false, nil
+	}
+	var response struct {
+		PairingURI string `json:"pairing_uri"`
+	}
+	if err := pairJSONRequest(client, origin, token, http.MethodPost, endpoint.Path, map[string]any{
+		"label": label, "origin": origin.String(), "scopes": wingScopedHermesScopes,
+	}, &response); err != nil {
+		return "", true, err
+	}
+	pairingURI, err := url.Parse(response.PairingURI)
+	if err != nil || pairingURI.Query().Get("code") == "" {
+		return "", true, errors.New("hermes scoped enrollment returned invalid data")
+	}
+	return pairingURI.Query().Get("code"), true, nil
+}
+
+func exchangeScopedHermesEnrollment(options pairOptions) (string, string, error) {
+	var response struct {
+		Token        string `json:"token"`
+		CredentialID string `json:"credential_id"`
+	}
+	err := pairJSONRequest(
+		&http.Client{Timeout: 10 * time.Second}, options.Origin, "", http.MethodPost,
+		"/v1/operator/enrollments/exchange",
+		map[string]any{"origin": options.Origin.String(), "code": options.ScopedEnrollmentCode},
+		&response,
+	)
+	if err != nil || response.Token == "" {
+		return "", "", errors.New("scoped Hermes enrollment exchange failed")
+	}
+	return response.Token, response.CredentialID, nil
+}
+
+func stageControlCredential(controlOrigin *url.URL) (string, string, error) {
+	var response struct {
+		CredentialID string `json:"credential_id"`
+		Token        string `json:"token"`
+	}
+	loopbackHost := "127.0.0.1"
+	if strings.Contains(controlOrigin.Hostname(), ":") {
+		loopbackHost = "::1"
+	}
+	loopbackOrigin := &url.URL{Scheme: controlOrigin.Scheme, Host: net.JoinHostPort(loopbackHost, controlOrigin.Port())}
+	if err := pairJSONRequest(
+		&http.Client{Timeout: 10 * time.Second}, loopbackOrigin, "", http.MethodPost,
+		"/v1/pairing/control-credentials", struct{}{}, &response,
+	); err != nil || response.CredentialID == "" || response.Token == "" {
+		return "", "", errors.New("wing link control credential staging failed")
+	}
+	return response.CredentialID, response.Token, nil
+}
+
+func pairJSONRequest(client *http.Client, origin *url.URL, token, method, path string, body any, target any) error {
+	var payload io.Reader
+	if body != nil {
+		encoded, err := json.Marshal(body)
+		if err != nil {
+			return err
+		}
+		payload = bytes.NewReader(encoded)
+	}
+	request, err := http.NewRequest(method, origin.ResolveReference(&url.URL{Path: path}).String(), payload)
+	if err != nil {
+		return err
+	}
+	if token != "" {
+		request.Header.Set("Authorization", "Bearer "+token)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := client.Do(request)
+	if err != nil {
+		return errors.New("hermes enrollment request failed")
+	}
+	defer func() { _ = response.Body.Close() }()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return fmt.Errorf("hermes enrollment returned HTTP %d", response.StatusCode)
+	}
+	if err := json.NewDecoder(io.LimitReader(response.Body, 1<<20)).Decode(target); err != nil {
+		return errors.New("hermes enrollment returned invalid data")
+	}
+	return nil
 }
 
 func discoverHermesToken() (string, error) {
@@ -329,7 +552,7 @@ func preferredPairingIP(addresses []net.Addr) (string, error) {
 		if ip[0] == 100 && ip[1] >= 64 && ip[1] <= 127 {
 			return ip.String(), nil
 		}
-		if fallback == "" {
+		if ip.IsPrivate() && fallback == "" {
 			fallback = ip.String()
 		}
 	}
@@ -337,6 +560,25 @@ func preferredPairingIP(addresses []net.Addr) (string, error) {
 		return "", errors.New("no LAN/VPN IPv4 found; use --local or --origin")
 	}
 	return fallback, nil
+}
+
+func requireTrustedOriginHost(host string) error {
+	if strings.EqualFold(host, "localhost") {
+		return nil
+	}
+	addresses, err := net.LookupIP(host)
+	if err != nil || len(addresses) == 0 {
+		return errors.New("pairing origin host could not be resolved")
+	}
+	for _, address := range addresses {
+		if !isTrustedControlPlaneIP(address) {
+			return errors.New("pairing origins must use loopback, a private LAN, or Tailscale")
+		}
+		if !isLocalInterfaceIP(address) {
+			return errors.New("pairing origin is not assigned to this host")
+		}
+	}
+	return nil
 }
 
 func isLoopbackHost(host string) bool {

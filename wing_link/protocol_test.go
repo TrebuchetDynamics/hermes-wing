@@ -224,13 +224,13 @@ func TestRunPrintsVersion(t *testing.T) {
 	}
 }
 
-func TestRunRecognizesOnlyFixedCommands(t *testing.T) {
-	for _, command := range []string{"serve", "status", "start", "stop", "restart"} {
+func TestServiceCommandsRejectExtraArgumentsWithoutExecution(t *testing.T) {
+	for _, command := range []string{"status", "start", "stop", "restart"} {
 		var stdout, stderr bytes.Buffer
-		if code := run([]string{command}, &stdout, &stderr); code != 1 {
+		if code := run([]string{command, "extra"}, &stdout, &stderr); code != 2 {
 			t.Fatalf("%s exit code = %d", command, code)
 		}
-		if stdout.Len() != 0 || !strings.Contains(stderr.String(), command+" is unavailable") {
+		if stdout.Len() != 0 || !strings.Contains(stderr.String(), "usage: wing-link") {
 			t.Fatalf("%s stdout=%q stderr=%q", command, stdout.String(), stderr.String())
 		}
 	}
@@ -242,7 +242,7 @@ func TestRunRejectsExtraArguments(t *testing.T) {
 		message string
 	}{
 		{args: []string{"pair", "version"}, message: "unknown option version"},
-		{args: []string{"serve", "--port", "9000"}, message: "usage: wing-link"},
+		{args: []string{"serve", "--port", "9000"}, message: "unknown option --port"},
 	} {
 		var stdout, stderr bytes.Buffer
 		if code := run(test.args, &stdout, &stderr); code != 2 {

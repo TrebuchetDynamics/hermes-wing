@@ -910,6 +910,18 @@ abstract class AppLocalizations {
   /// **'Detailed gateway status could not be loaded from Hermes.'**
   String get gatewayStatusLoadFailedBody;
 
+  /// No description provided for @gatewayStatusBasicOnlyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. Showing basic health because this gateway does not advertise detailed status.'**
+  String get gatewayStatusBasicOnlyBody;
+
+  /// No description provided for @gatewayStatusDetailedFallbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. Basic health is available, but detailed status could not be loaded.'**
+  String get gatewayStatusDetailedFallbackBody;
+
   /// No description provided for @gatewayStatusReadOnlyNote.
   ///
   /// In en, this message translates to:

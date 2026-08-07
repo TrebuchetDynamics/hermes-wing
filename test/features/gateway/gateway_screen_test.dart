@@ -200,23 +200,28 @@ void main() {
     expect(find.text('3'), findsOneWidget);
   });
 
-  testWidgets('unsupported detailed health fails closed and hides stale data', (
+  testWidgets('unsupported detailed health falls back to basic health', (
     tester,
   ) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(detailedHealth: false),
-      detailedHealth: _initialHealth,
+      basicHealth: _initialHealth,
     );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_testApp(channel));
     await tester.pumpAndSettle();
 
+    expect(find.text('Healthy'), findsOneWidget);
+    expect(find.text('0.18.0'), findsOneWidget);
+    expect(find.text('Active agents'), findsNothing);
     expect(
-      find.text('This gateway did not advertise detailed health status.'),
+      find.text(
+        'Connected. Showing basic health because this gateway does not advertise detailed status.',
+      ),
       findsOneWidget,
     );
-    expect(find.text('0.18.0'), findsNothing);
+    expect(find.text('Gateway status unavailable'), findsNothing);
     expect(find.byKey(const ValueKey('gateway-refresh-button')), findsNothing);
   });
 
@@ -225,28 +230,27 @@ void main() {
   ) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(grantGatewayRead: false),
-      detailedHealth: _initialHealth,
+      basicHealth: _initialHealth,
+      detailedHealth: _richHealth,
     );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_testApp(channel));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('This gateway did not advertise detailed health status.'),
-      findsOneWidget,
-    );
-    expect(find.text('Healthy'), findsNothing);
+    expect(find.text('Healthy'), findsOneWidget);
+    expect(find.text('0.18.0'), findsOneWidget);
+    expect(find.text('0.18.1'), findsNothing);
     expect(find.byKey(const ValueKey('gateway-refresh-button')), findsNothing);
     expect(channel.loadDetailedHealthCalls, 0);
   });
 
-  testWidgets('health load failure does not expose raw errors or stale data', (
+  testWidgets('detailed health failure falls back without exposing raw errors', (
     tester,
   ) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(),
-      detailedHealth: _initialHealth,
+      basicHealth: _initialHealth,
       optionalResourceErrors: const {
         HermesOptionalResource.detailedHealth:
             'private gateway process path and stack trace',
@@ -257,12 +261,15 @@ void main() {
     await tester.pumpWidget(_testApp(channel));
     await tester.pumpAndSettle();
 
+    expect(find.text('Healthy'), findsOneWidget);
     expect(
-      find.text('Detailed gateway status could not be loaded from Hermes.'),
+      find.text(
+        'Connected. Basic health is available, but detailed status could not be loaded.',
+      ),
       findsOneWidget,
     );
     expect(find.textContaining('private gateway'), findsNothing);
-    expect(find.text('0.18.0'), findsNothing);
+    expect(find.text('0.18.0'), findsOneWidget);
   });
 
   testWidgets('gateway picker activates the selected saved gateway', (
@@ -300,6 +307,40 @@ void main() {
 
     expect(directory.activeContactId?.gatewayId, 'beta');
     expect(channel.connectCalls.last.baseUrl, 'https://beta');
+  });
+
+  testWidgets('renames the active saved gateway', (tester) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-rename-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('gateway-rename-field')),
+      'Work',
+    );
+    await tester.tap(find.byKey(const ValueKey('gateway-rename-save')));
+    await tester.pumpAndSettle();
+
+    expect(directory.gateways.single.label, 'Work');
+    expect(find.text('Work'), findsOneWidget);
   });
 
   testWidgets('disconnect keeps the saved gateway available', (tester) async {

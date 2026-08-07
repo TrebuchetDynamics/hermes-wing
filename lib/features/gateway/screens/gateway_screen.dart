@@ -29,6 +29,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _refreshing = false;
   bool _refreshFailed = false;
   bool _disconnecting = false;
+  bool _renaming = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +40,37 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       animation: Listenable.merge([channel, directory]),
       builder: (context, _) {
         final canRefresh = _detailedHealthAdvertised(channel.state);
+        final activeGatewayId = directory.activeContactId?.gatewayId;
+        final activeGateway = activeGatewayId == null
+            ? null
+            : directory.gateways
+                  .where((gateway) => gateway.id == activeGatewayId)
+                  .firstOrNull;
         return Scaffold(
           appBar: AppBar(
             title: Text(strings.gatewayStatusTitle),
             actions: [
+              if (activeGateway != null)
+                IconButton(
+                  key: const ValueKey('gateway-rename-button'),
+                  tooltip: strings.settingsRenameGatewayTitle,
+                  onPressed: _renaming
+                      ? null
+                      : () => unawaited(
+                          _renameGateway(
+                            directory,
+                            activeGateway.id,
+                            activeGateway.label,
+                            strings,
+                          ),
+                        ),
+                  icon: _renaming
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.edit_outlined),
+                ),
               if (canRefresh)
                 IconButton(
                   key: const ValueKey('gateway-refresh-button'),
@@ -67,7 +95,10 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   fieldKey: const ValueKey('gateway-status-picker'),
                   directory: directory,
                   helpText: strings.gatewayStatusHelp,
-                  enabled: _switchingGatewayId == null && !_disconnecting,
+                  enabled:
+                      _switchingGatewayId == null &&
+                      !_disconnecting &&
+                      !_renaming,
                   onSelected: (id) =>
                       unawaited(_selectGateway(directory, id, strings)),
                 ),
@@ -133,6 +164,56 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
     } finally {
       if (mounted) setState(() => _switchingGatewayId = null);
+    }
+  }
+
+  Future<void> _renameGateway(
+    HermesGatewayDirectory directory,
+    String gatewayId,
+    String currentLabel,
+    AppLocalizations strings,
+  ) async {
+    var draftLabel = currentLabel;
+    final label = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(strings.settingsRenameGatewayTitle),
+        content: TextFormField(
+          key: const ValueKey('gateway-rename-field'),
+          initialValue: currentLabel,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: strings.settingsGatewayNameLabel,
+          ),
+          onChanged: (value) => draftLabel = value,
+          onFieldSubmitted: (value) => Navigator.pop(dialogContext, value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(strings.cancelAction),
+          ),
+          FilledButton(
+            key: const ValueKey('gateway-rename-save'),
+            onPressed: () => Navigator.pop(dialogContext, draftLabel),
+            child: Text(strings.saveAction),
+          ),
+        ],
+      ),
+    );
+    if (label == null || !mounted) return;
+    setState(() {
+      _renaming = true;
+      _actionError = null;
+    });
+    try {
+      await directory.renameGateway(gatewayId, label);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _actionError = strings.settingsRenameGatewayError);
+      }
+    } finally {
+      if (mounted) setState(() => _renaming = false);
     }
   }
 
@@ -221,25 +302,31 @@ class _GatewayBody extends StatelessWidget {
         body: strings.gatewayStatusConnectionRequiredBody,
       );
     }
-    if (!_detailedHealthAdvertised(state)) {
-      return WingEmptyState(
-        icon: Icons.lock_outline,
-        title: strings.gatewayStatusUnavailableTitle,
-        body: strings.gatewayStatusUnavailableBody,
-      );
-    }
-    final health = state.detailedHealth;
-    if (refreshFailed ||
+    final detailedAdvertised = _detailedHealthAdvertised(state);
+    final detailedFailed =
+        refreshFailed ||
         state.optionalResourceErrors.containsKey(
           HermesOptionalResource.detailedHealth,
-        ) ||
-        health == null) {
+        );
+    final health = detailedAdvertised && !detailedFailed
+        ? state.detailedHealth ?? state.basicHealth
+        : state.basicHealth;
+    if (health == null) {
       return WingEmptyState(
-        icon: Icons.sync_problem_outlined,
+        icon: detailedAdvertised
+            ? Icons.sync_problem_outlined
+            : Icons.lock_outline,
         title: strings.gatewayStatusUnavailableTitle,
-        body: strings.gatewayStatusLoadFailedBody,
+        body: detailedAdvertised
+            ? strings.gatewayStatusLoadFailedBody
+            : strings.gatewayStatusUnavailableBody,
       );
     }
+    final fallbackNotice = !detailedAdvertised
+        ? strings.gatewayStatusBasicOnlyBody
+        : detailedFailed || state.detailedHealth == null
+        ? strings.gatewayStatusDetailedFallbackBody
+        : null;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -258,15 +345,27 @@ class _GatewayBody extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.visibility_outlined),
+                Icon(
+                  fallbackNotice == null
+                      ? Icons.visibility_outlined
+                      : Icons.info_outline,
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: Text(strings.gatewayStatusReadOnlyNote)),
+                Expanded(
+                  child: Text(
+                    fallbackNotice ?? strings.gatewayStatusReadOnlyNote,
+                  ),
+                ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 16),
-        _HealthCard(health: health, strings: strings),
+        _HealthCard(
+          health: health,
+          strings: strings,
+          showDetailedFields: fallbackNotice == null,
+        ),
         if (health.readiness case final readiness?
             when !readiness.isAbsent && readiness.checks.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -282,10 +381,15 @@ class _GatewayBody extends StatelessWidget {
 }
 
 class _HealthCard extends StatelessWidget {
-  const _HealthCard({required this.health, required this.strings});
+  const _HealthCard({
+    required this.health,
+    required this.strings,
+    required this.showDetailedFields,
+  });
 
   final HermesHealthStatus health;
   final AppLocalizations strings;
+  final bool showDetailedFields;
 
   @override
   Widget build(BuildContext context) {
@@ -327,47 +431,54 @@ class _HealthCard extends StatelessWidget {
                 value: _safePreview(health.version!, 80),
               ),
             ],
-            if (health.gatewayState?.trim().isNotEmpty ?? false) ...[
+            if (showDetailedFields &&
+                (health.gatewayState?.trim().isNotEmpty ?? false)) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayRuntimeStateLabel,
                 value: _safePreview(health.gatewayState!, 80),
               ),
             ],
-            const SizedBox(height: 10),
-            _StatusRow(
-              label: strings.gatewayActiveAgentsLabel,
-              value: health.activeAgents.toString(),
-            ),
-            if (health.gatewayBusy case final busy?) ...[
+            if (showDetailedFields) ...[
+              const SizedBox(height: 10),
+              _StatusRow(
+                label: strings.gatewayActiveAgentsLabel,
+                value: health.activeAgents.toString(),
+              ),
+            ],
+            if (health.gatewayBusy case final busy?
+                when showDetailedFields) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayWorkStateLabel,
                 value: busy ? strings.gatewayBusy : strings.gatewayIdle,
               ),
             ],
-            if (health.gatewayDrainable case final drainable?) ...[
+            if (health.gatewayDrainable case final drainable?
+                when showDetailedFields) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayDrainableLabel,
                 value: drainable ? strings.gatewayYes : strings.gatewayNo,
               ),
             ],
-            if (health.updatedAt case final updatedAt?) ...[
+            if (health.updatedAt case final updatedAt?
+                when showDetailedFields) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayUpdatedLabel,
                 value: _safePreview(updatedAt, 80),
               ),
             ],
-            if (health.pid case final pid?) ...[
+            if (health.pid case final pid? when showDetailedFields) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayProcessIdLabel,
                 value: pid.toString(),
               ),
             ],
-            if (health.exitReason case final exitReason?) ...[
+            if (health.exitReason case final exitReason?
+                when showDetailedFields) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayExitReasonLabel,

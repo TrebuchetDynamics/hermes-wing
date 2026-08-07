@@ -17,7 +17,7 @@ extension _ConnectionExtension on HermesApiChannel {
         HermesApiConfig.fromBaseUrl(baseUrl, apiKey: apiKey),
       );
       _client = client;
-      await client.health();
+      final basicHealth = await client.health();
       if (!_isCurrentConnection(generation, client)) return;
       final capabilities = await client.capabilities();
       final optionalResourceErrors = <HermesOptionalResource, String>{};
@@ -116,6 +116,7 @@ extension _ConnectionExtension on HermesApiChannel {
         _state.copyWith(
           status: HermesConnectionStatus.connected,
           capabilities: capabilities,
+          basicHealth: basicHealth,
           detailedHealth: detailedHealth,
           models: models,
           runtimeModels: runtimeModels,

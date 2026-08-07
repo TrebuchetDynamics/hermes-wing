@@ -492,6 +492,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Detailed gateway status could not be loaded from Hermes.';
 
   @override
+  String get gatewayStatusBasicOnlyBody =>
+      'Connected. Showing basic health because this gateway does not advertise detailed status.';
+
+  @override
+  String get gatewayStatusDetailedFallbackBody =>
+      'Connected. Basic health is available, but detailed status could not be loaded.';
+
+  @override
   String get gatewayStatusReadOnlyNote =>
       'Read-only gateway status. Lifecycle, logs, and messaging-platform administration remain hidden until exact scoped contracts are advertised.';
 

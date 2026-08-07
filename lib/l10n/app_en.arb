@@ -195,6 +195,8 @@
   "gatewayStatusConnectionErrorBody": "Gateway status could not be loaded from Hermes.",
   "gatewayStatusUnavailableBody": "This gateway did not advertise detailed health status.",
   "gatewayStatusLoadFailedBody": "Detailed gateway status could not be loaded from Hermes.",
+  "gatewayStatusBasicOnlyBody": "Connected. Showing basic health because this gateway does not advertise detailed status.",
+  "gatewayStatusDetailedFallbackBody": "Connected. Basic health is available, but detailed status could not be loaded.",
   "gatewayStatusReadOnlyNote": "Read-only gateway status. Lifecycle, logs, and messaging-platform administration remain hidden until exact scoped contracts are advertised.",
   "gatewayStatusRefreshTooltip": "Refresh gateway status",
   "gatewayHealthy": "Healthy",

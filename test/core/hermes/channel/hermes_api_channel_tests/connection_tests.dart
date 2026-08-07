@@ -146,7 +146,8 @@ void _hermesApiChannelConnectionTests() {
           get: (uri, headers) async {
             requestedPaths.add(uri.path);
             return switch (uri.path) {
-              '/health' => '{"status":"ok"}',
+              '/health' =>
+                '{"status":"ok","platform":"hermes-agent","version":"0.18.0"}',
               '/v1/capabilities' => capabilities,
               '/api/sessions' => '{"object":"list","data":[]}',
               '/health/detailed' => throw StateError('must not be requested'),
@@ -162,6 +163,8 @@ void _hermesApiChannelConnectionTests() {
       expect(requestedPaths, isNot(contains('/health/detailed')));
       expect(channel.state.canReadDetailedHealth, isFalse);
       expect(channel.state.detailedHealth, isNull);
+      expect(channel.state.basicHealth?.isOk, isTrue);
+      expect(channel.state.basicHealth?.version, '0.18.0');
 
       requestedPaths.clear();
       await expectLater(channel.loadDetailedHealth(), throwsStateError);

@@ -20,6 +20,7 @@ class HermesChannelState {
     this.status = HermesConnectionStatus.disconnected,
     this.errorMessage,
     this.capabilities,
+    this.basicHealth,
     this.detailedHealth,
     this.models = const [],
     this.runtimeModels = const [],
@@ -45,6 +46,10 @@ class HermesChannelState {
   final HermesConnectionStatus status;
   final String? errorMessage;
   final HermesCapabilityDocument? capabilities;
+
+  /// Health returned by the mandatory `/health` connection check. Available
+  /// even when the endpoint does not expose privileged detailed diagnostics.
+  final HermesHealthStatus? basicHealth;
   final HermesHealthStatus? detailedHealth;
   final List<String> models;
   final List<HermesRuntimeModel> runtimeModels;
@@ -247,6 +252,7 @@ class HermesChannelState {
     String? errorMessage,
     bool clearErrorMessage = false,
     HermesCapabilityDocument? capabilities,
+    HermesHealthStatus? basicHealth,
     HermesHealthStatus? detailedHealth,
     bool clearDetailedHealth = false,
     List<String>? models,
@@ -295,6 +301,7 @@ class HermesChannelState {
           ? null
           : errorMessage ?? this.errorMessage,
       capabilities: capabilities ?? this.capabilities,
+      basicHealth: basicHealth ?? this.basicHealth,
       detailedHealth: clearDetailedHealth
           ? null
           : detailedHealth ?? this.detailedHealth,

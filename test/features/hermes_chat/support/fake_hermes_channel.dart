@@ -33,6 +33,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     String? errorMessage,
     HermesCapabilityDocument? capabilities,
     String? activeSessionId,
+    HermesHealthStatus? basicHealth,
     HermesHealthStatus? detailedHealth,
     List<String> models = const [],
     List<HermesRuntimeModel> runtimeModels = const [],
@@ -72,10 +73,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.writeProfileSoulFails = false,
     this.profileMutationFailureMessage = 'Hermes API returned HTTP 412',
   }) : connectCapabilities = capabilities,
+       connectBasicHealth = basicHealth,
        _state = status == HermesConnectionStatus.connected
            ? HermesChannelState(
                status: status,
                capabilities: capabilities,
+               basicHealth: basicHealth,
                detailedHealth: detailedHealth,
                models: models,
                runtimeModels: runtimeModels,
@@ -114,6 +117,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   );
 
   final HermesCapabilityDocument? connectCapabilities;
+  final HermesHealthStatus? connectBasicHealth;
   final List<FakeHermesConnectCall> connectCalls = [];
   int disconnectCalls = 0;
   final List<String> sentVoiceTranscripts = [];
@@ -225,6 +229,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       HermesChannelState(
         status: HermesConnectionStatus.connected,
         capabilities: connectCapabilities,
+        basicHealth: connectBasicHealth,
         sessions: [const HermesSession(id: sessionId, source: 'fake')],
         activeSessionId: sessionId,
         connectedBaseUrl: baseUrl,

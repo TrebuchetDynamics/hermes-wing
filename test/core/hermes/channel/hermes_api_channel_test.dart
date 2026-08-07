@@ -418,6 +418,78 @@ const _interleavedLaterReplyMessagesFixture = '''
 ''';
 
 void _hermesApiChannelProfileTests() {
+  test(
+    'history refresh keeps server timestamps and known per-turn usage',
+    () async {
+      var messageReads = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _capabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' =>
+                messageReads++ == 0
+                    ? '''{"object":"list","data":[{"id":"live-id","session_id":"sess_1","role":"assistant","content":"white\\n","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":100,"output_tokens":1,"total_tokens":101}}]}'''
+                    : '''{"object":"list","data":[{"id":"server-id","session_id":"sess_1","role":"assistant","content":"white","timestamp":"2026-08-07T12:00:00Z"}]}''',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      await channel.disconnect();
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      final turn = channel.state.activeMessages.single;
+      expect(turn.id, 'server-id');
+      expect(turn.createdAt, DateTime.parse('2026-08-07T12:00:00Z').toLocal());
+      expect(turn.usage?.inputTokens, 100);
+      expect(turn.usage?.outputTokens, 1);
+      expect(turn.usage?.totalTokens, 101);
+
+      await channel.disconnect();
+      await channel.connect(
+        baseUrl: 'http://127.0.0.1:8642',
+        apiKey: 'different-credential',
+      );
+      expect(channel.state.activeMessages.single.usage, isNull);
+    },
+  );
+
+  test('history metadata does not cross profile boundaries', () async {
+    var messageReads = 0;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _profileCapabilitiesFixture,
+            '/api/profiles' => _profilesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              messageReads++ == 0
+                  ? '''{"object":"list","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":8,"output_tokens":2,"total_tokens":10}}]}'''
+                  : '''{"object":"list","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z"}]}''',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    expect(channel.state.activeMessages.single.usage?.totalTokens, 10);
+
+    await channel.selectProfile('coder');
+
+    expect(channel.state.selectedProfileId, 'coder');
+    expect(channel.state.activeMessages.single.usage, isNull);
+  });
+
   test('selectProfile keeps selection client-side and scopes profile-owned '
       'refreshes with the mandatory profile query', () async {
     final requests = <Uri>[];
@@ -472,6 +544,43 @@ void _hermesApiChannelProfileTests() {
     // Selection never calls a server active-profile endpoint.
     expect(requests.any((uri) => uri.path.contains('active')), isFalse);
   });
+
+  test(
+    'selectProfile accepts a topology-discovered profile with declared context',
+    () async {
+      final requests = <Uri>[];
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            requests.add(uri);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _profileCapabilitiesFixture,
+              '/api/sessions' => _coderSessionsFixture,
+              '/api/sessions/sess_9/messages' => _coderMessagesFixture,
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      requests.clear();
+
+      await channel.selectProfile('coder', allowDiscovered: true);
+
+      expect(channel.state.selectedProfileId, 'coder');
+      expect(channel.state.profiles.single.id, 'coder');
+      expect(requests.any((uri) => uri.path == '/api/profiles'), isFalse);
+      expect(
+        requests
+            .firstWhere((uri) => uri.path == '/api/sessions')
+            .queryParameters['profile'],
+        'coder',
+      );
+    },
+  );
 
   test('selectProfile never reuses inventory from the prior profile when '
       'refreshes fail', () async {

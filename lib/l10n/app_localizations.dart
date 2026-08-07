@@ -232,17 +232,53 @@ abstract class AppLocalizations {
   /// **'Gateway off'**
   String get agentGatewayOff;
 
+  /// No description provided for @agentGatewayUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway state unknown'**
+  String get agentGatewayUnknown;
+
+  /// No description provided for @managedByWingLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by Wing Link'**
+  String get managedByWingLink;
+
   /// No description provided for @agentNoModel.
   ///
   /// In en, this message translates to:
   /// **'No model selected'**
   String get agentNoModel;
 
+  /// No description provided for @agentsLocalLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load local agents.'**
+  String get agentsLocalLoadError;
+
+  /// No description provided for @agentsGatewayConnectError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to this gateway.'**
+  String get agentsGatewayConnectError;
+
+  /// No description provided for @profileStableNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1–64 lowercase letters, numbers, _ or -.'**
+  String get profileStableNameHint;
+
   /// No description provided for @chatWithAgent.
   ///
   /// In en, this message translates to:
   /// **'Chat'**
   String get chatWithAgent;
+
+  /// No description provided for @chatWithNamedAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with {name}'**
+  String chatWithNamedAgent(String name);
 
   /// No description provided for @switchingAgent.
   ///
@@ -255,6 +291,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get editAgent;
+
+  /// No description provided for @editNamedAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {name}'**
+  String editNamedAgent(String name);
 
   /// No description provided for @createAgentTitle.
   ///
@@ -333,6 +375,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete agent'**
   String get deleteAgent;
+
+  /// No description provided for @deleteNamedAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}'**
+  String deleteNamedAgent(String name);
 
   /// No description provided for @deleteAgentTitle.
   ///

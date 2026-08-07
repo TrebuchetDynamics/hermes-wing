@@ -47,6 +47,32 @@ void main() {
       expect(loaded?.baseUrl, 'https://hermes.example');
     });
 
+    test('the Wing Link token is secure and round-trips separately', () async {
+      await store.save(
+        baseUrl: 'https://hermes.example:8642',
+        apiKey: 'hermes-secret',
+        wingLinkOrigin: 'https://hermes.example:8654',
+        wingLinkToken: 'wing-link-secret',
+        wingLinkPendingCredentialId: 'cred_pending',
+      );
+
+      final loaded = await store.load();
+
+      expect(loaded?.wingLinkOrigin, 'https://hermes.example:8654');
+      expect(loaded?.wingLinkToken, 'wing-link-secret');
+      expect(loaded?.wingLinkPendingCredentialId, 'cred_pending');
+      expect(await _preferenceDump(), isNot(contains('wing-link-secret')));
+      expect(loaded?.apiKey, 'hermes-secret');
+
+      await store.save(
+        baseUrl: 'https://hermes.example:8642',
+        apiKey: 'hermes-secret',
+        wingLinkPendingCredentialId: '',
+      );
+      expect((await store.load())?.wingLinkPendingCredentialId, isNull);
+      expect((await store.load())?.wingLinkToken, 'wing-link-secret');
+    });
+
     test('saving without a credential leaves none behind', () async {
       await store.save(baseUrl: 'https://hermes.example', apiKey: 'first');
       await store.save(baseUrl: 'https://hermes.example', apiKey: null);

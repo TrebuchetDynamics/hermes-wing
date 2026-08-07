@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -66,6 +68,7 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final _approvalRunIds = <String, String>{};
   final _sessionStreamGenerations = <String, int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
+  final _recentTurns = <String, List<HermesChatTurn>>{};
   bool _detachedRunsLoaded = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
@@ -91,6 +94,16 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     _detachedRuns.clear();
     _approvalController.close();
     super.dispose();
+  }
+
+  String _recentTurnKey(
+    HermesApiClient client,
+    String sessionId, {
+    String? profileId,
+  }) {
+    final credential = sha256.convert(utf8.encode(client.config.apiKey ?? ''));
+    final profile = profileId ?? _state.selectedProfileId ?? 'default';
+    return '${client.config.baseUri}|$credential|$profile|$sessionId';
   }
 
   void _setState(HermesChannelState next) {
@@ -139,7 +152,10 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
       _forkSession(sessionId, title: title);
 
   @override
-  Future<void> selectProfile(String profileId) => _selectProfile(profileId);
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) => _selectProfile(profileId, allowDiscovered: allowDiscovered);
 
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) =>

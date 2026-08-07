@@ -342,7 +342,10 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
-  Future<void> selectProfile(String profileId) async {
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
     selectProfileCalls.add(profileId);
     _setState(_state.copyWith(selectedProfileId: profileId));
   }

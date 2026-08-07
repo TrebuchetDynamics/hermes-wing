@@ -979,6 +979,17 @@ extension _MessagingExtension on HermesApiChannel {
     String? errorMessage,
     bool clearErrorMessage = false,
   }) {
+    final client = _client;
+    if (client != null) {
+      final key = _recentTurnKey(client, sessionId);
+      _recentTurns.remove(key);
+      _recentTurns[key] = turns.length <= 500
+          ? List.unmodifiable(turns)
+          : List.unmodifiable(turns.sublist(turns.length - 500));
+      while (_recentTurns.length > 32) {
+        _recentTurns.remove(_recentTurns.keys.first);
+      }
+    }
     final isActiveSession = _state.activeSessionId == sessionId;
     _setState(
       _state.copyWith(

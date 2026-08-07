@@ -34,7 +34,7 @@ abstract interface class HermesChannel implements Listenable {
   /// Selects [profileId] as the client-local active profile. This never calls
   /// a server active-profile endpoint; it refreshes the profile list and the
   /// profile-owned sessions/inventory using the mandatory `profile` query.
-  Future<void> selectProfile(String profileId);
+  Future<void> selectProfile(String profileId, {bool allowDiscovered = false});
 
   Future<void> createProfile({required String name, String? cloneFrom});
   Future<void> renameProfile({

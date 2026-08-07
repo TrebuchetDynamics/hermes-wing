@@ -116,6 +116,45 @@ void main() {
     expect(channel.renameProfileCalls, isEmpty);
   });
 
+  testWidgets('stable rename writes changed persona to the new id', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      profileSoul: const HermesProfileSoul(soul: 'Old.', revision: 's1'),
+    );
+    addTearDown(channel.dispose);
+    final renames = <String>[];
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          profile: const HermesProfile(
+            id: 'coder',
+            displayName: 'coder',
+            revision: 'rev-1',
+          ),
+          stableNames: true,
+          canEditSoul: true,
+          onRename: (id, name, revision) async =>
+              renames.add('$id:$name:$revision'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, 'renamed');
+    await tester.enterText(find.byType(TextFormField).last, 'New.');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(renames, ['coder:renamed:rev-1']);
+    expect(channel.writeProfileSoulCalls, [
+      {'profileId': 'renamed', 'soul': 'New.', 'revision': 's1'},
+    ]);
+  });
+
   testWidgets('a revision conflict surfaces the conflict message', (
     tester,
   ) async {

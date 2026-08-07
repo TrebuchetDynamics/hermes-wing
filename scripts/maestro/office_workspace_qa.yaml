@@ -9,11 +9,11 @@ name: office_workspace_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s)^More.*"
+- tapOn: "Open more destinations"
 - tapOn: "^Office$"
 - assertVisible: "(?s).*accessible 2D workspace.*"
 - assertVisible: "(?s).*[1-9][0-9]* agent.*"

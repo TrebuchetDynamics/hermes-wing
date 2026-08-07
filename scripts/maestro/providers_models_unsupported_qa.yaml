@@ -11,14 +11,12 @@ name: providers_models_unsupported_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- assertVisible: "(?s).*Settings.*"
-- tapOn: "(?s)^More.*"
-- assertVisible: "(?s).*Providers.*"
-- tapOn: "(?s)^Providers.*"
+- tapOn: "Open more destinations"
+- tapOn: "^Providers$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"

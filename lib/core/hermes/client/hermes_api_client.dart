@@ -605,6 +605,9 @@ class HermesIssuedOperatorToken {
     required this.token,
     this.label = '',
     this.credentialId = '',
+    this.wingLinkOrigin = '',
+    this.wingLinkToken = '',
+    this.wingLinkCredentialId = '',
   });
 
   factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
@@ -612,12 +615,24 @@ class HermesIssuedOperatorToken {
       token: wingStringFromJson(json['token'], fallback: ''),
       label: wingStringFromJson(json['label'], fallback: ''),
       credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
+      wingLinkOrigin: wingStringFromJson(
+        json['wing_link_origin'],
+        fallback: '',
+      ),
+      wingLinkToken: wingStringFromJson(json['wing_link_token'], fallback: ''),
+      wingLinkCredentialId: wingStringFromJson(
+        json['wing_link_credential_id'],
+        fallback: '',
+      ),
     );
   }
 
   final String token;
   final String label;
   final String credentialId;
+  final String wingLinkOrigin;
+  final String wingLinkToken;
+  final String wingLinkCredentialId;
 }
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {

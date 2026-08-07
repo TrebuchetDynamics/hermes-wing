@@ -6,7 +6,10 @@ extension _ProfilesExtension on HermesApiChannel {
   /// profile-owned sessions and inventory scoped by the mandatory `profile`
   /// query. Capability/profile-context gaps fail before any network I/O, and
   /// responses that arrive after a reconnect are dropped by generation check.
-  Future<void> _selectProfile(String profileId) async {
+  Future<void> _selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
     final client = _requireConnectedClient();
     final id = profileId.trim();
     if (id.isEmpty) {
@@ -16,21 +19,28 @@ extension _ProfilesExtension on HermesApiChannel {
         'Profile id cannot be empty.',
       );
     }
-    _requireProfileEndpoint(
-      'profiles',
-      'GET',
-      '/api/profiles',
-      'profiles:read',
-      'list profiles',
-    );
+    if (!allowDiscovered) {
+      _requireProfileEndpoint(
+        'profiles',
+        'GET',
+        '/api/profiles',
+        'profiles:read',
+        'list profiles',
+      );
+    }
     _requireProfileContext('select a profile');
 
     final generation = _connectionGeneration;
     final capabilities = _state.capabilities;
 
-    final profiles = await client.listProfiles();
+    final profiles = allowDiscovered
+        ? [
+            ..._state.profiles.where((profile) => profile.id != id),
+            HermesProfile(id: id, displayName: id, revision: ''),
+          ]
+        : await client.listProfiles();
     if (!_isCurrentConnection(generation, client)) return;
-    if (!profiles.any((profile) => profile.id == id)) {
+    if (!allowDiscovered && !profiles.any((profile) => profile.id == id)) {
       throw StateError('Hermes profile "$id" is not available.');
     }
 
@@ -124,7 +134,7 @@ extension _ProfilesExtension on HermesApiChannel {
     final detachedRunStillActive = detachedActiveId != null;
     var messages = const <String, List<HermesChatTurn>>{};
     if (activeId != null) {
-      final turns = await _fetchTurns(client, activeId);
+      final turns = await _fetchTurns(client, activeId, profileId: id);
       if (!_isCurrentConnection(generation, client)) return;
       messages = {activeId: turns};
     }

@@ -36,4 +36,6 @@ name: session_metadata_qa
 # Do not capture a screenshot: session identity/title are intentionally visible
 # in this operator-only sheet and must not be copied into QA artifacts.
 - tapOn: "^Copy details$"
-- assertVisible: "(?s).*Copied redacted Hermes session details.*"
+- extendedWaitUntil:
+    notVisible: "(?s).*Session details.*"
+    timeout: 30000

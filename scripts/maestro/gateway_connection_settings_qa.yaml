@@ -13,8 +13,8 @@ name: gateway_connection_settings_qa
       visible: "(?s).*Message Hermes….*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Settings.*"
-- tapOn: "(?s).*Settings.*"
+- tapOn: "Open more destinations"
+- tapOn: "^Settings$"
 - assertVisible: "^Gateways$"
 - assertVisible: "(?s).*Credentials stay in secure storage; values hidden.*"
 - tapOn: "(?s).*Gateway actions for.*"

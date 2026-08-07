@@ -578,7 +578,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final harness = await _pumpGatewayChat(tester, textScale: 2);
+    final harness = await _pumpGatewayChat(tester);
     harness.channel.replaceSessions(const [
       HermesSession(
         id: 'usage-metadata',
@@ -635,6 +635,37 @@ void main() {
         .data;
     expect(details, isNot(contains('private prompt')));
     expect(details, isNot(contains('Preview:')));
+
+    final clipboardCalls = <MethodCall>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        clipboardCalls.add(call);
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final copyButton = find.widgetWithText(FilledButton, 'Copy details');
+    tester.widget<FilledButton>(copyButton).onPressed!();
+    await tester.pumpAndSettle();
+
+    expect(
+      clipboardCalls.map((call) => call.method),
+      contains('Clipboard.setData'),
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-session-details-sheet')),
+      findsNothing,
+    );
+    expect(
+      find.text('Copied redacted Hermes session details.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('phone header keeps secondary actions in overflow', (

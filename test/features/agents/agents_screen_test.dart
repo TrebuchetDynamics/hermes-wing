@@ -1,16 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/agents/screens/agents_screen.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/router/routes/app_routes.dart';
 import 'package:wing/shared/widgets/wing_skeleton.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
@@ -64,10 +68,13 @@ class _GatedProfileSelectionChannel extends FakeHermesChannel {
   int selectionAttempts = 0;
 
   @override
-  Future<void> selectProfile(String profileId) async {
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
     selectionAttempts += 1;
     await selectionGate.future;
-    await super.selectProfile(profileId);
+    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
   }
 }
 
@@ -75,6 +82,7 @@ Widget _agentsTestApp(
   FakeHermesChannel channel, {
   double textScale = 1.0,
   HermesGatewayDirectory? directory,
+  WingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
@@ -87,6 +95,8 @@ Widget _agentsTestApp(
             activeChannel: channel,
           ),
     ),
+    if (wingLinkClientBuilder != null)
+      wingLinkClientBuilderProvider.overrideWithValue(wingLinkClientBuilder),
   ],
   child: MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -143,6 +153,103 @@ void main() {
     expect(channel.connectCalls.single.baseUrl, 'https://b');
     expect(directory.activeContactId?.gatewayId, 'beta');
   });
+
+  testWidgets(
+    'Wing Link profiles use advertised Hermes context and create locally',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+        capabilities: _profileCapabilities(const ['profiles:read']),
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://a.example:8642',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+      final rows = <Map<String, Object?>>[
+        {
+          'id': 'default',
+          'name': 'default',
+          'revision': 'd',
+          'actions': <String, Object?>{},
+        },
+        {
+          'id': 'link',
+          'name': 'link',
+          'revision': 'l',
+          'actions': {
+            'rename': {'revision': 'l'},
+            'delete': {'revision': 'l'},
+          },
+        },
+      ];
+      final client = WingLinkClient(
+        origin: Uri.parse('https://a.example:8654'),
+        token: 'wlc-secret',
+        get: (_, headers) async {
+          expect(headers['Authorization'], 'Bearer wlc-secret');
+          return '{"profiles":${jsonEncode(rows)}}';
+        },
+        post: (_, _, body) async {
+          final name = (jsonDecode(body) as Map<String, Object?>)['name']!;
+          final row = <String, Object?>{
+            'id': name,
+            'name': name,
+            'revision': 'q',
+            'actions': {
+              'rename': {'revision': 'q'},
+              'delete': {'revision': 'q'},
+            },
+          };
+          rows.add(row);
+          return '{"profile":${jsonEncode(row)}}';
+        },
+      );
+
+      await tester.pumpWidget(
+        _agentsTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder: ({required origin, required token}) => client,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('link', skipOffstage: false), findsWidgets);
+      expect(find.text('New Agent'), findsOneWidget);
+      final linkChat = find.descendant(
+        of: find.bySemanticsLabel('Chat with link', skipOffstage: false),
+        matching: find.byType(FilledButton, skipOffstage: false),
+      );
+      expect(tester.widget<FilledButton>(linkChat).onPressed, isNotNull);
+      tester.widget<FilledButton>(linkChat).onPressed!();
+      await tester.pumpAndSettle();
+      expect(channel.state.selectedProfileId, 'link');
+
+      await tester.tap(find.text('New Agent'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'qa');
+      await tester.tap(find.text('Create'));
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(find.text('qa'), findsWidgets);
+    },
+  );
 
   testWidgets('write access opens the create-agent editor', (tester) async {
     final channel = FakeHermesChannel(
@@ -214,6 +321,9 @@ void main() {
 
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
     expect(find.text('Delete agent'), findsOneWidget);
+    expect(find.bySemanticsLabel('Chat with Coding Agent'), findsOneWidget);
+    expect(find.bySemanticsLabel('Edit Coding Agent'), findsOneWidget);
+    expect(find.bySemanticsLabel('Delete Coding Agent'), findsOneWidget);
   });
 
   testWidgets('edit sheet respects a missing profile delete endpoint', (
@@ -395,6 +505,62 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(channel.selectProfileCalls, ['coder']);
+  });
+
+  testWidgets('Chat opens the selected profile in chat', (tester) async {
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Hermes One', revision: 'd'),
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+      ],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+    final router = GoRouter(
+      initialLocation: AppRoutes.agents,
+      routes: [
+        GoRoute(
+          path: AppRoutes.agents,
+          builder: (_, _) => const AgentsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.hermes,
+          builder: (_, _) => const Scaffold(body: Text('Chat destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => directoryFor(
+              configs: const [],
+              loader: FakeGatewaySummaryLoader(const {}),
+              activeChannel: channel,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
+    await tester.ensureVisible(coderChat);
+    await tester.pumpAndSettle();
+    await tester.tap(coderChat);
+    await tester.pumpAndSettle();
+
+    expect(channel.selectProfileCalls, ['coder']);
+    expect(find.text('Chat destination'), findsOneWidget);
   });
 
   testWidgets('shows progress and blocks repeat taps while switching agents', (

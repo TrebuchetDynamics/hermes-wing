@@ -11,22 +11,17 @@ name: gateway_status_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "(?s).*Message Hermes….*"
     commands:
-      - tapOn: "(?s).*Default agent.*"
+      - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s)^More.*"
-- scrollUntilVisible:
-    element:
-      text: "(?s)^Gateway.*"
-    direction: DOWN
-    timeout: 30000
-- tapOn: "(?s)^Gateway.*"
+- tapOn: "Open more destinations"
+- tapOn: "^Gateway$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
 - extendedWaitUntil:
-    visible: "(?s).*(Read-only gateway status|did not advertise detailed health status).*"
+    visible: "(?s).*(Read-only gateway status|does not advertise detailed status).*"
     timeout: 60000
 - runFlow:
     when:
@@ -44,7 +39,7 @@ name: gateway_status_qa
       - takeScreenshot: gateway_status_refreshed
 - runFlow:
     when:
-      visible: "(?s).*did not advertise detailed health status.*"
+      visible: "(?s).*does not advertise detailed status.*"
     commands:
       - assertNotVisible: "(?s).*Refresh gateway status.*"
       - assertNotVisible: "(?s)^Restart$"

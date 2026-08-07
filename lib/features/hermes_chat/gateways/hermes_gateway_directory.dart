@@ -10,6 +10,7 @@ import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/models/hermes_session.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
+import '../../../core/wing_link/wing_link_client.dart';
 import 'gateway_contact.dart';
 import 'gateway_contact_cache.dart';
 
@@ -31,6 +32,9 @@ typedef GatewayPeriodicTimerFactory =
 abstract interface class GatewaySummaryLoader {
   Future<GatewaySummary> load(HermesEndpointConfig config);
 }
+
+typedef PendingWingLinkCredentialRecovery =
+    Future<bool> Function(HermesEndpointConfig config);
 
 class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
   const HermesApiGatewaySummaryLoader({this.clientBuilder});
@@ -84,6 +88,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     required HermesChannel activeChannel,
     DateTime Function()? now,
     GatewayPeriodicTimerFactory? periodicTimer,
+    PendingWingLinkCredentialRecovery? pendingCredentialRecovery,
     this.maxConcurrent = 3,
   }) : assert(maxConcurrent > 0),
        _store = store,
@@ -91,7 +96,9 @@ class HermesGatewayDirectory extends ChangeNotifier
        _loader = loader,
        _activeChannel = activeChannel,
        _now = now ?? DateTime.now,
-       _periodicTimer = periodicTimer ?? Timer.periodic;
+       _periodicTimer = periodicTimer ?? Timer.periodic,
+       _pendingCredentialRecovery =
+           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential;
 
   final HermesEndpointStore _store;
   final GatewayContactCache _cache;
@@ -99,6 +106,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   final HermesChannel _activeChannel;
   final DateTime Function() _now;
   final GatewayPeriodicTimerFactory _periodicTimer;
+  final PendingWingLinkCredentialRecovery _pendingCredentialRecovery;
   final int maxConcurrent;
   final Map<String, HermesEndpointConfig> _configsById = {};
   final Map<String, int> _gatewayRefreshGenerations = {};
@@ -109,6 +117,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   bool _started = false;
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
+  Future<void> _profileSelectionTail = Future.value();
   Timer? _foregroundTimer;
 
   List<GatewayContact> get contacts => List.unmodifiable(_contacts);
@@ -125,6 +134,14 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   bool get refreshing => _refreshing;
   bool get hasSavedGateways => _configsById.isNotEmpty;
+
+  HermesEndpointConfig? get activeGatewayConfig {
+    final gatewayId = _activeContactId?.gatewayId;
+    return gatewayId == null ? null : _configsById[gatewayId];
+  }
+
+  HermesEndpointConfig? configForGateway(String gatewayId) =>
+      _configsById[gatewayId];
 
   Future<void> start() async {
     if (_started) return;
@@ -154,6 +171,8 @@ class HermesGatewayDirectory extends ChangeNotifier
       notifyListeners();
       return;
     }
+    if (generation != _refreshGeneration) return;
+    await Future.wait(configs.map(_recoverPendingWingLinkCredential));
     if (generation != _refreshGeneration) return;
 
     _configsById
@@ -198,6 +217,50 @@ class HermesGatewayDirectory extends ChangeNotifier
     _refreshing = false;
     await _saveContacts();
     notifyListeners();
+  }
+
+  Future<void> _recoverPendingWingLinkCredential(
+    HermesEndpointConfig config,
+  ) async {
+    final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
+    final controlToken = config.wingLinkToken ?? '';
+    final credentialId = config.wingLinkPendingCredentialId ?? '';
+    if (origin == null ||
+        origin.host.isEmpty ||
+        controlToken.isEmpty ||
+        credentialId.isEmpty) {
+      return;
+    }
+    try {
+      if (!await _pendingCredentialRecovery(config)) return;
+      await _store.save(
+        baseUrl: config.baseUrl,
+        apiKey: config.apiKey,
+        label: config.label,
+        profileId: config.id,
+        wingLinkOrigin: origin.toString(),
+        wingLinkToken: controlToken,
+        wingLinkPendingCredentialId: '',
+      );
+    } catch (_) {
+      // Leave the securely stored pending transaction for the next refresh.
+    }
+  }
+
+  static Future<bool> _verifyAndAcknowledgePendingCredential(
+    HermesEndpointConfig config,
+  ) async {
+    final origin = Uri.parse(config.wingLinkOrigin!);
+    await HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl(
+        config.baseUrl,
+        apiKey: config.apiKey,
+      ),
+    ).health();
+    final client = WingLinkClient(origin: origin, token: config.wingLinkToken!);
+    await client.verifyPendingCredential();
+    await client.acknowledgeCredential(config.wingLinkPendingCredentialId!);
+    return true;
   }
 
   /// The contact cache is a best-effort local convenience that every refresh
@@ -476,6 +539,84 @@ class HermesGatewayDirectory extends ChangeNotifier
     }
     if (target == null) throw StateError('Gateway has no available profiles.');
     await activate(target.id);
+  }
+
+  Future<void> selectProfileOnActiveGateway(
+    String profileId, {
+    HermesProfile? discoveredProfile,
+  }) async {
+    final predecessor = _profileSelectionTail;
+    final release = Completer<void>();
+    _profileSelectionTail = release.future;
+    await predecessor;
+    try {
+      final currentId = _activeContactId;
+      if (currentId == null) {
+        throw StateError('Select a gateway before selecting an agent.');
+      }
+      if (_activeChannel.state.hasStreamingSessions) {
+        throw StateError('Stop active replies before switching agents.');
+      }
+      final nativeProfile = _activeChannel.state.profiles
+          .where((profile) => profile.id == profileId)
+          .firstOrNull;
+      final profile =
+          nativeProfile ??
+          (discoveredProfile?.id == profileId ? discoveredProfile : null);
+      if (profile == null) {
+        throw StateError('Hermes profile "$profileId" is not available.');
+      }
+
+      final generation = _activationGeneration;
+      await _activeChannel.selectProfile(
+        profileId,
+        allowDiscovered: nativeProfile == null,
+      );
+      _requireCurrentProfileSelection(generation, currentId, profileId);
+      final targetId = GatewayContactId(
+        gatewayId: currentId.gatewayId,
+        profileId: profileId,
+      );
+      if (!_contacts.any((contact) => contact.id == targetId)) {
+        final gatewayLabel = _contacts
+            .where((contact) => contact.id.gatewayId == currentId.gatewayId)
+            .map((contact) => contact.gatewayLabel)
+            .firstOrNull;
+        final sessions = _activeChannel.state.sessions;
+        _contacts = sortGatewayContacts([
+          ..._contacts,
+          GatewayContact(
+            id: targetId,
+            gatewayLabel: gatewayLabel ?? currentId.gatewayId,
+            profileName: profile.displayName.isEmpty
+                ? profile.id
+                : profile.displayName,
+            latestSession: sessions.firstOrNull,
+            sessionCount: sessions.length,
+            availability: GatewayAvailability.online,
+            lastRefreshedAt: _now().toUtc(),
+          ),
+        ]);
+        await _saveContacts();
+        _requireCurrentProfileSelection(generation, currentId, profileId);
+      }
+      _activeContactId = targetId;
+      notifyListeners();
+    } finally {
+      release.complete();
+    }
+  }
+
+  void _requireCurrentProfileSelection(
+    int generation,
+    GatewayContactId expectedContact,
+    String profileId,
+  ) {
+    if (generation != _activationGeneration ||
+        _activeContactId != expectedContact ||
+        _activeChannel.state.selectedProfileId != profileId) {
+      throw StateError('The active gateway changed while selecting the agent.');
+    }
   }
 
   Future<void> removeGateway(String gatewayId) async {

@@ -237,23 +237,67 @@ extension _ConnectionExtension on HermesApiChannel {
 
   Future<List<HermesChatTurn>> _fetchTurns(
     HermesApiClient client,
-    String sessionId,
-  ) async {
+    String sessionId, {
+    String? profileId,
+  }) async {
     final history = await client.sessionMessages(sessionId);
-    return [
+    final fetchedAt = DateTime.now();
+    final resolvedProfile = profileId ?? _state.selectedProfileId ?? 'default';
+    final cacheKey = _recentTurnKey(
+      client,
+      sessionId,
+      profileId: resolvedProfile,
+    );
+    final stateProfile = _state.selectedProfileId ?? 'default';
+    final unmatched = List<HermesChatTurn>.of(
+      (resolvedProfile == stateProfile ? _state.messages[sessionId] : null) ??
+          _recentTurns[cacheKey] ??
+          const [],
+    );
+    final turns = [
       for (final message in history)
-        HermesChatTurn(
-          id: message.id,
-          sessionId: sessionId,
-          author: switch (message.role) {
+        (() {
+          final author = switch (message.role) {
             'user' => HermesTurnAuthor.user,
             'assistant' => HermesTurnAuthor.assistant,
             _ => HermesTurnAuthor.system,
-          },
-          createdAt: DateTime.now(),
-          text: message.content,
-        ),
+          };
+          var match = unmatched.indexWhere((turn) => turn.id == message.id);
+          if (match < 0) {
+            match = unmatched.indexWhere(
+              (turn) =>
+                  turn.author == author &&
+                  turn.text.trim() == message.content.trim(),
+            );
+          }
+          final existing = match < 0 ? null : unmatched.removeAt(match);
+          final parsedTimestamp = DateTime.tryParse(message.timestamp ?? '');
+          final serverTimestamp =
+              parsedTimestamp != null &&
+                  parsedTimestamp.isAfter(DateTime.utc(2000)) &&
+                  parsedTimestamp.isBefore(
+                    fetchedAt.toUtc().add(const Duration(days: 1)),
+                  )
+              ? parsedTimestamp.toLocal()
+              : null;
+          return HermesChatTurn(
+            id: message.id,
+            sessionId: sessionId,
+            author: author,
+            createdAt: serverTimestamp ?? existing?.createdAt ?? fetchedAt,
+            text: message.content,
+            usage: message.usage ?? existing?.usage,
+          );
+        })(),
     ];
+    _recentTurns.remove(cacheKey);
+    _recentTurns[cacheKey] = turns.length <= 500
+        ? List.unmodifiable(turns)
+        : List.unmodifiable(turns.sublist(turns.length - 500));
+    while (_recentTurns.length > 32) {
+      _recentTurns.remove(_recentTurns.keys.first);
+    }
+    return turns;
   }
 }
 

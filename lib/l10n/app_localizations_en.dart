@@ -91,16 +91,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentGatewayOff => 'Gateway off';
 
   @override
+  String get agentGatewayUnknown => 'Gateway state unknown';
+
+  @override
+  String get managedByWingLink => 'Managed by Wing Link';
+
+  @override
   String get agentNoModel => 'No model selected';
 
   @override
+  String get agentsLocalLoadError => 'Could not load local agents.';
+
+  @override
+  String get agentsGatewayConnectError => 'Could not connect to this gateway.';
+
+  @override
+  String get profileStableNameHint =>
+      'Use 1–64 lowercase letters, numbers, _ or -.';
+
+  @override
   String get chatWithAgent => 'Chat';
+
+  @override
+  String chatWithNamedAgent(String name) {
+    return 'Chat with $name';
+  }
 
   @override
   String get switchingAgent => 'Switching…';
 
   @override
   String get editAgent => 'Edit';
+
+  @override
+  String editNamedAgent(String name) {
+    return 'Edit $name';
+  }
 
   @override
   String get createAgentTitle => 'Create agent';
@@ -141,6 +167,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAgent => 'Delete agent';
+
+  @override
+  String deleteNamedAgent(String name) {
+    return 'Delete $name';
+  }
 
   @override
   String deleteAgentTitle(String name) {

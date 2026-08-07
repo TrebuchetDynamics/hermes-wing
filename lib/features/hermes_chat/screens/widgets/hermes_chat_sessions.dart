@@ -1327,11 +1327,13 @@ class _HermesSessionTile extends StatelessWidget {
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: summary));
                   if (!sheetContext.mounted) return;
-                  ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
+                  Navigator.of(sheetContext).pop();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                     SnackBar(
                       content: Text(
                         _hermesStrings(
-                          sheetContext,
+                          context,
                         ).chatRailCopiedSessionDetailsBody,
                       ),
                     ),

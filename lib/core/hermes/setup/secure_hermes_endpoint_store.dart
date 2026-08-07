@@ -18,6 +18,8 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
   static const _profilesPreferenceKey = 'wing.hermes.profiles';
   static const _selectedProfilePreferenceKey = 'wing.hermes.selected_profile';
   static const _apiKeySecureStoragePrefix = 'wing.hermes.profile_api_key.';
+  static const _wingLinkTokenSecureStoragePrefix =
+      'wing.hermes.profile_wing_link_token.';
 
   final FlutterSecureStorage _secureStorage;
 
@@ -50,6 +52,9 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
+    String? wingLinkOrigin,
+    String? wingLinkToken,
+    String? wingLinkPendingCredentialId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
@@ -64,11 +69,23 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
         : existingIds.isEmpty
         ? fallbackId
         : existingIds.first;
+    final existing = profiles.where((profile) => profile.id == id).firstOrNull;
+    final normalizedWingLinkOrigin = wingLinkOrigin == null
+        ? existing?.wingLinkOrigin
+        : hermesPublicEndpointBaseUrl(wingLinkOrigin);
+    final pendingCredentialId = wingLinkPendingCredentialId == null
+        ? existing?.wingLinkPendingCredentialId
+        : wingLinkPendingCredentialId.trim().isEmpty
+        ? null
+        : wingLinkPendingCredentialId.trim();
     final next = HermesEndpointConfig(
       id: id,
       label: label?.trim().isEmpty ?? true ? null : label!.trim(),
       baseUrl: normalizedBaseUrl,
       apiKey: apiKey,
+      wingLinkOrigin: normalizedWingLinkOrigin,
+      wingLinkToken: wingLinkToken ?? existing?.wingLinkToken,
+      wingLinkPendingCredentialId: pendingCredentialId,
     );
     final updated = [
       next,
@@ -88,6 +105,15 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
         value: apiKey,
       );
     }
+    final controlToken = next.wingLinkToken;
+    if (controlToken == null || controlToken.isEmpty) {
+      await _secureStorage.delete(key: _wingLinkTokenKey(id));
+    } else {
+      await _secureStorage.write(
+        key: _wingLinkTokenKey(id),
+        value: controlToken,
+      );
+    }
   }
 
   @override
@@ -99,6 +125,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
         if (profile.id != profileId) profile,
     ];
     await _secureStorage.delete(key: _apiKeyKey(profileId));
+    await _secureStorage.delete(key: _wingLinkTokenKey(profileId));
     await _saveProfileMetadata(prefs, updated);
     final selectedId = prefs.getString(_selectedProfilePreferenceKey);
     if (selectedId == profileId) {
@@ -183,12 +210,19 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
       final publicBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
       if (publicBaseUrl.isEmpty || !seenBaseUrls.add(publicBaseUrl)) continue;
       final apiKey = await _secureStorage.read(key: _apiKeyKey(id));
+      final wingLinkToken = await _secureStorage.read(
+        key: _wingLinkTokenKey(id),
+      );
       profiles.add(
         HermesEndpointConfig(
           id: id,
           label: item['label']?.toString(),
           baseUrl: publicBaseUrl,
           apiKey: apiKey,
+          wingLinkOrigin: item['wingLinkOrigin']?.toString(),
+          wingLinkToken: wingLinkToken,
+          wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
+              ?.toString(),
         ),
       );
     }
@@ -210,12 +244,21 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           if (profile.label?.trim().isNotEmpty ?? false)
             'label': profile.label!.trim(),
           'baseUrl': profile.baseUrl,
+          if (profile.wingLinkOrigin?.trim().isNotEmpty ?? false)
+            'wingLinkOrigin': hermesPublicEndpointBaseUrl(
+              profile.wingLinkOrigin!,
+            ),
+          if (profile.wingLinkPendingCredentialId?.trim().isNotEmpty ?? false)
+            'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId!
+                .trim(),
         },
     ]);
     await prefs.setString(_profilesPreferenceKey, encoded);
   }
 
   static String _apiKeyKey(String id) => '$_apiKeySecureStoragePrefix$id';
+  static String _wingLinkTokenKey(String id) =>
+      '$_wingLinkTokenSecureStoragePrefix$id';
 
   static String _profileIdForBaseUrl(String baseUrl) =>
       base64Url.encode(utf8.encode(baseUrl.trim())).replaceAll('=', '');

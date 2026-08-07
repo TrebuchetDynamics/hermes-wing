@@ -23,6 +23,28 @@ void main() {
     expect(message.content, isNot(contains('secret')));
   });
 
+  test('parses history timestamps and per-message usage', () {
+    final message = HermesMessage.fromJson({
+      'id': 'message-1',
+      'session_id': 'session-1',
+      'role': 'assistant',
+      'content': 'Done',
+      'timestamp': 1786104000,
+      'usage': {'prompt_tokens': 12, 'completion_tokens': 3},
+    });
+
+    expect(
+      message.timestamp,
+      DateTime.fromMillisecondsSinceEpoch(
+        1786104000000,
+        isUtc: true,
+      ).toIso8601String(),
+    );
+    expect(message.usage?.inputTokens, 12);
+    expect(message.usage?.outputTokens, 3);
+    expect(message.usage?.totalTokens, 15);
+  });
+
   test('summarizes text-file history without exposing its contents', () {
     final message = HermesMessage.fromJson({
       'id': 'message-1',

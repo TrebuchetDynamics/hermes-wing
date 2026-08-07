@@ -1,4 +1,5 @@
 import '../../protocol/wing_json.dart';
+import 'hermes_run.dart';
 
 class HermesSession {
   const HermesSession({
@@ -98,10 +99,9 @@ double? _optionalNonNegativeDouble(Object? value) {
 String? _sessionTimestampFromJson(Object? value) {
   final text = wingOptionalStringFromJson(value);
   if (text == null) return null;
-  if (DateTime.tryParse(text) != null) return text;
-
   final seconds = value is num ? value.toDouble() : double.tryParse(text);
-  if (seconds == null || !seconds.isFinite || seconds < 0) return text;
+  if (seconds == null) return text;
+  if (!seconds.isFinite || seconds < 0) return text;
   final milliseconds = seconds * Duration.millisecondsPerSecond;
   if (!milliseconds.isFinite || milliseconds > 8640000000000000) {
     return text;
@@ -135,6 +135,7 @@ class HermesMessage {
     this.toolName,
     this.timestamp,
     this.finishReason,
+    this.usage,
   });
 
   factory HermesMessage.fromJson(Map<String, Object?> json) {
@@ -148,8 +149,11 @@ class HermesMessage {
         summarizeTextFiles: role == 'user',
       ),
       toolName: wingOptionalStringFromJson(json['tool_name']),
-      timestamp: wingOptionalStringFromJson(json['timestamp']),
+      timestamp: _sessionTimestampFromJson(json['timestamp']),
       finishReason: wingOptionalStringFromJson(json['finish_reason']),
+      usage: wingMapFromJson(json['usage']).isEmpty
+          ? null
+          : HermesRunUsage.fromJson(wingMapFromJson(json['usage'])),
     );
   }
 
@@ -160,6 +164,7 @@ class HermesMessage {
   final String? toolName;
   final String? timestamp;
   final String? finishReason;
+  final HermesRunUsage? usage;
 }
 
 String _hermesMessageContent(

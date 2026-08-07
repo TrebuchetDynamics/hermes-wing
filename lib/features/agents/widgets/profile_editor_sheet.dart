@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
 
+typedef ProfileCreateCallback =
+    Future<void> Function(String name, String? cloneFrom);
+typedef ProfileRenameCallback =
+    Future<void> Function(String profileId, String name, String revision);
+typedef ProfileDeleteCallback =
+    Future<void> Function(String profileId, String revision);
+
 class ProfileEditorSheet extends StatefulWidget {
   const ProfileEditorSheet({
     required this.channel,
@@ -10,6 +17,10 @@ class ProfileEditorSheet extends StatefulWidget {
     this.profile,
     this.canEditSoul = false,
     this.canDelete = false,
+    this.stableNames = false,
+    this.onCreate,
+    this.onRename,
+    this.onDelete,
     super.key,
   });
 
@@ -18,6 +29,10 @@ class ProfileEditorSheet extends StatefulWidget {
   final HermesProfile? profile;
   final bool canEditSoul;
   final bool canDelete;
+  final bool stableNames;
+  final ProfileCreateCallback? onCreate;
+  final ProfileRenameCallback? onRename;
+  final ProfileDeleteCallback? onDelete;
 
   @override
   State<ProfileEditorSheet> createState() => _ProfileEditorSheetState();
@@ -29,6 +44,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   final _personaController = TextEditingController();
   String? _cloneFrom;
   String? _personaRevision;
+  String _originalPersona = '';
   String? _error;
   bool _saving = false;
   bool _loadingPersona = false;
@@ -39,7 +55,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(
-      text: widget.profile?.displayName ?? '',
+      text: widget.stableNames
+          ? widget.profile?.id ?? ''
+          : widget.profile?.displayName ?? '',
     );
     if (!_editing) {
       _cloneFrom = widget.profiles.any((profile) => profile.id == 'default')
@@ -63,6 +81,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       final soul = await widget.channel.readProfileSoul(widget.profile!.id);
       if (!mounted) return;
       _personaController.text = soul.soul;
+      _originalPersona = soul.soul;
       _personaRevision = soul.revision;
     } catch (_) {
       if (!mounted) return;
@@ -93,10 +112,15 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       _error = null;
     });
     try {
-      await widget.channel.deleteProfile(
-        profileId: profile.id,
-        revision: profile.revision,
-      );
+      final onDelete = widget.onDelete;
+      if (onDelete == null) {
+        await widget.channel.deleteProfile(
+          profileId: profile.id,
+          revision: profile.revision,
+        );
+      } else {
+        await onDelete(profile.id, profile.revision);
+      }
       if (mounted) await Navigator.of(context).maybePop();
     } catch (error) {
       if (!mounted) return;
@@ -120,19 +144,36 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       final name = _nameController.text.trim();
       final profile = widget.profile;
       if (profile == null) {
-        await widget.channel.createProfile(name: name, cloneFrom: _cloneFrom);
+        final onCreate = widget.onCreate;
+        if (onCreate == null) {
+          await widget.channel.createProfile(name: name, cloneFrom: _cloneFrom);
+        } else {
+          await onCreate(name, _cloneFrom);
+        }
       } else {
-        if (name != profile.displayName) {
-          await widget.channel.renameProfile(
-            profileId: profile.id,
-            name: name,
-            revision: profile.revision,
-          );
+        final currentName = widget.stableNames
+            ? profile.id
+            : profile.displayName;
+        if (name != currentName) {
+          final onRename = widget.onRename;
+          if (onRename == null) {
+            await widget.channel.renameProfile(
+              profileId: profile.id,
+              name: name,
+              revision: profile.revision,
+            );
+          } else {
+            await onRename(profile.id, name, profile.revision);
+          }
         }
         final personaRevision = _personaRevision;
-        if (widget.canEditSoul && personaRevision != null) {
+        if (widget.canEditSoul &&
+            personaRevision != null &&
+            _personaController.text != _originalPersona) {
           await widget.channel.writeProfileSoul(
-            profileId: profile.id,
+            profileId: widget.stableNames && name != currentName
+                ? name
+                : profile.id,
             soul: _personaController.text,
             revision: personaRevision,
           );
@@ -187,9 +228,15 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   labelText: strings.agentDisplayName,
                   border: const OutlineInputBorder(),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? strings.agentNameRequired
-                    : null,
+                validator: (value) {
+                  final name = value?.trim() ?? '';
+                  if (name.isEmpty) return strings.agentNameRequired;
+                  if (widget.stableNames &&
+                      !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
+                    return strings.profileStableNameHint;
+                  }
+                  return null;
+                },
               ),
               if (profile == null) ...[
                 const SizedBox(height: 16),

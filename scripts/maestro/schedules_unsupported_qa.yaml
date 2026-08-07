@@ -11,12 +11,12 @@ name: schedules_unsupported_qa
 - setOrientation: PORTRAIT
 - runFlow:
     when:
-      visible: "(?s).*All chats.*"
+      visible: "(?s).*Message Hermes….*"
     commands:
-      - tapOn: "(?s).*Default agent.*"
+      - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default agent.*"
-- tapOn: "(?s)^More.*"
-- tapOn: "(?s)^Schedules.*"
+- tapOn: "Open more destinations"
+- tapOn: "^Schedules$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
 - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"

@@ -14,8 +14,69 @@ import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
 import '../support/fake_hermes_gateway_directory.dart';
 
+class _QueuedProfileChannel extends FakeHermesChannel {
+  _QueuedProfileChannel() : super(status: HermesConnectionStatus.disconnected);
+
+  final slowStarted = Completer<void>();
+  final releaseSlow = Completer<void>();
+
+  @override
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
+    if (profileId == 'slow') {
+      if (!slowStarted.isCompleted) slowStarted.complete();
+      await releaseSlow.future;
+    }
+    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'refresh resumes a securely stored pending Wing Link acknowledgment',
+    () async {
+      var acknowledged = false;
+      const origin = 'http://127.0.0.1:8654';
+      final config = HermesEndpointConfig(
+        id: 'pending',
+        baseUrl: origin,
+        apiKey: 'hermes-token',
+        wingLinkOrigin: origin,
+        wingLinkToken: 'wlc-token',
+        wingLinkPendingCredentialId: 'cred_pending',
+      );
+      final store = FakeHermesEndpointStore(
+        initial: config,
+        profiles: [config],
+      );
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'pending': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+        pendingCredentialRecovery: (candidate) async {
+          expect(candidate.wingLinkToken, 'wlc-token');
+          expect(candidate.wingLinkPendingCredentialId, 'cred_pending');
+          acknowledged = true;
+          return true;
+        },
+      );
+      addTearDown(directory.dispose);
+
+      await directory.refresh();
+
+      expect(acknowledged, isTrue);
+      expect(store.saveCalls.single.wingLinkPendingCredentialId, '');
+    },
+  );
+
   test(
     'API summary loader does not probe profiles without profiles read scope',
     () async {
@@ -244,6 +305,72 @@ void main() {
     expect(channel.connectCalls.single.baseUrl, 'https://alpha.example');
     expect(channel.selectProfileCalls, ['default']);
     expect(directory.activeContactId?.gatewayId, 'alpha');
+  });
+
+  test(
+    'same-gateway profile selection keeps directory state synchronized',
+    () async {
+      final channel = FakeHermesChannel.disconnected();
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+      await channel.createProfile(name: 'New Agent');
+
+      await directory.selectProfileOnActiveGateway('new-agent');
+
+      expect(channel.disconnectCalls, 0);
+      expect(channel.selectProfileCalls, ['default', 'new-agent']);
+      expect(
+        directory.activeContactId,
+        const GatewayContactId(gatewayId: 'alpha', profileId: 'new-agent'),
+      );
+      expect(
+        directory.contacts.any(
+          (contact) =>
+              contact.id.profileId == 'new-agent' &&
+              contact.profileName == 'New Agent',
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test('same-gateway profile selections are serialized', () async {
+    final channel = _QueuedProfileChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    await channel.createProfile(name: 'slow');
+    await channel.createProfile(name: 'fast');
+
+    final slow = directory.selectProfileOnActiveGateway('slow');
+    await channel.slowStarted.future;
+    final fast = directory.selectProfileOnActiveGateway('fast');
+    channel.releaseSlow.complete();
+    await Future.wait([slow, fast]);
+
+    expect(channel.state.selectedProfileId, 'fast');
+    expect(
+      directory.activeContactId,
+      const GatewayContactId(gatewayId: 'alpha', profileId: 'fast'),
+    );
+    expect(channel.disconnectCalls, 0);
   });
 
   test('fallback contact skips profile selection', () async {
@@ -910,6 +1037,9 @@ class _ThrowingHermesEndpointStore implements HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
+    String? wingLinkOrigin,
+    String? wingLinkToken,
+    String? wingLinkPendingCredentialId,
   }) async {}
 
   @override

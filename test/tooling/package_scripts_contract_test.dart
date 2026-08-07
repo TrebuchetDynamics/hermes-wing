@@ -441,7 +441,7 @@ void main() {
     for (final path in [
       'scripts/maestro/chat_ux_qa.yaml',
       'scripts/maestro/multi_gateway_chat.yaml',
-      'scripts/maestro/gateway_profiles_unsupported_qa.yaml',
+      'scripts/maestro/gateway_profiles_qa.yaml',
       'scripts/maestro/providers_models_unsupported_qa.yaml',
       'scripts/maestro/tools_inventory_qa.yaml',
       'scripts/maestro/office_workspace_qa.yaml',

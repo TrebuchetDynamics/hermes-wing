@@ -321,7 +321,9 @@ test("a browser speech failure is bounded and the following reply can recover", 
     testInfo,
     screenshotPrefix: "tts-failure",
   });
-  await expect(page.getByText("Could not speak Hermes reply.")).toBeVisible();
+  await expect(
+    page.getByText("Could not speak Hermes reply.").last(),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Speak and send" }),
   ).toBeVisible();
@@ -706,7 +708,9 @@ test("an asynchronous browser speech error recovers for the next reply", async (
   ).toBeVisible();
 
   await page.evaluate(() => globalThis.wingE2ESpeech.fail());
-  await expect(page.getByText("Could not speak Hermes reply.")).toBeVisible();
+  await expect(
+    page.getByText("Could not speak Hermes reply.").last(),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Speak and send" }),
   ).toBeVisible();

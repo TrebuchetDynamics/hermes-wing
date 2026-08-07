@@ -3,7 +3,7 @@
 ## What this is
 
 Hermes Wing can manage profiles separately on each saved gateway. Open
-**Settings → Gateways → gateway menu → Manage agents**, or open **Agents** and
+**Settings → Gateways → gateway menu → Manage profiles**, or open **Profiles** and
 choose a gateway. The selected gateway remains authoritative for every read and
 mutation.
 
@@ -13,7 +13,9 @@ A saved paired gateway can carry two independent connections:
 - the Wing Link origin and control credential for local profile topology.
 
 Wing Link is not a Hermes reverse proxy. The Flutter client never sends chat,
-session, run, approval, provider, or model traffic through it.
+session, run, approval, or model traffic through it. A paired Wing Link may
+manage profile-scoped custom provider definitions through its typed Hermes CLI
+adapter; provider credentials remain on the direct Hermes contract.
 
 ## Supported workflows
 
@@ -37,7 +39,7 @@ optimistic-concurrency precondition.
 
 ### Wing Link local profiles
 
-When a paired gateway has a Wing Link control credential, Agents also supports
+When a paired gateway has a Wing Link control credential, Profiles also supports
 local Hermes CLI profiles through the separate `8654` management listener:
 
 | Operation | Wing Link behavior                                           |
@@ -58,6 +60,17 @@ Persona/SOUL editing is not part of the Wing Link topology API. A local-only
 profile's Chat action remains disabled until Hermes advertises a usable API
 profile context. Wing does not invent context, change sticky CLI state, or
 route chat through Wing Link.
+
+### Wing Link custom providers
+
+When paired Hermes omits provider administration, the Providers screen uses
+Wing Link for custom OpenAI-compatible provider definitions. List, create,
+update, and delete are explicitly scoped to the selected profile and map to
+fixed `hermes --profile <id> config get/set/unset` argument arrays. IDs, HTTP(S)
+origins, model names, and opaque revisions are validated before execution.
+Arbitrary config keys and CLI passthrough are not exposed. Credentials and
+OAuth accounts remain outside this adapter because secrets must never enter
+process arguments.
 
 ## Pairing and credential boundary
 
@@ -105,13 +118,14 @@ mutations are not queued or replayed later, per
 
 ### Cached fallback contacts are not profile capability proof
 
-A gateway without advertised Hermes profile discovery still has one fallback
-Default contact for unscoped chat. That fallback does not grant native profile
-CRUD or profile-scoped chat.
+A gateway without advertised Hermes profile discovery uses a fallback Default
+profile for unscoped chat. Wing Link supplements every local profile as a
+management-only row, but those rows do not gain profile-scoped chat until Hermes
+advertises usable profile context.
 
 ## Troubleshooting
 
-When **Agents unavailable** appears:
+When **Profiles unavailable** appears:
 
 1. Confirm the intended gateway is selected and direct Hermes is online.
 2. For native profiles, inspect authenticated capabilities without recording a

@@ -5,16 +5,16 @@ Date: 2026-08-06
 
 ## Summary
 
-Hermes Wing currently treats Hermes profiles as agents, but the connected Hermes Agent API may advertise only the default profile even when the local Hermes installation contains additional profiles. On the current development host, `hermes profile list` reports `default`, `link`, and `mineru`, while Hermes Wing shows only `default`.
+Hermes Wing presents Hermes profiles as profiles, but the connected Hermes Agent API may advertise only the default profile even when the local Hermes installation contains additional profiles. On the current development host, `hermes profile list` reports `default`, `link`, and `mineru`, while Hermes Wing shows only `default`.
 
 Wing Link will provide a bounded local profile-topology bridge without requiring any Hermes Agent changes. It will use Hermes Agent APIs first, supplement incomplete local inventory from validated profile directories, and use fixed Hermes CLI argument arrays only where the API does not own the operation. Running `wing-link pair` will install and start the per-user Wing Link service, pair Hermes Wing with both Hermes and Wing Link, verify connectivity, and make the merged agent inventory available without further setup commands.
 
-This design supersedes ADR 0044 and the Wing Link local-runtime plan only where they prohibit LAN/VPN Wing Link management, profile-topology bridging, and compatibility transfer of an existing Hermes API key. The replacement boundary is narrow: Wing Link may bridge local profile topology and, when an unchanged Agent cannot issue a scoped enrollment, may transfer the existing local `API_SERVER_KEY` through the reviewed one-time broker. Hermes Agent remains authoritative for chat, sessions, runs, providers, models, skills, memory, schedules, approvals, and profile-owned runtime behavior. The compatibility credential carries full Hermes access and therefore requires explicit operator review on an encrypted VPN or isolated trusted LAN.
+This design supersedes ADR 0044 and the Wing Link local-runtime plan where they prohibit LAN/VPN Wing Link management, typed Hermes CLI adapters, profile-topology bridging, and compatibility transfer of an existing Hermes API key. Wing Link may expose only reviewed, typed operations backed by fixed Hermes argument arrays; it never exposes arbitrary CLI or shell execution. Current adapters cover local profile topology and profile-scoped custom OpenAI-compatible provider definitions. Hermes Agent remains authoritative for runtime behavior. When an unchanged Agent cannot issue a scoped enrollment, Wing Link may transfer the existing local `API_SERVER_KEY` through the reviewed one-time broker. The compatibility credential carries full Hermes access and therefore requires explicit operator review on an encrypted VPN or isolated trusted LAN.
 
 ## Goals
 
 - Show every local Hermes profile in Hermes Wing, including profiles omitted by the Agent API.
-- Support create, clone, rename, and delete from the existing Agents UI.
+- Support create, clone, rename, and delete from the existing Profiles UI.
 - Prefer advertised Hermes APIs and use the Hermes CLI only as a bounded compatibility path.
 - Require no Hermes Agent code, plugin, endpoint, or configuration change.
 - Make `wing-link pair` the only setup command users need after installation.
@@ -24,7 +24,7 @@ This design supersedes ADR 0044 and the Wing Link local-runtime plan only where 
 ## Non-goals
 
 - Proxying chat or other Hermes domain traffic through Wing Link.
-- Editing persona, model, skill, provider, memory, schedule, or session state through Wing Link.
+- Editing persona, model assignments, skills, provider credentials/OAuth accounts, memory, schedules, or sessions through Wing Link. Custom provider definition CRUD is an explicit typed exception.
 - Parsing `hermes profile list`, `show`, or other human CLI output.
 - Parsing profile YAML, databases, logs, or shell configuration in Flutter.
 - Remote profile deployment to another machine.
@@ -33,7 +33,7 @@ This design supersedes ADR 0044 and the Wing Link local-runtime plan only where 
 
 ## Terminology
 
-- **Agent:** Hermes Wing presentation term for one Hermes profile.
+- **Profile:** Hermes Wing presentation term for one Hermes profile.
 - **API profile:** A profile returned by the connected Hermes Agent API.
 - **Local profile:** A validated profile directory discovered by Wing Link.
 - **Merged profile:** One stable-ID row combining API and local evidence.
@@ -212,6 +212,10 @@ hermes profile delete --yes mineru
 
 The app retains typed-name confirmation before sending delete. Wing Link independently rejects `default`, stale revisions, invalid IDs, and unknown profiles.
 
+### Custom provider routes
+
+Authenticated `GET` and `POST /v1/providers` plus `PATCH` and `DELETE /v1/providers/{id}` manage custom OpenAI-compatible provider definitions for the mandatory `?profile=<id>` context. Rows expose only `id`, `base_url`, `model`, and an opaque revision. Wing Link reads machine JSON with `hermes --profile <id> config get providers --json`; mutations use only allowlisted `providers.<id>.{name,base_url,model}` set paths or exact provider deletion. Provider credentials and OAuth accounts are excluded from these routes.
+
 ## Command safety
 
 - Resolve only the locally discovered `hermes` executable.
@@ -225,7 +229,7 @@ The app retains typed-name confirmation before sending delete. Wing Link indepen
 
 ## Flutter integration
 
-The existing Agents screen remains the management surface.
+The existing Profiles screen remains the management surface.
 
 - Add a Wing Link client and secure control-token store.
 - Load Agent API profiles first, then request Wing Link profiles when paired.
@@ -301,7 +305,7 @@ Errors contain bounded operator guidance but no secrets, paths, URLs with creden
 - Local-only Chat remains disabled until usable Agent context exists.
 - Control token is stored separately and never rendered.
 - Pairing resumes after app recreation without issuing duplicate credentials.
-- Agents UI passes 320 px, 200% text scale, semantics, and keyboard tests.
+- Profiles UI passes 320 px, 200% text scale, semantics, and keyboard tests.
 
 ### End-to-end receipt
 

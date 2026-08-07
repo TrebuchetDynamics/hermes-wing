@@ -164,7 +164,7 @@ The implemented routes remain `/hermes` and `/settings` while parity slices add 
 - `/discover` — skills and MCP discovery.
 - `/office` — the adaptive Hermes Office experience.
 - `/tasks` — Kanban and Schedules.
-- `/agents` — profiles, persona, and profile administration.
+- `/profiles` — profiles, persona, and profile administration (`/agents` redirects for compatibility).
 - `/providers` — providers, models, and task-model overrides.
 - `/tools` — toolsets and MCP administration.
 - `/memory` — memory entries, profile, capacity, and providers.

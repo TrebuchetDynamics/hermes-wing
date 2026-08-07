@@ -8,8 +8,10 @@ All notable user-visible changes will be documented here.
 
 - Wing Link can run as a persistent Linux user service with separate direct
   Hermes and acknowledged management credentials. Its private/VPN profile API
-  merges Agent-advertised rows with validated local profiles and supports
+  merges Hermes-advertised rows with validated local profiles and supports
   revisioned create/clone/rename/delete without proxying Hermes traffic.
+- The Profiles directory now supplements Hermes API contacts with every local
+  Wing Link profile and labels topology-only rows as management-only.
 
 ### Fixed
 
@@ -19,8 +21,8 @@ All notable user-visible changes will be documented here.
   connection without deleting the saved gateway or API key.
 - Invalid or incomplete pairing links now offer manual gateway setup instead
   of leaving QR scanning as the only recovery path.
-- Chat contacts now prefix every agent name with its gateway, so duplicate
-  profiles such as “Default agent” remain distinguishable.
+- Chat contacts now prefix every profile name with its gateway, so duplicate
+  profiles such as “Default profile” remain distinguishable.
 - Connected gateways now show their basic `/health` result when detailed health
   is unsupported or temporarily fails, instead of appearing unavailable, and
   active saved gateways can be renamed directly from the gateway screen.

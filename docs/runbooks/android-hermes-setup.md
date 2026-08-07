@@ -23,7 +23,7 @@
    credential before storing it.
 
 4. Confirm direct Hermes `/health` and `/v1/capabilities` load. Confirm Wing Link
-   `/healthz` is reachable and the Agents screen lists all local profiles.
+   `/healthz` is reachable and the Profiles screen lists all local profiles.
 5. Verify local profile create/clone, stable-ID rename, and typed-confirmation
    delete. Persona/SOUL editing is not a Wing Link topology operation. Chat for
    local-only profiles remains disabled unless Hermes itself advertises usable

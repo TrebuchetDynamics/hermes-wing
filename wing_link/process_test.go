@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -29,6 +30,10 @@ func TestProcessHelper(t *testing.T) {
 	case "output":
 		fmt.Printf("\x1b]0;hidden-title\x07\x1b]8;;https://example.com\x1b\\visible-link\x1b]8;;\x1b\\ \x1b[31mtoken=%s\x1b[0m\n", os.Getenv("INHERITED_TEST_TOKEN"))
 		fmt.Printf("%0300d\n", 0)
+	case "capture":
+		fmt.Print(`{"acme":{"base_url":"https://example.test/v1","model":"m"}}`)
+	case "large-capture":
+		fmt.Print(strings.Repeat("x", 5000))
 	case "sleep":
 		time.Sleep(30 * time.Second)
 	case "spawn-child":
@@ -86,6 +91,18 @@ func TestProcessOutputIsBoundedAndSanitized(t *testing.T) {
 	}
 	if len([]rune(lines[1])) != 240 {
 		t.Fatalf("bounded length = %d", len([]rune(lines[1])))
+	}
+}
+
+func TestProcessCaptureReturnsBoundedRawStdout(t *testing.T) {
+	output, result := runProcessCapture(context.Background(), helperCommand("capture"), 4096)
+	if result.Err != nil || string(output) != `{"acme":{"base_url":"https://example.test/v1","model":"m"}}` {
+		t.Fatalf("result=%#v output=%q", result, output)
+	}
+
+	output, result = runProcessCapture(context.Background(), helperCommand("large-capture"), 128)
+	if !errors.Is(result.Err, errProcessOutputTooLarge) || output != nil {
+		t.Fatalf("result=%#v output=%q", result, output)
 	}
 }
 

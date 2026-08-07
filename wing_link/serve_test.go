@@ -247,7 +247,7 @@ func TestProfileInventoryMergesAPIFirstAndRoutesAdvertisedCreateWithoutCLIFallba
 				for _, profile := range apiProfiles {
 					profiles = append(profiles, profile)
 				}
-				writeJSON(writer, http.StatusOK, map[string]any{"profiles": profiles})
+				writeJSON(writer, http.StatusOK, map[string]any{"object": "list", "data": profiles})
 				return
 			}
 			if failCreate {

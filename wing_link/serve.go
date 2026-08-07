@@ -70,8 +70,9 @@ type profileBackend struct {
 }
 
 type wingLinkServer struct {
-	profiles *profileBackend
-	state    *StateStore
+	profiles  *profileBackend
+	providers *providerBackend
+	state     *StateStore
 }
 
 func serveCommand(stdout, stderr io.Writer, args []string) int {
@@ -80,22 +81,36 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		_, _ = fmt.Fprintf(stderr, "serve: %v\n", err)
 		return 2
 	}
+	runHermes := func(ctx context.Context, args ...string) error {
+		result := runProcess(ctx, CommandSpec{
+			Path: options.Hermes, Args: args,
+			Env: []string{"HERMES_HOME=" + options.Home}, Timeout: 90 * time.Second,
+		}, nil)
+		if result.Err != nil {
+			return errors.New("hermes command failed")
+		}
+		return nil
+	}
 	backend := &profileBackend{
-		home: options.Home,
-		api:  newHermesProfileAPI(options.HermesOrigin, options.HermesToken),
-		runHermes: func(ctx context.Context, args ...string) error {
-			result := runProcess(ctx, CommandSpec{
+		home:      options.Home,
+		api:       newHermesProfileAPI(options.HermesOrigin, options.HermesToken),
+		runHermes: runHermes,
+	}
+	providers := &providerBackend{
+		runHermes: runHermes,
+		readHermes: func(ctx context.Context, args ...string) ([]byte, error) {
+			output, result := runProcessCapture(ctx, CommandSpec{
 				Path: options.Hermes, Args: args,
-				Env: []string{"HERMES_HOME=" + options.Home}, Timeout: 90 * time.Second,
-			}, nil)
+				Env: []string{"HERMES_HOME=" + options.Home}, Timeout: 30 * time.Second,
+			}, 256*1024)
 			if result.Err != nil {
-				return errors.New("hermes profile command failed")
+				return nil, errors.New("hermes command failed")
 			}
-			return nil
+			return output, nil
 		},
 	}
 	server := &http.Server{
-		Handler:           newWingLinkServer(backend, &StateStore{path: options.StatePath}),
+		Handler:           newWingLinkServer(backend, &StateStore{path: options.StatePath}, providers),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second,
 	}
@@ -311,8 +326,12 @@ func isTrustedControlPlaneIP(ip net.IP) bool {
 	return ipv4 != nil && ipv4[0] == 100 && ipv4[1] >= 64 && ipv4[1] <= 127
 }
 
-func newWingLinkServer(profiles *profileBackend, state *StateStore) http.Handler {
-	return &wingLinkServer{profiles: profiles, state: state}
+func newWingLinkServer(profiles *profileBackend, state *StateStore, providers ...*providerBackend) http.Handler {
+	server := &wingLinkServer{profiles: profiles, state: state}
+	if len(providers) > 0 {
+		server.providers = providers[0]
+	}
+	return server
 }
 
 func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -370,6 +389,9 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 		default:
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 		}
+		return
+	}
+	if server.providers != nil && server.serveProviderRoute(writer, request) {
 		return
 	}
 	writer.WriteHeader(http.StatusNotFound)
@@ -1009,7 +1031,7 @@ func (api *hermesProfileAPI) inventory(ctx context.Context) (apiProfileInventory
 			Model          string `json:"model"`
 			SkillsCount    int    `json:"skills_count"`
 			GatewayRunning bool   `json:"gateway_running"`
-		} `json:"profiles"`
+		} `json:"data"`
 	}
 	if err := api.requestJSON(ctx, http.MethodGet, "/api/profiles", nil, "", &envelope); err != nil {
 		return apiProfileInventory{}, err

@@ -1240,6 +1240,34 @@ void main() {
     expect(run.usage?.totalTokens, 19);
   });
 
+  test('run status preserves common server failure detail shapes', () {
+    final stringError = HermesRun.fromJson({
+      'run_id': 'run_1',
+      'status': 'failed',
+      'error': 'HTTP 429: The usage limit has been reached',
+    });
+    final structuredError = HermesRun.fromJson({
+      'run_id': 'run_2',
+      'status': 'failed',
+      'error': {
+        'type': 'authentication_error',
+        'message': 'Provider rejected the API key',
+      },
+    });
+    final failureReason = HermesRun.fromJson({
+      'run_id': 'run_3',
+      'status': 'failed',
+      'failure_reason': 'Model is unavailable',
+    });
+
+    expect(stringError.error, 'HTTP 429: The usage limit has been reached');
+    expect(
+      structuredError.error,
+      'authentication_error: Provider rejected the API key',
+    );
+    expect(failureReason.error, 'Model is unavailable');
+  });
+
   test('run status preserves explicitly reported zero token usage', () {
     final run = HermesRun.fromJson({
       'run_id': 'run_1',

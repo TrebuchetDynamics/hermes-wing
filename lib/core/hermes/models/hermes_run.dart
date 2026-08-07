@@ -46,17 +46,23 @@ class HermesRun {
     required this.sessionId,
     this.status = HermesRunLifecycle.unknown,
     this.output,
+    this.error,
     this.usage,
   });
 
   factory HermesRun.fromJson(Map<String, Object?> json) {
     final usageJson = wingMapFromJson(json['usage']);
     final usage = usageJson.isEmpty ? null : HermesRunUsage.fromJson(usageJson);
+    final status = _runLifecycle(json['status']);
     return HermesRun(
       id: wingStringFromJson(json['id'] ?? json['run_id'], fallback: ''),
       sessionId: wingStringFromJson(json['session_id'], fallback: ''),
-      status: _runLifecycle(json['status']),
+      status: status,
       output: wingOptionalStringFromJson(json['output']),
+      error: _runFailureDetail(
+        json,
+        includeGenericFields: status == HermesRunLifecycle.failed,
+      ),
       usage: usage,
     );
   }
@@ -65,7 +71,33 @@ class HermesRun {
   final String sessionId;
   final HermesRunLifecycle status;
   final String? output;
+  final String? error;
   final HermesRunUsage? usage;
+}
+
+String? _runFailureDetail(
+  Map<String, Object?> json, {
+  required bool includeGenericFields,
+}) {
+  for (final value in [json['error'], json['last_error'], json['failure']]) {
+    final text = wingOptionalLiteralStringFromJson(value);
+    if (text != null) return text;
+    final nested = wingMapFromJson(value);
+    if (nested.isEmpty) continue;
+    final code = wingFirstStringFieldFromJson(nested, const ['code', 'type']);
+    final message = wingFirstStringFieldFromJson(nested, const [
+      'message',
+      'detail',
+      'reason',
+    ]);
+    if (code != null && message != null) return '$code: $message';
+    if (message != null || code != null) return message ?? code;
+  }
+  return wingFirstStringFieldFromJson(json, [
+    'error_message',
+    'failure_reason',
+    if (includeGenericFields) ...['message', 'detail', 'reason'],
+  ]);
 }
 
 HermesRunLifecycle _runLifecycle(Object? value) {

@@ -911,6 +911,66 @@ void _hermesApiChannelRunTransportTests() {
     expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
   });
 
+  test('sendText recovers missing failure detail from run status', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' =>
+            '{"object":"hermes.run","run_id":"run_1","session_id":"sess_1","status":"failed","error":"HTTP 429 for api_key=secret-key at /home/alice/.hermes"}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+        getStream: (uri, headers) =>
+            Stream.fromIterable(const ['event: run.failed\ndata: {}\n\n']),
+      ),
+    );
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('recover failure details');
+
+    expect(
+      channel.state.errorMessage,
+      'Hermes run failed: HTTP 429 for api_key=[redacted] at [redacted-path]',
+    );
+    expect(channel.state.errorMessage, isNot(contains('secret-key')));
+    expect(channel.state.errorMessage, isNot(contains('/home/alice')));
+  });
+
+  test('sendText recovers structured details after generic stream errors', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' =>
+            '{"object":"hermes.run","run_id":"run_1","session_id":"sess_1","status":"failed","error":{"type":"authentication_error","message":"Provider rejected the API key"}}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+        getStream: (uri, headers) =>
+            Stream.fromIterable(const ['event: stream.error\ndata: {}\n\n']),
+      ),
+    );
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('recover structured failure details');
+
+    expect(
+      channel.state.errorMessage,
+      'Hermes run failed: authentication_error: Provider rejected the API key',
+    );
+  });
+
   test('sendText preserves redacted run failure details', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(

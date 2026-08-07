@@ -382,6 +382,22 @@ extension _MessagingExtension on HermesApiChannel {
       try {
         recoveredRun = await client.getRunStatus(runId);
         runUsage ??= recoveredRun.usage;
+        final recoveredError = recoveredRun.error?.trim();
+        final currentError = _state.errorMessage ?? '';
+        final alreadyHasServerDetail =
+            currentError.startsWith('Hermes run failed:') ||
+            currentError.startsWith('Hermes stream reported an error:');
+        if (streamFailed &&
+            recoveredRun.status == HermesRunLifecycle.failed &&
+            !alreadyHasServerDetail &&
+            recoveredError?.isNotEmpty == true) {
+          _setTurns(
+            sessionId,
+            List.of(turns),
+            errorMessage:
+                'Hermes run failed: ${_safeHermesError(recoveredError!)}',
+          );
+        }
         if (recoveredRun.status == HermesRunLifecycle.completed ||
             recoveredRun.status == HermesRunLifecycle.failed ||
             recoveredRun.status == HermesRunLifecycle.cancelled) {

@@ -1769,6 +1769,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reconnect with a fresh Hermes API key, then retry this message.';
 
   @override
+  String get chatErrorProviderUsageExhaustedTitle =>
+      'Provider usage limit reached.';
+
+  @override
+  String get chatErrorProviderUsageExhaustedBody =>
+      'Choose another provider or model, or wait for the provider\'s usage limit to reset.';
+
+  @override
+  String get chatErrorOpenProvidersAction => 'Switch provider or model';
+
+  @override
   String get chatErrorApprovalResponseFailedTitle =>
       'Hermes could not record the approval decision.';
 

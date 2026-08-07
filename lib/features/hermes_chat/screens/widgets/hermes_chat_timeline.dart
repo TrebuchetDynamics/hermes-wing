@@ -31,6 +31,7 @@ class _HermesTranscriptList extends StatelessWidget {
     required this.onRetryError,
     required this.onReconnectError,
     required this.onReauthorizeError,
+    required this.onManageProvidersError,
   });
 
   final ScrollController controller;
@@ -49,6 +50,7 @@ class _HermesTranscriptList extends StatelessWidget {
   final VoidCallback? onRetryError;
   final VoidCallback onReconnectError;
   final VoidCallback onReauthorizeError;
+  final VoidCallback onManageProvidersError;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +107,7 @@ class _HermesTranscriptList extends StatelessWidget {
           onRetry: onRetryError,
           onReconnect: onReconnectError,
           onReauthorize: onReauthorizeError,
+          onManageProviders: onManageProvidersError,
         ),
       );
     }

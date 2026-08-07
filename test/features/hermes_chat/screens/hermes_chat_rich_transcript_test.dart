@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/models/hermes_run.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
@@ -638,6 +639,47 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
+  });
+
+  testWidgets('exhausted provider usage directs away from futile retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.addFailedExchange(
+      'Try the exhausted model.',
+      errorMessage: 'Hermes run failed: 429 Too Many Requests',
+    );
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const HermesChatScreen()),
+        GoRoute(
+          path: '/providers',
+          builder: (_, _) => const Scaffold(body: Text('Provider settings')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Provider usage limit reached.'), findsOneWidget);
+    expect(find.text('Switch provider or model'), findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
+
+    await tester.tap(find.text('Switch provider or model'));
+    await tester.pumpAndSettle();
+    expect(find.text('Provider settings'), findsOneWidget);
   });
 
   testWidgets(

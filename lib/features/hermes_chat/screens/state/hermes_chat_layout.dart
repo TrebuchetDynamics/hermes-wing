@@ -438,6 +438,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 onRetryError: errorRetry,
                 onReconnectError: () => unawaited(_reconnect(channel)),
                 onReauthorizeError: () => unawaited(_reauthorize(channel)),
+                onManageProvidersError: () => context.go(AppRoutes.providers),
               ),
             ),
             if (_voiceInputController.error != null)
@@ -545,6 +546,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     required VoidCallback? onRetryError,
     required VoidCallback onReconnectError,
     required VoidCallback onReauthorizeError,
+    required VoidCallback onManageProvidersError,
   }) {
     if (state.activeSessionId == null) {
       final strings = AppLocalizations.of(context);
@@ -595,6 +597,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       onRetryError: onRetryError,
       onReconnectError: onReconnectError,
       onReauthorizeError: onReauthorizeError,
+      onManageProvidersError: onManageProvidersError,
     );
   }
 

@@ -6,17 +6,20 @@ class _HermesChatError extends StatelessWidget {
     this.onRetry,
     this.onReconnect,
     this.onReauthorize,
+    this.onManageProviders,
   });
 
   final String error;
   final VoidCallback? onRetry;
   final VoidCallback? onReconnect;
   final VoidCallback? onReauthorize;
+  final VoidCallback? onManageProviders;
 
   @override
   Widget build(BuildContext context) {
     final lower = error.toLowerCase();
     final authRejected = _isHermesAuthError(lower);
+    final providerUsageExhausted = _isHermesProviderUsageExhausted(lower);
     final approvalResponseFailed = lower.contains('could not answer approval');
     final malformedApprovalRequest = lower.contains(
       'approval request was missing an approval id',
@@ -34,6 +37,11 @@ class _HermesChatError extends StatelessWidget {
         ? (
             strings.chatErrorAuthRejectedTitle,
             strings.chatErrorAuthRejectedBody,
+          )
+        : providerUsageExhausted
+        ? (
+            strings.chatErrorProviderUsageExhaustedTitle,
+            strings.chatErrorProviderUsageExhaustedBody,
           )
         : approvalResponseFailed
         ? (
@@ -137,6 +145,16 @@ class _HermesChatError extends StatelessWidget {
                             icon: const Icon(Icons.key_outlined),
                             label: Text(strings.chatErrorUpdateKeyAction),
                           )
+                        else if (providerUsageExhausted &&
+                            onManageProviders != null)
+                          OutlinedButton.icon(
+                            key: const ValueKey(
+                              'hermes-chat-error-manage-providers',
+                            ),
+                            onPressed: onManageProviders,
+                            icon: const Icon(Icons.hub_outlined),
+                            label: Text(strings.chatErrorOpenProvidersAction),
+                          )
                         else if ((runStillActive || streamOrNetworkFailure) &&
                             onReconnect != null)
                           OutlinedButton.icon(
@@ -145,7 +163,7 @@ class _HermesChatError extends StatelessWidget {
                             icon: const Icon(Icons.cable_outlined),
                             label: Text(strings.chatErrorReconnectAction),
                           ),
-                        if (onRetry != null)
+                        if (!providerUsageExhausted && onRetry != null)
                           FilledButton.icon(
                             key: const ValueKey('hermes-chat-error-retry'),
                             onPressed: onRetry,
@@ -407,6 +425,13 @@ String _safeHermesSessionSearchText(String text) {
 
 String _safeHermesUiError(Object error) =>
     _safeHermesUiPreview(error.toString(), maxLength: 160);
+
+bool _isHermesProviderUsageExhausted(String lowerCaseError) {
+  return RegExp(r'\b429\b').hasMatch(lowerCaseError) ||
+      lowerCaseError.contains('too many requests') ||
+      lowerCaseError.contains('usage_limit_reached') ||
+      lowerCaseError.contains('usage limit has been reached');
+}
 
 bool _isHermesAuthError(String lowerCaseError) {
   return lowerCaseError.contains('401') ||

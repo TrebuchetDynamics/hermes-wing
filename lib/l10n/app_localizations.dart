@@ -3037,6 +3037,24 @@ abstract class AppLocalizations {
   /// **'Reconnect with a fresh Hermes API key, then retry this message.'**
   String get chatErrorAuthRejectedBody;
 
+  /// No description provided for @chatErrorProviderUsageExhaustedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider usage limit reached.'**
+  String get chatErrorProviderUsageExhaustedTitle;
+
+  /// No description provided for @chatErrorProviderUsageExhaustedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another provider or model, or wait for the provider\'s usage limit to reset.'**
+  String get chatErrorProviderUsageExhaustedBody;
+
+  /// No description provided for @chatErrorOpenProvidersAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch provider or model'**
+  String get chatErrorOpenProvidersAction;
+
   /// No description provided for @chatErrorApprovalResponseFailedTitle.
   ///
   /// In en, this message translates to:

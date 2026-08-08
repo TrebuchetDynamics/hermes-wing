@@ -75,8 +75,16 @@ func pairCommand(stdout, stderr io.Writer, args []string) int {
 	if options.Origin.Scheme == "http" && !isLoopbackHost(options.Origin.Hostname()) {
 		_, _ = fmt.Fprintln(stderr, "pair: plaintext HTTP requires confirmation in Wing; prefer a trusted VPN")
 	}
-	qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
+	_, _ = fmt.Fprintf(stderr, "pair: label %q, Hermes %s, Wing Link %s\n", options.Label, options.Origin, options.ControlOrigin)
+	_, _ = fmt.Fprintln(stderr, "pair:")
+	_, _ = fmt.Fprintln(stderr, "pair: Connect on the phone with Hermes Wing:")
+	_, _ = fmt.Fprintln(stderr, "pair:   1. Open Hermes Wing and choose Connect to Hermes.")
+	_, _ = fmt.Fprintln(stderr, "pair:   2. Scan the QR code below, or share/paste this link into the app:")
+	_, _ = fmt.Fprintf(stderr, "pair:      %s\n", broker.PairingURI.String())
+	_, _ = fmt.Fprintln(stderr, "pair:   3. Review the label, endpoint, and access, then confirm.")
+	_, _ = fmt.Fprintln(stderr, "pair: The link and code are single-use and expire in 5m.")
 	_, _ = fmt.Fprintf(stderr, "pair: code: %s\n", broker.PairingURI.Query().Get("code"))
+	qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
 
 	timer := time.NewTimer(time.Until(expiresAt))
 	defer timer.Stop()

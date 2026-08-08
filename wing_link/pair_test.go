@@ -291,6 +291,69 @@ func TestReadHermesTokenFile(t *testing.T) {
 	}
 }
 
+func TestDiscoverHermesTokenCreatesMissingAPIKey(t *testing.T) {
+	directory := t.TempDir()
+	envPath := filepath.Join(directory, ".env")
+	if err := os.WriteFile(envPath, []byte("API_SERVER_ENABLED=true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	hermesPath := filepath.Join(directory, "hermes")
+	script := "#!/bin/sh\nprintf '%s\\n' \"$FAKE_HERMES_ENV_PATH\"\n"
+	if err := os.WriteFile(hermesPath, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("FAKE_HERMES_ENV_PATH", envPath)
+	t.Setenv("PATH", directory)
+	t.Setenv("WING_HERMES_TOKEN", "")
+
+	token, err := discoverHermesToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(token) != 64 {
+		t.Fatalf("token length = %d", len(token))
+	}
+	persisted, err := readHermesTokenFile(envPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if persisted != token {
+		t.Fatal("generated token was not persisted")
+	}
+}
+
+func TestEnsureHermesTokenFileSerializesKeyCreation(t *testing.T) {
+	envPath := filepath.Join(t.TempDir(), ".env")
+	if err := os.WriteFile(envPath, []byte("API_SERVER_ENABLED=true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	unlock, err := acquireStateLock(envPath + ".wing-link.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() {
+		_, err := ensureHermesTokenFile(envPath)
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		t.Fatalf("key creation ignored lock: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+	if err := unlock(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("key creation did not resume after lock release")
+	}
+}
+
 func TestPairOperationalErrorIsActionableWithoutGlobalHelp(t *testing.T) {
 	t.Setenv("WING_HERMES_TOKEN", "")
 	t.Setenv("WING_HERMES_URL", "http://127.0.0.1:8642")

@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -486,12 +489,67 @@ func discoverHermesToken() (string, error) {
 	})
 	if result.Err == nil {
 		for index := len(lines) - 1; index >= 0; index-- {
-			if token, err := readHermesTokenFile(lines[index]); err == nil {
+			if !filepath.IsAbs(lines[index]) {
+				continue
+			}
+			if token, err := ensureHermesTokenFile(lines[index]); err == nil {
 				return token, nil
 			}
 		}
 	}
-	return "", errors.New("could not find the local Hermes API key; run Hermes setup or set WING_HERMES_TOKEN")
+	return "", errors.New("could not prepare the local Hermes API key")
+}
+
+func ensureHermesTokenFile(path string) (string, error) {
+	if token, err := readHermesTokenFile(path); err == nil {
+		return token, nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return "", errors.New("hermes environment directory is unavailable")
+	}
+	unlock, err := acquireStateLock(path + ".wing-link.lock")
+	if err != nil {
+		return "", errors.New("could not lock the Hermes environment file")
+	}
+	defer func() { _ = unlock() }()
+	if token, err := readHermesTokenFile(path); err == nil {
+		return token, nil
+	}
+	info, err := os.Lstat(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", errors.New("hermes environment file is unavailable")
+	}
+	if err == nil && !info.Mode().IsRegular() {
+		return "", errors.New("hermes environment file is unavailable")
+	}
+	contents, err := os.ReadFile(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "", errors.New("hermes environment file is unavailable")
+	}
+	keyBytes := make([]byte, 32)
+	if _, err := rand.Read(keyBytes); err != nil {
+		return "", errors.New("could not generate a Hermes API key")
+	}
+	token := hex.EncodeToString(keyBytes)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	if err != nil {
+		return "", errors.New("hermes environment file is unavailable")
+	}
+	defer func() { _ = file.Close() }()
+	if err := file.Chmod(0o600); err != nil {
+		return "", errors.New("could not secure the Hermes environment file")
+	}
+	prefix := ""
+	if len(contents) > 0 && contents[len(contents)-1] != '\n' {
+		prefix = "\n"
+	}
+	if _, err := fmt.Fprintf(file, "%sAPI_SERVER_KEY=%s\n", prefix, token); err != nil {
+		return "", errors.New("could not save the Hermes API key")
+	}
+	if err := file.Sync(); err != nil {
+		return "", errors.New("could not save the Hermes API key")
+	}
+	return token, nil
 }
 
 func readHermesTokenFile(path string) (string, error) {

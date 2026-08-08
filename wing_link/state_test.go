@@ -122,6 +122,20 @@ func TestStateStoreFailsClosedForMalformedState(t *testing.T) {
 	}
 }
 
+func TestStateStoreRejectsOversizedTrailingData(t *testing.T) {
+	store := newTestStateStore(t, time.Now)
+	token := "wlc_test"
+	document := `{"schema":1,"control_token_hashes":["` + hashSecret(token) + `"]}`
+	payload := append([]byte(document), bytes.Repeat([]byte(" "), (64<<10)-len(document))...)
+	payload = append(payload, []byte("unexpected")...)
+	if err := os.WriteFile(store.path, payload, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if store.Authorize(token) {
+		t.Fatal("oversized state with trailing data was accepted")
+	}
+}
+
 func TestStateStoreRejectsChangedToken(t *testing.T) {
 	store := newTestStateStore(t, time.Now)
 	enrollment, err := store.CreateEnrollment()

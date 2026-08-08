@@ -412,6 +412,22 @@ func TestProfileCreateRejectsSymlinkedProfileChild(t *testing.T) {
 	}
 }
 
+func TestDecodeJSONRejectsBodyBeyondLimit(t *testing.T) {
+	body := `{"value":"ok"}` + strings.Repeat(" ", 64<<10)
+	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
+	response := httptest.NewRecorder()
+	var target struct {
+		Value string `json:"value"`
+	}
+
+	if decodeJSON(response, request, &target) {
+		t.Fatal("oversized request body was accepted")
+	}
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d", response.Code)
+	}
+}
+
 func TestProfileMutationRejectsStaleRevision(t *testing.T) {
 	harness := newProfileHarness(t)
 	response := harness.request(t, http.MethodDelete, "/v1/profiles/link", nil, true, map[string]string{"If-Match": "stale"})

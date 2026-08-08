@@ -269,6 +269,9 @@ func (s *StateStore) load() (persistedState, error) {
 	if !info.Mode().IsRegular() {
 		return state, errors.New("state path is not a regular file")
 	}
+	if info.Size() > 64<<10 {
+		return state, errors.New("state file is too large")
+	}
 	ownerOnly, err := statePathOwnerOnly(s.path, false)
 	if err != nil {
 		return state, fmt.Errorf("inspect state permissions: %w", err)

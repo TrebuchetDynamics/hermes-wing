@@ -232,6 +232,8 @@ func TestCustomProviderCRUDRejectsUnsafeInputBeforeHermes(t *testing.T) {
 	}{
 		{"../escape", "https://api.example.test/v1", "model"},
 		{"acme", "file:///tmp/provider", "model"},
+		{"acme", "https://:443/v1", "model"},
+		{"acme", "https://api.example.test:65536/v1", "model"},
 		{"acme", "https://user:secret@example.test/v1", "model"},
 		{"acme", "https://api.example.test/v1?token=secret", "model"},
 		{"acme", "https://api.example.test/v1", ""},
@@ -242,6 +244,74 @@ func TestCustomProviderCRUDRejectsUnsafeInputBeforeHermes(t *testing.T) {
 	}
 	if commands != 0 {
 		t.Fatalf("invalid requests ran Hermes %d times", commands)
+	}
+}
+
+func TestCustomProviderCreateConfirmsPersistence(t *testing.T) {
+	reads := 0
+	backend := &providerBackend{
+		readHermes: func(context.Context, ...string) ([]byte, error) {
+			reads++
+			return []byte(`{}`), nil
+		},
+		runHermes: func(context.Context, ...string) error { return nil },
+	}
+
+	if _, err := backend.create(context.Background(), "default", "acme", "https://api.example.test/v1", "v1"); err == nil {
+		t.Fatal("create succeeded although the provider was not persisted")
+	}
+	if reads != 2 {
+		t.Fatalf("inventory reads = %d, want preflight plus confirmation", reads)
+	}
+}
+
+func TestCustomProviderUpdateConfirmsPersistence(t *testing.T) {
+	const inventory = `{"acme":{"base_url":"https://old.example.test/v1","model":"old"}}`
+	reads := 0
+	backend := &providerBackend{
+		readHermes: func(context.Context, ...string) ([]byte, error) {
+			reads++
+			return []byte(inventory), nil
+		},
+		runHermes: func(context.Context, ...string) error { return nil },
+	}
+	current, err := validateCustomProvider("acme", "https://old.example.test/v1", "old")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := backend.update(
+		context.Background(), "default", "acme",
+		"https://new.example.test/v1", "new", providerRevision("default", current),
+	); err == nil {
+		t.Fatal("update succeeded although the provider was not changed")
+	}
+	if reads != 2 {
+		t.Fatalf("inventory reads = %d, want preflight plus confirmation", reads)
+	}
+}
+
+func TestCustomProviderDeleteConfirmsRemoval(t *testing.T) {
+	const inventory = `{"acme":{"base_url":"https://api.example.test/v1","model":"v1"}}`
+	reads := 0
+	backend := &providerBackend{
+		readHermes: func(context.Context, ...string) ([]byte, error) {
+			reads++
+			return []byte(inventory), nil
+		},
+		runHermes: func(context.Context, ...string) error { return nil },
+	}
+	row, err := validateCustomProvider("acme", "https://api.example.test/v1", "v1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = backend.delete(context.Background(), "default", "acme", providerRevision("default", row))
+	if err == nil {
+		t.Fatal("delete succeeded although the provider remains in inventory")
+	}
+	if reads != 2 {
+		t.Fatalf("inventory reads = %d, want preflight plus confirmation", reads)
 	}
 }
 

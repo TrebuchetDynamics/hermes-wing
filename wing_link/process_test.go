@@ -94,6 +94,13 @@ func TestProcessOutputIsBoundedAndSanitized(t *testing.T) {
 	}
 }
 
+func TestProcessOutputRedactsOverlappingSecrets(t *testing.T) {
+	output := sanitizeOutput("alphabet", []string{"alpha", "alphabet"})
+	if output != "[REDACTED]" {
+		t.Fatalf("overlapping secret leaked: %q", output)
+	}
+}
+
 func TestProcessCaptureReturnsBoundedRawStdout(t *testing.T) {
 	output, result := runProcessCapture(context.Background(), helperCommand("capture"), 4096)
 	if result.Err != nil || string(output) != `{"acme":{"base_url":"https://example.test/v1","model":"m"}}` {

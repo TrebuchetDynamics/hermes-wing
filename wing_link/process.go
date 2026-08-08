@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -207,6 +208,8 @@ func readProcessLines(reader io.Reader, emit func(string)) error {
 func sanitizeOutput(value string, secrets []string) string {
 	value = terminalEscapePattern.ReplaceAllString(value, "")
 	value = controlPattern.ReplaceAllString(value, "")
+	secrets = append([]string(nil), secrets...)
+	sort.SliceStable(secrets, func(i, j int) bool { return len(secrets[i]) > len(secrets[j]) })
 	for _, secret := range secrets {
 		value = strings.ReplaceAll(value, secret, "[REDACTED]")
 	}

@@ -156,10 +156,10 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 		defer state.Unlock()
 		switch request.URL.Path {
 		case "/v1/operator/enrollments/inspect":
-			scopes := []string{"Full Hermes access", "Wing Link profile management"}
+			scopes := []string{"Full Hermes access", "Wing Link profile and provider management"}
 			accessLabel := "Full Hermes access"
 			if options.CredentialMode == "scoped" {
-				scopes = append(append([]string(nil), wingScopedHermesScopes...), "Wing Link profile management")
+				scopes = append(append([]string(nil), wingScopedHermesScopes...), "Wing Link profile and provider management")
 				accessLabel = "Scoped Hermes access"
 			}
 			writePairJSON(writer, http.StatusOK, map[string]any{
@@ -204,7 +204,7 @@ func startPairingBroker(options pairOptions) (*pairingBroker, error) {
 						"wing_link_origin":        options.ControlOrigin.String(),
 						"wing_link_token":         controlToken,
 						"wing_link_credential_id": controlCredentialID,
-						"wing_link_scopes":        []string{"profiles:read", "profiles:write"},
+						"wing_link_scopes":        wingLinkControlScopes,
 					},
 				}
 			}
@@ -368,6 +368,10 @@ func parsePairOptions(args []string) (pairOptions, error) {
 	}, nil
 }
 
+var wingLinkControlScopes = []string{
+	"profiles:read", "profiles:write", "providers:read", "providers:write",
+}
+
 var wingScopedHermesScopes = []string{
 	"chat:write", "sessions:read", "sessions:write", "runs:read", "runs:write",
 	"approvals:write", "profiles:read", "profiles:write", "providers:read",
@@ -477,24 +481,15 @@ func discoverHermesToken() (string, error) {
 	if err != nil {
 		return "", errors.New("could not find the local Hermes API key; install/configure Hermes or set WING_HERMES_TOKEN")
 	}
-	var lines []string
-	result := runProcess(context.Background(), CommandSpec{
+	output, result := runProcessCapture(context.Background(), CommandSpec{
 		Path:    hermes,
 		Args:    []string{"config", "env-path"},
 		Timeout: 5 * time.Second,
-	}, func(line string) {
-		if line = strings.TrimSpace(line); line != "" {
-			lines = append(lines, line)
-		}
-	})
-	if result.Err == nil {
-		for index := len(lines) - 1; index >= 0; index-- {
-			if !filepath.IsAbs(lines[index]) {
-				continue
-			}
-			if token, err := ensureHermesTokenFile(lines[index]); err == nil {
-				return token, nil
-			}
+	}, 4096)
+	path := strings.TrimSpace(string(output))
+	if result.Err == nil && filepath.IsAbs(path) && !strings.ContainsAny(path, "\r\n") {
+		if token, err := ensureHermesTokenFile(path); err == nil {
+			return token, nil
 		}
 	}
 	return "", errors.New("could not prepare the local Hermes API key")
@@ -536,7 +531,7 @@ func ensureHermesTokenFile(path string) (string, error) {
 		return "", errors.New("hermes environment file is unavailable")
 	}
 	defer func() { _ = file.Close() }()
-	if err := file.Chmod(0o600); err != nil {
+	if err := secureStatePath(path, false); err != nil {
 		return "", errors.New("could not secure the Hermes environment file")
 	}
 	prefix := ""
@@ -570,10 +565,7 @@ func readHermesTokenFile(path string) (string, error) {
 		if !ok || strings.TrimSpace(key) != "API_SERVER_KEY" {
 			continue
 		}
-		value = strings.TrimSpace(value)
-		if len(value) >= 2 && ((value[0] == '\'' && value[len(value)-1] == '\'') || (value[0] == '"' && value[len(value)-1] == '"')) {
-			value = value[1 : len(value)-1]
-		}
+		value = parseHermesEnvValue(value)
 		if value != "" {
 			return value, nil
 		}
@@ -581,12 +573,27 @@ func readHermesTokenFile(path string) (string, error) {
 	return "", errors.New("hermes API key is not configured")
 }
 
+func parseHermesEnvValue(value string) string {
+	value = strings.TrimSpace(value)
+	if len(value) >= 2 && (value[0] == '\'' || value[0] == '"') {
+		if end := strings.IndexByte(value[1:], value[0]); end >= 0 {
+			return value[1 : end+1]
+		}
+	}
+	for _, marker := range []string{" #", "\t#"} {
+		if index := strings.Index(value, marker); index >= 0 {
+			value = value[:index]
+		}
+	}
+	return strings.TrimSpace(value)
+}
+
 func normalizeOrigin(value string) (*url.URL, error) {
 	origin, err := url.Parse(strings.TrimSpace(value))
 	if err != nil || origin.Host == "" || origin.User != nil || (origin.Scheme != "http" && origin.Scheme != "https") || (origin.Path != "" && origin.Path != "/") || origin.RawQuery != "" || origin.Fragment != "" {
 		return nil, errors.New("origin must be an http(s) origin without credentials, path, query, or fragment")
 	}
-	if origin.Port() == "0" {
+	if !validURLPort(origin) {
 		return nil, errors.New("origin must use a valid TCP port")
 	}
 	if ip := net.ParseIP(origin.Hostname()); ip != nil && ip.IsUnspecified() {
@@ -595,7 +602,16 @@ func normalizeOrigin(value string) (*url.URL, error) {
 	return &url.URL{Scheme: origin.Scheme, Host: origin.Host}, nil
 }
 
-// advertiseIP prefers Tailscale, then the first non-loopback IPv4.
+func validURLPort(value *url.URL) bool {
+	port := value.Port()
+	if port == "" {
+		return true
+	}
+	number, err := strconv.Atoi(port)
+	return err == nil && number >= 1 && number <= 65535
+}
+
+// advertiseIP prefers Tailscale, then the first private LAN address.
 func advertiseIP() (string, error) {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
@@ -611,19 +627,19 @@ func preferredPairingIP(addresses []net.Addr) (string, error) {
 		if !ok {
 			continue
 		}
-		ip := network.IP.To4()
+		ip := network.IP
 		if ip == nil || ip.IsLoopback() || !ip.IsGlobalUnicast() {
 			continue
 		}
-		if ip[0] == 100 && ip[1] >= 64 && ip[1] <= 127 {
-			return ip.String(), nil
+		if ipv4 := ip.To4(); ipv4 != nil && ipv4[0] == 100 && ipv4[1] >= 64 && ipv4[1] <= 127 {
+			return ipv4.String(), nil
 		}
 		if ip.IsPrivate() && fallback == "" {
 			fallback = ip.String()
 		}
 	}
 	if fallback == "" {
-		return "", errors.New("no LAN/VPN IPv4 found; use --local or --origin")
+		return "", errors.New("no LAN/VPN address found; use --local or --origin")
 	}
 	return fallback, nil
 }

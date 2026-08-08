@@ -106,8 +106,16 @@ func (backend *providerBackend) create(ctx context.Context, profile, id, baseURL
 		}
 		return customProviderRow{}, err
 	}
-	row.Revision = providerRevision(profile, row)
-	return row, nil
+	rows, err := backend.listLocked(ctx, profile)
+	persisted, exists := findCustomProvider(rows, row.ID)
+	if err != nil || !exists || persisted.BaseURL != row.BaseURL || persisted.Model != row.Model {
+		confirmationErr := fmt.Errorf("%w: create was not confirmed", errProviderCLIFailed)
+		if rollbackErr := backend.rollbackProviderCreate(profile, row.ID); rollbackErr != nil {
+			return customProviderRow{}, errors.Join(confirmationErr, err, rollbackErr)
+		}
+		return customProviderRow{}, errors.Join(confirmationErr, err)
+	}
+	return persisted, nil
 }
 
 func (backend *providerBackend) update(ctx context.Context, profile, id, baseURL, model, revision string) (customProviderRow, error) {
@@ -138,8 +146,16 @@ func (backend *providerBackend) update(ctx context.Context, profile, id, baseURL
 		}
 		return customProviderRow{}, err
 	}
-	row.Revision = providerRevision(profile, row)
-	return row, nil
+	rows, err = backend.listLocked(ctx, profile)
+	persisted, exists := findCustomProvider(rows, row.ID)
+	if err != nil || !exists || persisted.BaseURL != row.BaseURL || persisted.Model != row.Model {
+		confirmationErr := fmt.Errorf("%w: update was not confirmed", errProviderCLIFailed)
+		if rollbackErr := backend.rollbackProviderUpdate(profile, current); rollbackErr != nil {
+			return customProviderRow{}, errors.Join(confirmationErr, err, rollbackErr)
+		}
+		return customProviderRow{}, errors.Join(confirmationErr, err)
+	}
+	return persisted, nil
 }
 
 func (backend *providerBackend) delete(ctx context.Context, profile, id, revision string) error {
@@ -166,6 +182,13 @@ func (backend *providerBackend) delete(ctx context.Context, profile, id, revisio
 	}
 	if err := backend.runHermes(ctx, "--profile", profile, "config", "unset", "providers."+normalized); err != nil {
 		return errProviderCLIFailed
+	}
+	rows, err = backend.listLocked(ctx, profile)
+	if err != nil {
+		return err
+	}
+	if _, exists := findCustomProvider(rows, normalized); exists {
+		return fmt.Errorf("%w: deletion was not confirmed", errProviderCLIFailed)
 	}
 	return nil
 }
@@ -224,7 +247,10 @@ func validateCustomProvider(id, baseURL, model string) (customProviderRow, error
 		return customProviderRow{}, errProviderInvalid
 	}
 	parsed, err := url.Parse(baseURL)
-	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Hostname() == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
+		return customProviderRow{}, errProviderInvalid
+	}
+	if !validURLPort(parsed) {
 		return customProviderRow{}, errProviderInvalid
 	}
 	return customProviderRow{ID: normalized, BaseURL: parsed.String(), Model: model}, nil

@@ -923,7 +923,7 @@ func requireRealDirectory(path string) error {
 }
 
 func decodeJSON(writer http.ResponseWriter, request *http.Request, target any) bool {
-	decoder := json.NewDecoder(io.LimitReader(request.Body, 64<<10))
+	decoder := json.NewDecoder(http.MaxBytesReader(writer, request.Body, 64<<10))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(target); err != nil {
 		writeJSON(writer, http.StatusBadRequest, map[string]any{

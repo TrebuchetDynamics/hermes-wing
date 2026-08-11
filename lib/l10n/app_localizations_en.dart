@@ -2886,4 +2886,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesLoading => 'Loading schedules';
+
+  @override
+  String get localSetupTitle => 'Set up Hermes on this Linux computer';
+
+  @override
+  String get localSetupBody =>
+      'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Profiles, providers, Tailscale, tools, channels, and schedules remain managed by Hermes after connection.';
+
+  @override
+  String get localSetupDetecting => 'Checking this computer for Hermes Agent…';
+
+  @override
+  String get localSetupMissingTitle => 'Hermes Agent is not installed';
+
+  @override
+  String get localSetupMissingBody =>
+      'Install the verified Hermes Agent release for your user account, secure the local API, and start the gateway.';
+
+  @override
+  String get localSetupReadyTitle => 'Hermes Agent is ready';
+
+  @override
+  String get localSetupReadyBody =>
+      'Adopt this existing installation without replacing its profiles, providers, or configuration.';
+
+  @override
+  String get localSetupUnhealthyTitle => 'Hermes Agent needs repair';
+
+  @override
+  String get localSetupUnhealthyBody =>
+      'Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.';
+
+  @override
+  String get localSetupInstallAction => 'Install Hermes Agent here';
+
+  @override
+  String get localSetupAdoptAction => 'Adopt this installation';
+
+  @override
+  String get localSetupRepairAction => 'Repair Hermes Agent';
+
+  @override
+  String get localSetupInstalling =>
+      'Installing or adopting Hermes Agent and starting its gateway…';
+
+  @override
+  String get localSetupCompleteTitle => 'Hermes gateway is ready';
+
+  @override
+  String get localSetupCompleteBody =>
+      'Local installation and gateway startup are verified. Continue to pairing before managing Hermes capabilities.';
+
+  @override
+  String get localSetupContinueAction => 'Continue to pairing';
+
+  @override
+  String get localSetupRetryAction => 'Check again';
+
+  @override
+  String get localSetupConsentTitle => 'Allow local Hermes setup?';
+
+  @override
+  String get localSetupConsentBody =>
+      'Wing Link will run a verified Hermes installer when needed, create or update user-level service files, secure local API access, and start the Hermes gateway. It will not configure profiles or providers.';
+
+  @override
+  String get localSetupConsentAction => 'Run setup';
 }

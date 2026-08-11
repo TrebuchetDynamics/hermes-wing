@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -465,6 +466,7 @@ void main() {
     }
 
     testWidgets('scan QR opens pairing review', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
       final store = FakeHermesEndpointStore();
       final source = _FakeConnectIntentSource(scanned: _validPayload);
       addTearDown(source.dispose);
@@ -484,6 +486,7 @@ void main() {
       expect(source.scanCalls, 1);
       expect(controller.status, HermesEnrollmentStatus.ready);
       expect(find.text('hermes.example'), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
     });
 
     testWidgets('invalid pairing links offer manual gateway setup', (

@@ -4,6 +4,49 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 
 void main() {
+  test('starts bounded setup and polls its operation', () async {
+    final requests = <String>[];
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      post: (uri, headers, body) async {
+        requests.add('POST ${uri.path} $body');
+        return '{"protocol_version":1,"operation_id":"op_setup"}';
+      },
+      get: (uri, headers) async {
+        requests.add('GET ${uri.path}');
+        return '{"protocol_version":1,"operation_id":"op_setup","phase":"gateway","message":"Starting Hermes gateway","percent":96}';
+      },
+    );
+
+    final operationId = await client.startSetup();
+    final operation = await client.getOperation(operationId);
+
+    expect(operationId, 'op_setup');
+    expect(operation.phase, 'gateway');
+    expect(operation.percent, 96);
+    expect(operation.terminal, isFalse);
+    expect(requests, ['POST /v1/setup {}', 'GET /v1/operations/op_setup']);
+  });
+
+  test('rejects unsafe operation identifiers before transport', () async {
+    var requested = false;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requested = true;
+        return '{}';
+      },
+    );
+
+    await expectLater(
+      client.getOperation('../profiles'),
+      throwsA(isA<WingLinkException>()),
+    );
+    expect(requested, isFalse);
+  });
+
   test('pending credential verification reads host status only', () async {
     final requestedPaths = <String>[];
     final client = WingLinkClient(

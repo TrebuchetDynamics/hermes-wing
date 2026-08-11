@@ -4800,6 +4800,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading schedules'**
   String get schedulesLoading;
+
+  /// No description provided for @localSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up Hermes on this Linux computer'**
+  String get localSetupTitle;
+
+  /// No description provided for @localSetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Profiles, providers, Tailscale, tools, channels, and schedules remain managed by Hermes after connection.'**
+  String get localSetupBody;
+
+  /// No description provided for @localSetupDetecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking this computer for Hermes Agent…'**
+  String get localSetupDetecting;
+
+  /// No description provided for @localSetupMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent is not installed'**
+  String get localSetupMissingTitle;
+
+  /// No description provided for @localSetupMissingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Install the verified Hermes Agent release for your user account, secure the local API, and start the gateway.'**
+  String get localSetupMissingBody;
+
+  /// No description provided for @localSetupReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent is ready'**
+  String get localSetupReadyTitle;
+
+  /// No description provided for @localSetupReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Adopt this existing installation without replacing its profiles, providers, or configuration.'**
+  String get localSetupReadyBody;
+
+  /// No description provided for @localSetupUnhealthyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent needs repair'**
+  String get localSetupUnhealthyTitle;
+
+  /// No description provided for @localSetupUnhealthyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.'**
+  String get localSetupUnhealthyBody;
+
+  /// No description provided for @localSetupInstallAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Hermes Agent here'**
+  String get localSetupInstallAction;
+
+  /// No description provided for @localSetupAdoptAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Adopt this installation'**
+  String get localSetupAdoptAction;
+
+  /// No description provided for @localSetupRepairAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair Hermes Agent'**
+  String get localSetupRepairAction;
+
+  /// No description provided for @localSetupInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing or adopting Hermes Agent and starting its gateway…'**
+  String get localSetupInstalling;
+
+  /// No description provided for @localSetupCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes gateway is ready'**
+  String get localSetupCompleteTitle;
+
+  /// No description provided for @localSetupCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Local installation and gateway startup are verified. Continue to pairing before managing Hermes capabilities.'**
+  String get localSetupCompleteBody;
+
+  /// No description provided for @localSetupContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to pairing'**
+  String get localSetupContinueAction;
+
+  /// No description provided for @localSetupRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get localSetupRetryAction;
+
+  /// No description provided for @localSetupConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow local Hermes setup?'**
+  String get localSetupConsentTitle;
+
+  /// No description provided for @localSetupConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link will run a verified Hermes installer when needed, create or update user-level service files, secure local API access, and start the Hermes gateway. It will not configure profiles or providers.'**
+  String get localSetupConsentBody;
+
+  /// No description provided for @localSetupConsentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Run setup'**
+  String get localSetupConsentAction;
 }
 
 class _AppLocalizationsDelegate

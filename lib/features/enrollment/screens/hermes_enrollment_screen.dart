@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -252,7 +253,15 @@ class _HermesEnrollmentScreenState
       spacing: 12,
       runSpacing: 12,
       children: [
-        _scanButton(),
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+          _scanButton(),
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.linux)
+          FilledButton.tonalIcon(
+            key: const ValueKey('hermes-enrollment-local-setup'),
+            onPressed: () => context.push(AppRoutes.localSetup),
+            icon: const Icon(Icons.computer_outlined),
+            label: Text(strings.localSetupInstallAction),
+          ),
         OutlinedButton.icon(
           key: const ValueKey('hermes-enrollment-manual-connect'),
           onPressed: _scanning ? null : _openManualConnection,

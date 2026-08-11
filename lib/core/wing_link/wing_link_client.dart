@@ -85,6 +85,36 @@ class WingLinkProvider {
   final String revision;
 }
 
+class WingLinkOperation {
+  const WingLinkOperation({
+    required this.id,
+    required this.phase,
+    required this.message,
+    required this.percent,
+    required this.terminal,
+    this.errorCode = '',
+  });
+
+  factory WingLinkOperation.fromJson(Map<String, Object?> json) {
+    final percent = json['percent'];
+    return WingLinkOperation(
+      id: json['operation_id']?.toString() ?? '',
+      phase: json['phase']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      percent: percent is num ? percent.toInt().clamp(0, 100) : 0,
+      terminal: json['terminal'] == true,
+      errorCode: json['error_code']?.toString() ?? '',
+    );
+  }
+
+  final String id;
+  final String phase;
+  final String message;
+  final int percent;
+  final bool terminal;
+  final String errorCode;
+}
+
 class WingLinkException implements Exception {
   const WingLinkException(this.message);
 
@@ -126,6 +156,28 @@ class WingLinkClient {
       _headers,
       '{}',
     );
+  }
+
+  Future<String> startSetup() async {
+    final json = _decode(await _post(_uri('/v1/setup'), _headers, '{}'));
+    final operationId = json['operation_id']?.toString() ?? '';
+    _requireOperationId(operationId);
+    return operationId;
+  }
+
+  Future<WingLinkOperation> getOperation(String operationId) async {
+    _requireOperationId(operationId);
+    final json = _decode(
+      await _get(
+        _uri('/v1/operations/${Uri.encodeComponent(operationId)}'),
+        _headers,
+      ),
+    );
+    final operation = WingLinkOperation.fromJson(json);
+    if (operation.id != operationId || operation.phase.isEmpty) {
+      throw const WingLinkException('Wing Link returned invalid data');
+    }
+    return operation;
   }
 
   Future<List<WingLinkProfile>> listProfiles() async {
@@ -268,6 +320,14 @@ class WingLinkClient {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
+
+  static final RegExp _operationIdPattern = RegExp(r'^op_[A-Za-z0-9_-]{1,92}$');
+
+  void _requireOperationId(String value) {
+    if (!_operationIdPattern.hasMatch(value)) {
+      throw const WingLinkException('Wing Link operation ID is invalid');
+    }
+  }
 
   Uri _uri(String path) =>
       _origin.replace(path: path, query: null, fragment: null);

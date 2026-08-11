@@ -115,6 +115,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             label: Text(strings.chatLayoutScanQrAction),
                           ),
                         ],
+                        if (!kIsWeb &&
+                            defaultTargetPlatform == TargetPlatform.linux) ...[
+                          const SizedBox(height: 16),
+                          FilledButton.tonalIcon(
+                            key: const ValueKey('hermes-open-local-setup'),
+                            onPressed: () => context.push(AppRoutes.localSetup),
+                            icon: const Icon(Icons.computer_outlined),
+                            label: Text(strings.localSetupInstallAction),
+                          ),
+                        ],
                         const SizedBox(height: 20),
                         TextField(
                           key: const ValueKey('hermes-base-url-field'),

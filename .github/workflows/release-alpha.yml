@@ -109,6 +109,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.44.2
@@ -155,9 +159,49 @@ jobs:
             hermes-wing-web.tar.gz.sha256
           if-no-files-found: error
 
+  wing-link:
+    name: Wing Link host binaries
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
+      - name: Test and build Wing Link targets
+        working-directory: wing_link
+        env:
+          CGO_ENABLED: "0"
+          TAG: ${{ inputs.tag }}
+        run: |
+          go test ./...
+          version=${TAG#v}
+          ldflags="-s -w -X main.version=${version}"
+          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-linux-amd64 .
+          GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-linux-arm64 .
+          GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-darwin-amd64 .
+          GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-darwin-arm64 .
+          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-windows-amd64.exe .
+          GOOS=android GOARCH=arm64 go build -trimpath -buildmode=pie -ldflags="$ldflags" -o ../wing-link-android-arm64 .
+      - name: Generate Wing Link checksums
+        run: sha256sum wing-link-* > wing-link-checksums.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wing-link-release
+          path: |
+            wing-link-linux-amd64
+            wing-link-linux-arm64
+            wing-link-darwin-amd64
+            wing-link-darwin-arm64
+            wing-link-windows-amd64.exe
+            wing-link-android-arm64
+            wing-link-checksums.sha256
+          if-no-files-found: error
+
   publish:
     name: Publish GitHub prerelease
-    needs: [android, linux, web]
+    needs: [android, linux, web, wing-link]
     runs-on: ubuntu-latest
     permissions:
       contents: write

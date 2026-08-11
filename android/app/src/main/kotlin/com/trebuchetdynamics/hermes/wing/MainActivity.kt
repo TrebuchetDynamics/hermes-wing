@@ -13,6 +13,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.trebuchetdynamics.hermes.wing.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.hermes.wing.durablekeys.DurableKeyStoreChannel
 import com.trebuchetdynamics.hermes.wing.pairing.PairingHandoffIntentParser
+import com.trebuchetdynamics.hermes.wing.termux.TermuxWingLinkChannel
 import com.trebuchetdynamics.hermes.wing.voice.WingVoiceEnginePlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -61,6 +62,10 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             DURABLE_KEYS_METHOD_CHANNEL,
         ).setMethodCallHandler(DurableKeyStoreChannel())
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            TermuxWingLinkChannel.CHANNEL_NAME,
+        ).setMethodCallHandler(TermuxWingLinkChannel(applicationContext))
         EventChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONNECT_INTENTS_EVENT_CHANNEL,

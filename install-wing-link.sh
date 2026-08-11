@@ -5,6 +5,11 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source_dir="$script_dir/wing_link"
 install_dir="${WING_LINK_INSTALL_DIR:-$HOME/.local/bin}"
 use_sudo=false
+termux=false
+if [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]]; then
+  install_dir="${PREFIX}/bin"
+  termux=true
+fi
 
 usage() {
   cat <<'EOF'
@@ -33,7 +38,16 @@ done
 
 tmp_bin="$(mktemp)"
 trap 'rm -f "$tmp_bin"' EXIT
-(cd "$source_dir" && go build -o "$tmp_bin" .)
+[[ "$termux" == false || "$use_sudo" == false ]] || {
+  echo "--system is not supported in Termux; Wing Link installs to ${PREFIX}/bin." >&2
+  exit 2
+}
+
+build_args=(-trimpath -o "$tmp_bin")
+if [[ "$termux" == true ]]; then
+  build_args+=(-buildmode=pie)
+fi
+(cd "$source_dir" && go build "${build_args[@]}" .)
 
 if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
   command -v sudo >/dev/null 2>&1 || {

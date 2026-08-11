@@ -50,7 +50,7 @@ void main() {
     );
     expect(workflow, contains('flutter build web --release'));
     expect(workflow, contains('hermes-wing-web.tar.gz.sha256'));
-    expect(workflow, contains('needs: [android, linux, web]'));
+    expect(workflow, contains('needs: [android, linux, web, wing-link]'));
   });
 
   test('alpha tag matches the app version before platform builds', () {

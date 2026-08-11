@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- User-granted gate for the fixed Wing Link Termux RUN_COMMAND adapter. -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
 
     <application
         android:label="Hermes Wing"
@@ -60,6 +62,8 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- Android 11+ package visibility for explicit Termux availability checks. -->
+        <package android:name="com.termux" />
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

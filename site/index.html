@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#070b14" />
+    <meta
+      name="description"
+      content="Hermes Wing is a mobile-first, cross-platform client for Hermes Agent sessions, streamed runs, approvals, profiles, and voice."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Hermes Wing — Hermes Agent everywhere" />
+    <meta
+      property="og:description"
+      content="Follow conversations, inspect tool activity, and approve work from mobile or desktop."
+    />
+    <meta
+      property="og:image"
+      content="https://trebuchetdynamics.github.io/hermes-wing/assets/showcase.png"
+    />
+    <meta property="og:url" content="https://trebuchetdynamics.github.io/hermes-wing/" />
+    <link rel="icon" href="assets/app-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Hermes Wing — Hermes Agent everywhere</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <nav class="nav shell" aria-label="Main navigation">
+        <a class="brand" href="./" aria-label="Hermes Wing home">
+          <img src="assets/app-icon.png" width="34" height="34" alt="" />
+          <span>Hermes Wing</span>
+          <span class="alpha-chip">Alpha</span>
+        </a>
+        <div class="nav-links">
+          <a href="#product">Product</a>
+          <a href="#architecture">How it works</a>
+          <a href="#status">Status</a>
+        </div>
+        <div class="nav-actions">
+          <a
+            class="button button-quiet"
+            href="https://github.com/TrebuchetDynamics/hermes-wing"
+          >GitHub</a>
+          <a class="button button-small" href="app/">Open web alpha</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="status-dot"></span>Built for Hermes Agent</p>
+          <h1 id="hero-title">Your agent.<br /><span>Within reach.</span></h1>
+          <p class="hero-lede">
+            Follow conversations, inspect tool activity, answer approval requests,
+            and talk to Hermes Agent from your phone or desktop.
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button button-primary"
+              href="https://github.com/TrebuchetDynamics/hermes-wing#readme"
+            >Get started from source <span aria-hidden="true">→</span></a>
+            <a class="button button-secondary" href="app/">Try the web alpha</a>
+          </div>
+          <p class="release-note">
+            <strong>Alpha software.</strong> Source builds only—no signed downloads or
+            app-store release yet.
+          </p>
+        </div>
+
+        <div class="hero-visual" aria-label="Hermes Wing live session trace">
+          <img
+            src="assets/hero.svg"
+            width="1200"
+            height="410"
+            alt="Hermes Wing live session trace with capability negotiation, tool activity, and an operator approval checkpoint"
+          />
+        </div>
+      </section>
+
+      <section class="proof-strip" aria-label="Hermes Wing capabilities">
+        <div class="shell proof-list">
+          <span>Streamed runs</span>
+          <span>Inline approvals</span>
+          <span>Gateway inventory</span>
+          <span>Optional on-device voice</span>
+        </div>
+      </section>
+
+      <section class="section shell" id="product" aria-labelledby="product-title">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">One client, every screen</p>
+            <h2 id="product-title">Stay attached to the work.</h2>
+          </div>
+          <p>
+            Wing keeps the active Hermes session close without pretending to be the
+            agent. Hermes remains authoritative for runs, tools, profiles, approvals,
+            and configuration.
+          </p>
+        </div>
+
+        <figure class="product-frame">
+          <picture>
+            <source
+              media="(max-width: 600px)"
+              srcset="assets/showcase-mobile.png"
+            />
+            <img
+              src="assets/showcase.png"
+              width="1200"
+              height="780"
+              loading="lazy"
+              alt="Hermes Wing client evidence showing desktop run controls and mobile gateway tool inventory"
+            />
+          </picture>
+          <figcaption>
+            Repository-backed examples: deterministic desktop browser evidence and a
+            physical Android device receipt.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="section architecture" id="architecture" aria-labelledby="architecture-title">
+        <div class="shell">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">A client, not a second control plane</p>
+              <h2 id="architecture-title">Hermes stays in charge.</h2>
+            </div>
+            <p>
+              Wing connects through Hermes's HTTP and SSE API. It does not read Hermes
+              files, duplicate agent state, or silently enable unsupported operations.
+            </p>
+          </div>
+
+          <div class="runtime-layout">
+            <ol class="runtime-steps">
+              <li>
+                <span class="step-number">01</span>
+                <div><h3>Trust one origin</h3><p>Choose a reachable Hermes endpoint and review how credentials will travel.</p></div>
+              </li>
+              <li>
+                <span class="step-number">02</span>
+                <div><h3>Negotiate capability</h3><p>Health and capability contracts decide which controls appear.</p></div>
+              </li>
+              <li>
+                <span class="step-number">03</span>
+                <div><h3>Stream authoritative state</h3><p>HTTP carries resources and commands; SSE carries typed run events.</p></div>
+              </li>
+              <li>
+                <span class="step-number">04</span>
+                <div><h3>Fail closed</h3><p>Unavailable contracts stay unavailable instead of becoming controls that fail later.</p></div>
+              </li>
+            </ol>
+            <figure class="flow-frame">
+              <img
+                src="assets/runtime-flow.svg"
+                width="1200"
+                height="680"
+                loading="lazy"
+                alt="Hermes Wing connection and run-event flow from trusted origin through capability negotiation to a streamed session"
+              />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell capabilities" aria-labelledby="capabilities-title">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Operator controls</p>
+            <h2 id="capabilities-title">The important parts, close by.</h2>
+          </div>
+          <p>Purpose-built views for the moments when your agent needs attention.</p>
+        </div>
+
+        <div class="capability-list">
+          <article>
+            <span>01</span><h3>Conversations</h3>
+            <p>Stream replies, Markdown, reasoning summaries, tool activity, usage, and errors in the session that owns the run.</p>
+          </article>
+          <article>
+            <span>02</span><h3>Approvals</h3>
+            <p>Review sensitive work and approve once, allow for the session, always allow, or deny.</p>
+          </article>
+          <article>
+            <span>03</span><h3>Gateways & profiles</h3>
+            <p>Move between trusted Hermes endpoints and browse capability-gated profiles, models, skills, tools, and schedules.</p>
+          </article>
+          <article>
+            <span>04</span><h3>Voice experiments</h3>
+            <p>Dictate for review and try local reply speech where supported, with privacy boundaries and platform limits made explicit.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section status-section" id="status" aria-labelledby="status-title">
+        <div class="shell status-layout">
+          <div>
+            <p class="eyebrow">Project status</p>
+            <h2 id="status-title">Useful today.<br />Still experimental.</h2>
+            <p class="status-copy">
+              Android is the best-tested client. Web and Linux are alpha and
+              text-focused. Other desktop and Apple targets are build-tested, not a
+              supported release line.
+            </p>
+            <a
+              class="text-link"
+              href="https://github.com/TrebuchetDynamics/hermes-wing#project-status"
+            >Read the complete status and limits <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="platform-table" role="table" aria-label="Platform status">
+            <div role="row"><span role="cell">Android</span><span role="cell" class="status alpha">Experimental alpha</span></div>
+            <div role="row"><span role="cell">Web</span><span role="cell" class="status alpha">Text-focused alpha</span></div>
+            <div role="row"><span role="cell">Linux</span><span role="cell" class="status alpha">Text-focused alpha</span></div>
+            <div role="row"><span role="cell">Windows</span><span role="cell" class="status build">Build-tested</span></div>
+            <div role="row"><span role="cell">iOS</span><span role="cell" class="status build">Simulator build-tested</span></div>
+            <div role="row"><span role="cell">macOS</span><span role="cell" class="status build">Build-tested</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing shell" aria-labelledby="closing-title">
+        <p class="eyebrow">Open source · MIT licensed</p>
+        <h2 id="closing-title">Bring Hermes Agent<br />to the screen beside you.</h2>
+        <div class="hero-actions closing-actions">
+          <a
+            class="button button-primary"
+            href="https://github.com/TrebuchetDynamics/hermes-wing#readme"
+          >Build Hermes Wing <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="app/">Open web alpha</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-layout">
+        <div class="brand footer-brand">
+          <img src="assets/app-icon.png" width="30" height="30" alt="" />
+          <span>Hermes Wing</span>
+        </div>
+        <p>An independent client for Hermes Agent. Alpha software.</p>
+        <div class="footer-links">
+          <a href="https://github.com/TrebuchetDynamics/hermes-wing">GitHub</a>
+          <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/SECURITY.md">Security</a>
+          <a href="https://github.com/TrebuchetDynamics/hermes-wing/issues">Issues</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

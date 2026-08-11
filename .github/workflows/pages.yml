@@ -6,7 +6,9 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "assets/**"
+      - "hermes-wing-icon.png"
       - "lib/**"
+      - "site/**"
       - "web/**"
       - "pubspec.lock"
       - "pubspec.yaml"
@@ -35,28 +37,68 @@ jobs:
           flutter-version: 3.44.6
           channel: stable
           cache: true
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
       - uses: actions/configure-pages@v5
       - name: Install dependencies
-        run: flutter pub get
-      - name: Build repository-scoped web app
-        run: flutter build web --release --base-href /hermes-wing/
+        run: |
+          flutter pub get
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Build Pages artifact
+        run: |
+          flutter build web --release --base-href /hermes-wing/app/
+          rm -rf build/pages
+          mkdir -p build/pages/app build/pages/assets
+          cp -a build/web/. build/pages/app/
+          cp site/index.html site/styles.css build/pages/
+          cp assets/readme/hero.svg build/pages/assets/hero.svg
+          cp assets/readme/showcase.png build/pages/assets/showcase.png
+          cp assets/readme/showcase-mobile.png build/pages/assets/showcase-mobile.png
+          cp assets/readme/runtime-flow.svg build/pages/assets/runtime-flow.svg
+          cp hermes-wing-icon.png build/pages/assets/app-icon.png
+      - name: Landing and web client browser smoke
+        run: |
+          mkdir -p /tmp/hermes-wing-pages
+          ln -s "${GITHUB_WORKSPACE}/build/pages" /tmp/hermes-wing-pages/hermes-wing
+          python3 -m http.server 8769 --bind 127.0.0.1 --directory /tmp/hermes-wing-pages &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8769/hermes-wing/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ \
+            npx playwright test --config=playwright.config.mjs \
+            playwright/tests/regression/pages-landing.spec.mjs --reporter=list
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: build/web
+          path: build/pages
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify deployed scoped assets
+      - name: Verify deployed landing and web app
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           page_root="${PAGE_URL%/}/"
-          index="$(curl --fail --silent --show-error "${page_root}?revision=${GITHUB_SHA}")"
-          if [[ "$index" != *'<base href="/hermes-wing/">'* ]]; then
-            echo "Deployed index is missing the repository-scoped base href." >&2
+          landing="$(curl --fail --silent --show-error "${page_root}?revision=${GITHUB_SHA}")"
+          if [[ "$landing" != *'<title>Hermes Wing — Hermes Agent everywhere</title>'* ]]; then
+            echo "Deployed root is not the Hermes Wing landing page." >&2
             exit 1
           fi
           curl --fail --silent --show-error \
-            "${page_root}flutter_bootstrap.js?revision=${GITHUB_SHA}" >/dev/null
+            "${page_root}styles.css?revision=${GITHUB_SHA}" >/dev/null
+          app_index="$(curl --fail --silent --show-error "${page_root}app/?revision=${GITHUB_SHA}")"
+          if [[ "$app_index" != *'<base href="/hermes-wing/app/">'* ]]; then
+            echo "Deployed web app is missing its scoped base href." >&2
+            exit 1
+          fi
           curl --fail --silent --show-error \
-            "${page_root}main.dart.js?revision=${GITHUB_SHA}" >/dev/null
+            "${page_root}app/flutter_bootstrap.js?revision=${GITHUB_SHA}" >/dev/null
+          curl --fail --silent --show-error \
+            "${page_root}app/main.dart.js?revision=${GITHUB_SHA}" >/dev/null

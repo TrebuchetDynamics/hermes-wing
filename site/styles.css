@@ -411,6 +411,7 @@ h2 {
 .product-frame img {
   display: block;
   width: 100%;
+  height: auto;
 }
 
 .product-frame figcaption {
@@ -486,8 +487,11 @@ h2 {
   background: var(--surface);
 }
 
+.flow-frame picture,
 .flow-frame img {
+  display: block;
   width: 100%;
+  height: auto;
 }
 
 .capability-list {

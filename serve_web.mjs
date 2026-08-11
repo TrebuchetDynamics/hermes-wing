@@ -37,6 +37,7 @@ const hermesState = {
   stopCount: 0,
   decisions: [],
   runs: new Map(),
+  presentationMode: false,
 };
 
 function resetHermesState() {
@@ -62,6 +63,7 @@ function resetHermesState() {
   hermesState.stopCount = 0;
   hermesState.decisions = [];
   hermesState.runs.clear();
+  hermesState.presentationMode = false;
 }
 
 resetHermesState();
@@ -94,6 +96,14 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "POST" && url === "/e2e/hermes/reset") {
     resetHermesState();
     return json(res, 200, { reset: true });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/presentation") {
+    resetHermesState();
+    hermesState.presentationMode = true;
+    hermesState.sessions[0].title = "Gateway readiness";
+    hermesState.sessions[0].messages[0].content =
+      "Hermes is connected and ready.";
+    return json(res, 200, { seeded: true });
   }
   if (req.method === "GET" && url === "/e2e/hermes/stop-count") {
     return json(res, 200, { stopCount: hermesState.stopCount });
@@ -316,7 +326,10 @@ async function handleHermesApi(req, res, url) {
     const body = await readJsonBody(req);
     const session = findHermesSession(body.session_id);
     const runId = `run_${hermesState.nextRunId++}`;
-    const reply = `Hermes echo: ${body.message}`;
+    const presentation = hermesState.presentationMode;
+    const reply = presentation
+      ? "Gateway is healthy. Profiles, skills, and toolsets are ready."
+      : `Hermes echo: ${body.message}`;
     if (session) {
       session.messages.push({
         id: `msg_${hermesState.nextMessageId++}`,
@@ -329,11 +342,25 @@ async function handleHermesApi(req, res, url) {
       session_id: body.session_id,
       reply,
       approval_id: `approval_${runId}`,
+      presentation,
+      status: "running",
       release: null,
     });
     return json(res, 200, {
       object: "hermes.run",
       run: { id: runId, session_id: body.session_id },
+    });
+  }
+  const runStatusMatch = url.match(/^\/v1\/runs\/([^/]+)$/);
+  if (req.method === "GET" && runStatusMatch) {
+    const run = hermesState.runs.get(decodeURIComponent(runStatusMatch[1]));
+    if (!run) return json(res, 404, { error: { message: "run not found" } });
+    return json(res, 200, {
+      object: "hermes.run",
+      run_id: run.id,
+      session_id: run.session_id,
+      status: run.status,
+      ...(run.status === "completed" ? { output: run.reply } : {}),
     });
   }
   const runEventsMatch = url.match(/^\/v1\/runs\/([^/]+)\/events$/);
@@ -359,6 +386,7 @@ async function handleHermesApi(req, res, url) {
     });
     if (res.writableEnded || decision === "closed") return;
     if (decision === "stop" || decision === "reset" || decision === "deny") {
+      if (run) run.status = "cancelled";
       res.end(
         `event: run.completed\ndata: ${JSON.stringify({ status: decision })}\n\n` +
           `data: [DONE]\n\n`,
@@ -373,14 +401,22 @@ async function handleHermesApi(req, res, url) {
         content: run.reply,
       });
     }
+    const tool = run?.presentation ? "read_file" : "bash";
+    const toolPreview = run?.presentation
+      ? "health + capabilities"
+      : "echo e2e";
+    const toolResult = run?.presentation
+      ? "Gateway checks complete"
+      : "tool complete";
+    if (run) run.status = "completed";
     res.end(
       `event: tool.started\ndata: ${JSON.stringify({
-        tool: "bash",
-        preview: "echo e2e",
+        tool,
+        preview: toolPreview,
       })}\n\n` +
         `event: tool.completed\ndata: ${JSON.stringify({
-          tool: "bash",
-          result_text: "tool complete",
+          tool,
+          result_text: toolResult,
         })}\n\n` +
         `event: message.delta\ndata: ${JSON.stringify({ delta: run?.reply ?? "" })}\n\n` +
         `event: run.completed\ndata: ${JSON.stringify({ status: "completed" })}\n\n` +

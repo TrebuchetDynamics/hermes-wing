@@ -1,7 +1,7 @@
 # Hermes Wing
 
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Hermes Wing streams Hermes Agent conversations, tool activity, and approval controls across mobile and desktop">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Hermes Wing follows a healthy Hermes Agent session through capability negotiation, completed tool activity, and a streamed reply">
 </p>
 
 <p align="center">
@@ -30,10 +30,10 @@ local-versus-remote setup and visual feature tour. Wing adapts those ideas for a
 smaller screen and keeps all Hermes operations behind advertised API contracts.
 
 <p align="center">
-  <img src="./assets/readme/showcase.png" width="100%" alt="Hermes Wing desktop run controls and mobile gateway inventory">
+  <img src="./assets/readme/showcase.png" width="100%" alt="Current Hermes Wing UI with a completed desktop gateway-readiness run and populated mobile skills and toolsets">
 </p>
 
-<p align="center"><sub>Repository-backed examples: a streamed tool run with an inline approval on desktop, and gateway-scoped skills and toolsets on a physical Android phone.</sub></p>
+<p align="center"><sub>Current deterministic browser captures: one healthy completed run on desktop and populated, gateway-scoped skills and toolsets on mobile.</sub></p>
 
 ## What you can do
 
@@ -62,7 +62,7 @@ list or a control that fails later.
 
 1. Wing connects to one trusted Hermes API origin.
 2. It reads `/health` and `/v1/capabilities` before enabling features.
-3. HTTP carries commands and resources. SSE carries typed run events.
+3. HTTPS carries commands and resources. SSE carries typed run events.
 4. After a reconnect, Wing refreshes authoritative server state. It does not
    replay local approvals or mutations automatically.
 
@@ -320,6 +320,18 @@ flutter build web --release -t lib/main_e2e.dart
 npm run web:e2e
 npm audit
 ```
+
+Regenerate the shared README and landing-page visuals from the deterministic
+Hermes browser fixture after material UI changes:
+
+```bash
+npx playwright install chromium
+npm run readme:assets
+```
+
+The generator builds `lib/main_e2e.dart`, seeds a healthy presentation session,
+and overwrites `assets/readme/hero.svg`, both runtime diagrams, and the desktop
+and mobile showcase PNGs.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before sending a pull request.
 

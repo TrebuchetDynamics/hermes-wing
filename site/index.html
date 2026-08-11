@@ -75,7 +75,7 @@
             src="assets/hero.svg"
             width="1200"
             height="410"
-            alt="Hermes Wing live session trace with capability negotiation, tool activity, and an operator approval checkpoint"
+            alt="Hermes Wing healthy session trace with capability negotiation, completed tool activity, and a streamed reply"
           />
         </div>
       </section>
@@ -111,14 +111,14 @@
             <img
               src="assets/showcase.png"
               width="1200"
-              height="780"
+              height="760"
               loading="lazy"
-              alt="Hermes Wing client evidence showing desktop run controls and mobile gateway tool inventory"
+              alt="Current Hermes Wing deterministic browser captures showing a completed desktop run and populated mobile tool inventory"
             />
           </picture>
           <figcaption>
-            Repository-backed examples: deterministic desktop browser evidence and a
-            physical Android device receipt.
+            Current deterministic browser captures: one healthy completed desktop run
+            and populated, gateway-scoped skills and toolsets on mobile.
           </figcaption>
         </figure>
       </section>
@@ -131,8 +131,9 @@
               <h2 id="architecture-title">Hermes stays in charge.</h2>
             </div>
             <p>
-              Wing connects through Hermes's HTTP and SSE API. It does not read Hermes
-              files, duplicate agent state, or silently enable unsupported operations.
+              Wing connects through Hermes's HTTPS API and SSE event stream. It does
+              not read Hermes files, duplicate agent state, or silently enable
+              unsupported operations.
             </p>
           </div>
 
@@ -148,7 +149,7 @@
               </li>
               <li>
                 <span class="step-number">03</span>
-                <div><h3>Stream authoritative state</h3><p>HTTP carries resources and commands; SSE carries typed run events.</p></div>
+                <div><h3>Stream authoritative state</h3><p>HTTPS carries resources and commands; SSE carries typed run events.</p></div>
               </li>
               <li>
                 <span class="step-number">04</span>
@@ -156,13 +157,19 @@
               </li>
             </ol>
             <figure class="flow-frame">
-              <img
-                src="assets/runtime-flow.svg"
-                width="1200"
-                height="680"
-                loading="lazy"
-                alt="Hermes Wing connection and run-event flow from trusted origin through capability negotiation to a streamed session"
-              />
+              <picture>
+                <source
+                  media="(max-width: 600px)"
+                  srcset="assets/runtime-flow-mobile.svg"
+                />
+                <img
+                  src="assets/runtime-flow.svg"
+                  width="1200"
+                  height="340"
+                  loading="lazy"
+                  alt="Hermes Wing connection flow: Wing Link setup and pairing, trusted HTTPS, fail-closed capabilities, Hermes sessions, SSE run events, and operator control"
+                />
+              </picture>
             </figure>
           </div>
         </div>

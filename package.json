@@ -6,6 +6,7 @@
   "scripts": {
     "test": "flutter test --concurrency=1",
     "web:e2e": "./playwright/scripts/run_tests.sh",
+    "readme:assets": "node scripts/generate_readme_assets.mjs",
     "hermes:live-smoke": "./scripts/run_live_hermes_smoke.sh",
     "hermes:provider-smoke": "./scripts/run_provider_hermes_smoke.sh",
     "hermes:provider-smoke:local": "./scripts/run_local_configured_hermes_provider_smoke.sh",

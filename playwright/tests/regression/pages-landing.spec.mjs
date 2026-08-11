@@ -72,6 +72,11 @@ test("landing page remains usable at a compact mobile viewport", async ({ page }
       image.currentSrc.endsWith("/assets/showcase-mobile.png"),
     ),
   ).toBeTruthy();
+  expect(
+    await page.locator(".flow-frame img").evaluate((image) =>
+      image.currentSrc.endsWith("/assets/runtime-flow-mobile.svg"),
+    ),
+  ).toBeTruthy();
   await expect(
     page
       .getByRole("navigation", { name: "Main navigation" })

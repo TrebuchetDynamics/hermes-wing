@@ -1,0 +1,62 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/pages.yml"
+      - "assets/**"
+      - "lib/**"
+      - "web/**"
+      - "pubspec.lock"
+      - "pubspec.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy web app
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.6
+          channel: stable
+          cache: true
+      - uses: actions/configure-pages@v5
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build repository-scoped web app
+        run: flutter build web --release --base-href /hermes-wing/
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/web
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify deployed scoped assets
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          page_root="${PAGE_URL%/}/"
+          index="$(curl --fail --silent --show-error "${page_root}?revision=${GITHUB_SHA}")"
+          if [[ "$index" != *'<base href="/hermes-wing/">'* ]]; then
+            echo "Deployed index is missing the repository-scoped base href." >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error \
+            "${page_root}flutter_bootstrap.js?revision=${GITHUB_SHA}" >/dev/null
+          curl --fail --silent --show-error \
+            "${page_root}main.dart.js?revision=${GITHUB_SHA}" >/dev/null

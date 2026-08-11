@@ -703,7 +703,7 @@ abstract class AppLocalizations {
   /// No description provided for @officeGatewayDefault.
   ///
   /// In en, this message translates to:
-  /// **'Gateway default contact'**
+  /// **'Gateway endpoint contact'**
   String get officeGatewayDefault;
 
   /// No description provided for @officeSessionCount.

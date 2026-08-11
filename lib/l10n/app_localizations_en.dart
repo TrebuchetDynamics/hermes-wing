@@ -380,7 +380,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not open this Hermes profile. Refresh and try again.';
 
   @override
-  String get officeGatewayDefault => 'Gateway default contact';
+  String get officeGatewayDefault => 'Gateway endpoint contact';
 
   @override
   String officeSessionCount(int count) {

@@ -125,7 +125,7 @@ void main() {
     },
   );
 
-  testWidgets('fallback default contact remains usable at 200% text scale', (
+  testWidgets('gateway endpoint contact remains usable at 200% text scale', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -167,8 +167,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Default profile'), findsOneWidget);
-    expect(find.text('Gateway default contact'), findsOneWidget);
+    expect(find.text('Legacy Gateway'), findsWidgets);
+    expect(find.text('Gateway endpoint contact'), findsOneWidget);
     expect(find.text('1 session'), findsWidgets);
     expect(find.textContaining('Wallet'), findsNothing);
     expect(find.textContaining('Account'), findsNothing);

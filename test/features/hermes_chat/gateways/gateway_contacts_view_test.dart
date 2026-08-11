@@ -78,6 +78,40 @@ void main() {
     expect(find.text('Cloud · Default profile'), findsOneWidget);
   });
 
+  testWidgets('does not duplicate an unscoped gateway identity', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'sidon',
+                'default',
+                'Sidon Fractal QA',
+                'Sidon Fractal QA',
+                '2026-07-16T05:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Sidon Fractal QA'), findsOneWidget);
+    expect(find.text('Sidon Fractal QA · Sidon Fractal QA'), findsNothing);
+    final semantics = tester.getSemantics(
+      find.byKey(const ValueKey('gateway-contact-sidon-default')),
+    );
+    expect(semantics.label, 'Sidon Fractal QA, online');
+  });
+
   testWidgets('pull to refresh invokes the refresh callback', (tester) async {
     var refreshCalls = 0;
     await tester.pumpWidget(

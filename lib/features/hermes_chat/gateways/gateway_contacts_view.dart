@@ -102,13 +102,16 @@ class GatewayContactsView extends StatelessWidget {
             separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
             itemBuilder: (context, index) {
               final contact = contacts[index];
+              final contactTitle = _contactTitle(contact);
+              final contactStatus = contact.chatAvailable
+                  ? contact.availability.name
+                  : AppLocalizations.of(context).profileChatUnavailable;
               return Semantics(
                 key: ValueKey(
                   'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
-                label:
-                    '${contact.gatewayLabel}, ${contact.profileName}, '
-                    '${contact.chatAvailable ? contact.availability.name : AppLocalizations.of(context).profileChatUnavailable}',
+                excludeSemantics: true,
+                label: '$contactTitle, $contactStatus',
                 child: ListTile(
                   key: const ValueKey('gateway-contact-row'),
                   leading: CircleAvatar(
@@ -172,7 +175,9 @@ String _contactTitle(GatewayContact contact) {
   final gateway = contact.gatewayLabel.trim();
   final profile = contact.profileName.trim();
   if (gateway.isEmpty) return profile;
-  if (profile.isEmpty) return gateway;
+  if (profile.isEmpty || gateway.toLowerCase() == profile.toLowerCase()) {
+    return gateway;
+  }
   return '$gateway · $profile';
 }
 

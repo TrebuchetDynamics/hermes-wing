@@ -330,7 +330,7 @@ class HermesGatewayDirectory extends ChangeNotifier
                   profileId: 'default',
                 ),
                 gatewayLabel: config.displayLabel,
-                profileName: 'Default profile',
+                profileName: config.displayLabel,
                 latestSession: _latestSession(summary.unscopedSessions),
                 sessionCount: summary.unscopedSessions.length,
                 availability: GatewayAvailability.online,

@@ -18,7 +18,8 @@ name: sidon_fractal_music_qa
     visible: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
     timeout: 60000
 - assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
-- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*Default profile.*"
+- assertNotVisible: "Default profile"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*Message Hermes….*"
     timeout: 60000

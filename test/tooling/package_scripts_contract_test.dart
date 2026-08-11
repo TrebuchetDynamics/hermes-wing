@@ -578,6 +578,8 @@ void main() {
     expect(flow, contains('Continue working on the fractal music stuff'));
     expect(flow, contains('timeout: 600000'));
     expect(flow, contains('notVisible: "Stop"'));
+    expect(flow, contains('assertNotVisible: "Default profile"'));
+    expect(flow, isNot(contains(r'${WING_QA_GATEWAY_LABEL}.*Default profile')));
     expect(flow, isNot(contains('Profiles unavailable')));
     expect(flow, isNot(contains('API_SERVER_KEY')));
     expect(flow, isNot(contains('wing://connect?')));

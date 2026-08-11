@@ -176,7 +176,7 @@
   "officeCurrentChat": "Current chat",
   "officeReturnToChat": "Return to chat",
   "officeOpenFailed": "Could not open this Hermes profile. Refresh and try again.",
-  "officeGatewayDefault": "Gateway default contact",
+  "officeGatewayDefault": "Gateway endpoint contact",
   "officeSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
   "@officeSessionCount": {
     "placeholders": {

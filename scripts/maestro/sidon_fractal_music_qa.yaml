@@ -1,0 +1,41 @@
+# Static validation: maestro check-syntax scripts/maestro/sidon_fractal_music_qa.yaml
+# Physical-device live receipt for a gateway paired directly to the Sidon
+# Hermes API. Pass only the non-secret saved gateway label:
+# `-e WING_QA_GATEWAY_LABEL="Sidon Fractal QA"`.
+# Enrollment links, API credentials, and response text never belong here.
+appId: com.trebuchetdynamics.hermes.wing
+name: sidon_fractal_music_qa
+---
+- launchApp:
+    stopApp: true
+- setOrientation: PORTRAIT
+- runFlow:
+    when:
+      visible: "(?s).*Message Hermes….*"
+    commands:
+      - tapOn: "(?s).*All chats.*"
+- extendedWaitUntil:
+    visible: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
+    timeout: 60000
+- assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*Default profile.*"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 60000
+- tapOn: "(?s).*More actions.*"
+- tapOn: "(?s).*New session.*"
+- extendedWaitUntil:
+    visible: "(?s).*How can Hermes help today?.*"
+    timeout: 30000
+- tapOn: "(?s).*Message Hermes….*"
+- inputText: "Continue working on the fractal music stuff. End your response with SIDON_FRACTAL_CONTINUED."
+- tapOn: "(?s).*Send.*"
+- assertVisible: "(?s).*Continue working on the fractal music stuff.*"
+- extendedWaitUntil:
+    visible: "(?s).*SIDON_FRACTAL_CONTINUED.*"
+    timeout: 600000
+- extendedWaitUntil:
+    notVisible: "Stop"
+    timeout: 600000
+- assertVisible: "(?s).*SIDON_FRACTAL_CONTINUED.*"
+- takeScreenshot: sidon_fractal_music_continued

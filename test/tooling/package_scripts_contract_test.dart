@@ -569,6 +569,20 @@ void main() {
     expect(output.toString(), isNot(contains(token)));
   });
 
+  test('Sidon Fractal Music pilot is profile-bound and secret-free', () {
+    final flow = File(
+      'scripts/maestro/sidon_fractal_music_qa.yaml',
+    ).readAsStringSync();
+
+    expect(flow, contains(r'${WING_QA_GATEWAY_LABEL}'));
+    expect(flow, contains('Continue working on the fractal music stuff'));
+    expect(flow, contains('timeout: 600000'));
+    expect(flow, contains('notVisible: "Stop"'));
+    expect(flow, isNot(contains('Profiles unavailable')));
+    expect(flow, isNot(contains('API_SERVER_KEY')));
+    expect(flow, isNot(contains('wing://connect?')));
+  });
+
   test('Maestro fixtures use the documented canonical paths', () {
     final audit = File(
       'docs/runbooks/hermes-readiness-audit.md',

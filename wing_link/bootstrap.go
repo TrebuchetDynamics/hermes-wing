@@ -220,10 +220,12 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 			return nil
 		},
 		StartGateway: func(ctx context.Context) error {
-			if err := runHermes(ctx, "gateway", "install"); err != nil {
-				return err
+			for _, args := range hermesGatewayCommands() {
+				if err := runHermes(ctx, args...); err != nil {
+					return err
+				}
 			}
-			return runHermes(ctx, "gateway", "start")
+			return nil
 		},
 		VerifyGateway: func(ctx context.Context) error {
 			port, err := resolveHermesAPIPort()
@@ -246,6 +248,10 @@ func resolveHermesAPIPort() (int, error) {
 		return 0, errors.New("WING_HERMES_PORT must be a valid TCP port")
 	}
 	return port, nil
+}
+
+func hermesGatewayCommands() [][]string {
+	return [][]string{{"gateway", "install"}, {"gateway", "restart"}}
 }
 
 func hermesAPIEndpointCommands(port int) [][]string {

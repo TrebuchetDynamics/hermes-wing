@@ -302,6 +302,14 @@ func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
 	}
 }
 
+func TestHermesGatewayCommandsRestartToApplyEndpointChanges(t *testing.T) {
+	commands := hermesGatewayCommands()
+	want := [][]string{{"gateway", "install"}, {"gateway", "restart"}}
+	if !reflect.DeepEqual(commands, want) {
+		t.Fatalf("commands = %#v, want %#v", commands, want)
+	}
+}
+
 func TestHermesAPIEndpointUsesFixedLocalConfigurationAndHealth(t *testing.T) {
 	t.Setenv("WING_HERMES_PORT", "9864")
 	port, err := resolveHermesAPIPort()

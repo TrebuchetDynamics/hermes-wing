@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,24 +17,9 @@ import (
 	"time"
 )
 
-func TestBootstrapRequestValidatesInitialProfileAndProvider(t *testing.T) {
-	valid := BootstrapRequest{
-		Profile: &BootstrapProfile{Name: "work", CloneFrom: "default"},
-		Provider: &BootstrapProvider{
-			ID: "acme", BaseURL: "https://api.example.test/v1", Model: "acme-v1",
-		},
-	}
-	if err := valid.Validate(); err != nil {
-		t.Fatalf("valid request rejected: %v", err)
-	}
-	for _, request := range []BootstrapRequest{
-		{Profile: &BootstrapProfile{Name: "../escape"}},
-		{Provider: &BootstrapProvider{ID: "acme", BaseURL: "file:///tmp/api", Model: "v1"}},
-		{Provider: &BootstrapProvider{ID: "acme", BaseURL: "https://api.example.test/v1"}},
-	} {
-		if err := request.Validate(); err == nil {
-			t.Fatalf("invalid request accepted: %#v", request)
-		}
+func TestBootstrapRequestValidatesEmptySupervisorRequest(t *testing.T) {
+	if err := (BootstrapRequest{}).Validate(); err != nil {
+		t.Fatalf("empty supervisor request rejected: %v", err)
 	}
 }
 
@@ -179,19 +165,19 @@ func TestHermesInstallerDoesNotPublishRawInstallerOutput(t *testing.T) {
 	}
 }
 
-func TestParseBootstrapOptionsRequiresCompleteProviderTuple(t *testing.T) {
-	options, err := parseBootstrapOptions([]string{
-		"--profile", "work", "--clone-from", "default",
-		"--provider", "acme", "--provider-url", "https://api.example.test/v1", "--model", "acme-v1",
-	})
-	if err != nil {
-		t.Fatal(err)
+func TestParseBootstrapOptionsRejectsRuntimeDomainFlags(t *testing.T) {
+	options, err := parseBootstrapOptions([]string{"--json"})
+	if err != nil || !options.JSON {
+		t.Fatalf("json options = %#v, %v", options, err)
 	}
-	if options.Request.Profile == nil || options.Request.Profile.Name != "work" || options.Request.Provider == nil || options.Request.Provider.ID != "acme" {
-		t.Fatalf("options = %#v", options)
-	}
-	if _, err := parseBootstrapOptions([]string{"--provider", "acme"}); err == nil {
-		t.Fatal("partial provider accepted")
+	for _, args := range [][]string{
+		{"--profile", "work"},
+		{"--provider", "acme"},
+		{"--model", "model"},
+	} {
+		if _, err := parseBootstrapOptions(args); err == nil {
+			t.Fatalf("runtime domain option accepted: %#v", args)
+		}
 	}
 }
 
@@ -209,9 +195,6 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
 			return HermesInspection{Executable: "/safe/hermes", Adopted: true}, nil
 		},
-		RunHermes:     func(context.Context, ...string) error { return nil },
-		ReadHermes:    func(context.Context, ...string) ([]byte, error) { return []byte(`{}`), nil },
-		ProfileExists: func(context.Context, string) bool { return false },
 	}
 	server := httptest.NewServer(newWingLinkServerWithBootstrap(
 		&profileBackend{home: t.TempDir()}, store, nil, manager,
@@ -280,56 +263,80 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 	}
 }
 
-func TestBootstrapConfiguresProfileBeforeProviderWithFixedHermesArguments(t *testing.T) {
-	var commands [][]string
-	profiles := map[string]bool{"default": true}
-	apiKeyEnsured := false
-	gatewayStarted := false
-	manager := &BootstrapManager{
-		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
-			return HermesInspection{Executable: "/safe/hermes", Adopted: true}, nil
-		},
-		EnsureAPIKey: func(context.Context) error {
-			apiKeyEnsured = true
-			return nil
-		},
-		StartGateway: func(context.Context) error {
-			if !apiKeyEnsured {
-				return errors.New("gateway started before API authentication")
-			}
-			gatewayStarted = true
-			return nil
-		},
-		RunHermes: func(_ context.Context, args ...string) error {
-			commands = append(commands, append([]string(nil), args...))
-			if len(args) >= 3 && reflect.DeepEqual(args[:2], []string{"profile", "create"}) {
-				profiles[args[2]] = true
-			}
-			return nil
-		},
-		ReadHermes: func(_ context.Context, args ...string) ([]byte, error) {
-			commands = append(commands, append([]string(nil), args...))
-			if reflect.DeepEqual(args, []string{"--profile", "work", "config", "get", "providers", "--json"}) {
-				if len(commands) < 6 {
-					return []byte(`{}`), nil
-				}
-				return []byte(`{"acme":{"name":"acme","base_url":"https://api.example.test/v1","model":"acme-v1"}}`), nil
-			}
-			return nil, errors.New("unexpected read")
-		},
-		ProfileExists: func(_ context.Context, id string) bool { return profiles[id] },
-	}
-	result, err := manager.Bootstrap(context.Background(), BootstrapRequest{
-		Profile:  &BootstrapProfile{Name: "work", CloneFrom: "default"},
-		Provider: &BootstrapProvider{ID: "acme", BaseURL: "https://api.example.test/v1", Model: "acme-v1"},
-	}, nil)
+func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
+	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json")}
+	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Profile != "work" || result.Provider != "acme" || !result.HermesAdopted || !result.GatewayStarted || !gatewayStarted {
-		t.Fatalf("result = %#v", result)
+	token, err := store.ExchangeEnrollment(enrollment.Code)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if len(commands) == 0 || !reflect.DeepEqual(commands[0], []string{"profile", "create", "work", "--no-alias", "--clone-from", "default"}) {
-		t.Fatalf("profile was not configured first: %#v", commands)
+	manager := &BootstrapManager{
+		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
+			t.Fatal("invalid request reached bootstrap")
+			return HermesInspection{}, nil
+		},
+	}
+	server := httptest.NewServer(newWingLinkServerWithBootstrap(nil, store, nil, manager))
+	defer server.Close()
+
+	request, err := http.NewRequest(
+		http.MethodPost,
+		server.URL+"/v1/setup",
+		strings.NewReader(`{"profile":{"name":"work"}}`),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Authorization", "Bearer "+token)
+	request.Header.Set("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = response.Body.Close() }()
+	if response.StatusCode != http.StatusBadRequest {
+		t.Fatalf("status = %d; want %d", response.StatusCode, http.StatusBadRequest)
+	}
+}
+
+func TestHermesAPIEndpointUsesFixedLocalConfigurationAndHealth(t *testing.T) {
+	t.Setenv("WING_HERMES_PORT", "9864")
+	port, err := resolveHermesAPIPort()
+	if err != nil || port != 9864 {
+		t.Fatalf("port = %d, %v", port, err)
+	}
+	want := [][]string{
+		{"config", "set", "--force", "platforms.api_server.enabled", "true"},
+		{"config", "set", "--force", "platforms.api_server.extra.host", "127.0.0.1"},
+		{"config", "set", "--force", "platforms.api_server.extra.port", "9864"},
+	}
+	if got := hermesAPIEndpointCommands(port); !reflect.DeepEqual(got, want) {
+		t.Fatalf("commands = %#v", got)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/health" {
+			t.Fatalf("health path = %q", request.URL.Path)
+		}
+		writer.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+	healthPort := server.Listener.Addr().(*net.TCPAddr).Port
+	if err := waitForHermesAPIHealth(context.Background(), healthPort); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestHermesAPIPortRejectsInvalidEnvironment(t *testing.T) {
+	for _, value := range []string{"0", "65536", "not-a-port"} {
+		t.Run(value, func(t *testing.T) {
+			t.Setenv("WING_HERMES_PORT", value)
+			if _, err := resolveHermesAPIPort(); err == nil {
+				t.Fatal("invalid port accepted")
+			}
+		})
 	}
 }

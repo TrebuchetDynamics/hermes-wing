@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -33,40 +34,9 @@ var (
 	ErrBootstrapInvalid     = errors.New("bootstrap request is invalid")
 )
 
-type BootstrapProfile struct {
-	Name      string `json:"name"`
-	CloneFrom string `json:"clone_from,omitempty"`
-}
+type BootstrapRequest struct{}
 
-type BootstrapProvider struct {
-	ID      string `json:"id"`
-	BaseURL string `json:"base_url"`
-	Model   string `json:"model"`
-}
-
-type BootstrapRequest struct {
-	Profile  *BootstrapProfile  `json:"profile,omitempty"`
-	Provider *BootstrapProvider `json:"provider,omitempty"`
-}
-
-func (request BootstrapRequest) Validate() error {
-	if request.Profile != nil {
-		if _, err := mutableProfileID(request.Profile.Name); err != nil {
-			return fmt.Errorf("%w: profile", ErrBootstrapInvalid)
-		}
-		if strings.TrimSpace(request.Profile.CloneFrom) != "" {
-			if _, err := normalizeProfileID(request.Profile.CloneFrom); err != nil {
-				return fmt.Errorf("%w: clone source", ErrBootstrapInvalid)
-			}
-		}
-	}
-	if request.Provider != nil {
-		if _, err := validateCustomProvider(request.Provider.ID, request.Provider.BaseURL, request.Provider.Model); err != nil {
-			return fmt.Errorf("%w: provider", ErrBootstrapInvalid)
-		}
-	}
-	return nil
-}
+func (BootstrapRequest) Validate() error { return nil }
 
 type HermesInspection struct {
 	Executable string `json:"-"`
@@ -79,8 +49,6 @@ type BootstrapResult struct {
 	HermesAdopted   bool   `json:"hermes_adopted"`
 	HermesVersion   string `json:"hermes_version,omitempty"`
 	GatewayStarted  bool   `json:"gateway_started"`
-	Profile         string `json:"profile,omitempty"`
-	Provider        string `json:"provider,omitempty"`
 }
 
 type HermesInstaller struct {
@@ -146,19 +114,20 @@ func (installer *HermesInstaller) installCommand(path string) CommandSpec {
 }
 
 type BootstrapManager struct {
-	EnsureHermes  func(context.Context, func(OperationEvent)) (HermesInspection, error)
-	EnsureAPIKey  func(context.Context) error
-	StartGateway  func(context.Context) error
-	RunHermes     func(context.Context, ...string) error
-	ReadHermes    func(context.Context, ...string) ([]byte, error)
-	ProfileExists func(context.Context, string) bool
+	EnsureHermes      func(context.Context, func(OperationEvent)) (HermesInspection, error)
+	EnsureAPIKey      func(context.Context) error
+	EnsureAPIEndpoint func(context.Context) error
+	StartGateway      func(context.Context) error
+	VerifyGateway     func(context.Context) error
+	RunHermes         func(context.Context, ...string) error
+	ReadHermes        func(context.Context, ...string) ([]byte, error)
 }
 
 func (manager *BootstrapManager) Bootstrap(ctx context.Context, request BootstrapRequest, emit func(OperationEvent)) (BootstrapResult, error) {
 	if err := request.Validate(); err != nil {
 		return BootstrapResult{}, err
 	}
-	if manager == nil || manager.EnsureHermes == nil || manager.RunHermes == nil || manager.ReadHermes == nil {
+	if manager == nil || manager.EnsureHermes == nil {
 		return BootstrapResult{}, ErrHermesInstall
 	}
 	inspection, err := manager.EnsureHermes(ctx, emit)
@@ -166,41 +135,16 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 		return BootstrapResult{}, err
 	}
 	result := BootstrapResult{HermesInstalled: true, HermesAdopted: inspection.Adopted, HermesVersion: inspection.Version}
-	profile := "default"
-	if request.Profile != nil {
-		profile, _ = mutableProfileID(request.Profile.Name)
-		if manager.ProfileExists != nil && manager.ProfileExists(ctx, profile) {
-			return BootstrapResult{}, errProfileExists
-		}
-		args := []string{"profile", "create", profile, "--no-alias"}
-		if clone := strings.TrimSpace(request.Profile.CloneFrom); clone != "" {
-			args = append(args, "--clone-from", clone)
-		}
-		emitBootstrap(emit, "profile", "Creating Hermes profile", 78)
-		if err := manager.RunHermes(ctx, args...); err != nil {
-			return BootstrapResult{}, fmt.Errorf("%w: %v", errProfileCLIFailed, err)
-		}
-		if manager.ProfileExists != nil && !manager.ProfileExists(ctx, profile) {
-			return BootstrapResult{}, fmt.Errorf("%w: profile was not persisted", errProfileCLIFailed)
-		}
-		result.Profile = profile
-	}
-	if request.Provider != nil {
-		emitBootstrap(emit, "provider", "Configuring Hermes provider", 88)
-		backend := &providerBackend{runHermes: manager.RunHermes, readHermes: manager.ReadHermes}
-		row, err := backend.create(ctx, profile, request.Provider.ID, request.Provider.BaseURL, request.Provider.Model)
-		if err != nil {
-			return BootstrapResult{}, err
-		}
-		result.Provider = row.ID
-		if result.Profile == "" {
-			result.Profile = profile
-		}
-	}
 	if manager.EnsureAPIKey != nil {
 		emitBootstrap(emit, "authentication", "Securing Hermes API access", 92)
 		if err := manager.EnsureAPIKey(ctx); err != nil {
 			return BootstrapResult{}, fmt.Errorf("%w: API authentication", ErrHermesInstall)
+		}
+	}
+	if manager.EnsureAPIEndpoint != nil {
+		emitBootstrap(emit, "api_endpoint", "Configuring local Hermes API endpoint", 94)
+		if err := manager.EnsureAPIEndpoint(ctx); err != nil {
+			return BootstrapResult{}, fmt.Errorf("%w: API endpoint", ErrHermesInstall)
 		}
 	}
 	if manager.StartGateway != nil {
@@ -208,8 +152,14 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 		if err := manager.StartGateway(ctx); err != nil {
 			return BootstrapResult{}, fmt.Errorf("%w: gateway", ErrHermesInstall)
 		}
-		result.GatewayStarted = true
 	}
+	if manager.VerifyGateway != nil {
+		emitBootstrap(emit, "health", "Verifying Hermes gateway health", 98)
+		if err := manager.VerifyGateway(ctx); err != nil {
+			return BootstrapResult{}, fmt.Errorf("%w: gateway health", ErrHermesInstall)
+		}
+	}
+	result.GatewayStarted = manager.StartGateway != nil
 	emitBootstrap(emit, "complete", "Hermes setup complete", 100)
 	return result, nil
 }
@@ -256,20 +206,78 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 			_, err = ensureHermesTokenFile(path)
 			return err
 		},
+		EnsureAPIEndpoint: func(ctx context.Context) error {
+			port, err := resolveHermesAPIPort()
+			if err != nil {
+				return err
+			}
+			for _, args := range hermesAPIEndpointCommands(port) {
+				if err := runHermes(ctx, args...); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
 		StartGateway: func(ctx context.Context) error {
 			if err := runHermes(ctx, "gateway", "install"); err != nil {
 				return err
 			}
 			return runHermes(ctx, "gateway", "start")
 		},
-		RunHermes: runHermes, ReadHermes: readHermes,
-		ProfileExists: func(_ context.Context, id string) bool {
-			if id == "default" {
-				return true
+		VerifyGateway: func(ctx context.Context) error {
+			port, err := resolveHermesAPIPort()
+			if err != nil {
+				return err
 			}
-			info, err := os.Stat(filepath.Join(home, "profiles", id))
-			return err == nil && info.IsDir()
+			return waitForHermesAPIHealth(ctx, port)
 		},
+		RunHermes: runHermes, ReadHermes: readHermes,
+	}
+}
+
+func resolveHermesAPIPort() (int, error) {
+	value := strings.TrimSpace(os.Getenv("WING_HERMES_PORT"))
+	if value == "" {
+		return 8642, nil
+	}
+	port, err := strconv.Atoi(value)
+	if err != nil || port < 1 || port > 65535 {
+		return 0, errors.New("WING_HERMES_PORT must be a valid TCP port")
+	}
+	return port, nil
+}
+
+func hermesAPIEndpointCommands(port int) [][]string {
+	return [][]string{
+		{"config", "set", "--force", "platforms.api_server.enabled", "true"},
+		{"config", "set", "--force", "platforms.api_server.extra.host", "127.0.0.1"},
+		{"config", "set", "--force", "platforms.api_server.extra.port", strconv.Itoa(port)},
+	}
+}
+
+func waitForHermesAPIHealth(ctx context.Context, port int) error {
+	healthCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	client := &http.Client{Timeout: 2 * time.Second}
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/health", port)
+	ticker := time.NewTicker(250 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		request, err := http.NewRequestWithContext(healthCtx, http.MethodGet, endpoint, nil)
+		if err == nil {
+			response, requestErr := client.Do(request)
+			if requestErr == nil {
+				_ = response.Body.Close()
+				if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices {
+					return nil
+				}
+			}
+		}
+		select {
+		case <-healthCtx.Done():
+			return errors.New("Hermes API did not become healthy")
+		case <-ticker.C:
+		}
 	}
 }
 

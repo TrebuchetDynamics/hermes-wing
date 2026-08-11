@@ -1,6 +1,39 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+class VoiceEngineProvenance {
+  const VoiceEngineProvenance({
+    required this.engine,
+    required this.adapter,
+    required this.model,
+    required this.offlineRequested,
+    required this.appOwnedModel,
+  });
+
+  final String engine;
+  final String adapter;
+  final String? model;
+  final bool offlineRequested;
+  final bool appOwnedModel;
+
+  @override
+  bool operator ==(Object other) =>
+      other is VoiceEngineProvenance &&
+      other.engine == engine &&
+      other.adapter == adapter &&
+      other.model == model &&
+      other.offlineRequested == offlineRequested &&
+      other.appOwnedModel == appOwnedModel;
+
+  @override
+  int get hashCode =>
+      Object.hash(engine, adapter, model, offlineRequested, appOwnedModel);
+}
+
+abstract interface class VoiceCaptureProvenanceService {
+  VoiceEngineProvenance get provenance;
+}
+
 class VoiceCapture {
   const VoiceCapture({
     required this.audio,
@@ -20,6 +53,10 @@ abstract interface class VoiceCaptureService {
 
   /// Cancels any active capture and releases the microphone promptly.
   Future<void> cancel();
+}
+
+abstract interface class VoiceCaptureLifecycleService {
+  Future<void> dispose();
 }
 
 /// Optional live recognition updates from a [VoiceCaptureService].

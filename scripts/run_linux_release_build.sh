@@ -82,7 +82,10 @@ fi
 
 # audioplayers creates its target before calling link_directories, so CMake
 # drops the rootless GStreamer library directory from its final link command.
+# Flutter also requires clang to sit next to the selected clang++ executable.
+cc="$(command -v clang)"
 cxx="$(command -v clang++)"
+ln -sf "$cc" "$compiler_dir/clang"
 cat >"$compiler_dir/clang++" <<EOF
 #!/usr/bin/env bash
 for argument in "\$@"; do

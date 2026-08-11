@@ -2,8 +2,83 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/voice/voice_settings.dart';
+import '../../../shared/voice/text_to_speech_service.dart';
 
 export '../../../shared/voice/voice_settings.dart';
+
+final class OfflineTtsRuntimeOwner {
+  TextToSpeechService? _current;
+  bool _currentOwnsOfflineModels = false;
+  Future<void> _releaseBarrier = Future<void>.value();
+
+  Future<void> adopt(
+    TextToSpeechService service, {
+    bool ownsOfflineModels = false,
+  }) {
+    if (identical(_current, service)) return _releaseBarrier;
+    final previous = _current;
+    _current = service;
+    _currentOwnsOfflineModels = ownsOfflineModels;
+    if (previous != null) _queueRelease(previous);
+    return _releaseBarrier;
+  }
+
+  Future<void> release(TextToSpeechService service) {
+    if (!identical(_current, service)) return _releaseBarrier;
+    _current = null;
+    _currentOwnsOfflineModels = false;
+    _queueRelease(service);
+    return _releaseBarrier;
+  }
+
+  Future<void> releaseAll() {
+    final current = _current;
+    _current = null;
+    _currentOwnsOfflineModels = false;
+    if (current != null) _queueRelease(current);
+    return _releaseBarrier;
+  }
+
+  Future<void> releaseOfflineModels() {
+    if (!_currentOwnsOfflineModels) return _releaseBarrier;
+    return releaseAll();
+  }
+
+  void _queueRelease(TextToSpeechService service) {
+    _releaseBarrier = _releaseBarrier.then(
+      (_) => Future<void>.sync(service.dispose),
+    );
+  }
+}
+
+final offlineTtsRuntimeOwnerProvider = Provider<OfflineTtsRuntimeOwner>(
+  (_) => OfflineTtsRuntimeOwner(),
+);
+
+final class ReleaseBarrierTextToSpeechService implements TextToSpeechService {
+  ReleaseBarrierTextToSpeechService(this._delegate, this._predecessorRelease);
+
+  final TextToSpeechService _delegate;
+  final Future<void> _predecessorRelease;
+
+  @override
+  Future<void> speak(String text) async {
+    await _predecessorRelease;
+    await _delegate.speak(text);
+  }
+
+  @override
+  Future<void> stop() async {
+    await _predecessorRelease;
+    await _delegate.stop();
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _predecessorRelease;
+    await _delegate.dispose();
+  }
+}
 
 class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyVoiceEnabled = 'wing.voice.continuous_enabled';
@@ -16,6 +91,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyCommandWord = 'wing.voice.command_word';
   static const _keySpeechRate = 'tts_speech_rate';
   static const _keyTtsVoiceName = 'tts_voice_name';
+  static const _keyLanguageMode = 'wing.voice.language_mode';
 
   SharedPreferences? _prefs;
   final _voicePacks = <PocketSpeechModel, PocketSpeechVoicePack>{};
@@ -81,6 +157,11 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
       final commandWord = _prefs?.getString(_keyCommandWord) ?? 'navi';
       final speechRate = _prefs?.getDouble(_keySpeechRate) ?? 1.0;
       final ttsVoiceName = _prefs?.getString(_keyTtsVoiceName);
+      final savedLanguageMode = _prefs?.getString(_keyLanguageMode);
+      final languageMode = VoiceLanguageMode.values.firstWhere(
+        (candidate) => candidate.name == savedLanguageMode,
+        orElse: () => VoiceLanguageMode.autoEnglishSpanish,
+      );
       state = WingVoiceSettings(
         continuousVoiceEnabled: enabled,
         speakRepliesEnabled: speakReplies,
@@ -91,6 +172,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
         commandWord: commandWord,
         speechRate: speechRate,
         ttsVoiceName: ttsVoiceName,
+        languageMode: languageMode,
       );
     } catch (_) {
       if (ref.mounted) state = const WingVoiceSettings();
@@ -142,6 +224,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
       } else {
         await prefs.setString(_keyTtsVoiceName, ttsVoiceName);
       }
+      await prefs.setString(_keyLanguageMode, settings.languageMode.name);
     } catch (_) {
       // Settings remain usable in memory when platform persistence is down.
     }
@@ -225,6 +308,12 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   void setTtsVoiceName(String? name) {
     _mutationGeneration += 1;
     state = state.copyWith(ttsVoiceName: name, clearTtsVoiceName: name == null);
+    _save();
+  }
+
+  void setLanguageMode(VoiceLanguageMode mode) {
+    _mutationGeneration += 1;
+    state = state.copyWith(languageMode: mode);
     _save();
   }
 }

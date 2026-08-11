@@ -17,6 +17,17 @@ enum PocketSpeechModel {
   String get downloadSummary => '$downloadSize · $voiceSummary';
 }
 
+enum VoiceLanguageMode {
+  autoEnglishSpanish('Auto · English + Español', null),
+  english('English', 'en-US'),
+  spanish('Español', 'es-US');
+
+  const VoiceLanguageMode(this.label, this.localeId);
+
+  final String label;
+  final String? localeId;
+}
+
 class PocketSpeechVoicePack {
   const PocketSpeechVoicePack({
     required this.model,
@@ -37,6 +48,7 @@ class WingVoiceSettings {
     this.pocketSpeechTtsEnabled = false,
     this.pocketSpeechModel = PocketSpeechModel.kitten,
     this.pocketSpeechVoicePack,
+    this.languageMode = VoiceLanguageMode.autoEnglishSpanish,
     this.commandWord = 'navi',
     this.speechRate = 1.0,
     this.ttsVoiceName,
@@ -51,6 +63,7 @@ class WingVoiceSettings {
   final bool pocketSpeechTtsEnabled;
   final PocketSpeechModel pocketSpeechModel;
   final PocketSpeechVoicePack? pocketSpeechVoicePack;
+  final VoiceLanguageMode languageMode;
   bool get pocketSpeechVoicePackReady =>
       pocketSpeechVoicePack?.model == pocketSpeechModel;
   final String commandWord;
@@ -67,6 +80,7 @@ class WingVoiceSettings {
     bool? pocketSpeechTtsEnabled,
     PocketSpeechModel? pocketSpeechModel,
     PocketSpeechVoicePack? pocketSpeechVoicePack,
+    VoiceLanguageMode? languageMode,
     bool clearPocketSpeechVoicePack = false,
     String? commandWord,
     double? speechRate,
@@ -83,6 +97,7 @@ class WingVoiceSettings {
       pocketSpeechVoicePack: clearPocketSpeechVoicePack
           ? null
           : pocketSpeechVoicePack ?? this.pocketSpeechVoicePack,
+      languageMode: languageMode ?? this.languageMode,
       commandWord: commandWord ?? this.commandWord,
       speechRate: speechRate ?? this.speechRate,
       ttsVoiceName: clearTtsVoiceName

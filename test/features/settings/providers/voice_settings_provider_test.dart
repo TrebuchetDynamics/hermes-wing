@@ -138,6 +138,31 @@ void main() {
     await pumpEventQueue();
   });
 
+  test('voice language mode defaults to bilingual auto and persists', () async {
+    SharedPreferences.setMockInitialValues({});
+    final firstContainer = ProviderContainer();
+    final controller = firstContainer.read(wingVoiceSettingsProvider.notifier);
+    await pumpEventQueue();
+
+    expect(
+      firstContainer.read(wingVoiceSettingsProvider).languageMode,
+      VoiceLanguageMode.autoEnglishSpanish,
+    );
+    controller.setLanguageMode(VoiceLanguageMode.spanish);
+    await pumpEventQueue();
+    firstContainer.dispose();
+
+    final secondContainer = ProviderContainer();
+    addTearDown(secondContainer.dispose);
+    secondContainer.read(wingVoiceSettingsProvider.notifier);
+    await pumpEventQueue();
+
+    expect(
+      secondContainer.read(wingVoiceSettingsProvider).languageMode,
+      VoiceLanguageMode.spanish,
+    );
+  });
+
   test('switching models remembers a downloaded pack after restart', () async {
     SharedPreferences.setMockInitialValues({});
     final firstContainer = ProviderContainer();

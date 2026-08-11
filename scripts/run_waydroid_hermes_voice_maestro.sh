@@ -22,13 +22,34 @@ if [ -z "$device" ] || [ "$(adb -s "$device" get-state 2>/dev/null)" != device ]
   echo "An online Android target is required. Set WING_ANDROID_DEVICE_ID." >&2
   exit 2
 fi
+manufacturer="$(
+  adb -s "$device" shell getprop ro.product.manufacturer 2>/dev/null | tr -d '\r'
+)"
+if [ "$manufacturer" != Waydroid ]; then
+  echo "The deterministic voice fixture may run only on a verified Waydroid target." >&2
+  exit 2
+fi
 
 package="com.trebuchetdynamics.hermes.wing"
 fixture_package="$package.voicefixture"
 recognizer="$fixture_package/.HeadlessSpeechRecognitionService"
 speech_role="android.app.role.SYSTEM_SPEECH_RECOGNIZER"
 previous_recognizer="$(adb -s "$device" shell settings get secure voice_recognition_service | tr -d '\r')"
-previous_speech_role="$(adb -s "$device" shell cmd role get-role-holders "$speech_role" | tr -d '\r' | head -n 1)"
+if adb -s "$device" shell cmd role help 2>/dev/null | grep -q get-role-holders; then
+  previous_speech_role="$(
+    adb -s "$device" shell cmd role get-role-holders "$speech_role" |
+      tr -d '\r' | head -n 1
+  )"
+else
+  previous_speech_role="$(
+    adb -s "$device" shell dumpsys role |
+      grep -A2 "name=$speech_role" |
+      grep -m1 'holders=' |
+      cut -d= -f2 |
+      cut -d, -f1 |
+      tr -d '\r ' || true
+  )"
+fi
 previous_tts="$(adb -s "$device" shell settings get secure tts_default_synth | tr -d '\r')"
 previously_disabled="$(adb -s "$device" shell pm list packages -d | tr -d '\r')"
 google_speech_packages=(com.google.android.as com.google.android.tts)
@@ -63,6 +84,10 @@ cleanup() {
   adb -s "$device" shell cmd role set-bypassing-role-qualification false \
     >/dev/null 2>&1 || true
   adb -s "$device" uninstall "$fixture_package" >/dev/null 2>&1 || true
+  # A debug integration target writes integration_test into this generated
+  # registrant. Remove it so the next normal/release build regenerates the
+  # production plugin set instead of compiling a dev-only plugin.
+  rm -f android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 }
 trap cleanup EXIT
 
@@ -75,10 +100,6 @@ adb -s "$device" uninstall "$fixture_package" >/dev/null 2>&1 || true
 adb -s "$device" install \
   build/headless_voice_fixture/outputs/apk/debug/headless_voice_fixture-debug.apk
 adb -s "$device" shell pm clear "$fixture_package" >/dev/null
-adb -s "$device" shell cmd role set-bypassing-role-qualification true
-adb -s "$device" shell cmd role add-role-holder \
-  "$speech_role" "$fixture_package" 0
-adb -s "$device" shell cmd role set-bypassing-role-qualification false
 for speech_package in "${google_speech_packages[@]}"; do
   if adb -s "$device" shell pm path "$speech_package" >/dev/null 2>&1; then
     adb -s "$device" shell pm disable-user --user 0 "$speech_package" >/dev/null
@@ -90,6 +111,13 @@ adb -s "$device" shell pm clear "$package" >/dev/null
 for voice_package in "$package" "$fixture_package"; do
   adb -s "$device" shell pm grant "$voice_package" android.permission.RECORD_AUDIO
 done
+# Install Maestro's driver before changing the speech role. Package installation
+# triggers role re-evaluation on Waydroid and can evict the test recognizer.
+maestro --device "$device" hierarchy --reinstall-driver >/dev/null
+adb -s "$device" shell cmd role set-bypassing-role-qualification true
+adb -s "$device" shell cmd role add-role-holder \
+  "$speech_role" "$fixture_package" 0
+adb -s "$device" shell cmd role set-bypassing-role-qualification false
 adb -s "$device" shell am start -W -S -n "$package/.MainActivity"
 
 printf 'Android target: %s\n' "$device"
@@ -97,4 +125,5 @@ adb -s "$device" shell cmd package query-services \
   -a android.speech.RecognitionService
 adb -s "$device" shell cmd package query-services \
   -a android.intent.action.TTS_SERVICE
-maestro --device "$device" test .maestro/hermes-continuous-voice-smoke.yaml
+maestro --device "$device" test --no-reinstall-driver \
+  .maestro/hermes-continuous-voice-smoke.yaml

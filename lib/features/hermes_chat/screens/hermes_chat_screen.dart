@@ -29,7 +29,13 @@ import '../../../shared/tips/wing_tips.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../settings/providers/voice_settings_provider.dart';
+import '../../settings/providers/offline_stt_pack_provider.dart';
+import '../../voice/services/models/default_voice_model_pack_installer.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
+import '../../voice/services/platform/voice_capture_platform.dart';
+import '../../voice/services/speech/offline_first_voice_capture_service.dart';
+import '../../voice/services/speech/offline_voice_capture_factory.dart';
+import '../../voice/services/tts/pocket_speech_incremental_tts_engine.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../attachments/hermes_attachment_content.dart';
 import '../attachments/staged_attachment.dart';
@@ -55,12 +61,60 @@ part 'state/hermes_chat_session_actions.dart';
 part 'state/hermes_chat_message_flow.dart';
 
 /// Voice-capture/TTS services for the Hermes chat screen.
-final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>(
-  (_) => createDefaultVoiceCaptureService(),
+final hermesVoiceCapturePlatformProvider = Provider<VoiceCapturePlatform>(
+  (_) => currentVoiceCapturePlatform(),
 );
+
+final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>((ref) {
+  final packStatus = ref.watch(
+    offlineSttPackControllerProvider.select((state) => state.status),
+  );
+  final offlineSttTier = ref.watch(offlineSttModelTierProvider);
+  final platform = ref.watch(hermesVoiceCapturePlatformProvider);
+  final runtimeOwner = ref.watch(offlineVoiceRuntimeOwnerProvider);
+  final languageMode = ref.watch(
+    wingVoiceSettingsProvider.select((settings) => settings.languageMode),
+  );
+  final fallback = createDefaultVoiceCaptureService(
+    platform: platform,
+    localeId: languageMode.localeId,
+  );
+  if (fallback == null || packStatus != OfflineSttPackStatus.installed) {
+    return fallback;
+  }
+  late final Future<void> predecessorRelease;
+  final service = OfflineFirstVoiceCaptureService(
+    fallback: fallback,
+    loadOffline: () async {
+      await predecessorRelease;
+      if (!platform.isAndroid) return null;
+      final installer = await createDefaultVoiceModelPackInstaller();
+      return loadInstalledOfflineVoiceCapture(
+        installer: installer,
+        tier: offlineSttTier,
+        languageMode: () => ref.read(wingVoiceSettingsProvider).languageMode,
+      );
+    },
+  );
+  predecessorRelease = runtimeOwner.adopt(service);
+  ref.onDispose(() => unawaited(runtimeOwner.release(service)));
+  return service;
+});
 
 final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
   (_) => openFile,
+);
+
+final hermesTtsIsAndroidProvider = Provider<bool>(
+  (_) => !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
+);
+
+typedef HermesPlatformTtsFactory =
+    TextToSpeechService? Function(TtsSettingsReader settings);
+
+final hermesPlatformTtsFactoryProvider = Provider<HermesPlatformTtsFactory>(
+  (_) =>
+      (settings) => createDefaultTextToSpeechService(settings: settings),
 );
 
 final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
@@ -72,21 +126,32 @@ final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
       ),
     ),
   );
-  final platformService = createDefaultTextToSpeechService(
-    settings: () => ref.read(wingVoiceSettingsProvider),
-  );
+  WingVoiceSettings settings() => ref.read(wingVoiceSettingsProvider);
+  final platformFactory = ref.watch(hermesPlatformTtsFactoryProvider);
+  final platformService = platformFactory(settings);
   final service = pocketSpeechEnabled && voicePack != null
-      ? createPocketSpeechTextToSpeechService(
-          enabled: true,
-          voicePack: voicePack,
-          settings: () => ref.read(wingVoiceSettingsProvider),
-          fallback: platformService,
-        )
+      ? createIncrementalPocketSpeechTextToSpeechService(
+              enabled: true,
+              isAndroid: ref.watch(hermesTtsIsAndroidProvider),
+              voicePack: voicePack,
+              fallback: platformService,
+              settings: settings,
+            ) ??
+            createPocketSpeechTextToSpeechService(
+              enabled: true,
+              voicePack: voicePack,
+              settings: settings,
+              fallback: platformService,
+            )
       : platformService;
-  if (service != null) {
-    ref.onDispose(() => unawaited(service.dispose()));
-  }
-  return service;
+  if (service == null) return null;
+  final owner = ref.watch(offlineTtsRuntimeOwnerProvider);
+  final predecessorRelease = owner.adopt(
+    service,
+    ownsOfflineModels: pocketSpeechEnabled && voicePack != null,
+  );
+  ref.onDispose(() => unawaited(owner.release(service)));
+  return ReleaseBarrierTextToSpeechService(service, predecessorRelease);
 });
 
 const _hermesBaseUrlHint =

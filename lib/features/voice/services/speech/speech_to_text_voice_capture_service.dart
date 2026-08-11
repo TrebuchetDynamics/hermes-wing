@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -48,12 +50,24 @@ abstract interface class SpeechToTextEngine {
   Future<void> cancel();
 }
 
+abstract interface class SpeechToTextListeningStateEngine {
+  bool get isListening;
+}
+
+abstract interface class SpeechToTextGenerationBoundEngine {
+  bool get hasGenerationBoundCallbacks;
+}
+
 abstract interface class SpeechToTextSoundLevelEngine {
   Stream<double> get soundLevels;
 }
 
 class PluginSpeechToTextEngine
-    implements SpeechToTextEngine, SpeechToTextSoundLevelEngine {
+    implements
+        SpeechToTextEngine,
+        SpeechToTextListeningStateEngine,
+        SpeechToTextGenerationBoundEngine,
+        SpeechToTextSoundLevelEngine {
   PluginSpeechToTextEngine({
     stt.SpeechToText? speechToText,
     this.androidIntentLookup = false,
@@ -64,6 +78,13 @@ class PluginSpeechToTextEngine
   final _soundLevels = StreamController<double>.broadcast();
   final bool androidIntentLookup;
   final bool androidNoBluetooth;
+
+  @override
+  bool get isListening => _speechToText.isListening;
+
+  @override
+  bool get hasGenerationBoundCallbacks =>
+      defaultTargetPlatform == TargetPlatform.android;
 
   @override
   Stream<double> get soundLevels => _soundLevels.stream;
@@ -134,7 +155,8 @@ class SpeechToTextVoiceCaptureService
     implements
         VoiceCaptureService,
         VoiceCaptureProgressService,
-        VoiceCaptureSoundLevelService {
+        VoiceCaptureSoundLevelService,
+        VoiceCaptureProvenanceService {
   factory SpeechToTextVoiceCaptureService({
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
@@ -178,14 +200,26 @@ class SpeechToTextVoiceCaptureService
   final SpeechToTextReadinessCheck? _readinessCheck;
   final SpeechToTextCaptureCoordinator _coordinator;
   final String? localeId;
+  String? get configuredLocaleId => localeId;
   final Duration pauseFor;
   final Duration partialResultPauseFor;
   final bool onDeviceOnly;
+  @override
+  VoiceEngineProvenance get provenance => VoiceEngineProvenance(
+    engine: 'Platform SpeechRecognizer',
+    adapter: 'speech_to_text 7.4.0',
+    model: null,
+    offlineRequested: onDeviceOnly,
+    appOwnedModel: false,
+  );
   final _partialTranscripts = StreamController<String>.broadcast(sync: true);
   final _soundLevels = StreamController<double>.broadcast(sync: true);
   bool _initialized = false;
+  bool _captureInProgress = false;
   Completer<void>? _activeCancellation;
   Completer<SpeechToTextSnapshot>? _activeCompletion;
+  Completer<void>? _activeRecognitionEnded;
+  Future<void> _recognizerTeardown = Future<void>.value();
   void Function(Object error)? _onError;
   void Function(String status)? _onStatus;
 
@@ -207,15 +241,73 @@ class SpeechToTextVoiceCaptureService
         const SpeechToTextCaptureFailure('capture cancelled'),
       );
     }
-    return _engine.cancel();
+    final recognitionEnded = _activeRecognitionEnded;
+    final engineCancellation = _beginRecognizerCancellation(
+      recognitionEnded: recognitionEnded,
+    );
+    return engineCancellation.then<void>((_) => _recognizerTeardown);
+  }
+
+  Future<void> _beginRecognizerCancellation({
+    required Completer<void>? recognitionEnded,
+  }) {
+    final previousTeardown = _recognizerTeardown;
+    final engineCancellation = Future<void>.sync(_engine.cancel);
+    final teardown = () async {
+      Object? cancellationError;
+      StackTrace? cancellationStackTrace;
+      try {
+        await engineCancellation;
+      } catch (error, stackTrace) {
+        cancellationError = error;
+        cancellationStackTrace = stackTrace;
+      }
+      if (recognitionEnded != null && !recognitionEnded.isCompleted) {
+        // A failed cancel is not proof that the recognizer ended. Keep the
+        // replacement barrier pending until the platform terminal callback.
+        await recognitionEnded.future;
+        return;
+      }
+      if (cancellationError != null) {
+        Error.throwWithStackTrace(cancellationError, cancellationStackTrace!);
+      }
+    }();
+    _recognizerTeardown = Future.wait<void>([
+      previousTeardown,
+      teardown,
+    ]).then<void>((_) {});
+    unawaited(
+      _recognizerTeardown.then<void>(
+        (_) {},
+        onError: (Object _, StackTrace _) {},
+      ),
+    );
+    return engineCancellation;
   }
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
+    if (_captureInProgress) {
+      throw const SpeechToTextCaptureFailure('capture already in progress');
+    }
+    _captureInProgress = true;
+    try {
+      return await _captureExclusive(timeout: timeout);
+    } finally {
+      _captureInProgress = false;
+    }
+  }
+
+  Future<VoiceCapture> _captureExclusive({required Duration timeout}) async {
+    await _recognizerTeardown.timeout(
+      timeout,
+      onTimeout: () => throw const VoiceCaptureTimeout(),
+    );
     final startedAt = _clock();
     final elapsed = Stopwatch()..start();
     final cancellation = Completer<void>();
     final completion = Completer<SpeechToTextSnapshot>();
+    final recognitionEnded = Completer<void>();
     _activeCancellation = cancellation;
     _activeCompletion = completion;
     unawaited(
@@ -228,11 +320,21 @@ class SpeechToTextVoiceCaptureService
     Timer? partialResultTimer;
     var recognitionStarted = false;
     var recognitionStopAttempted = false;
+    var recognitionCancellationAttempted = false;
+    Future<void>? recognitionCancellation;
+    var ambiguousTerminalPending = false;
     final soundLevelSubscription =
         (_engine is SpeechToTextSoundLevelEngine
                 ? (_engine as SpeechToTextSoundLevelEngine).soundLevels
                 : null)
-            ?.listen(_soundLevels.add);
+            ?.listen((level) {
+              if (!identical(_activeRecognitionEnded, recognitionEnded) ||
+                  cancellation.isCompleted ||
+                  recognitionEnded.isCompleted) {
+                return;
+              }
+              _soundLevels.add(level);
+            });
 
     void cancelPartialResultTimer() => partialResultTimer?.cancel();
 
@@ -244,19 +346,41 @@ class SpeechToTextVoiceCaptureService
       }
     }
 
+    Future<void> cancelCurrentRecognition() {
+      final existing = recognitionCancellation;
+      if (existing != null) return existing;
+      recognitionCancellationAttempted = true;
+      return recognitionCancellation = _beginRecognizerCancellation(
+        recognitionEnded: identical(_activeRecognitionEnded, recognitionEnded)
+            ? recognitionEnded
+            : null,
+      );
+    }
+
     void completeWithError(Object error) {
       cancelPartialResultTimer();
       log(_coordinator.errorDiagnostic(error));
-      if (!completion.isCompleted) {
+      // An error callback is not proof that the platform recognizer has
+      // reached terminal teardown. Complete the capture failure first so a
+      // synchronous terminal emitted by cancel cannot replace its error, then
+      // start cancellation and keep replacement capture blocked.
+      if (!completion.isCompleted && latestTranscript?.finalResult != true) {
         completion.completeError(_coordinator.normalizeError(error));
       }
+      fireAndForget(
+        cancelCurrentRecognition(),
+        'speech engine cancel after recognition error',
+      );
     }
 
     Future<T> bounded<T>(Future<T> operation) {
       final remaining = timeout - elapsed.elapsed;
       if (remaining <= Duration.zero) {
         if (!cancellation.isCompleted) {
-          fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+          fireAndForget(
+            cancelCurrentRecognition(),
+            'speech engine cancel on timeout',
+          );
         }
         throw const VoiceCaptureTimeout();
       }
@@ -267,7 +391,10 @@ class SpeechToTextVoiceCaptureService
           // the recognizer reports NO_SPEECH_DETECTED, which would strand the
           // capture with a spinning mic and no error.
           if (!cancellation.isCompleted) {
-            fireAndForget(_engine.cancel(), 'speech engine cancel on timeout');
+            fireAndForget(
+              cancelCurrentRecognition(),
+              'speech engine cancel on timeout',
+            );
           }
           throw const VoiceCaptureTimeout();
         },
@@ -280,6 +407,24 @@ class SpeechToTextVoiceCaptureService
         (_) => throw const SpeechToTextCaptureFailure('capture cancelled'),
       ),
     ]);
+
+    Future<void>? stoppedRecognitionSettlement;
+    Future<void> settleStoppedRecognition() {
+      return stoppedRecognitionSettlement ??= () async {
+        if (recognitionEnded.isCompleted) return;
+        try {
+          await recognitionEnded.future.timeout(
+            const Duration(milliseconds: 200),
+          );
+        } on TimeoutException {
+          // A recognizer that omits its terminal status must be explicitly
+          // cancelled before another listen starts. Unlike the old fixed delay,
+          // this fallback does not simply assume teardown after the clock wins.
+          await bounded(cancelCurrentRecognition());
+          await bounded(recognitionEnded.future);
+        }
+      }();
+    }
 
     try {
       final unavailableReason = await cancellable(
@@ -298,12 +443,62 @@ class SpeechToTextVoiceCaptureService
           onError: completeWithError,
           onStatus: (status) {
             log('status=$status');
-            if (completion.isCompleted) return;
             final normalizedStatus = status.trim().toLowerCase();
             if (normalizedStatus == 'listening') recognitionStarted = true;
-            if (isTerminalSpeechToTextStatus(status) &&
-                !recognitionStarted &&
-                latestTranscript == null) {
+            final terminal = isTerminalSpeechToTextStatus(status);
+            if (identical(_activeRecognitionEnded, recognitionEnded) &&
+                terminal &&
+                !recognitionEnded.isCompleted) {
+              final transcript = latestTranscript;
+              final generationEngine = _engine;
+              final generationBound =
+                  generationEngine is SpeechToTextGenerationBoundEngine &&
+                  (generationEngine as SpeechToTextGenerationBoundEngine)
+                      .hasGenerationBoundCallbacks;
+              if (!generationBound &&
+                  !ambiguousTerminalPending &&
+                  !recognitionStopAttempted &&
+                  !recognitionCancellationAttempted &&
+                  !cancellation.isCompleted) {
+                // Global speech_to_text status callbacks have no native
+                // recognizer identity. An unprompted terminal can be stale even
+                // after this recognizer's final result, so it must not submit
+                // or release ownership. Fail this capture when no final exists
+                // and require a second terminal callback after cancellation as
+                // teardown proof.
+                ambiguousTerminalPending = true;
+                cancelPartialResultTimer();
+                if (!completion.isCompleted &&
+                    (transcript == null || !transcript.finalResult)) {
+                  completion.completeError(
+                    const SpeechToTextCaptureFailure(
+                      'ambiguous terminal recognizer status',
+                    ),
+                  );
+                }
+                fireAndForget(
+                  cancelCurrentRecognition(),
+                  'speech engine cancel after ambiguous terminal',
+                );
+                return;
+              }
+              if (ambiguousTerminalPending) {
+                final stateEngine = _engine;
+                if (stateEngine is SpeechToTextListeningStateEngine) {
+                  final listeningState =
+                      stateEngine as SpeechToTextListeningStateEngine;
+                  if (listeningState.isListening) {
+                    return;
+                  }
+                }
+              }
+              recognitionEnded.complete();
+              if (identical(_activeRecognitionEnded, recognitionEnded)) {
+                _activeRecognitionEnded = null;
+              }
+            }
+            if (completion.isCompleted) return;
+            if (terminal && !recognitionStarted && latestTranscript == null) {
               return;
             }
             switch (_coordinator.terminalStatusPlan(
@@ -348,6 +543,7 @@ class SpeechToTextVoiceCaptureService
         'pauseFor=${pauseFor.inMilliseconds}ms partialResults=true '
         'onDevice=$onDeviceOnly',
       );
+      _activeRecognitionEnded = recognitionEnded;
       await cancellable(
         _engine.listen(
           listenFor: listenFor,
@@ -355,6 +551,12 @@ class SpeechToTextVoiceCaptureService
           localeId: effectiveLocaleId,
           onDevice: onDeviceOnly,
           onResult: (snapshot) {
+            if (!identical(_activeRecognitionEnded, recognitionEnded) ||
+                cancellation.isCompleted ||
+                recognitionCancellationAttempted ||
+                recognitionEnded.isCompleted) {
+              return;
+            }
             recognitionStarted = true;
             log(
               'result wordsLength=${snapshot.words.length} '
@@ -366,14 +568,8 @@ class SpeechToTextVoiceCaptureService
               current: latestTranscript,
               candidate: snapshot,
             );
-            if (snapshot.finalResult && !completion.isCompleted) {
+            if (snapshot.finalResult) {
               cancelPartialResultTimer();
-              completion.complete(
-                _coordinator.completionTranscript(
-                  terminalSnapshot: snapshot,
-                  latestUsableSnapshot: latestTranscript,
-                ),
-              );
             } else if (snapshot.words.trim().isNotEmpty) {
               cancelPartialResultTimer();
               partialResultTimer = Timer(
@@ -384,16 +580,26 @@ class SpeechToTextVoiceCaptureService
                   if (!completion.isCompleted && !recognitionStopAttempted) {
                     recognitionStopAttempted = true;
                     fireAndForget(
-                      _engine.stop().whenComplete(() async {
-                        // ponytail: one short grace lets Android flush its final callback.
-                        await Future<void>.delayed(
-                          const Duration(milliseconds: 100),
-                        );
-                        final transcript = latestTranscript;
-                        if (!completion.isCompleted && transcript != null) {
-                          completion.complete(transcript);
-                        }
-                      }),
+                      Future<void>.sync(_engine.stop).then<void>(
+                        (_) => settleStoppedRecognition().then<void>((_) {
+                          final transcript = latestTranscript;
+                          if (!completion.isCompleted && transcript != null) {
+                            completion.complete(transcript);
+                          }
+                        }),
+                        onError: (Object error, StackTrace _) {
+                          log(
+                            'speech engine stop after partial transcript inactivity '
+                            'failed (${error.runtimeType})',
+                          );
+                          return settleStoppedRecognition().then<void>((_) {
+                            final transcript = latestTranscript;
+                            if (!completion.isCompleted && transcript != null) {
+                              completion.complete(transcript);
+                            }
+                          });
+                        },
+                      ),
                       'speech engine stop after partial transcript inactivity',
                     );
                   }
@@ -406,7 +612,14 @@ class SpeechToTextVoiceCaptureService
 
       final snapshot = await bounded(completion.future);
       cancelPartialResultTimer();
-      if (!recognitionStopAttempted) await cancellable(_engine.stop());
+      if (recognitionStopAttempted) {
+        await cancellable(settleStoppedRecognition());
+      } else {
+        // A final result and recognizer teardown are separate Android events.
+        // Do not start a replacement capture until this recognizer reports its
+        // terminal status, and do not issue a redundant stop after final STT.
+        await cancellable(recognitionEnded.future);
+      }
 
       final transcript = snapshot.words.trim();
       if (transcript.isEmpty) {
@@ -426,7 +639,7 @@ class SpeechToTextVoiceCaptureService
       cancelPartialResultTimer();
       if (!cancellation.isCompleted) {
         fireAndForget(
-          _engine.cancel(),
+          cancelCurrentRecognition(),
           'speech engine cancel after capture failure',
         );
       }
@@ -443,6 +656,10 @@ class SpeechToTextVoiceCaptureService
         _activeCancellation = null;
       }
       if (identical(_activeCompletion, completion)) _activeCompletion = null;
+      if (identical(_activeRecognitionEnded, recognitionEnded) &&
+          recognitionEnded.isCompleted) {
+        _activeRecognitionEnded = null;
+      }
       await soundLevelSubscription?.cancel();
     }
   }

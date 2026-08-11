@@ -146,6 +146,36 @@ void main() {
     expect(actionTapped, isTrue);
   });
 
+  testWidgets('InfoActionSheet bounds long information values', (tester) async {
+    const value = 'a-very-long-gateway-profile-model-value-that-must-not-wrap';
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showSheet(
+                context,
+                InfoActionSheet(
+                  'Status',
+                  infoRows: const [SheetInfoRow(Icons.info, 'Gateway', value)],
+                  actions: const [],
+                ),
+              ),
+              child: const Text('Show sheet'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Show sheet'));
+    await tester.pumpAndSettle();
+
+    final valueText = tester.widget<Text>(find.text(value));
+    expect(valueText.maxLines, 1);
+    expect(valueText.overflow, TextOverflow.ellipsis);
+  });
+
   testWidgets('long action sheet uses DraggableScrollableSheet', (
     tester,
   ) async {

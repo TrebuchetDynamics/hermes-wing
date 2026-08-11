@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/features/settings/providers/offline_stt_pack_provider.dart';
 import 'package:wing/features/settings/providers/voice_settings_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/features/voice/services/models/offline_voice_model_manifests.dart';
 import 'package:wing/features/voice/services/tts/pocket_speech_asset_download_service.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
@@ -71,6 +73,55 @@ void main() {
     expect(find.textContaining('stored on this device'), findsOneWidget);
   });
 
+  testWidgets('Pocket Speech deletion awaits active runtime disposal', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'wing.voice.pocket_speech_model': 'kitten',
+      'wing.voice.kokoro_model_path': '/models/kitten/model.onnx',
+      'wing.voice.kokoro_voices_path': '/models/kitten/voices.json',
+    });
+    final downloader = _FakeAssetDownloadService();
+    debugPocketSpeechAssetDownloadService = downloader;
+    addTearDown(() => debugPocketSpeechAssetDownloadService = null);
+    final owner = OfflineTtsRuntimeOwner();
+    final runtime = _BlockingDisposeTtsService();
+    await owner.adopt(runtime, ownsOfflineModels: true);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [offlineTtsRuntimeOwnerProvider.overrideWithValue(owner)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final remove = find.byKey(
+      const ValueKey('voice-pocket-speech-remove-kitten'),
+    );
+    final removeButton = tester.widget<IconButton>(remove);
+    expect(removeButton.onPressed, isNotNull);
+    removeButton.onPressed!();
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Remove'));
+    await tester.pump();
+
+    expect(runtime.disposeStarted, isTrue);
+    expect(downloader.deleteCalls, 0);
+
+    runtime.disposeGate.complete();
+    await tester.pumpAndSettle();
+    expect(downloader.deleteCalls, 1);
+  });
+
   testWidgets(
     'model picker shows download size and language coverage before selection',
     (tester) async {
@@ -87,12 +138,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(
-        find.descendant(
-          of: find.byKey(const ValueKey('voice-pocket-speech-model')),
-          matching: find.byType(DropdownButton<PocketSpeechModel>),
-        ),
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('voice-pocket-speech-model')),
+        300,
       );
+      final modelDropdown = find.descendant(
+        of: find.byKey(const ValueKey('voice-pocket-speech-model')),
+        matching: find.byType(DropdownButton<PocketSpeechModel>),
+      );
+      await tester.ensureVisible(modelDropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(modelDropdown);
       await tester.pumpAndSettle();
 
       expect(
@@ -126,12 +182,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('voice-pocket-speech-model')),
-        matching: find.byType(DropdownButton<PocketSpeechModel>),
-      ),
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('voice-pocket-speech-model')),
+      300,
     );
+    final modelDropdown = find.descendant(
+      of: find.byKey(const ValueKey('voice-pocket-speech-model')),
+      matching: find.byType(DropdownButton<PocketSpeechModel>),
+    );
+    await tester.ensureVisible(modelDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(modelDropdown);
     await tester.pumpAndSettle();
     await tester.tap(
       find.text('Kitten · About 26 MB · English · 1 voice').last,
@@ -216,6 +277,109 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('recognition language can select bilingual auto or one locale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('voice-advanced-expansion')),
+      300,
+    );
+    await tester.tap(find.byKey(const ValueKey('voice-advanced-expansion')));
+    await tester.pumpAndSettle();
+
+    final picker = find.byKey(const ValueKey('voice-language-mode'));
+    expect(picker, findsOneWidget);
+    await tester.ensureVisible(picker);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: picker,
+        matching: find.byType(DropdownButton<VoiceLanguageMode>),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Auto · English + Español'), findsWidgets);
+    await tester.tap(find.text('Español').last);
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(VoiceSettingsScreen)),
+    );
+    expect(
+      container.read(wingVoiceSettingsProvider).languageMode,
+      VoiceLanguageMode.spanish,
+    );
+  });
+
+  testWidgets('offline STT pack can be downloaded from Voice settings', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final repository = _FakeOfflineSttRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          offlineSttPackRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final pack = find.byKey(const ValueKey('voice-offline-stt-pack'));
+    await tester.scrollUntilVisible(pack, 300);
+    expect(pack, findsOneWidget);
+    expect(find.textContaining('Whisper Base'), findsWidgets);
+
+    final tier = find.byKey(const ValueKey('voice-offline-stt-tier'));
+    expect(tier, findsOneWidget);
+    await tester.tap(tier);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Whisper Small').last);
+    await tester.pumpAndSettle();
+    expect(
+      ProviderScope.containerOf(
+        tester.element(pack),
+      ).read(offlineSttModelTierProvider),
+      OfflineSttModelTier.quality,
+    );
+
+    final download = find.byKey(const ValueKey('voice-offline-stt-download'));
+    await tester.tap(download);
+    await tester.pumpAndSettle();
+
+    expect(repository.installCalls, 1);
+    expect(
+      find.byKey(const ValueKey('voice-offline-stt-delete')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('advanced voice controls start collapsed and can be revealed', (
@@ -349,7 +513,33 @@ void main() {
   });
 }
 
+class _FakeOfflineSttRepository implements OfflineSttPackRepository {
+  bool installed = false;
+  int installCalls = 0;
+
+  @override
+  Future<OfflineSttPackInstallation?> installedPack() async => installed
+      ? const OfflineSttPackInstallation(provenance: 'verified test revision')
+      : null;
+
+  @override
+  Future<OfflineSttPackInstallation> install() async {
+    installCalls += 1;
+    installed = true;
+    return const OfflineSttPackInstallation(
+      provenance: 'verified test revision',
+    );
+  }
+
+  @override
+  Future<void> delete() async {
+    installed = false;
+  }
+}
+
 class _FakeAssetDownloadService implements PocketSpeechAssetDownloadService {
+  int deleteCalls = 0;
+
   @override
   bool isConfigured(PocketSpeechModel model) => true;
 
@@ -370,7 +560,26 @@ class _FakeAssetDownloadService implements PocketSpeechAssetDownloadService {
   }) => throw UnimplementedError();
 
   @override
-  Future<void> delete(PocketSpeechModel model) async {}
+  Future<void> delete(PocketSpeechModel model) async {
+    deleteCalls += 1;
+  }
+}
+
+class _BlockingDisposeTtsService implements TextToSpeechService {
+  final disposeGate = Completer<void>();
+  bool disposeStarted = false;
+
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {
+    disposeStarted = true;
+    await disposeGate.future;
+  }
 }
 
 class _FakePreviewTtsService implements TextToSpeechService {

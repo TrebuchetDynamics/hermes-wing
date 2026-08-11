@@ -10,9 +10,13 @@ import 'support/hermes_voice_smoke_harness.dart';
 void main() {
   final channel = AndroidHermesVoiceSmokeChannel();
   final capture = SpeechToTextVoiceCaptureService(
+    diagnosticLog: debugPrint,
     localeId: 'en_US',
     onDeviceOnly: false,
-    engine: PluginSpeechToTextEngine(androidNoBluetooth: true),
+    engine: PluginSpeechToTextEngine(
+      androidIntentLookup: true,
+      androidNoBluetooth: true,
+    ),
   );
   runApp(
     ProviderScope(

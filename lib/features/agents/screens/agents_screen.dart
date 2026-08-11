@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/hermes_domain_authority.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -45,6 +46,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
   @override
   void initState() {
     super.initState();
+    if (!wingLinkDomainFallbacksEnabled) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final directory = ref.read(hermesGatewayDirectoryProvider);
       final gatewayId = directory.activeContactId?.gatewayId;
@@ -390,6 +392,16 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
     HermesGatewayDirectory directory,
     String gatewayId,
   ) async {
+    if (!wingLinkDomainFallbacksEnabled) {
+      if (mounted) {
+        setState(() {
+          _wingLinkGatewayId = null;
+          _wingLinkClient = null;
+          _wingLinkProfiles = null;
+        });
+      }
+      return;
+    }
     final config = directory.configForGateway(gatewayId);
     final originValue = config?.wingLinkOrigin?.trim() ?? '';
     final token = config?.wingLinkToken?.trim() ?? '';

@@ -41,6 +41,37 @@ void main() {
     expect(find.textContaining('/home/operator'), findsNothing);
   });
 
+  testWidgets('reserves edge-to-edge navigation inset below diagnostics', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              padding: EdgeInsets.zero,
+              viewPadding: const EdgeInsets.only(bottom: 32),
+            ),
+            child: child!,
+          ),
+          home: const DiagnosticsSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final list = tester.widget<ListView>(find.byType(ListView));
+    final padding = list.padding! as EdgeInsets;
+    expect(padding.bottom, 48);
+  });
+
   testWidgets('copies the bounded Hermes diagnostics snapshot', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final channel = FakeHermesChannel(

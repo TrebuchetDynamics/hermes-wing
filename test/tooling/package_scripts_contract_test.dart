@@ -5,6 +5,132 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('Waydroid speech fixture ends speech before its final result', () {
+    final fixture = File(
+      'android/headless_voice_fixture/src/main/kotlin/'
+      'com/trebuchetdynamics/hermes/wing/voicefixture/'
+      'HeadlessVoiceTestServices.kt',
+    ).readAsStringSync();
+
+    expect(fixture.indexOf('callback.endOfSpeech()'), greaterThanOrEqualTo(0));
+    expect(
+      fixture.indexOf('callback.endOfSpeech()'),
+      lessThan(fixture.indexOf('callback.results(')),
+    );
+  });
+
+  test('Waydroid stale callback is emitted only after successor starts', () {
+    final fixture = File(
+      'android/headless_voice_fixture/src/main/kotlin/'
+      'com/trebuchetdynamics/hermes/wing/voicefixture/'
+      'HeadlessVoiceTestServices.kt',
+    ).readAsStringSync();
+
+    final successorStart = fixture.indexOf('else if (index == 1)');
+    final staleCallback = fixture.indexOf(
+      'staleCallback?.results(',
+      successorStart,
+    );
+    expect(successorStart, greaterThanOrEqualTo(0));
+    expect(staleCallback, greaterThan(successorStart));
+    expect(
+      fixture.substring(successorStart, staleCallback),
+      contains('handler.postDelayed'),
+    );
+  });
+
+  test('vendored Android speech callbacks recheck native generation', () {
+    final plugin = File(
+      'third_party/speech_to_text/android/src/main/kotlin/'
+      'com/csdcorp/speech_to_text/SpeechToTextPlugin.kt',
+    ).readAsStringSync();
+
+    expect(
+      RegExp(
+        r'private fun sendError[\s\S]*?handler\.post \{[\s\S]*?'
+        r'session != recognitionSession',
+      ).hasMatch(plugin),
+      isTrue,
+    );
+    expect(
+      RegExp(
+        r'override fun onRmsChanged[\s\S]*?handler\.post \{[\s\S]*?'
+        r'session != recognitionSession',
+      ).hasMatch(plugin),
+      isTrue,
+    );
+    expect(plugin, contains('recognizerToDestroy?.destroy()'));
+  });
+
+  test('Waydroid voice runner scopes role qualification bypass', () {
+    final runner = File(
+      'scripts/run_waydroid_hermes_voice_maestro.sh',
+    ).readAsStringSync();
+    final provision = runner.indexOf(r'maestro --device "$device" hierarchy');
+    final enable = runner.lastIndexOf(
+      'cmd role set-bypassing-role-qualification true',
+    );
+    final disable = runner.lastIndexOf(
+      'cmd role set-bypassing-role-qualification false',
+    );
+    final smoke = runner.lastIndexOf(r'maestro --device "$device" test');
+
+    expect(runner, contains('ro.product.manufacturer'));
+    expect(runner, contains('Waydroid'));
+    expect(provision, greaterThanOrEqualTo(0));
+    expect(enable, greaterThan(provision));
+    expect(disable, greaterThan(enable));
+    expect(smoke, greaterThan(disable));
+  });
+
+  test(
+    'Waydroid voice runner removes integration-only plugin registration',
+    () {
+      final runner = File(
+        'scripts/run_waydroid_hermes_voice_maestro.sh',
+      ).readAsStringSync();
+
+      expect(
+        runner,
+        contains(
+          'rm -f android/app/src/main/java/io/flutter/plugins/'
+          'GeneratedPluginRegistrant.java',
+        ),
+      );
+    },
+  );
+
+  test('Waydroid voice runner supports role CLIs without get-role-holders', () {
+    final runner = File(
+      'scripts/run_waydroid_hermes_voice_maestro.sh',
+    ).readAsStringSync();
+
+    expect(runner, contains('dumpsys role'));
+    expect(runner, contains('get-role-holders'));
+  });
+
+  test('Linux rootless build exposes paired clang executables', () {
+    final helper = File(
+      'scripts/run_linux_release_build.sh',
+    ).readAsStringSync();
+
+    expect(helper, contains(r'cc="$(command -v clang)"'));
+    expect(helper, contains(r'ln -sf "$cc" "$compiler_dir/clang"'));
+    expect(helper, contains(r'cat >"$compiler_dir/clang++"'));
+  });
+
+  test('Linux bundle keeps ONNX Runtime relocatable', () {
+    final cmake = File('linux/CMakeLists.txt').readAsStringSync();
+
+    expect(cmake, contains('BUILD_WITH_INSTALL_RPATH TRUE'));
+    expect(cmake, contains(r'INSTALL_RPATH "$ORIGIN"'));
+    expect(cmake, contains('flutter_onnxruntime/onnxruntime/'));
+    expect(cmake, contains('-Wl,-rpath-link,'));
+    expect(cmake, contains('get_filename_component(onnxruntime_runtime_file'));
+    expect(cmake, contains('REALPATH'));
+    expect(cmake, contains('RENAME "libonnxruntime.so.1"'));
+  });
+
   test('package scripts expose Hermes and platform closeout helpers', () {
     final serveWeb = File('serve_web.mjs').readAsStringSync();
     expect(
@@ -105,6 +231,15 @@ void main() {
     expect(
       androidLiveMicPrep,
       contains('does not\nprove physical microphone capture'),
+    );
+    expect(
+      androidLiveMicPrep,
+      contains(r'adb -s "$device" install -r "$apk_path"'),
+    );
+    expect(
+      androidLiveMicPrep,
+      isNot(contains(r'flutter install -d "$device"')),
+      reason: 'prep must not launch a stale APK after installation fails',
     );
     expect(
       androidLiveMicReceipt,

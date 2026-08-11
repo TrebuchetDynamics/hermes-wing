@@ -33,8 +33,10 @@ WING_ANDROID_HERMES_URL=<android-reachable-hermes-url> \
 npm run android:live-mic-prep
 ```
 
-The prep helper installs/launches Hermes Wing and grants `RECORD_AUDIO`. It is not a
-pass receipt.
+The prep helper builds `build/app/outputs/flutter-apk/app-debug.apk`, installs that
+exact artifact, verifies the package is present, grants `RECORD_AUDIO`, and launches
+Hermes Wing. Installation and permission errors stop the helper rather than allowing
+an older installed build to be mistaken for the current one. It is not a pass receipt.
 
 Current prep receipt (2026-07-04): `flutter emulators --launch fractal_test`
 crashed with exit `-6`, but directly launching the AVD with

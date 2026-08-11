@@ -484,6 +484,54 @@ abstract class AppLocalizations {
   /// **'Gateway'**
   String get gatewayLabel;
 
+  /// No description provided for @shellProfileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get shellProfileLabel;
+
+  /// No description provided for @shellModelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get shellModelLabel;
+
+  /// No description provided for @shellInventoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get shellInventoryLabel;
+
+  /// No description provided for @shellConnectedHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected · {host}'**
+  String shellConnectedHost(String host);
+
+  /// No description provided for @shellDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get shellDisconnected;
+
+  /// No description provided for @shellNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not loaded'**
+  String get shellNotLoaded;
+
+  /// No description provided for @shellUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get shellUnavailable;
+
+  /// No description provided for @shellInventorySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{tools, plural, =1{1 tool} other{{tools} tools}} · {skills, plural, =1{1 skill} other{{skills} skills}}'**
+  String shellInventorySummary(int tools, int skills);
+
   /// No description provided for @selectGatewayHint.
   ///
   /// In en, this message translates to:
@@ -1213,6 +1261,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Configured'**
   String get providerConfiguredBadge;
+
+  /// No description provided for @providersConfiguredSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Configured providers'**
+  String get providersConfiguredSection;
+
+  /// No description provided for @providersAvailableSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Available providers'**
+  String get providersAvailableSection;
 
   /// No description provided for @providerNotConfiguredBadge.
   ///
@@ -2150,6 +2210,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advanced'**
   String get voiceAdvancedSection;
+
+  /// No description provided for @voiceRecognitionLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognition language'**
+  String get voiceRecognitionLanguageTitle;
+
+  /// No description provided for @voiceRecognitionLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.'**
+  String get voiceRecognitionLanguageSubtitle;
+
+  /// No description provided for @voiceOfflineRecognitionSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline recognition'**
+  String get voiceOfflineRecognitionSection;
+
+  /// No description provided for @voiceOfflineSttPackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Whisper Base INT8 · English + Español'**
+  String get voiceOfflineSttPackTitle;
+
+  /// No description provided for @voiceOfflineSttChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the verified model pack…'**
+  String get voiceOfflineSttChecking;
+
+  /// No description provided for @voiceOfflineSttAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Not installed · about 163 MB · Android recognition remains available.'**
+  String get voiceOfflineSttAbsent;
+
+  /// No description provided for @voiceOfflineSttInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading and verifying every model artifact…'**
+  String get voiceOfflineSttInstalling;
+
+  /// No description provided for @voiceOfflineSttInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed and verified. {provenance}'**
+  String voiceOfflineSttInstalled(String provenance);
+
+  /// No description provided for @voiceOfflineSttDeleting.
+  ///
+  /// In en, this message translates to:
+  /// **'Removing the offline model pack…'**
+  String get voiceOfflineSttDeleting;
+
+  /// No description provided for @voiceOfflineSttUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The offline speech pack is unavailable.'**
+  String get voiceOfflineSttUnavailable;
+
+  /// No description provided for @voiceOfflineSttDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get voiceOfflineSttDownload;
+
+  /// No description provided for @voiceOfflineSttRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get voiceOfflineSttRemove;
+
+  /// No description provided for @voiceOfflineSttRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get voiceOfflineSttRetry;
 
   /// No description provided for @voiceCommandWordTitle.
   ///

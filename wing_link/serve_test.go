@@ -97,7 +97,26 @@ func decodeBody(t *testing.T, response *http.Response, target any) {
 	}
 }
 
+func TestWingLinkDomainRoutesStayQuarantined(t *testing.T) {
+	handler := newWingLinkServer(
+		&profileBackend{},
+		&StateStore{path: filepath.Join(t.TempDir(), "state.json")},
+		&providerBackend{},
+	)
+	for _, path := range []string{"/v1/profiles", "/v1/providers?profile=default"} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusNotFound {
+			t.Fatalf("%s status = %d; want %d", path, response.Code, http.StatusNotFound)
+		}
+	}
+}
+
 func TestPendingCredentialCanVerifyReadsButCannotMutateBeforeAcknowledgment(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
 	credentialID, token, err := store.StageControlToken()
 	if err != nil {
@@ -193,6 +212,9 @@ func TestPendingCredentialCanVerifyReadsButCannotMutateBeforeAcknowledgment(t *t
 }
 
 func TestManagementAPIUsesIndependentControlTokenAndDoesNotProxyHermes(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 
 	unauthorized := harness.request(t, http.MethodGet, "/v1/profiles", nil, false, nil)
@@ -323,6 +345,9 @@ func newProfileHarnessHome(t *testing.T) string {
 }
 
 func TestProfileCreateRenameAndDeleteUseFixedHermesArguments(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 	created := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{"name": "7qa-agent", "clone_from": "link"}, true, nil)
 	if created.StatusCode != http.StatusCreated {
@@ -361,6 +386,9 @@ func TestProfileCreateRenameAndDeleteUseFixedHermesArguments(t *testing.T) {
 }
 
 func TestProfileGrammarAllowsSixtyFourCharactersAndRejectsReservedNames(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 	name := "1" + strings.Repeat("a", 63)
 	response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{"name": name}, true, nil)
@@ -379,6 +407,9 @@ func TestProfileGrammarAllowsSixtyFourCharactersAndRejectsReservedNames(t *testi
 }
 
 func TestProfileCreatePropagatesUnsafeInventoryErrorsWithoutRunningHermes(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 	if err := os.RemoveAll(filepath.Join(harness.home, "profiles")); err != nil {
 		t.Fatal(err)
@@ -398,6 +429,9 @@ func TestProfileCreatePropagatesUnsafeInventoryErrorsWithoutRunningHermes(t *tes
 }
 
 func TestProfileCreateRejectsSymlinkedProfileChild(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 	if err := os.Symlink(t.TempDir(), filepath.Join(harness.home, "profiles", "unsafe")); err != nil {
 		t.Fatal(err)

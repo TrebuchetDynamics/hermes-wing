@@ -16,8 +16,9 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
         animation: channel,
         builder: (context, _) {
           final state = channel.state;
+          final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
             children: [
               _SettingsSectionCard(
                 title: strings.diagnosticsConnectionSection,

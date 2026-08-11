@@ -13,3 +13,9 @@ Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, in
 - [Android Hermes setup](runbooks/android-hermes-setup.md)
 - [Alpha release runbook](runbooks/release-alpha.md)
 - [Threat model](security/threat-model.md)
+
+## Research recommendations
+
+- [Buzz UX and archived Nostr research](research/buzz-nostr-lessons.md) — Nostr control transport deferred
+- [Matrix messaging lessons for Wing and Wing Link](research/matrix-messaging-lessons.md)
+- [Offline bilingual mobile voice architecture](research/offline-bilingual-voice-architecture.md)

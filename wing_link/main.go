@@ -31,6 +31,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "pair":
 		return pairCommand(stdout, stderr, args[1:])
+	case "setup":
+		return bootstrapCommand(stdout, stderr, args[1:])
 	case "serve":
 		return serveCommand(stdout, stderr, args[1:])
 	case "status", "start", "stop", "restart":
@@ -56,6 +58,10 @@ Commands:
   serve     Run the independent Wing Link profile control plane.
             Options: --listen HOST:PORT
   status    Report daemon and runtime state.
+  setup     Install or adopt pinned Hermes Agent, then optionally create an
+            initial profile and custom provider.
+            Options: --profile NAME [--clone-from NAME]
+                     --provider ID --provider-url URL --model MODEL [--json]
   pair      Pair direct Hermes and independent Wing Link credentials.
   start     Start the daemon if it is not running.
   stop      Stop the running daemon.

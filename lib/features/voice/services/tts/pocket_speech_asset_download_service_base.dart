@@ -74,7 +74,7 @@ class PocketSpeechAssetDownloadConfig {
       modelUrl: String.fromEnvironment(
         'KITTEN_MODEL_URL',
         defaultValue:
-            'https://huggingface.co/KittenML/kitten-tts-nano-0.8-int8/resolve/main/kitten_tts_nano_v0_8.onnx?download=true',
+            'https://huggingface.co/KittenML/kitten-tts-nano-0.8-int8/resolve/84781d74e29ee25217551556398b42f80593a813/kitten_tts_nano_v0_8.onnx?download=true',
       ),
       voicesJsonUrl: String.fromEnvironment(
         'KITTEN_VOICES_JSON_URL',

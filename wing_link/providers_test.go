@@ -171,6 +171,9 @@ func TestCustomProviderUpdateRollsBackPartialCLIChanges(t *testing.T) {
 }
 
 func TestCustomProviderRouteRequiresWingLinkAuthorization(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy provider domain routes are quarantined")
+	}
 	backend := &providerBackend{
 		readHermes: func(context.Context, ...string) ([]byte, error) {
 			return []byte(`{"acme":{"base_url":"https://api.example.test/v1","model":"v1"}}`), nil

@@ -1,6 +1,14 @@
-# Wing Link Multi-Agent Management Design
+# Wing Link multi-agent management design
 
-Status: approved design
+> **Status: superseded (2026-08-10).** This document is preserved as design
+> history, but its profile-topology and custom-provider bridge is not approved
+> for implementation or production use. ADR 0012 and amended ADR 0044 keep
+> profiles, providers, configuration, sessions, messages, tools, schedules,
+> approvals, and messaging semantics authoritative in Hermes Agent. Wing Link is
+> limited to bounded bootstrap, pairing, service lifecycle, health, repair, and
+> diagnostics.
+
+Historical status: approved design
 Date: 2026-08-06
 
 ## Summary

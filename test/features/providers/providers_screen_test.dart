@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -265,6 +264,27 @@ void main() {
     expect(find.textContaining('····ab12'), findsWidgets);
   });
 
+  testWidgets('configured providers are presented before setup candidates', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(const ['providers:read']),
+      providers: const [_anthropicProvider, _openAiProvider],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Configured providers'), findsOneWidget);
+    expect(find.text('Available providers'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('OpenAI')).dy,
+      lessThan(tester.getTopLeft(find.text('Anthropic')).dy),
+    );
+  });
+
   testWidgets(
     'shows loading instead of an empty state while inventories load',
     (tester) async {
@@ -404,7 +424,7 @@ void main() {
   );
 
   testWidgets(
-    'Wing Link CRUDs custom providers when Hermes omits provider APIs',
+    'Wing Link provider fallback stays quarantined when Agent omits APIs',
     (tester) async {
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
@@ -425,117 +445,28 @@ void main() {
       );
       await directory.refresh();
       await directory.activateGateway('alpha');
-
-      final providers = <String, Map<String, Object?>>{
-        'acme': {
-          'id': 'acme',
-          'base_url': 'https://api.acme.test/v1',
-          'model': 'v1',
-          'revision': 'rev-1',
-        },
-      };
-      final requests = <String>[];
-      var providerReads = 0;
-      WingLinkClient builder({required Uri origin, required String token}) =>
-          WingLinkClient(
-            origin: origin,
-            token: token,
-            get: (uri, headers) async {
-              expect(uri.queryParameters['profile'], 'default');
-              providerReads++;
-              if (providerReads > 1) {
-                throw StateError('post-mutation refresh must not run');
-              }
-              return jsonEncode({
-                'providers': providers.values.toList(growable: false),
-              });
-            },
-            post: (uri, headers, body) async {
-              final value = jsonDecode(body) as Map<String, dynamic>;
-              final id = value['id'] as String;
-              requests.add('POST $id');
-              providers[id] = {...value, 'revision': 'rev-created'};
-              return jsonEncode({'provider': providers[id]});
-            },
-            patch: (uri, headers, body) async {
-              final id = uri.pathSegments.last;
-              final value = jsonDecode(body) as Map<String, dynamic>;
-              requests.add('PATCH $id');
-              providers[id] = {
-                'id': id,
-                'base_url': value['base_url'],
-                'model': value['model'],
-                'revision': 'rev-updated',
-              };
-              return jsonEncode({'provider': providers[id]});
-            },
-            delete: (uri, headers) async {
-              final id = uri.pathSegments.last;
-              requests.add('DELETE $id ${headers['If-Match']}');
-              providers.remove(id);
-              return '{}';
-            },
-          );
+      var wingLinkCalls = 0;
 
       await tester.pumpWidget(
-        _testApp(channel, directory: directory, wingLinkClientBuilder: builder),
+        _testApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder: ({required origin, required token}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async {
+                  wingLinkCalls++;
+                  return '{"providers":[]}';
+                },
+              ),
+        ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('acme'), findsOneWidget);
-      expect(find.text('Providers unavailable'), findsNothing);
-
-      await tester.tap(find.text('Create'));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const ValueKey('wing-link-provider-id')),
-        'new-provider',
-      );
-      await tester.enterText(
-        find.byKey(const ValueKey('wing-link-provider-endpoint')),
-        'https://new.example.test/v1',
-      );
-      await tester.enterText(
-        find.byKey(const ValueKey('wing-link-provider-model')),
-        'new-model',
-      );
-      await tester.tap(find.byKey(const ValueKey('wing-link-provider-save')));
-      await tester.pumpAndSettle();
-      expect(requests, contains('POST new-provider'));
-      expect(find.text('new-provider'), findsOneWidget);
-
-      var editProvider = find.byKey(
-        const ValueKey('wing-link-provider-edit-new-provider'),
-      );
-      await tester.ensureVisible(editProvider);
-      await tester.pumpAndSettle();
-      await tester.tap(editProvider);
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const ValueKey('wing-link-provider-model')),
-        'updated-model',
-      );
-      await tester.tap(find.byKey(const ValueKey('wing-link-provider-save')));
-      await tester.pumpAndSettle();
-      expect(requests, contains('PATCH new-provider'));
-      expect(find.text('Model: updated-model'), findsOneWidget);
-
-      editProvider = find.byKey(
-        const ValueKey('wing-link-provider-edit-new-provider'),
-      );
-      await tester.ensureVisible(editProvider);
-      await tester.pumpAndSettle();
-      await tester.tap(editProvider);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('wing-link-provider-delete')));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('wing-link-provider-delete-confirm')),
-      );
-      await tester.pumpAndSettle();
-      expect(requests, contains('DELETE new-provider rev-updated'));
-      expect(providerReads, 1);
-      expect(find.text('new-provider'), findsNothing);
+      expect(wingLinkCalls, 0);
+      expect(find.text('Providers unavailable'), findsOneWidget);
+      expect(find.text('Create'), findsNothing);
     },
   );
 
@@ -876,6 +807,11 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('OpenAI'), findsOneWidget);
     expect(find.text('Manage credential'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('Choose model'),
+      180,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Choose model'), findsOneWidget);
   });
 

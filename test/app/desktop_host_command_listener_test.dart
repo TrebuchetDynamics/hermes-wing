@@ -225,6 +225,10 @@ void main() {
       expect(linuxWindow, contains('"Maximize / Restore"'));
       expect(linuxWindow, contains('GDK_WINDOW_STATE_FULLSCREEN'));
       expect(linuxWindow, contains('GDK_KEY_F11'));
+      expect(
+        linuxWindow,
+        contains('gtk_widget_set_size_request(GTK_WIDGET(window), 360, 480)'),
+      );
       expect(windowsMain, contains('window.Create(L"Hermes Wing"'));
       expect(windowsMain, contains('VK_F11'));
       expect(windowsMain, contains('VK_OEM_COMMA'));

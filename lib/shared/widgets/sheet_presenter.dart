@@ -139,16 +139,7 @@ void _showInfoActionSheet(
           children: [
             Text(title, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            for (final row in infoRows)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(row.icon),
-                title: Text(
-                  row.label,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                subtitle: Text(row.value),
-              ),
+            _buildInfoGrid(context, infoRows),
             const SizedBox(height: 8),
             const Divider(height: 1),
             const SizedBox(height: 8),
@@ -157,6 +148,56 @@ void _showInfoActionSheet(
         ),
       ),
     ),
+  );
+}
+
+Widget _buildInfoGrid(BuildContext context, List<SheetInfoRow> rows) {
+  const spacing = 12.0;
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final columnWidth = (constraints.maxWidth - spacing) / 2;
+      return Wrap(
+        spacing: spacing,
+        runSpacing: 4,
+        children: [
+          for (final row in rows)
+            SizedBox(
+              width: columnWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(row.icon, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            row.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                          Text(
+                            row.value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      );
+    },
   );
 }
 

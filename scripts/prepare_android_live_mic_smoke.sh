@@ -10,6 +10,7 @@ done
 
 package="${WING_ANDROID_PACKAGE:-com.trebuchetdynamics.hermes.wing}"
 activity="${WING_ANDROID_ACTIVITY:-com.trebuchetdynamics.hermes.wing/.MainActivity}"
+apk_path="build/app/outputs/flutter-apk/app-debug.apk"
 
 android_endpoint_hint() {
   if [ -n "${WING_ANDROID_HERMES_URL:-}" ]; then
@@ -86,8 +87,15 @@ if [ "${WING_ANDROID_SKIP_BUILD:-0}" != "1" ]; then
   flutter build apk --debug
 fi
 
-flutter install -d "$device" || true
-adb -s "$device" shell pm grant "$package" android.permission.RECORD_AUDIO >/dev/null 2>&1 || true
+if [ ! -s "$apk_path" ]; then
+  echo "Debug APK not found or empty at $apk_path." >&2
+  exit 1
+fi
+
+echo "Installing exact debug artifact: $apk_path"
+adb -s "$device" install -r "$apk_path"
+adb -s "$device" shell pm path "$package" >/dev/null
+adb -s "$device" shell pm grant "$package" android.permission.RECORD_AUDIO >/dev/null
 adb -s "$device" shell am start -n "$activity" >/dev/null
 
 cat <<EOF

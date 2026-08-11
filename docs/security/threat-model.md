@@ -39,10 +39,12 @@ Status: alpha baseline, not an independent security assessment.
    HTTPS URLs and checked against configured SHA-256 digests.
 7. **Wing Link host supervisor.** The persistent service can install and control
    local processes. It binds authenticated management to `127.0.0.1:8654` and,
-   after explicit setup, one current private/VPN interface. Only local profile
-   topology crosses this API; Hermes chat, session, run, provider, model, and
-   approval requests never transit through it. Android reaches the fixed
-   executable through the user-approved Termux `RUN_COMMAND` boundary.
+   after explicit setup, one current private/VPN interface. Only bounded
+   bootstrap, pairing, service lifecycle, health, repair, and diagnostics cross
+   this API. Hermes profile, provider, message, session, run, tool, schedule,
+   approval, and messaging-platform requests never transit through it. Android
+   reaches the fixed executable through the user-approved Termux `RUN_COMMAND`
+   boundary.
 
 ## Current controls
 
@@ -75,7 +77,7 @@ Status: alpha baseline, not an independent security assessment.
 - Wing Link runtime installation verifies signed version-pinned metadata and complete artifacts, defaults to per-user installation, delegates elevation to the OS, activates only healthy runtimes, and retains a verified rollback target.
 - Wing Link management accepts only loopback or one exact current RFC 1918, CGNAT/Tailscale, or IPv6 ULA listener and requires an independently generated control token. Flutter securely stores the pending token, verifies direct Hermes plus Wing Link reads, then acknowledges it before mutations are authorized.
 - Pairing prefers scoped Hermes enrollment. If it is unavailable, the compatibility review explicitly says **Full Hermes access** before the existing API key is transferred once; the management listener never accepts that key.
-- Wing Link exposes no Hermes reverse proxy. It merges API-first profile inventory with validated local topology, routes advertised API actions without CLI fallback, and otherwise invokes only fixed Hermes CLI create/clone/rename/delete argument vectors.
+- Wing Link exposes no Hermes reverse proxy and does not manage Hermes domain state. It invokes only reviewed installer, bootstrap, pairing, service-lifecycle, health, repair, and diagnostics operations. Profile/provider prototype adapters are deprecated and must be quarantined or removed rather than used when Hermes omits a contract.
 - Wing Link accepts fixed operation names and argument vectors only, never a client-provided executable, shell command, installer URL, or mutable release reference.
 - Android calls only the fixed Wing Link executable through Termux `RUN_COMMAND`; initial Termux installation, external-app access, and permission approval remain visible user actions.
 - The recommended Donna starter profile is disclosed and deselectable, pinned by commit and signed-manifest archive digest, and installed only through Hermes’s distribution interface; existing profiles are never overwritten or silently updated.
@@ -116,7 +118,7 @@ Status: alpha baseline, not an independent security assessment.
 - Current Hermes backup/import creates and overlays unencrypted path-based full-home ZIP files; the versioned handle-based archive contract, encryption, inspection, and rollback-safe restore remain to be implemented.
 - The Flutter desktop SSH host adapter and cross-platform trust, rotation, injection, and forwarding receipts remain to be implemented; Hermes Desktop currently uses automatic `accept-new` first trust.
 - Hermes Agent signed release metadata and Wing Link’s verified cross-platform runtime installer/updater remain to be implemented; Hermes Desktop currently downloads mutable `main` installer scripts, pipes the Unix script into a shell, and brokers `sudo` passwords itself.
-- Wing Link’s Linux user-service hosting, independent token lifecycle, private/VPN listener, no-proxy boundary, and profile topology bridge have local automated evidence. Clean-host restart/login evidence, non-Linux service adapters, Termux bootstrap/permission receipts, rollback evidence, and optional OmniRoute isolation remain pending.
+- Wing Link's Linux user-service hosting, independent token lifecycle, private/VPN listener, and no-proxy boundary have local automated evidence. Earlier profile/provider bridge tests are historical prototype evidence only; removing or quarantining those domain adapters remains required. Clean-host restart/login evidence, non-Linux service adapters, Termux bootstrap/permission receipts, rollback evidence, and optional OmniRoute isolation remain pending.
 - Donna commit `63845c197483d7bb24638a593436e5000891a134` lacks Hermes’s required `distribution.yaml`; starter-profile installation remains fail-closed until a newly reviewed pinned commit satisfies that contract.
 - Canonical AAB/APK, APT/RPM, MSIX, and notarized DMG pipelines and their migration, upgrade, uninstall, identity, and package-script receipts remain incomplete.
 - No ordinary-CI physical microphone test.

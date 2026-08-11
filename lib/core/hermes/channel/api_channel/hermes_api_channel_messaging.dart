@@ -243,14 +243,30 @@ extension _MessagingExtension on HermesApiChannel {
           return;
         }
         if (_isToolEvent(event.name)) {
+          final closesAssistantSegment = assistantTurn.text.trim().isNotEmpty;
           _applyToolEvent(
             sessionId: sessionId,
             runId: runId,
             event: event,
             turns: turns,
             toolTurnIndexByCallId: toolTurnIndexByCallId,
-            insertBefore: assistantIndex,
+            insertBefore: closesAssistantSegment
+                ? assistantIndex + 1
+                : assistantIndex,
           );
+          if (closesAssistantSegment) {
+            turns[assistantIndex] = assistantTurn.copyWith(
+              status: HermesTurnStatus.completed,
+            );
+            assistantTurn = HermesChatTurn(
+              id: '${assistantTurn.id}-segment-${toolTurnIndexByCallId.length}',
+              sessionId: sessionId,
+              author: HermesTurnAuthor.assistant,
+              createdAt: DateTime.now(),
+              status: HermesTurnStatus.streaming,
+            );
+            turns.add(assistantTurn);
+          }
           assistantIndex = turns.length - 1;
           _setTurns(sessionId, List.of(turns));
           return;
@@ -297,6 +313,20 @@ extension _MessagingExtension on HermesApiChannel {
           return;
         }
         if (_isSuccessfulTerminalRunEvent(event.name)) {
+          final canonicalFinal = _canonicalFinalForEvent(
+            event,
+            expectedRunId: runId,
+            expectedSessionId: sessionId,
+          );
+          if (canonicalFinal != null) {
+            assistantTurn = assistantTurn.copyWith(
+              text: reconcileAssistantText(
+                streamed: assistantTurn.text,
+                canonical: canonicalFinal,
+              ),
+            );
+            turns[assistantIndex] = assistantTurn;
+          }
           final usageJson = wingMapFromJson(event.payload['usage']);
           if (usageJson.isNotEmpty) {
             runUsage = HermesRunUsage.fromJson(usageJson);
@@ -516,10 +546,19 @@ extension _MessagingExtension on HermesApiChannel {
           message,
           preSendTurnCount,
         )) {
+          final reconciledServerTurns = _reconcileCurrentAssistantReply(
+            serverTurns,
+            assistantTurn,
+            message,
+            preSendTurnCount,
+          );
           _setTurns(
             sessionId,
             _attachUsageToLatestAssistant(
-              _mergeRunDetailTurns(serverTurns, turns.skip(preSendTurnCount)),
+              _mergeRunDetailTurns(
+                reconciledServerTurns,
+                turns.skip(preSendTurnCount),
+              ),
               runUsage,
             ),
           );
@@ -570,6 +609,19 @@ extension _MessagingExtension on HermesApiChannel {
     String sentMessage,
     int preSendTurnCount,
   ) {
+    return _currentAssistantReplyIndex(
+          serverTurns,
+          sentMessage,
+          preSendTurnCount,
+        ) !=
+        null;
+  }
+
+  int? _currentAssistantReplyIndex(
+    List<HermesChatTurn> serverTurns,
+    String sentMessage,
+    int preSendTurnCount,
+  ) {
     final normalizedMessage = sentMessage.trim();
     if (normalizedMessage.isNotEmpty) {
       for (var index = serverTurns.length - 1; index >= 0; index--) {
@@ -579,31 +631,72 @@ extension _MessagingExtension on HermesApiChannel {
             index < preSendTurnCount) {
           continue;
         }
-        return _hasAssistantReplyAfter(serverTurns, index);
+        return _assistantReplyIndexAfter(serverTurns, index);
       }
     }
-    if (serverTurns.length <= preSendTurnCount) return false;
-    return _hasAssistantReplyAfter(serverTurns, preSendTurnCount - 1);
+    if (serverTurns.length <= preSendTurnCount) return null;
+    return _assistantReplyIndexAfter(serverTurns, preSendTurnCount - 1);
   }
 
-  bool _hasAssistantReplyAfter(List<HermesChatTurn> serverTurns, int index) {
-    for (final candidate in serverTurns.skip(index + 1)) {
-      if (candidate.author == HermesTurnAuthor.user) return false;
+  int? _assistantReplyIndexAfter(List<HermesChatTurn> serverTurns, int index) {
+    for (
+      var candidateIndex = index + 1;
+      candidateIndex < serverTurns.length;
+      candidateIndex++
+    ) {
+      final candidate = serverTurns[candidateIndex];
+      if (candidate.author == HermesTurnAuthor.user) return null;
       if (candidate.author == HermesTurnAuthor.assistant &&
           candidate.text.trim().isNotEmpty) {
-        return true;
+        return candidateIndex;
       }
     }
-    return false;
+    return null;
+  }
+
+  List<HermesChatTurn> _reconcileCurrentAssistantReply(
+    List<HermesChatTurn> serverTurns,
+    HermesChatTurn localAssistantTurn,
+    String sentMessage,
+    int preSendTurnCount,
+  ) {
+    final assistantIndex = _currentAssistantReplyIndex(
+      serverTurns,
+      sentMessage,
+      preSendTurnCount,
+    );
+    if (assistantIndex == null || localAssistantTurn.text.trim().isEmpty) {
+      return serverTurns;
+    }
+    final serverAssistant = serverTurns[assistantIndex];
+    if (serverAssistant.sessionId != localAssistantTurn.sessionId) {
+      return serverTurns;
+    }
+    final reconciled = List<HermesChatTurn>.from(serverTurns);
+    reconciled[assistantIndex] = serverAssistant.copyWith(
+      text: reconcileAssistantText(
+        streamed: localAssistantTurn.text,
+        canonical: serverAssistant.text,
+      ),
+    );
+    return reconciled;
   }
 
   List<HermesChatTurn> _mergeRunDetailTurns(
     List<HermesChatTurn> serverTurns,
     Iterable<HermesChatTurn> localRunTurns,
   ) {
-    final details = localRunTurns
-        .where((turn) => turn.kind != HermesTurnKind.text)
-        .toList(growable: false);
+    final local = localRunTurns.toList(growable: false);
+    final finalAssistantIndex = local.lastIndexWhere(
+      (turn) => turn.author == HermesTurnAuthor.assistant,
+    );
+    final details = <HermesChatTurn>[
+      for (var index = 0; index < local.length; index++)
+        if (local[index].kind != HermesTurnKind.text ||
+            (local[index].author == HermesTurnAuthor.assistant &&
+                index != finalAssistantIndex))
+          local[index],
+    ];
     if (details.isEmpty) return serverTurns;
     final merged = List<HermesChatTurn>.from(serverTurns);
     final assistantIndex = merged.lastIndexWhere(
@@ -697,6 +790,28 @@ extension _MessagingExtension on HermesApiChannel {
         name == 'message.completed' ||
         name == 'response.completed' ||
         name == 'response.done';
+  }
+
+  String? _canonicalFinalForEvent(
+    HermesStreamEvent event, {
+    required String? expectedRunId,
+    required String expectedSessionId,
+  }) {
+    final eventRunId = wingOptionalStringFromJson(event.payload['run_id']);
+    if (eventRunId != null && eventRunId != expectedRunId) {
+      return null;
+    }
+    final eventSessionId = wingOptionalStringFromJson(
+      event.payload['session_id'],
+    );
+    if (eventSessionId != null && eventSessionId != expectedSessionId) {
+      return null;
+    }
+    final output =
+        _rawStreamText(event.payload['output']) ??
+        _rawStreamText(event.payload['text']) ??
+        _rawStreamText(event.payload['content']);
+    return output?.trim().isNotEmpty == true ? output : null;
   }
 
   bool _isFailedTerminalRunEvent(String name) {

@@ -167,35 +167,39 @@ class FallbackTextToSpeechService implements TextToSpeechService {
 
   final TextToSpeechService _primary;
   final TextToSpeechService _fallback;
+  int _operationGeneration = 0;
 
   @override
   Future<void> speak(String text) async {
+    final operationGeneration = ++_operationGeneration;
     try {
       await _primary.speak(text);
     } catch (_) {
+      if (operationGeneration != _operationGeneration) return;
       try {
         await _primary.stop();
       } catch (_) {}
+      if (operationGeneration != _operationGeneration) return;
       await _fallback.speak(text);
     }
   }
 
   @override
-  Future<void> stop() async {
-    try {
-      await _primary.stop();
-    } finally {
-      await _fallback.stop();
-    }
+  Future<void> stop() {
+    _operationGeneration += 1;
+    return Future.wait<void>([
+      Future<void>.sync(_primary.stop),
+      Future<void>.sync(_fallback.stop),
+    ]);
   }
 
   @override
-  Future<void> dispose() async {
-    try {
-      await _primary.dispose();
-    } finally {
-      await _fallback.dispose();
-    }
+  Future<void> dispose() {
+    _operationGeneration += 1;
+    return Future.wait<void>([
+      Future<void>.sync(_primary.dispose),
+      Future<void>.sync(_fallback.dispose),
+    ]);
   }
 }
 

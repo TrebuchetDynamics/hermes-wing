@@ -25,8 +25,24 @@ flutter install -d <device-id>
 Or install the APK with ADB:
 
 ```bash
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
+adb devices -l
+adb -s <device-id> install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
+
+Always pin `<device-id>`. An emulator and a physical phone can be online at the
+same time, and an implicit ADB target can install or inspect the wrong device.
+
+For the physical-microphone test path, the repository helper builds a debug APK,
+installs that exact artifact, verifies the package, grants microphone permission,
+and launches the app:
+
+```bash
+WING_ANDROID_DEVICE_ID=<device-id> npm run android:live-mic-prep
+```
+
+The helper fails if the exact debug APK cannot be installed; it must never fall
+back to launching an older release already present on the phone. Preparation is
+still not proof that microphone capture, provider reply, TTS, or re-arm works.
 
 ## Release signing setup
 
@@ -88,8 +104,8 @@ For the active Hermes companion goal, follow `docs/runbooks/android/live-mic-smo
 Check for an Android speech recognizer before judging Hermes Wing voice behavior:
 
 ```bash
-adb shell true
-adb shell cmd package query-services -a android.speech.RecognitionService
+adb -s <device-id> shell true
+adb -s <device-id> shell cmd package query-services -a android.speech.RecognitionService
 ```
 
 Open the active profile chat, tap the mic, grant the microphone permission prompt if Android asks, and speak a short phrase. The expected ready path is:
@@ -122,4 +138,4 @@ What is already covered in the app:
 - Permission failures show `microphone permission denied` and tell the tester to grant microphone permission in Android App info.
 - The continuous voice sheet explains that Android recognizer, microphone permission, and gateway profile STT are separate checks.
 
-Final smoke requirement: use a responsive emulator or physical USB-debuggable Android device, install the latest local debug APK, run `adb shell true`, run the speech-recognition service query, grant microphone permission, then capture one short phrase from the active profile chat.
+Final smoke requirement: use a responsive emulator or physical USB-debuggable Android device, install the latest local debug APK, run `adb -s <device-id> shell true`, run the speech-recognition service query against that same explicit device, grant microphone permission, then capture one short phrase from the active profile chat.

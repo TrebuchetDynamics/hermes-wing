@@ -118,7 +118,6 @@ class WingLinkClient {
 
   Future<void> verifyPendingCredential() async {
     _decode(await _get(_uri('/v1/status'), _headers));
-    await listProfiles();
   }
 
   Future<void> acknowledgeCredential(String credentialId) async {

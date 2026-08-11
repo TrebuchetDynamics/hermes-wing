@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/hermes_domain_authority.dart';
 import '../../../core/hermes/models/hermes_runtime_model.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -132,7 +133,8 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     final token = config?.wingLinkToken?.trim() ?? '';
     final wingLinkProfileId = profileId ?? 'default';
     final wingLinkClient =
-        !channel.state.canReadProviders &&
+        wingLinkDomainFallbacksEnabled &&
+            !channel.state.canReadProviders &&
             origin != null &&
             origin.host.isNotEmpty &&
             token.isNotEmpty
@@ -266,7 +268,10 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       );
     }
 
-    final providers = state.providers;
+    final providers = [
+      ...state.providers.where((provider) => provider.configured),
+      ...state.providers.where((provider) => !provider.configured),
+    ];
     final wingLinkProviders = _wingLinkProviders ?? const <WingLinkProvider>[];
     final canWriteProviders = state.canWriteProviders;
 
@@ -294,7 +299,19 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
           )
         else ...[
           for (var index = 0; index < providers.length; index++) ...[
-            if (index > 0) const SizedBox(height: 12),
+            if (index == 0 ||
+                providers[index - 1].configured !=
+                    providers[index].configured) ...[
+              if (index > 0) const SizedBox(height: 24),
+              Text(
+                providers[index].configured
+                    ? strings.providersConfiguredSection
+                    : strings.providersAvailableSection,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 10),
+            ] else
+              const SizedBox(height: 12),
             _ProviderCard(
               provider: providers[index],
               strings: strings,

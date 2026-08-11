@@ -192,16 +192,11 @@ void main() {
     expect(find.textContaining('Continuous voice paused'), findsNothing);
   });
 
-  testWidgets('voice icon sends one turn without enabling hands-free', (
+  testWidgets('voice icon enables persistent listening for interruption', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
-    final capture = FakeVoiceCaptureService(
-      audio: Uint8List(0),
-      transcript: 'draft from voice',
-      duration: const Duration(seconds: 1),
-      confidence: 0.9,
-    );
+    final capture = _CommandThenBlockCaptureService('draft from voice');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -209,7 +204,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -222,22 +220,27 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
     await tester.pumpAndSettle();
 
-    final composer = tester.widget<TextField>(
-      find.byKey(const ValueKey('hermes-composer-field')),
-    );
-    expect(composer.controller?.text, 'existing draft');
     expect(channel.sentVoiceTranscripts, ['draft from voice']);
     expect(channel.state.activeMessages, isNotEmpty);
+    expect(
+      find.byKey(const ValueKey('hermes-voice-mode-surface')),
+      findsOneWidget,
+    );
     final container = ProviderScope.containerOf(
       tester.element(find.byType(HermesChatScreen)),
     );
     expect(
       container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
-      isFalse,
+      isTrue,
     );
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+    );
+    await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('one-shot Speak shows a live waveform while capturing', (
+  testWidgets('hands-free voice shows a live waveform while capturing', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -261,17 +264,20 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
-    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(capture.captureCalls, 1);
+    capture.emitLevel(0);
+    await tester.pump(const Duration(milliseconds: 100));
 
     final waveform = find.descendant(
-      of: find.byKey(const ValueKey('hermes-mic-button')),
+      of: find.byKey(const ValueKey('hermes-voice-mode-surface')),
       matching: find.byKey(const ValueKey('hermes-voice-waveform')),
     );
     final bars = find.descendant(
       of: waveform,
       matching: find.byType(AnimatedContainer),
     );
-    expect(capture.captureCalls, 1);
     expect(waveform, findsOneWidget);
     expect(bars, findsNWidgets(5));
     final quietHeight = tester
@@ -286,10 +292,11 @@ void main() {
       greaterThan(quietHeight),
     );
 
-    capture.complete('waveform restored');
-    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+    );
+    await tester.pump();
     expect(waveform, findsNothing);
-    expect(channel.sentVoiceTranscripts, ['waveform restored']);
   });
 
   testWidgets(
@@ -669,7 +676,7 @@ void main() {
     final mic = tester.getSemantics(
       find.byKey(const ValueKey('hermes-mic-button')),
     );
-    expect('${mic.label} ${mic.tooltip}', contains('Speak and send'));
+    expect('${mic.label} ${mic.tooltip}', contains('Hands-free voice'));
   });
 
   testWidgets('hands-free voice state is announced, not shown only', (
@@ -693,7 +700,7 @@ void main() {
 
     expect(
       find.bySemanticsLabel(RegExp(r'Hands-free')),
-      findsOneWidget,
+      findsWidgets,
       reason: 'idle voice state must be reachable without sight',
     );
 
@@ -741,7 +748,7 @@ void main() {
     final error = tester.getSemantics(
       find.byKey(const ValueKey('hermes-voice-error')),
     );
-    expect(error.label, contains('timed out'));
+    expect(error.label, contains('recognizer failure'));
     expect(error.flagsCollection.isLiveRegion, isTrue);
     semantics.dispose();
   });
@@ -752,7 +759,7 @@ class _FailingVoiceCaptureService implements VoiceCaptureService {
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async =>
-      throw const VoiceCaptureTimeout();
+      throw StateError('recognizer failure');
 
   @override
   Future<void> cancel() async {}

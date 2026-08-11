@@ -15,6 +15,7 @@ import android.speech.tts.TextToSpeechService
 /** Deterministic Android voice services installed only during headless tests. */
 class HeadlessSpeechRecognitionService : RecognitionService() {
     private val handler = Handler(Looper.getMainLooper())
+    private var predecessorCallback: Callback? = null
 
     override fun onStartListening(intent: Intent?, callback: Callback) {
         val preferences = getSharedPreferences("headless_voice_test", MODE_PRIVATE)
@@ -39,6 +40,27 @@ class HeadlessSpeechRecognitionService : RecognitionService() {
                 )
                 putFloatArray(SpeechRecognizer.CONFIDENCE_SCORES, floatArrayOf(0.95f))
             })
+            if (index == 0) {
+                predecessorCallback = callback
+            } else if (index == 1) {
+                // Emit from N only after N+1's RecognitionService start has
+                // been observed. The generation-bound native adapter must
+                // prevent this callback from reaching N+1's Dart listeners.
+                val staleCallback = predecessorCallback
+                handler.postDelayed({
+                    staleCallback?.endOfSpeech()
+                    staleCallback?.results(Bundle().apply {
+                        putStringArrayList(
+                            SpeechRecognizer.RESULTS_RECOGNITION,
+                            arrayListOf("stale predecessor voice"),
+                        )
+                        putFloatArray(
+                            SpeechRecognizer.CONFIDENCE_SCORES,
+                            floatArrayOf(0.95f),
+                        )
+                    })
+                }, 100)
+            }
         }, 150)
     }
 

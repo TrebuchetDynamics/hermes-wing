@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -155,11 +154,10 @@ void main() {
   });
 
   testWidgets(
-    'Wing Link profiles use advertised Hermes context and create locally',
+    'Wing Link profile fallback stays quarantined when Agent omits profiles',
     (tester) async {
       final channel = FakeHermesChannel(
         status: HermesConnectionStatus.disconnected,
-        capabilities: _profileCapabilities(const ['profiles:read']),
       );
       addTearDown(channel.dispose);
       final directory = directoryFor(
@@ -179,75 +177,28 @@ void main() {
       );
       await directory.refresh();
       await directory.activateGateway('alpha');
-      final rows = <Map<String, Object?>>[
-        {
-          'id': 'default',
-          'name': 'default',
-          'revision': 'd',
-          'actions': <String, Object?>{},
-        },
-        {
-          'id': 'link',
-          'name': 'link',
-          'revision': 'l',
-          'actions': {
-            'rename': {'revision': 'l'},
-            'delete': {'revision': 'l'},
-          },
-        },
-      ];
-      final client = WingLinkClient(
-        origin: Uri.parse('https://a.example:8654'),
-        token: 'wlc-secret',
-        get: (_, headers) async {
-          expect(headers['Authorization'], 'Bearer wlc-secret');
-          return '{"profiles":${jsonEncode(rows)}}';
-        },
-        post: (_, _, body) async {
-          final name = (jsonDecode(body) as Map<String, Object?>)['name']!;
-          final row = <String, Object?>{
-            'id': name,
-            'name': name,
-            'revision': 'q',
-            'actions': {
-              'rename': {'revision': 'q'},
-              'delete': {'revision': 'q'},
-            },
-          };
-          rows.add(row);
-          return '{"profile":${jsonEncode(row)}}';
-        },
-      );
+      var wingLinkCalls = 0;
 
       await tester.pumpWidget(
         _agentsTestApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) => client,
+          wingLinkClientBuilder: ({required origin, required token}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async {
+                  wingLinkCalls++;
+                  return '{"profiles":[]}';
+                },
+              ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('link', skipOffstage: false), findsWidgets);
-      expect(find.text('New Profile'), findsOneWidget);
-      final linkChat = find.descendant(
-        of: find.bySemanticsLabel('Chat with link', skipOffstage: false),
-        matching: find.byType(FilledButton, skipOffstage: false),
-      );
-      expect(tester.widget<FilledButton>(linkChat).onPressed, isNotNull);
-      tester.widget<FilledButton>(linkChat).onPressed!();
-      await tester.pumpAndSettle();
-      expect(channel.state.selectedProfileId, 'link');
-
-      await tester.tap(find.text('New Profile'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField).first, 'qa');
-      await tester.tap(find.text('Create'));
-      await tester.pumpAndSettle();
-
-      await tester.drag(find.byType(ListView), const Offset(0, -500));
-      await tester.pumpAndSettle();
-      expect(find.text('qa'), findsWidgets);
+      expect(wingLinkCalls, 0);
+      expect(find.text('Profiles unavailable'), findsOneWidget);
+      expect(find.text('New Profile'), findsNothing);
     },
   );
 

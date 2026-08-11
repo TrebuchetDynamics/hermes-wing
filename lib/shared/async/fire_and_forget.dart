@@ -25,9 +25,12 @@ FireAndForgetReporter reportFireAndForgetFailure = _debugReportFailure;
 void fireAndForget(Future<void>? operation, String operationName) {
   if (operation == null) return;
   unawaited(
-    operation.catchError((Object error) {
-      reportFireAndForgetFailure(operationName, error);
-    }),
+    operation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace _) {
+        reportFireAndForgetFailure(operationName, error);
+      },
+    ),
   );
 }
 

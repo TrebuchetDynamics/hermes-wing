@@ -1527,7 +1527,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     // tooltip is hover/manual only. Because that moves the tooltip off the
     // button, the icon carries the accessible name so the button node keeps
     // announcing more than "button".
-    final micLabel = AppLocalizations.of(context).chatLayoutSpeakAndSendTooltip;
+    final micLabel = AppLocalizations.of(context).chatLayoutHandsFreeVoiceLabel;
     final micButton = Tooltip(
       message: micLabel,
       triggerMode: TooltipTriggerMode.manual,
@@ -1536,7 +1536,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         icon: Icon(Icons.mic_rounded, semanticLabel: micLabel),
         onPressed: !canSendTurns || !voiceEnabled
             ? null
-            : () => unawaited(_voiceInputController.captureAndSend()),
+            : () => _setContinuousVoice(true),
       ),
     );
     if (_voiceInputController.capturing || !canSendTurns || !voiceEnabled) {

@@ -21,6 +21,8 @@ import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
+import '../../voice/services/models/offline_voice_model_manifests.dart';
+import '../providers/offline_stt_pack_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/voice_settings_provider.dart';
 

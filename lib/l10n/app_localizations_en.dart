@@ -238,6 +238,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayLabel => 'Gateway';
 
   @override
+  String get shellProfileLabel => 'Profile';
+
+  @override
+  String get shellModelLabel => 'Model';
+
+  @override
+  String get shellInventoryLabel => 'Inventory';
+
+  @override
+  String shellConnectedHost(String host) {
+    return 'Connected · $host';
+  }
+
+  @override
+  String get shellDisconnected => 'Disconnected';
+
+  @override
+  String get shellNotLoaded => 'Not loaded';
+
+  @override
+  String get shellUnavailable => 'Unavailable';
+
+  @override
+  String shellInventorySummary(int tools, int skills) {
+    String _temp0 = intl.Intl.pluralLogic(
+      tools,
+      locale: localeName,
+      other: '$tools tools',
+      one: '1 tool',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skills,
+      locale: localeName,
+      other: '$skills skills',
+      one: '1 skill',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
   String get selectGatewayHint => 'Select gateway';
 
   @override
@@ -668,6 +708,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get providerConfiguredBadge => 'Configured';
+
+  @override
+  String get providersConfiguredSection => 'Configured providers';
+
+  @override
+  String get providersAvailableSection => 'Available providers';
 
   @override
   String get providerNotConfiguredBadge => 'Not configured';
@@ -1207,6 +1253,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceAdvancedSection => 'Advanced';
+
+  @override
+  String get voiceRecognitionLanguageTitle => 'Recognition language';
+
+  @override
+  String get voiceRecognitionLanguageSubtitle =>
+      'Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.';
+
+  @override
+  String get voiceOfflineRecognitionSection => 'Offline recognition';
+
+  @override
+  String get voiceOfflineSttPackTitle =>
+      'Whisper Base INT8 · English + Español';
+
+  @override
+  String get voiceOfflineSttChecking => 'Checking the verified model pack…';
+
+  @override
+  String get voiceOfflineSttAbsent =>
+      'Not installed · about 163 MB · Android recognition remains available.';
+
+  @override
+  String get voiceOfflineSttInstalling =>
+      'Downloading and verifying every model artifact…';
+
+  @override
+  String voiceOfflineSttInstalled(String provenance) {
+    return 'Installed and verified. $provenance';
+  }
+
+  @override
+  String get voiceOfflineSttDeleting => 'Removing the offline model pack…';
+
+  @override
+  String get voiceOfflineSttUnavailable =>
+      'The offline speech pack is unavailable.';
+
+  @override
+  String get voiceOfflineSttDownload => 'Download';
+
+  @override
+  String get voiceOfflineSttRemove => 'Remove';
+
+  @override
+  String get voiceOfflineSttRetry => 'Retry';
 
   @override
   String get voiceCommandWordTitle => 'Command word';

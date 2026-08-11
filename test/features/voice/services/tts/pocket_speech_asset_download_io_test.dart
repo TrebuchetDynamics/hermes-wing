@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
+import 'package:wing/features/voice/services/models/voice_model_pack_installer.dart';
 import 'package:wing/features/voice/services/tts/pocket_speech_asset_download_service.dart';
 import 'package:wing/features/voice/services/tts/pocket_speech_asset_download_service_io.dart';
 import 'package:wing/shared/voice/voice_settings.dart';
@@ -105,6 +106,77 @@ void main() {
       ),
     ),
   );
+
+  test('shared transactional service installs immutable metadata', () async {
+    final fixture = healthySpec();
+    final service = TransactionalPocketSpeechAssetDownloadService(
+      config: PocketSpeechAssetDownloadConfig(
+        kitten: fixture.spec,
+        kokoro: const PocketSpeechDownloadSpec(
+          modelUrl: '',
+          voicesJsonUrl: '',
+          modelSha256: '',
+          voicesJsonSha256: '',
+          modelBytes: 0,
+          voicesJsonBytes: 0,
+        ),
+      ),
+      installerFactory: () async => VoiceModelPackInstaller(
+        rootDirectory: Directory('${root.path}/voice-model-packs'),
+      ),
+    );
+
+    final pack = await withHttp(
+      () => service.download(PocketSpeechModel.kitten),
+    );
+
+    expect(File(pack.modelPath).readAsBytesSync(), fixture.model);
+    expect(File(pack.voicesPath).readAsBytesSync(), fixture.voices);
+    expect(
+      File('${File(pack.modelPath).parent.path}/.pack.json').existsSync(),
+      isTrue,
+    );
+    expect(pack.modelPath, contains('/pocket-speech-kitten/'));
+  });
+
+  test('transactional Kokoro accepts its pinned binary voice table', () async {
+    final modelBytes = utf8.encode('kokoro-onnx');
+    final voicesBytes = <int>[0, 255, 1, 128, 2, 64];
+    const modelUrl = 'https://cdn.example/kokoro.onnx';
+    const voicesUrl = 'https://cdn.example/voices.bin';
+    replies[modelUrl] = _Reply(statusCode: 200, body: modelBytes);
+    replies[voicesUrl] = _Reply(statusCode: 200, body: voicesBytes);
+    final service = TransactionalPocketSpeechAssetDownloadService(
+      config: PocketSpeechAssetDownloadConfig(
+        kitten: const PocketSpeechDownloadSpec(
+          modelUrl: '',
+          voicesJsonUrl: '',
+          modelSha256: '',
+          voicesJsonSha256: '',
+          modelBytes: 0,
+          voicesJsonBytes: 0,
+        ),
+        kokoro: PocketSpeechDownloadSpec(
+          modelUrl: modelUrl,
+          voicesJsonUrl: voicesUrl,
+          modelSha256: sha(modelBytes),
+          voicesJsonSha256: sha(voicesBytes),
+          modelBytes: modelBytes.length,
+          voicesJsonBytes: voicesBytes.length,
+        ),
+      ),
+      installerFactory: () async => VoiceModelPackInstaller(
+        rootDirectory: Directory('${root.path}/voice-model-packs'),
+      ),
+    );
+
+    final pack = await withHttp(
+      () => service.download(PocketSpeechModel.kokoro),
+    );
+
+    expect(pack.voicesPath, endsWith('/voices.bin'));
+    expect(File(pack.voicesPath).readAsBytesSync(), voicesBytes);
+  });
 
   test('a healthy download installs both files', () async {
     final fixture = healthySpec();

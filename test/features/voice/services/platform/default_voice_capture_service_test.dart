@@ -1,8 +1,32 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/voice/services/platform/default_voice_capture_service.dart';
+import 'package:wing/features/voice/services/speech/speech_to_text_voice_capture_service.dart';
 import 'package:wing/shared/voice/voice_capture_service.dart';
 
 void main() {
+  test('passes an explicit profile language to platform recognition', () {
+    final service = createDefaultVoiceCaptureService(
+      platform: const VoiceCapturePlatform(isAndroid: true),
+      localeId: 'es-US',
+    );
+
+    expect(service, isA<SpeechToTextVoiceCaptureService>());
+    expect(
+      (service as VoiceCaptureProvenanceService).provenance,
+      const VoiceEngineProvenance(
+        engine: 'Platform SpeechRecognizer',
+        adapter: 'speech_to_text 7.4.0',
+        model: null,
+        offlineRequested: true,
+        appOwnedModel: false,
+      ),
+    );
+    expect(
+      (service as SpeechToTextVoiceCaptureService).configuredLocaleId,
+      'es-US',
+    );
+  });
+
   test('creates speech_to_text capture on supported platforms', () {
     for (final platform in const [
       VoiceCapturePlatform(isAndroid: true),

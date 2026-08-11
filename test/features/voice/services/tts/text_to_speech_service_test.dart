@@ -170,6 +170,72 @@ void main() {
     },
   );
 
+  test('fallback TTS cannot restart after barge-in stop', () async {
+    final primary = _DelayedFailingTextToSpeechService();
+    final fallback = FakeTextToSpeechService();
+    final service = FallbackTextToSpeechService(primary, fallback);
+    final speaking = service.speak('do not resume');
+    await Future<void>.delayed(Duration.zero);
+
+    await service.stop();
+    primary.fail();
+    await speaking;
+
+    expect(fallback.spoken, isEmpty);
+  });
+
+  test(
+    'fallback stop is attempted when primary stop throws synchronously',
+    () async {
+      final primary = _SynchronouslyThrowingTextToSpeechService();
+      final fallback = _RecordingTextToSpeechService();
+      final service = FallbackTextToSpeechService(primary, fallback);
+
+      await expectLater(Future<void>.sync(service.stop), throwsStateError);
+
+      expect(fallback.stopCalls, 1);
+    },
+  );
+
+  test('fallback stop is attempted even when primary stop hangs', () async {
+    final primary = _HungStoppingTextToSpeechService();
+    final fallback = _RecordingTextToSpeechService();
+    final service = FallbackTextToSpeechService(primary, fallback);
+
+    final stopping = service.stop();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(fallback.stopCalls, 1);
+    primary.finishStop();
+    await stopping;
+  });
+
+  test(
+    'fallback dispose is attempted when primary dispose throws synchronously',
+    () async {
+      final primary = _SynchronouslyThrowingTextToSpeechService();
+      final fallback = _RecordingTextToSpeechService();
+      final service = FallbackTextToSpeechService(primary, fallback);
+
+      await expectLater(Future<void>.sync(service.dispose), throwsStateError);
+
+      expect(fallback.disposeCalls, 1);
+    },
+  );
+
+  test('fallback dispose is attempted while primary dispose hangs', () async {
+    final primary = _HungDisposingTextToSpeechService();
+    final fallback = _RecordingTextToSpeechService();
+    final service = FallbackTextToSpeechService(primary, fallback);
+
+    final disposing = service.dispose();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(fallback.disposeCalls, 1);
+    primary.finishDispose();
+    await disposing;
+  });
+
   test('stop prevents delayed configuration from starting speech', () async {
     final engine = _DelayedConfigureFlutterTtsEngine();
     final service = FlutterTextToSpeechService(engine: engine);
@@ -236,6 +302,84 @@ class _DelayedConfigureFlutterTtsEngine extends _FakeFlutterTtsEngine {
   }
 
   void completeConfiguration() => _configuration.complete();
+}
+
+class _SynchronouslyThrowingTextToSpeechService implements TextToSpeechService {
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() => throw StateError('synchronous stop failure');
+
+  @override
+  Future<void> dispose() => throw StateError('synchronous dispose failure');
+}
+
+class _HungStoppingTextToSpeechService implements TextToSpeechService {
+  final _stop = Completer<void>();
+
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() => _stop.future;
+
+  @override
+  Future<void> dispose() => stop();
+
+  void finishStop() => _stop.complete();
+}
+
+class _HungDisposingTextToSpeechService implements TextToSpeechService {
+  final _dispose = Completer<void>();
+
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() => _dispose.future;
+
+  void finishDispose() => _dispose.complete();
+}
+
+class _RecordingTextToSpeechService implements TextToSpeechService {
+  int stopCalls = 0;
+  int disposeCalls = 0;
+
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() async {
+    stopCalls += 1;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposeCalls += 1;
+  }
+}
+
+class _DelayedFailingTextToSpeechService implements TextToSpeechService {
+  final _speaking = Completer<void>();
+
+  @override
+  Future<void> speak(String text) => _speaking.future;
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  void fail() {
+    if (!_speaking.isCompleted) {
+      _speaking.completeError(StateError('primary failed after stop'));
+    }
+  }
 }
 
 class _FakeFlutterTtsEngine implements FlutterTtsEngine {

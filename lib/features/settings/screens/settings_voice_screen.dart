@@ -45,6 +45,7 @@ class _VoiceSettingsScreenState extends ConsumerState<VoiceSettingsScreen> {
   Widget build(BuildContext context) {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final controller = ref.read(wingVoiceSettingsProvider.notifier);
+    final offlineSttPack = ref.watch(offlineSttPackControllerProvider);
     final pocketSpeechDownloader = ref.watch(
       _pocketSpeechAssetDownloadServiceProvider,
     );
@@ -87,6 +88,7 @@ class _VoiceSettingsScreenState extends ConsumerState<VoiceSettingsScreen> {
               ),
             ],
           ),
+          _OfflineSttPackSection(state: offlineSttPack),
           _PocketSpeechSettingsSection(
             settings: settings,
             controller: controller,
@@ -108,6 +110,34 @@ class _VoiceSettingsScreenState extends ConsumerState<VoiceSettingsScreen> {
               ),
               children: [
                 ListTile(
+                  key: const ValueKey('voice-language-mode'),
+                  leading: const Icon(Icons.translate),
+                  title: Text(strings.voiceRecognitionLanguageTitle),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(strings.voiceRecognitionLanguageSubtitle),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: DropdownButton<VoiceLanguageMode>(
+                          isExpanded: true,
+                          value: settings.languageMode,
+                          items: [
+                            for (final mode in VoiceLanguageMode.values)
+                              DropdownMenuItem(
+                                value: mode,
+                                child: Text(mode.label),
+                              ),
+                          ],
+                          onChanged: (mode) {
+                            if (mode != null) controller.setLanguageMode(mode);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListTile(
                   key: const ValueKey('settings-command-word'),
                   title: Text(strings.voiceCommandWordTitle),
                   subtitle: Text(settings.commandWord),
@@ -125,6 +155,114 @@ class _VoiceSettingsScreenState extends ConsumerState<VoiceSettingsScreen> {
       ),
     );
   }
+}
+
+class _OfflineSttPackSection extends ConsumerWidget {
+  const _OfflineSttPackSection({required this.state});
+
+  final OfflineSttPackState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(offlineSttPackControllerProvider.notifier);
+    final tier = ref.watch(offlineSttModelTierProvider);
+    final tierController = ref.read(offlineSttModelTierProvider.notifier);
+    final strings = AppLocalizations.of(context);
+    final installed = state.status == OfflineSttPackStatus.installed;
+    return _SettingsSectionCard(
+      title: strings.voiceOfflineRecognitionSection,
+      icon: Icons.offline_bolt_outlined,
+      children: [
+        ListTile(
+          key: const ValueKey('voice-offline-stt-pack'),
+          leading: Icon(
+            installed
+                ? Icons.verified_outlined
+                : Icons.download_for_offline_outlined,
+          ),
+          title: Text(strings.voiceOfflineSttPackTitle),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButton<OfflineSttModelTier>(
+                key: const ValueKey('voice-offline-stt-tier'),
+                isExpanded: true,
+                value: tier,
+                items: [
+                  for (final candidate in OfflineSttModelTier.values)
+                    DropdownMenuItem(
+                      value: candidate,
+                      child: Text(
+                        '${candidate.label} · ${candidate.downloadSize}',
+                      ),
+                    ),
+                ],
+                onChanged: state.isBusy
+                    ? null
+                    : (selection) {
+                        if (selection != null) {
+                          unawaited(tierController.setTier(selection));
+                        }
+                      },
+              ),
+              Text(_statusText(strings, state)),
+              if (state.isBusy) ...[
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: state.status == OfflineSttPackStatus.checking
+                      ? 0
+                      : state.progress,
+                ),
+                if (state.receivedBytes case final received?)
+                  Text(
+                    '$received / ${state.totalBytes ?? 0} bytes',
+                    key: const ValueKey('voice-offline-stt-byte-progress'),
+                  ),
+              ],
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: switch (state.status) {
+                  OfflineSttPackStatus.absent => FilledButton.icon(
+                    key: const ValueKey('voice-offline-stt-download'),
+                    onPressed: () => unawaited(controller.install()),
+                    icon: const Icon(Icons.download),
+                    label: Text(strings.voiceOfflineSttDownload),
+                  ),
+                  OfflineSttPackStatus.installed => OutlinedButton.icon(
+                    key: const ValueKey('voice-offline-stt-delete'),
+                    onPressed: () => unawaited(controller.delete()),
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(strings.voiceOfflineSttRemove),
+                  ),
+                  OfflineSttPackStatus.error => OutlinedButton.icon(
+                    key: const ValueKey('voice-offline-stt-retry'),
+                    onPressed: () => unawaited(controller.refresh()),
+                    icon: const Icon(Icons.refresh),
+                    label: Text(strings.voiceOfflineSttRetry),
+                  ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _statusText(AppLocalizations strings, OfflineSttPackState state) =>
+      switch (state.status) {
+        OfflineSttPackStatus.checking => strings.voiceOfflineSttChecking,
+        OfflineSttPackStatus.absent => strings.voiceOfflineSttAbsent,
+        OfflineSttPackStatus.installing => strings.voiceOfflineSttInstalling,
+        OfflineSttPackStatus.installed => strings.voiceOfflineSttInstalled(
+          state.provenance ?? '',
+        ),
+        OfflineSttPackStatus.deleting => strings.voiceOfflineSttDeleting,
+        OfflineSttPackStatus.error =>
+          state.message ?? strings.voiceOfflineSttUnavailable,
+      };
 }
 
 class _PocketSpeechSettingsSection extends ConsumerWidget {
@@ -231,6 +369,9 @@ class _PocketSpeechSettingsSection extends ConsumerWidget {
                     children: [
                       if (settings.pocketSpeechVoicePackReady)
                         IconButton(
+                          key: ValueKey(
+                            'voice-pocket-speech-remove-${settings.pocketSpeechModel.name}',
+                          ),
                           tooltip: strings.voiceRemovePackTooltip,
                           onPressed: downloader == null
                               ? null
@@ -568,6 +709,7 @@ Future<void> _deletePocketSpeechAssets(
   if (confirmed != true || !context.mounted) return;
 
   try {
+    await ref.read(offlineTtsRuntimeOwnerProvider).releaseOfflineModels();
     await downloader.delete(model);
     controller.clearPocketSpeechVoicePack(model);
     ref.invalidate(pocketSpeechVoiceNamesProvider);

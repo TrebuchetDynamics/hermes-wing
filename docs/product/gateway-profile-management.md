@@ -2,107 +2,118 @@
 
 ## What this is
 
-Hermes Wing can manage profiles separately on each saved gateway. Open
-**Settings → Gateways → gateway menu → Manage profiles**, or open **Profiles** and
-choose a gateway. The selected gateway remains authoritative for every read and
-mutation.
+Hermes Wing can manage profiles and providers separately on each saved gateway,
+but only when that gateway advertises the exact scoped Hermes Agent contracts.
+The selected Hermes endpoint remains authoritative for every read and mutation.
 
-A saved paired gateway can carry two independent connections:
+Open **Settings → Gateways → gateway menu → Manage profiles**, or open
+**Profiles** and choose a gateway. Provider and model controls live under
+**Providers**.
 
-- the Hermes origin and Hermes bearer credential for chat, sessions, and runs;
-- the Wing Link origin and control credential for local profile topology.
+A saved paired gateway may carry two independent connections:
 
-Wing Link is not a Hermes reverse proxy. The Flutter client never sends chat,
-session, run, approval, or model traffic through it. A paired Wing Link may
-manage profile-scoped custom provider definitions through its typed Hermes CLI
-adapter; provider credentials remain on the direct Hermes contract.
+- the Hermes origin and Hermes bearer credential for sessions, messages,
+  profiles, providers, runs, approvals, and other Hermes domains;
+- the Wing Link origin and control credential for bounded host-local bootstrap,
+  pairing, service lifecycle, health, repair, and diagnostics.
 
-## Supported workflows
+The direct Hermes connection is the only approved profile and provider path.
+Wing Link is not a Hermes reverse proxy or a fallback domain API.
 
-### Hermes-advertised profiles
+## Supported profile workflows
 
 When authenticated `GET /v1/capabilities` advertises the exact profile query
 contract, scopes, methods, and routes, Wing uses Hermes directly:
 
-| Operation               | Required Hermes contract                        |
-| ----------------------- | ----------------------------------------------- |
-| List                    | `GET /api/profiles`, `profiles:read`            |
-| Create                  | `POST /api/profiles`, `profiles:write`          |
-| Rename display metadata | `PATCH /api/profiles/{name}`, `profiles:write`  |
-| Persona                 | `GET` and `PUT /api/profiles/{name}/soul`       |
-| Delete                  | `DELETE /api/profiles/{name}`, `profiles:write` |
-| Chat                    | advertised profile query context                |
+| Operation | Required Hermes contract |
+| --- | --- |
+| List | `GET /api/profiles`, `profiles:read` |
+| Create | `POST /api/profiles`, `profiles:write` |
+| Rename display metadata | `PATCH /api/profiles/{name}`, `profiles:write` |
+| Persona | `GET` and `PUT /api/profiles/{name}/soul` |
+| Delete | `DELETE /api/profiles/{name}`, `profiles:write` |
+| Chat | advertised profile query context |
 
-The channel checks schema, scope, method, and path before network I/O. Native
-rename, persona update, and delete send the opaque Hermes revision as an
-optimistic-concurrency precondition.
+The client checks schema, scope, method, path, and explicit profile context
+before network I/O. Rename, persona update, and delete send the opaque Hermes
+domain revision as an optimistic-concurrency precondition. Missing or stale
+contracts fail closed; Wing does not fall back to local files or Wing Link.
 
-### Wing Link local profiles
+A gateway without advertised profile discovery may expose one unscoped Default
+contact for compatible chat. That fallback is presentation state, not evidence
+that profile administration is available.
 
-When a paired gateway has a Wing Link control credential, Profiles also supports
-local Hermes CLI profiles through the separate `8654` management listener:
+## Supported provider/model workflows
 
-| Operation | Wing Link behavior                                           |
-| --------- | ------------------------------------------------------------ |
-| List      | reads the validated local profile topology                   |
-| Create    | `hermes profile create <id> --no-alias`                      |
-| Clone     | adds `--clone-from <source>` to the fixed argument array     |
-| Rename    | `hermes profile rename <old> <new>`                          |
-| Delete    | `hermes profile delete --yes <id>`, after typed confirmation |
+Provider and model administration also uses direct, advertised Hermes contracts:
 
-Local names are stable IDs matching `[a-z0-9][a-z0-9_-]{0,63}`. Reserved
-profiles, including `default`, cannot be renamed or deleted. Mutations are
-serialized and require the current topology revision; stale revisions return a
-conflict and must be refreshed before retrying. Wing Link rejects symlinked or
-otherwise unsafe profile roots before invoking Hermes CLI.
+| Operation | Required Hermes contract |
+| --- | --- |
+| Provider inventory | `GET /api/providers`, `providers:read` |
+| Set/remove/validate credential | dedicated `/api/providers/{slug}/credential` operations, `providers:write` |
+| Model inventory | `GET /api/models`, `models:read` |
+| Refresh models | `POST /api/models/refresh`, `models:write` |
+| Assign model | `PUT /api/models/assignment`, `models:write`, `If-Match` |
 
-Persona/SOUL editing is not part of the Wing Link topology API. A local-only
-profile's Chat action remains disabled until Hermes advertises a usable API
-profile context. Wing does not invent context, change sticky CLI state, or
-route chat through Wing Link.
+Provider credentials are write-only. Hermes reports bounded presence and masked
+metadata but never returns a stored value. Wing does not pass credentials in
+URLs, QR payloads, process arguments, logs, operation events, diagnostics, or
+screenshots.
 
-### Wing Link custom providers
+When only exact `GET /v1/models` is advertised, Wing may show bounded runtime
+model inventory read-only. It must not infer provider mutation support from that
+route.
 
-When paired Hermes omits provider administration, the Providers screen uses
-Wing Link for custom OpenAI-compatible provider definitions. List, create,
-update, and delete are explicitly scoped to the selected profile and map to
-fixed `hermes --profile <id> config get/set/unset` argument arrays. IDs, HTTP(S)
-origins, model names, and opaque revisions are validated before execution.
-Arbitrary config keys and CLI passthrough are not exposed. Credentials and
-OAuth accounts remain outside this adapter because secrets must never enter
-process arguments.
+## Prototype migration note
+
+This worktree still contains prototype Wing Link profile-topology and custom
+provider adapters, plus tests and historical documentation created for that
+experiment. The architecture decision changed on 2026-08-10:
+
+- those adapters are deprecated and are not an approved production capability;
+- they must be quarantined or removed from Flutter and Wing Link;
+- the app must not call them when Hermes omits a domain contract;
+- their existence or passing tests do not establish supported profile/provider
+  management;
+- historical receipts that used them are superseded for production readiness.
+
+The preserved historical design is explicitly marked superseded. New work must
+follow [ADR 0012](../adr/0012-hermes-agent-domain-authority.md) and amended
+[ADR 0044](../adr/0044-wing-link-local-runtime-supervisor.md).
 
 ## Pairing and credential boundary
 
 Run Wing Link on the Hermes host, then pair direct Hermes and the separate
-control origin:
+supervisor origin:
 
 ```bash
 WING_HERMES_URL=http://<trusted-vpn-ip>:8642 \
 WING_LINK_URL=http://<trusted-vpn-ip>:8654 wing-link pair
 ```
 
-`wing-link pair` installs, starts, and verifies the per-user service before it
-shows the QR; the service survives the pairing terminal. The QR contains a short-lived code, the direct Hermes origin, the one-time
-broker origin, and the non-secret Wing Link origin. It contains no bearer
-credential. After operator review, the compatibility broker returns the
-existing Hermes API key once and stages a separate random Wing Link token. Wing
-must call `POST /v1/auth/credentials/{id}/ack` with that pending token before it
-becomes valid for `/v1/profiles`. The app stores the two tokens under separate
-secure-storage keys; shared preferences contain only normalized non-secret
-origins and labels.
+`wing-link pair` installs, starts, and verifies the supported per-user service
+before showing the QR. The QR contains a short-lived code, the direct Hermes
+origin, the one-time broker origin, and the non-secret Wing Link origin. It
+contains no bearer credential.
 
-All authenticated Wing Link operations use the control token. The Hermes API
-key is never accepted by the Wing Link management listener. Unknown Hermes
-paths return `404`; there is no proxy fallback.
+After operator review, pairing prefers a scoped Hermes enrollment and stages a
+separate Wing Link control credential. The app stores the credentials under
+separate secure-storage keys. Shared preferences contain only normalized
+non-secret origins and labels. The Hermes credential is never accepted by the
+Wing Link listener, and unknown paths return `404`; there is no proxy fallback.
+
+The Wing Link credential authorizes supervisor operations only. It is not proof
+of profile, provider, session, message, tool, schedule, approval, or messaging
+platform authority.
 
 ## Hard limitations
 
-### Hermes remains the runtime authority
+### Hermes remains the domain authority
 
-This repository does not patch, deploy, or restart Hermes Agent. Native API
-profile rows and runtime context remain Hermes-owned. Wing Link provides only
-validated local topology operations around the installed Hermes CLI.
+Hermes Agent owns profiles, providers, models, persona, sessions, messages,
+tools, schedules, approvals, and messaging-platform semantics. Wing uses
+advertised Hermes interfaces. It does not parse Hermes files, databases, logs,
+cryptographic stores, or human CLI output.
 
 ### One full Hermes channel is active at a time
 
@@ -112,41 +123,36 @@ independent streaming channels.
 
 ### No offline administrative replay
 
-Profile mutations require a live authorized endpoint. Failed or interrupted
-mutations are not queued or replayed later, per
+Profile/provider mutations require a live authorized endpoint. Failed or
+interrupted mutations are not queued or replayed later, per
 [ADR 0030](../adr/0030-no-offline-mutation-replay.md).
 
-### Cached fallback contacts are not profile capability proof
+### Unsupported is not empty
 
-A gateway without advertised Hermes profile discovery uses a fallback Default
-profile for unscoped chat. Wing Link supplements every local profile as a
-management-only row, but those rows do not gain profile-scoped chat until Hermes
-advertises usable profile context.
+A missing route, missing scope, authentication failure, or incompatible profile
+context appears as unavailable. Wing does not present it as an empty profile,
+provider, or model list.
 
 ## Troubleshooting
 
-When **Profiles unavailable** appears:
+When **Profiles unavailable** or **Providers unavailable** appears:
 
 1. Confirm the intended gateway is selected and direct Hermes is online.
-2. For native profiles, inspect authenticated capabilities without recording a
-   token and verify exact profile routes/scopes/query context.
-3. For local profiles, verify `wing-link serve` is running at the saved control
-   origin and re-pair if the independent control credential is missing or
-   revoked.
-4. Confirm the Wing Link host matches the Hermes host and the listener is bound
-   only to loopback, a private LAN, or Tailscale.
-5. Refresh after a revision conflict before retrying.
+2. Reconnect so Wing refreshes authenticated capabilities and granted scopes.
+3. Verify Hermes advertises the exact methods, routes, scopes, and mandatory
+   profile query context without recording a token.
+4. Refresh after a revision conflict before retrying.
+5. Update or configure Hermes Agent if the required contract is absent.
 
-Do not work around missing capability by placing secrets in URLs, parsing
-Hermes files in Flutter, exposing a dashboard port, or adding client-local
-shadow profiles.
+Do not work around a missing contract by placing secrets in URLs, invoking Wing
+Link domain adapters, parsing Hermes files in Flutter, exposing a dashboard port,
+or adding client-local shadow profiles/providers.
 
 ## Evidence
 
 - `test/features/agents/agents_screen_test.dart`
-- `test/features/enrollment/hermes_enrollment_flow_test.dart`
+- `test/features/providers/providers_screen_test.dart`
+- `test/core/hermes/channel/hermes_api_channel_test.dart`
 - `test/core/hermes/setup/secure_hermes_endpoint_store_test.dart`
-- `test/core/wing_link/wing_link_client_test.dart`
-- `wing_link/pair_test.go`
-- `wing_link/serve_test.go`
-- `scripts/maestro/gateway_profiles_qa.yaml`
+- `test/tooling/hermes_domain_authority_contract_test.dart`
+- `test/tooling/wing_link_docs_contract_test.dart`

@@ -17,6 +17,7 @@ typedef VoiceCaptureServiceFactory = VoiceCaptureService Function();
 VoiceCaptureService? createDefaultVoiceCaptureService({
   VoiceCapturePlatform? platform,
   VoiceCaptureServiceFactory? speechToTextServiceFactory,
+  String? localeId,
 }) {
   final effectivePlatform = platform ?? currentVoiceCapturePlatform();
   if (!_supportsSpeechToText(effectivePlatform)) return null;
@@ -25,6 +26,7 @@ VoiceCaptureService? createDefaultVoiceCaptureService({
     return speechToTextServiceFactory();
   }
   return SpeechToTextVoiceCaptureService(
+    localeId: localeId,
     readinessCheck: effectivePlatform.isAndroid
         ? () async {
             final reason = (await checkDefaultVoiceCaptureReadiness(

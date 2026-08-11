@@ -26,7 +26,7 @@ test("Hermes route opens QR enrollment from the agent empty state", async ({
   await a11y(page);
 
   await page
-    .getByRole("button", { name: "Add gateway or agent" })
+    .getByRole("button", { name: "Add gateway or profile" })
     .first()
     .click();
   await expect(

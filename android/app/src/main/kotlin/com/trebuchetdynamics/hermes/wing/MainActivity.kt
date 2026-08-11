@@ -13,6 +13,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.trebuchetdynamics.hermes.wing.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.hermes.wing.durablekeys.DurableKeyStoreChannel
 import com.trebuchetdynamics.hermes.wing.pairing.PairingHandoffIntentParser
+import com.trebuchetdynamics.hermes.wing.voice.WingVoiceEnginePlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -22,6 +23,7 @@ class MainActivity : FlutterActivity() {
     private var initialConnectIntent: Map<String, String>? = null
     private var connectIntentEvents: EventChannel.EventSink? = null
     private var qrScanPending = false
+    private var voiceEnginePlugin: WingVoiceEnginePlugin? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         initialConnectIntent = connectPayloadFrom(intent)
@@ -30,6 +32,10 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        voiceEnginePlugin = WingVoiceEnginePlugin(
+            applicationContext,
+            flutterEngine.dartExecutor.binaryMessenger,
+        )
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONNECT_INTENTS_METHOD_CHANNEL,
@@ -77,6 +83,12 @@ class MainActivity : FlutterActivity() {
         val payload = connectPayloadFrom(intent) ?: return
         initialConnectIntent = payload
         connectIntentEvents?.success(payload)
+    }
+
+    override fun onDestroy() {
+        voiceEnginePlugin?.dispose()
+        voiceEnginePlugin = null
+        super.onDestroy()
     }
 
     private fun scanQrCode(result: MethodChannel.Result) {

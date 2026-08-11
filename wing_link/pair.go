@@ -526,25 +526,47 @@ func ensureHermesTokenFile(path string) (string, error) {
 		return "", errors.New("could not generate a Hermes API key")
 	}
 	token := hex.EncodeToString(keyBytes)
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
-	if err != nil {
-		return "", errors.New("hermes environment file is unavailable")
-	}
-	defer func() { _ = file.Close() }()
-	if err := secureStatePath(path, false); err != nil {
-		return "", errors.New("could not secure the Hermes environment file")
-	}
 	prefix := ""
 	if len(contents) > 0 && contents[len(contents)-1] != '\n' {
 		prefix = "\n"
 	}
-	if _, err := fmt.Fprintf(file, "%sAPI_SERVER_KEY=%s\n", prefix, token); err != nil {
-		return "", errors.New("could not save the Hermes API key")
-	}
-	if err := file.Sync(); err != nil {
-		return "", errors.New("could not save the Hermes API key")
+	payload := append([]byte(nil), contents...)
+	payload = fmt.Appendf(payload, "%sAPI_SERVER_KEY=%s\n", prefix, token)
+	if err := writeHermesTokenFile(path, payload); err != nil {
+		return "", err
 	}
 	return token, nil
+}
+
+func writeHermesTokenFile(path string, payload []byte) error {
+	temp, err := os.CreateTemp(filepath.Dir(path), ".hermes-env-*")
+	if err != nil {
+		return errors.New("could not stage the Hermes API key")
+	}
+	tempPath := temp.Name()
+	defer func() { _ = os.Remove(tempPath) }()
+	if err := secureStatePath(tempPath, false); err != nil {
+		_ = temp.Close()
+		return errors.New("could not secure the Hermes environment file")
+	}
+	if _, err := temp.Write(payload); err != nil {
+		_ = temp.Close()
+		return errors.New("could not save the Hermes API key")
+	}
+	if err := temp.Sync(); err != nil {
+		_ = temp.Close()
+		return errors.New("could not save the Hermes API key")
+	}
+	if err := temp.Close(); err != nil {
+		return errors.New("could not save the Hermes API key")
+	}
+	if err := replaceStateFile(tempPath, path); err != nil {
+		return errors.New("could not save the Hermes API key")
+	}
+	if err := syncStateDirectory(filepath.Dir(path)); err != nil {
+		return errors.New("could not save the Hermes API key")
+	}
+	return nil
 }
 
 func readHermesTokenFile(path string) (string, error) {

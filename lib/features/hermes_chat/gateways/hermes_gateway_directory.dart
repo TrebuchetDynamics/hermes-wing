@@ -37,8 +37,6 @@ abstract interface class GatewaySummaryLoader {
 
 typedef PendingWingLinkCredentialRecovery =
     Future<bool> Function(HermesEndpointConfig config);
-typedef WingLinkProfileLoader =
-    Future<List<WingLinkProfile>> Function(HermesEndpointConfig config);
 
 class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
   const HermesApiGatewaySummaryLoader({this.clientBuilder});
@@ -101,7 +99,6 @@ class HermesGatewayDirectory extends ChangeNotifier
     DateTime Function()? now,
     GatewayPeriodicTimerFactory? periodicTimer,
     PendingWingLinkCredentialRecovery? pendingCredentialRecovery,
-    WingLinkProfileLoader? wingLinkProfileLoader,
     this.maxConcurrent = 3,
   }) : assert(maxConcurrent > 0),
        _store = store,
@@ -111,8 +108,7 @@ class HermesGatewayDirectory extends ChangeNotifier
        _now = now ?? DateTime.now,
        _periodicTimer = periodicTimer ?? Timer.periodic,
        _pendingCredentialRecovery =
-           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential,
-       _wingLinkProfileLoader = wingLinkProfileLoader ?? _loadWingLinkProfiles;
+           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential;
 
   final HermesEndpointStore _store;
   final GatewayContactCache _cache;
@@ -121,7 +117,6 @@ class HermesGatewayDirectory extends ChangeNotifier
   final DateTime Function() _now;
   final GatewayPeriodicTimerFactory _periodicTimer;
   final PendingWingLinkCredentialRecovery _pendingCredentialRecovery;
-  final WingLinkProfileLoader _wingLinkProfileLoader;
   final int maxConcurrent;
   final Map<String, HermesEndpointConfig> _configsById = {};
   final Map<String, int> _gatewayRefreshGenerations = {};
@@ -262,15 +257,6 @@ class HermesGatewayDirectory extends ChangeNotifier
     }
   }
 
-  static Future<List<WingLinkProfile>> _loadWingLinkProfiles(
-    HermesEndpointConfig config,
-  ) async {
-    final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
-    final token = config.wingLinkToken ?? '';
-    if (origin == null || origin.host.isEmpty || token.isEmpty) return const [];
-    return WingLinkClient(origin: origin, token: token).listProfiles();
-  }
-
   static Future<bool> _verifyAndAcknowledgePendingCredential(
     HermesEndpointConfig config,
   ) async {
@@ -330,21 +316,12 @@ class HermesGatewayDirectory extends ChangeNotifier
         _gatewayRefreshGenerations[gatewayId] == gatewayGeneration;
     try {
       final summary = await _loader.load(config);
-      List<WingLinkProfile> wingLinkProfiles = const [];
-      try {
-        wingLinkProfiles = await _wingLinkProfileLoader(config);
-      } catch (_) {
-        // Chat remains usable when the independent management plane is down.
-      }
       if (!isCurrent()) return;
       final refreshedAt = _now().toUtc();
       final apiProfiles = {
         for (final profile in summary.profiles) profile.id: profile,
       };
-      final localProfiles = {
-        for (final profile in wingLinkProfiles) profile.id: profile,
-      };
-      final profileIds = {...apiProfiles.keys, ...localProfiles.keys};
+      final profileIds = apiProfiles.keys;
       final projected = profileIds.isEmpty
           ? [
               GatewayContact(
@@ -371,9 +348,7 @@ class HermesGatewayDirectory extends ChangeNotifier
                   gatewayLabel: config.displayLabel,
                   profileName:
                       apiProfiles[profileId]?.displayName ??
-                      (profileId == 'default'
-                          ? 'Default profile'
-                          : localProfiles[profileId]?.name ?? profileId),
+                      (profileId == 'default' ? 'Default profile' : profileId),
                   latestSession: _latestSession(
                     summary.sessionsByProfile[profileId] ??
                         (profileId == 'default'

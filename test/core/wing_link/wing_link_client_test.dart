@@ -4,6 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 
 void main() {
+  test('pending credential verification reads host status only', () async {
+    final requestedPaths = <String>[];
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requestedPaths.add(uri.path);
+        return '{"status":"ok"}';
+      },
+    );
+
+    await client.verifyPendingCredential();
+
+    expect(requestedPaths, ['/v1/status']);
+  });
+
   test('lists Wing Link profiles with the independent control token', () async {
     late Uri requestedUri;
     late Map<String, String> requestedHeaders;

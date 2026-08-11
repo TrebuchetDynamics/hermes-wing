@@ -5,7 +5,10 @@ import 'package:crypto/crypto.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../../shared/voice/voice_settings.dart';
+import '../models/default_voice_model_pack_installer.dart';
+import '../models/voice_model_pack_installer.dart';
 import 'pocket_speech_asset_download_service_base.dart';
+import 'pocket_speech_model_manifests.dart';
 
 class IoPocketSpeechAssetDownloadService
     implements PocketSpeechAssetDownloadService {
@@ -226,12 +229,94 @@ class IoPocketSpeechAssetDownloadService
   }
 }
 
+typedef PocketSpeechModelPackInstallerFactory =
+    Future<VoiceModelPackInstaller> Function();
+
+/// Production Pocket Speech storage backed by the same transactional installer
+/// as offline STT packs: immutable metadata, recovery, rollback, and root-wide
+/// operation serialization are therefore shared by both model families.
+final class TransactionalPocketSpeechAssetDownloadService
+    implements PocketSpeechAssetDownloadService {
+  TransactionalPocketSpeechAssetDownloadService({
+    required this.config,
+    PocketSpeechModelPackInstallerFactory? installerFactory,
+  }) : _installerFactory =
+           installerFactory ?? createDefaultVoiceModelPackInstaller;
+
+  final PocketSpeechAssetDownloadConfig config;
+  final PocketSpeechModelPackInstallerFactory _installerFactory;
+  Future<VoiceModelPackInstaller>? _installer;
+
+  Future<VoiceModelPackInstaller> get _resolvedInstaller =>
+      _installer ??= _installerFactory();
+
+  @override
+  bool isConfigured(PocketSpeechModel model) =>
+      config.specFor(model).isConfigured;
+
+  @override
+  Future<PocketSpeechVoicePack> download(
+    PocketSpeechModel model, {
+    PocketSpeechDownloadProgressCallback? onProgress,
+  }) async {
+    final spec = config.specFor(model);
+    if (!spec.isConfigured) {
+      throw StateError('${model.label} download is not configured.');
+    }
+    final manifest = pocketSpeechManifest(model, spec);
+    final installer = await _resolvedInstaller;
+    final installed = await installer.install(
+      manifest,
+      onProgress: (progress) => onProgress?.call(
+        PocketSpeechDownloadProgress(
+          model: model,
+          part: progress.artifactName == 'model'
+              ? PocketSpeechDownloadPart.model
+              : PocketSpeechDownloadPart.voices,
+          receivedBytes: progress.receivedBytes,
+          totalBytes: progress.totalBytes,
+        ),
+      ),
+    );
+    return _voicePack(model, installed);
+  }
+
+  @override
+  Future<PocketSpeechVoicePack?> installedPack(PocketSpeechModel model) async {
+    final spec = config.specFor(model);
+    if (!spec.isConfigured) return null;
+    final installer = await _resolvedInstaller;
+    final installed = await installer.installedPack(
+      pocketSpeechManifest(model, spec),
+    );
+    return installed == null ? null : _voicePack(model, installed);
+  }
+
+  @override
+  Future<void> delete(PocketSpeechModel model) async {
+    final spec = config.specFor(model);
+    if (!spec.isConfigured) return;
+    final manifest = pocketSpeechManifest(model, spec);
+    final installer = await _resolvedInstaller;
+    await installer.delete(manifest.packId, manifest.version);
+  }
+
+  PocketSpeechVoicePack _voicePack(
+    PocketSpeechModel model,
+    InstalledVoiceModelPack installed,
+  ) => PocketSpeechVoicePack(
+    model: model,
+    modelPath: installed.artifactFile('model').path,
+    voicesPath: installed.artifactFile('voices').path,
+  );
+}
+
 PocketSpeechAssetDownloadService?
 createDefaultPocketSpeechAssetDownloadService({
   PocketSpeechAssetDownloadConfig? config,
 }) {
   final effective = config ?? PocketSpeechAssetDownloadConfig.fromEnvironment();
   return effective.hasConfiguredModel
-      ? IoPocketSpeechAssetDownloadService(config: effective)
+      ? TransactionalPocketSpeechAssetDownloadService(config: effective)
       : null;
 }

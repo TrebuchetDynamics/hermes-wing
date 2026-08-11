@@ -114,6 +114,23 @@
   "toolsConnectionRequiredBody": "Open a saved gateway chat before viewing its tool inventory.",
   "toolsConnectionErrorBody": "Tool inventory could not be loaded from Hermes.",
   "gatewayLabel": "Gateway",
+  "shellProfileLabel": "Profile",
+  "shellModelLabel": "Model",
+  "shellInventoryLabel": "Inventory",
+  "shellConnectedHost": "Connected · {host}",
+  "@shellConnectedHost": {
+    "placeholders": {"host": {"type": "String"}}
+  },
+  "shellDisconnected": "Disconnected",
+  "shellNotLoaded": "Not loaded",
+  "shellUnavailable": "Unavailable",
+  "shellInventorySummary": "{tools, plural, =1{1 tool} other{{tools} tools}} · {skills, plural, =1{1 skill} other{{skills} skills}}",
+  "@shellInventorySummary": {
+    "placeholders": {
+      "tools": {"type": "int"},
+      "skills": {"type": "int"}
+    }
+  },
   "selectGatewayHint": "Select gateway",
   "gatewaySelectPromptTitle": "Select a gateway",
   "toolsUnavailableTitle": "Tools unavailable",
@@ -296,6 +313,8 @@
   "providersEmptyTitle": "No providers available",
   "providersEmptyBody": "Connect with provider access to manage credentials.",
   "providerConfiguredBadge": "Configured",
+  "providersConfiguredSection": "Configured providers",
+  "providersAvailableSection": "Available providers",
   "providerNotConfiguredBadge": "Not configured",
   "providerKeyHintLabel": "Key {hint}",
   "@providerKeyHintLabel": {
@@ -646,6 +665,26 @@
   "voiceSpeakRepliesTitle": "Speak replies aloud",
   "voiceSpeakRepliesSubtitle": "Allow hands-free voice to speak Hermes replies aloud; the chat's hands-free switch turns this on and off",
   "voiceAdvancedSection": "Advanced",
+  "voiceRecognitionLanguageTitle": "Recognition language",
+  "voiceRecognitionLanguageSubtitle": "Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.",
+  "voiceOfflineRecognitionSection": "Offline recognition",
+  "voiceOfflineSttPackTitle": "Whisper Base INT8 · English + Español",
+  "voiceOfflineSttChecking": "Checking the verified model pack…",
+  "voiceOfflineSttAbsent": "Not installed · about 163 MB · Android recognition remains available.",
+  "voiceOfflineSttInstalling": "Downloading and verifying every model artifact…",
+  "voiceOfflineSttInstalled": "Installed and verified. {provenance}",
+  "@voiceOfflineSttInstalled": {
+    "placeholders": {
+      "provenance": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceOfflineSttDeleting": "Removing the offline model pack…",
+  "voiceOfflineSttUnavailable": "The offline speech pack is unavailable.",
+  "voiceOfflineSttDownload": "Download",
+  "voiceOfflineSttRemove": "Remove",
+  "voiceOfflineSttRetry": "Retry",
   "voiceCommandWordTitle": "Command word",
   "voiceCommandWordHint": "Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.",
   "voicePocketSpeechSection": "Local voice preferences",

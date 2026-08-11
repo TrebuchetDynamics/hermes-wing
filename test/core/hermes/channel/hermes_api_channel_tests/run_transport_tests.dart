@@ -65,6 +65,86 @@ void _hermesApiChannelRunTransportTests() {
   );
 
   test(
+    'terminal canonical output repairs dropped middle deltas for the owned run',
+    () async {
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async => switch (uri.path) {
+            '/v1/runs' =>
+              '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+            _ => '{}',
+          },
+          getStream: (uri, headers) => Stream.fromIterable(const [
+            'event: message.delta\ndata: {"delta":"Hola, este "}\n\n',
+            'event: message.delta\ndata: {"delta":"mensaje bilingüe"}\n\n',
+            'event: run.completed\ndata: {"run_id":"run_1","session_id":"sess_1","output":"Hola, 世界, este mensaje bilingüe"}\n\n',
+          ]),
+        ),
+      );
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText('repair this stream');
+
+      expect(
+        channel.state.activeMessages.last.text,
+        'Hola, 世界, este mensaje bilingüe',
+      );
+      expect(
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.completed,
+      );
+    },
+  );
+
+  for (final mismatch in const {
+    'run':
+        '{"run_id":"run_other","session_id":"sess_1","output":"Stale canonical"}',
+    'session':
+        '{"run_id":"run_1","session_id":"sess_other","output":"Stale canonical"}',
+  }.entries) {
+    test(
+      'terminal canonical output rejects a mismatched ${mismatch.key}',
+      () async {
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async => switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              _ => throw StateError('unexpected GET $uri'),
+            },
+            post: (uri, headers, body) async => switch (uri.path) {
+              '/v1/runs' =>
+                '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+              _ => '{}',
+            },
+            getStream: (uri, headers) => Stream.fromIterable([
+              'event: message.delta\ndata: {"delta":"Owned stream"}\n\n',
+              'event: run.completed\ndata: ${mismatch.value}\n\n',
+            ]),
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+        await channel.sendText('reject stale final');
+
+        expect(channel.state.activeMessages.last.text, 'Owned stream');
+      },
+    );
+  }
+
+  test(
     'session switching preserves concurrent runs and streams each transcript',
     () async {
       final streams = <String, _ManualStringStream>{};
@@ -377,7 +457,7 @@ void _hermesApiChannelRunTransportTests() {
   });
 
   test(
-    'sendText keeps reasoning through authoritative history reconciliation',
+    'sendText preserves distinct assistant and reasoning segments through history reconciliation',
     () async {
       var messagesRequests = 0;
       final channel = HermesApiChannel(
@@ -398,6 +478,8 @@ void _hermesApiChannelRunTransportTests() {
           getStream: (uri, headers) => Stream.fromIterable([
             'data: {"event":"reasoning.available","text":"Reasoning survives."}\n\n',
             'data: {"event":"message.delta","delta":"Local"}\n\n',
+            'data: {"event":"tool.started","tool":"bash","tool_call_id":"call_1","preview":"inspect"}\n\n',
+            'data: {"event":"message.delta","delta":"Hi there"}\n\n',
             'data: {"event":"run.completed"}\n\n',
           ]),
         ),
@@ -410,8 +492,12 @@ void _hermesApiChannelRunTransportTests() {
         HermesTurnKind.text,
         HermesTurnKind.reasoning,
         HermesTurnKind.text,
+        HermesTurnKind.toolCall,
+        HermesTurnKind.text,
       ]);
       expect(channel.state.activeMessages[1].text, 'Reasoning survives.');
+      expect(channel.state.activeMessages[2].text, 'Local');
+      expect(channel.state.activeMessages[3].toolCall?.name, 'bash');
       expect(channel.state.activeMessages.last.text, 'Hi there');
     },
   );

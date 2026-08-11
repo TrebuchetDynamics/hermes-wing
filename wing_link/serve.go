@@ -70,10 +70,17 @@ type profileBackend struct {
 }
 
 type wingLinkServer struct {
-	profiles  *profileBackend
-	providers *providerBackend
-	state     *StateStore
+	profiles   *profileBackend
+	providers  *providerBackend
+	bootstrap  *BootstrapManager
+	operations *OperationManager
+	state      *StateStore
 }
+
+// Hermes Agent is the sole profile/provider/configuration authority. The
+// legacy adapters remain compiled only for rollback compatibility; Wing Link
+// does not expose their routes.
+const wingLinkDomainFallbacksEnabled = false
 
 func serveCommand(stdout, stderr io.Writer, args []string) int {
 	options, err := parseServeOptions(args)
@@ -81,36 +88,21 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		_, _ = fmt.Fprintf(stderr, "serve: %v\n", err)
 		return 2
 	}
-	runHermes := func(ctx context.Context, args ...string) error {
-		result := runProcess(ctx, CommandSpec{
-			Path: options.Hermes, Args: args,
-			Env: []string{"HERMES_HOME=" + options.Home}, Timeout: 90 * time.Second,
-		}, nil)
-		if result.Err != nil {
-			return errors.New("hermes command failed")
-		}
-		return nil
-	}
+	bootstrap := newProductionBootstrapManager(options.Home, options.Hermes)
+	runHermes := bootstrap.RunHermes
 	backend := &profileBackend{
 		home:      options.Home,
 		api:       newHermesProfileAPI(options.HermesOrigin, options.HermesToken),
 		runHermes: runHermes,
 	}
 	providers := &providerBackend{
-		runHermes: runHermes,
-		readHermes: func(ctx context.Context, args ...string) ([]byte, error) {
-			output, result := runProcessCapture(ctx, CommandSpec{
-				Path: options.Hermes, Args: args,
-				Env: []string{"HERMES_HOME=" + options.Home}, Timeout: 30 * time.Second,
-			}, 256*1024)
-			if result.Err != nil {
-				return nil, errors.New("hermes command failed")
-			}
-			return output, nil
-		},
+		runHermes:  runHermes,
+		readHermes: bootstrap.ReadHermes,
 	}
 	server := &http.Server{
-		Handler:           newWingLinkServer(backend, &StateStore{path: options.StatePath}, providers),
+		Handler: newWingLinkServerWithBootstrap(
+			backend, &StateStore{path: options.StatePath}, providers, bootstrap,
+		),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second,
 	}
@@ -175,10 +167,7 @@ func parseServeOptions(args []string) (serveOptions, error) {
 	if err != nil {
 		return serveOptions{}, err
 	}
-	hermes, err := exec.LookPath("hermes")
-	if err != nil {
-		return serveOptions{}, errors.New("could not find hermes")
-	}
+	hermes, _ := exec.LookPath("hermes")
 	statePath, err := resolveWingLinkStatePath()
 	if err != nil {
 		return serveOptions{}, err
@@ -194,9 +183,12 @@ func parseServeOptions(args []string) (serveOptions, error) {
 	if !strings.EqualFold(hermesOrigin.Hostname(), listenAddress.IP.String()) {
 		return serveOptions{}, errors.New("hermes and wing link must use the same host")
 	}
-	hermesToken, err := discoverHermesToken()
-	if err != nil {
-		return serveOptions{}, err
+	hermesToken := ""
+	if hermes != "" {
+		hermesToken, err = discoverHermesToken()
+		if err != nil {
+			return serveOptions{}, err
+		}
 	}
 	return serveOptions{
 		Listen: listenAddress.String(), Home: home, Hermes: hermes, StatePath: statePath,
@@ -327,11 +319,18 @@ func isTrustedControlPlaneIP(ip net.IP) bool {
 }
 
 func newWingLinkServer(profiles *profileBackend, state *StateStore, providers ...*providerBackend) http.Handler {
-	server := &wingLinkServer{profiles: profiles, state: state}
+	var provider *providerBackend
 	if len(providers) > 0 {
-		server.providers = providers[0]
+		provider = providers[0]
 	}
-	return server
+	return newWingLinkServerWithBootstrap(profiles, state, provider, nil)
+}
+
+func newWingLinkServerWithBootstrap(profiles *profileBackend, state *StateStore, provider *providerBackend, bootstrap *BootstrapManager) http.Handler {
+	return &wingLinkServer{
+		profiles: profiles, providers: provider, bootstrap: bootstrap,
+		operations: NewOperationManager(), state: state,
+	}
 }
 
 func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -360,7 +359,21 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 		}
 		return
 	}
-	if request.URL.Path == "/v1/profiles" {
+	if request.URL.Path == "/v1/setup" && request.Method == http.MethodPost {
+		if !server.requireAuthorization(writer, request) {
+			return
+		}
+		server.startBootstrap(writer, request)
+		return
+	}
+	if id, ok := operationRoute(request.URL.Path); ok && request.Method == http.MethodGet {
+		if !server.requireReadAuthorization(writer, request) {
+			return
+		}
+		server.operationSnapshot(writer, id)
+		return
+	}
+	if wingLinkDomainFallbacksEnabled && request.URL.Path == "/v1/profiles" {
 		switch request.Method {
 		case http.MethodGet:
 			if !server.requireReadAuthorization(writer, request) {
@@ -391,7 +404,7 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 		}
 		return
 	}
-	if server.providers != nil && server.serveProviderRoute(writer, request) {
+	if wingLinkDomainFallbacksEnabled && server.providers != nil && server.serveProviderRoute(writer, request) {
 		return
 	}
 	writer.WriteHeader(http.StatusNotFound)

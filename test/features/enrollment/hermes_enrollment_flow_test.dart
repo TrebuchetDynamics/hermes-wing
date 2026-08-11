@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
@@ -530,6 +531,21 @@ void main() {
       expect(
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsNothing,
+      );
+
+      final router = GoRouter.of(tester.element(find.byType(HermesChatScreen)));
+      expect(
+        router.canPop(),
+        isTrue,
+        reason: 'Android back must return to the enrollment chooser.',
+      );
+      router.pop();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Connect to Hermes'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        findsOneWidget,
       );
     });
 

@@ -17,7 +17,8 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^10.3.1
   web: ^1.1.1
-  speech_to_text: ^7.4.0
+  speech_to_text:
+    path: third_party/speech_to_text
   flutter_tts: ^4.2.5
   audioplayers: ^6.5.1
   path_provider: ^2.1.5
@@ -32,11 +33,18 @@ dependencies:
   file_selector: ^1.1.0
   betto_lang_detector: ^0.1.0-dev.1
   unorm_dart: ^0.3.2
+  sherpa_onnx: ^1.13.4
+
+dependency_overrides:
+  malsami:
+    path: third_party/malsami
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
+  speech_to_text_platform_interface: ^2.4.0
   flutter_lints: ^6.0.0
 
 flutter:

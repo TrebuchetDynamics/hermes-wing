@@ -7,6 +7,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// sherpa_onnx 1.13.4 is built against ONNX Runtime 1.27.0, while the
+// PocketSpeech Flutter binding currently requests an older Android artifact.
+// Resolve both Java/native consumers to the Sherpa-compatible ABI so the APK
+// contains one coherent libonnxruntime.so rather than two incompatible copies.
+configurations.configureEach {
+    resolutionStrategy.force("com.microsoft.onnxruntime:onnxruntime-android:1.27.0")
+}
+
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.isFile) {
@@ -42,6 +50,15 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    packaging {
+        jniLibs.pickFirsts += setOf(
+            "lib/arm64-v8a/libonnxruntime.so",
+            "lib/armeabi-v7a/libonnxruntime.so",
+            "lib/x86/libonnxruntime.so",
+            "lib/x86_64/libonnxruntime.so",
+        )
     }
 
     val releaseKeystorePath = releaseSigningValue(

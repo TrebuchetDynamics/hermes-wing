@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
+import '../../hermes_chat/screens/hermes_chat_screen.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../providers/hermes_enrollment_provider.dart';
 
@@ -121,7 +122,14 @@ class _HermesEnrollmentScreenState
 
   void _openManualConnection() {
     ref.read(hermesEnrollmentControllerProvider).cancel();
-    context.go('${AppRoutes.hermes}?connect=1');
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              const HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
   }
 
   @override

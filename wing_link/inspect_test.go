@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -17,8 +18,25 @@ func TestInspectLocalInstallationReportsMissingHermes(t *testing.T) {
 			return nil, ProcessResult{}
 		},
 	)
-	if inspection.HermesInstalled || inspection.HermesHealthy || !inspection.SetupAvailable {
+	if inspection.HermesInstalled || inspection.HermesHealthy || inspection.SetupAvailable != (runtime.GOOS == "linux") {
 		t.Fatalf("inspection = %#v", inspection)
+	}
+}
+
+func TestInspectLocalInstallationRejectsEmptyOrPathBearingVersion(t *testing.T) {
+	for _, output := range [][]byte{
+		nil,
+		[]byte("/private/home/.local/bin/hermes v1.2.3\n"),
+		[]byte("Hermes Agent at /private/home/.hermes\n"),
+	} {
+		inspection := inspectLocalInstallation(
+			context.Background(),
+			func() (string, error) { return "/safe/hermes", nil },
+			func(context.Context, CommandSpec) ([]byte, ProcessResult) { return output, ProcessResult{} },
+		)
+		if inspection.HermesHealthy || inspection.HermesVersion != "" {
+			t.Fatalf("unsafe version accepted: %#v", inspection)
+		}
 	}
 }
 

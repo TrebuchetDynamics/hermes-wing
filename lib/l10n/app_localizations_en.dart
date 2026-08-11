@@ -2919,6 +2919,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.';
 
   @override
+  String get localSetupAction => 'Set up Hermes on this computer';
+
+  @override
   String get localSetupInstallAction => 'Install Hermes Agent here';
 
   @override

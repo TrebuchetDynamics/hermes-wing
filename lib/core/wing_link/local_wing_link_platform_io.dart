@@ -5,13 +5,17 @@ import 'dart:io';
 import 'local_wing_link_process.dart';
 
 const _maximumOutputBytes = 256 * 1024;
+const _defaultRunTimeout = Duration(seconds: 30);
+const _defaultSetupTimeout = Duration(minutes: 20);
+const _terminationGrace = Duration(seconds: 2);
 
 String localAppExecutablePath() => Platform.resolvedExecutable;
 
 Future<LocalWingLinkProcessResult> runLocalWingLink(
   String executable,
-  List<String> arguments,
-) async {
+  List<String> arguments, {
+  Duration timeout = _defaultRunTimeout,
+}) async {
   if (!Platform.isLinux) {
     return const LocalWingLinkProcessResult(exitCode: 126);
   }
@@ -25,24 +29,27 @@ Future<LocalWingLinkProcessResult> runLocalWingLink(
     final output = await Future.wait([
       _collectBounded(process.stdout),
       _collectBounded(process.stderr),
-    ]);
+    ]).timeout(timeout);
     final exitCode = await process.exitCode;
     return LocalWingLinkProcessResult(
       exitCode: exitCode,
       stdout: utf8.decode(output[0], allowMalformed: true),
       stderr: utf8.decode(output[1], allowMalformed: true),
     );
-  } on StateError {
-    process.kill(ProcessSignal.sigkill);
-    await process.exitCode;
+  } on TimeoutException {
+    await _terminateProcess(process);
+    return const LocalWingLinkProcessResult(exitCode: 124);
+  } on Object {
+    await _terminateProcess(process);
     return const LocalWingLinkProcessResult(exitCode: 125);
   }
 }
 
 Future<LocalWingLinkSetupOperation> startLocalWingLinkSetup(
   String executable,
-  LocalWingLinkProgressCallback onProgress,
-) async {
+  LocalWingLinkProgressCallback onProgress, {
+  Duration timeout = _defaultSetupTimeout,
+}) async {
   if (!Platform.isLinux) return _UnavailableSetupOperation();
   final process = await Process.start(
     executable,
@@ -50,7 +57,7 @@ Future<LocalWingLinkSetupOperation> startLocalWingLinkSetup(
     runInShell: false,
     mode: ProcessStartMode.normal,
   );
-  return _IOSetupOperation(process, onProgress);
+  return _IOSetupOperation(process, onProgress, timeout);
 }
 
 class _UnavailableSetupOperation implements LocalWingLinkSetupOperation {
@@ -63,8 +70,8 @@ class _UnavailableSetupOperation implements LocalWingLinkSetupOperation {
 }
 
 class _IOSetupOperation implements LocalWingLinkSetupOperation {
-  _IOSetupOperation(this._process, this._onProgress) {
-    _result = _collect();
+  _IOSetupOperation(this._process, this._onProgress, Duration timeout) {
+    _result = _collectWithTimeout(timeout);
   }
 
   final Process _process;
@@ -74,6 +81,23 @@ class _IOSetupOperation implements LocalWingLinkSetupOperation {
 
   @override
   Future<LocalWingLinkProcessResult> get result => _result;
+
+  Future<LocalWingLinkProcessResult> _collectWithTimeout(
+    Duration timeout,
+  ) async {
+    final collection = _collect();
+    try {
+      return await collection.timeout(timeout);
+    } on TimeoutException {
+      await _terminateProcess(_process);
+      try {
+        await collection;
+      } on Object {
+        // The timeout result below remains authoritative.
+      }
+      return const LocalWingLinkProcessResult(exitCode: 124);
+    }
+  }
 
   Future<LocalWingLinkProcessResult> _collect() async {
     var bytes = 0;
@@ -119,25 +143,40 @@ class _IOSetupOperation implements LocalWingLinkSetupOperation {
         stdout: terminalJson ?? '',
         stderr: utf8.decode(stderr, allowMalformed: true),
       );
-    } on StateError {
-      _process.kill(ProcessSignal.sigkill);
-      await _process.exitCode;
-      await stderrFuture;
+    } on Object {
+      await _terminateProcess(_process);
+      try {
+        await stderrFuture;
+      } on Object {
+        // A bounded failure is reported below without raw output.
+      }
       return const LocalWingLinkProcessResult(exitCode: 125);
     }
   }
 
   @override
   Future<void> cancel() async {
-    if (_cancelled) return;
+    if (_cancelled) {
+      await _process.exitCode;
+      return;
+    }
     _cancelled = true;
-    if (!_process.kill(ProcessSignal.sigterm)) return;
-    await Future.any([
-      _process.exitCode,
-      Future<void>.delayed(const Duration(seconds: 2)),
-    ]);
-    _process.kill(ProcessSignal.sigkill);
+    await _terminateProcess(_process);
   }
+}
+
+Future<void> _terminateProcess(Process process) async {
+  if (!process.kill(ProcessSignal.sigterm)) {
+    await process.exitCode;
+    return;
+  }
+  try {
+    await process.exitCode.timeout(_terminationGrace);
+    return;
+  } on TimeoutException {
+    process.kill(ProcessSignal.sigkill);
+  }
+  await process.exitCode;
 }
 
 Future<List<int>> _collectBounded(Stream<List<int>> stream) async {

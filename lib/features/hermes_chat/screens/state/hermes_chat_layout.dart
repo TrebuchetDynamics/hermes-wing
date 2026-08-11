@@ -122,7 +122,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             key: const ValueKey('hermes-open-local-setup'),
                             onPressed: () => context.push(AppRoutes.localSetup),
                             icon: const Icon(Icons.computer_outlined),
-                            label: Text(strings.localSetupInstallAction),
+                            label: Text(strings.localSetupAction),
                           ),
                         ],
                         const SizedBox(height: 20),

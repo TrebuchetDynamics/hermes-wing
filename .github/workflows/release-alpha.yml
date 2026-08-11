@@ -36,10 +36,12 @@ jobs:
         run: |
           app_version=$(awk '/^version:/{print $2; exit}' pubspec.yaml)
           app_version=${app_version%%+*}
-          case "$TAG" in
-            v${app_version}-alpha.*) ;;
-            *) echo "Tag must match app version: v${app_version}-alpha.N" >&2; exit 1 ;;
-          esac
+          tag_prefix="v${app_version}-alpha."
+          tag_suffix=${TAG#$tag_prefix}
+          if [[ "$TAG" != "${tag_prefix}${tag_suffix}" || ! "$tag_suffix" =~ ^[0-9]+$ ]]; then
+            echo "Tag must match app version: v${app_version}-alpha.N" >&2
+            exit 1
+          fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release already exists: $TAG" >&2
             exit 1

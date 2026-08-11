@@ -64,6 +64,7 @@ class LocalWingLinkHost {
   final LocalWingLinkRunner _runner;
   final LocalWingLinkSetupStarter? _setupStarter;
   LocalWingLinkSetupOperation? _activeSetup;
+  bool _setupStarting = false;
 
   Future<LocalHermesInspection> inspect() async {
     final json = await _runJson(['inspect', '--json']);
@@ -95,17 +96,20 @@ class LocalWingLinkHost {
     if (starter == null) {
       json = await _runJson(['setup', '--json']);
     } else {
-      if (_activeSetup != null) {
+      if (_activeSetup != null || _setupStarting) {
         throw const LocalWingLinkException(
           'setup_in_progress',
           'Hermes setup is already running.',
         );
       }
-      final operation = await starter(
-        _wingLinkExecutable,
-        onProgress ?? (_) {},
-      );
-      _activeSetup = operation;
+      _setupStarting = true;
+      late final LocalWingLinkSetupOperation operation;
+      try {
+        operation = await starter(_wingLinkExecutable, onProgress ?? (_) {});
+        _activeSetup = operation;
+      } finally {
+        _setupStarting = false;
+      }
       try {
         json = _decodeProcessResult(await operation.result);
       } finally {

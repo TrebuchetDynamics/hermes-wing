@@ -4,15 +4,17 @@ set -euo pipefail
 repository="TrebuchetDynamics/hermes-wing"
 tag=""
 expected_sha256=""
+expected_size=""
 install_dir=""
 
 usage() {
   cat <<'EOF'
-Usage: ./install-wing-link-release.sh --tag TAG --sha256 HEX [--prefix DIR]
+Usage: ./install-wing-link-release.sh --tag TAG --sha256 HEX --size BYTES [--prefix DIR]
 
 Downloads one immutable-tag Wing Link release asset, verifies it against the
-expected SHA-256 supplied out-of-band, validates the binary, and atomically
-installs it for the current user. It never downloads or executes a checksum.
+expected SHA-256 and exact byte size supplied out-of-band, validates the binary,
+and atomically installs it for the current user. It never downloads or executes
+a checksum.
 EOF
 }
 
@@ -20,6 +22,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --tag) tag="${2:?--tag requires a value}"; shift 2 ;;
     --sha256) expected_sha256="${2:?--sha256 requires a value}"; shift 2 ;;
+    --size) expected_size="${2:?--size requires a value}"; shift 2 ;;
     --prefix) install_dir="${2:?--prefix requires a directory}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -33,6 +36,10 @@ done
 expected_sha256="${expected_sha256,,}"
 [[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
   echo "--sha256 must be exactly 64 hexadecimal characters." >&2
+  exit 2
+}
+[[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
+  echo "--size must be the exact positive asset byte count." >&2
   exit 2
 }
 command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
@@ -94,15 +101,39 @@ rollback() {
 }
 trap rollback EXIT
 
+run_version_probe() {
+  local binary="$1"
+  local status=0
+  "$binary" version >/dev/null 2>&1 &
+  local probe_pid=$!
+  (
+    sleep 15
+    kill -TERM "$probe_pid" 2>/dev/null || exit 0
+    sleep 2
+    kill -KILL "$probe_pid" 2>/dev/null || true
+  ) &
+  local watchdog_pid=$!
+  wait "$probe_pid" || status=$?
+  kill "$watchdog_pid" 2>/dev/null || true
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$status"
+}
+
 url="https://github.com/${repository}/releases/download/${tag}/${asset}"
 curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --connect-timeout 15 --max-time 300 --max-filesize "$expected_size" \
   --output "$work_dir/$asset" "$url"
+actual_size="$(wc -c < "$work_dir/$asset" | tr -d '[:space:]')"
+[[ "$actual_size" == "$expected_size" ]] || {
+  echo "Downloaded asset size did not match the expected byte count." >&2
+  exit 1
+}
 (
   cd "$work_dir"
   printf '%s  %s\n' "$expected_sha256" "$asset" | sha256sum -c -
 )
 chmod 0755 "$work_dir/$asset"
-"$work_dir/$asset" version >/dev/null
+run_version_probe "$work_dir/$asset"
 
 mkdir -p "$install_dir"
 [[ ! -L "$install_dir" ]] || { echo "Install prefix must not be a symlink." >&2; exit 1; }
@@ -115,9 +146,9 @@ if [[ -e "$destination" ]]; then
   backup_created=true
 fi
 install -m 0755 "$work_dir/$asset" "$candidate"
-"$candidate" version >/dev/null
+run_version_probe "$candidate"
 mv "$candidate" "$destination"
 installed_new=true
-"$destination" version >/dev/null
+run_version_probe "$destination"
 
 printf 'Installed verified %s to %s\n' "$asset" "$destination"

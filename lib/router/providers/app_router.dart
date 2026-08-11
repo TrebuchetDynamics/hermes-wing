@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -131,6 +132,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // no Hermes endpoint is configured yet at that point.
       GoRoute(
         path: AppRoutes.localSetup,
+        redirect: (_, _) =>
+            !kIsWeb && defaultTargetPlatform == TargetPlatform.linux
+            ? null
+            : AppRoutes.enroll,
         builder: (context, state) =>
             _SelectableRoute(child: const LocalHermesSetupScreen()),
       ),

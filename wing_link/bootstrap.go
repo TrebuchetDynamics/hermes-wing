@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -267,8 +268,16 @@ func waitForHermesAPIHealth(ctx context.Context, port int) error {
 		if err == nil {
 			response, requestErr := client.Do(request)
 			if requestErr == nil {
+				var health struct {
+					Status   string `json:"status"`
+					Platform string `json:"platform"`
+					Version  string `json:"version"`
+				}
+				decodeErr := json.NewDecoder(io.LimitReader(response.Body, 16*1024)).Decode(&health)
 				_ = response.Body.Close()
-				if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices {
+				if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices &&
+					decodeErr == nil && health.Status == "ok" && health.Platform == "hermes-agent" &&
+					strings.TrimSpace(health.Version) != "" {
 					return nil
 				}
 			}

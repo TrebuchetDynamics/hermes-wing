@@ -1822,6 +1822,7 @@
   "localSetupReadyBody": "Adopt this existing installation without replacing its profiles, providers, or configuration.",
   "localSetupUnhealthyTitle": "Hermes Agent needs repair",
   "localSetupUnhealthyBody": "Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.",
+  "localSetupAction": "Set up Hermes on this computer",
   "localSetupInstallAction": "Install Hermes Agent here",
   "localSetupAdoptAction": "Adopt this installation",
   "localSetupRepairAction": "Repair Hermes Agent",

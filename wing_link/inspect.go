@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -46,9 +47,20 @@ func inspectLocalInstallation(
 	if result.Err != nil {
 		return inspection
 	}
+	version := parsedHermesVersion(output)
+	if version == "" {
+		return inspection
+	}
 	inspection.HermesHealthy = true
-	inspection.HermesVersion = firstSafeLine(output)
+	inspection.HermesVersion = version
 	return inspection
+}
+
+var hermesVersionPattern = regexp.MustCompile(`(?m)^Hermes Agent v[0-9]+(?:\.[0-9]+){1,3}(?:$|[[:space:]])`)
+
+func parsedHermesVersion(output []byte) string {
+	match := hermesVersionPattern.Find(output)
+	return strings.TrimSpace(string(match))
 }
 
 func firstSafeLine(output []byte) string {

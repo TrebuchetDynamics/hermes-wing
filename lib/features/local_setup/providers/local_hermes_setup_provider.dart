@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -99,7 +101,7 @@ class LocalHermesSetupController extends ChangeNotifier {
       if (generation != _generation) return;
       _status = LocalHermesSetupStatus.failed;
       _errorMessage =
-          'Hermes setup did not complete. Existing configuration was not replaced.';
+          'Hermes setup did not complete. Some local changes may have been applied; review Diagnostics before retrying.';
     }
     _notify();
   }
@@ -112,6 +114,7 @@ class LocalHermesSetupController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _generation++;
+    unawaited(_host.cancelSetup());
     super.dispose();
   }
 }

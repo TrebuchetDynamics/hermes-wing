@@ -4855,6 +4855,12 @@ abstract class AppLocalizations {
   /// **'Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.'**
   String get localSetupUnhealthyBody;
 
+  /// No description provided for @localSetupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up Hermes on this computer'**
+  String get localSetupAction;
+
   /// No description provided for @localSetupInstallAction.
   ///
   /// In en, this message translates to:

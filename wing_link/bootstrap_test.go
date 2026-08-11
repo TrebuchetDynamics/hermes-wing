@@ -321,12 +321,26 @@ func TestHermesAPIEndpointUsesFixedLocalConfigurationAndHealth(t *testing.T) {
 		if request.URL.Path != "/health" {
 			t.Fatalf("health path = %q", request.URL.Path)
 		}
-		writer.WriteHeader(http.StatusNoContent)
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{"status":"ok","platform":"hermes-agent","version":"0.20.0"}`))
 	}))
 	defer server.Close()
 	healthPort := server.Listener.Addr().(*net.TCPAddr).Port
 	if err := waitForHermesAPIHealth(context.Background(), healthPort); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestHermesAPIHealthRejectsUnrelatedHTTPService(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+	port := server.Listener.Addr().(*net.TCPAddr).Port
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	if err := waitForHermesAPIHealth(ctx, port); err == nil {
+		t.Fatal("unrelated health service accepted as Hermes")
 	}
 }
 

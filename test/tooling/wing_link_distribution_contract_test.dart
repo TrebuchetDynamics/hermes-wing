@@ -21,7 +21,11 @@ void main() {
     expect(workflow, contains('GOOS=android GOARCH=arm64'));
     expect(workflow, contains('-buildmode=pie'));
     expect(workflow, contains('sha256sum wing-link-*'));
+    expect(workflow, contains(r'${TAG#$tag_prefix}'));
+    expect(workflow, contains(r'=~ ^[0-9]+$'));
     expect(workflow, contains('needs: [android, linux, web, wing-link]'));
+    final linuxCmake = File('linux/CMakeLists.txt').readAsStringSync();
+    expect(linuxCmake, contains('-X main.version='));
   });
 
   test(
@@ -32,7 +36,12 @@ void main() {
       final text = installer.readAsStringSync();
 
       expect(text, contains('--sha256'));
+      expect(text, contains('--size'));
       expect(text, contains('sha256sum -c'));
+      expect(text, contains('--max-filesize'));
+      expect(text, contains('--connect-timeout'));
+      expect(text, contains('--max-time'));
+      expect(text, contains('run_version_probe'));
       expect(text, contains('trap rollback EXIT'));
       expect(text, contains('wing-link-android-arm64'));
       expect(text, contains(r'${PREFIX}/bin'));

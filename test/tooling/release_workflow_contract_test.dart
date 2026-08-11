@@ -66,7 +66,9 @@ void main() {
       contains(r"awk '/^version:/{print $2; exit}' pubspec.yaml"),
     );
     expect(workflow, contains(r'app_version=${app_version%%+*}'));
-    expect(workflow, contains(r'v${app_version}-alpha.*'));
+    expect(workflow, contains(r'tag_prefix="v${app_version}-alpha."'));
+    expect(workflow, contains(r'tag_suffix=${TAG#$tag_prefix}'));
+    expect(workflow, contains(r'"$tag_suffix" =~ ^[0-9]+$'));
   });
 
   test('existing alpha release fails before platform builds', () {

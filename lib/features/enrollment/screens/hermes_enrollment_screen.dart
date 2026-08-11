@@ -260,7 +260,7 @@ class _HermesEnrollmentScreenState
             key: const ValueKey('hermes-enrollment-local-setup'),
             onPressed: () => context.push(AppRoutes.localSetup),
             icon: const Icon(Icons.computer_outlined),
-            label: Text(strings.localSetupInstallAction),
+            label: Text(strings.localSetupAction),
           ),
         OutlinedButton.icon(
           key: const ValueKey('hermes-enrollment-manual-connect'),

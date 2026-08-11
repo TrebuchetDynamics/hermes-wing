@@ -63,10 +63,17 @@ find_program(GO_EXECUTABLE go REQUIRED)
 file(GLOB WING_LINK_GO_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_SOURCE_DIR}/../wing_link/*.go")
 set(WING_LINK_BUNDLE_BINARY "${CMAKE_BINARY_DIR}/wing-link")
+if(DEFINED FLUTTER_VERSION_NAME AND NOT FLUTTER_VERSION_NAME STREQUAL "")
+  set(WING_LINK_VERSION "${FLUTTER_VERSION_NAME}")
+else()
+  set(WING_LINK_VERSION "dev")
+endif()
 add_custom_command(
   OUTPUT "${WING_LINK_BUNDLE_BINARY}"
   COMMAND "${CMAKE_COMMAND}" -E env CGO_ENABLED=0
-    "${GO_EXECUTABLE}" build -trimpath -o "${WING_LINK_BUNDLE_BINARY}" .
+    "${GO_EXECUTABLE}" build -trimpath
+    "-ldflags=-s -w -X main.version=${WING_LINK_VERSION}"
+    -o "${WING_LINK_BUNDLE_BINARY}" .
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/../wing_link"
   DEPENDS ${WING_LINK_GO_SOURCES}
     "${CMAKE_SOURCE_DIR}/../wing_link/go.mod"

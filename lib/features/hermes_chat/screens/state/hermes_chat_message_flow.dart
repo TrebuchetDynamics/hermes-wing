@@ -108,7 +108,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       state.activeMessages.last.status == HermesTurnStatus.streaming;
 
   bool _canSendTurns(HermesChannelState state) {
-    if (state.activeSessionId == null) return false;
+    if (state.activeSessionId == null || state.hasUnreconciledRun) return false;
     final capabilities = state.capabilities;
     if (capabilities == null) return true;
     return HermesTransportPolicy(capabilities).supportsAnyChatTransport;

@@ -728,4 +728,16 @@ void main() {
       isTrue,
     );
   });
+  testWidgets('unreconciled run disables the composer', (tester) async {
+    final channel = FakeHermesChannel(hasUnreconciledRun: true);
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(field.enabled, isFalse);
+    expect(find.text('Retry last message'), findsNothing);
+  });
 }

@@ -59,6 +59,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.loadJobsFails = false,
     String connectedBaseUrl = 'http://fake-hermes:8642',
     bool connectedWithApiKey = true,
+    bool hasUnreconciledRun = false,
     this.createSessionFails = false,
     this.selectSessionFails = false,
     this.selectSessionFailureMessage = 'select failed',
@@ -91,6 +92,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                errorMessage: errorMessage,
                connectedBaseUrl: connectedBaseUrl,
                connectedWithApiKey: connectedWithApiKey,
+               hasUnreconciledRun: hasUnreconciledRun,
                sessions:
                    sessions ?? [HermesSession(id: sessionId, source: 'fake')],
                profiles: profiles,

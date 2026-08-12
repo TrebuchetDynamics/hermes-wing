@@ -38,6 +38,7 @@ class HermesChannelState {
     this.modelInventory,
     this.connectedBaseUrl,
     this.connectedWithApiKey = false,
+    this.hasUnreconciledRun = false,
     this.messages = const {},
     this.voiceRuns = const {},
     this.activeVoiceRunId,
@@ -84,6 +85,7 @@ class HermesChannelState {
 
   final String? connectedBaseUrl;
   final bool connectedWithApiKey;
+  final bool hasUnreconciledRun;
 
   /// Scope-gating visibility hooks. These mirror the milestone-1 pattern
   /// (`supportsSchema` + advertised endpoint + granted scope) so surfaces can
@@ -274,6 +276,7 @@ class HermesChannelState {
     String? connectedBaseUrl,
     bool clearConnectedBaseUrl = false,
     bool? connectedWithApiKey,
+    bool? hasUnreconciledRun,
     Map<String, List<HermesChatTurn>>? messages,
     Map<String, WingVoiceRun>? voiceRuns,
     String? activeVoiceRunId,
@@ -328,6 +331,7 @@ class HermesChannelState {
           ? null
           : connectedBaseUrl ?? this.connectedBaseUrl,
       connectedWithApiKey: connectedWithApiKey ?? this.connectedWithApiKey,
+      hasUnreconciledRun: hasUnreconciledRun ?? this.hasUnreconciledRun,
       messages: messages ?? this.messages,
       voiceRuns: voiceRuns ?? this.voiceRuns,
       activeVoiceRunId: clearActiveVoiceRunId

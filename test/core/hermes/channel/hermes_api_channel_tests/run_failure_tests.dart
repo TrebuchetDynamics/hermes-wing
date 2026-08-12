@@ -651,12 +651,23 @@ void _hermesApiChannelRunFailureTests() {
       );
 
       stream.emit(
-        'event: message.delta\ndata: {"delta":"reattached"}\n\n'
-        'event: run.completed\ndata: {}\n\n',
+        'event: message.delta\ndata: {"run_id":"wrong","delta":"wrong"}\n\n'
+        'event: run.completed\ndata: {"run_id":"wrong","session_id":"sess_2"}\n\n',
+      );
+      await pumpEventQueue();
+
+      expect(store.leases.single.runId, 'run_detached');
+      expect(channel.state.hasUnreconciledRun, isTrue);
+      expect(channel.state.activeMessages.last.text, isNot(contains('wrong')));
+
+      stream.emit(
+        'event: message.delta\ndata: {"run_id":"run_detached","session_id":"sess_2","delta":"reattached"}\n\n'
+        'event: run.completed\ndata: {"run_id":"run_detached","session_id":"sess_2"}\n\n',
       );
       await pumpEventQueue();
 
       expect(store.leases, isEmpty);
+      expect(channel.state.hasUnreconciledRun, isFalse);
       expect(channel.state.errorMessage, isNull);
       expect(
         channel.state.activeMessages.last.status,
@@ -664,6 +675,43 @@ void _hermesApiChannelRunFailureTests() {
       );
     },
   );
+
+  test('reattached done marker keeps an active run fail-closed', () async {
+    final store = _MemoryDetachedRunStore()
+      ..leases = [
+        HermesDetachedRunLease(
+          runId: 'run_detached',
+          sessionId: 'sess_1',
+          baseUrl: 'http://127.0.0.1:8642',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_detached' =>
+            '{"run_id":"run_detached","session_id":"sess_1","status":"running"}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        getStream: (uri, headers) =>
+            Stream<String>.fromIterable(const ['data: [DONE]\n\n']),
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    await pumpEventQueue();
+
+    expect(store.leases.single.runId, 'run_detached');
+    expect(channel.state.hasUnreconciledRun, isTrue);
+    await expectLater(channel.sendText('must not duplicate'), throwsStateError);
+  });
 
   test(
     'reconnect releases a detached run missing after server restart',

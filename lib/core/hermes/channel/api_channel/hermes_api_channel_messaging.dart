@@ -786,6 +786,19 @@ extension _MessagingExtension on HermesApiChannel {
         name == 'response.done';
   }
 
+  bool _eventMatchesOwnedRun(
+    HermesStreamEvent event, {
+    required String expectedRunId,
+    required String expectedSessionId,
+  }) {
+    final eventRunId = wingOptionalStringFromJson(event.payload['run_id']);
+    if (eventRunId != null && eventRunId != expectedRunId) return false;
+    final eventSessionId = wingOptionalStringFromJson(
+      event.payload['session_id'],
+    );
+    return eventSessionId == null || eventSessionId == expectedSessionId;
+  }
+
   String? _canonicalFinalForEvent(
     HermesStreamEvent event, {
     required String? expectedRunId,
@@ -1102,6 +1115,14 @@ extension _MessagingExtension on HermesApiChannel {
           .listen(
             (event) {
               if (!isCurrentStream() || terminal) return;
+              if (!_eventMatchesOwnedRun(
+                event,
+                expectedRunId: runId,
+                expectedSessionId: sessionId,
+              )) {
+                return;
+              }
+              if (event.isDone) return;
               final delta = _streamDelta(event);
               if (delta != null && delta.isNotEmpty) {
                 assistantTurn = assistantTurn.appendDelta(delta);
@@ -1128,7 +1149,7 @@ extension _MessagingExtension on HermesApiChannel {
                 }
                 return;
               }
-              if (_isSuccessfulTerminalRunEvent(event.name) || event.isDone) {
+              if (_isSuccessfulTerminalRunEvent(event.name)) {
                 terminal = true;
                 successful = true;
                 if (!completer.isCompleted) completer.complete();

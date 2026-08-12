@@ -18,7 +18,7 @@ test.beforeEach(async ({ request }) => {
   expect(response.ok()).toBeTruthy();
 });
 
-test("Hermes route opens QR enrollment from the agent empty state", async ({
+test("Hermes route opens manual enrollment from the agent empty state", async ({
   page,
 }) => {
   await page.goto(`${APP}#/hermes`, { timeout: 15000 });
@@ -33,7 +33,7 @@ test("Hermes route opens QR enrollment from the agent empty state", async ({
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Scan QR code" }),
+    page.getByRole("button", { name: "Enter gateway manually" }),
   ).toBeVisible();
 });
 

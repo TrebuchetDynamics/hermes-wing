@@ -101,12 +101,15 @@ set_target_properties(${BINARY_NAME}
 include(flutter/generated_plugins.cmake)
 
 # Flutter plugins are copied into the bundle rather than installed as CMake
-# targets, so preserve a relocatable runtime path in the ONNX plugin itself.
-if(TARGET flutter_onnxruntime_plugin)
-  set_target_properties(flutter_onnxruntime_plugin PROPERTIES
-    BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "$ORIGIN")
-endif()
+# targets. Give every generated plugin a sibling-relative runtime path so the
+# release cannot fall back to Flutter's checkout-specific ephemeral directory.
+foreach(plugin ${FLUTTER_PLUGIN_LIST})
+  if(TARGET ${plugin}_plugin)
+    set_target_properties(${plugin}_plugin PROPERTIES
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH "$ORIGIN")
+  endif()
+endforeach()
 
 
 # === Installation ===

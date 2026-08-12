@@ -29,7 +29,7 @@ name: sidon_fractal_music_qa
     visible: "(?s).*How can Hermes help today?.*"
     timeout: 30000
 - tapOn: "(?s).*Message Hermes….*"
-- inputText: "Continue working on the fractal music stuff. End your response with SIDON_FRACTAL_CONTINUED."
+- inputText: "Continue working on the fractal music stuff. Finish with the uppercase form of sidon underscore fractal underscore continued."
 - tapOn: "(?s).*Send.*"
 - assertVisible: "(?s).*Continue working on the fractal music stuff.*"
 - extendedWaitUntil:

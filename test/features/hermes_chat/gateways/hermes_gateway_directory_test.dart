@@ -106,7 +106,8 @@ void main() {
 
     expect(directory.contacts, hasLength(1));
     expect(directory.contacts.single.id.profileId, 'default');
-    expect(directory.contacts.single.profileName, 'Home');
+    expect(directory.contacts.single.gatewayLabel, 'Home');
+    expect(directory.contacts.single.profileName, 'Endpoint contact');
     expect(directory.contacts.single.isFallbackProfile, isTrue);
     expect(
       directory.contacts.any((contact) => contact.id.profileId == 'link'),

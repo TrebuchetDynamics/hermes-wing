@@ -35,6 +35,7 @@ extension _SessionsExtension on HermesApiChannel {
     _setState(
       _state.copyWith(
         activeSessionId: sessionId,
+        hasUnreconciledRun: detachedRunStillActive,
         errorMessage: detachedRunStillActive
             ? 'Hermes run is still active. Reconnect later before retrying.'
             : null,
@@ -42,6 +43,16 @@ extension _SessionsExtension on HermesApiChannel {
         messages: {..._state.messages, sessionId: turns},
       ),
     );
+    if (detachedRunStillActive) {
+      unawaited(
+        _reattachDetachedRun(
+          client: client,
+          baseUrl: baseUrl,
+          profileId: profileId,
+          sessionId: sessionId,
+        ),
+      );
+    }
   }
 
   Future<void> _createSession({String? title}) async {
@@ -68,6 +79,11 @@ extension _SessionsExtension on HermesApiChannel {
       _state.copyWith(
         sessions: [..._state.sessions, created],
         activeSessionId: created.id,
+        hasUnreconciledRun: _sessionHasDetachedRun(
+          sessionId: created.id,
+          profileId: profileId,
+        ),
+        clearErrorMessage: true,
         messages: {..._state.messages, created.id: turns},
       ),
     );
@@ -164,6 +180,10 @@ extension _SessionsExtension on HermesApiChannel {
           sessions: remaining,
           activeSessionId: nextActiveId,
           clearActiveSessionId: nextActiveId == null,
+          hasUnreconciledRun: _sessionHasDetachedRun(
+            sessionId: nextActiveId,
+            profileId: profileId,
+          ),
           messages: messages,
         ),
       );
@@ -222,6 +242,11 @@ extension _SessionsExtension on HermesApiChannel {
         _state.copyWith(
           sessions: [..._state.sessions, fork],
           activeSessionId: fork.id,
+          hasUnreconciledRun: _sessionHasDetachedRun(
+            sessionId: fork.id,
+            profileId: profileId,
+          ),
+          clearErrorMessage: true,
           messages: {..._state.messages, fork.id: turns},
         ),
       );

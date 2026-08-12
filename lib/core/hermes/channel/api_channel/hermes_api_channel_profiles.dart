@@ -147,6 +147,7 @@ extension _ProfilesExtension on HermesApiChannel {
         sessions: sessions,
         activeSessionId: activeId,
         clearActiveSessionId: activeId == null,
+        hasUnreconciledRun: detachedRunStillActive,
         models: models,
         runtimeModels: runtimeModels,
         skills: skills,
@@ -164,6 +165,16 @@ extension _ProfilesExtension on HermesApiChannel {
         clearActiveVoiceRunId: true,
       ),
     );
+    if (detachedRunStillActive && activeId != null) {
+      unawaited(
+        _reattachDetachedRun(
+          client: client,
+          baseUrl: _state.connectedBaseUrl ?? '',
+          profileId: id,
+          sessionId: activeId,
+        ),
+      );
+    }
   }
 
   Future<void> _createProfile({required String name, String? cloneFrom}) async {

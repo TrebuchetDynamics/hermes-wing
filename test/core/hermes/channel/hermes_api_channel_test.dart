@@ -283,10 +283,153 @@ class _MemoryDetachedRunStore implements HermesDetachedRunStore {
   List<HermesDetachedRunLease> leases = const [];
 
   @override
+  Object get coordinationKey => this;
+
+  @override
   Future<List<HermesDetachedRunLease>> load() async => List.of(leases);
 
   @override
   Future<void> save(List<HermesDetachedRunLease> leases) async {
+    this.leases = List.of(leases);
+  }
+}
+
+class _BlockingDetachedRunStore implements HermesDetachedRunStore {
+  _BlockingDetachedRunStore({this.blockLoad = false});
+
+  List<HermesDetachedRunLease> leases = const [];
+  final saveSnapshots = <List<HermesDetachedRunLease>>[];
+  final _saveCompleters = <Completer<void>>[];
+  final bool blockLoad;
+  final _loadCompleter = Completer<void>();
+  int loadCalls = 0;
+
+  int get saveCalls => saveSnapshots.length;
+
+  @override
+  Object get coordinationKey => this;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() async {
+    loadCalls += 1;
+    if (blockLoad) await _loadCompleter.future;
+    return List.of(leases);
+  }
+
+  void completeLoad() => _loadCompleter.complete();
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    final snapshot = List<HermesDetachedRunLease>.of(leases);
+    saveSnapshots.add(snapshot);
+    final completer = Completer<void>();
+    _saveCompleters.add(completer);
+    await completer.future;
+    this.leases = snapshot;
+  }
+
+  void completeSave(int index) => _saveCompleters[index].complete();
+}
+
+class _DetachedRunStoreView implements HermesDetachedRunStore {
+  const _DetachedRunStoreView({required this.backing, required this.key});
+
+  final HermesDetachedRunStore backing;
+  final Object key;
+
+  @override
+  Object get coordinationKey => key;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() => backing.load();
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) =>
+      backing.save(leases);
+}
+
+class _ThrowingLoadDetachedRunStore implements HermesDetachedRunStore {
+  bool failLoad = true;
+  List<HermesDetachedRunLease> leases = const [];
+  int saveCalls = 0;
+
+  @override
+  Object get coordinationKey => this;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() => failLoad
+      ? Future.error(StateError('secure read failed'))
+      : Future.value(List.of(leases));
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    saveCalls += 1;
+    this.leases = List.of(leases);
+  }
+}
+
+class _FailingSaveNumberDetachedRunStore implements HermesDetachedRunStore {
+  _FailingSaveNumberDetachedRunStore(this.failureNumber);
+
+  final int failureNumber;
+  List<HermesDetachedRunLease> leases = const [];
+  int saveCalls = 0;
+
+  @override
+  Object get coordinationKey => this;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() async => List.of(leases);
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    saveCalls += 1;
+    if (saveCalls == failureNumber) throw StateError('save failed');
+    this.leases = List.of(leases);
+  }
+}
+
+class _FailFirstDetachedRunStore implements HermesDetachedRunStore {
+  _FailFirstDetachedRunStore({this.failures = 1});
+
+  final int failures;
+  List<HermesDetachedRunLease> leases = const [];
+  int saveCalls = 0;
+
+  @override
+  Object get coordinationKey => this;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() async => List.of(leases);
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    saveCalls += 1;
+    if (saveCalls <= failures) throw StateError('save failed');
+    this.leases = List.of(leases);
+  }
+}
+
+class _BlockingFailSaveDetachedRunStore implements HermesDetachedRunStore {
+  List<HermesDetachedRunLease> leases = const [];
+  final saveStarted = Completer<void>();
+  final releaseSave = Completer<void>();
+  int saveCalls = 0;
+
+  @override
+  Object get coordinationKey => this;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() async => List.of(leases);
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    saveCalls += 1;
+    if (saveCalls == 1) {
+      saveStarted.complete();
+      await releaseSave.future;
+      throw StateError('save failed');
+    }
     this.leases = List.of(leases);
   }
 }
@@ -350,6 +493,16 @@ class _ManualStringSubscription implements StreamSubscription<String> {
 
   @override
   Future<E> asFuture<E>([E? futureValue]) async => futureValue as E;
+}
+
+class _ThrowingListenStringStream extends Stream<String> {
+  @override
+  StreamSubscription<String> listen(
+    void Function(String event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) => throw StateError('listen failed synchronously');
 }
 
 const _sessionsFixture = '''

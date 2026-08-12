@@ -24,12 +24,16 @@ class HermesDetachedRunLease {
     if (createdAt == null) {
       throw const FormatException('Detached run created_at is invalid.');
     }
-    final profileValue = json['profile_id'];
-    final profileId = profileValue is String && profileValue.trim().isNotEmpty
-        ? profileValue.trim()
-        : null;
-    if (profileId != null && profileId.length > 256) {
-      throw const FormatException('Detached run profile_id is too long.');
+    String? profileId;
+    if (json.containsKey('profile_id')) {
+      final profileValue = json['profile_id'];
+      if (profileValue is! String || profileValue.trim().isEmpty) {
+        throw const FormatException('Detached run profile_id is invalid.');
+      }
+      profileId = profileValue.trim();
+      if (profileId.length > 256) {
+        throw const FormatException('Detached run profile_id is too long.');
+      }
     }
     return HermesDetachedRunLease(
       runId: requiredString('run_id', maximumLength: 256),
@@ -56,6 +60,12 @@ class HermesDetachedRunLease {
 }
 
 abstract interface class HermesDetachedRunStore {
+  /// Stable process-local identity for the underlying persistence slot.
+  ///
+  /// Separate store objects that read and write the same backing key must
+  /// return equal values so predecessor and successor channels serialize.
+  Object get coordinationKey;
+
   Future<List<HermesDetachedRunLease>> load();
 
   Future<void> save(List<HermesDetachedRunLease> leases);

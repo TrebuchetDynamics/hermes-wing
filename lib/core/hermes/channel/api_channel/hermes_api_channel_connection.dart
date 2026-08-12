@@ -7,6 +7,8 @@ extension _ConnectionExtension on HermesApiChannel {
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();
+    _detachedRunsLoadFuture = null;
+    _detachedRunsLoadFailed = false;
     _client = null;
     _setState(
       const HermesChannelState(status: HermesConnectionStatus.connecting),
@@ -98,8 +100,10 @@ extension _ConnectionExtension on HermesApiChannel {
           detachedActiveId != null &&
           _detachedRuns.values.any(
             (run) =>
+                run.baseUrl == _detachedRunBaseUrl(baseUrl) &&
+                run.profileId == initialProfileId &&
                 run.sessionId == detachedActiveId &&
-                _confirmedDetachedRunIds.contains(run.runId),
+                _confirmedDetachedRunKeys.contains(_detachedRunKey(run)),
           );
       List<HermesChatTurn>? messages;
       if (activeId != null) {

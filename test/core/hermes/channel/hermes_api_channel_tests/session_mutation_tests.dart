@@ -788,6 +788,43 @@ void _hermesApiChannelSessionMutationTests() {
     expect(channel.state.activeSessionId, 'fork_2');
   });
 
+  test('forkSession derives the accepted child run guard', () async {
+    final store = _MemoryDetachedRunStore()
+      ..leases = [
+        HermesDetachedRunLease(
+          runId: 'run_fork',
+          sessionId: 'fork_1',
+          baseUrl: 'http://127.0.0.1:8642',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      sessionIdFactory: () => 'fork_1',
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _capabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/api/sessions/fork_1/messages' =>
+            '{"object":"list","session_id":"fork_1","data":[]}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.session","session":{"id":"fork_1","source":"api_server","title":"Recovered fork","parent_session_id":"sess_1"}}',
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.forkSession('sess_1');
+
+    expect(channel.state.activeSessionId, 'fork_1');
+    expect(channel.state.hasUnreconciledRun, isTrue);
+  });
+
   test('forkSession creates and selects a copied child session', () async {
     final posts = <String, Map<String, Object?>>{};
     final channel = HermesApiChannel(
@@ -884,6 +921,43 @@ void _hermesApiChannelSessionMutationTests() {
       expect(channel.state.messages.containsKey('fork_1'), isTrue);
     },
   );
+
+  test('createSession derives the accepted session run guard', () async {
+    final store = _MemoryDetachedRunStore()
+      ..leases = [
+        HermesDetachedRunLease(
+          runId: 'run_child',
+          sessionId: 'navi-test-2',
+          baseUrl: 'http://127.0.0.1:8642',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      sessionIdFactory: () => 'navi-test-2',
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _capabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/api/sessions/navi-test-2/messages' =>
+            '{"object":"list","session_id":"navi-test-2","data":[]}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.session","session":{"id":"navi-test-2","source":"api_server","title":"Recovered child"}}',
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.createSession(title: 'Recovered child');
+
+    expect(channel.state.activeSessionId, 'navi-test-2');
+    expect(channel.state.hasUnreconciledRun, isTrue);
+  });
 
   test('createSession creates and selects a new session', () async {
     final posts = <String, Map<String, Object?>>{};

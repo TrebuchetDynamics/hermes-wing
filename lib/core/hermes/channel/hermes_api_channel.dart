@@ -62,6 +62,8 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final HermesDetachedRunStore? _detachedRunStore;
   final Duration streamIdleTimeout;
 
+  static final _detachedRunOperationTails = <Object, Future<void>>{};
+
   HermesApiClient? _client;
   HermesChannelState _state = const HermesChannelState();
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
@@ -70,9 +72,10 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final _approvalRunIds = <String, String>{};
   final _sessionStreamGenerations = <String, int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
-  final _confirmedDetachedRunIds = <String>{};
+  final _confirmedDetachedRunKeys = <String>{};
   final _recentTurns = <String, List<HermesChatTurn>>{};
-  bool _detachedRunsLoaded = false;
+  Future<void>? _detachedRunsLoadFuture;
+  bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
   final _approvalController =

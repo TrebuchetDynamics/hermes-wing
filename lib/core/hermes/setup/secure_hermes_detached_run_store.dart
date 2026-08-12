@@ -14,45 +14,45 @@ class SecureHermesDetachedRunStore implements HermesDetachedRunStore {
   static const _storageKey = 'wing.hermes.detached_runs.v1';
   static const _maximumLeases = 16;
 
+  @override
+  Object get coordinationKey => _storageKey;
+
   final FlutterSecureStorage _secureStorage;
 
   @override
   Future<List<HermesDetachedRunLease>> load() async {
     final String? encoded;
-    try {
-      encoded = await _secureStorage.read(key: _storageKey);
-    } catch (_) {
-      return const [];
-    }
+    encoded = await _secureStorage.read(key: _storageKey);
     if (encoded == null || encoded.isEmpty) return const [];
-    try {
-      final decoded = jsonDecode(encoded);
-      if (decoded is! List<Object?>) return const [];
-      final leases = <HermesDetachedRunLease>[];
-      for (final row in decoded.take(_maximumLeases)) {
-        if (row is! Map) continue;
-        try {
-          leases.add(
-            HermesDetachedRunLease.fromJson(
-              row.map((key, value) => MapEntry(key.toString(), value)),
-            ),
-          );
-        } on FormatException {
-          // Ignore one malformed lease without discarding valid handles.
-        }
-      }
-      return leases;
-    } on FormatException {
-      return const [];
+    final decoded = jsonDecode(encoded);
+    if (decoded is! List<Object?>) {
+      throw const FormatException('Detached run store must contain a list.');
     }
+    final leases = <HermesDetachedRunLease>[];
+    for (final row in decoded) {
+      if (row is! Map) {
+        throw const FormatException('Detached run lease must be an object.');
+      }
+      leases.add(
+        HermesDetachedRunLease.fromJson(
+          row.map((key, value) => MapEntry(key.toString(), value)),
+        ),
+      );
+    }
+    if (leases.length > _maximumLeases) {
+      throw const FormatException('Detached run store capacity exceeded.');
+    }
+    return leases;
   }
 
   @override
   Future<void> save(List<HermesDetachedRunLease> leases) async {
-    final bounded = leases.take(_maximumLeases).map((lease) => lease.toJson());
+    if (leases.length > _maximumLeases) {
+      throw StateError('Detached run store capacity exceeded.');
+    }
     await _secureStorage.write(
       key: _storageKey,
-      value: jsonEncode(bounded.toList()),
+      value: jsonEncode(leases.map((lease) => lease.toJson()).toList()),
     );
   }
 }

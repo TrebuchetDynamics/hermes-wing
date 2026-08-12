@@ -144,6 +144,40 @@ void _hermesApiChannelRunTransportTests() {
     );
   }
 
+  test('run transport done marker does not release an active run', () async {
+    final store = _MemoryDetachedRunStore();
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' =>
+            '{"run_id":"run_1","session_id":"sess_1","status":"running"}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async => switch (uri.path) {
+          '/v1/runs' =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+          _ => '{}',
+        },
+        getStream: (uri, headers) =>
+            Stream.fromIterable(const ['data: [DONE]\n\n']),
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText('do not trust done');
+
+    expect(store.leases.single.runId, 'run_1');
+    expect(channel.state.errorMessage, contains('still active'));
+    await expectLater(channel.sendText('must not duplicate'), throwsStateError);
+  });
+
   test(
     'session switching preserves concurrent runs and streams each transcript',
     () async {

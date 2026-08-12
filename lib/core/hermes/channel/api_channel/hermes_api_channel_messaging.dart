@@ -216,8 +216,18 @@ extension _MessagingExtension on HermesApiChannel {
         if (!isCurrentStream() || terminalRunEventReceived) {
           return;
         }
+        if (useRunTransport &&
+            runId != null &&
+            !_eventMatchesOwnedRun(
+              event,
+              expectedRunId: runId,
+              expectedSessionId: sessionId,
+            )) {
+          return;
+        }
         armIdleTimer();
         if (event.isDone) {
+          if (useRunTransport) return;
           terminalRunEventReceived = true;
           if (!completer.isCompleted) completer.complete();
           return;

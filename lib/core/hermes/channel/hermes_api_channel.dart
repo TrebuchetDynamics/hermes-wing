@@ -70,6 +70,7 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final _approvalRunIds = <String, String>{};
   final _sessionStreamGenerations = <String, int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
+  final _confirmedDetachedRunIds = <String>{};
   final _recentTurns = <String, List<HermesChatTurn>>{};
   bool _detachedRunsLoaded = false;
   int _nextStreamGeneration = 0;

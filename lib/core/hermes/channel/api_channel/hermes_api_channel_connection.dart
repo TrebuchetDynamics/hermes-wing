@@ -94,7 +94,13 @@ extension _ConnectionExtension on HermesApiChannel {
         sessionIds: sessions.map((session) => session.id),
       );
       final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
-      final detachedRunStillActive = detachedActiveId != null;
+      final detachedRunConfirmed =
+          detachedActiveId != null &&
+          _detachedRuns.values.any(
+            (run) =>
+                run.sessionId == detachedActiveId &&
+                _confirmedDetachedRunIds.contains(run.runId),
+          );
       List<HermesChatTurn>? messages;
       if (activeId != null) {
         messages = await _fetchTurns(
@@ -140,15 +146,26 @@ extension _ConnectionExtension on HermesApiChannel {
           clearActiveSessionId: activeId == null,
           connectedBaseUrl: baseUrl,
           connectedWithApiKey: apiKey?.trim().isNotEmpty ?? false,
-          errorMessage: detachedRunStillActive
+          hasUnreconciledRun: detachedActiveId != null,
+          errorMessage: detachedActiveId != null && !detachedRunConfirmed
               ? 'Hermes run is still active. Reconnect later before retrying.'
               : null,
-          clearErrorMessage: !detachedRunStillActive,
+          clearErrorMessage: detachedActiveId == null || detachedRunConfirmed,
           messages: activeId == null || messages == null
               ? _state.messages
               : {...(_state.messages), activeId: messages},
         ),
       );
+      if (detachedRunConfirmed && activeId != null) {
+        unawaited(
+          _reattachDetachedRun(
+            client: client,
+            baseUrl: baseUrl,
+            profileId: initialProfileId,
+            sessionId: activeId,
+          ),
+        );
+      }
     } catch (error) {
       if (generation != _connectionGeneration ||
           (client != null && !identical(_client, client))) {

@@ -278,19 +278,12 @@ extension _MessagingExtension on HermesApiChannel {
             sessionId: sessionId,
           );
           if (request.id.isEmpty) {
-            terminalRunEventReceived = true;
-            streamFailed = true;
-            assistantTurn = assistantTurn.copyWith(
-              status: HermesTurnStatus.failed,
-            );
-            turns[assistantIndex] = assistantTurn;
             _setTurns(
               sessionId,
               List.of(turns),
               errorMessage:
-                  'Hermes approval request was missing an approval id.',
+                  'Hermes approval request was missing an approval id. The run is still active.',
             );
-            if (!completer.isCompleted) completer.complete();
             return;
           }
           if (runId != null) _approvalRunIds[request.id] = runId;
@@ -333,6 +326,7 @@ extension _MessagingExtension on HermesApiChannel {
           }
           terminalRunEventReceived = true;
           terminalRunLifecycleReceived = true;
+          _setTurns(sessionId, List.of(turns), clearErrorMessage: true);
           if (!completer.isCompleted) completer.complete();
           return;
         }
@@ -1040,6 +1034,197 @@ extension _MessagingExtension on HermesApiChannel {
         run.sessionId == sessionId,
   );
 
+  Future<void> _reattachDetachedRun({
+    required HermesApiClient client,
+    required String baseUrl,
+    required String? profileId,
+    required String sessionId,
+  }) async {
+    await _ensureDetachedRunsLoaded();
+    final candidates =
+        _detachedRuns.values
+            .where(
+              (run) =>
+                  run.baseUrl == _detachedRunBaseUrl(baseUrl) &&
+                  run.profileId == profileId &&
+                  run.sessionId == sessionId,
+            )
+            .toList(growable: false)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    HermesDetachedRunLease? lease;
+    for (final candidate in candidates) {
+      if (_confirmedDetachedRunIds.contains(candidate.runId)) {
+        lease = candidate;
+        break;
+      }
+    }
+    if (lease == null || !_isConnectedProfile(client, profileId)) return;
+    final runId = lease.runId;
+
+    final streamGeneration = ++_nextStreamGeneration;
+    _sessionStreamGenerations[sessionId] = streamGeneration;
+    bool isCurrentStream() =>
+        _isConnectedProfile(client, profileId) &&
+        _state.activeSessionId == sessionId &&
+        _sessionStreamGenerations[sessionId] == streamGeneration;
+
+    final turns = List<HermesChatTurn>.from(
+      _state.messages[sessionId] ?? const [],
+    );
+    var assistantIndex = turns.lastIndexWhere(
+      (turn) => turn.author == HermesTurnAuthor.assistant,
+    );
+    if (assistantIndex == -1 ||
+        turns[assistantIndex].status != HermesTurnStatus.streaming) {
+      turns.add(
+        HermesChatTurn(
+          id: 'reattached-assistant-${turns.length}',
+          sessionId: sessionId,
+          author: HermesTurnAuthor.assistant,
+          createdAt: DateTime.now(),
+          status: HermesTurnStatus.streaming,
+        ),
+      );
+      assistantIndex = turns.length - 1;
+    }
+    var assistantTurn = turns[assistantIndex];
+    _activeRunIds[sessionId] = runId;
+    _setTurns(sessionId, List.of(turns), clearErrorMessage: true);
+
+    final completer = Completer<void>();
+    _activeStreamCompleters[sessionId] = completer;
+    var terminal = false;
+    var successful = false;
+    late final StreamSubscription<HermesStreamEvent> subscription;
+    try {
+      subscription = client
+          .runEvents(runId, profile: profileId)
+          .listen(
+            (event) {
+              if (!isCurrentStream() || terminal) return;
+              final delta = _streamDelta(event);
+              if (delta != null && delta.isNotEmpty) {
+                assistantTurn = assistantTurn.appendDelta(delta);
+                turns[assistantIndex] = assistantTurn;
+                _setTurns(sessionId, List.of(turns));
+                return;
+              }
+              if (_isApprovalRequestEvent(event.name)) {
+                final request = _approvalRequestFromEvent(
+                  event,
+                  runId: runId,
+                  sessionId: sessionId,
+                );
+                if (request.id.isEmpty) {
+                  _setTurns(
+                    sessionId,
+                    List.of(turns),
+                    errorMessage:
+                        'Hermes approval request was missing an approval id. The run is still active.',
+                  );
+                } else {
+                  _approvalRunIds[request.id] = runId;
+                  _approvalController.add(request);
+                }
+                return;
+              }
+              if (_isSuccessfulTerminalRunEvent(event.name) || event.isDone) {
+                terminal = true;
+                successful = true;
+                if (!completer.isCompleted) completer.complete();
+                return;
+              }
+              if (_isFailedTerminalRunEvent(event.name) ||
+                  _isStreamErrorEvent(event.name)) {
+                terminal = true;
+                if (!completer.isCompleted) completer.complete();
+              }
+            },
+            onError: (Object error) {
+              if (!isCurrentStream() || terminal) return;
+              _setTurns(
+                sessionId,
+                List.of(turns),
+                errorMessage:
+                    'Hermes run event stream failed while reconnecting: ${_safeHermesError(error)}',
+              );
+              if (!completer.isCompleted) completer.complete();
+            },
+            onDone: () {
+              if (!isCurrentStream() || terminal) return;
+              _setTurns(
+                sessionId,
+                List.of(turns),
+                errorMessage:
+                    'Hermes run is still active after its event stream closed. Reconnect before retrying.',
+              );
+              if (!completer.isCompleted) completer.complete();
+            },
+            cancelOnError: true,
+          );
+    } catch (error) {
+      if (isCurrentStream()) {
+        _setTurns(
+          sessionId,
+          List.of(turns),
+          errorMessage:
+              'Hermes run event stream failed to reopen: ${_safeHermesError(error)}',
+        );
+      }
+      return;
+    }
+    _activeStreams[sessionId] = subscription;
+    await completer.future;
+    if (!isCurrentStream()) return;
+    if (terminal) unawaited(subscription.cancel());
+    if (identical(_activeStreams[sessionId], subscription)) {
+      _activeStreams.remove(sessionId);
+    }
+    if (identical(_activeStreamCompleters[sessionId], completer)) {
+      _activeStreamCompleters.remove(sessionId);
+    }
+    if (_activeRunIds[sessionId] == runId) {
+      _activeRunIds.remove(sessionId);
+    }
+    _approvalRunIds.removeWhere((_, approvalRunId) => approvalRunId == runId);
+    if (!terminal) {
+      assistantTurn = assistantTurn.copyWith(status: HermesTurnStatus.failed);
+      turns[assistantIndex] = assistantTurn;
+      _setTurns(sessionId, List.of(turns));
+      return;
+    }
+    await _releaseDetachedRun(runId);
+    if (!isCurrentStream()) return;
+    _setState(_state.copyWith(hasUnreconciledRun: false));
+    try {
+      final serverTurns = await _fetchTurns(
+        client,
+        sessionId,
+        profileId: profileId,
+      );
+      if (!isCurrentStream()) return;
+      _setTurns(
+        sessionId,
+        serverTurns,
+        clearErrorMessage: successful,
+        errorMessage: successful ? null : 'Hermes run did not complete.',
+      );
+    } catch (_) {
+      assistantTurn = assistantTurn.copyWith(
+        status: successful
+            ? HermesTurnStatus.completed
+            : HermesTurnStatus.failed,
+      );
+      turns[assistantIndex] = assistantTurn;
+      _setTurns(
+        sessionId,
+        List.of(turns),
+        clearErrorMessage: successful,
+        errorMessage: successful ? null : 'Hermes run did not complete.',
+      );
+    }
+  }
+
   Future<String?> _recoverActiveDetachedSession({
     required HermesApiClient client,
     required HermesCapabilityDocument capabilities,
@@ -1106,8 +1291,10 @@ extension _MessagingExtension on HermesApiChannel {
             run.status == HermesRunLifecycle.failed ||
             run.status == HermesRunLifecycle.cancelled) {
           _detachedRuns.remove(detached.runId);
+          _confirmedDetachedRunIds.remove(detached.runId);
           changed = true;
         } else {
+          _confirmedDetachedRunIds.add(detached.runId);
           stillActive = true;
         }
       } catch (error) {
@@ -1115,6 +1302,7 @@ extension _MessagingExtension on HermesApiChannel {
           // The run registry is process-local; a gateway restart makes an old
           // lease authoritatively absent rather than indefinitely active.
           _detachedRuns.remove(detached.runId);
+          _confirmedDetachedRunIds.remove(detached.runId);
           changed = true;
         } else {
           // Fail closed: a transient status failure must not authorize a retry.
@@ -1169,9 +1357,19 @@ extension _MessagingExtension on HermesApiChannel {
         : HermesTransportPolicy(capabilities).supportsRunStop;
     if (client != null && runId != null && canStopRun) {
       fireAndForget(
-        client
-            .stopRun(runId, profile: _state.selectedProfileId)
-            .then((_) => _releaseDetachedRun(runId)),
+        client.stopRun(runId, profile: _state.selectedProfileId).then((
+          _,
+        ) async {
+          await _releaseDetachedRun(runId);
+          if (_state.activeSessionId == sessionId) {
+            _setState(
+              _state.copyWith(
+                hasUnreconciledRun: false,
+                clearErrorMessage: true,
+              ),
+            );
+          }
+        }),
         'stop detached run',
       );
     }

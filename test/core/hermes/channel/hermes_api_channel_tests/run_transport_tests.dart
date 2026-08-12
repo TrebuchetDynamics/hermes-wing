@@ -653,55 +653,69 @@ void _hermesApiChannelRunTransportTests() {
     expect(channel.state.errorMessage, isNull);
   });
 
-  test('sendText fails locally for malformed approval requests', () async {
-    final approvals = <HermesApprovalRequest>[];
-    final stream = _ManualStringStream();
-    final sendDone = Completer<void>();
-    final channel = HermesApiChannel(
-      clientBuilder: (config) => HermesApiClient(
-        config: config,
-        get: (uri, headers) async {
-          return switch (uri.path) {
-            '/health' => '{"status":"ok"}',
-            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
-            '/api/sessions' => _sessionsFixture,
-            '/api/sessions/sess_1/messages' => _messagesFixture,
-            _ => throw StateError('unexpected GET $uri'),
-          };
-        },
-        post: (uri, headers, body) async {
-          return switch (uri.path) {
-            '/v1/runs' =>
-              '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
-            _ => '{}',
-          };
-        },
-        getStream: (uri, headers) => stream,
-      ),
-    );
-    channel.approvalRequests.listen(approvals.add);
-    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+  test(
+    'sendText keeps the owned run attached after a malformed approval request',
+    () async {
+      final approvals = <HermesApprovalRequest>[];
+      final stream = _ManualStringStream();
+      final sendDone = Completer<void>();
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+          post: (uri, headers, body) async {
+            return switch (uri.path) {
+              '/v1/runs' =>
+                '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+              _ => '{}',
+            };
+          },
+          getStream: (uri, headers) => stream,
+        ),
+      );
+      channel.approvalRequests.listen(approvals.add);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
-    unawaited(
-      channel.sendText('needs approval').whenComplete(sendDone.complete),
-    );
-    await pumpEventQueue();
-    stream.emit('event: approval.request\ndata: {"prompt":"Approve?"}\n\n');
-    await pumpEventQueue();
+      unawaited(
+        channel.sendText('needs approval').whenComplete(sendDone.complete),
+      );
+      await pumpEventQueue();
+      stream.emit('event: approval.request\ndata: {"prompt":"Approve?"}\n\n');
+      await pumpEventQueue();
 
-    expect(sendDone.isCompleted, isTrue);
-    expect(approvals, isEmpty);
-    expect(
-      channel.state.errorMessage,
-      'Hermes approval request was missing an approval id.',
-    );
-    expect(channel.state.activeMessages.map((turn) => turn.text), [
-      'Hello',
-      'needs approval',
-      '',
-    ]);
-    expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
-  });
+      expect(sendDone.isCompleted, isFalse);
+      expect(approvals, isEmpty);
+      expect(
+        channel.state.errorMessage,
+        'Hermes approval request was missing an approval id. The run is still active.',
+      );
+      expect(
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.streaming,
+      );
+
+      stream.emit(
+        'event: message.delta\ndata: {"delta":"Recovered"}\n\n'
+        'event: run.completed\ndata: {}\n\n',
+      );
+      await sendDone.future;
+
+      expect(channel.state.errorMessage, isNull);
+      expect(channel.state.activeMessages.last.text, 'Recovered');
+      expect(
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.completed,
+      );
+    },
+  );
 
   test(
     'sendText completes and reconciles when run completed arrives without stream close',

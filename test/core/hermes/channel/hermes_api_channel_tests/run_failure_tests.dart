@@ -603,6 +603,9 @@ void _hermesApiChannelRunFailureTests() {
           ),
         ];
       var statusRequests = 0;
+      var messagesRequests = 0;
+      final stream = _ManualStringStream();
+      final streamAttached = Completer<void>();
       final channel = HermesApiChannel(
         detachedRunStore: store,
         clientBuilder: (config) => HermesApiClient(
@@ -611,28 +614,53 @@ void _hermesApiChannelRunFailureTests() {
             '/health' => '{"status":"ok"}',
             '/v1/capabilities' => _runsCapableCapabilitiesFixture,
             '/api/sessions' => _twoSessionsFixture,
-            '/api/sessions/sess_2/messages' => _messagesFixture,
+            '/api/sessions/sess_2/messages' =>
+              messagesRequests++ == 0
+                  ? _messagesFixture
+                  : _reconciledMessagesFixture,
             '/v1/runs/run_detached' => () {
               statusRequests += 1;
               return '{"run_id":"run_detached","session_id":"sess_2","status":"running"}';
             }(),
             _ => throw StateError('unexpected GET $uri'),
           },
+          getStream: (uri, headers) {
+            expect(uri.path, '/v1/runs/run_detached/events');
+            if (!streamAttached.isCompleted) streamAttached.complete();
+            return stream;
+          },
         ),
       );
       addTearDown(channel.dispose);
 
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      await streamAttached.future;
+      await pumpEventQueue();
 
       expect(statusRequests, 1);
       expect(channel.state.activeSessionId, 'sess_2');
+      expect(channel.state.errorMessage, isNull);
+      expect(channel.state.hasUnreconciledRun, isTrue);
       expect(
-        channel.state.errorMessage,
-        'Hermes run is still active. Reconnect later before retrying.',
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.streaming,
       );
       await expectLater(
         channel.sendText('must not duplicate'),
         throwsStateError,
+      );
+
+      stream.emit(
+        'event: message.delta\ndata: {"delta":"reattached"}\n\n'
+        'event: run.completed\ndata: {}\n\n',
+      );
+      await pumpEventQueue();
+
+      expect(store.leases, isEmpty);
+      expect(channel.state.errorMessage, isNull);
+      expect(
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.completed,
       );
     },
   );

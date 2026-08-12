@@ -119,9 +119,15 @@ void main() {
     expect(helper, contains(r'cat >"$compiler_dir/clang++"'));
   });
 
-  test('Linux bundle keeps ONNX Runtime relocatable', () {
+  test('Linux bundle keeps every Flutter plugin relocatable', () {
     final cmake = File('linux/CMakeLists.txt').readAsStringSync();
 
+    expect(cmake, contains(r'foreach(plugin ${FLUTTER_PLUGIN_LIST})'));
+    expect(cmake, contains(r'if(TARGET ${plugin}_plugin)'));
+    expect(
+      cmake,
+      contains(r'set_target_properties(${plugin}_plugin PROPERTIES'),
+    );
     expect(cmake, contains('BUILD_WITH_INSTALL_RPATH TRUE'));
     expect(cmake, contains(r'INSTALL_RPATH "$ORIGIN"'));
     expect(cmake, contains('flutter_onnxruntime/onnxruntime/'));

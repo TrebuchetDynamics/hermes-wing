@@ -17,6 +17,8 @@ class _HermesTranscriptList extends StatelessWidget {
   const _HermesTranscriptList({
     required this.controller,
     required this.turns,
+    required this.profileId,
+    required this.profileColor,
     required this.pendingApproval,
     required this.pendingApprovalCount,
     required this.canRespondToApprovals,
@@ -36,6 +38,8 @@ class _HermesTranscriptList extends StatelessWidget {
 
   final ScrollController controller;
   final List<HermesChatTurn> turns;
+  final String profileId;
+  final String? profileColor;
   final HermesApprovalRequest? pendingApproval;
   final int pendingApprovalCount;
   final bool canRespondToApprovals;
@@ -59,11 +63,18 @@ class _HermesTranscriptList extends StatelessWidget {
       final turn = turns[index];
       if (turn.kind == HermesTurnKind.text &&
           turn.status != HermesTurnStatus.streaming &&
-          turn.text.trim().isEmpty) {
+          turn.text.trim().isEmpty &&
+          turn.attachment == null) {
         continue;
       }
       if (turn.kind == HermesTurnKind.reasoning) {
-        rows.add(_ReasoningCard(turn: turn));
+        rows.add(
+          _ReasoningCard(
+            turn: turn,
+            profileId: profileId,
+            profileColor: profileColor,
+          ),
+        );
       } else if (turn.kind == HermesTurnKind.toolCall &&
           turn.toolCall != null) {
         final group = <HermesChatTurn>[turn];
@@ -72,11 +83,19 @@ class _HermesTranscriptList extends StatelessWidget {
             turns[index + 1].toolCall != null) {
           group.add(turns[++index]);
         }
-        rows.add(_ToolActivityGroup(turns: group));
+        rows.add(
+          _ToolActivityGroup(
+            turns: group,
+            profileId: profileId,
+            profileColor: profileColor,
+          ),
+        );
       } else {
         rows.add(
           _TurnBubble(
             turn: turn,
+            profileId: profileId,
+            profileColor: profileColor,
             onReply: onReplyTurn,
             onCopyTranscriptText: onCopyTranscriptText,
             onCopyTranscriptMarkdown: onCopyTranscriptMarkdown,
@@ -179,16 +198,25 @@ class _HermesTranscriptList extends StatelessWidget {
 }
 
 class _AssistantTimelineItem extends StatelessWidget {
-  const _AssistantTimelineItem({required this.child});
+  const _AssistantTimelineItem({
+    required this.child,
+    this.profileId = 'default',
+    this.profileColor,
+  });
 
   final Widget child;
+  final String profileId;
+  final String? profileColor;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 720) return child;
-        final colorScheme = Theme.of(context).colorScheme;
+        final identityColor = hermesProfileColor(
+          profileId,
+          advertisedColor: profileColor,
+        );
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
@@ -197,12 +225,15 @@ class _AssistantTimelineItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: CircleAvatar(
+                  key: const ValueKey('hermes-assistant-avatar'),
                   radius: 15,
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.18),
+                  backgroundColor: identityColor,
                   child: Text(
-                    'H',
+                    profileId.trim().isEmpty
+                        ? 'H'
+                        : profileId.trim().characters.first.toUpperCase(),
                     style: TextStyle(
-                      color: colorScheme.primary,
+                      color: hermesProfileForeground(identityColor),
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -219,13 +250,21 @@ class _AssistantTimelineItem extends StatelessWidget {
 }
 
 class _ReasoningCard extends StatelessWidget {
-  const _ReasoningCard({required this.turn});
+  const _ReasoningCard({
+    required this.turn,
+    required this.profileId,
+    this.profileColor,
+  });
 
   final HermesChatTurn turn;
+  final String profileId;
+  final String? profileColor;
 
   @override
   Widget build(BuildContext context) {
     return _AssistantTimelineItem(
+      profileId: profileId,
+      profileColor: profileColor,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -252,9 +291,15 @@ class _ReasoningCard extends StatelessWidget {
 }
 
 class _ToolActivityGroup extends StatelessWidget {
-  const _ToolActivityGroup({required this.turns});
+  const _ToolActivityGroup({
+    required this.turns,
+    required this.profileId,
+    this.profileColor,
+  });
 
   final List<HermesChatTurn> turns;
+  final String profileId;
+  final String? profileColor;
 
   @override
   Widget build(BuildContext context) {
@@ -279,6 +324,8 @@ class _ToolActivityGroup extends StatelessWidget {
         : strings.chatTranscriptToolActivityCountTitle(tools.length);
 
     return _AssistantTimelineItem(
+      profileId: profileId,
+      profileColor: profileColor,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -337,11 +384,149 @@ class _ToolActivityRow extends StatelessWidget {
   }
 }
 
+class _MessageContent extends StatelessWidget {
+  const _MessageContent({
+    required this.text,
+    required this.markdown,
+    required this.attachment,
+  });
+
+  final String text;
+  final bool markdown;
+  final HermesTurnAttachment? attachment;
+
+  @override
+  Widget build(BuildContext context) {
+    final safeAttachment = attachment == null
+        ? null
+        : _DisplayAttachment(
+            name: _safeHermesUiPreview(
+              attachment!.name.replaceAll(RegExp(r'\s+'), ' ').trim(),
+              maxLength: 120,
+            ),
+            image: attachment!.kind == HermesAttachmentKind.image,
+          );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (text.isNotEmpty)
+          markdown
+              ? HermesRichText(text, selectable: false)
+              : Text(
+                  text,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(height: 1.35),
+                ),
+        if (text.isNotEmpty && safeAttachment != null)
+          const SizedBox(height: 8),
+        if (safeAttachment != null)
+          _MessageAttachmentCard(attachment: safeAttachment),
+      ],
+    );
+  }
+}
+
+class _MessageAttachmentCard extends StatelessWidget {
+  const _MessageAttachmentCard({required this.attachment});
+
+  final _DisplayAttachment attachment;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final strings = AppLocalizations.of(context);
+    final attachmentLabel = attachment.image
+        ? strings.chatImageAttachmentLabel(attachment.name)
+        : strings.chatFileAttachmentLabel(attachment.name);
+    return Semantics(
+      label: attachmentLabel,
+      child: Container(
+        key: ValueKey('hermes-message-attachment-${attachment.name}'),
+        constraints: const BoxConstraints(minWidth: 180),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: colors.surface.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: colors.outlineVariant.withValues(alpha: 0.7),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.16),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                attachment.image
+                    ? Icons.image_outlined
+                    : Icons.insert_drive_file_outlined,
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    attachment.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    attachment.image
+                        ? strings.chatImageAttachmentTypeLabel
+                        : _fileTypeLabel(strings, attachment.name),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DisplayAttachment {
+  const _DisplayAttachment({required this.name, required this.image});
+
+  final String name;
+  final bool image;
+}
+
+String _fileTypeLabel(AppLocalizations strings, String name) {
+  final dot = name.lastIndexOf('.');
+  if (dot < 0 || dot == name.length - 1) {
+    return strings.chatFileAttachmentTypeLabel;
+  }
+  final extension = name.substring(dot + 1).toUpperCase();
+  return extension.length <= 8
+      ? strings.chatFileExtensionTypeLabel(extension)
+      : strings.chatFileAttachmentTypeLabel;
+}
+
 enum _TurnAction { copy, reply, copyTranscriptText, copyTranscriptMarkdown }
 
 class _TurnBubble extends StatelessWidget {
   const _TurnBubble({
     required this.turn,
+    required this.profileId,
+    required this.profileColor,
     required this.onReply,
     required this.onCopyTranscriptText,
     required this.onCopyTranscriptMarkdown,
@@ -349,6 +534,8 @@ class _TurnBubble extends StatelessWidget {
   });
 
   final HermesChatTurn turn;
+  final String profileId;
+  final String? profileColor;
   final ValueChanged<HermesChatTurn> onReply;
   final VoidCallback onCopyTranscriptText;
   final VoidCallback onCopyTranscriptMarkdown;
@@ -402,16 +589,13 @@ class _TurnBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Flexible(
-                  child: isUser
-                      ? Text(
-                          turn.text,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(height: 1.35),
-                        )
-                      : structuredError != null
+                  child: structuredError != null
                       ? _StructuredAssistantError(structuredError)
-                      : HermesRichText(turn.text, selectable: false),
+                      : _MessageContent(
+                          text: turn.text,
+                          markdown: !isUser,
+                          attachment: turn.attachment,
+                        ),
                 ),
                 if (streaming) ...[
                   const SizedBox(width: 8),
@@ -473,7 +657,11 @@ class _TurnBubble extends StatelessWidget {
       child: bubble,
     );
     if (isUser) return interactiveBubble;
-    return _AssistantTimelineItem(child: interactiveBubble);
+    return _AssistantTimelineItem(
+      profileId: profileId,
+      profileColor: profileColor,
+      child: interactiveBubble,
+    );
   }
 
   Future<void> _showActions(BuildContext context) async {

@@ -94,6 +94,18 @@ Every milestone is a vertical slice: authoritative Hermes contract, capability a
 | 10. Linux desktop host parity | Interactive 3D Office plus authenticated version-pinned runtime discovery/install/update/rollback, local process lifecycle, explicitly trusted SSH tunnelling, picker-originated filesystem/worktree grants, signed APT/RPM distribution and verified updates, window integration, and packaging. | stable shared contracts |
 | 11. Remaining platforms | Port the desktop Office and host adapters to Windows/macOS, ship signed MSIX and notarized DMG packages with verified updates, deliver and validate the final Electron guarded legacy-wallet export, satisfy the Electron retirement gate, then complete iOS/web remote parity and approved exclusions. Canonical host identity, bounded Linux/Windows/macOS Settings menu-to-route adapters, native fixed-information About actions, and local minimize/maximize/restore/full-screen controls are the first implemented shell slice. | milestones 0–10 |
 
+### Hermes WebUI cross-reference
+
+The source-backed [Hermes WebUI feature and architecture study](hermes-webui-feature-study.md)
+adds browser-client lessons without changing Hermes Desktop's frozen retirement
+baseline. Its highest-priority refinements are canonical-final assistant reply
+reconciliation, explicit Queue/Steer/Stop ownership, recovery-aware terminal
+states, one progressively disclosed activity model, session organization through
+Agent-owned contracts, and symptom-led Wing Link troubleshooting. Direct Agent
+imports, local database/config access, arbitrary remote filesystem/terminal
+surfaces, WebUI-owned authentication state, and local shadow domain stores remain
+explicitly out of scope.
+
 The executable plan for milestones 0–1 is `docs/superpowers/plans/2026-07-13-android-auth-profiles.md`. Later milestones receive separate implementation plans after their baseline scenarios and server contracts are expanded in this ledger.
 
 ### Milestone status

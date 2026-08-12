@@ -48,6 +48,7 @@ import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
+import '../widgets/hermes_profile_identity.dart';
 import '../widgets/hermes_rich_text.dart';
 
 part 'widgets/hermes_chat_error.dart';
@@ -657,6 +658,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         (hasGateways || !state.isConnected) &&
         !legacyConnected;
     final activeContact = directory.activeContact;
+    final selectedProfile = state.profiles
+        .where((profile) => profile.id == state.selectedProfileId)
+        .firstOrNull;
+    final identityColor = hermesProfileColor(
+      activeContact?.id.profileId ?? state.selectedProfileId ?? 'default',
+      advertisedColor: selectedProfile?.color,
+    );
     _requestShellNavigation(activeContact == null);
     final desktopShortcuts = <ShortcutActivator, Intent>{
       if (_usesDesktopKeyboardShortcuts && state.isConnected) ...{
@@ -708,10 +716,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
+                      key: const ValueKey('hermes-contact-avatar'),
                       radius: 17,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer,
+                      backgroundColor: identityColor,
+                      foregroundColor: hermesProfileForeground(identityColor),
                       child: Text(
                         activeContact.profileName.trim().isEmpty
                             ? '?'
@@ -1003,7 +1011,13 @@ List<String> _hermesTranscriptSections(
     }
 
     final text = turn.text.trim();
-    if (text.isEmpty) continue;
+    final attachment = turn.attachment;
+    final attachmentText = attachment == null
+        ? null
+        : attachment.kind == HermesAttachmentKind.image
+        ? strings.chatImageAttachmentLabel(attachment.name)
+        : strings.chatFileAttachmentLabel(attachment.name);
+    if (text.isEmpty && attachmentText == null) continue;
     final author = turn.kind == HermesTurnKind.reasoning
         ? strings.reasoningTitle
         : switch (turn.author) {
@@ -1023,10 +1037,16 @@ List<String> _hermesTranscriptSections(
       markdown
           ? [
               '## $author',
-              text,
+              if (text.isNotEmpty) text,
+              ?attachmentText,
               if (usageText != null) '_${usageText}_',
             ].join('\n\n')
-          : ['$author:', text, ?usageText].join('\n'),
+          : [
+              '$author:',
+              if (text.isNotEmpty) text,
+              ?attachmentText,
+              ?usageText,
+            ].join('\n'),
     );
   }
   return sections;

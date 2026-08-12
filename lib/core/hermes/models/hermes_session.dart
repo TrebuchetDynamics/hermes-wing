@@ -1,4 +1,5 @@
 import '../../protocol/wing_json.dart';
+import 'hermes_chat_turn.dart';
 import 'hermes_run.dart';
 
 class HermesSession {
@@ -132,6 +133,7 @@ class HermesMessage {
     required this.sessionId,
     required this.role,
     required this.content,
+    this.attachment,
     this.toolName,
     this.timestamp,
     this.finishReason,
@@ -140,14 +142,16 @@ class HermesMessage {
 
   factory HermesMessage.fromJson(Map<String, Object?> json) {
     final role = wingStringFromJson(json['role'], fallback: '');
+    final parsed = _hermesMessageContent(
+      json['content'],
+      extractAttachment: role == 'user',
+    );
     return HermesMessage(
       id: wingStringFieldFromJson(json, 'id'),
       sessionId: wingStringFieldFromJson(json, 'session_id'),
       role: role,
-      content: _hermesMessageContent(
-        json['content'],
-        summarizeTextFiles: role == 'user',
-      ),
+      content: parsed.text,
+      attachment: parsed.attachment,
       toolName: wingOptionalStringFromJson(json['tool_name']),
       timestamp: _sessionTimestampFromJson(json['timestamp']),
       finishReason: wingOptionalStringFromJson(json['finish_reason']),
@@ -161,40 +165,76 @@ class HermesMessage {
   final String sessionId;
   final String role;
   final String content;
+  final HermesTurnAttachment? attachment;
   final String? toolName;
   final String? timestamp;
   final String? finishReason;
   final HermesRunUsage? usage;
 }
 
-String _hermesMessageContent(
+({String text, HermesTurnAttachment? attachment}) _hermesMessageContent(
   Object? value, {
-  required bool summarizeTextFiles,
+  required bool extractAttachment,
 }) {
-  final content = value is String
-      ? value
-      : value is List
-      ? [
-          for (final part in value)
-            if (part is Map)
-              switch (part['type']) {
-                'text' ||
-                'input_text' => wingStringFromJson(part['text'], fallback: ''),
-                'image_url' || 'input_image' => '[Image]',
-                _ => '',
-              },
-        ].where((part) => part.isNotEmpty).join('\n\n')
-      : '';
-  if (!summarizeTextFiles) return content;
-  return content
-      .replaceFirstMapped(
-        RegExp(
-          r'(?:\n\n)?<file name="([^"]*)" mime="[^"]*">\n.*\n</file>$',
-          dotAll: true,
-        ),
-        (match) => '\n\n[File: ${_unescapeAttachmentXml(match[1]!)}]',
-      )
-      .trim();
+  if (value is String) return (text: value, attachment: null);
+  if (value is! List) return (text: '', attachment: null);
+
+  final textParts = <String>[];
+  final attachments = <({int? textIndex, HermesTurnAttachment value})>[];
+  for (final rawPart in value) {
+    if (rawPart is! Map) continue;
+    final type = rawPart['type'];
+    if (type == 'image_url' || type == 'input_image') {
+      if (extractAttachment) {
+        attachments.add((
+          textIndex: null,
+          value: const HermesTurnAttachment(
+            name: 'attachment',
+            kind: HermesAttachmentKind.image,
+          ),
+        ));
+      }
+      continue;
+    }
+    if (type != 'text' && type != 'input_text') continue;
+    final text = wingStringFromJson(rawPart['text'], fallback: '');
+    if (text.isEmpty) continue;
+    final textIndex = textParts.length;
+    textParts.add(text);
+    final file = extractAttachment ? _parseTextFilePart(text) : null;
+    if (file != null) {
+      attachments.add((textIndex: textIndex, value: file));
+    }
+  }
+  if (attachments.length != 1) {
+    final privateTextIndexes = attachments
+        .where((attachment) => attachment.textIndex != null)
+        .map((attachment) => attachment.textIndex!)
+        .toSet();
+    return (
+      text: [
+        for (var index = 0; index < textParts.length; index++)
+          if (!privateTextIndexes.contains(index)) textParts[index],
+      ].join('\n\n'),
+      attachment: null,
+    );
+  }
+  final attachment = attachments.single;
+  final textIndex = attachment.textIndex;
+  if (textIndex != null) textParts.removeAt(textIndex);
+  return (text: textParts.join('\n\n'), attachment: attachment.value);
+}
+
+HermesTurnAttachment? _parseTextFilePart(String value) {
+  final match = RegExp(
+    '^<file name="([^"\\r\\n]{1,$hermesAttachmentEncodedNameLimit})" mime="text/plain">\\n[\\s\\S]*\\n</file>\$',
+  ).firstMatch(value);
+  if (match == null) return null;
+  final name = canonicalHermesAttachmentName(
+    _unescapeAttachmentXml(match[1]!),
+    fallback: 'attachment.txt',
+  );
+  return HermesTurnAttachment(name: name, kind: HermesAttachmentKind.file);
 }
 
 String _unescapeAttachmentXml(String value) => value

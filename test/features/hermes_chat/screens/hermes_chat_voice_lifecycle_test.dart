@@ -152,7 +152,10 @@ void main() {
       channel.sentImageDataUrls.single,
       startsWith('data:image/png;base64,'),
     );
-    expect(find.textContaining('[Image: photo.png]'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('hermes-message-attachment-photo.png')),
+      findsOneWidget,
+    );
 
     pickTextFile = true;
     await tester.tap(find.byKey(const ValueKey('hermes-attachment-button')));
@@ -167,7 +170,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(channel.sentTextAttachments.last, 'alpha\nbeta');
-    expect(find.textContaining('[File: notes.md]'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('hermes-message-attachment-notes.md')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('passive session changes do not show voice warnings', (

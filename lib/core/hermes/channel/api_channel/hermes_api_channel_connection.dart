@@ -317,12 +317,21 @@ extension _ConnectionExtension on HermesApiChannel {
                   )
               ? parsedTimestamp.toLocal()
               : null;
+          final serverAttachment = message.attachment;
+          final existingAttachment = existing?.attachment;
+          final reconciledAttachment =
+              existingAttachment != null &&
+                  serverAttachment != null &&
+                  existingAttachment.kind == serverAttachment.kind
+              ? existingAttachment
+              : serverAttachment;
           return HermesChatTurn(
             id: message.id,
             sessionId: sessionId,
             author: author,
             createdAt: serverTimestamp ?? existing?.createdAt ?? fetchedAt,
             text: message.content,
+            attachment: reconciledAttachment,
             usage: message.usage ?? existing?.usage,
           );
         })(),

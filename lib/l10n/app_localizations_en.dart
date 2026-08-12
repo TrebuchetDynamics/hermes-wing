@@ -931,6 +931,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transcriptImageFallbackLabel => 'Image';
 
   @override
+  String get chatImageAttachmentTypeLabel => 'IMAGE';
+
+  @override
+  String get chatFileAttachmentTypeLabel => 'FILE';
+
+  @override
+  String chatImageAttachmentLabel(String name) {
+    return 'Image attachment: $name';
+  }
+
+  @override
+  String chatFileAttachmentLabel(String name) {
+    return 'File attachment: $name';
+  }
+
+  @override
+  String chatFileExtensionTypeLabel(String extension) {
+    return '$extension FILE';
+  }
+
+  @override
   String get transcriptImageNotLoaded => 'image not loaded';
 
   @override

@@ -43,29 +43,21 @@ extension _MessagingExtension on HermesApiChannel {
         'Hermes attachments must be supported image data URLs.',
       );
     }
-    final attachmentLabel = attachmentName?.trim();
-    final safeLabel = attachmentLabel?.isNotEmpty == true
-        ? attachmentLabel!
-        : hasTextFile
-        ? 'attachment.txt'
-        : 'attachment';
-    final requestText = [
-      if (message.isNotEmpty) message,
-      if (hasTextFile)
-        '<file name="${_escapeAttachmentXml(safeLabel)}" mime="text/plain">\n$textAttachment\n</file>',
-    ].join('\n\n');
-    final displayMessage = [
-      if (message.isNotEmpty) message,
-      if (hasImage) '[Image: $safeLabel]',
-      if (hasTextFile) '[File: $safeLabel]',
-    ].join('\n\n');
-    final Object requestMessage = hasImage
+    final safeLabel = canonicalHermesAttachmentName(
+      attachmentName,
+      fallback: hasTextFile ? 'attachment.txt' : 'attachment',
+    );
+    final textFilePart = hasTextFile
+        ? '<file name="${escapeHermesAttachmentName(safeLabel)}" mime="text/plain">\n$textAttachment\n</file>'
+        : null;
+    final Object requestMessage = hasImage || hasTextFile
         ? [
-            if (requestText.isNotEmpty)
-              {'type': 'input_text', 'text': requestText},
-            {'type': 'input_image', 'image_url': image},
+            if (message.isNotEmpty) {'type': 'input_text', 'text': message},
+            if (textFilePart != null)
+              {'type': 'input_text', 'text': textFilePart},
+            if (hasImage) {'type': 'input_image', 'image_url': image},
           ]
-        : requestText;
+        : message;
     final client = _client;
     final sessionId = _state.activeSessionId;
     final profileId = _state.selectedProfileId;
@@ -118,7 +110,15 @@ extension _MessagingExtension on HermesApiChannel {
         sessionId: sessionId,
         author: HermesTurnAuthor.user,
         createdAt: now,
-        text: displayMessage,
+        text: message,
+        attachment: hasImage || hasTextFile
+            ? HermesTurnAttachment(
+                name: safeLabel,
+                kind: hasImage
+                    ? HermesAttachmentKind.image
+                    : HermesAttachmentKind.file,
+              )
+            : null,
       ),
     );
     var assistantTurn = HermesChatTurn(
@@ -1823,10 +1823,3 @@ extension _MessagingExtension on HermesApiChannel {
 }
 
 String _detachedRunBaseUrl(String value) => hermesPublicEndpointBaseUrl(value);
-
-String _escapeAttachmentXml(String value) => value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&apos;');

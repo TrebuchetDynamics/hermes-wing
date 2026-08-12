@@ -1,6 +1,6 @@
 # Hermes Wing PRD
 
-Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. It pursues capability parity by preserving user outcomes through Flutter, Hermes Agent APIs, and platform-native host integrations rather than translating Electron code directly.
+Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. It pursues capability parity by preserving user outcomes through Flutter, Hermes Agent APIs, and platform-native host integrations rather than translating Electron code directly. Hermes WebUI is a separate outcome and interaction reference, frozen independently in [the WebUI feature study](hermes-webui-feature-study.md); it does not move the Desktop retirement baseline and is not an authority, backend, transport, or local-state template for Wing.
 
 The shared journey is: enroll or connect to a trusted Hermes endpoint, choose or create a session, send text or local voice transcripts, review tool progress, answer approvals, and stop active runs. Android presents guided local Hermes installation through Wing Link and Termux as its primary first-run path while retaining one-time pairing to a trusted remote endpoint. Supported desktop targets use Wing Link directly; iOS and web expose remote-safe outcomes and hide local host controls.
 

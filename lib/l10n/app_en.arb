@@ -453,6 +453,26 @@
   "sessionStreamingReply": "Streaming reply",
   "sessionReplyFailed": "Reply failed",
   "transcriptImageFallbackLabel": "Image",
+  "chatImageAttachmentTypeLabel": "IMAGE",
+  "chatFileAttachmentTypeLabel": "FILE",
+  "chatImageAttachmentLabel": "Image attachment: {name}",
+  "@chatImageAttachmentLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "chatFileAttachmentLabel": "File attachment: {name}",
+  "@chatFileAttachmentLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "chatFileExtensionTypeLabel": "{extension} FILE",
+  "@chatFileExtensionTypeLabel": {
+    "placeholders": {
+      "extension": {"type": "String"}
+    }
+  },
   "transcriptImageNotLoaded": "image not loaded",
   "copyCodeAction": "Copy code",
   "codeCopiedMessage": "Code copied",

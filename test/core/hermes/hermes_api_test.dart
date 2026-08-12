@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 
 void main() {
   test('summarizes multimodal history without exposing image data', () {
@@ -19,8 +20,34 @@ void main() {
       ],
     });
 
-    expect(message.content, 'What is this?\n\n[Image]');
+    expect(message.content, 'What is this?');
     expect(message.content, isNot(contains('secret')));
+    expect(message.attachment?.name, 'attachment');
+    expect(message.attachment?.kind, HermesAttachmentKind.image);
+  });
+
+  test('attachment filename canonicalization never splits Unicode scalars', () {
+    final prefix511 = List.filled(511, 'a').join();
+    final prefix510 = List.filled(510, 'a').join();
+    final beforeBoundary = '$prefix511😀';
+    final atBoundary = '$prefix510😀';
+
+    final truncated = canonicalHermesAttachmentName(
+      beforeBoundary,
+      fallback: 'attachment',
+    );
+    final retained = canonicalHermesAttachmentName(
+      atBoundary,
+      fallback: 'attachment',
+    );
+
+    expect(truncated, prefix511);
+    expect(
+      truncated.runes,
+      everyElement(isNot(inInclusiveRange(0xD800, 0xDFFF))),
+    );
+    expect(retained, atBoundary);
+    expect(utf8.decode(utf8.encode(retained)), retained);
   });
 
   test('parses history timestamps and per-message usage', () {
@@ -50,13 +77,80 @@ void main() {
       'id': 'message-1',
       'session_id': 'session-1',
       'role': 'user',
-      'content':
-          'Review this\n\n<file name="notes&lt;&amp;.txt" mime="text/plain">\nsecret contents\n</file>',
+      'content': [
+        {'type': 'input_text', 'text': 'Review this'},
+        {
+          'type': 'input_text',
+          'text':
+              '<file name="notes&lt;&amp;.txt" mime="text/plain">\nsecret contents\n</file>',
+        },
+      ],
     });
 
-    expect(message.content, 'Review this\n\n[File: notes<&.txt]');
+    expect(message.content, 'Review this');
     expect(message.content, isNot(contains('secret contents')));
+    expect(message.attachment?.name, 'notes<&.txt');
+    expect(message.attachment?.kind, HermesAttachmentKind.file);
   });
+
+  test('keeps file-like string prose literal', () {
+    const prose =
+        'First\n\n<file name="fake.txt" mime="text/plain">\nnot an attachment\n</file>';
+    final message = HermesMessage.fromJson({
+      'id': 'message-1',
+      'session_id': 'session-1',
+      'role': 'user',
+      'content': prose,
+    });
+
+    expect(message.content, prose);
+    expect(message.attachment, isNull);
+  });
+
+  test(
+    'redacts recognized file payloads when attachment provenance is ambiguous',
+    () {
+      final multipleFiles = HermesMessage.fromJson({
+        'id': 'message-1',
+        'session_id': 'session-1',
+        'role': 'user',
+        'content': [
+          {'type': 'input_text', 'text': 'First'},
+          {
+            'type': 'input_text',
+            'text':
+                '<file name="one.txt" mime="text/plain">\nprivate one\n</file>',
+          },
+          {
+            'type': 'input_text',
+            'text':
+                '<file name="two.txt" mime="text/plain">\nprivate two\n</file>',
+          },
+        ],
+      });
+      final imageAndFile = HermesMessage.fromJson({
+        'id': 'message-2',
+        'session_id': 'session-1',
+        'role': 'user',
+        'content': [
+          {'type': 'input_text', 'text': 'Inspect both'},
+          {
+            'type': 'input_text',
+            'text':
+                '<file name="secret.txt" mime="text/plain">\nprivate mixed\n</file>',
+          },
+          {'type': 'input_image', 'image_url': 'data:image/png;base64,secret'},
+        ],
+      });
+
+      expect(multipleFiles.attachment, isNull);
+      expect(multipleFiles.content, 'First');
+      expect(multipleFiles.content, isNot(contains('private')));
+      expect(imageAndFile.attachment, isNull);
+      expect(imageAndFile.content, 'Inspect both');
+      expect(imageAndFile.content, isNot(contains('private mixed')));
+    },
+  );
 
   test('client bounds requests that never complete', () async {
     final never = Completer<String>();

@@ -1646,6 +1646,36 @@ abstract class AppLocalizations {
   /// **'Image'**
   String get transcriptImageFallbackLabel;
 
+  /// No description provided for @chatImageAttachmentTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'IMAGE'**
+  String get chatImageAttachmentTypeLabel;
+
+  /// No description provided for @chatFileAttachmentTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FILE'**
+  String get chatFileAttachmentTypeLabel;
+
+  /// No description provided for @chatImageAttachmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Image attachment: {name}'**
+  String chatImageAttachmentLabel(String name);
+
+  /// No description provided for @chatFileAttachmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'File attachment: {name}'**
+  String chatFileAttachmentLabel(String name);
+
+  /// No description provided for @chatFileExtensionTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{extension} FILE'**
+  String chatFileExtensionTypeLabel(String extension);
+
   /// No description provided for @transcriptImageNotLoaded.
   ///
   /// In en, this message translates to:

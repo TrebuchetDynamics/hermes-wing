@@ -30,7 +30,28 @@ class HermesRichText extends StatelessWidget {
     final markdownStyle = MarkdownStyleSheet.fromTheme(theme).copyWith(
       p: theme.textTheme.bodyMedium?.copyWith(height: 1.38),
       listBullet: theme.textTheme.bodyMedium?.copyWith(height: 1.38),
-      blockSpacing: 10,
+      h1: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+      h2: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      h3: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+      code: theme.textTheme.bodyMedium?.copyWith(
+        fontFamily: 'monospace',
+        fontFamilyFallback: const ['Roboto Mono'],
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      ),
+      blockquote: theme.textTheme.bodyMedium?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+        height: 1.4,
+      ),
+      blockquoteDecoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.34),
+        border: Border(
+          left: BorderSide(color: theme.colorScheme.secondary, width: 3),
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      blockquotePadding: const EdgeInsets.fromLTRB(12, 8, 10, 8),
+      blockSpacing: 12,
+      listIndent: 22,
     );
     final content = MarkdownBody(
       data: data,
@@ -98,10 +119,11 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
           : SelectableText(code, style: preferredStyle),
     );
     return DecoratedBox(
+      key: const ValueKey('hermes-code-block'),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: colors.surfaceContainerLowest,
         border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,7 +133,15 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 12),
-                  child: Text(language.isEmpty ? 'code' : language),
+                  child: Text(
+                    language.isEmpty ? 'code' : language,
+                    key: const ValueKey('hermes-code-language'),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
                 ),
               ),
               IconButton(

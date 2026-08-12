@@ -605,20 +605,24 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }) async {
     sentImageDataUrls.add(imageDataUrl);
     sentTextAttachments.add(textAttachment);
-    final displayText = imageDataUrl != null
-        ? '${text.trim()}\n\n[Image: ${attachmentName ?? 'attachment'}]'.trim()
-        : textAttachment != null
-        ? '${text.trim()}\n\n[File: ${attachmentName ?? 'attachment.txt'}]'
-              .trim()
-        : text;
+    final attachment = imageDataUrl != null || textAttachment != null
+        ? HermesTurnAttachment(
+            name:
+                attachmentName ??
+                (textAttachment != null ? 'attachment.txt' : 'attachment'),
+            kind: imageDataUrl != null
+                ? HermesAttachmentKind.image
+                : HermesAttachmentKind.file,
+          )
+        : null;
     final gate = sendTextGate;
     if (gate == null) {
-      _appendExchange(displayText);
+      _appendExchange(text, attachment: attachment);
       return;
     }
-    beginStreamingTurn(displayText);
+    beginStreamingTurn(text, attachment: attachment);
     await gate();
-    completeStreamingTurn(text: 'Echo: $displayText');
+    completeStreamingTurn(text: 'Echo: $text');
   }
 
   void emitApprovalRequest(HermesApprovalRequest request) {
@@ -631,7 +635,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
 
   /// Test-only helper: leaves an assistant turn `streaming` (as a real
   /// in-flight run would) so widget tests can exercise the stop control.
-  void beginStreamingTurn(String userText) {
+  void beginStreamingTurn(String userText, {HermesTurnAttachment? attachment}) {
     final sessionId = _state.activeSessionId;
     if (sessionId == null) return;
     final turns = List<HermesChatTurn>.from(_state.activeMessages);
@@ -643,6 +647,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         author: HermesTurnAuthor.user,
         createdAt: now,
         text: userText,
+        attachment: attachment,
       ),
     );
     turns.add(
@@ -760,7 +765,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     );
   }
 
-  void _appendExchange(String text) {
+  void _appendExchange(String text, {HermesTurnAttachment? attachment}) {
     final sessionId = _state.activeSessionId;
     if (sessionId == null) return;
     final turns = List<HermesChatTurn>.from(_state.activeMessages);
@@ -772,6 +777,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         author: HermesTurnAuthor.user,
         createdAt: now,
         text: text,
+        attachment: attachment,
       ),
     );
     turns.add(

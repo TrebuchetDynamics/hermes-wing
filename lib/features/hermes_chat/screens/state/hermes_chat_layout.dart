@@ -588,6 +588,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     return _HermesTranscriptList(
       controller: _transcriptScrollController,
       turns: state.activeMessages,
+      profileId: state.selectedProfileId ?? 'default',
+      profileColor: state.profiles
+          .where((profile) => profile.id == state.selectedProfileId)
+          .map((profile) => profile.color)
+          .firstOrNull,
       pendingApproval: pendingApproval,
       pendingApprovalCount: pendingApprovalCount,
       canRespondToApprovals: canRespondToApprovals,

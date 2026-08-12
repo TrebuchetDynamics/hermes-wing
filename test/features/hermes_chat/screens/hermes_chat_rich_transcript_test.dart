@@ -42,6 +42,129 @@ void main() {
     },
   );
 
+  testWidgets('assistant Markdown keeps rich blocks usable on a narrow phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Show rich formatting.');
+    channel.completeStreamingTurn(
+      text: '''## Result
+
+> A quoted answer
+
+- first
+- second
+
+`inline()`
+
+```dart
+final answer = veryLongFunctionNameThatMustScrollHorizontally();
+```
+''',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Result', findRichText: true), findsOneWidget);
+    expect(find.text('A quoted answer', findRichText: true), findsOneWidget);
+    expect(find.text('inline()', findRichText: true), findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-code-block')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-code-language')), findsOneWidget);
+    expect(find.text('dart'), findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-code-copy')), findsOneWidget);
+  });
+
+  testWidgets('sent attachments render as Telegram-style file cards', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    await channel.sendText(
+      'Please inspect this.',
+      textAttachment: 'contents',
+      attachmentName: 'purple plan.md',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-message-attachment-purple plan.md')),
+      findsOneWidget,
+    );
+    expect(find.text('purple plan.md'), findsOneWidget);
+    expect(find.textContaining('[File:'), findsNothing);
+    expect(find.byIcon(Icons.insert_drive_file_outlined), findsOneWidget);
+  });
+
+  testWidgets('file cards preserve bounded bracket and newline filenames', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    await channel.sendText(
+      'Inspect this.',
+      textAttachment: 'contents',
+      attachmentName: 'purple ] plan\nfinal.md',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(
+        const ValueKey('hermes-message-attachment-purple ] plan final.md'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('purple ] plan final.md'), findsOneWidget);
+    expect(find.textContaining('[File:'), findsNothing);
+  });
+
+  testWidgets('marker-like prose remains ordinary message text', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn(
+      '[File: first]\n\nordinary prose\n\n[File: actual.txt]',
+    );
+    channel.completeStreamingTurn(text: 'Literal markers stay literal.');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-message-attachment-actual.txt')),
+      findsNothing,
+    );
+    expect(find.textContaining('ordinary prose'), findsOneWidget);
+    expect(find.textContaining('[File: actual.txt]'), findsOneWidget);
+  });
+
   testWidgets('reasoning is available in a collapsed readable card', (
     tester,
   ) async {
@@ -412,6 +535,78 @@ void main() {
       '## You\n\nQuestion\n\n## Hermes\n\nAnswer with **Markdown**.',
     );
     expect(find.text('Transcript copied as Markdown'), findsOneWidget);
+  });
+
+  testWidgets('copies attachment-only turns in both transcript formats', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn(
+      '',
+      attachment: const HermesTurnAttachment(
+        name: 'photo.png',
+        kind: HermesAttachmentKind.image,
+      ),
+    );
+    channel.completeStreamingTurn(text: 'Received.');
+    // Attachment terminology must come from AppLocalizations for UI,
+    // semantics, and transcript export.
+    String? copiedText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copiedText =
+                (call.arguments as Map<Object?, Object?>)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    expect(
+      strings.chatImageAttachmentLabel('photo.png'),
+      'Image attachment: photo.png',
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label ==
+                strings.chatImageAttachmentLabel('photo.png'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(strings.chatImageAttachmentTypeLabel), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-copy-transcript-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy as Markdown'));
+    await tester.pumpAndSettle();
+    expect(copiedText, contains(strings.chatImageAttachmentLabel('photo.png')));
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-copy-transcript-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy as text'));
+    await tester.pumpAndSettle();
+    expect(copiedText, contains('Image attachment: photo.png'));
+    semantics.dispose();
   });
 
   testWidgets('exports bounded server session metadata with the transcript', (

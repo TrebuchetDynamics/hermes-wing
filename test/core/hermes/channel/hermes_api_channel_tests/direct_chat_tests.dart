@@ -59,9 +59,160 @@ void _hermesApiChannelDirectChatTests() {
     );
 
     expect(requestBody, {
-      'message':
-          '<file name="notes&lt;&amp;.txt" mime="text/plain">\nalpha\nbeta\n</file>',
+      'message': [
+        {
+          'type': 'input_text',
+          'text':
+              '<file name="notes&lt;&amp;.txt" mime="text/plain">\nalpha\nbeta\n</file>',
+        },
+      ],
     });
+  });
+
+  test('text attachment filename round-trips through history safely', () async {
+    Map<String, Object?>? requestBody;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+        postStream: (uri, headers, body) {
+          requestBody = jsonDecode(body) as Map<String, Object?>;
+          return Stream.value('data: [DONE]\n\n');
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText(
+      '',
+      textAttachment: 'private contents',
+      attachmentName: '  ${List.filled(120, '&quot;').join()}\r\nsecret.md  ',
+    );
+
+    final content = (requestBody!['message'] as List<Object?>)
+        .cast<Map<String, Object?>>()
+        .single['text'];
+    final restored = HermesMessage.fromJson({
+      'id': 'restored',
+      'session_id': 'sess_1',
+      'role': 'user',
+      'content': [
+        {'type': 'input_text', 'text': content},
+      ],
+    });
+    expect(restored.content, isEmpty);
+    expect(restored.content, isNot(contains('private contents')));
+    expect(restored.attachment?.kind, HermesAttachmentKind.file);
+    expect(restored.attachment?.name, isNot(contains(RegExp(r'[\r\n]'))));
+    expect(restored.attachment?.name.length, lessThanOrEqualTo(512));
+  });
+
+  test(
+    'plain duplicate prose does not inherit optimistic attachment metadata',
+    () async {
+      var messageReads = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _capabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' =>
+                messageReads++ == 0
+                    ? _messagesFixture
+                    : '''{"object":"list","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-plain","session_id":"sess_1","role":"user","content":"Inspect"}]}''',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+          postStream: (uri, headers, body) => Stream.value('data: [DONE]\n\n'),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText(
+        'Inspect',
+        imageDataUrl: 'data:image/png;base64,c2FmZQ==',
+        attachmentName: 'photo.png',
+      );
+
+      final reconciled = channel.state.activeMessages.last;
+      expect(reconciled.id, 'server-plain');
+      expect(reconciled.text, 'Inspect');
+      expect(reconciled.attachment, isNull);
+    },
+  );
+
+  test('image reconciliation preserves the optimistic attachment name', () async {
+    var messageReads = 0;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              messageReads++ == 0
+                  ? _messagesFixture
+                  : '''{"object":"list","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"input_text","text":"Inspect"},{"type":"input_image","image_url":"data:image/png;base64,secret"}]}]}''',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+        postStream: (uri, headers, body) => Stream.value('data: [DONE]\n\n'),
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.sendText(
+      'Inspect',
+      imageDataUrl: 'data:image/png;base64,c2FmZQ==',
+      attachmentName: 'photo.png',
+    );
+
+    final imageTurn = channel.state.activeMessages.last;
+    expect(imageTurn.id, 'server-image');
+    expect(imageTurn.text, 'Inspect');
+    expect(imageTurn.attachment?.kind, HermesAttachmentKind.image);
+    expect(imageTurn.attachment?.name, 'photo.png');
+  });
+
+  test('restores an image-only turn as a structured attachment', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              '''{"object":"list","data":[{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,secret"}}]}]}''',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    final imageTurn = channel.state.activeMessages.single;
+    expect(imageTurn.text, isEmpty);
+    expect(imageTurn.attachment?.kind, HermesAttachmentKind.image);
+    expect(imageTurn.attachment?.name, 'attachment');
   });
 
   test(

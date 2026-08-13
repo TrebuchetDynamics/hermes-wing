@@ -39,6 +39,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
   String? _actionError;
   String? _switchingGatewayId;
   String? _switchingProfileId;
+  bool _chatRouteOpen = false;
   String? _wingLinkGatewayId;
   WingLinkClient? _wingLinkClient;
   List<WingLinkProfile>? _wingLinkProfiles;
@@ -267,9 +268,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
               onChat: isWingLinkRow(profiles[index])
                   ? canUseHermesProfileContext(profiles[index])
                         ? profiles[index].id == 'default'
-                              ? () => GoRouter.maybeOf(
-                                  context,
-                                )?.go(AppRoutes.hermes)
+                              ? () => unawaited(_openChat())
                               : () => _selectProfile(channel, profiles[index])
                         : null
                   : _switchingProfileId == null
@@ -493,7 +492,9 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
           discoveredProfile: profile,
         );
       }
-      if (mounted) GoRouter.maybeOf(context)?.go(AppRoutes.hermes);
+      if (mounted) {
+        unawaited(_openChat());
+      }
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -504,6 +505,18 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
       if (mounted && _switchingProfileId == profileId) {
         setState(() => _switchingProfileId = null);
       }
+    }
+  }
+
+  Future<void> _openChat() async {
+    if (_chatRouteOpen) return;
+    final router = GoRouter.maybeOf(context);
+    if (router == null) return;
+    setState(() => _chatRouteOpen = true);
+    try {
+      await router.push<void>(AppRoutes.hermes);
+    } finally {
+      if (mounted) setState(() => _chatRouteOpen = false);
     }
   }
 }

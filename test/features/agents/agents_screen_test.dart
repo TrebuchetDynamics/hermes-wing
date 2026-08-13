@@ -514,6 +514,121 @@ void main() {
     expect(find.text('Chat destination'), findsOneWidget);
   });
 
+  testWidgets('Android Back returns from profile chat to the profile list', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+      ],
+      selectedProfileId: 'coder',
+    );
+    addTearDown(channel.dispose);
+    final router = GoRouter(
+      initialLocation: AppRoutes.agents,
+      routes: [
+        GoRoute(
+          path: AppRoutes.agents,
+          builder: (_, _) => const AgentsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.hermes,
+          builder: (_, _) => const Scaffold(body: Text('Chat destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => directoryFor(
+              configs: const [],
+              loader: FakeGatewaySummaryLoader(const {}),
+              activeChannel: channel,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Chat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chat destination'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profiles'), findsWidgets);
+    expect(find.text('Coding Agent'), findsOneWidget);
+  });
+
+  testWidgets('rapid Chat taps push only one route', (tester) async {
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Hermes One', revision: 'd'),
+      ],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+    final router = GoRouter(
+      initialLocation: AppRoutes.agents,
+      routes: [
+        GoRoute(
+          path: AppRoutes.agents,
+          builder: (_, _) => const AgentsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.hermes,
+          builder: (_, _) => const Scaffold(body: Text('Chat destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => directoryFor(
+              configs: const [],
+              loader: FakeGatewaySummaryLoader(const {}),
+              activeChannel: channel,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final chat = find.widgetWithText(FilledButton, 'Chat');
+
+    await tester.tap(chat);
+    await tester.tap(chat, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('Chat destination'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profiles'), findsWidgets);
+    expect(find.text('Hermes One'), findsOneWidget);
+  });
+
   testWidgets('shows progress and blocks repeat taps while switching agents', (
     tester,
   ) async {

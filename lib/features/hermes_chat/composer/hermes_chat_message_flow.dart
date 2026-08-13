@@ -1,4 +1,4 @@
-part of '../hermes_chat_screen.dart';
+part of '../screens/hermes_chat_screen.dart';
 
 extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   void _sendComposerText(HermesChannel channel) {

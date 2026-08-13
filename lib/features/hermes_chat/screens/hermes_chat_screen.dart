@@ -59,7 +59,7 @@ part 'state/hermes_chat_lifecycle.dart';
 part 'state/hermes_chat_layout.dart';
 part 'state/hermes_chat_connection.dart';
 part '../session/hermes_chat_session_actions.dart';
-part 'state/hermes_chat_message_flow.dart';
+part '../composer/hermes_chat_message_flow.dart';
 
 /// Voice-capture/TTS services for the Hermes chat screen.
 final hermesVoiceCapturePlatformProvider = Provider<VoiceCapturePlatform>(

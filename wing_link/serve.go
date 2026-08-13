@@ -390,19 +390,21 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 		}
 		return
 	}
-	if id, ok := profileRoute(request.URL.Path); ok {
-		if !server.requireAuthorization(writer, request) {
+	if wingLinkDomainFallbacksEnabled {
+		if id, ok := profileRoute(request.URL.Path); ok {
+			if !server.requireAuthorization(writer, request) {
+				return
+			}
+			switch request.Method {
+			case http.MethodPatch:
+				server.renameProfile(writer, request, id)
+			case http.MethodDelete:
+				server.deleteProfile(writer, request, id)
+			default:
+				writer.WriteHeader(http.StatusMethodNotAllowed)
+			}
 			return
 		}
-		switch request.Method {
-		case http.MethodPatch:
-			server.renameProfile(writer, request, id)
-		case http.MethodDelete:
-			server.deleteProfile(writer, request, id)
-		default:
-			writer.WriteHeader(http.StatusMethodNotAllowed)
-		}
-		return
 	}
 	if wingLinkDomainFallbacksEnabled && server.providers != nil && server.serveProviderRoute(writer, request) {
 		return

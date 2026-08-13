@@ -98,18 +98,49 @@ func decodeBody(t *testing.T, response *http.Response, target any) {
 }
 
 func TestWingLinkDomainRoutesStayQuarantined(t *testing.T) {
-	handler := newWingLinkServer(
-		&profileBackend{},
-		&StateStore{path: filepath.Join(t.TempDir(), "state.json")},
-		&providerBackend{},
-	)
-	for _, path := range []string{"/v1/profiles", "/v1/providers?profile=default"} {
-		request := httptest.NewRequest(http.MethodGet, path, nil)
+	var commands [][]string
+	backend := &profileBackend{
+		home: t.TempDir(),
+		runHermes: func(_ context.Context, args ...string) error {
+			commands = append(commands, append([]string(nil), args...))
+			return nil
+		},
+	}
+	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
+	enrollment, err := store.CreateEnrollment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := store.ExchangeEnrollment(enrollment.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := newWingLinkServer(backend, store, &providerBackend{})
+	cases := []struct {
+		method string
+		path   string
+		body   string
+	}{
+		{http.MethodGet, "/v1/profiles", ""},
+		{http.MethodPatch, "/v1/profiles/default", `{"name":"other","revision":"rev"}`},
+		{http.MethodDelete, "/v1/profiles/default", ""},
+		{http.MethodGet, "/v1/providers?profile=default", ""},
+	}
+	for _, testCase := range cases {
+		request := httptest.NewRequest(
+			testCase.method,
+			testCase.path,
+			strings.NewReader(testCase.body),
+		)
+		request.Header.Set("Authorization", "Bearer "+token)
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 		if response.Code != http.StatusNotFound {
-			t.Fatalf("%s status = %d; want %d", path, response.Code, http.StatusNotFound)
+			t.Fatalf("%s %s status = %d; want %d", testCase.method, testCase.path, response.Code, http.StatusNotFound)
 		}
+	}
+	if len(commands) != 0 {
+		t.Fatalf("quarantined domain route ran Hermes: %#v", commands)
 	}
 }
 
@@ -463,6 +494,9 @@ func TestDecodeJSONRejectsBodyBeyondLimit(t *testing.T) {
 }
 
 func TestProfileMutationRejectsStaleRevision(t *testing.T) {
+	if !wingLinkDomainFallbacksEnabled {
+		t.Skip("legacy profile domain routes are quarantined")
+	}
 	harness := newProfileHarness(t)
 	response := harness.request(t, http.MethodDelete, "/v1/profiles/link", nil, true, map[string]string{"If-Match": "stale"})
 	if response.StatusCode != http.StatusConflict {

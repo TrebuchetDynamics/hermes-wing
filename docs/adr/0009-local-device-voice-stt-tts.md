@@ -48,7 +48,7 @@ Use local device packages for voice:
 
 - `pubspec.yaml` (pinned `pocket_speech` Git dependency)
 - `lib/features/hermes_chat/screens/hermes_chat_screen.dart:37-44`
-- `lib/features/hermes_chat/controllers/hermes_voice_input_controller.dart`
+- `lib/features/hermes_chat/voice/hermes_voice_input_controller.dart`
 - `lib/features/voice/services/platform/default_voice_capture_service.dart:15-33`
 - `lib/features/voice/services/speech/speech_to_text_voice_capture_service.dart:17-99`
 - `lib/features/voice/services/tts/text_to_speech_service.dart`

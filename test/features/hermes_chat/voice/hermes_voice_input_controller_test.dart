@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/features/hermes_chat/controllers/hermes_voice_input_controller.dart';
+import 'package:wing/features/hermes_chat/voice/hermes_voice_input_controller.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_capture_failures.dart';
 import 'package:wing/shared/voice/voice_capture_service.dart';

@@ -43,7 +43,7 @@ import '../controllers/hermes_approval_queue.dart';
 import '../controllers/hermes_channel_observation.dart';
 import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_follow_up_queue.dart';
-import '../controllers/hermes_voice_input_controller.dart';
+import '../voice/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';

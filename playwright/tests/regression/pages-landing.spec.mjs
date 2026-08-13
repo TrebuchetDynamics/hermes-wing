@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.skip(
+  !process.env.PAGES_BASE_URL,
+  "PAGES_BASE_URL is required for the assembled Pages artifact smoke",
+);
+
 const root = process.env.PAGES_BASE_URL ?? "http://127.0.0.1:8769/hermes-wing/";
 
 function collectPageFailures(page) {

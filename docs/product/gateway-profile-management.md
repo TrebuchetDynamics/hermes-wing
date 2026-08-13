@@ -150,7 +150,7 @@ or adding client-local shadow profiles/providers.
 
 ## Evidence
 
-- `test/features/agents/agents_screen_test.dart`
+- `test/features/profiles/profiles_screen_test.dart`
 - `test/features/providers/providers_screen_test.dart`
 - `test/core/hermes/channel/hermes_api_channel_test.dart`
 - `test/core/hermes/setup/secure_hermes_endpoint_store_test.dart`

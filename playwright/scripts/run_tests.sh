@@ -42,6 +42,20 @@ fi
 echo "Test server running on http://127.0.0.1:8767"
 echo ""
 
-# Run the Playwright tests
+# Run each default suite in a fresh Playwright process. Flutter web and system
+# Chromium accumulate enough resources across the full discovery set to make
+# later timing-sensitive approval and speech flows flaky under CI load.
 echo "Running Playwright tests..."
-npx playwright test --config=playwright.config.mjs 2>&1
+DEFAULT_SPECS=(
+  playwright/tests/regression/browser-surfaces.spec.mjs
+  playwright/tests/regression/chat-tts.spec.mjs
+  playwright/tests/regression/hermes-lifecycle.spec.mjs
+  playwright/tests/regression/hermes-live-say-hi.spec.mjs
+  playwright/tests/regression/hermes-smoke.spec.mjs
+  playwright/tests/screenshots/e2e-screenshots.spec.mjs
+)
+for spec in "${DEFAULT_SPECS[@]}"; do
+  echo ""
+  echo "Running $spec..."
+  npx playwright test --config=playwright.config.mjs "$spec" 2>&1
+done

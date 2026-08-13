@@ -13,7 +13,7 @@ async function open(page, route) {
 test("Hermes connect screen screenshot", async ({ page }, testInfo) => {
   await open(page, "#/hermes");
   await page
-    .getByRole("button", { name: "Add gateway or agent" })
+    .getByRole("button", { name: "Add gateway or profile" })
     .first()
     .click();
   await expect(

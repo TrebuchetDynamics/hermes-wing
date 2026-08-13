@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.skip(
+  !process.env.RELEASE_ARTIFACT_BASE_URL,
+  "RELEASE_ARTIFACT_BASE_URL is required for release artifact smoke",
+);
+
 const root = process.env.RELEASE_ARTIFACT_BASE_URL;
 
 test("packaged Flutter web release initializes", async ({ page }) => {

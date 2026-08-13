@@ -19,10 +19,10 @@ async function openConnected(page, route) {
   await page.evaluate(() => globalThis.wingE2EHermesConnect());
 }
 
-test("Hermes empty state opens secure QR enrollment", async ({ page }) => {
+test("Hermes empty state opens secure web enrollment", async ({ page }) => {
   await open(page, "/hermes");
   await page
-    .getByRole("button", { name: "Add gateway or agent" })
+    .getByRole("button", { name: "Add gateway or profile" })
     .first()
     .click();
 
@@ -30,7 +30,7 @@ test("Hermes empty state opens secure QR enrollment", async ({ page }) => {
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Scan QR code" }),
+    page.getByRole("button", { name: "Enter gateway manually" }),
   ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(
     0,
@@ -52,19 +52,19 @@ test("Office renders its connected empty state and settings recovery action", as
   await openConnected(page, "/office");
 
   await expect(
-    page.getByRole("group", { name: /No Hermes agents available/ }),
+    page.getByRole("group", { name: /No Hermes profiles available/ }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Open settings" }),
   ).toBeVisible();
 });
 
-test("Agents fails closed when profile administration is not advertised", async ({
+test("Profiles fail closed when profile administration is not advertised", async ({
   page,
 }) => {
-  await openConnected(page, "/agents");
+  await openConnected(page, "/profiles");
 
-  await expect(page.getByText("Agents unavailable")).toBeVisible();
+  await expect(page.getByText("Profiles unavailable")).toBeVisible();
   await expect(
     page.getByText(
       "Update Hermes Agent and reconnect this gateway with profile permissions.",

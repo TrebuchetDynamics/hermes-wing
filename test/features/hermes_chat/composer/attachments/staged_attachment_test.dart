@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/features/hermes_chat/attachments/staged_attachment.dart';
+import 'package:wing/features/hermes_chat/composer/attachments/staged_attachment.dart';
 
 void main() {
   test('an image sends as a data URL carrying its sniffed type', () {

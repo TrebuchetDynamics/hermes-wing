@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/features/hermes_chat/attachments/hermes_attachment_content.dart';
+import 'package:wing/features/hermes_chat/composer/attachments/hermes_attachment_content.dart';
 
 Uint8List _bytes(List<int> values) => Uint8List.fromList(values);
 

@@ -1,4 +1,4 @@
-part of '../hermes_chat_screen.dart';
+part of '../screens/hermes_chat_screen.dart';
 
 extension _HermesChatScreenSessionActions on _HermesChatScreenState {
   Future<void> _createSession(

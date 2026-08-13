@@ -1,0 +1,198 @@
+# Deterministic Android qualification of production profile/chat/editor screens.
+# This does not substitute for live Hermes credential and multiplexer evidence.
+appId: com.trebuchetdynamics.hermes.wing
+name: strict_profile_lifecycle_fixture
+---
+- launchApp:
+    stopApp: true
+    clearState: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 60000
+- tapOn: "Open more destinations"
+- tapOn: "^Profiles$"
+- extendedWaitUntil:
+    visible: "(?s).*New Profile.*"
+    timeout: 30000
+- assertNotVisible: "(?s).*Endpoint contact.*"
+- assertVisible: "(?s).*ID: default.*"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*ID: yunobo.*"
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: strict_profile_inventory_tail
+
+# Return to the first authoritative row before iterating in inventory order.
+- scrollUntilVisible:
+    element:
+      text: "Chat with default"
+    direction: UP
+    timeout: 30000
+
+# Every profile must open its own chat and emit an assistant-only identity receipt.
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: default
+      SESSION_ID: session-default
+      NONCE: a1
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: cadencia
+      SESSION_ID: session-cadencia
+      NONCE: b2
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: link
+      SESSION_ID: session-link
+      NONCE: c3
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: mineru
+      SESSION_ID: session-mineru
+      NONCE: d4
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: portal-crazy
+      SESSION_ID: session-portal-crazy
+      NONCE: e5
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: sdrhf-vigia
+      SESSION_ID: session-sdrhf-vigia
+      NONCE: f6
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: sidon
+      SESSION_ID: session-sidon
+      NONCE: g7
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: visor-box
+      SESSION_ID: session-visor-box
+      NONCE: h8
+- runFlow:
+    file: profile_lifecycle_one.yaml
+    env:
+      PROFILE_ID: yunobo
+      SESSION_ID: session-yunobo
+      NONCE: i9
+
+# Exercise revisioned display-name and persona mutation with read-back.
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru"
+    direction: UP
+    timeout: 30000
+- tapOn: "Edit mineru"
+- extendedWaitUntil:
+    visible: "(?s).*ID: mineru.*"
+    timeout: 30000
+- tapOn: "Profile name"
+- eraseText: 80
+- inputText: "mineru-qualified"
+- tapOn: "Persona"
+- eraseText: 200
+- inputText: "persona-qualified-mineru"
+- hideKeyboard
+- tapOn: "^Save$"
+- extendedWaitUntil:
+    notVisible: "^Save$"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru-qualified"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit mineru-qualified"
+- extendedWaitUntil:
+    visible: "(?s).*mineru-qualified.*"
+    timeout: 30000
+- assertVisible: "(?s).*persona-qualified-mineru.*"
+
+# A force-stop/relaunch must retain the mutation in fixture-backed app storage.
+- pressKey: back
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 60000
+- tapOn: "Open more destinations"
+- tapOn: "^Profiles$"
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru-qualified"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit mineru-qualified"
+- assertVisible: "(?s).*persona-qualified-mineru.*"
+- pressKey: back
+
+# The mutation must not leak into another profile.
+- scrollUntilVisible:
+    element:
+      text: "Edit portal-crazy"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit portal-crazy"
+- assertVisible: "(?s).*persona-initial-portal-crazy.*"
+- assertNotVisible: "(?s).*persona-qualified-mineru.*"
+- pressKey: back
+
+# Return to the mutated profile to restore its original values.
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru-qualified"
+    direction: UP
+    timeout: 30000
+- tapOn: "Edit mineru-qualified"
+
+# Restore fixture-visible values and verify the restored read-back.
+- tapOn: "Profile name"
+- eraseText: 80
+- inputText: "mineru"
+- tapOn: "Persona"
+- eraseText: 200
+- inputText: "persona-initial-mineru"
+- hideKeyboard
+- tapOn: "^Save$"
+- extendedWaitUntil:
+    notVisible: "^Save$"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit mineru"
+- assertVisible: "(?s).*persona-initial-mineru.*"
+- pressKey: back
+- assertVisible: "(?s).*Profiles.*"
+
+# A second force-stop/relaunch must retain the restored values.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 60000
+- tapOn: "Open more destinations"
+- tapOn: "^Profiles$"
+- scrollUntilVisible:
+    element:
+      text: "Edit mineru"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit mineru"
+- assertVisible: "(?s).*persona-initial-mineru.*"
+- pressKey: back
+- assertVisible: "(?s).*Profiles.*"
+- takeScreenshot: strict_profile_lifecycle_status_complete

@@ -1,0 +1,28 @@
+appId: com.trebuchetdynamics.hermes.wing
+---
+- scrollUntilVisible:
+    element:
+      text: "Chat with ${PROFILE_ID}"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Chat with ${PROFILE_ID}"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 30000
+- tapOn: "(?s).*Message Hermes….*"
+- inputText: "nonce-${NONCE}"
+- hideKeyboard
+- tapOn: "^Send$"
+- extendedWaitUntil:
+    visible: "(?s).*PROFILE_RECEIPT::${PROFILE_ID}::${SESSION_ID}::nonce-${NONCE}::assistant.*"
+    timeout: 30000
+- assertNotVisible: "(?s).*PROFILE_RECEIPT::(?!${PROFILE_ID}::).*::assistant.*"
+- pressKey: back
+- extendedWaitUntil:
+    visible: "(?s).*Profiles.*"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*ID: ${PROFILE_ID}.*"
+    direction: DOWN
+    timeout: 30000

@@ -129,6 +129,25 @@ async function sendChat(page, text, { testInfo, screenshotPrefix } = {}) {
   if (testInfo) await screenshot(page, testInfo, `${screenshotPrefix}-reply`);
 }
 
+async function expectVoiceInputAvailable(page) {
+  const legacyDirectControl = page.getByRole("button", {
+    name: "Speak and send",
+  });
+  const handsFreeControl = page.getByRole("button", {
+    name: "Hands-free voice",
+  });
+  await expect
+    .poll(async () =>
+      (await legacyDirectControl.count()) + (await handsFreeControl.count()),
+    )
+    .toBeGreaterThan(0);
+  if (await handsFreeControl.count()) {
+    await expect(handsFreeControl).toBeVisible();
+  } else {
+    await expect(legacyDirectControl).toBeVisible();
+  }
+}
+
 test.beforeEach(async ({ request }) => {
   const response = await request.post(`${APP}e2e/hermes/reset`);
   expect(response.ok()).toBeTruthy();
@@ -150,9 +169,7 @@ test("chat replies stay silent when Speak replies aloud is disabled", async ({
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
     .toBe(0);
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
   );
@@ -180,9 +197,7 @@ test("Speak replies aloud uses the selected speed and Stop speaking cancels play
   expect(utterance.volume).toBe(1);
 
   await page.getByRole("button", { name: "Stop speaking" }).click();
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
     .toBe(1);
@@ -216,9 +231,7 @@ test("completed speech returns to voice input and the next reply can speak", asy
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
   await page.evaluate(() => globalThis.wingE2ESpeech.finish());
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
 
   await screenshot(page, testInfo, "first-speech-completed");
 
@@ -237,9 +250,7 @@ test("completed speech returns to voice input and the next reply can speak", asy
     "Hermes echo: second spoken browser turn",
   ]);
   await page.evaluate(() => globalThis.wingE2ESpeech.finish());
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await expect(page.getByText("Could not speak Hermes reply.")).toHaveCount(0);
 });
 
@@ -324,9 +335,7 @@ test("a browser speech failure is bounded and the following reply can recover", 
   await expect(
     page.getByText("Could not speak Hermes reply.").last(),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
   );
@@ -510,9 +519,7 @@ test("denying an approval stays silent and returns chat to a usable state", asyn
   await expect(
     page.getByRole("button", { name: /Tool activity: bash/ }),
   ).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   expect(
     await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
   ).toBe(0);
@@ -668,9 +675,7 @@ test("Stop speaking discards a queued reply and later speech still works", async
   await screenshot(page, testInfo, "queued-stop-waiting");
 
   await page.getByRole("button", { name: "Stop speaking" }).click();
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
     .toBe(1);
@@ -711,9 +716,7 @@ test("an asynchronous browser speech error recovers for the next reply", async (
   await expect(
     page.getByText("Could not speak Hermes reply.").last(),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "async-speech-failure-notice");
 
   await sendChat(page, "asynchronous speech recovery browser turn", {
@@ -745,7 +748,8 @@ test("disconnecting during speech cancels playback without replaying it after re
   await expect(disconnectDialog).toContainText("Disconnect from Hermes?");
   await screenshot(page, testInfo, "disconnect-speech-confirmation");
   await disconnectDialog.getByRole("button", { name: "Disconnect" }).click();
-  await expect(page.getByRole("heading", { name: "Agents" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Profiles" })).toBeVisible();
+  await expect(page.getByText("Gateway: Disconnected")).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
     .toBeGreaterThan(0);
@@ -831,8 +835,6 @@ test("mobile chat keeps spoken-reply controls reachable", async ({
   ).toBeVisible();
   await screenshot(page, testInfo, "mobile-stop-speaking");
   await page.evaluate(() => globalThis.wingE2ESpeech.finish());
-  await expect(
-    page.getByRole("button", { name: "Speak and send" }),
-  ).toBeVisible();
+  await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "mobile-speech-completed");
 });

@@ -809,6 +809,191 @@ void main() {
   );
 
   test(
+    'speak next reply does not replay the baseline assistant turn',
+    () async {
+      final channel = FakeHermesChannel();
+      await channel.sendText('already answered');
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => null,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(speakRepliesEnabled: true),
+        onDraft: (_) {},
+      );
+      addTearDown(controller.dispose);
+
+      controller.speakNextReply();
+      await controller.maybeContinue();
+
+      expect(tts.spoken, isEmpty);
+    },
+  );
+
+  test(
+    'continuous voice speaks stable reply sentences before generation ends',
+    () async {
+      final channel = _StreamingVoiceChannel();
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => null,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+
+      controller.speakNextReply();
+      channel.beginStreamingTurn('question');
+      channel.appendStreamingTurnText('First sentence. Tail');
+
+      await controller.maybeContinue();
+      expect(tts.spoken, ['First sentence.']);
+
+      await controller.maybeContinue();
+      expect(tts.spoken, ['First sentence.']);
+
+      channel.completeStreamingTurn(text: 'First sentence. Final tail');
+      await controller.maybeContinue();
+
+      expect(tts.spoken, ['First sentence.', 'Final tail']);
+    },
+  );
+
+  test('canonical completion rewrites do not shift the spoken tail', () async {
+    final channel = _StreamingVoiceChannel();
+    final tts = FakeTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(speakRepliesEnabled: true),
+      onDraft: (_) {},
+      rearmDelay: Duration.zero,
+    );
+    addTearDown(controller.dispose);
+
+    controller.speakNextReply();
+    channel.beginStreamingTurn('question');
+    channel.appendStreamingTurnText('Answer is 10. Tail arriving');
+    await controller.maybeContinue();
+
+    channel.completeStreamingTurn(text: 'Answer: 10. Tail');
+    await controller.maybeContinue();
+
+    expect(tts.spoken, ['Answer is 10.', 'Tail']);
+  });
+
+  test(
+    'streaming speech drains a sentence that arrived during playback',
+    () async {
+      final channel = _StreamingVoiceChannel();
+      final tts = _ControlledTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => null,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(speakRepliesEnabled: true),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+
+      controller.speakNextReply();
+      channel.beginStreamingTurn('question');
+      channel.appendStreamingTurnText('First sentence.');
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+      expect(tts.spoken, ['First sentence.']);
+
+      channel.appendStreamingTurnText(' Second sentence!');
+      await controller.maybeContinue();
+      expect(tts.spoken, ['First sentence.']);
+
+      tts.complete();
+      await pumpEventQueue();
+
+      expect(tts.spoken, ['First sentence.', 'Second sentence!']);
+    },
+  );
+
+  test(
+    'short echo of a later streaming chunk does not interrupt playback',
+    () async {
+      final channel = _StreamingVoiceChannel();
+      final capture = _FirstThenControlledCaptureService('question');
+      final tts = _BlockSecondTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.enableContinuous();
+      channel.appendStreamingTurnText(' First sentence.');
+      await controller.maybeContinue();
+      channel.appendStreamingTurnText(' Tail.');
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+
+      expect(tts.spoken, ['First sentence.', 'Tail.']);
+      capture.emitPartial('Tail.');
+      await pumpEventQueue();
+
+      expect(tts.stopCalls, 0);
+      expect(controller.speaking, isTrue);
+      tts.completeSecond();
+    },
+  );
+
+  test(
+    'partial input barges into speech started from a streaming reply',
+    () async {
+      final channel = _StreamingVoiceChannel();
+      final capture = _FirstThenControlledCaptureService('question');
+      final tts = _ControlledTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.enableContinuous();
+      channel.appendStreamingTurnText(' First sentence.');
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+      expect(tts.spoken, ['First sentence.']);
+      expect(controller.speaking, isTrue);
+
+      capture.emitPartial('interrupt now');
+      await pumpEventQueue();
+
+      expect(tts.stopCalls, 1);
+      expect(controller.speaking, isFalse);
+      expect(controller.continuousEnabled, isTrue);
+    },
+  );
+
+  test(
     'continuous voice speaks a reply after listening finds no interruption',
     () async {
       final channel = _StreamingVoiceChannel();
@@ -1238,12 +1423,41 @@ class _SlowStoppingTextToSpeechService implements TextToSpeechService {
   }
 }
 
-class _ControlledTextToSpeechService implements TextToSpeechService {
-  final _completion = Completer<void>();
+class _BlockSecondTextToSpeechService implements TextToSpeechService {
+  final _secondCompletion = Completer<void>();
+  final List<String> spoken = [];
   int stopCalls = 0;
 
   @override
-  Future<void> speak(String text) => _completion.future;
+  Future<void> speak(String text) {
+    spoken.add(text);
+    return spoken.length == 1 ? Future<void>.value() : _secondCompletion.future;
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls += 1;
+    completeSecond();
+  }
+
+  @override
+  Future<void> dispose() => stop();
+
+  void completeSecond() {
+    if (!_secondCompletion.isCompleted) _secondCompletion.complete();
+  }
+}
+
+class _ControlledTextToSpeechService implements TextToSpeechService {
+  final _completion = Completer<void>();
+  final List<String> spoken = [];
+  int stopCalls = 0;
+
+  @override
+  Future<void> speak(String text) {
+    spoken.add(text);
+    return _completion.future;
+  }
 
   @override
   Future<void> stop() async {

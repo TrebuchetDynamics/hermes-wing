@@ -23,6 +23,7 @@ class QueueVoiceCaptureService extends ChangeNotifier
 
   final List<VoiceCapture> _captures;
   final bool waitWhenEmpty;
+  Completer<VoiceCapture>? _waitingCapture;
   int captureCalls = 0;
 
   @override
@@ -30,17 +31,37 @@ class QueueVoiceCaptureService extends ChangeNotifier
     captureCalls += 1;
     notifyListeners();
     if (_captures.isNotEmpty) return Future.value(_captures.removeAt(0));
-    if (waitWhenEmpty) return Completer<VoiceCapture>().future;
+    if (waitWhenEmpty) {
+      final waiting = Completer<VoiceCapture>();
+      _waitingCapture = waiting;
+      return waiting.future;
+    }
     throw StateError('No queued voice capture');
   }
 
+  void enqueue(VoiceCapture capture) {
+    final waiting = _waitingCapture;
+    if (waiting != null && !waiting.isCompleted) {
+      _waitingCapture = null;
+      waiting.complete(capture);
+      return;
+    }
+    _captures.add(capture);
+  }
+
   @override
-  Future<void> cancel() async {}
+  Future<void> cancel() async {
+    final waiting = _waitingCapture;
+    _waitingCapture = null;
+    if (waiting != null && !waiting.isCompleted) {
+      waiting.completeError(StateError('cancelled'));
+    }
+  }
 }
 
 class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     implements HermesChannel {
-  AndroidHermesVoiceSmokeChannel()
+  AndroidHermesVoiceSmokeChannel({this.streamFirstReply = false})
     : _state = const HermesChannelState(
         status: HermesConnectionStatus.connected,
         sessions: [HermesSession(id: _sessionId, source: 'android-smoke')],
@@ -51,6 +72,7 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   static const _sessionId = 'android-smoke-session';
 
   final sentVoiceTranscripts = <String>[];
+  final bool streamFirstReply;
   int _voiceRunCounter = 0;
   HermesChannelState _state;
   final _approvals = StreamController<HermesApprovalRequest>.broadcast();
@@ -78,6 +100,21 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     );
   }
 
+  void completeStreamingReply(String text) {
+    final messages = List<HermesChatTurn>.from(_state.activeMessages);
+    final index = messages.lastIndexWhere(
+      (turn) =>
+          turn.author == HermesTurnAuthor.assistant &&
+          turn.status == HermesTurnStatus.streaming,
+    );
+    if (index < 0) return;
+    messages[index] = messages[index].copyWith(
+      text: text,
+      status: HermesTurnStatus.completed,
+    );
+    _setMessages(messages);
+  }
+
   @override
   Future<void> sendText(
     String text, {
@@ -86,6 +123,8 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     String? attachmentName,
   }) async {
     final now = DateTime.now();
+    final firstStreamingReply =
+        streamFirstReply && _state.activeMessages.isEmpty;
     _setMessages([
       ..._state.activeMessages,
       HermesChatTurn(
@@ -99,8 +138,11 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
         id: 'assistant-${_state.activeMessages.length}',
         sessionId: _sessionId,
         author: HermesTurnAuthor.assistant,
-        text: 'echo: $text',
+        text: firstStreamingReply ? 'echo: $text.' : 'echo: $text',
         createdAt: now,
+        status: firstStreamingReply
+            ? HermesTurnStatus.streaming
+            : HermesTurnStatus.completed,
       ),
     ]);
   }

@@ -70,7 +70,9 @@ class HermesVoiceInputController extends ChangeNotifier {
   int _speechGeneration = 0;
   String? _error;
   String? _lastSpokenTurnId;
-  String? _lastSpokenReply;
+  String? _spokenReplyPrefix;
+  String? _activeSpokenChunk;
+  int _spokenReplyCharacterCount = 0;
   String? _liveTranscript;
   double? _soundLevel;
   VoiceCaptureService? _activeCaptureService;
@@ -110,11 +112,14 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   void _baselineAssistantReplies() {
-    _lastSpokenReply = null;
+    _spokenReplyPrefix = null;
+    _activeSpokenChunk = null;
     _lastSpokenTurnId = null;
+    _spokenReplyCharacterCount = 0;
     for (final turn in _channel().state.activeMessages) {
       if (turn.author == HermesTurnAuthor.assistant) {
         _lastSpokenTurnId = turn.id;
+        _spokenReplyCharacterCount = turn.text.length;
       }
     }
   }
@@ -258,7 +263,7 @@ class HermesVoiceInputController extends ChangeNotifier {
           await _interruptActiveSpeech();
           if (_disposed || operationGeneration != _operationGeneration) return;
         }
-        _lastSpokenReply = null;
+        _activeSpokenChunk = null;
         if (effectiveContinuous && _handleLocalCommand(transcript)) {
           // pause() inside _handleLocalCommand already reset _capturing.
           break;
@@ -327,14 +332,17 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     final channel = _channel();
     if (channel.state.activeVoiceRun != null) return;
-    final reply = hermesContinuousVoiceReplyToSpeak(
+    final reply = hermesContinuousVoiceReplyChunkToSpeak(
       turns: channel.state.activeMessages,
       enabled: true,
-      lastSpokenTurnId: _lastSpokenTurnId,
+      spokenTurnId: _lastSpokenTurnId,
+      spokenCharacterCount: _spokenReplyCharacterCount,
+      spokenText: _spokenReplyPrefix,
     );
     if (reply == null) return;
-    _lastSpokenTurnId = reply.id;
-    _speakNextReply = false;
+    _lastSpokenTurnId = reply.turn.id;
+    _spokenReplyCharacterCount = reply.spokenCharacterCount;
+    _speakNextReply = reply.turn.status == HermesTurnStatus.streaming;
 
     final tts = _textToSpeechService();
     if (tts == null) {
@@ -349,7 +357,11 @@ class HermesVoiceInputController extends ChangeNotifier {
     _activeTextToSpeechService = tts;
     final speechGeneration = ++_speechGeneration;
     _speaking = true;
-    _lastSpokenReply = reply.text;
+    _spokenReplyPrefix = reply.turn.text.substring(
+      0,
+      reply.spokenCharacterCount,
+    );
+    _activeSpokenChunk = reply.text;
     notifyListeners();
     if (_continuousEnabled && !_capturing) {
       unawaited(_capture(autoSend: true, continuous: true));
@@ -372,7 +384,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speaking = false;
     _activeTextToSpeechService = null;
     if (!channel.state.isConnected ||
-        channel.state.activeSessionId != reply.sessionId) {
+        channel.state.activeSessionId != reply.turn.sessionId) {
       final continuous = _continuousEnabled;
       _continuousEnabled = false;
       _error = continuous
@@ -401,7 +413,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   bool _isSpokenReplyEcho(String transcript) {
-    final spokenReply = _lastSpokenReply;
+    final spokenReply = _activeSpokenChunk;
     if (spokenReply == null) return false;
     final candidate = _voiceEchoKey(transcript);
     final reply = _voiceEchoKey(spokenReply);
@@ -412,7 +424,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   bool _isPossibleSpokenReplyEcho(String transcript) {
-    final spokenReply = _lastSpokenReply;
+    final spokenReply = _activeSpokenChunk;
     if (spokenReply == null) return false;
     final candidate = _voiceEchoKey(transcript);
     if (candidate.isEmpty) return true;
@@ -564,7 +576,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     fireAndForget(_speechTeardown, 'speech teardown on pause');
     _continuousEnabled = false;
     _speakNextReply = false;
-    _lastSpokenReply = null;
+    _spokenReplyPrefix = null;
+    _activeSpokenChunk = null;
     _capturing = false;
     _speaking = false;
     _error = notice;

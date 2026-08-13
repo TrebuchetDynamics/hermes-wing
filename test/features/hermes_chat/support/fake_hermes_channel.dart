@@ -664,6 +664,24 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     );
   }
 
+  void appendStreamingTurnText(String delta, {String? sessionId}) {
+    final targetSessionId = sessionId ?? _state.activeSessionId;
+    if (targetSessionId == null || delta.isEmpty) return;
+    final turns = List<HermesChatTurn>.from(
+      _state.messages[targetSessionId] ?? const [],
+    );
+    final assistantIndex = turns.lastIndexWhere(
+      (turn) =>
+          turn.author == HermesTurnAuthor.assistant &&
+          turn.status == HermesTurnStatus.streaming,
+    );
+    if (assistantIndex < 0) return;
+    turns[assistantIndex] = turns[assistantIndex].appendDelta(delta);
+    _setState(
+      _state.copyWith(messages: {..._state.messages, targetSessionId: turns}),
+    );
+  }
+
   void completeStreamingTurn({
     String text = 'done',
     HermesRunUsage? usage,

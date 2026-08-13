@@ -169,6 +169,7 @@ void main() {
       'android:live-mic-receipt':
           './scripts/record_android_live_mic_receipt.sh',
       'platform:workflow-smoke': './scripts/run_hermes_platform_workflow.sh',
+      'release:verify-artifacts': './scripts/verify_release_artifacts.sh',
       'linux:release-build': './scripts/run_linux_release_build.sh',
     };
 

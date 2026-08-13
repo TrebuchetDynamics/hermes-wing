@@ -16,12 +16,12 @@ jobs:
     name: Validate source
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
@@ -60,12 +60,12 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: 17
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -75,11 +75,13 @@ jobs:
           STORE_PASSWORD: ${{ secrets.WING_RELEASE_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.WING_RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.WING_RELEASE_KEY_PASSWORD }}
+          CERT_SHA256: ${{ secrets.WING_RELEASE_CERT_SHA256 }}
         run: |
           test -n "$KEYSTORE"
           test -n "$STORE_PASSWORD"
           test -n "$KEY_ALIAS"
           test -n "$KEY_PASSWORD"
+          test -n "$CERT_SHA256"
           printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/wing-release.jks"
       - name: Build signed release APK and AAB
         env:
@@ -95,7 +97,7 @@ jobs:
           cp build/app/outputs/bundle/release/app-release.aab hermes-wing-android.aab
           sha256sum hermes-wing-android.apk > hermes-wing-android.apk.sha256
           sha256sum hermes-wing-android.aab > hermes-wing-android.aab.sha256
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-android-release
           path: |
@@ -110,12 +112,12 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: wing_link/go.mod
           cache-dependency-path: wing_link/go.sum
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -129,7 +131,7 @@ jobs:
           flutter build linux --release
           tar -C build/linux/x64/release -czf hermes-wing-linux-x64.tar.gz bundle
           sha256sum hermes-wing-linux-x64.tar.gz > hermes-wing-linux-x64.tar.gz.sha256
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-linux-release
           path: |
@@ -142,8 +144,8 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -153,7 +155,7 @@ jobs:
           flutter build web --release
           tar -C build/web -czf hermes-wing-web.tar.gz .
           sha256sum hermes-wing-web.tar.gz > hermes-wing-web.tar.gz.sha256
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-web-release
           path: |
@@ -166,8 +168,8 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: wing_link/go.mod
           cache-dependency-path: wing_link/go.sum
@@ -188,7 +190,7 @@ jobs:
           GOOS=android GOARCH=arm64 go build -trimpath -buildmode=pie -ldflags="$ldflags" -o ../wing-link-android-arm64 .
       - name: Generate Wing Link checksums
         run: sha256sum wing-link-* > wing-link-checksums.sha256
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: wing-link-release
           path: |
@@ -201,18 +203,183 @@ jobs:
             wing-link-checksums.sha256
           if-no-files-found: error
 
+  verify-artifacts:
+    name: Verify and smoke exact release artifacts
+    needs: [android, linux, web, wing-link]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Install artifact verification dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl file libgtk-3-0 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libsecret-1-0 qemu-user-static unzip xvfb
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify checksums, signatures, archives, and runnable artifacts
+        env:
+          TAG: ${{ inputs.tag }}
+          WING_RELEASE_CERT_SHA256: ${{ secrets.WING_RELEASE_CERT_SHA256 }}
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f -print | sort -V | tail -1)
+          export APKSIGNER
+          ./scripts/verify_release_artifacts.sh dist "$TAG"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: hermes-wing-verified-release
+          path: dist/**
+          if-no-files-found: error
+
+  android-artifact-smoke:
+    name: Install and launch exact release APK
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: hermes-wing-android-release
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Verify, install, and launch release APK
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        env:
+          TAG: ${{ inputs.tag }}
+          WING_RELEASE_CERT_SHA256: ${{ secrets.WING_RELEASE_CERT_SHA256 }}
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            manifest_name=$(awk 'NF == 2 {print $2}' hermes-wing-android.apk.sha256)
+            test "$(wc -l < hermes-wing-android.apk.sha256)" -eq 1
+            test "$manifest_name" = hermes-wing-android.apk || { echo "checksum manifest does not exactly cover expected artifacts" >&2; exit 1; }
+            sha256sum -c hermes-wing-android.apk.sha256
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f -print | sort -V | tail -1)
+            mapfile -t actual_signers < <($APKSIGNER verify --print-certs hermes-wing-android.apk | awk -F': ' '/Signer #[0-9]+ certificate SHA-256 digest:/{gsub(/:|[[:space:]]/, "", $2); print tolower($2)}')
+            expected=$(printf '%s' "$WING_RELEASE_CERT_SHA256" | tr -d ':[:space:]' | tr '[:upper:]' '[:lower:]')
+            test -n "$expected"
+            test "${#actual_signers[@]}" -eq 1
+            test "${actual_signers[0]}" = "$expected"
+            adb install hermes-wing-android.apk
+            adb logcat -c
+            adb shell am start -W -n com.trebuchetdynamics.hermes.wing/.MainActivity
+            sleep 5
+            adb shell pidof com.trebuchetdynamics.hermes.wing
+            adb uninstall com.trebuchetdynamics.hermes.wing
+            printf 'tag=%s\nsource_revision=%s\nresult=verified-installed-launched\n' "$TAG" "$GITHUB_SHA" > android-artifact-smoke.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: android-artifact-smoke-receipt
+          path: android-artifact-smoke.txt
+          if-no-files-found: error
+
+  wing-link-macos-smoke:
+    name: Run exact Wing Link macOS artifact
+    needs: wing-link
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wing-link-release
+      - name: Verify and run the native macOS binary
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          expected=$(printf '%s\n' wing-link-android-arm64 wing-link-darwin-amd64 wing-link-darwin-arm64 wing-link-linux-amd64 wing-link-linux-arm64 wing-link-windows-amd64.exe | sort)
+          actual=$(awk 'NF == 2 && $1 ~ /^[0-9a-fA-F]+$/ && $2 !~ /[\\\/]/ {print $2}' wing-link-checksums.sha256 | sort)
+          test "$(wc -l < wing-link-checksums.sha256)" -eq 6 && test "$actual" = "$expected" || { echo "checksum manifest does not exactly cover expected artifacts" >&2; exit 1; }
+          shasum -a 256 -c wing-link-checksums.sha256
+          file wing-link-darwin-amd64 | grep -q 'Mach-O 64-bit'
+          file wing-link-darwin-arm64 | grep -q 'Mach-O 64-bit'
+          case "$(uname -m)" in
+            arm64) binary=wing-link-darwin-arm64 ;;
+            x86_64) binary=wing-link-darwin-amd64 ;;
+            *) echo "unsupported macOS runner architecture" >&2; exit 1 ;;
+          esac
+          chmod +x "$binary"
+          test "$(./$binary version)" = "${TAG#v}"
+          printf 'tag=%s\nsource_revision=%s\nbinary=%s\nresult=verified-ran-version\n' "$TAG" "$GITHUB_SHA" "$binary" > wing-link-macos-smoke.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wing-link-macos-smoke-receipt
+          path: wing-link-macos-smoke.txt
+          if-no-files-found: error
+
+  wing-link-windows-smoke:
+    name: Run exact Wing Link Windows artifact
+    needs: wing-link
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wing-link-release
+      - name: Verify and run the Windows binary
+        shell: pwsh
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          $expectedFiles = @('wing-link-android-arm64', 'wing-link-darwin-amd64', 'wing-link-darwin-arm64', 'wing-link-linux-amd64', 'wing-link-linux-arm64', 'wing-link-windows-amd64.exe')
+          $manifest = @(Get-Content wing-link-checksums.sha256)
+          $entries = @($manifest | ForEach-Object {
+            if ($_ -notmatch '^([0-9a-fA-F]{64}) [ *]([^/\\]+)$') { throw 'checksum manifest does not exactly cover expected artifacts' }
+            [pscustomobject]@{ Hash = $Matches[1].ToLowerInvariant(); Name = $Matches[2] }
+          })
+          if ($entries.Count -ne $expectedFiles.Count -or (Compare-Object ($entries.Name | Sort-Object -Unique) $expectedFiles)) { throw 'checksum manifest does not exactly cover expected artifacts' }
+          $entries | ForEach-Object {
+            $actual = (Get-FileHash -Algorithm SHA256 $_.Name).Hash.ToLowerInvariant()
+            if ($actual -ne $_.Hash) { throw "checksum mismatch: $($_.Name)" }
+          }
+          $actualVersion = (& .\wing-link-windows-amd64.exe version).Trim()
+          $expectedVersion = $env:TAG.TrimStart('v')
+          if ($actualVersion -ne $expectedVersion) { throw "version mismatch" }
+          "tag=$env:TAG`nsource_revision=$env:GITHUB_SHA`nbinary=wing-link-windows-amd64.exe`nresult=verified-ran-version" | Set-Content wing-link-windows-smoke.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wing-link-windows-smoke-receipt
+          path: wing-link-windows-smoke.txt
+          if-no-files-found: error
+
   publish:
     name: Publish GitHub prerelease
-    needs: [android, linux, web, wing-link]
+    needs:
+      - verify-artifacts
+      - android-artifact-smoke
+      - wing-link-macos-smoke
+      - wing-link-windows-smoke
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
+          name: hermes-wing-verified-release
+          path: dist
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: "*-smoke-receipt"
           path: dist
           merge-multiple: true
-      - name: Publish prerelease
+      - name: Publish verified prerelease
         env:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
@@ -221,5 +388,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Hermes Wing $TAG" \
-            --notes "Alpha release with signed Android APK/AAB, Linux x64, and static web artifacts. Every downloadable archive includes a SHA-256 checksum. See README.md for support limits." \
+            --notes "Verified alpha release with a signed Android APK/AAB, Linux x64 bundle, static web archive, Wing Link binaries, checksums, and a pre-publication verification receipt. See README.md for support limits." \
             --prerelease

@@ -3,6 +3,58 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('release workflow actions are pinned to immutable commits', () {
+    final workflow = File(
+      '.github/workflows/release-alpha.yml',
+    ).readAsStringSync();
+    final actionReferences = RegExp(
+      r'uses:\s+[^\s@]+@([^\s#]+)',
+    ).allMatches(workflow);
+
+    expect(actionReferences, isNotEmpty);
+    for (final reference in actionReferences) {
+      expect(
+        reference.group(1),
+        matches(RegExp(r'^[0-9a-f]{40}$')),
+        reason: reference.group(0),
+      );
+    }
+  });
+
+  test('release verifier rejects unsafe or incomplete artifacts', () async {
+    final verifier = File(
+      'scripts/verify_release_artifacts.sh',
+    ).readAsStringSync();
+    expect(verifier, contains('APK must have exactly one signing certificate'));
+    expect(verifier, contains('AAB must have exactly one signing certificate'));
+    expect(verifier, contains('MAX_MEMBERS'));
+    expect(verifier, contains('MAX_EXPANDED_BYTES'));
+    expect(verifier, contains('unsafe archive entry type'));
+    expect(verifier, contains('hard links are not allowed'));
+    expect(verifier, contains('duplicate archive path'));
+    expect(
+      verifier,
+      contains('checksum manifest does not exactly cover expected artifacts'),
+    );
+    expect(verifier, contains('AAB contains unsigned payload entries'));
+    expect(verifier, contains("jarsigner -verify -verbose"));
+
+    if (Platform.isWindows) return;
+    final temp = await Directory.systemTemp.createTemp(
+      'wing-release-verifier-',
+    );
+    addTearDown(() => temp.delete(recursive: true));
+
+    final result = await Process.run(
+      'bash',
+      ['scripts/verify_release_artifacts.sh', temp.path, 'v0.1.0-alpha.1'],
+      environment: {'WING_RELEASE_CERT_SHA256': '00'},
+    );
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('does not match the allowlist'));
+  });
+
   test('alpha artifacts require repository validation', () {
     final workflow = File(
       '.github/workflows/release-alpha.yml',
@@ -39,6 +91,57 @@ void main() {
     expect(workflow, contains('hermes-wing-android.aab\n'));
   });
 
+  test('exact artifacts are verified and smoked before publication', () {
+    final workflow = File(
+      '.github/workflows/release-alpha.yml',
+    ).readAsStringSync();
+
+    expect(
+      RegExp(
+        r'  verify-artifacts:\n(?:.|\n)*?    needs: \[android, linux, web, wing-link\]',
+      ).hasMatch(workflow),
+      isTrue,
+    );
+    expect(
+      workflow,
+      contains(r'./scripts/verify_release_artifacts.sh dist "$TAG"'),
+    );
+    expect(workflow, contains('name: hermes-wing-verified-release'));
+    expect(workflow, contains('  android-artifact-smoke:\n'));
+    expect(workflow, contains(r'test "${#actual_signers[@]}" -eq 1'));
+    expect(workflow, contains('adb install hermes-wing-android.apk'));
+    expect(
+      workflow,
+      contains('com.trebuchetdynamics.hermes.wing/.MainActivity'),
+    );
+    expect(workflow, contains('  wing-link-macos-smoke:\n'));
+    expect(workflow, contains('  wing-link-windows-smoke:\n'));
+    expect(workflow, contains('android-artifact-smoke-receipt'));
+    expect(workflow, contains('wing-link-macos-smoke-receipt'));
+    expect(workflow, contains('wing-link-windows-smoke-receipt'));
+    expect(
+      RegExp(
+        r'wing-link-checksums\.sha256(?:.|\n)*?'
+        r'checksum manifest does not exactly cover expected artifacts',
+      ).allMatches(workflow),
+      hasLength(3),
+    );
+    expect(
+      RegExp(
+        r'  publish:\n(?:.|\n)*?    needs:\n'
+        r'      - verify-artifacts\n'
+        r'      - android-artifact-smoke\n'
+        r'      - wing-link-macos-smoke\n'
+        r'      - wing-link-windows-smoke',
+      ).hasMatch(workflow),
+      isTrue,
+    );
+    expect(
+      workflow.indexOf('verify_release_artifacts.sh'),
+      lessThan(workflow.indexOf('gh release create')),
+    );
+  });
+
   test('alpha release publishes the tested web build', () {
     final workflow = File(
       '.github/workflows/release-alpha.yml',
@@ -50,7 +153,7 @@ void main() {
     );
     expect(workflow, contains('flutter build web --release'));
     expect(workflow, contains('hermes-wing-web.tar.gz.sha256'));
-    expect(workflow, contains('needs: [android, linux, web, wing-link]'));
+    expect(workflow, contains('name: hermes-wing-verified-release'));
   });
 
   test('alpha tag matches the app version before platform builds', () {

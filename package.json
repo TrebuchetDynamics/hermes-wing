@@ -21,7 +21,8 @@
     "platform:workflow-smoke": "./scripts/run_hermes_platform_workflow.sh",
     "hermes:readiness-audit": "./scripts/audit_hermes_readiness.sh",
     "linux:release-build": "./scripts/run_linux_release_build.sh",
-    "android:send-apk": "./build-send-apk.sh"
+    "android:send-apk": "./build-send-apk.sh",
+    "release:verify-artifacts": "./scripts/verify_release_artifacts.sh"
   },
   "repository": {
     "type": "git",

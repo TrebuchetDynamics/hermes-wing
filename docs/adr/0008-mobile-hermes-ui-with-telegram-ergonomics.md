@@ -26,4 +26,4 @@ Do not copy Electron chrome, installer/update flows, or Desktop-only navigation 
 - `docs/product/hermes-desktop-ui-gap.md:196-214`
 - `lib/features/hermes_chat/screens/hermes_chat_screen.dart:52-55`
 - `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart`
-- `lib/features/hermes_chat/screens/widgets/hermes_chat_timeline.dart`
+- `lib/features/hermes_chat/presentation/hermes_chat_timeline.dart`

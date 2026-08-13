@@ -49,12 +49,12 @@ import '../gateways/gateway_contacts_view.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../widgets/hermes_profile_identity.dart';
-import '../widgets/hermes_rich_text.dart';
+import '../presentation/hermes_rich_text.dart';
 
 part 'widgets/hermes_chat_error.dart';
 part 'widgets/hermes_chat_sessions.dart';
 part 'widgets/hermes_chat_status.dart';
-part 'widgets/hermes_chat_timeline.dart';
+part '../presentation/hermes_chat_timeline.dart';
 part 'state/hermes_chat_lifecycle.dart';
 part 'state/hermes_chat_layout.dart';
 part 'state/hermes_chat_connection.dart';

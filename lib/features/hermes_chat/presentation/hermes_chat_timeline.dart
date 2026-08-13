@@ -1,4 +1,4 @@
-part of '../hermes_chat_screen.dart';
+part of '../screens/hermes_chat_screen.dart';
 
 enum _TranscriptContextAction { copyText, copyMarkdown }
 

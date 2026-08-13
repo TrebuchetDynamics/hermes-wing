@@ -10,7 +10,7 @@ import 'package:wing/core/hermes/models/hermes_run.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:wing/features/hermes_chat/widgets/hermes_rich_text.dart';
+import 'package:wing/features/hermes_chat/presentation/hermes_rich_text.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../support/fake_hermes_channel.dart';

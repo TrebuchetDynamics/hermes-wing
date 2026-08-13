@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
-import 'package:wing/features/hermes_chat/controllers/hermes_approval_queue.dart';
+import 'package:wing/features/hermes_chat/messaging/approvals/hermes_approval_queue.dart';
 
-import '../support/fake_hermes_channel.dart';
+import '../../support/fake_hermes_channel.dart';
 
 HermesApprovalRequest _request({
   String id = 'approval-1',

@@ -5,7 +5,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../../core/hermes/channel/hermes_channel.dart';
 
 typedef HermesApprovalErrorSink = void Function(Object error);
 

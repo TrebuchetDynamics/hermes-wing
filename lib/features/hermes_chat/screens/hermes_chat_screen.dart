@@ -39,7 +39,7 @@ import '../../voice/services/tts/pocket_speech_incremental_tts_engine.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/staged_attachment.dart';
-import '../controllers/hermes_approval_queue.dart';
+import '../messaging/approvals/hermes_approval_queue.dart';
 import '../controllers/hermes_channel_observation.dart';
 import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_follow_up_queue.dart';

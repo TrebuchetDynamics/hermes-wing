@@ -12,7 +12,7 @@ import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
-import '../../agents/providers/profile_selection_provider.dart';
+import '../../profiles/providers/profile_selection_provider.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../widgets/model_picker_sheet.dart';

@@ -28,14 +28,14 @@ final wingLinkClientBuilderProvider = Provider<WingLinkClientBuilder>(
           WingLinkClient(origin: origin, token: token),
 );
 
-class AgentsScreen extends ConsumerStatefulWidget {
-  const AgentsScreen({super.key});
+class ProfilesScreen extends ConsumerStatefulWidget {
+  const ProfilesScreen({super.key});
 
   @override
-  ConsumerState<AgentsScreen> createState() => _AgentsScreenState();
+  ConsumerState<ProfilesScreen> createState() => _ProfilesScreenState();
 }
 
-class _AgentsScreenState extends ConsumerState<AgentsScreen> {
+class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   String? _actionError;
   String? _switchingGatewayId;
   String? _switchingProfileId;
@@ -181,7 +181,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        _AgentsHeader(
+        _ProfilesHeader(
           title: strings.agentsTitle,
           subtitle: strings.agentsSubtitle,
           readOnly:
@@ -234,7 +234,7 @@ class _AgentsScreenState extends ConsumerState<AgentsScreen> {
         else
           for (var index = 0; index < profiles.length; index++) ...[
             if (index > 0) const SizedBox(height: 12),
-            _AgentCard(
+            _ProfileCard(
               profile: profiles[index],
               managedByWingLink:
                   isWingLinkRow(profiles[index]) &&
@@ -542,8 +542,8 @@ bool _canUseEndpoint(
     capabilities.auth.allows(scope) &&
     capabilities.advertisesScopedEndpoint(name, method, path, scope);
 
-class _AgentsHeader extends StatelessWidget {
-  const _AgentsHeader({
+class _ProfilesHeader extends StatelessWidget {
+  const _ProfilesHeader({
     required this.title,
     required this.subtitle,
     required this.readOnly,
@@ -590,8 +590,8 @@ class _AgentsHeader extends StatelessWidget {
   }
 }
 
-class _AgentCard extends StatelessWidget {
-  const _AgentCard({
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({
     required this.profile,
     required this.managedByWingLink,
     required this.gatewayStateUnknown,

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/agents/screens/agents_screen.dart';
+import '../../features/profiles/screens/profiles_screen.dart';
 import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/gateway/screens/gateway_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
@@ -69,7 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.profiles,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
-              child: const AgentsScreen(),
+              child: const ProfilesScreen(),
             ),
           ),
           GoRoute(

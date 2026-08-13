@@ -6,7 +6,7 @@ void main() {
   test('Hermes Agent exclusively owns profile and provider domains', () {
     final authority = File('lib/core/hermes/hermes_domain_authority.dart');
     final agents = File(
-      'lib/features/agents/screens/agents_screen.dart',
+      'lib/features/profiles/screens/profiles_screen.dart',
     ).readAsStringSync();
     final providers = File(
       'lib/features/providers/screens/providers_screen.dart',

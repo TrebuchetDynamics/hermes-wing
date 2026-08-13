@@ -9,7 +9,7 @@ import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
-import 'package:wing/features/agents/screens/agents_screen.dart';
+import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -77,7 +77,7 @@ class _GatedProfileSelectionChannel extends FakeHermesChannel {
   }
 }
 
-Widget _agentsTestApp(
+Widget _profilesTestApp(
   FakeHermesChannel channel, {
   double textScale = 1.0,
   HermesGatewayDirectory? directory,
@@ -106,7 +106,7 @@ Widget _agentsTestApp(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
-    home: const AgentsScreen(),
+    home: const ProfilesScreen(),
   ),
 );
 
@@ -118,7 +118,7 @@ void main() {
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
 
-      await tester.pumpWidget(_agentsTestApp(channel));
+      await tester.pumpWidget(_profilesTestApp(channel));
       await tester.pumpAndSettle();
 
       expect(find.text('Select a gateway'), findsOneWidget);
@@ -142,7 +142,7 @@ void main() {
     );
     await directory.refresh();
 
-    await tester.pumpWidget(_agentsTestApp(channel, directory: directory));
+    await tester.pumpWidget(_profilesTestApp(channel, directory: directory));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
     await tester.pumpAndSettle();
@@ -180,7 +180,7 @@ void main() {
       var wingLinkCalls = 0;
 
       await tester.pumpWidget(
-        _agentsTestApp(
+        _profilesTestApp(
           channel,
           directory: directory,
           wingLinkClientBuilder: ({required origin, required token}) =>
@@ -219,7 +219,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
     await tester.tap(find.text('New Profile'));
     await tester.pumpAndSettle();
@@ -243,7 +243,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(find.text('Coding Agent'), findsOneWidget);
@@ -267,7 +267,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
@@ -292,7 +292,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(OutlinedButton, 'Edit'));
     await tester.pumpAndSettle();
@@ -306,7 +306,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pump();
 
     expect(find.byType(WingSkeletonList), findsOneWidget);
@@ -325,7 +325,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(
@@ -340,7 +340,7 @@ void main() {
     final channel = FakeHermesChannel(capabilities: null);
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(find.text('Profiles unavailable'), findsOneWidget);
@@ -355,7 +355,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(find.text('No profiles available'), findsOneWidget);
@@ -372,7 +372,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     // Exactly one row is marked selected, and it is the default agent.
@@ -399,7 +399,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     expect(
@@ -427,7 +427,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     // Only the non-default agent exposes a delete affordance.
@@ -446,7 +446,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
@@ -473,7 +473,7 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.agents,
-          builder: (_, _) => const AgentsScreen(),
+          builder: (_, _) => const ProfilesScreen(),
         ),
         GoRoute(
           path: AppRoutes.hermes,
@@ -530,7 +530,7 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.agents,
-          builder: (_, _) => const AgentsScreen(),
+          builder: (_, _) => const ProfilesScreen(),
         ),
         GoRoute(
           path: AppRoutes.hermes,
@@ -585,7 +585,7 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.agents,
-          builder: (_, _) => const AgentsScreen(),
+          builder: (_, _) => const ProfilesScreen(),
         ),
         GoRoute(
           path: AppRoutes.hermes,
@@ -644,7 +644,7 @@ void main() {
       channel.dispose();
     });
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
@@ -681,7 +681,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel));
+    await tester.pumpWidget(_profilesTestApp(channel));
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Edit'));
@@ -714,7 +714,7 @@ void main() {
     );
     addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_agentsTestApp(channel, textScale: 2.0));
+    await tester.pumpWidget(_profilesTestApp(channel, textScale: 2.0));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

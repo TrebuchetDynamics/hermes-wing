@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
-import 'package:wing/features/agents/widgets/profile_editor_sheet.dart';
+import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';

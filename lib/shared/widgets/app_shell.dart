@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/hermes/channel/hermes_channel_state.dart';
-import '../../features/agents/providers/profile_selection_provider.dart';
+import '../../features/profiles/providers/profile_selection_provider.dart';
 import '../../features/hermes_chat/providers/hermes_channel_provider.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_shell_presentation.dart';

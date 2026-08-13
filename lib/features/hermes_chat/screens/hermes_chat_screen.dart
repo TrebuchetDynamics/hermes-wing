@@ -22,7 +22,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/security/wing_redaction.dart';
 import '../../../l10n/app_localizations_en.dart';
 import '../../../router/routes/app_routes.dart';
-import '../../agents/providers/profile_selection_provider.dart';
+import '../../profiles/providers/profile_selection_provider.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';

@@ -22,6 +22,30 @@ Widget _localizedApp(Widget home) => MaterialApp(
 );
 
 void main() {
+  testWidgets('streaming turn uses a static indicator under reduced motion', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Keep working.');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-streaming-reduced-motion')),
+      findsOneWidget,
+    );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets(
     'assistant markdown renders without exposing formatting markers',
     (tester) async {

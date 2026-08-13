@@ -32,11 +32,16 @@ async function expectLanding(page) {
   await expect(page.getByRole("heading", { name: "Hermes stays in charge." })).toBeVisible();
   await expect(page.getByRole("table", { name: "Platform status" })).toBeVisible();
   await expect(page.locator("img")).toHaveCount(5);
-  expect(
-    await page.locator("img").evaluateAll((images) =>
-      images.every((image) => image.complete && image.naturalWidth > 0),
-    ),
-  ).toBeTruthy();
+  for (const image of await page.locator("img").all()) {
+    await image.scrollIntoViewIfNeeded();
+  }
+  await expect
+    .poll(() =>
+      page.locator("img").evaluateAll((images) =>
+        images.every((image) => image.complete && image.naturalWidth > 0),
+      ),
+    )
+    .toBeTruthy();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBeTruthy();

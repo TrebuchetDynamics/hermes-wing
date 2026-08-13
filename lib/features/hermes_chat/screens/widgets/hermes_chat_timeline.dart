@@ -599,11 +599,19 @@ class _TurnBubble extends StatelessWidget {
                 ),
                 if (streaming) ...[
                   const SizedBox(width: 8),
-                  const SizedBox(
-                    height: 12,
-                    width: 12,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  if (MediaQuery.disableAnimationsOf(context))
+                    Icon(
+                      Icons.pending_outlined,
+                      key: const ValueKey('hermes-streaming-reduced-motion'),
+                      size: 12,
+                      color: colors.primary,
+                    )
+                  else
+                    const SizedBox(
+                      height: 12,
+                      width: 12,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                 ],
                 const SizedBox(width: 8),
                 Text(

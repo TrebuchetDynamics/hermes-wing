@@ -12,6 +12,25 @@ flutter pub get
 npm ci
 ```
 
+## Repository map
+
+- `lib/` contains the Flutter client. Hermes API models, transport, and session
+  state live under `lib/core/hermes/`; product screens live under `lib/features/`.
+- `wing_link/` contains the Go setup and pairing helper. Keep it limited to host
+  installation, pairing, lifecycle, health, and diagnostics. Profiles, providers,
+  sessions, and other agent domains belong to Hermes APIs. Legacy profile and
+  provider adapters remain quarantined with their production routes disabled;
+  do not extend or re-enable them.
+- `test/` contains Dart unit, widget, and source-contract tests.
+- `integration_test/` and `playwright/` cover device and browser flows.
+- `docs/` contains setup runbooks, security material, product contracts, and
+  architecture decisions.
+
+Most client work can use the deterministic browser fixture without a physical
+device. Run `flutter build web --release -t lib/main_e2e.dart` followed by
+`npm run web:e2e`. Android speech, acoustic behavior, and platform integration
+still need appropriate hardware or an emulator.
+
 ## Required checks
 
 ```bash
@@ -22,6 +41,24 @@ flutter build web --release -t lib/main_e2e.dart
 npm run web:e2e
 npm audit
 ```
+
+Regenerate the shared README and landing-page visuals after relevant UI changes:
+
+```bash
+npx playwright install chromium
+npm run readme:assets
+```
+
+The generator uses the deterministic Hermes fixture and fails on browser console,
+page, or same-origin HTTP errors.
+
+## Where help is useful
+
+Current priorities are Android chat and approval polish, accessibility, setup
+clarity, and reproducible platform qualification. Check the
+[issue tracker](https://github.com/TrebuchetDynamics/hermes-wing/issues) before
+starting larger work, or open a focused issue describing the user problem and
+the platform you can test.
 
 Add the smallest regression test that proves non-trivial behavior. Never place
 API keys, transcripts, private endpoint URLs, or generated agent state in a

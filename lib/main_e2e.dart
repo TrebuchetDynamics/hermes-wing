@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:js_interop';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web/web.dart' as web;
@@ -25,8 +26,12 @@ external set _wingE2EHermesSendText(JSFunction callback);
 @JS('wingE2EHermesSubmitVoice')
 external set _wingE2EHermesSubmitVoice(JSFunction callback);
 
+@JS('wingE2EReduceMotion')
+external set _wingE2EReduceMotion(JSFunction callback);
+
 void main() {
   final hermesChannel = HermesApiChannel();
+  final reduceMotion = ValueNotifier(false);
   _wingE2EHermesConnect = (([JSString? baseUrl, JSString? apiKey]) {
     unawaited(
       hermesChannel.connect(
@@ -51,17 +56,22 @@ void main() {
     );
     hermesChannel.submitVoiceRun(id);
   }).toJS;
+  _wingE2EReduceMotion = (() {
+    reduceMotion.value = true;
+  }).toJS;
 
   runApp(
     ProviderScope(
       overrides: [hermesChannelProvider.overrideWithValue(hermesChannel)],
-      child: const _E2ETestApp(),
+      child: _E2ETestApp(reduceMotion: reduceMotion),
     ),
   );
 }
 
 class _E2ETestApp extends ConsumerWidget {
-  const _E2ETestApp();
+  const _E2ETestApp({required this.reduceMotion});
+
+  final ValueListenable<bool> reduceMotion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,6 +85,13 @@ class _E2ETestApp extends ConsumerWidget {
       darkTheme: wingDarkTheme,
       themeMode: ThemeMode.system,
       routerConfig: router,
+      builder: (context, child) => ValueListenableBuilder(
+        valueListenable: reduceMotion,
+        builder: (context, disabled, _) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: disabled),
+          child: child ?? const SizedBox.shrink(),
+        ),
+      ),
     );
   }
 }

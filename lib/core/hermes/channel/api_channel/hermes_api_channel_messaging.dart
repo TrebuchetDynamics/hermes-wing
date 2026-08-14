@@ -71,6 +71,15 @@ extension _MessagingExtension on HermesApiChannel {
       _setState(_state.copyWith(errorMessage: message));
       throw StateError(message);
     }
+    if (_hasUnresolvedLegacyDetachedRun(
+      baseUrl: _state.connectedBaseUrl,
+      profileId: profileId,
+    )) {
+      const message =
+          'Wing could not verify a previous Hermes run. Reconnect before sending.';
+      _setState(_state.copyWith(errorMessage: message));
+      throw StateError(message);
+    }
     if (!_isConnectedProfile(client, profileId) ||
         _state.activeSessionId != sessionId) {
       return;
@@ -1336,6 +1345,18 @@ extension _MessagingExtension on HermesApiChannel {
         run.profileId == profileId &&
         run.sessionId == sessionId,
   );
+
+  bool _hasUnresolvedLegacyDetachedRun({
+    required String? baseUrl,
+    required String? profileId,
+  }) =>
+      baseUrl != null &&
+      _detachedRuns.values.any(
+        (run) =>
+            run.baseUrl == _detachedRunBaseUrl(baseUrl) &&
+            run.profileId == profileId &&
+            run.sessionId.isEmpty,
+      );
 
   bool _sessionHasDetachedRun({
     required String? sessionId,

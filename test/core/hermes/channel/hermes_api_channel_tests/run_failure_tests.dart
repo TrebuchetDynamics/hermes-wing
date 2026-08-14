@@ -2051,6 +2051,50 @@ void _hermesApiChannelRunFailureTests() {
     expect(store.leases.single.runId, 'run_unknown');
   });
 
+  test(
+    'unresolved legacy blank-session lease blocks duplicate submission',
+    () async {
+      final store = _MemoryDetachedRunStore()
+        ..leases = [
+          HermesDetachedRunLease(
+            runId: 'run_legacy',
+            sessionId: '',
+            baseUrl: 'http://127.0.0.1:8642',
+            createdAt: DateTime.now().toUtc(),
+          ),
+        ];
+      var runSubmissions = 0;
+      final channel = HermesApiChannel(
+        detachedRunStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/v1/runs/run_legacy' => throw StateError('network unavailable'),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async {
+            runSubmissions += 1;
+            return '{}';
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await expectLater(channel.sendText('do not duplicate'), throwsStateError);
+      expect(runSubmissions, 0);
+      expect(
+        channel.state.errorMessage,
+        'Wing could not verify a previous Hermes run. Reconnect before sending.',
+      );
+    },
+  );
+
   test('reconnect releases a detached run after terminal status', () async {
     var runSubmissions = 0;
     var runOneStatusRequests = 0;

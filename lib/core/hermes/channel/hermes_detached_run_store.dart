@@ -8,9 +8,13 @@ class HermesDetachedRunLease {
   });
 
   factory HermesDetachedRunLease.fromJson(Map<String, Object?> json) {
-    String requiredString(String name, {int maximumLength = 512}) {
+    String requiredString(
+      String name, {
+      int maximumLength = 512,
+      bool allowLegacyBlank = false,
+    }) {
       final value = json[name];
-      if (value is! String || value.trim().isEmpty) {
+      if (value is! String || (!allowLegacyBlank && value.trim().isEmpty)) {
         throw FormatException('Detached run $name is missing.');
       }
       final trimmed = value.trim();
@@ -37,7 +41,15 @@ class HermesDetachedRunLease {
     }
     return HermesDetachedRunLease(
       runId: requiredString('run_id', maximumLength: 256),
-      sessionId: requiredString('session_id', maximumLength: 256),
+      // Hermes Agent's historical run-start response omitted session_id. Wing
+      // persisted a blank value before validating ownership. Keep that row
+      // quarantined: without its session, Wing cannot safely reattach or delete
+      // it, but it must not make the entire secure store unreadable.
+      sessionId: requiredString(
+        'session_id',
+        maximumLength: 256,
+        allowLegacyBlank: true,
+      ),
       baseUrl: requiredString('base_url', maximumLength: 2048),
       profileId: profileId,
       createdAt: createdAt,

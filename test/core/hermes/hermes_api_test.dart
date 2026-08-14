@@ -1538,6 +1538,7 @@ void main() {
 
       final run = await client.startRun(sessionId: 'sess_1', message: 'hello');
       expect(run.id, 'run_1');
+      expect(run.sessionId, 'sess_1');
       expect(posts['/v1/runs'], {
         'session_id': 'sess_1',
         'input': 'hello',
@@ -1566,6 +1567,22 @@ void main() {
       expect(posts['/v1/runs/run_1/stop'], <String, Object?>{});
     },
   );
+
+  test('run start binds the requested session when Hermes omits it', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      post: (uri, headers, body) async =>
+          '{"run_id":"run_current","status":"started"}',
+    );
+
+    final run = await client.startRun(
+      sessionId: 'sess_requested',
+      message: 'hello',
+    );
+
+    expect(run.id, 'run_current');
+    expect(run.sessionId, 'sess_requested');
+  });
 
   test('decodes server-sent events across chunks and keeps multiline data', () {
     final decoder = HermesSseEventDecoder();

@@ -38,6 +38,23 @@ void main() {
     );
   });
 
+  test('legacy lease missing only session id remains recoverable', () async {
+    FlutterSecureStorage.setMockInitialValues({
+      'wing.hermes.detached_runs.v1':
+          '[{"run_id":"run_legacy","session_id":"",'
+          '"base_url":"http://127.0.0.1:8642",'
+          '"created_at":"2026-08-13T00:00:00Z"},'
+          '{"run_id":"run_valid","session_id":"sess_1",'
+          '"base_url":"http://127.0.0.1:8642",'
+          '"created_at":"2026-08-13T00:00:00Z"}]',
+    });
+
+    final leases = await SecureHermesDetachedRunStore().load();
+
+    expect(leases.map((lease) => lease.runId), ['run_legacy', 'run_valid']);
+    expect(leases.first.sessionId, isEmpty);
+  });
+
   test('malformed trailing lease beyond storage bound fails load', () async {
     final rows = List.generate(
       16,

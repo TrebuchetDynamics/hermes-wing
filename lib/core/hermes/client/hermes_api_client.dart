@@ -245,7 +245,16 @@ class HermesApiClient {
     final run = response['run'] is Map
         ? wingMapFromJson(response['run'])
         : response;
-    return HermesRun.fromJson(run);
+    final parsed = HermesRun.fromJson(run);
+    if (parsed.sessionId.isNotEmpty) return parsed;
+    return HermesRun(
+      id: parsed.id,
+      sessionId: sessionId,
+      status: parsed.status,
+      output: parsed.output,
+      error: parsed.error,
+      usage: parsed.usage,
+    );
   }
 
   Future<HermesRun> getRunStatus(String runId, {String? profile}) async {

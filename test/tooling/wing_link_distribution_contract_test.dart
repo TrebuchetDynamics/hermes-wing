@@ -92,6 +92,121 @@ esac
     expect(File('${installDir.path}/wing-link').existsSync(), isTrue);
   });
 
+  test('release interruption restores the existing Wing Link', () async {
+    final temp = await Directory.systemTemp.createTemp(
+      'wing-link-release-signal-',
+    );
+    addTearDown(() => temp.delete(recursive: true));
+    final fakeBin = Directory('${temp.path}/bin')..createSync();
+    final releasedBinary = File('${temp.path}/released-wing-link')
+      ..writeAsStringSync('#!/bin/sh\necho 1.2.3-alpha.4\n');
+    final curl = File('${fakeBin.path}/curl')
+      ..writeAsStringSync('''#!/bin/sh
+output=''
+while [ "\$#" -gt 0 ]; do
+  if [ "\$1" = --output ]; then output="\$2"; shift 2; continue; fi
+  shift
+done
+cp "\$FAKE_WING_LINK" "\$output"
+''');
+    final mv = File('${fakeBin.path}/mv')
+      ..writeAsStringSync('''#!/usr/bin/env bash
+target_path="\$2"
+/bin/mv "\$@"
+if [[ "\$target_path" == *.backup.* ]]; then kill -TERM "\$PPID"; fi
+''');
+    await Process.run('chmod', ['+x', releasedBinary.path, curl.path, mv.path]);
+    final digestResult = await Process.run('sha256sum', [releasedBinary.path]);
+    final digest = (digestResult.stdout as String).split(' ').first;
+    final installDir = Directory('${temp.path}/install')..createSync();
+    final destination = File('${installDir.path}/wing-link')
+      ..writeAsStringSync('#!/bin/sh\necho predecessor\n');
+    await Process.run('chmod', ['+x', destination.path]);
+
+    final install = await Process.run(
+      './install-wing-link.sh',
+      [
+        '--tag',
+        'v1.2.3-alpha.4',
+        '--sha256',
+        digest,
+        '--size',
+        '${releasedBinary.lengthSync()}',
+        '--prefix',
+        installDir.path,
+      ],
+      environment: {
+        'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
+        'FAKE_WING_LINK': releasedBinary.path,
+      },
+    );
+
+    expect(install.exitCode, isNot(0));
+    expect(destination.readAsStringSync(), '#!/bin/sh\necho predecessor\n');
+    expect(installDir.listSync().map((entry) => entry.path), [
+      destination.path,
+    ]);
+  });
+
+  test('quick setup builds Wing Link then bootstraps Hermes', () async {
+    final temp = await Directory.systemTemp.createTemp('wing-link-quick-');
+    addTearDown(() => temp.delete(recursive: true));
+    final fakeBin = Directory('${temp.path}/bin')..createSync();
+    final calls = File('${temp.path}/calls');
+    final go = File('${fakeBin.path}/go')
+      ..writeAsStringSync('''#!/bin/sh
+output=''
+while [ "\$#" -gt 0 ]; do
+  if [ "\$1" = -o ]; then output="\$2"; break; fi
+  shift
+done
+[ -n "\$output" ] || exit 2
+cat > "\$output" <<'SCRIPT'
+#!/bin/sh
+case "\${1:-}" in
+  version) echo 0.1.0-dev+test ;;
+  setup)
+    printf '%s\\n' setup >> "\$WING_LINK_TEST_CALLS"
+    [ "\${WING_LINK_TEST_FAIL_SETUP:-}" != 1 ]
+    ;;
+  *) exit 2 ;;
+esac
+SCRIPT
+chmod +x "\$output"
+''');
+    await Process.run('chmod', ['+x', go.path]);
+    final installDir = Directory('${temp.path}/install');
+    final environment = {
+      'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
+      'WING_LINK_TEST_CALLS': calls.path,
+    };
+
+    final install = await Process.run('./install-wing-link.sh', [
+      '--build',
+      '--setup',
+      '--prefix',
+      installDir.path,
+    ], environment: environment);
+
+    expect(install.exitCode, 0, reason: install.stderr as String);
+    expect(calls.readAsStringSync(), 'setup\n');
+    expect(install.stdout, contains('Hermes runtime is ready'));
+
+    final failedInstallDir = Directory('${temp.path}/failed-install');
+    final failedSetup = await Process.run(
+      './install-wing-link.sh',
+      ['--build', '--setup', '--prefix', failedInstallDir.path],
+      environment: {...environment, 'WING_LINK_TEST_FAIL_SETUP': '1'},
+    );
+    expect(failedSetup.exitCode, 1);
+    expect(
+      File('${failedInstallDir.path}/wing-link').existsSync(),
+      isTrue,
+      reason: 'a setup failure must preserve the diagnostic and retry tool',
+    );
+    expect(failedSetup.stderr, contains('Wing Link remains installed'));
+  });
+
   test('source build reports progress, result, and next step', () async {
     final temp = await Directory.systemTemp.createTemp('wing-link-build-');
     addTearDown(() => temp.delete(recursive: true));
@@ -106,7 +221,7 @@ esac
     for (final message in [
       'Wing Link source build',
       '[1/3] Building',
-      '[2/3] Installing',
+      '[2/3] Validating and installing',
       '[3/3] Verifying',
       'Installed:',
       'Version:',
@@ -120,6 +235,114 @@ esac
     );
     expect(install.stdout, isNot(contains('Version:   dev')));
   });
+
+  test('source build probe failure preserves an existing Wing Link', () async {
+    final temp = await Directory.systemTemp.createTemp(
+      'wing-link-build-rollback-',
+    );
+    addTearDown(() => temp.delete(recursive: true));
+    final fakeBin = Directory('${temp.path}/bin')..createSync();
+    final go = File('${fakeBin.path}/go')
+      ..writeAsStringSync('''#!/bin/sh
+output=''
+while [ "\$#" -gt 0 ]; do
+  if [ "\$1" = -o ]; then output="\$2"; break; fi
+  shift
+done
+cat > "\$output" <<'SCRIPT'
+#!/bin/sh
+count=0
+[ ! -f "\$WING_LINK_TEST_PROBE_COUNT" ] || count="\$(cat "\$WING_LINK_TEST_PROBE_COUNT")"
+count=\$((count + 1))
+printf '%s' "\$count" > "\$WING_LINK_TEST_PROBE_COUNT"
+[ "\$count" -lt 3 ] || exit 9
+echo 0.1.0-dev+test
+SCRIPT
+chmod +x "\$output"
+''');
+    await Process.run('chmod', ['+x', go.path]);
+    final installDir = Directory('${temp.path}/install')..createSync();
+    final destination = File('${installDir.path}/wing-link')
+      ..writeAsStringSync('#!/bin/sh\necho predecessor\n');
+    final probeCount = File('${temp.path}/probe-count');
+    await Process.run('chmod', ['+x', destination.path]);
+
+    final install = await Process.run(
+      './install-wing-link.sh',
+      ['--build', '--prefix', installDir.path],
+      environment: {
+        'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
+        'WING_LINK_TEST_PROBE_COUNT': probeCount.path,
+      },
+    );
+
+    expect(install.exitCode, 9);
+    expect(destination.readAsStringSync(), '#!/bin/sh\necho predecessor\n');
+  });
+
+  test(
+    'source build interruption cannot lose predecessor or adopt candidate',
+    () async {
+      final temp = await Directory.systemTemp.createTemp(
+        'wing-link-build-signal-',
+      );
+      addTearDown(() => temp.delete(recursive: true));
+      final fakeBin = Directory('${temp.path}/bin')..createSync();
+      final go = File('${fakeBin.path}/go')
+        ..writeAsStringSync('''#!/bin/sh
+output=''
+while [ "\$#" -gt 0 ]; do
+  if [ "\$1" = -o ]; then output="\$2"; break; fi
+  shift
+done
+cat > "\$output" <<'SCRIPT'
+#!/bin/sh
+echo 0.1.0-dev+test
+SCRIPT
+chmod +x "\$output"
+''');
+      final mv = File('${fakeBin.path}/mv')
+        ..writeAsStringSync('''#!/usr/bin/env bash
+source_path="\$1"
+target_path="\$2"
+/bin/mv "\$@"
+if [[ "\${WING_LINK_TEST_SIGNAL_AT:-}" == backup && "\$target_path" == *.backup.* ]]; then
+  kill -TERM "\$PPID"
+elif [[ "\${WING_LINK_TEST_SIGNAL_AT:-}" == adopt && "\$source_path" == *.new.* ]]; then
+  kill -TERM "\$PPID"
+fi
+''');
+      await Process.run('chmod', ['+x', go.path, mv.path]);
+      final environment = {
+        'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
+      };
+
+      final predecessorDir = Directory('${temp.path}/predecessor')
+        ..createSync();
+      final predecessor = File('${predecessorDir.path}/wing-link')
+        ..writeAsStringSync('#!/bin/sh\necho predecessor\n');
+      await Process.run('chmod', ['+x', predecessor.path]);
+      final interruptedBackup = await Process.run(
+        './install-wing-link.sh',
+        ['--build', '--prefix', predecessorDir.path],
+        environment: {...environment, 'WING_LINK_TEST_SIGNAL_AT': 'backup'},
+      );
+      expect(interruptedBackup.exitCode, isNot(0));
+      expect(predecessor.readAsStringSync(), '#!/bin/sh\necho predecessor\n');
+      expect(predecessorDir.listSync().map((entry) => entry.path), [
+        predecessor.path,
+      ]);
+
+      final freshDir = Directory('${temp.path}/fresh');
+      final interruptedAdoption = await Process.run(
+        './install-wing-link.sh',
+        ['--build', '--prefix', freshDir.path],
+        environment: {...environment, 'WING_LINK_TEST_SIGNAL_AT': 'adopt'},
+      );
+      expect(interruptedAdoption.exitCode, isNot(0));
+      expect(freshDir.listSync(), isEmpty);
+    },
+  );
 
   test('source build mode defaults to the Termux prefix and PIE build', () {
     final installer = File('install-wing-link.sh').readAsStringSync();
@@ -146,5 +369,20 @@ esac
     ]);
     expect(mixedDestination.exitCode, 2);
     expect(mixedDestination.stderr, contains('cannot be combined'));
+
+    final termuxSetup = await Process.run(
+      './install-wing-link.sh',
+      ['--setup'],
+      environment: {
+        ...Platform.environment,
+        'TERMUX_VERSION': 'test',
+        'PREFIX': '/data/data/com.termux/files/usr',
+      },
+    );
+    expect(termuxSetup.exitCode, 2);
+    expect(
+      termuxSetup.stderr,
+      contains('guided Termux hosting is not yet qualified'),
+    );
   });
 }

@@ -68,8 +68,8 @@ void main() {
     expect(readme, contains('showcase-mobile.png'));
     expect(readme, contains('Hermes remains the source of truth'));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
+    expect(readme, contains('./install-wing-link.sh --build --setup'));
     expect(readme, contains('Go 1.26 or newer'));
-    expect(readme, contains('~/.local/bin/wing-link setup'));
     expect(readme, contains('authenticated remote management API'));
     expect(
       readme,

@@ -7,15 +7,16 @@ expected_sha256=""
 expected_size=""
 install_dir=""
 build=false
+quick_setup=false
 use_sudo=false
 custom_prefix=false
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./install-wing-link.sh [--prefix DIR]
+  ./install-wing-link.sh [--setup] [--prefix DIR]
   ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--prefix DIR]
-  ./install-wing-link.sh --build [--system | --prefix DIR]
+  ./install-wing-link.sh --build [--setup] [--system | --prefix DIR]
 
 By default, downloads the most recent alpha Wing Link release and verifies it
 against its published checksum. Supplying immutable release metadata verifies
@@ -23,6 +24,7 @@ both the expected SHA-256 and exact byte size out-of-band. The binary is always
 validated and atomically installed for the current user.
 
   --build       Build and install the local Go wing_link package instead
+  --setup       Install/adopt Hermes Agent, prepare API access, and start its gateway
   --system      With --build, install in /usr/local/bin (uses sudo when needed)
   --prefix DIR  Install in a custom directory
 EOF
@@ -31,6 +33,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --build) build=true; shift ;;
+    --setup) quick_setup=true; shift ;;
     --tag) tag="${2:?--tag requires a value}"; shift 2 ;;
     --sha256) expected_sha256="${2:?--sha256 requires a value}"; shift 2 ;;
     --size) expected_size="${2:?--size requires a value}"; shift 2 ;;
@@ -57,6 +60,43 @@ if [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]]; then
 else
   [[ -n "$install_dir" ]] || install_dir="${WING_LINK_INSTALL_DIR:-$HOME/.local/bin}"
 fi
+
+if [[ "$quick_setup" == true && ( "$termux" == true || "$(uname -s)" != Linux ) ]]; then
+  echo "--setup currently requires a Linux host with a systemd user session." >&2
+  echo "Wing Link binary installation is available here; guided Termux hosting is not yet qualified." >&2
+  exit 2
+fi
+
+run_quick_setup() {
+  local binary="$1"
+  [[ "$quick_setup" == true ]] || return 0
+  printf '\n[4/4] Installing or adopting Hermes Agent and starting its gateway...\n'
+  if ! "$binary" setup; then
+    echo "Host setup failed. Wing Link remains installed so you can inspect and retry." >&2
+    echo "Retry: $binary setup" >&2
+    return 1
+  fi
+  printf '\nHermes runtime is ready for provider setup.\n'
+  printf 'Next: run hermes setup to choose a provider and model, then pair Hermes Wing.\n'
+}
+
+run_version_probe() {
+  local binary="$1"
+  local status=0
+  "$binary" version >/dev/null 2>&1 &
+  local probe_pid=$!
+  (
+    sleep 15
+    kill -TERM "$probe_pid" 2>/dev/null || exit 0
+    sleep 2
+    kill -KILL "$probe_pid" 2>/dev/null || true
+  ) >/dev/null 2>&1 &
+  local watchdog_pid=$!
+  wait "$probe_pid" || status=$?
+  kill "$watchdog_pid" 2>/dev/null || true
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$status"
+}
 
 if [[ "$build" == true ]]; then
   script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -100,25 +140,78 @@ if [[ "$build" == true ]]; then
   printf '[1/3] Building Go package...\n'
   (cd "$source_dir" && go build "${build_args[@]}" .)
 
-  printf '[2/3] Installing binary...\n'
+  printf '[2/3] Validating and installing binary...\n'
+  run_version_probe "$tmp_bin"
+  installed_version="$build_version"
+  privileged=()
   if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
     command -v sudo >/dev/null 2>&1 || {
+      rm -f "$tmp_bin"
       echo "sudo is required for --system." >&2
       exit 1
     }
-    sudo install -D -m 0755 "$tmp_bin" "$destination"
-  else
-    install -D -m 0755 "$tmp_bin" "$destination"
+    privileged=(sudo)
   fi
+  "${privileged[@]}" mkdir -p "$install_dir"
+  [[ ! -L "$install_dir" ]] || {
+    rm -f "$tmp_bin"
+    echo "Install prefix must not be a symlink." >&2
+    exit 1
+  }
+  candidate="$install_dir/.wing-link.new.$$"
+  backup="$install_dir/.wing-link.backup.$$"
+  adoption_prepared=false
+  source_build_rollback() {
+    status=$?
+    trap - EXIT INT TERM
+    set +e
+    rm -f "$tmp_bin"
+    if [[ $status -ne 0 && "$adoption_prepared" == true ]]; then
+      if [[ -e "$backup" ]]; then
+        "${privileged[@]}" rm -f "$destination"
+        "${privileged[@]}" mv "$backup" "$destination"
+      elif [[ ! -e "$candidate" && -e "$destination" ]]; then
+        "${privileged[@]}" rm -f "$destination"
+      fi
+    else
+      "${privileged[@]}" rm -f "$backup"
+    fi
+    "${privileged[@]}" rm -f "$candidate"
+    exit "$status"
+  }
+  trap source_build_rollback EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  if [[ -e "$destination" ]]; then
+    [[ -f "$destination" && ! -L "$destination" ]] || {
+      echo "Existing Wing Link destination is not a regular file." >&2
+      exit 1
+    }
+  fi
+  "${privileged[@]}" install -m 0755 "$tmp_bin" "$candidate"
+  run_version_probe "$candidate"
+  adoption_prepared=true
+  if [[ -e "$destination" ]]; then
+    "${privileged[@]}" mv "$destination" "$backup"
+  fi
+  "${privileged[@]}" mv "$candidate" "$destination"
 
   printf '[3/3] Verifying executable...\n'
-  installed_version="$("$destination" version)"
+  run_version_probe "$destination"
+  trap - EXIT INT TERM
+  rm -f "$tmp_bin"
+  "${privileged[@]}" rm -f "$backup"
   printf '\nInstalled: %s\n' "$destination"
   printf 'Version:   %s\n' "$installed_version"
-  if [[ ":$PATH:" == *":$install_dir:"* ]]; then
+  if [[ "$quick_setup" == true ]]; then
+    run_quick_setup "$destination"
+  elif [[ ":$PATH:" == *":$install_dir:"* ]]; then
     printf 'Next:      wing-link inspect\n'
   else
     printf 'Next:      %s inspect\n' "$destination"
+  fi
+  if [[ ":$PATH:" != *":$install_dir:"* ]]; then
     printf 'PATH:      Add %s to run wing-link from any directory.\n' "$install_dir"
   fi
   printf 'Help:      %s help\n' "$destination"
@@ -193,27 +286,29 @@ work_dir="$(mktemp -d)"
 destination="$install_dir/wing-link"
 candidate="$install_dir/.wing-link.new.$$"
 backup="$install_dir/.wing-link.backup.$$"
-backup_created=false
-installed_new=false
+adoption_prepared=false
 
 rollback() {
   status=$?
-  trap - EXIT
+  trap - EXIT INT TERM
+  set +e
   rm -rf "$work_dir"
-  rm -f "$candidate"
-  if [[ $status -ne 0 ]]; then
-    if [[ "$installed_new" == true ]]; then
+  if [[ $status -ne 0 && "$adoption_prepared" == true ]]; then
+    if [[ -e "$backup" ]]; then
       rm -f "$destination"
-    fi
-    if [[ "$backup_created" == true && -f "$backup" ]]; then
       mv "$backup" "$destination"
+    elif [[ ! -e "$candidate" && -e "$destination" ]]; then
+      rm -f "$destination"
     fi
   else
     rm -f "$backup"
   fi
+  rm -f "$candidate"
   exit "$status"
 }
 trap rollback EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [[ "$auto_release" == true ]]; then
   checksum_manifest="$work_dir/wing-link-checksums.sha256"
@@ -234,24 +329,6 @@ if [[ "$auto_release" == true ]]; then
     exit 1
   }
 fi
-
-run_version_probe() {
-  local binary="$1"
-  local status=0
-  "$binary" version >/dev/null 2>&1 &
-  local probe_pid=$!
-  (
-    sleep 15
-    kill -TERM "$probe_pid" 2>/dev/null || exit 0
-    sleep 2
-    kill -KILL "$probe_pid" 2>/dev/null || true
-  ) &
-  local watchdog_pid=$!
-  wait "$probe_pid" || status=$?
-  kill "$watchdog_pid" 2>/dev/null || true
-  wait "$watchdog_pid" 2>/dev/null || true
-  return "$status"
-}
 
 url="https://github.com/${repository}/releases/download/${tag}/${asset}"
 download_limit="${expected_size:-52428800}"
@@ -279,13 +356,18 @@ if [[ -e "$destination" ]]; then
     echo "Existing Wing Link destination is not a regular file." >&2
     exit 1
   }
-  mv "$destination" "$backup"
-  backup_created=true
 fi
 install -m 0755 "$work_dir/$asset" "$candidate"
 run_version_probe "$candidate"
+adoption_prepared=true
+if [[ -e "$destination" ]]; then
+  mv "$destination" "$backup"
+fi
 mv "$candidate" "$destination"
-installed_new=true
 run_version_probe "$destination"
 
 printf 'Installed verified %s to %s\n' "$asset" "$destination"
+trap - EXIT INT TERM
+rm -f "$backup"
+rm -rf "$work_dir"
+run_quick_setup "$destination"

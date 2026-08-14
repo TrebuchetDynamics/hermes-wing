@@ -61,7 +61,38 @@ run activity, approvals, capability-gated administration, and voice. See the
 [official Hermes Agent documentation](https://hermes-agent.nousresearch.com/docs/)
 for Agent installation, providers, models, profiles, and gateway configuration.
 
-## Try it
+## Quick start
+
+The shortest supported path uses a Linux host with a working systemd user
+session. One paste builds Wing Link from the checked-out source, installs or
+adopts the pinned Hermes Agent build, prepares API access, and starts the Hermes
+gateway. It requires Git and Go 1.26 or newer:
+
+```bash
+git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git && cd hermes-wing && ./install-wing-link.sh --build --setup
+```
+
+Then complete Hermes's provider and model wizard:
+
+```bash
+hermes setup
+```
+
+Finally, open Hermes Wing and choose **Connect to Hermes**. For a phone or
+another computer, follow the [three-minute pairing path](#pair-a-phone-or-another-computer).
+
+The installer is safe to run again. It validates Wing Link before installation
+and adopts a supported Hermes installation instead of replacing its home,
+profiles, or credentials. If host setup fails, Wing Link stays installed so
+`~/.local/bin/wing-link inspect` can explain what needs attention.
+
+> [!IMPORTANT]
+> `--setup` is currently qualified only on Linux hosts with a systemd user
+> session. The installer can place the Android ARM64 PIE binary in Termux, but
+> guided Termux Hermes hosting is not yet qualified. For Android today, run
+> Hermes on Linux and pair the phone.
+
+## Install or try Hermes Wing
 
 ### Web alpha
 
@@ -105,7 +136,7 @@ Common development endpoints:
 Prefer HTTPS when traffic leaves the local machine. Wing asks before sending a
 credential over non-loopback plaintext HTTP.
 
-### Set up a Hermes host and pair Android
+### Pair a phone or another computer
 
 [Wing Link](docs/product/wing-link.md) is the authenticated remote management API
 that runs beside Hermes Agent. It can install or adopt the pinned Agent build,
@@ -113,21 +144,20 @@ prepare authentication, control the gateway, and create a short-lived pairing QR
 code. The current HTTP service binds loopback plus a selected or automatically
 discovered local private-LAN/Tailscale interface.
 
-The host needs Git, Go 1.26 or newer, and network access for the pinned Hermes
-installer. Persistent Wing Link service management is currently implemented for
-Linux with a per-user systemd service.
+The source path needs Git, Go 1.26 or newer, and network access. Persistent Wing
+Link service management is currently implemented for Linux with a per-user
+systemd service.
 
 ```bash
-git clone https://github.com/TrebuchetDynamics/hermes-wing.git
+git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
-./install-wing-link.sh --build
-~/.local/bin/wing-link setup
+./install-wing-link.sh --build --setup
 hermes setup
 ```
 
-The installer defaults to `~/.local/bin`; add it to `PATH` if you prefer the
-unqualified `wing-link` command. `wing-link setup` installs or adopts Hermes,
-prepares API access, and starts the local runtime. `hermes setup` remains the
+The installer defaults to `~/.local/bin`. `--build` builds the reviewed checkout;
+`--setup` then runs that installed Wing Link binary to install or adopt Hermes,
+prepare API access, and start the local runtime. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
 Today, Wing Link's Agent-domain compatibility surface is fixed profile
 list/create/rename/delete plus transactional new-profile setup for an allowlisted

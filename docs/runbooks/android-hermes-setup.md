@@ -3,18 +3,16 @@
 This runbook pairs Android with a Linux Hermes host that has a functioning
 systemd user session. Android/Termux Wing Link service hosting is not qualified.
 
-1. Build/install Wing Link on the Hermes host:
+1. Install Wing Link and prepare Hermes on the Linux host:
 
    ```bash
-   ./install-wing-link.sh --build
+   ./install-wing-link.sh --build --setup
    ```
 
-2. Inspect and prepare Hermes. Wing Link installs or adopts the runtime and
-   prepares API access; Hermes owns provider, model, tools, and messaging setup:
+2. Complete Hermes configuration. Wing Link has installed or adopted the runtime
+   and prepared API access; Hermes owns provider, model, tools, and messaging setup:
 
    ```bash
-   wing-link inspect
-   wing-link setup
    hermes setup
    ```
 

@@ -12,13 +12,13 @@ import '../gateways/gateway_contact_cache.dart';
 import '../gateways/hermes_gateway_directory.dart';
 
 /// Persists the Hermes endpoint (base URL + API key); see
-/// docs/adr/0004-hermes-endpoint-and-secret-storage.md.
+/// docs/adr/security-and-privacy.md.
 final hermesEndpointStoreProvider = Provider<HermesEndpointStore>(
   (ref) => SecureHermesEndpointStore(),
 );
 
 /// Native Hermes channel; see
-/// docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
+/// docs/adr/client.md.
 final hermesChannelProvider = Provider<HermesChannel>((ref) {
   final channel = HermesApiChannel(
     detachedRunStore: SecureHermesDetachedRunStore(),

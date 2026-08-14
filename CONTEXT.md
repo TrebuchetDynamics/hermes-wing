@@ -29,7 +29,7 @@ A feature that manages the machine running Hermes, such as installation, local f
 _Avoid_: universal client feature
 
 **Hermes Agent authority**:
-Hermes Agent owns profiles, configuration, memory, skills, tools, schedules, Kanban, sessions, and gateway state. Clients use advertised Hermes interfaces instead of reading its files, databases, or CLI output.
+Hermes Agent owns profiles, configuration, memory, skills, tools, schedules, Kanban, sessions, and gateway state. Clients use advertised Hermes interfaces. Because supported Hermes Agent releases cannot be changed for Wing, the host-only Wing Link profile compatibility adapter may invoke the fixed Hermes CLI operations defined by the runtime decision without creating Wing-owned domain state.
 _Avoid_: duplicated client backend
 
 **Profile-explicit control plane**:
@@ -61,8 +61,8 @@ A platform-specific client boundary for bootstrap and machine integration, limit
 _Avoid_: domain service
 
 **Wing Link**:
-The independently authenticated host supervisor that installs, adopts, updates, starts, stops, repairs, pairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. It listens on loopback plus one explicitly selected private/VPN interface. Initial setup may invoke reviewed Hermes-owned bootstrap operations, but profile, provider, session, message, tool, schedule, approval, and messaging semantics remain direct Hermes Agent domains and never transit Wing Link.
-_Avoid_: domain backend, profile bridge, provider adapter, Hermes proxy, public administration service
+The independently authenticated host supervisor that installs, adopts, updates, starts, stops, repairs, pairs, and diagnoses an external Hermes runtime on supported PCs and Android/Termux. It listens on loopback plus one explicitly selected private/VPN interface. Initial setup may invoke reviewed Hermes-owned bootstrap operations. Its bounded profile compatibility adapter delegates fixed list/create/rename/delete and pairing credential discovery to the installed Hermes CLI, enables profile multiplexing, and verifies profile-specific `/p/<id>` endpoints. Provider, session, message, tool, schedule, approval, and messaging semantics remain direct Hermes Agent domains and never transit Wing Link.
+_Avoid_: domain backend, arbitrary CLI bridge, provider adapter, Hermes proxy, public administration service
 
 **Starter profile**:
 The consented, version-pinned Donna profile distribution offered during local setup. Hermes Agent’s profile-distribution interface installs it; Wing Link never clones mutable profile content directly into Hermes state.

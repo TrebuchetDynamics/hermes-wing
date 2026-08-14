@@ -39,7 +39,7 @@ class HermesApiConfig {
   Uri get runsUri => _withPath('/v1/runs');
 
   /// Unauthenticated one-time pairing endpoints; see
-  /// docs/adr/0043-hardened-hermes-one-device-authorization.md. Callers must
+  /// docs/adr/security-and-privacy.md. Callers must
   /// never attach [headers] (a saved bearer credential) to these requests.
   Uri get enrollmentInspectUri => _withPath('/v1/operator/enrollments/inspect');
   Uri get enrollmentExchangeUri =>

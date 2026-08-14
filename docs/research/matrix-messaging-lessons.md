@@ -234,7 +234,7 @@ provider rule that credentials are not accepted as setup arguments.
 
 ### 3. Do not directly edit Hermes configuration
 
-ADR 0012 keeps configuration authority in Hermes Agent. Wing Link should not
+The product boundary decision keeps configuration authority in Hermes Agent. Wing Link should not
 write Matrix variables into `.env`, parse `config.yaml`, inspect the crypto store,
 or interpret free-form gateway logs. If Hermes lacks a setup/readiness contract,
 that contract must be added upstream first.

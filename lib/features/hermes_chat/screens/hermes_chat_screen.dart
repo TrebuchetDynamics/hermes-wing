@@ -223,7 +223,7 @@ bool _isValidHermesBaseUrl(String value) {
 
 /// Native Hermes Agent chat/session screen: manual connect, session list,
 /// streamed transcript, text composer, and continuous voice. See
-/// docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
+/// docs/adr/client.md.
 class HermesChatScreen extends ConsumerStatefulWidget {
   const HermesChatScreen({
     this.voiceCaptureServiceOverride,

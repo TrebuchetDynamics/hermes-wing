@@ -1,47 +1,17 @@
-# Architecture Decision Records
+# Architecture decisions
 
-Hermes Wing ADRs record durable decisions for the active Hermes-only app. They are source-backed snapshots, not migration task lists.
+These five living decisions are the current architectural guardrails for Hermes Wing. They replace the earlier set of 44 narrow ADRs, whose history remains available in Git. Historical plans may still cite the retired numbers.
 
-- [ADR 0001: Make Hermes Wing a Hermes-only companion](0001-hermes-only-runtime.md)
-- [ADR 0002: Use Riverpod providers for app seams and test overrides](0002-riverpod-provider-seams.md)
-- [ADR 0003: Route through a small Hermes and Settings shell](0003-go-router-hermes-settings-shell.md)
-- [ADR 0004: Store Hermes endpoint metadata separately from API keys](0004-hermes-endpoint-and-secret-storage.md)
-- [ADR 0005: Gate Hermes surfaces with the capabilities document](0005-capability-gated-hermes-client.md)
-- [ADR 0006: Model Hermes runs as SSE-driven chat work with approvals and stop controls](0006-run-sse-approvals-and-stop-lifecycle.md)
-- [ADR 0007: Keep a native HermesChannel instead of a legacy WingChannel adapter](0007-native-hermes-channel-not-wing-channel-adapter.md)
-- [ADR 0008: Build a mobile Hermes UI with Telegram chat ergonomics](0008-mobile-hermes-ui-with-telegram-ergonomics.md)
-- [ADR 0009: Use local device STT and TTS packages for voice](0009-local-device-voice-stt-tts.md)
-- [ADR 0010: Validate with Flutter unit tests plus web/E2E Hermes entry points](0010-validation-and-e2e-entrypoints.md)
-- [ADR 0011: Make Hermes Wing a cross-platform Hermes One client](0011-cross-platform-hermes-one-successor.md)
-- [ADR 0012: Keep domain authority in Hermes Agent](0012-hermes-agent-domain-authority.md)
-- [ADR 0013: Use one adaptive parity route tree](0013-adaptive-parity-route-tree.md)
-- [ADR 0014: Use one Hermes API origin for remote clients](0014-single-origin-hermes-control-plane.md)
-- [ADR 0015: Require scoped authorization for remote administration](0015-scoped-remote-administration.md)
-- [ADR 0016: Enroll Android with one-time pairing codes](0016-one-time-android-enrollment.md)
-- [ADR 0017: Retire Electron only after desktop parity](0017-electron-retirement-after-desktop-parity.md)
-- [ADR 0018: Use adaptive Office renderers](0018-adaptive-office-renderers.md)
-- [ADR 0019: Keep Hermes One account authority separate](0019-separate-hermes-one-account-authority.md)
-- [ADR 0020: Do not port local wallet custody](0020-no-local-wallet-custody.md)
-- [ADR 0021: Freeze a final Electron retirement cutoff](0021-freeze-final-electron-cutoff.md)
-- [ADR 0022: Evolve parity APIs through additive capabilities](0022-additive-capability-schema.md)
-- [ADR 0023: Manage an external Hermes runtime](0023-external-managed-hermes-runtime.md)
-- [ADR 0024: Make the Hermes control plane profile-explicit](0024-profile-explicit-control-plane.md)
-- [ADR 0025: Carry profile context in the query string](0025-profile-query-context.md)
-- [ADR 0026: Use HTTP commands and SSE event streams](0026-http-and-sse-control-plane.md)
-- [ADR 0027: Use server-issued resource handles](0027-server-resource-handles.md)
-- [ADR 0028: Use typed, revisioned administration](0028-typed-revisioned-administration.md)
-- [ADR 0029: Apply runtime changes explicitly](0029-explicit-apply-lifecycle.md)
-- [ADR 0030: Do not replay offline mutations](0030-no-offline-mutation-replay.md)
-- [ADR 0031: Import Electron client state explicitly](0031-explicit-electron-client-state-import.md)
-- [ADR 0032: Require accessible capability parity](0032-accessible-capability-parity.md)
-- [ADR 0033: Sign releases and verify updates](0033-signed-releases-and-updates.md)
-- [ADR 0034: Require explicit consent for minimal analytics](0034-explicit-minimal-analytics.md)
-- [ADR 0035: Preserve baseline locales and RTL behavior](0035-baseline-locales-and-rtl.md)
-- [ADR 0036: Make backup and restore server-owned](0036-server-owned-backup-and-restore.md)
-- [ADR 0037: Confirm SSH host identity explicitly](0037-explicit-ssh-host-trust.md)
-- [ADR 0038: Verify managed-runtime installation and updates](0038-verified-managed-runtime-installation.md)
-- [ADR 0039: Use a small canonical package matrix](0039-canonical-platform-packages.md)
-- [ADR 0040: Detach Android while server runs continue](0040-detach-android-background-runs.md)
-- [ADR 0041: Require picker-originated filesystem grants](0041-picker-originated-filesystem-grants.md)
-- [ADR 0042: Provide guarded legacy-wallet export](0042-guarded-legacy-wallet-export.md)
-- [ADR 0043: Harden Hermes One device authorization](0043-hardened-hermes-one-device-authorization.md)
+1. [Product boundaries](product.md)
+2. [Client architecture](client.md)
+3. [API and state](api-and-state.md)
+4. [Security and privacy](security-and-privacy.md)
+5. [Runtime and delivery](runtime-and-delivery.md)
+
+## How to use these decisions
+
+- Treat domain ownership, security, privacy, data-loss prevention, and accessibility as hard boundaries.
+- Treat named libraries, routes, transports, package formats, and platform techniques as defaults that may change when a simpler supported approach works.
+- Prefer advertised capabilities and runtime evidence over assumptions about a platform or Hermes Agent release.
+- Keep implementation detail in code, tests, plans, and runbooks rather than creating another ADR.
+- Update an existing decision before adding a new one. Add a decision only for a cross-cutting choice that is expensive to reverse and is not covered here.

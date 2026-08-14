@@ -17,10 +17,15 @@ npm ci
 - `lib/` contains the Flutter client. Hermes API models, transport, and session
   state live under `lib/core/hermes/`; product screens live under `lib/features/`.
 - `wing_link/` contains the Go setup and pairing helper. Keep it limited to host
-  installation, pairing, lifecycle, health, and diagnostics. Profiles, providers,
-  sessions, and other agent domains belong to Hermes APIs. Legacy profile and
-  provider adapters remain quarantined with their production routes disabled;
-  do not extend or re-enable them.
+  installation, pairing, lifecycle, health, diagnostics, and the bounded profile
+  compatibility adapter in the runtime decision. Supported Hermes Agent releases
+  cannot be changed for Wing, so the adapter may invoke fixed `hermes profile
+list|create|rename|delete` commands, resolve each listed credential through
+  fixed `hermes --profile <id> config env-path`, enable profile multiplexing, and
+  restart the active gateway before pairing verified `/p/<id>` connections.
+  Hermes remains authoritative: never invoke `profile use`, persist shadow profile
+  state, expose arbitrary CLI execution, or extend this exception to providers,
+  general configuration, sessions, messages, tools, or schedules.
 - `test/` contains Dart unit, widget, and source-contract tests.
 - `integration_test/` and `playwright/` cover device and browser flows.
 - `docs/` contains setup runbooks, security material, product contracts, and

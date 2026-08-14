@@ -37,7 +37,7 @@ part 'api_channel/hermes_api_channel_voice.dart';
 part 'api_channel/hermes_api_channel_errors.dart';
 
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
-/// API server. See docs/adr/0007-native-hermes-channel-not-wing-channel-adapter.md.
+/// API server. See docs/adr/client.md.
 class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,

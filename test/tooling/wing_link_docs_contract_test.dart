@@ -4,15 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Wing Link is a local host supervisor only', () {
-    final adr = File(
-      'docs/adr/0044-wing-link-local-runtime-supervisor.md',
-    ).readAsStringSync();
-    expect(adr, contains('127.0.0.1:8654'));
-    expect(adr, contains('Hermes Agent remains authoritative'));
-    expect(adr, contains('Termux RUN_COMMAND'));
-    expect(adr, contains('OmniRoute is optional'));
-    expect(adr, contains('Recommended Donna starter profile'));
-    expect(adr, contains('lacks the `distribution.yaml`'));
+    final adr = File('docs/adr/runtime-and-delivery.md').readAsStringSync();
+    expect(adr, contains('Hermes Agent remains an external runtime'));
+    expect(adr, contains('authenticated host supervisor'));
+    expect(adr, contains('must not expose arbitrary shell or CLI execution'));
+    expect(adr, contains('explicitly selected trusted private/VPN interface'));
     expect(adr, isNot(contains('Wing Link proxies Hermes chat')));
     final context = File('CONTEXT.md').readAsStringSync();
     final threatModel = File(
@@ -31,9 +27,10 @@ void main() {
     expect(threatModel, contains('Wing Link control token'));
     expect(threatModel, isNot(contains('profile topology bridge')));
     expect(roadmap, contains('no Hermes domain bridge'));
-    expect(profileGuide, contains('only approved profile and provider path'));
-    expect(profileGuide, contains('Prototype migration note'));
-    expect(adr, contains('does not manage Hermes domain state'));
+    expect(profileGuide, contains('only approved\nprovider path'));
+    expect(profileGuide, contains('Compatibility migration note'));
+    expect(profileGuide, contains('fixed Wing Link profile adapter'));
+    expect(adr, contains('must not expose arbitrary shell or CLI execution'));
     expect(adr, isNot(contains('initial CLI adapters cover profile topology')));
     expect(supersededBridgeDesign, contains('Status: superseded'));
   });

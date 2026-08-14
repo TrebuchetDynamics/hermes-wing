@@ -1,0 +1,13 @@
+{
+  "agent_version": "0.20.0",
+  "agent_release": "2026.8.3",
+  "upstream_commit": "d2c6af3aa258c47d64c41a56fe9ff61815334e17",
+  "fixture_kind": "source-derived",
+  "source": "gateway/platforms/api_server.py::_handle_capabilities",
+  "sanitization": [
+    "model normalized to hermes-agent",
+    "auth.required set to true",
+    "cors set to false"
+  ],
+  "contains_secrets": false
+}

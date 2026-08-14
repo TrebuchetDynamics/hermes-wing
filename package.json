@@ -20,9 +20,10 @@
     "android:maestro-regression": "maestro test -e WING_QA_GATEWAY_LABEL=\"${WING_QA_GATEWAY_LABEL:-$(hostname)}\" .maestro/real-gateway-regression.yaml scripts/maestro/session_branch_qa.yaml scripts/maestro/session_bulk_selection_qa.yaml scripts/maestro/session_metadata_qa.yaml scripts/maestro/tools_inventory_qa.yaml scripts/maestro/gateway_status_qa.yaml scripts/maestro/gateway_connection_settings_qa.yaml scripts/maestro/gateway_profiles_qa.yaml scripts/maestro/providers_models_unsupported_qa.yaml scripts/maestro/schedules_unsupported_qa.yaml scripts/maestro/office_workspace_qa.yaml",
     "platform:workflow-smoke": "./scripts/run_hermes_platform_workflow.sh",
     "hermes:readiness-audit": "./scripts/audit_hermes_readiness.sh",
+    "hermes:compatibility": "flutter test test/core/hermes/hermes_api_test.dart --plain-name \"released Hermes Agent capability fixtures remain compatible\"",
+    "release:verify-artifacts": "./scripts/verify_release_artifacts.sh",
     "linux:release-build": "./scripts/run_linux_release_build.sh",
-    "android:send-apk": "./build-send-apk.sh",
-    "release:verify-artifacts": "./scripts/verify_release_artifacts.sh"
+    "android:send-apk": "./build-send-apk.sh"
   },
   "repository": {
     "type": "git",

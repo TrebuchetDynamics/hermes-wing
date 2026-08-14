@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
@@ -269,6 +270,105 @@ void main() {
 
     expect(() => config.sessionUri('  '), throwsArgumentError);
     expect(() => config.runEventsUri('\t'), throwsArgumentError);
+  });
+
+  test('released Hermes Agent capability fixtures remain compatible', () {
+    final fixtureDirectories =
+        Directory(
+            'test/fixtures/hermes_agent',
+          ).listSync().whereType<Directory>().toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+
+    expect(fixtureDirectories, isNotEmpty);
+    for (final directory in fixtureDirectories) {
+      final fixtureText = File(
+        '${directory.path}/capabilities.json',
+      ).readAsStringSync();
+      final fixture = jsonDecode(fixtureText) as Map<String, Object?>;
+      final metadataText = File(
+        '${directory.path}/metadata.json',
+      ).readAsStringSync();
+      final metadata = jsonDecode(metadataText) as Map<String, Object?>;
+      final capabilities = HermesCapabilityDocument.fromJson(fixture);
+      final policy = HermesTransportPolicy(capabilities);
+      final reason = directory.path;
+
+      expect(metadata['agent_version'], isNotEmpty, reason: reason);
+      expect(metadata['agent_release'], isNotEmpty, reason: reason);
+      expect(
+        metadata['upstream_commit'],
+        matches(RegExp(r'^[0-9a-f]{40}$')),
+        reason: reason,
+      );
+      expect(
+        metadata['fixture_kind'],
+        anyOf('live-capture', 'source-derived'),
+        reason: reason,
+      );
+      expect(metadata['source'], isNotEmpty, reason: reason);
+      expect(metadata['sanitization'], isA<List<Object?>>(), reason: reason);
+      expect(metadata['contains_secrets'], isFalse, reason: reason);
+      const sensitiveKeys = {
+        'authorization',
+        'apikey',
+        'accesstoken',
+        'refreshtoken',
+        'privatekey',
+        'clientsecret',
+        'password',
+      };
+      void expectNoSensitiveKeys(Object? value) {
+        if (value is Map) {
+          for (final entry in value.entries) {
+            final normalizedKey = entry.key.toString().toLowerCase().replaceAll(
+              RegExp('[^a-z0-9]'),
+              '',
+            );
+            expect(
+              sensitiveKeys,
+              isNot(contains(normalizedKey)),
+              reason: reason,
+            );
+            expectNoSensitiveKeys(entry.value);
+          }
+        } else if (value is List) {
+          for (final item in value) {
+            expectNoSensitiveKeys(item);
+          }
+        } else if (value is String) {
+          final normalizedValue = value.replaceAll('\\', '/').toLowerCase();
+          expect(
+            RegExp(r'^[a-z]:/').hasMatch(normalizedValue),
+            isFalse,
+            reason: reason,
+          );
+          expect(normalizedValue.startsWith('//'), isFalse, reason: reason);
+          for (final forbidden in [
+            'http://',
+            'https://',
+            '/home/',
+            '/users/',
+          ]) {
+            expect(normalizedValue, isNot(contains(forbidden)), reason: reason);
+          }
+        }
+      }
+
+      expectNoSensitiveKeys(fixture);
+      expectNoSensitiveKeys(metadata);
+      final retainedText = '$fixtureText\n$metadataText'.toLowerCase();
+      for (final forbidden in ['http://', 'https://', '/home/']) {
+        expect(retainedText, isNot(contains(forbidden)), reason: reason);
+      }
+      expect(capabilities.supportsSchema, isTrue, reason: reason);
+      expect(capabilities.model, isNotEmpty, reason: reason);
+      expect(
+        capabilities.advertisesEndpoint('sessions', 'GET', '/api/sessions'),
+        isTrue,
+        reason: reason,
+      );
+      expect(policy.supportsAnyChatTransport, isTrue, reason: reason);
+    }
   });
 
   test(

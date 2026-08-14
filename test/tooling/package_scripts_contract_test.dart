@@ -153,6 +153,11 @@ void main() {
             as Map<String, Object?>;
     final scripts = (packageJson['scripts'] as Map).cast<String, Object?>();
 
+    expect(
+      scripts['hermes:compatibility'],
+      contains('released Hermes Agent capability fixtures remain compatible'),
+    );
+
     const expectedScripts = {
       'hermes:live-smoke': './scripts/run_live_hermes_smoke.sh',
       'hermes:provider-smoke': './scripts/run_provider_hermes_smoke.sh',

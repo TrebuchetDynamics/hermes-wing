@@ -3,7 +3,9 @@
 Hermes Wing does not promise compatibility by Hermes Agent release version. It
 reads `/v1/capabilities` from one canonical Hermes API origin and enables only
 advertised transports and surfaces. Dashboard ports and session tokens are not
-client transports.
+client transports. Every candidate Agent release follows the repeatable
+[release compatibility audit](../runbooks/hermes-agent-release-compatibility.md);
+the recorded version and commit are evidence provenance, never feature gates.
 
 ## Capability schema evolution
 
@@ -31,26 +33,26 @@ scoped operations. Enrollment inspect/exchange are unauthenticated because the
 one-time code is itself the credential (origin-bound, TTL-limited,
 lockout-rate-limited); everything else requires the listed scope:
 
-| Method | Path | Required scope |
-| --- | --- | --- |
-| `POST` | `/v1/operator/enrollments` | `settings:write` |
-| `POST` | `/v1/operator/enrollments/inspect` | (code + origin) |
-| `POST` | `/v1/operator/enrollments/exchange` | (code + origin) |
-| `GET` | `/v1/operator/credentials` | `settings:read` |
-| `DELETE` | `/v1/operator/credentials/{id}` | `settings:write` |
-| `GET` | `/api/profiles` | `profiles:read` |
-| `POST` | `/api/profiles` | `profiles:write` |
-| `PATCH` | `/api/profiles/{name}` | `profiles:write` (`If-Match`) |
-| `DELETE` | `/api/profiles/{name}` | `profiles:write` (`If-Match`) |
-| `GET` | `/api/profiles/{name}/soul` | `profiles:read` |
-| `PUT` | `/api/profiles/{name}/soul` | `profiles:write` (`If-Match`) |
-| `GET` | `/api/providers` | `providers:read` |
-| `PUT` | `/api/providers/{slug}/credential` | `providers:write` |
-| `DELETE` | `/api/providers/{slug}/credential` | `providers:write` |
-| `POST` | `/api/providers/{slug}/credential/validate` | `providers:write` |
-| `GET` | `/api/models` | `models:read` |
-| `POST` | `/api/models/refresh` | `models:write` |
-| `PUT` | `/api/models/assignment` | `models:write` (`If-Match`) |
+| Method   | Path                                        | Required scope                |
+| -------- | ------------------------------------------- | ----------------------------- |
+| `POST`   | `/v1/operator/enrollments`                  | `settings:write`              |
+| `POST`   | `/v1/operator/enrollments/inspect`          | (code + origin)               |
+| `POST`   | `/v1/operator/enrollments/exchange`         | (code + origin)               |
+| `GET`    | `/v1/operator/credentials`                  | `settings:read`               |
+| `DELETE` | `/v1/operator/credentials/{id}`             | `settings:write`              |
+| `GET`    | `/api/profiles`                             | `profiles:read`               |
+| `POST`   | `/api/profiles`                             | `profiles:write`              |
+| `PATCH`  | `/api/profiles/{name}`                      | `profiles:write` (`If-Match`) |
+| `DELETE` | `/api/profiles/{name}`                      | `profiles:write` (`If-Match`) |
+| `GET`    | `/api/profiles/{name}/soul`                 | `profiles:read`               |
+| `PUT`    | `/api/profiles/{name}/soul`                 | `profiles:write` (`If-Match`) |
+| `GET`    | `/api/providers`                            | `providers:read`              |
+| `PUT`    | `/api/providers/{slug}/credential`          | `providers:write`             |
+| `DELETE` | `/api/providers/{slug}/credential`          | `providers:write`             |
+| `POST`   | `/api/providers/{slug}/credential/validate` | `providers:write`             |
+| `GET`    | `/api/models`                               | `models:read`                 |
+| `POST`   | `/api/models/refresh`                       | `models:write`                |
+| `PUT`    | `/api/models/assignment`                    | `models:write` (`If-Match`)   |
 
 Profile mutations use opaque domain revisions: a missing `If-Match` returns
 `428`, a stale revision returns `412` with no write, and the client refreshes

@@ -672,6 +672,7 @@ void main() {
     addTearDown(() => installDir.delete(recursive: true));
 
     final install = await Process.run('./install-wing-link.sh', [
+      '--build',
       '--prefix',
       installDir.path,
     ]);

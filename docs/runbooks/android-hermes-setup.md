@@ -5,7 +5,7 @@
 2. Build/install Wing Link:
 
    ```bash
-   ./install-wing-link.sh
+   ./install-wing-link.sh --build
    ```
 
 3. Pair both direct Hermes and Wing Link. This installs, starts, and verifies

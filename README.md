@@ -116,7 +116,7 @@ Linux with a per-user systemd service.
 ```bash
 git clone https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
-./install-wing-link.sh
+./install-wing-link.sh --build
 ~/.local/bin/wing-link setup
 hermes setup
 hermes gateway restart

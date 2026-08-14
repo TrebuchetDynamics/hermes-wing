@@ -31,8 +31,9 @@ void main() {
   test(
     'release installer requires out-of-band digest and is transactional',
     () {
-      final installer = File('install-wing-link-release.sh');
+      final installer = File('install-wing-link.sh');
       expect(installer.existsSync(), isTrue);
+      expect(File('install-wing-link-release.sh').existsSync(), isFalse);
       final text = installer.readAsStringSync();
 
       expect(text, contains('--sha256'));
@@ -50,11 +51,30 @@ void main() {
     },
   );
 
-  test('source installer defaults to the Termux prefix and PIE build', () {
+  test('source build mode defaults to the Termux prefix and PIE build', () {
     final installer = File('install-wing-link.sh').readAsStringSync();
 
+    expect(installer, contains('--build'));
     expect(installer, contains('TERMUX_VERSION'));
     expect(installer, contains(r'${PREFIX}/bin'));
     expect(installer, contains('-buildmode=pie'));
+  });
+
+  test('installer rejects conflicting modes', () async {
+    final mixedMode = await Process.run('./install-wing-link.sh', [
+      '--build',
+      '--tag',
+      'v1.2.3-alpha.4',
+    ]);
+    expect(mixedMode.exitCode, 2);
+    expect(mixedMode.stderr, contains('cannot be combined with --build'));
+
+    final mixedDestination = await Process.run('./install-wing-link.sh', [
+      '--system',
+      '--prefix',
+      '/tmp/wing-link',
+    ]);
+    expect(mixedDestination.exitCode, 2);
+    expect(mixedDestination.stderr, contains('cannot be combined'));
   });
 }

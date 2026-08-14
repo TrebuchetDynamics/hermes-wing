@@ -1,66 +1,215 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-source_dir="$script_dir/wing_link"
-install_dir="${WING_LINK_INSTALL_DIR:-$HOME/.local/bin}"
+repository="TrebuchetDynamics/hermes-wing"
+tag=""
+expected_sha256=""
+expected_size=""
+install_dir=""
+build=false
 use_sudo=false
-termux=false
-if [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]]; then
-  install_dir="${PREFIX}/bin"
-  termux=true
-fi
+custom_prefix=false
 
 usage() {
   cat <<'EOF'
-Usage: ./install-wing-link.sh [--system | --prefix DIR]
+Usage:
+  ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--prefix DIR]
+  ./install-wing-link.sh --build [--system | --prefix DIR]
 
-Builds and installs wing-link (the Go wing_link package) for the current user
-in ~/.local/bin by default.
-  --system      Install machine-wide in /usr/local/bin (uses sudo when needed)
+By default, downloads one immutable-tag Wing Link release asset, verifies it
+against the expected SHA-256 and exact byte size supplied out-of-band, validates
+the binary, and atomically installs it for the current user.
+
+  --build       Build and install the local Go wing_link package instead
+  --system      With --build, install in /usr/local/bin (uses sudo when needed)
   --prefix DIR  Install in a custom directory
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --build) build=true; shift ;;
+    --tag) tag="${2:?--tag requires a value}"; shift 2 ;;
+    --sha256) expected_sha256="${2:?--sha256 requires a value}"; shift 2 ;;
+    --size) expected_size="${2:?--size requires a value}"; shift 2 ;;
     --system) install_dir="/usr/local/bin"; use_sudo=true; shift ;;
-    --prefix) install_dir="${2:?--prefix requires a directory}"; shift 2 ;;
+    --prefix) install_dir="${2:?--prefix requires a directory}"; custom_prefix=true; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 
-[[ -d "$source_dir" && -f "$source_dir/go.mod" ]] || {
-  echo "The wing_link Go package was not found beside this installer." >&2
-  exit 1
-}
-
-tmp_bin="$(mktemp)"
-trap 'rm -f "$tmp_bin"' EXIT
-[[ "$termux" == false || "$use_sudo" == false ]] || {
-  echo "--system is not supported in Termux; Wing Link installs to ${PREFIX}/bin." >&2
+[[ "$use_sudo" == false || "$custom_prefix" == false ]] || {
+  echo "--system and --prefix cannot be combined." >&2
   exit 2
 }
-
-build_args=(-trimpath -o "$tmp_bin")
-if [[ "$termux" == true ]]; then
-  build_args+=(-buildmode=pie)
+if [[ "$build" == true && ( -n "$tag" || -n "$expected_sha256" || -n "$expected_size" ) ]]; then
+  echo "Release verification options cannot be combined with --build." >&2
+  exit 2
 fi
-(cd "$source_dir" && go build "${build_args[@]}" .)
 
-if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
-  command -v sudo >/dev/null 2>&1 || {
-    echo "sudo is required for --system." >&2
+termux=false
+if [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]]; then
+  termux=true
+  [[ -n "$install_dir" ]] || install_dir="${PREFIX}/bin"
+else
+  [[ -n "$install_dir" ]] || install_dir="${WING_LINK_INSTALL_DIR:-$HOME/.local/bin}"
+fi
+
+if [[ "$build" == true ]]; then
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  source_dir="$script_dir/wing_link"
+  [[ -d "$source_dir" && -f "$source_dir/go.mod" ]] || {
+    echo "The wing_link Go package was not found beside this installer." >&2
     exit 1
   }
-  sudo install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
-else
-  install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
+  [[ "$termux" == false || "$use_sudo" == false ]] || {
+    echo "--system is not supported in Termux; Wing Link installs to ${PREFIX}/bin." >&2
+    exit 2
+  }
+
+  tmp_bin="$(mktemp)"
+  trap 'rm -f "$tmp_bin"' EXIT
+  build_args=(-trimpath -o "$tmp_bin")
+  if [[ "$termux" == true ]]; then
+    build_args+=(-buildmode=pie)
+  fi
+  (cd "$source_dir" && go build "${build_args[@]}" .)
+
+  if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
+    command -v sudo >/dev/null 2>&1 || {
+      echo "sudo is required for --system." >&2
+      exit 1
+    }
+    sudo install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
+  else
+    install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
+  fi
+
+  "$install_dir/wing-link" version >/dev/null
+  printf 'Built and installed wing-link to %s\n' "$install_dir/wing-link"
+  if [[ ":$PATH:" != *":$install_dir:"* ]]; then
+    printf 'Add %s to PATH to run wing-link from any directory.\n' "$install_dir"
+  fi
+  exit 0
 fi
 
-"$install_dir/wing-link" version >/dev/null
-printf 'Installed wing-link to %s\n' "$install_dir/wing-link"
-if [[ ":$PATH:" != *":$install_dir:"* ]]; then
-  printf 'Add %s to PATH to run wing-link from any directory.\n' "$install_dir"
+[[ "$use_sudo" == false ]] || {
+  echo "--system requires --build." >&2
+  exit 2
+}
+[[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]] || {
+  echo "--tag must be an alpha release tag." >&2
+  exit 2
+}
+expected_sha256="${expected_sha256,,}"
+[[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
+  echo "--sha256 must be exactly 64 hexadecimal characters." >&2
+  exit 2
+}
+[[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
+  echo "--size must be the exact positive asset byte count." >&2
+  exit 2
+}
+command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
+command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 1; }
+[[ "$install_dir" == /* ]] || { echo "Install prefix must be absolute." >&2; exit 2; }
+
+machine="$(uname -m)"
+case "$machine" in
+  x86_64|amd64) architecture="amd64" ;;
+  aarch64|arm64) architecture="arm64" ;;
+  *) echo "Unsupported architecture: $machine" >&2; exit 1 ;;
+esac
+
+if [[ "$termux" == true ]]; then
+  [[ "$architecture" == arm64 ]] || {
+    echo "This alpha supports Termux on ARM64 only." >&2
+    exit 1
+  }
+  asset="wing-link-android-arm64"
+else
+  case "$(uname -s)" in
+    Linux) asset="wing-link-linux-${architecture}" ;;
+    Darwin) asset="wing-link-darwin-${architecture}" ;;
+    *) echo "Use the Windows release asset on Windows." >&2; exit 1 ;;
+  esac
 fi
+
+work_dir="$(mktemp -d)"
+destination="$install_dir/wing-link"
+candidate="$install_dir/.wing-link.new.$$"
+backup="$install_dir/.wing-link.backup.$$"
+backup_created=false
+installed_new=false
+
+rollback() {
+  status=$?
+  trap - EXIT
+  rm -rf "$work_dir"
+  rm -f "$candidate"
+  if [[ $status -ne 0 ]]; then
+    if [[ "$installed_new" == true ]]; then
+      rm -f "$destination"
+    fi
+    if [[ "$backup_created" == true && -f "$backup" ]]; then
+      mv "$backup" "$destination"
+    fi
+  else
+    rm -f "$backup"
+  fi
+  exit "$status"
+}
+trap rollback EXIT
+
+run_version_probe() {
+  local binary="$1"
+  local status=0
+  "$binary" version >/dev/null 2>&1 &
+  local probe_pid=$!
+  (
+    sleep 15
+    kill -TERM "$probe_pid" 2>/dev/null || exit 0
+    sleep 2
+    kill -KILL "$probe_pid" 2>/dev/null || true
+  ) &
+  local watchdog_pid=$!
+  wait "$probe_pid" || status=$?
+  kill "$watchdog_pid" 2>/dev/null || true
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$status"
+}
+
+url="https://github.com/${repository}/releases/download/${tag}/${asset}"
+curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --connect-timeout 15 --max-time 300 --max-filesize "$expected_size" \
+  --output "$work_dir/$asset" "$url"
+actual_size="$(wc -c < "$work_dir/$asset" | tr -d '[:space:]')"
+[[ "$actual_size" == "$expected_size" ]] || {
+  echo "Downloaded asset size did not match the expected byte count." >&2
+  exit 1
+}
+(
+  cd "$work_dir"
+  printf '%s  %s\n' "$expected_sha256" "$asset" | sha256sum -c -
+)
+chmod 0755 "$work_dir/$asset"
+run_version_probe "$work_dir/$asset"
+
+mkdir -p "$install_dir"
+[[ ! -L "$install_dir" ]] || { echo "Install prefix must not be a symlink." >&2; exit 1; }
+if [[ -e "$destination" ]]; then
+  [[ -f "$destination" && ! -L "$destination" ]] || {
+    echo "Existing Wing Link destination is not a regular file." >&2
+    exit 1
+  }
+  mv "$destination" "$backup"
+  backup_created=true
+fi
+install -m 0755 "$work_dir/$asset" "$candidate"
+run_version_probe "$candidate"
+mv "$candidate" "$destination"
+installed_new=true
+run_version_probe "$destination"
+
+printf 'Installed verified %s to %s\n' "$asset" "$destination"

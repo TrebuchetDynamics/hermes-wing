@@ -1,7 +1,12 @@
 # Multi-Gateway Unified Chats — Design
 
 **Date:** 2026-07-16
-**Status:** Approved
+**Status:** Implemented foundation; historical design
+
+Current routing keeps the endpoint-scoped gateway identity plus Agent-local
+profile name. Supported releases may populate profiles through Wing Link's fixed
+compatibility adapter and verified `/p/<profile>` connections rather than the
+proposed direct profile API.
 
 ## Goal
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// Returns the non-secret Hermes API origin suitable for display/persistence.
 ///
 /// API keys sometimes arrive in copied setup URLs as userinfo, query strings, or
@@ -6,12 +8,27 @@ String hermesPublicEndpointBaseUrl(String baseUrl) {
   final trimmed = baseUrl.trim();
   final uri = Uri.tryParse(trimmed);
   if (uri == null || !uri.hasScheme || uri.host.isEmpty) return trimmed;
+  final pathSegments = uri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList(growable: false);
+  final profilePath = pathSegments.length == 2 && pathSegments.first == 'p'
+      ? '/p/${Uri.encodeComponent(pathSegments.last)}'
+      : '';
   return Uri(
     scheme: uri.scheme,
     host: uri.host,
     port: uri.hasPort ? uri.port : null,
+    path: profilePath,
   ).toString();
 }
+
+/// Returns Wing's stable gateway identity for one canonical Hermes endpoint.
+///
+/// Agent profile IDs are scoped to their owning gateway and must not be used as
+/// globally unique saved-gateway keys.
+String hermesEndpointIdForBaseUrl(String baseUrl) => base64Url
+    .encode(utf8.encode(hermesPublicEndpointBaseUrl(baseUrl)))
+    .replaceAll('=', '');
 
 /// A saved Hermes endpoint: base URL (non-secret) plus an optional bearer
 /// API key (secret). [id] and [label] are non-secret profile metadata used by
@@ -46,11 +63,16 @@ class HermesEndpointConfig {
 /// require re-entering the base URL/API key on every open. Implementations must
 /// never write [HermesEndpointConfig.apiKey] to shared preferences, logs, or
 /// other non-secure storage — see
-/// docs/adr/0004-hermes-endpoint-and-secret-storage.md.
+/// docs/adr/security-and-privacy.md.
 abstract interface class HermesEndpointStore {
   Future<HermesEndpointConfig?> load();
 
   Future<List<HermesEndpointConfig>> loadProfiles();
+
+  /// Atomically replaces the authoritative enrolled endpoint set. Auxiliary
+  /// non-secret compatibility projections may be updated separately, but
+  /// modern readers must never observe a prefix of [profiles].
+  Future<void> saveAll(List<HermesEndpointConfig> profiles);
 
   Future<void> save({
     required String baseUrl,
@@ -77,6 +99,9 @@ class EmptyHermesEndpointStore implements HermesEndpointStore {
 
   @override
   Future<List<HermesEndpointConfig>> loadProfiles() async => const [];
+
+  @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {}
 
   @override
   Future<void> save({

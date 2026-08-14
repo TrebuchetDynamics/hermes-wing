@@ -13,6 +13,11 @@ export '../models/hermes_profile.dart';
 export '../models/hermes_provider.dart';
 export 'hermes_channel_state.dart';
 
+abstract interface class HermesAudioChannel {
+  Future<String> transcribePcm16(Uint8List pcm16);
+  Future<Uint8List> synthesizeSpeech(String text);
+}
+
 /// Native Hermes Agent channel: sessions, streamed chat turns, and the
 /// device-transcript voice-run lifecycle. Deliberately does not implement
 /// `WingChannel` — see docs/adr/client.md.

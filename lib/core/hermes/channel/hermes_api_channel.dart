@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
@@ -38,7 +37,8 @@ part 'api_channel/hermes_api_channel_errors.dart';
 
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
 /// API server. See docs/adr/client.md.
-class HermesApiChannel extends ChangeNotifier implements HermesChannel {
+class HermesApiChannel extends ChangeNotifier
+    implements HermesChannel, HermesAudioChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,
     String Function()? sessionIdFactory,
@@ -238,6 +238,34 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     model: model,
     revision: revision,
   );
+
+  @override
+  Future<String> transcribePcm16(Uint8List pcm16) {
+    _requireAudioEndpoint('audio_transcribe', 'POST', '/api/audio/transcribe');
+    return _requireConnectedClient().transcribePcm16(
+      pcm16,
+      profile: _state.selectedProfileId,
+    );
+  }
+
+  @override
+  Future<Uint8List> synthesizeSpeech(String text) {
+    _requireAudioEndpoint('audio_speak', 'POST', '/api/audio/speak');
+    return _requireConnectedClient().synthesizeSpeech(
+      text,
+      profile: _state.selectedProfileId,
+    );
+  }
+
+  void _requireAudioEndpoint(String name, String method, String path) {
+    final capabilities = _state.capabilities;
+    if (capabilities == null ||
+        !capabilities.supportsSchema ||
+        !capabilities.supportsFeature('audio_api') ||
+        !capabilities.advertisesEndpoint(name, method, path)) {
+      throw StateError('Hermes did not advertise its audio API.');
+    }
+  }
 
   @override
   Future<void> sendText(

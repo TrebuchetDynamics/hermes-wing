@@ -1,5 +1,8 @@
 # Goal Technical Auditor Ledger
 
+> **Status: archived audit receipt for the pinned baseline below.** It is not a
+> current work instruction or architecture map.
+
 - Run: `1784343204931-2b2ae3ca9d38e`
 - Phase: `delivery_pending`
 - Scope: `.`

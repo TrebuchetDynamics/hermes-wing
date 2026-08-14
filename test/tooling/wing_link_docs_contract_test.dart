@@ -3,36 +3,71 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Wing Link is a local host supervisor only', () {
+  test('Wing Link is a bounded remote management plane', () {
     final adr = File('docs/adr/runtime-and-delivery.md').readAsStringSync();
-    expect(adr, contains('Hermes Agent remains an external runtime'));
-    expect(adr, contains('authenticated host supervisor'));
-    expect(adr, contains('must not expose arbitrary shell or CLI execution'));
-    expect(adr, contains('explicitly selected trusted private/VPN interface'));
-    expect(adr, isNot(contains('Wing Link proxies Hermes chat')));
     final context = File('CONTEXT.md').readAsStringSync();
     final threatModel = File(
       'docs/security/threat-model.md',
     ).readAsStringSync();
     final roadmap = File('ROADMAP.md').readAsStringSync();
+    final readme = File('README.md').readAsStringSync();
+    final compatibility = File(
+      'docs/product/hermes-compatibility.md',
+    ).readAsStringSync();
     final profileGuide = File(
       'docs/product/gateway-profile-management.md',
     ).readAsStringSync();
+    final wingLinkGuide = File('docs/product/wing-link.md').readAsStringSync();
     final supersededBridgeDesign = File(
       'docs/superpowers/specs/2026-08-06-wing-link-multi-agent-management-design.md',
     ).readAsStringSync();
 
-    expect(context, contains('host supervisor'));
-    expect(context, isNot(contains('bridge API-first local profile topology')));
-    expect(threatModel, contains('Wing Link control token'));
-    expect(threatModel, isNot(contains('profile topology bridge')));
-    expect(roadmap, contains('no Hermes domain bridge'));
-    expect(profileGuide, contains('only approved\nprovider path'));
-    expect(profileGuide, contains('Compatibility migration note'));
-    expect(profileGuide, contains('fixed Wing Link profile adapter'));
-    expect(adr, contains('must not expose arbitrary shell or CLI execution'));
-    expect(adr, isNot(contains('initial CLI adapters cover profile topology')));
-    expect(supersededBridgeDesign, contains('Status: superseded'));
+    expect(adr, contains('external authoritative runtime'));
+    expect(adr, contains('authenticated remote management plane'));
+    expect(adr, contains('arbitrary commands,'));
+    expect(adr, contains('config keys, and paths'));
+    expect(adr, contains('private-LAN/Tailscale interface'));
+    expect(adr, contains('non-loopback plaintext'));
+    expect(context, contains('remote management API'));
+    expect(threatModel, contains('opaque handles'));
+    expect(roadmap, contains('Profiles, directories, and Projects'));
+    expect(profileGuide, contains('Current profile path'));
+    expect(profileGuide, contains('Repository and subfolder assignment'));
+    expect(wingLinkGuide, contains('folder picker'));
+    expect(
+      wingLinkGuide,
+      contains('does not enumerate file names or metadata'),
+    );
+    expect(wingLinkGuide, contains('currently serves HTTP'));
+    expect(wingLinkGuide, contains('not a chat proxy'));
+    expect(wingLinkGuide, isNot(contains('arbitrary remote shell')));
+    expect(compatibility, isNot(contains('/api/model/set')));
+    expect(roadmap, contains('mutation hidden until an exact route'));
+    expect(
+      roadmap,
+      contains('File listing, preview, reading, or editing through Wing Link'),
+    );
+    expect(readme, contains('general provider operations are planned.'));
+    expect(
+      readme,
+      contains('existing-profile credential edits remain blocked'),
+    );
+    expect(
+      readme,
+      contains(
+        'hermes config set --force platforms.api_server.extra.host '
+        '<trusted-vpn-ip>',
+      ),
+    );
+    expect(
+      wingLinkGuide,
+      contains('Wing Link exposure and Hermes Agent exposure are separate'),
+    );
+    expect(wingLinkGuide, contains('configures the Agent API on `127.0.0.1`'));
+    expect(
+      supersededBridgeDesign,
+      contains('Status: superseded; do not implement'),
+    );
   });
 
   test('Nostr research is archived outside the core control plane', () {

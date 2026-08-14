@@ -35,7 +35,7 @@ import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/platform/voice_capture_platform.dart';
 import '../../voice/services/speech/offline_first_voice_capture_service.dart';
 import '../../voice/services/speech/offline_voice_capture_factory.dart';
-import '../../voice/services/tts/pocket_speech_incremental_tts_engine.dart';
+import '../../voice/services/tts/hermes_agent_text_to_speech_service.dart';
 import '../../voice/services/tts/text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/staged_attachment.dart';
@@ -106,10 +106,6 @@ final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
   (_) => openFile,
 );
 
-final hermesTtsIsAndroidProvider = Provider<bool>(
-  (_) => !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
-);
-
 typedef HermesPlatformTtsFactory =
     TextToSpeechService? Function(TtsSettingsReader settings);
 
@@ -118,41 +114,38 @@ final hermesPlatformTtsFactoryProvider = Provider<HermesPlatformTtsFactory>(
       (settings) => createDefaultTextToSpeechService(settings: settings),
 );
 
+typedef HermesAgentTtsFactory =
+    TextToSpeechService Function(HermesSpeechSynthesizer synthesize);
+
+final hermesAgentTtsFactoryProvider = Provider<HermesAgentTtsFactory>(
+  (_) =>
+      (synthesize) => HermesAgentTextToSpeechService(synthesize),
+);
+
 final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
-  final (pocketSpeechEnabled, voicePack) = ref.watch(
-    wingVoiceSettingsProvider.select(
-      (settings) => (
-        settings.pocketSpeechTtsEnabled && settings.pocketSpeechVoicePackReady,
-        settings.pocketSpeechVoicePack,
-      ),
-    ),
-  );
   WingVoiceSettings settings() => ref.read(wingVoiceSettingsProvider);
-  final platformFactory = ref.watch(hermesPlatformTtsFactoryProvider);
-  final platformService = platformFactory(settings);
-  final service = pocketSpeechEnabled && voicePack != null
-      ? createIncrementalPocketSpeechTextToSpeechService(
-              enabled: true,
-              isAndroid: ref.watch(hermesTtsIsAndroidProvider),
-              voicePack: voicePack,
-              fallback: platformService,
-              settings: settings,
-            ) ??
-            createPocketSpeechTextToSpeechService(
-              enabled: true,
-              voicePack: voicePack,
-              settings: settings,
-              fallback: platformService,
-            )
-      : platformService;
+  final platformService = ref.watch(hermesPlatformTtsFactoryProvider)(settings);
+  final channel = ref.watch(hermesChannelProvider);
+  final agentService = channel is HermesAudioChannel
+      ? ref.watch(hermesAgentTtsFactoryProvider)(
+          (channel as HermesAudioChannel).synthesizeSpeech,
+        )
+      : null;
+  final TextToSpeechService? service;
+  if (agentService != null && platformService != null) {
+    service = FallbackTextToSpeechService(agentService, platformService);
+  } else {
+    service = agentService ?? platformService;
+  }
   if (service == null) return null;
+  final resolvedService = service;
   final owner = ref.watch(offlineTtsRuntimeOwnerProvider);
   final predecessorRelease = owner.adopt(
-    service,
-    ownsOfflineModels: pocketSpeechEnabled && voicePack != null,
+    resolvedService,
+    ownsOfflineModels: false,
   );
-  ref.onDispose(() => unawaited(owner.release(service)));
-  return ReleaseBarrierTextToSpeechService(service, predecessorRelease);
+  ref.onDispose(() => unawaited(owner.release(resolvedService)));
+  return ReleaseBarrierTextToSpeechService(resolvedService, predecessorRelease);
 });
 
 const _hermesBaseUrlHint =
@@ -740,26 +733,40 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            activeContact.profileName,
+                            _contactProfileTitle(activeContact),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
-                          Text(
-                            '${activeContact.gatewayLabel} · ${activeContact.availability.name}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color:
-                                      activeContact.availability ==
-                                          GatewayAvailability.online
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                size: 8,
+                                color:
+                                    activeContact.availability ==
+                                        GatewayAvailability.online
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  activeContact.gatewayLabel,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: Theme.of(
                                           context,
                                         ).colorScheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                 ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -937,6 +944,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       child: content,
     );
   }
+}
+
+String _contactProfileTitle(GatewayContact contact) {
+  final value = contact.profileName.trim();
+  if (value.isEmpty) return '?';
+  final first = value.characters.first;
+  return '${first.toUpperCase()}${value.substring(first.length)}';
 }
 
 String _hermesTranscriptText(

@@ -208,8 +208,9 @@ admin-style Matrix tools, and no public room creation.
 
 ### 1. Add an explicit messaging bootstrap phase
 
-Core bootstrap currently installs/adopts Hermes, creates an optional profile and
-provider, ensures API authentication, and starts the gateway. A future messaging
+Core bootstrap currently installs/adopts Hermes, ensures API authentication, and
+starts the gateway. Profile/provider/model setup remains Hermes-owned; Wing Link's
+only profile exception is the fixed compatibility adapter in the runtime ADR. A future messaging
 phase should be independent and opt-in so core setup remains usable without
 Matrix.
 

@@ -2,6 +2,37 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_endpoint_store.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+
+class _FailingBundleWriteStorage extends FlutterSecureStorage {
+  const _FailingBundleWriteStorage();
+
+  @override
+  Future<void> write({
+    required String key,
+    required String? value,
+    AppleOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    AppleOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) {
+    if (key == 'wing.hermes.endpoint_bundle.v1') {
+      throw StateError('injected bundle write failure');
+    }
+    return super.write(
+      key: key,
+      value: value,
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    );
+  }
+}
 
 /// Every value the store wrote to shared preferences, flattened for scanning.
 Future<String> _preferenceDump() async {
@@ -95,6 +126,36 @@ void main() {
   });
 
   group('profiles', () {
+    test(
+      'an issued profile bundle commits as one secure source of truth',
+      () async {
+        await store.saveAll([
+          const HermesEndpointConfig(
+            id: 'default',
+            baseUrl: 'https://hermes.example',
+            apiKey: 'default-secret',
+            label: 'BlueBlack · default',
+          ),
+          const HermesEndpointConfig(
+            id: 'sidon',
+            baseUrl: 'https://hermes.example/p/sidon',
+            apiKey: 'sidon-secret',
+            label: 'BlueBlack · sidon',
+          ),
+        ]);
+
+        final profiles = await store.loadProfiles();
+        expect(profiles.map((profile) => profile.id), ['default', 'sidon']);
+        expect(profiles.map((profile) => profile.apiKey), [
+          'default-secret',
+          'sidon-secret',
+        ]);
+        final preferences = await _preferenceDump();
+        expect(preferences, isNot(contains('default-secret')));
+        expect(preferences, isNot(contains('sidon-secret')));
+      },
+    );
+
     test('saved profiles round-trip with their metadata', () async {
       await store.save(
         baseUrl: 'https://a.example',
@@ -235,6 +296,74 @@ void main() {
   });
 
   group('legacy single-endpoint migration', () {
+    test('a failed bundle commit preserves the legacy enrollment', () async {
+      SharedPreferences.setMockInitialValues({
+        'wing.hermes.base_url': 'https://legacy.example',
+      });
+      FlutterSecureStorage.setMockInitialValues({
+        'wing.hermes.api_key': 'legacy-secret',
+      });
+      final failingStore = SecureHermesEndpointStore(
+        secureStorage: const _FailingBundleWriteStorage(),
+      );
+
+      await expectLater(
+        failingStore.saveAll([
+          const HermesEndpointConfig(
+            id: 'modern',
+            baseUrl: 'https://modern.example',
+            apiKey: 'modern-secret',
+          ),
+        ]),
+        throwsStateError,
+      );
+
+      final preserved = await SecureHermesEndpointStore().load();
+      expect(preserved?.baseUrl, 'https://legacy.example');
+      expect(preserved?.apiKey, 'legacy-secret');
+    });
+
+    test(
+      'a modern bundle commit purges rollback-readable legacy secrets',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'wing.hermes.base_url': 'https://legacy.example',
+          'wing.hermes.profiles':
+              '[{"id":"old","baseUrl":"https://old.example"}]',
+        });
+        FlutterSecureStorage.setMockInitialValues({
+          'wing.hermes.api_key': 'legacy-secret',
+          'wing.hermes.profile_api_key.old': 'old-profile-secret',
+          'wing.hermes.profile_wing_link_token.old': 'old-control-secret',
+        });
+        final secure = const FlutterSecureStorage();
+
+        await SecureHermesEndpointStore().saveAll([
+          const HermesEndpointConfig(
+            id: 'default',
+            baseUrl: 'https://modern.example',
+            apiKey: 'modern-secret',
+          ),
+        ]);
+
+        expect(await secure.read(key: 'wing.hermes.api_key'), isNull);
+        expect(
+          await secure.read(key: 'wing.hermes.profile_api_key.old'),
+          isNull,
+        );
+        expect(
+          await secure.read(key: 'wing.hermes.profile_wing_link_token.old'),
+          isNull,
+        );
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('wing.hermes.base_url'), isNull);
+        expect(
+          (await SecureHermesEndpointStore().load())?.apiKey,
+          'modern-secret',
+        );
+      },
+    );
+
     test('a legacy base URL and key are adopted as one profile', () async {
       SharedPreferences.setMockInitialValues({
         'wing.hermes.base_url': 'https://legacy.example',

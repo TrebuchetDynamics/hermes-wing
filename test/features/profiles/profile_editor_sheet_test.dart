@@ -80,6 +80,106 @@ void main() {
     ]);
   });
 
+  testWidgets(
+    'configured create requires provider and model and keeps credential write-only',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      Map<String, String?>? submitted;
+
+      await tester.pumpWidget(
+        _editorTestApp(
+          ProfileEditorSheet(
+            channel: channel,
+            profiles: const [
+              HermesProfile(
+                id: 'default',
+                displayName: 'default',
+                revision: 'rev-default',
+              ),
+            ],
+            stableNames: true,
+            canConfigure: true,
+            onCreate:
+                ({
+                  required name,
+                  cloneFrom,
+                  description,
+                  provider,
+                  model,
+                  providerApiKey,
+                }) async {
+                  submitted = {
+                    'name': name,
+                    'cloneFrom': cloneFrom,
+                    'description': description,
+                    'provider': provider,
+                    'model': model,
+                    'providerApiKey': providerApiKey,
+                  };
+                },
+          ),
+        ),
+      );
+
+      final credentialField = find.widgetWithText(
+        TextFormField,
+        'New provider credential',
+      );
+      expect(
+        tester
+            .widget<EditableText>(
+              find.descendant(
+                of: credentialField,
+                matching: find.byType(EditableText),
+              ),
+            )
+            .obscureText,
+        isTrue,
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Profile name'),
+        'readyqa',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Description'),
+        'Physical lifecycle profile',
+      );
+      final initialCreate = find.widgetWithText(FilledButton, 'Create');
+      await tester.ensureVisible(initialCreate);
+      await tester.tap(initialCreate);
+      await tester.pump();
+      expect(find.text('Enter a model.'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Provider'),
+        'openrouter',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Model'),
+        'openai/gpt-5.2',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'New provider credential'),
+        'write-only-secret',
+      );
+      final createButton = find.widgetWithText(FilledButton, 'Create');
+      await tester.ensureVisible(createButton);
+      await tester.tap(createButton);
+      await tester.pumpAndSettle();
+
+      expect(submitted, {
+        'name': 'readyqa',
+        'cloneFrom': 'default',
+        'description': 'Physical lifecycle profile',
+        'provider': 'openrouter',
+        'model': 'openai/gpt-5.2',
+        'providerApiKey': 'write-only-secret',
+      });
+      expect(find.text('write-only-secret'), findsNothing);
+    },
+  );
+
   testWidgets('editing a persona writes the loaded SOUL revision', (
     tester,
   ) async {
@@ -137,8 +237,16 @@ void main() {
           ),
           stableNames: true,
           canEditSoul: true,
-          onRename: (id, name, revision) async =>
-              renames.add('$id:$name:$revision'),
+          onRename:
+              ({
+                required profileId,
+                required name,
+                required revision,
+                description,
+                provider,
+                model,
+                providerApiKey,
+              }) async => renames.add('$profileId:$name:$revision'),
         ),
       ),
     );

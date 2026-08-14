@@ -20,16 +20,16 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
   static const _apiKeySecureStoragePrefix = 'wing.hermes.profile_api_key.';
   static const _wingLinkTokenSecureStoragePrefix =
       'wing.hermes.profile_wing_link_token.';
+  static const _bundleSecureStorageKey = 'wing.hermes.endpoint_bundle.v1';
 
   final FlutterSecureStorage _secureStorage;
 
   @override
   Future<HermesEndpointConfig?> load() async {
+    final profiles = await loadProfiles();
+    if (profiles.isEmpty) return null;
     final prefs = await _prefsOrNull();
-    if (prefs == null) return null;
-    final profiles = await _loadProfiles(prefs);
-    if (profiles.isEmpty) return _loadLegacy(prefs);
-    final selectedId = prefs.getString(_selectedProfilePreferenceKey);
+    final selectedId = prefs?.getString(_selectedProfilePreferenceKey);
     return profiles.firstWhere(
       (profile) => profile.id == selectedId,
       orElse: () => profiles.first,
@@ -38,12 +38,103 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
 
   @override
   Future<List<HermesEndpointConfig>> loadProfiles() async {
+    List<HermesEndpointConfig>? bundle;
+    try {
+      bundle = await _loadSecureBundle();
+    } catch (_) {
+      // Secure storage can be unavailable in constrained desktop/test contexts.
+      // Reads retain the legacy non-secret fallback; writes still fail closed.
+    }
+    if (bundle != null) return bundle;
     final prefs = await _prefsOrNull();
     if (prefs == null) return const [];
     final profiles = await _loadProfiles(prefs);
     if (profiles.isNotEmpty) return profiles;
     final legacy = await _loadLegacy(prefs);
     return legacy == null ? const [] : [legacy];
+  }
+
+  @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {
+    final normalized = <HermesEndpointConfig>[];
+    final ids = <String>{};
+    final origins = <String>{};
+    for (final profile in profiles) {
+      final id = profile.id?.trim() ?? '';
+      final baseUrl = hermesPublicEndpointBaseUrl(profile.baseUrl);
+      if (id.isEmpty ||
+          baseUrl.isEmpty ||
+          !ids.add(id) ||
+          !origins.add(baseUrl)) {
+        throw ArgumentError(
+          'Endpoint bundle contains invalid or duplicate rows.',
+        );
+      }
+      normalized.add(
+        HermesEndpointConfig(
+          id: id,
+          label: profile.label?.trim(),
+          baseUrl: baseUrl,
+          apiKey: profile.apiKey,
+          wingLinkOrigin: profile.wingLinkOrigin == null
+              ? null
+              : hermesPublicEndpointBaseUrl(profile.wingLinkOrigin!),
+          wingLinkToken: profile.wingLinkToken,
+          wingLinkPendingCredentialId: profile.wingLinkPendingCredentialId,
+        ),
+      );
+    }
+    final payload = jsonEncode([
+      for (final profile in normalized)
+        {
+          'id': profile.id,
+          'baseUrl': profile.baseUrl,
+          if (profile.label?.isNotEmpty ?? false) 'label': profile.label,
+          if (profile.apiKey?.isNotEmpty ?? false) 'apiKey': profile.apiKey,
+          if (profile.wingLinkOrigin?.isNotEmpty ?? false)
+            'wingLinkOrigin': profile.wingLinkOrigin,
+          if (profile.wingLinkToken?.isNotEmpty ?? false)
+            'wingLinkToken': profile.wingLinkToken,
+          if (profile.wingLinkPendingCredentialId?.isNotEmpty ?? false)
+            'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId,
+        },
+    ]);
+    final prefs = await SharedPreferences.getInstance();
+    final legacyProfiles = await _loadProfiles(prefs);
+
+    // This single secure write is the authoritative endpoint-set commit. Do not
+    // destroy the currently readable legacy enrollment until this succeeds.
+    await _secureStorage.write(key: _bundleSecureStorageKey, value: payload);
+
+    // The modern bundle is now authoritative. Purge rollback-readable legacy
+    // credentials and metadata before publishing compatibility projections.
+    final legacyIds = <String>{
+      ...legacyProfiles.map((profile) => profile.id).whereType<String>(),
+      ...normalized.map((profile) => profile.id).whereType<String>(),
+    };
+    for (final id in legacyIds) {
+      await _secureStorage.delete(key: _apiKeyKey(id));
+      await _secureStorage.delete(key: _wingLinkTokenKey(id));
+    }
+    await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
+    await prefs.remove(_legacyBaseUrlPreferenceKey);
+
+    // Shared preferences contain non-secret compatibility metadata only. A
+    // projection failure cannot expose a partial endpoint bundle to modern
+    // readers and must not make a completed secure commit look rolled back.
+    try {
+      await _saveProfileMetadata(prefs, normalized);
+      if (normalized.isEmpty) {
+        await prefs.remove(_selectedProfilePreferenceKey);
+      } else {
+        await prefs.setString(
+          _selectedProfilePreferenceKey,
+          normalized.first.id!,
+        );
+      }
+    } catch (_) {
+      // The secure bundle remains the sole source of truth.
+    }
   }
 
   @override
@@ -56,113 +147,50 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
     final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
-    final profiles = await _loadProfiles(prefs);
-    final fallbackId = _profileIdForBaseUrl(normalizedBaseUrl);
-    final existingIds = profiles
-        .where((profile) => profile.baseUrl == normalizedBaseUrl)
-        .map((profile) => profile.id)
-        .whereType<String>();
-    final id = (profileId?.trim().isNotEmpty ?? false)
+    final profiles = await loadProfiles();
+    final existing = profiles
+        .where(
+          (profile) =>
+              profile.id == profileId || profile.baseUrl == normalizedBaseUrl,
+        )
+        .firstOrNull;
+    final id = profileId?.trim().isNotEmpty ?? false
         ? profileId!.trim()
-        : existingIds.isEmpty
-        ? fallbackId
-        : existingIds.first;
-    final existing = profiles.where((profile) => profile.id == id).firstOrNull;
-    final normalizedWingLinkOrigin = wingLinkOrigin == null
-        ? existing?.wingLinkOrigin
-        : hermesPublicEndpointBaseUrl(wingLinkOrigin);
-    final pendingCredentialId = wingLinkPendingCredentialId == null
-        ? existing?.wingLinkPendingCredentialId
-        : wingLinkPendingCredentialId.trim().isEmpty
-        ? null
-        : wingLinkPendingCredentialId.trim();
+        : existing?.id ?? hermesEndpointIdForBaseUrl(normalizedBaseUrl);
     final next = HermesEndpointConfig(
       id: id,
       label: label?.trim().isEmpty ?? true ? null : label!.trim(),
       baseUrl: normalizedBaseUrl,
       apiKey: apiKey,
-      wingLinkOrigin: normalizedWingLinkOrigin,
+      wingLinkOrigin: wingLinkOrigin == null
+          ? existing?.wingLinkOrigin
+          : hermesPublicEndpointBaseUrl(wingLinkOrigin),
       wingLinkToken: wingLinkToken ?? existing?.wingLinkToken,
-      wingLinkPendingCredentialId: pendingCredentialId,
+      wingLinkPendingCredentialId: wingLinkPendingCredentialId == null
+          ? existing?.wingLinkPendingCredentialId
+          : wingLinkPendingCredentialId.trim().isEmpty
+          ? null
+          : wingLinkPendingCredentialId.trim(),
     );
-    final updated = [
+    await saveAll([
       next,
       for (final profile in profiles)
         if (profile.id != id && profile.baseUrl != normalizedBaseUrl) profile,
-    ];
-    await _saveProfileMetadata(prefs, updated);
-    await prefs.setString(_selectedProfilePreferenceKey, id);
-    await prefs.setString(_legacyBaseUrlPreferenceKey, normalizedBaseUrl);
-    if (apiKey == null || apiKey.isEmpty) {
-      await _secureStorage.delete(key: _apiKeyKey(id));
-      await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
-    } else {
-      await _secureStorage.write(key: _apiKeyKey(id), value: apiKey);
-      await _secureStorage.write(
-        key: _legacyApiKeySecureStorageKey,
-        value: apiKey,
-      );
-    }
-    final controlToken = next.wingLinkToken;
-    if (controlToken == null || controlToken.isEmpty) {
-      await _secureStorage.delete(key: _wingLinkTokenKey(id));
-    } else {
-      await _secureStorage.write(
-        key: _wingLinkTokenKey(id),
-        value: controlToken,
-      );
-    }
+    ]);
   }
 
   @override
   Future<void> deleteProfile(String profileId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final profiles = await _loadProfiles(prefs);
-    final updated = [
+    final profiles = await loadProfiles();
+    await saveAll([
       for (final profile in profiles)
         if (profile.id != profileId) profile,
-    ];
-    await _secureStorage.delete(key: _apiKeyKey(profileId));
-    await _secureStorage.delete(key: _wingLinkTokenKey(profileId));
-    await _saveProfileMetadata(prefs, updated);
-    final selectedId = prefs.getString(_selectedProfilePreferenceKey);
-    if (selectedId == profileId) {
-      if (updated.isEmpty) {
-        await prefs.remove(_selectedProfilePreferenceKey);
-        await prefs.remove(_legacyBaseUrlPreferenceKey);
-        await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
-      } else {
-        await prefs.setString(_selectedProfilePreferenceKey, updated.first.id!);
-        await prefs.setString(
-          _legacyBaseUrlPreferenceKey,
-          updated.first.baseUrl,
-        );
-        final apiKey = updated.first.apiKey;
-        if (apiKey == null || apiKey.isEmpty) {
-          await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
-        } else {
-          await _secureStorage.write(
-            key: _legacyApiKeySecureStorageKey,
-            value: apiKey,
-          );
-        }
-      }
-    }
+    ]);
   }
 
   @override
-  Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    final selectedId = prefs.getString(_selectedProfilePreferenceKey);
-    if (selectedId != null && selectedId.isNotEmpty) {
-      await deleteProfile(selectedId);
-      return;
-    }
-    await prefs.remove(_legacyBaseUrlPreferenceKey);
-    await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
-  }
+  Future<void> clear() => saveAll(const []);
 
   Future<SharedPreferences?> _prefsOrNull() async {
     try {
@@ -180,7 +208,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     );
     final publicBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     return HermesEndpointConfig(
-      id: _profileIdForBaseUrl(publicBaseUrl),
+      id: hermesEndpointIdForBaseUrl(publicBaseUrl),
       baseUrl: publicBaseUrl,
       apiKey: apiKey,
     );
@@ -229,6 +257,47 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     return profiles;
   }
 
+  Future<List<HermesEndpointConfig>?> _loadSecureBundle() async {
+    final raw = await _secureStorage.read(key: _bundleSecureStorageKey);
+    if (raw == null) return null;
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } catch (_) {
+      return const [];
+    }
+    if (decoded is! List) return const [];
+    final profiles = <HermesEndpointConfig>[];
+    final ids = <String>{};
+    final origins = <String>{};
+    for (final item in decoded) {
+      if (item is! Map) return const [];
+      final id = item['id']?.toString() ?? '';
+      final baseUrl = hermesPublicEndpointBaseUrl(
+        item['baseUrl']?.toString() ?? '',
+      );
+      if (id.isEmpty ||
+          baseUrl.isEmpty ||
+          !ids.add(id) ||
+          !origins.add(baseUrl)) {
+        return const [];
+      }
+      profiles.add(
+        HermesEndpointConfig(
+          id: id,
+          baseUrl: baseUrl,
+          label: item['label']?.toString(),
+          apiKey: item['apiKey']?.toString(),
+          wingLinkOrigin: item['wingLinkOrigin']?.toString(),
+          wingLinkToken: item['wingLinkToken']?.toString(),
+          wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
+              ?.toString(),
+        ),
+      );
+    }
+    return profiles;
+  }
+
   Future<void> _saveProfileMetadata(
     SharedPreferences prefs,
     List<HermesEndpointConfig> profiles,
@@ -259,7 +328,4 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
   static String _apiKeyKey(String id) => '$_apiKeySecureStoragePrefix$id';
   static String _wingLinkTokenKey(String id) =>
       '$_wingLinkTokenSecureStoragePrefix$id';
-
-  static String _profileIdForBaseUrl(String baseUrl) =>
-      base64Url.encode(utf8.encode(baseUrl.trim())).replaceAll('=', '');
 }

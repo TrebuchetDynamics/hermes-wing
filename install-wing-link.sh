@@ -13,12 +13,14 @@ custom_prefix=false
 usage() {
   cat <<'EOF'
 Usage:
+  ./install-wing-link.sh [--prefix DIR]
   ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--prefix DIR]
   ./install-wing-link.sh --build [--system | --prefix DIR]
 
-By default, downloads one immutable-tag Wing Link release asset, verifies it
-against the expected SHA-256 and exact byte size supplied out-of-band, validates
-the binary, and atomically installs it for the current user.
+By default, downloads the most recent alpha Wing Link release and verifies it
+against its published checksum. Supplying immutable release metadata verifies
+both the expected SHA-256 and exact byte size out-of-band. The binary is always
+validated and atomically installed for the current user.
 
   --build       Build and install the local Go wing_link package instead
   --system      With --build, install in /usr/local/bin (uses sudo when needed)
@@ -68,29 +70,58 @@ if [[ "$build" == true ]]; then
     exit 2
   }
 
+  destination="$install_dir/wing-link"
+  app_version="$(awk '/^version:/{print $2; exit}' "$script_dir/pubspec.yaml")"
+  app_version="${app_version%%+*}"
+  [[ "$app_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+    echo "Could not determine the Wing Link version from pubspec.yaml." >&2
+    exit 1
+  }
+  revision="unknown"
+  dirty_suffix=""
+  if command -v git >/dev/null 2>&1 && revision="$(git -C "$script_dir" rev-parse --short=8 HEAD 2>/dev/null)"; then
+    if [[ -n "$(git -C "$script_dir" status --porcelain 2>/dev/null)" ]]; then
+      dirty_suffix=".dirty"
+    fi
+  fi
+  build_version="${app_version}-dev+${revision}${dirty_suffix}"
+
+  printf 'Wing Link source build\n'
+  printf '  Source:      %s\n' "$source_dir"
+  printf '  Destination: %s\n' "$destination"
+  printf '  Version:     %s\n\n' "$build_version"
+
   tmp_bin="$(mktemp)"
   trap 'rm -f "$tmp_bin"' EXIT
-  build_args=(-trimpath -o "$tmp_bin")
+  build_args=(-trimpath -ldflags "-X main.version=$build_version" -o "$tmp_bin")
   if [[ "$termux" == true ]]; then
     build_args+=(-buildmode=pie)
   fi
+  printf '[1/3] Building Go package...\n'
   (cd "$source_dir" && go build "${build_args[@]}" .)
 
+  printf '[2/3] Installing binary...\n'
   if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
     command -v sudo >/dev/null 2>&1 || {
       echo "sudo is required for --system." >&2
       exit 1
     }
-    sudo install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
+    sudo install -D -m 0755 "$tmp_bin" "$destination"
   else
-    install -D -m 0755 "$tmp_bin" "$install_dir/wing-link"
+    install -D -m 0755 "$tmp_bin" "$destination"
   fi
 
-  "$install_dir/wing-link" version >/dev/null
-  printf 'Built and installed wing-link to %s\n' "$install_dir/wing-link"
-  if [[ ":$PATH:" != *":$install_dir:"* ]]; then
-    printf 'Add %s to PATH to run wing-link from any directory.\n' "$install_dir"
+  printf '[3/3] Verifying executable...\n'
+  installed_version="$("$destination" version)"
+  printf '\nInstalled: %s\n' "$destination"
+  printf 'Version:   %s\n' "$installed_version"
+  if [[ ":$PATH:" == *":$install_dir:"* ]]; then
+    printf 'Next:      wing-link inspect\n'
+  else
+    printf 'Next:      %s inspect\n' "$destination"
+    printf 'PATH:      Add %s to run wing-link from any directory.\n' "$install_dir"
   fi
+  printf 'Help:      %s help\n' "$destination"
   exit 0
 fi
 
@@ -98,22 +129,44 @@ fi
   echo "--system requires --build." >&2
   exit 2
 }
+auto_release=false
+if [[ -z "$tag" && -z "$expected_sha256" && -z "$expected_size" ]]; then
+  auto_release=true
+elif [[ -z "$tag" || -z "$expected_sha256" || -z "$expected_size" ]]; then
+  echo "--tag, --sha256, and --size must be supplied together." >&2
+  exit 2
+fi
+command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
+command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 1; }
+[[ "$install_dir" == /* ]] || { echo "Install prefix must be absolute." >&2; exit 2; }
+
+if [[ "$auto_release" == true ]]; then
+  releases="$(curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
+    --connect-timeout 15 --max-time 30 \
+    "https://api.github.com/repos/${repository}/releases?per_page=100")"
+  tag="$(printf '%s' "$releases" | grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+"' | awk -F'"' 'NR == 1 { print $4 }' || true)"
+  [[ -n "$tag" ]] || {
+    echo "No alpha Wing Link release was found." >&2
+    exit 1
+  }
+  printf 'Using latest alpha release %s.\n' "$tag"
+fi
+
 [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]] || {
   echo "--tag must be an alpha release tag." >&2
   exit 2
 }
-expected_sha256="${expected_sha256,,}"
-[[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
-  echo "--sha256 must be exactly 64 hexadecimal characters." >&2
-  exit 2
-}
-[[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
-  echo "--size must be the exact positive asset byte count." >&2
-  exit 2
-}
-command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
-command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 1; }
-[[ "$install_dir" == /* ]] || { echo "Install prefix must be absolute." >&2; exit 2; }
+if [[ "$auto_release" == false ]]; then
+  expected_sha256="${expected_sha256,,}"
+  [[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
+    echo "--sha256 must be exactly 64 hexadecimal characters." >&2
+    exit 2
+  }
+  [[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
+    echo "--size must be the exact positive asset byte count." >&2
+    exit 2
+  }
+fi
 
 machine="$(uname -m)"
 case "$machine" in
@@ -162,6 +215,26 @@ rollback() {
 }
 trap rollback EXIT
 
+if [[ "$auto_release" == true ]]; then
+  checksum_manifest="$work_dir/wing-link-checksums.sha256"
+  curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+    --connect-timeout 15 --max-time 30 --max-filesize 65536 \
+    --output "$checksum_manifest" \
+    "https://github.com/${repository}/releases/download/${tag}/wing-link-checksums.sha256"
+  expected_sha256="$(awk -v expected="$asset" '
+    $2 == expected { count++; digest = $1 }
+    END { if (count != 1) exit 1; print digest }
+  ' "$checksum_manifest")" || {
+    echo "Release checksum manifest did not contain exactly one entry for ${asset}." >&2
+    exit 1
+  }
+  expected_sha256="${expected_sha256,,}"
+  [[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
+    echo "Release checksum for ${asset} was invalid." >&2
+    exit 1
+  }
+fi
+
 run_version_probe() {
   local binary="$1"
   local status=0
@@ -181,14 +254,17 @@ run_version_probe() {
 }
 
 url="https://github.com/${repository}/releases/download/${tag}/${asset}"
+download_limit="${expected_size:-52428800}"
 curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
-  --connect-timeout 15 --max-time 300 --max-filesize "$expected_size" \
+  --connect-timeout 15 --max-time 300 --max-filesize "$download_limit" \
   --output "$work_dir/$asset" "$url"
-actual_size="$(wc -c < "$work_dir/$asset" | tr -d '[:space:]')"
-[[ "$actual_size" == "$expected_size" ]] || {
-  echo "Downloaded asset size did not match the expected byte count." >&2
-  exit 1
-}
+if [[ -n "$expected_size" ]]; then
+  actual_size="$(wc -c < "$work_dir/$asset" | tr -d '[:space:]')"
+  [[ "$actual_size" == "$expected_size" ]] || {
+    echo "Downloaded asset size did not match the expected byte count." >&2
+    exit 1
+  }
+fi
 (
   cd "$work_dir"
   printf '%s  %s\n' "$expected_sha256" "$asset" | sha256sum -c -

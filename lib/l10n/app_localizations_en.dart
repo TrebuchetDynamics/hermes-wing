@@ -98,6 +98,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get managedByWingLink => 'Managed by Wing Link';
 
   @override
+  String get profileEnrolled => 'Enrolled';
+
+  @override
+  String get profileNotEnrolled => 'Not enrolled';
+
+  @override
   String get agentNoModel => 'No model selected';
 
   @override
@@ -141,6 +147,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentNameRequired => 'Enter a profile name.';
+
+  @override
+  String get profileDescriptionLabel => 'Description';
+
+  @override
+  String get profileProviderLabel => 'Provider';
+
+  @override
+  String get profileProviderRequired => 'Enter a provider.';
+
+  @override
+  String get profileModelLabel => 'Model';
+
+  @override
+  String get profileModelRequired => 'Enter a model.';
+
+  @override
+  String get profileCredentialLabel => 'New provider credential';
+
+  @override
+  String get profileCredentialHint =>
+      'Optional. This value is write-only and is never shown again.';
+
+  @override
+  String get profileReadinessNotice =>
+      'Saving sends one ‘Hi’ through Hermes to verify that this provider and model can answer.';
 
   @override
   String get cloneFromAgent => 'Clone from';

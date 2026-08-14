@@ -1,5 +1,11 @@
 # Milestone 2 — Providers & Models Implementation Plan
 
+> **Status: superseded planning history (2026-08-14).** The proposed
+> `/api/providers` and `/api/models/*` administration contract was not added to
+> supported Hermes Agent releases. Hermes Agent 0.20 advertises read-only
+> `/api/model/options`, not an API-server model mutation route. Wing must adapt to
+> current advertised contracts instead of executing this cross-repository plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Scoped, profile-aware provider-credential and model-selection contracts + Flutter client, per `docs/superpowers/specs/2026-07-14-milestone2-providers-models-design.md`. The phone is a key-setter and model-switcher, never a key-reader.

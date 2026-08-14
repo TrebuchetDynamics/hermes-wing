@@ -23,40 +23,23 @@ void main() {
     binding.defaultBinaryMessenger.setMockMethodCallHandler(voiceChannel, null);
   });
 
-  test(
-    'Android Kokoro settings select app-owned incremental PCM output',
-    () async {
-      SharedPreferences.setMockInitialValues({
-        'wing.voice.kokoro_tts_enabled': true,
-        'wing.voice.pocket_speech_model': 'kokoro',
-        'wing.voice.pocket_speech_kokoro_model_path': '/model.onnx',
-        'wing.voice.pocket_speech_kokoro_voices_path': '/voices.bin',
-      });
-      final container = ProviderContainer(
-        overrides: [
-          hermesTtsIsAndroidProvider.overrideWithValue(true),
-          hermesPlatformTtsFactoryProvider.overrideWithValue(
-            (_) => _FallbackTts(),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final subscription = container.listen(
-        hermesTextToSpeechServiceProvider,
-        (_, _) {},
-        fireImmediately: true,
-      );
-      addTearDown(subscription.close);
+  test('Hermes Agent TTS is preferred over device TTS', () async {
+    SharedPreferences.setMockInitialValues({});
+    final agent = _FallbackTts();
+    final platform = _FallbackTts();
+    final container = ProviderContainer(
+      overrides: [
+        hermesAgentTtsFactoryProvider.overrideWithValue((_) => agent),
+        hermesPlatformTtsFactoryProvider.overrideWithValue((_) => platform),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await Future<void>.delayed(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
+    await container.read(hermesTextToSpeechServiceProvider)!.speak('reply');
 
-      expect(
-        container.read(hermesTextToSpeechServiceProvider),
-        isA<ReleaseBarrierTextToSpeechService>(),
-      );
-    },
-  );
+    expect(agent.spoken, ['reply']);
+    expect(platform.spoken, isEmpty);
+  });
 
   test('platform TTS waits for offline predecessor disposal', () async {
     SharedPreferences.setMockInitialValues({
@@ -69,7 +52,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         offlineTtsRuntimeOwnerProvider.overrideWithValue(owner),
-        hermesTtsIsAndroidProvider.overrideWithValue(true),
+        hermesAgentTtsFactoryProvider.overrideWithValue((_) => _FailingTts()),
         hermesPlatformTtsFactoryProvider.overrideWithValue((_) => platform),
       ],
     );
@@ -92,6 +75,17 @@ final class _FallbackTts implements TextToSpeechService {
 
   @override
   Future<void> speak(String text) async => spoken.add(text);
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
+}
+
+final class _FailingTts implements TextToSpeechService {
+  @override
+  Future<void> speak(String text) => Future.error(StateError('unavailable'));
 
   @override
   Future<void> stop() async {}

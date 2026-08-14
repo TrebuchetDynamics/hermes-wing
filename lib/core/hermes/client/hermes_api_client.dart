@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../protocol/wing_json.dart';
 import '../models/hermes_capabilities.dart';
@@ -222,6 +223,38 @@ class HermesApiClient {
       body,
     );
     return const HermesSseEventDecoder().decodeJsonEventStream(chunks);
+  }
+
+  Future<String> transcribePcm16(Uint8List pcm16, {String? profile}) async {
+    final wav = _pcm16MonoWav(pcm16, sampleRate: 16000);
+    final response = await _postJson(
+      _scoped(config.audioTranscribeUri, profile),
+      {'data_url': 'data:audio/wav;base64,${base64Encode(wav)}'},
+    );
+    final transcript = wingStringFromJson(
+      response['transcript'],
+      fallback: '',
+    ).trim();
+    if (transcript.isEmpty) {
+      throw const FormatException('Hermes returned an empty transcript.');
+    }
+    return transcript;
+  }
+
+  Future<Uint8List> synthesizeSpeech(String text, {String? profile}) async {
+    final response = await _postJson(_scoped(config.audioSpeakUri, profile), {
+      'text': text.trim(),
+    });
+    final dataUrl = wingStringFromJson(response['data_url'], fallback: '');
+    final data = UriData.parse(dataUrl);
+    if (!data.isBase64 || !data.mimeType.startsWith('audio/')) {
+      throw const FormatException('Hermes returned invalid speech audio.');
+    }
+    final bytes = data.contentAsBytes();
+    if (bytes.isEmpty) {
+      throw const FormatException('Hermes returned empty speech audio.');
+    }
+    return bytes;
   }
 
   Future<HermesRun> startRun({
@@ -642,9 +675,32 @@ class HermesIssuedOperatorToken {
     this.wingLinkOrigin = '',
     this.wingLinkToken = '',
     this.wingLinkCredentialId = '',
+    this.connections = const [],
   });
 
   factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
+    final rawConnections = json['connections'];
+    final connections = <HermesIssuedConnection>[];
+    if (json.containsKey('connections')) {
+      if (rawConnections is! List || rawConnections.isEmpty) {
+        throw const FormatException('Hermes connection bundle is invalid.');
+      }
+      for (final row in rawConnections) {
+        if (row is! Map) {
+          throw const FormatException('Hermes connection bundle is invalid.');
+        }
+        final connection = HermesIssuedConnection.fromJson(
+          Map<String, Object?>.from(row),
+        );
+        if (connection.origin.isEmpty ||
+            connection.token.isEmpty ||
+            connection.profileId.isEmpty ||
+            connection.credentialId.isEmpty) {
+          throw const FormatException('Hermes connection bundle is invalid.');
+        }
+        connections.add(connection);
+      }
+    }
     return HermesIssuedOperatorToken(
       token: wingStringFromJson(json['token'], fallback: ''),
       label: wingStringFromJson(json['label'], fallback: ''),
@@ -658,6 +714,7 @@ class HermesIssuedOperatorToken {
         json['wing_link_credential_id'],
         fallback: '',
       ),
+      connections: List.unmodifiable(connections),
     );
   }
 
@@ -667,6 +724,61 @@ class HermesIssuedOperatorToken {
   final String wingLinkOrigin;
   final String wingLinkToken;
   final String wingLinkCredentialId;
+  final List<HermesIssuedConnection> connections;
+}
+
+/// One Hermes-owned endpoint included in a reviewed Wing Link pairing bundle.
+/// The token is write-only pairing material and must never reach presentation.
+class HermesIssuedConnection {
+  const HermesIssuedConnection({
+    required this.origin,
+    required this.token,
+    required this.label,
+    required this.profileId,
+    this.credentialId = '',
+  });
+
+  factory HermesIssuedConnection.fromJson(Map<String, Object?> json) =>
+      HermesIssuedConnection(
+        origin: wingStringFromJson(json['origin'], fallback: ''),
+        token: wingStringFromJson(json['token'], fallback: ''),
+        label: wingStringFromJson(json['label'], fallback: ''),
+        profileId: wingStringFromJson(json['profile_id'], fallback: ''),
+        credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
+      );
+
+  final String origin;
+  final String token;
+  final String label;
+  final String profileId;
+  final String credentialId;
+}
+
+Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
+  if (pcm16.isEmpty || pcm16.length.isOdd) {
+    throw const FormatException('PCM16 audio must contain complete samples.');
+  }
+  final wav = ByteData(44 + pcm16.length);
+  void ascii(int offset, String value) {
+    for (var i = 0; i < value.length; i++) {
+      wav.setUint8(offset + i, value.codeUnitAt(i));
+    }
+  }
+
+  ascii(0, 'RIFF');
+  wav.setUint32(4, 36 + pcm16.length, Endian.little);
+  ascii(8, 'WAVEfmt ');
+  wav.setUint32(16, 16, Endian.little);
+  wav.setUint16(20, 1, Endian.little);
+  wav.setUint16(22, 1, Endian.little);
+  wav.setUint32(24, sampleRate, Endian.little);
+  wav.setUint32(28, sampleRate * 2, Endian.little);
+  wav.setUint16(32, 2, Endian.little);
+  wav.setUint16(34, 16, Endian.little);
+  ascii(36, 'data');
+  wav.setUint32(40, pcm16.length, Endian.little);
+  wav.buffer.asUint8List(44).setAll(0, pcm16);
+  return wav.buffer.asUint8List();
 }
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {

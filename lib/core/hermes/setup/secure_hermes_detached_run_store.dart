@@ -33,11 +33,8 @@ class SecureHermesDetachedRunStore implements HermesDetachedRunStore {
       if (row is! Map) {
         throw const FormatException('Detached run lease must be an object.');
       }
-      leases.add(
-        HermesDetachedRunLease.fromJson(
-          row.map((key, value) => MapEntry(key.toString(), value)),
-        ),
-      );
+      final json = row.map((key, value) => MapEntry(key.toString(), value));
+      leases.add(HermesDetachedRunLease.fromJson(json));
     }
     if (leases.length > _maximumLeases) {
       throw const FormatException('Detached run store capacity exceeded.');

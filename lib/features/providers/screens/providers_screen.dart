@@ -133,7 +133,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     final token = config?.wingLinkToken?.trim() ?? '';
     final wingLinkProfileId = profileId ?? 'default';
     final wingLinkClient =
-        wingLinkDomainFallbacksEnabled &&
+        wingLinkProviderFallbacksEnabled &&
             !channel.state.canReadProviders &&
             origin != null &&
             origin.host.isNotEmpty &&

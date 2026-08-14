@@ -154,7 +154,7 @@ void main() {
   });
 
   testWidgets(
-    'Wing Link profile fallback stays quarantined when Agent omits profiles',
+    'Wing Link profiles remain manageable when Agent omits profile endpoints',
     (tester) async {
       final channel = FakeHermesChannel(
         status: HermesConnectionStatus.disconnected,
@@ -189,16 +189,330 @@ void main() {
                 token: token,
                 get: (_, _) async {
                   wingLinkCalls++;
-                  return '{"profiles":[]}';
+                  return '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''';
                 },
               ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(wingLinkCalls, 0);
-      expect(find.text('Profiles unavailable'), findsOneWidget);
-      expect(find.text('New Profile'), findsNothing);
+      expect(wingLinkCalls, 1);
+      expect(find.text('Profiles unavailable'), findsNothing);
+      expect(find.text('Link'), findsOneWidget);
+      expect(find.text('New Profile'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Wing Link rows distinguish enrolled endpoints from inventory-only profiles',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'default-endpoint',
+            label: 'Alpha · default',
+            baseUrl: 'https://a.example:8642/p/default',
+            apiKey: 'default-secret',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+          HermesEndpointConfig(
+            id: 'link-endpoint',
+            label: 'Alpha · link',
+            baseUrl: 'https://a.example:8642/p/link',
+            apiKey: 'link-secret',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'default-endpoint': gatewaySummary(['default']),
+          'link-endpoint': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('default-endpoint');
+
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder: ({required origin, required token}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async =>
+                    '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}},{"id":"newbie","name":"Newbie","topology_revision":"top-1","source":"cli","gateway_state":"stopped","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enrolled'), findsOneWidget);
+      final enrolledChat = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('agent-chat-link')),
+      );
+      expect(enrolledChat.onPressed, isNotNull);
+
+      await tester.scrollUntilVisible(find.text('Newbie'), 500);
+      expect(find.text('Not enrolled'), findsOneWidget);
+      final inventoryOnlyChat = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('agent-chat-newbie')),
+      );
+      expect(inventoryOnlyChat.onPressed, isNull);
+    },
+  );
+
+  testWidgets(
+    'Wing Link enrolled profile chat activates its saved scoped endpoint',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'default-endpoint',
+            label: 'Alpha · default',
+            baseUrl: 'https://a.example:8642/p/default',
+            apiKey: 'default-secret',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+          HermesEndpointConfig(
+            id: 'link-endpoint',
+            label: 'Alpha · link',
+            baseUrl: 'https://a.example:8642/p/link',
+            apiKey: 'link-secret',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'default-endpoint': gatewaySummary(['default']),
+          'link-endpoint': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('default-endpoint');
+      channel.connectCalls.clear();
+
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder: ({required origin, required token}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async =>
+                    '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final chatButton = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('agent-chat-link')),
+      );
+      chatButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      expect(channel.connectCalls, hasLength(1));
+      expect(
+        channel.connectCalls.single.baseUrl,
+        'https://a.example:8642/p/link',
+      );
+      expect(channel.connectCalls.single.apiKey, 'link-secret');
+      expect(directory.activeContactId?.gatewayId, 'link-endpoint');
+    },
+  );
+
+  testWidgets('Wing Link stale mutation refreshes inventory before retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.disconnected,
+    );
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://a.example:8642',
+          wingLinkOrigin: 'https://a.example:8654',
+          wingLinkToken: 'wlc-secret',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    var listCalls = 0;
+
+    await tester.pumpWidget(
+      _profilesTestApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: ({required origin, required token}) =>
+            WingLinkClient(
+              origin: origin,
+              token: token,
+              get: (_, _) async {
+                listCalls++;
+                return '''{"profiles":[{"id":"link","name":"link","topology_revision":"rev-$listCalls","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-$listCalls"},"delete":{"revision":"rev-$listCalls"}}}]}''';
+              },
+              patch: (_, _, _) async =>
+                  throw const WingLinkException('Wing Link HTTP 412'),
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final editButton = tester.widget<OutlinedButton>(
+      find.widgetWithText(OutlinedButton, 'Edit').first,
+    );
+    editButton.onPressed!.call();
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, 'link-renamed');
+    final save = find.widgetWithText(FilledButton, 'Save');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect(listCalls, 2);
+    expect(
+      find.text(
+        'This profile changed elsewhere. The latest version has been loaded; '
+        'review it before trying again.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('native Hermes profile API takes precedence over Wing Link', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const [
+        'profiles:read',
+        'profiles:write',
+      ]),
+      profiles: const [
+        HermesProfile(
+          id: 'native',
+          displayName: 'Native profile',
+          revision: 'native-rev',
+        ),
+      ],
+      selectedProfileId: 'native',
+    );
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://a.example:8642',
+          wingLinkOrigin: 'https://a.example:8654',
+          wingLinkToken: 'wlc-secret',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['native']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    var wingLinkCalls = 0;
+
+    await tester.pumpWidget(
+      _profilesTestApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: ({required origin, required token}) =>
+            WingLinkClient(
+              origin: origin,
+              token: token,
+              get: (_, _) async {
+                wingLinkCalls++;
+                return '{"profiles":[]}';
+              },
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(wingLinkCalls, 0);
+    expect(find.text('Managed by Wing Link'), findsNothing);
+  });
+
+  testWidgets(
+    'late native profile contract supersedes an in-flight Wing Link load',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://a.example:8642',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+      final wingLinkResponse = Completer<String>();
+
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder: ({required origin, required token}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) => wingLinkResponse.future,
+              ),
+        ),
+      );
+      await tester.pump();
+      channel.replaceCapabilitiesAndProfiles(
+        _profileCapabilities(const ['profiles:read', 'profiles:write']),
+        const [
+          HermesProfile(
+            id: 'native',
+            displayName: 'Native profile',
+            revision: 'native-rev',
+          ),
+        ],
+      );
+      await tester.pump();
+      expect(find.text('Native profile'), findsOneWidget);
+
+      wingLinkResponse.complete(
+        '''{"profiles":[{"id":"link","name":"Link","topology_revision":"link-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Native profile'), findsOneWidget);
+      expect(find.text('Link'), findsNothing);
     },
   );
 

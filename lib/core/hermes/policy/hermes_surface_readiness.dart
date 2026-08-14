@@ -38,6 +38,16 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
         endpoint.requiredScopes.every(capabilities.auth.allows);
   }
 
+  bool authorizesScopedEndpoint(
+    String name,
+    String method,
+    String path,
+    String scope,
+  ) =>
+      authorizesEndpoint(name, method, path) &&
+      capabilities.auth.allows(scope) &&
+      capabilities.advertisesScopedEndpoint(name, method, path, scope);
+
   final supportsSessions = authorizesEndpoint(
     'sessions',
     'GET',
@@ -89,6 +99,55 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
         '/api/profiles/{name}/soul',
         'profiles:write',
       );
+  final supportsProviderModelConfiguration =
+      capabilities.profileContext.isSupportedQueryContext &&
+      authorizesScopedEndpoint(
+        'providers',
+        'GET',
+        '/api/providers',
+        'providers:read',
+      ) &&
+      authorizesScopedEndpoint(
+        'provider_credential_set',
+        'PUT',
+        '/api/providers/{slug}/credential',
+        'providers:write',
+      ) &&
+      authorizesScopedEndpoint(
+        'provider_credential_delete',
+        'DELETE',
+        '/api/providers/{slug}/credential',
+        'providers:write',
+      ) &&
+      authorizesScopedEndpoint(
+        'provider_credential_validate',
+        'POST',
+        '/api/providers/{slug}/credential/validate',
+        'providers:write',
+      ) &&
+      authorizesScopedEndpoint('models', 'GET', '/api/models', 'models:read') &&
+      authorizesScopedEndpoint(
+        'models_refresh',
+        'POST',
+        '/api/models/refresh',
+        'models:write',
+      ) &&
+      authorizesScopedEndpoint(
+        'models_assignment',
+        'PUT',
+        '/api/models/assignment',
+        'models:write',
+      );
+  final supportsSkillsInventory = authorizesEndpoint(
+    'skills',
+    'GET',
+    '/v1/skills',
+  );
+  final supportsToolsetsInventory = authorizesEndpoint(
+    'toolsets',
+    'GET',
+    '/v1/toolsets',
+  );
   final advertisedServerAudio =
       policy.supportsRealtimeVoice || policy.supportsAudioApi;
 
@@ -184,6 +243,30 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           : supportsPersonaRead
           ? 'Persona/SOUL is readable, but this device cannot write it.'
           : 'Persona/SOUL remains hidden until the gateway advertises the exact scoped profile soul contract.',
+    ),
+    HermesSurfaceReadiness(
+      title: 'Provider/model configuration',
+      status: supportsProviderModelConfiguration
+          ? HermesSurfaceStatus.available
+          : HermesSurfaceStatus.deferred,
+      detail: supportsProviderModelConfiguration
+          ? 'Profile-scoped provider credentials, validation, model refresh, and revisioned assignment are available.'
+          : 'Provider/model configuration remains hidden until Hermes advertises all exact scoped provider and model contracts.',
+    ),
+    HermesSurfaceReadiness(
+      title: 'Skills/toolset mutation',
+      status: supportsSkillsInventory && supportsToolsetsInventory
+          ? HermesSurfaceStatus.readOnly
+          : HermesSurfaceStatus.deferred,
+      detail: supportsSkillsInventory && supportsToolsetsInventory
+          ? 'Hermes advertises read-only inventory; install, remove, enable, and disable remain unavailable without dedicated scoped write contracts.'
+          : 'Skills and toolsets remain unavailable until Hermes advertises their read-only inventory contracts; mutation still requires dedicated scoped write contracts.',
+    ),
+    const HermesSurfaceReadiness(
+      title: 'Profile enrollment/readiness',
+      status: HermesSurfaceStatus.deferred,
+      detail:
+          'Profile inventory and gateway serving do not prove enrollment or readiness. Automatic enrollment remains unavailable until Hermes owns a profile credential acknowledgment and revocation contract.',
     ),
     HermesSurfaceReadiness(
       title: 'Attachments/media',

@@ -153,6 +153,59 @@ class HermesGatewayDirectory extends ChangeNotifier
   HermesEndpointConfig? configForGateway(String gatewayId) =>
       _configsById[gatewayId];
 
+  /// Resolves an independently enrolled endpoint for a profile managed by the
+  /// selected gateway's Wing Link inventory. Inventory membership alone is not
+  /// enrollment: the endpoint must have its own saved bearer credential and
+  /// exact `/p/<profile>` routing on the same reviewed authorities.
+  String? enrolledGatewayIdForManagedProfile({
+    required String sourceGatewayId,
+    required String profileId,
+  }) {
+    final source = _configsById[sourceGatewayId];
+    final sourceHermes = Uri.tryParse(source?.baseUrl ?? '');
+    final sourceWingLink = Uri.tryParse(source?.wingLinkOrigin ?? '');
+    if (source == null ||
+        sourceHermes == null ||
+        sourceWingLink == null ||
+        profileId.trim() != profileId ||
+        profileId.isEmpty) {
+      return null;
+    }
+    for (final entry in _configsById.entries) {
+      final candidate = entry.value;
+      final credential = candidate.apiKey?.trim() ?? '';
+      final candidateHermes = Uri.tryParse(candidate.baseUrl);
+      final candidateWingLink = Uri.tryParse(candidate.wingLinkOrigin ?? '');
+      if (credential.isEmpty ||
+          candidateHermes == null ||
+          candidateWingLink == null ||
+          candidateHermes.scheme != sourceHermes.scheme ||
+          candidateHermes.host.toLowerCase() !=
+              sourceHermes.host.toLowerCase() ||
+          candidateHermes.port != sourceHermes.port ||
+          candidateWingLink.scheme != sourceWingLink.scheme ||
+          candidateWingLink.host.toLowerCase() !=
+              sourceWingLink.host.toLowerCase() ||
+          candidateWingLink.port != sourceWingLink.port) {
+        continue;
+      }
+      final segments = candidateHermes.pathSegments
+          .where((segment) => segment.isNotEmpty)
+          .toList(growable: false);
+      if (segments.length == 2 &&
+          segments.first == 'p' &&
+          segments.last == profileId) {
+        return entry.key;
+      }
+      if (profileId == 'default' &&
+          entry.key == sourceGatewayId &&
+          segments.isEmpty) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
   Future<void> start() async {
     if (_started) return;
     _started = true;
@@ -322,15 +375,19 @@ class HermesGatewayDirectory extends ChangeNotifier
         for (final profile in summary.profiles) profile.id: profile,
       };
       final profileIds = apiProfiles.keys;
+      final endpointProfileId = _profileIdFromEndpoint(config.baseUrl);
       final projected = profileIds.isEmpty
           ? [
               GatewayContact(
                 id: GatewayContactId(
                   gatewayId: gatewayId,
-                  profileId: 'default',
+                  profileId: endpointProfileId ?? 'default',
                 ),
-                gatewayLabel: config.displayLabel,
-                profileName: 'Endpoint contact',
+                gatewayLabel: _gatewayLabelForProfile(
+                  config.displayLabel,
+                  endpointProfileId,
+                ),
+                profileName: endpointProfileId ?? 'Endpoint contact',
                 latestSession: _latestSession(summary.unscopedSessions),
                 sessionCount: summary.unscopedSessions.length,
                 availability: GatewayAvailability.online,
@@ -756,4 +813,22 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (_started) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+}
+
+String? _profileIdFromEndpoint(String baseUrl) {
+  final segments = Uri.tryParse(baseUrl)?.pathSegments ?? const <String>[];
+  return segments.length == 2 &&
+          segments.first == 'p' &&
+          segments.last.trim().isNotEmpty
+      ? segments.last.trim()
+      : null;
+}
+
+String _gatewayLabelForProfile(String label, String? profileId) {
+  final trimmed = label.trim();
+  if (profileId == null) return trimmed;
+  final suffix = ' · $profileId';
+  return trimmed.toLowerCase().endsWith(suffix.toLowerCase())
+      ? trimmed.substring(0, trimmed.length - suffix.length).trim()
+      : trimmed;
 }

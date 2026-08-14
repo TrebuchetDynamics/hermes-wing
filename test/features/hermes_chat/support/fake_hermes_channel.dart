@@ -200,6 +200,13 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     notifyListeners();
   }
 
+  void replaceCapabilitiesAndProfiles(
+    HermesCapabilityDocument capabilities,
+    List<HermesProfile> profiles,
+  ) {
+    _setState(_state.copyWith(capabilities: capabilities, profiles: profiles));
+  }
+
   void replaceSessions(
     List<HermesSession> sessions, {
     required String? activeSessionId,

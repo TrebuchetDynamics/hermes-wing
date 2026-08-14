@@ -66,11 +66,15 @@ void main() {
     );
     expect(readme, contains('Try the web alpha'));
     expect(readme, contains('showcase-mobile.png'));
-    expect(readme, contains('Profile, provider, and model setup belongs to'));
+    expect(readme, contains('Hermes remains the source of truth'));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
     expect(readme, contains('Go 1.26 or newer'));
     expect(readme, contains('~/.local/bin/wing-link setup'));
-    expect(readme, contains('Deprecated Wing Link profile/provider adapters'));
+    expect(readme, contains('authenticated remote management API'));
+    expect(
+      readme,
+      contains("Today, Wing Link's Agent-domain compatibility surface"),
+    );
     expect(readme, isNot(contains('--provider')));
     expect(readme, isNot(contains('--profile')));
     expect(readme, isNot(contains('--model')));

@@ -162,6 +162,20 @@ void main() {
     expect(requests.last, 'DELETE /v1/providers/acme default rev-3');
   });
 
+  test('profile mutation exposes a typed stale-revision failure', () async {
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      patch: (_, _, _) async =>
+          throw const WingLinkException('Wing Link HTTP 412'),
+    );
+
+    await expectLater(
+      client.renameProfile(id: 'qa', name: 'qa2', revision: 'rev-1'),
+      throwsA(isA<WingLinkPreconditionFailed>()),
+    );
+  });
+
   test(
     'acknowledges before profile mutations and sends revision guards',
     () async {
@@ -185,13 +199,38 @@ void main() {
       );
 
       await client.acknowledgeCredential('cred_1');
-      await client.createProfile(name: 'qa', cloneFrom: 'default');
+      await client.createProfile(
+        name: 'qa',
+        cloneFrom: 'default',
+        description: 'Physical lifecycle profile',
+        provider: 'openrouter',
+        model: 'openai/gpt-5.2',
+        providerApiKey: 'write-only-provider-secret',
+      );
       await client.renameProfile(id: 'qa', name: 'qa2', revision: 'rev-1');
       await client.deleteProfile(id: 'qa2', revision: 'rev-2');
 
       expect(requests.first, 'POST /v1/auth/credentials/cred_1/ack {}');
-      expect(requests[1], contains('"clone_from":"default"'));
-      expect(requests[2], contains('"revision":"rev-1"'));
+      expect(
+        requests[1],
+        allOf([
+          contains('"clone_from":"default"'),
+          contains('"description":"Physical lifecycle profile"'),
+          contains('"provider":"openrouter"'),
+          contains('"model":"openai/gpt-5.2"'),
+          contains('"provider_api_key":"write-only-provider-secret"'),
+        ]),
+      );
+      expect(
+        requests[2],
+        allOf([
+          contains('"revision":"rev-1"'),
+          isNot(contains('"description"')),
+          isNot(contains('"provider"')),
+          isNot(contains('"model"')),
+          isNot(contains('"provider_api_key"')),
+        ]),
+      );
       expect(requests.last, 'DELETE /v1/profiles/qa2 rev-2');
     },
   );

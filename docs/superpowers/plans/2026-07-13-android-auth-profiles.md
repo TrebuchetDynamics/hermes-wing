@@ -1,5 +1,11 @@
 # Android Scoped Auth and Profiles Implementation Plan
 
+> **Status: superseded planning history (2026-08-14).** Supported Hermes Agent
+> releases were not modified with the proposed scoped enrollment or `/api/profiles`
+> contract. Current Wing uses Agent API capabilities plus the bounded Wing Link
+> profile compatibility adapter in `docs/adr/runtime-and-delivery.md`. Do not
+> execute this plan against current Hermes Agent.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Establish the secure Android control-plane foundation and deliver Profiles/Agents as the first complete Hermes Desktop capability-parity slice.

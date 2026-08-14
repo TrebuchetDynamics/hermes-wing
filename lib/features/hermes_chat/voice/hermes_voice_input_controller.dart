@@ -249,7 +249,28 @@ class HermesVoiceInputController extends ChangeNotifier {
         );
       case HermesVoiceCaptureStatus.captured:
         final capture = outcome.capture!;
-        final transcript = capture.transcript.trim();
+        var transcript = capture.transcript.trim();
+        if (capture.audio.isNotEmpty && channel is HermesAudioChannel) {
+          try {
+            transcript = (await (channel as HermesAudioChannel).transcribePcm16(
+              capture.audio,
+            )).trim();
+          } catch (_) {
+            // Device transcription remains the compatibility fallback for
+            // older Hermes endpoints and interrupted uploads.
+          }
+          if (_disposed || operationGeneration != _operationGeneration) return;
+          if (!channel.state.isConnected ||
+              channel.state.activeSessionId != captureSessionId) {
+            _capturing = false;
+            _recordCaptureFailure(
+              'Voice capture was discarded because the Hermes session changed.',
+              continuous: effectiveContinuous,
+            );
+            notifyListeners();
+            return;
+          }
+        }
         if (effectiveContinuous && _isSpokenReplyEcho(transcript)) {
           // Keep the reply fingerprint for the next capture too. Android can
           // return the same speaker playback in more than one recognition
@@ -284,7 +305,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         final voiceRunId = channel.startVoiceRun();
         channel.stageVoiceRunTranscript(
           voiceRunId: voiceRunId,
-          transcript: capture.transcript,
+          transcript: transcript,
           duration: capture.duration,
           confidence: capture.confidence,
         );

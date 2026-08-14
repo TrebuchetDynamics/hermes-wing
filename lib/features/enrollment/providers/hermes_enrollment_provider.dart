@@ -93,6 +93,14 @@ enum HermesEnrollmentStatus {
   failed,
 }
 
+bool _sameEndpointAuthority(String baseUrl, Uri authority) {
+  final candidate = Uri.tryParse(baseUrl);
+  return candidate != null &&
+      candidate.scheme == authority.scheme &&
+      candidate.host.toLowerCase() == authority.host.toLowerCase() &&
+      candidate.port == authority.port;
+}
+
 String _safeEnrollmentLabel(String value) => String.fromCharCodes(
   value.runes
       .where(
@@ -247,36 +255,111 @@ class HermesEnrollmentController extends ChangeNotifier {
               issued.wingLinkOrigin != wingLinkOrigin.toString())) {
         throw const FormatException('Wing Link credential did not match');
       }
-      await _store.save(
-        baseUrl: origin.toString(),
-        apiKey: issued.token,
-        label: preview.label,
-        wingLinkOrigin: wingLinkOrigin?.toString(),
-        wingLinkToken: wingLinkOrigin == null ? null : issued.wingLinkToken,
-        wingLinkPendingCredentialId: wingLinkOrigin == null
-            ? null
-            : issued.wingLinkCredentialId,
-      );
-      if (wingLinkOrigin != null) {
-        await _verifyEnrollment(
-          hermesOrigin: origin,
-          hermesToken: issued.token,
-          wingLinkOrigin: wingLinkOrigin,
-          wingLinkToken: issued.wingLinkToken,
+      final connections = issued.connections.isEmpty
+          ? [
+              HermesIssuedConnection(
+                origin: origin.toString(),
+                token: issued.token,
+                label: preview.label,
+                profileId: 'default',
+                credentialId: issued.credentialId,
+              ),
+            ]
+          : issued.connections;
+      final configs = <HermesEndpointConfig>[];
+      final profileIds = <String>{};
+      final connectionOrigins = <String>{};
+      final credentialIds = <String>{};
+      for (final connection in connections) {
+        final connectionOrigin = Uri.parse(connection.origin);
+        final segments = connectionOrigin.pathSegments
+            .where((segment) => segment.isNotEmpty)
+            .toList(growable: false);
+        final isBundle = issued.connections.isNotEmpty;
+        final validPath = !isBundle
+            ? segments.isEmpty
+            : segments.length == 2 &&
+                  segments.first == 'p' &&
+                  segments.last == connection.profileId &&
+                  connection.profileId.isNotEmpty;
+        final sameHermesAuthority =
+            connectionOrigin.scheme == origin.scheme &&
+            connectionOrigin.host.toLowerCase() == origin.host.toLowerCase() &&
+            connectionOrigin.port == origin.port;
+        final uniqueBundleIdentity =
+            !isBundle ||
+            (connection.profileId.isNotEmpty &&
+                connection.credentialId.isNotEmpty &&
+                profileIds.add(connection.profileId) &&
+                connectionOrigins.add(
+                  hermesPublicEndpointBaseUrl(connectionOrigin.toString()),
+                ) &&
+                credentialIds.add(connection.credentialId));
+        if (!sameHermesAuthority ||
+            !validPath ||
+            connectionOrigin.hasQuery ||
+            connectionOrigin.hasFragment ||
+            connectionOrigin.userInfo.isNotEmpty ||
+            connection.token.isEmpty ||
+            !uniqueBundleIdentity) {
+          throw const FormatException('Hermes connection did not match');
+        }
+        configs.add(
+          HermesEndpointConfig(
+            id: hermesEndpointIdForBaseUrl(connection.origin),
+            baseUrl: connection.origin,
+            apiKey: connection.token,
+            label: _safeEnrollmentLabel(connection.label),
+            wingLinkOrigin: wingLinkOrigin?.toString(),
+            wingLinkToken: wingLinkOrigin == null ? null : issued.wingLinkToken,
+            wingLinkPendingCredentialId: wingLinkOrigin == null
+                ? null
+                : issued.wingLinkCredentialId,
+          ),
         );
+      }
+      if (wingLinkOrigin != null) {
+        for (var index = 0; index < connections.length; index++) {
+          await _verifyEnrollment(
+            hermesOrigin: Uri.parse(connections[index].origin),
+            hermesToken: connections[index].token,
+            wingLinkOrigin: wingLinkOrigin,
+            wingLinkToken: issued.wingLinkToken,
+          );
+        }
+      }
+      final existingConfigs = await _store.loadProfiles();
+      final committedIds = configs.map((config) => config.id).toSet();
+      final committedOrigins = configs.map((config) => config.baseUrl).toSet();
+      final committedProfiles = [
+        ...configs,
+        for (final existing in existingConfigs)
+          if (!committedIds.contains(existing.id) &&
+              !committedOrigins.contains(existing.baseUrl) &&
+              (issued.connections.isEmpty ||
+                  !_sameEndpointAuthority(existing.baseUrl, origin)))
+            existing,
+      ];
+      await _store.saveAll(committedProfiles);
+      if (wingLinkOrigin != null) {
         await _acknowledgeWingLinkCredential(
           origin: wingLinkOrigin,
           token: issued.wingLinkToken,
           credentialId: issued.wingLinkCredentialId,
         );
-        await _store.save(
-          baseUrl: origin.toString(),
-          apiKey: issued.token,
-          label: preview.label,
-          wingLinkOrigin: wingLinkOrigin.toString(),
-          wingLinkToken: issued.wingLinkToken,
-          wingLinkPendingCredentialId: '',
-        );
+        await _store.saveAll([
+          for (final profile in committedProfiles)
+            committedIds.contains(profile.id)
+                ? HermesEndpointConfig(
+                    id: profile.id,
+                    baseUrl: profile.baseUrl,
+                    apiKey: profile.apiKey,
+                    label: profile.label,
+                    wingLinkOrigin: profile.wingLinkOrigin,
+                    wingLinkToken: profile.wingLinkToken,
+                  )
+                : profile,
+        ]);
       }
       if (generation != _generation) return;
       _origin = null;

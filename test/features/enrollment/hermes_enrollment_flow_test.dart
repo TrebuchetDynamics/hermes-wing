@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/core/hermes/setup/secure_hermes_endpoint_store.dart';
 import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
 import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/enrollment/services/hermes_connect_intent_source.dart';
@@ -34,6 +37,31 @@ const _issued = HermesIssuedOperatorToken(
   token: _secretToken,
   label: 'Galaxy S24',
   credentialId: 'hoc_1',
+);
+
+const _issuedBundle = HermesIssuedOperatorToken(
+  token: _secretToken,
+  label: 'BlueBlack',
+  credentialId: 'hoc_default',
+  wingLinkOrigin: 'https://hermes.example:8654',
+  wingLinkToken: 'wing-link-secret',
+  wingLinkCredentialId: 'cred_bundle',
+  connections: [
+    HermesIssuedConnection(
+      origin: 'https://hermes.example/p/default',
+      token: 'default-secret',
+      label: 'BlueBlack · default',
+      profileId: 'default',
+      credentialId: 'hoc_default',
+    ),
+    HermesIssuedConnection(
+      origin: 'https://hermes.example/p/sidon',
+      token: 'sidon-secret',
+      label: 'BlueBlack · sidon',
+      profileId: 'sidon',
+      credentialId: 'hoc_sidon',
+    ),
+  ],
 );
 
 class _FakeConnectIntentSource implements HermesConnectIntentSource {
@@ -114,6 +142,186 @@ void main() {
       expect(store.saveCalls.single.displayLabel, 'Galaxy S24');
     });
 
+    test(
+      'legacy enrollment persists through the production store as default',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        FlutterSecureStorage.setMockInitialValues({});
+        final store = SecureHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+        final saved = await store.loadProfiles();
+        expect(saved, hasLength(1));
+        expect(
+          saved.single.id,
+          hermesEndpointIdForBaseUrl('https://hermes.example'),
+        );
+        expect(saved.single.baseUrl, 'https://hermes.example');
+        expect(saved.single.apiKey, _secretToken);
+      },
+    );
+
+    test(
+      'one Wing Link exchange replaces the legacy endpoint with every profile',
+      () async {
+        const legacy = HermesEndpointConfig(
+          id: 'legacy',
+          baseUrl: 'https://hermes.example',
+          apiKey: 'legacy-secret',
+          label: 'BlueBlack',
+        );
+        final store = FakeHermesEndpointStore(
+          initial: legacy,
+          profiles: const [legacy],
+        );
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundle,
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+              }) async {},
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+        final profiles = await store.loadProfiles();
+        expect(profiles, hasLength(2));
+        expect(
+          profiles.map((profile) => profile.baseUrl),
+          containsAll([
+            'https://hermes.example/p/default',
+            'https://hermes.example/p/sidon',
+          ]),
+        );
+        expect(
+          profiles.map((profile) => profile.displayLabel),
+          containsAll(['BlueBlack · default', 'BlueBlack · sidon']),
+        );
+      },
+    );
+
+    test('a named profile cannot claim the unprefixed Hermes origin', () async {
+      final store = FakeHermesEndpointStore();
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async =>
+            const HermesIssuedOperatorToken(
+              token: _secretToken,
+              connections: [
+                HermesIssuedConnection(
+                  origin: 'https://hermes.example',
+                  token: 'sidon-secret',
+                  label: 'Sidon',
+                  profileId: 'sidon',
+                  credentialId: 'hoc_sidon',
+                ),
+              ],
+            ),
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      await controller.confirm();
+
+      expect(controller.status, HermesEnrollmentStatus.failed);
+      expect(store.saveAllCalls, isEmpty);
+    });
+
+    test(
+      'a duplicate profile bundle fails before verification or persistence',
+      () async {
+        var verifyCalls = 0;
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              const HermesIssuedOperatorToken(
+                token: _secretToken,
+                wingLinkOrigin: 'https://hermes.example:8654',
+                wingLinkToken: 'wlc-control-secret',
+                wingLinkCredentialId: 'cred_123',
+                connections: [
+                  HermesIssuedConnection(
+                    origin: 'https://hermes.example/p/sidon',
+                    token: 'first',
+                    label: 'Sidon',
+                    profileId: 'sidon',
+                    credentialId: 'hoc_first',
+                  ),
+                  HermesIssuedConnection(
+                    origin: 'https://hermes.example/p/sidon/',
+                    token: 'second',
+                    label: 'Sidon duplicate',
+                    profileId: 'sidon',
+                    credentialId: 'hoc_second',
+                  ),
+                ],
+              ),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {
+                verifyCalls++;
+              },
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.failed);
+        expect(
+          verifyCalls,
+          0,
+          reason: 'all rows validate before any network verification',
+        );
+        expect(store.saveAllCalls, isEmpty);
+      },
+    );
+
     test('hostile labels are bounded before review and persistence', () async {
       final store = FakeHermesEndpointStore();
       final preview = HermesEnrollmentPreview(
@@ -175,10 +383,12 @@ void main() {
     );
 
     test(
-      'Wing Link control token is acknowledged before secure persistence',
+      'bundle verifies and commits before Wing Link acknowledgment',
       () async {
         final events = <String>[];
-        final store = FakeHermesEndpointStore();
+        final store = FakeHermesEndpointStore(
+          onSaveAll: () => events.add('committed'),
+        );
         final controller = HermesEnrollmentController(
           inspectEnrollment: ({required origin, required code}) async =>
               _preview,
@@ -216,17 +426,30 @@ void main() {
 
         expect(events, [
           'verified',
+          'committed',
           'https://hermes.example:8654|wlc-control-secret|cred_123',
+          'committed',
         ]);
         expect(controller.status, HermesEnrollmentStatus.confirmed);
-        expect(store.saveCalls, hasLength(2));
-        expect(store.saveCalls.first.wingLinkPendingCredentialId, 'cred_123');
+        expect(store.saveAllCalls, hasLength(2));
+        expect(store.saveAllCalls.first, hasLength(1));
         expect(
-          store.saveCalls.last.wingLinkOrigin,
+          store.saveAllCalls.first.single.wingLinkOrigin,
           'https://hermes.example:8654',
         );
-        expect(store.saveCalls.last.wingLinkToken, 'wlc-control-secret');
-        expect(store.saveCalls.last.wingLinkPendingCredentialId, '');
+        expect(
+          store.saveAllCalls.first.single.wingLinkToken,
+          'wlc-control-secret',
+        );
+        expect(
+          store.saveAllCalls.first.single.wingLinkPendingCredentialId,
+          'cred_123',
+        );
+        expect(
+          store.saveAllCalls.last.single.wingLinkPendingCredentialId,
+          isNull,
+          reason: 'successful acknowledgment must clear durable pending state',
+        );
       },
     );
 
@@ -425,6 +648,40 @@ void main() {
       expect(store.deleteProfileCalls, isEmpty);
       expect(store.clearCalls, 0);
     });
+
+    test(
+      'same-named profiles from different gateways remain distinct',
+      () async {
+        final store = FakeHermesEndpointStore(
+          profiles: const [
+            HermesEndpointConfig(
+              id: 'default',
+              label: 'Other default',
+              baseUrl: 'https://other.example',
+              apiKey: 'other-key',
+            ),
+          ],
+        );
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+        await controller.confirm();
+
+        final profiles = await store.loadProfiles();
+        expect(
+          profiles.map((profile) => profile.baseUrl),
+          containsAll(['https://hermes.example', 'https://other.example']),
+        );
+        expect(profiles.map((profile) => profile.id).toSet(), hasLength(2));
+      },
+    );
   });
 
   group('HermesEnrollmentScreen (widget flow)', () {

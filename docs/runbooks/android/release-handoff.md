@@ -86,20 +86,29 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup values separately with `wing-cli info` and paste tokens into Hermes Wing only.
+- Share setup separately. Prefer loopback `wing-link pair`, or `wing-link pair
+  --remote` only through an authenticated encrypted VPN, then use **Connect to
+  Hermes → Scan QR code**. For an existing gateway, enter its origin and
+  credential manually.
 - Treat release signing keys as external secrets; do not add them to this repository or to issue reports.
 
 ## Quick smoke after install
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Paste a reachable Hermes base URL and token from `wing-cli info`.
+3. Pair locally with `wing-link pair`, pair through an authenticated encrypted VPN
+   with the documented `--remote` flow, or enter a reachable Hermes origin and
+   existing credential through the manual connection form.
 4. Send one short text turn to confirm the installed app can reach the trusted gateway.
 
 ## Continuous voice smoke after install
 
 Use a responsive Android target only. If ADB lists the target but `adb shell true` hangs or times out, the target is not valid for this smoke.
-For the active Hermes companion goal, follow `docs/runbooks/android/live-mic-smoke.md` after install: connect to a configured Hermes Agent API with real provider/model credentials, tap Speak, verify the spoken phrase becomes a Hermes text turn with a provider-backed reply, then verify continuous voice capture → Hermes reply → TTS → re-arm. Installing the APK is not a physical-audio receipt.
+For the active Hermes Wing goal, follow `docs/runbooks/android/live-mic-smoke.md`
+after install: connect to a configured Hermes Agent API with real provider/model
+credentials, tap Speak, verify the spoken phrase becomes a Hermes text turn with
+a provider-backed reply, then verify continuous voice capture → Hermes reply →
+TTS → re-arm. Installing the APK is not a physical-audio receipt.
 
 Check for an Android speech recognizer before judging Hermes Wing voice behavior:
 

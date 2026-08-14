@@ -4,9 +4,20 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
 
 typedef ProfileCreateCallback =
-    Future<void> Function(String name, String? cloneFrom);
+    Future<void> Function({
+      required String name,
+      String? cloneFrom,
+      String? description,
+      String? provider,
+      String? model,
+      String? providerApiKey,
+    });
 typedef ProfileRenameCallback =
-    Future<void> Function(String profileId, String name, String revision);
+    Future<void> Function({
+      required String profileId,
+      required String name,
+      required String revision,
+    });
 typedef ProfileDeleteCallback =
     Future<void> Function(String profileId, String revision);
 
@@ -18,6 +29,7 @@ class ProfileEditorSheet extends StatefulWidget {
     this.canEditSoul = false,
     this.canDelete = false,
     this.stableNames = false,
+    this.canConfigure = false,
     this.onCreate,
     this.onRename,
     this.onDelete,
@@ -30,6 +42,7 @@ class ProfileEditorSheet extends StatefulWidget {
   final bool canEditSoul;
   final bool canDelete;
   final bool stableNames;
+  final bool canConfigure;
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
@@ -42,6 +55,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   final _personaController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _providerController = TextEditingController();
+  final _modelController = TextEditingController();
+  final _credentialController = TextEditingController();
   String? _cloneFrom;
   String? _personaRevision;
   String _originalPersona = '';
@@ -72,6 +89,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   void dispose() {
     _nameController.dispose();
     _personaController.dispose();
+    _descriptionController.dispose();
+    _providerController.dispose();
+    _modelController.dispose();
+    _credentialController.dispose();
     super.dispose();
   }
 
@@ -148,13 +169,28 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         if (onCreate == null) {
           await widget.channel.createProfile(name: name, cloneFrom: _cloneFrom);
         } else {
-          await onCreate(name, _cloneFrom);
+          await onCreate(
+            name: name,
+            cloneFrom: _cloneFrom,
+            description: _descriptionController.text.trim(),
+            provider: _providerController.text.trim(),
+            model: _modelController.text.trim(),
+            providerApiKey: _credentialController.text.isEmpty
+                ? null
+                : _credentialController.text,
+          );
         }
       } else {
         final currentName = widget.stableNames
             ? profile.id
             : profile.displayName;
-        if (name != currentName) {
+        final hasConfigurationChange =
+            widget.canConfigure &&
+            (_descriptionController.text.trim().isNotEmpty ||
+                _providerController.text.trim().isNotEmpty ||
+                _modelController.text.trim().isNotEmpty ||
+                _credentialController.text.isNotEmpty);
+        if (name != currentName || hasConfigurationChange) {
           final onRename = widget.onRename;
           if (onRename == null) {
             await widget.channel.renameProfile(
@@ -163,7 +199,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
               revision: profile.revision,
             );
           } else {
-            await onRename(profile.id, name, profile.revision);
+            await onRename(
+              profileId: profile.id,
+              name: name,
+              revision: profile.revision,
+            );
           }
         }
         final personaRevision = _personaRevision;
@@ -189,6 +229,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             : strings.profileOperationFailed;
       });
     } finally {
+      _credentialController.clear();
       if (mounted) setState(() => _saving = false);
     }
   }
@@ -264,6 +305,136 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   onChanged: _saving
                       ? null
                       : (value) => setState(() => _cloneFrom = value),
+                ),
+                if (widget.canConfigure) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: strings.profileDescriptionLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _providerController,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: strings.profileProviderLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final provider = value?.trim() ?? '';
+                      if (!_editing && provider.isEmpty) {
+                        return strings.profileProviderRequired;
+                      }
+                      if (_editing &&
+                          provider.isEmpty &&
+                          _modelController.text.trim().isNotEmpty) {
+                        return strings.profileProviderRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _modelController,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: strings.profileModelLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final model = value?.trim() ?? '';
+                      if (!_editing && model.isEmpty) {
+                        return strings.profileModelRequired;
+                      }
+                      if (_editing &&
+                          model.isEmpty &&
+                          _providerController.text.trim().isNotEmpty) {
+                        return strings.profileModelRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.profileReadinessNotice),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _credentialController,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const <String>[],
+                    decoration: InputDecoration(
+                      labelText: strings.profileCredentialLabel,
+                      helperText: strings.profileCredentialHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ],
+              if (profile != null && widget.canConfigure) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  minLines: 2,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: strings.profileDescriptionLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _providerController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.profileProviderLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final provider = value?.trim() ?? '';
+                    if (provider.isEmpty &&
+                        _modelController.text.trim().isNotEmpty) {
+                      return strings.profileProviderRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _modelController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.profileModelLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final model = value?.trim() ?? '';
+                    if (model.isEmpty &&
+                        _providerController.text.trim().isNotEmpty) {
+                      return strings.profileModelRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Text(strings.profileReadinessNotice),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _credentialController,
+                  obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  autofillHints: const <String>[],
+                  decoration: InputDecoration(
+                    labelText: strings.profileCredentialLabel,
+                    helperText: strings.profileCredentialHint,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
               ],
               if (profile != null && widget.canEditSoul) ...[

@@ -244,6 +244,18 @@ abstract class AppLocalizations {
   /// **'Managed by Wing Link'**
   String get managedByWingLink;
 
+  /// No description provided for @profileEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get profileEnrolled;
+
+  /// No description provided for @profileNotEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enrolled'**
+  String get profileNotEnrolled;
+
   /// No description provided for @agentNoModel.
   ///
   /// In en, this message translates to:
@@ -321,6 +333,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a profile name.'**
   String get agentNameRequired;
+
+  /// No description provided for @profileDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get profileDescriptionLabel;
+
+  /// No description provided for @profileProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get profileProviderLabel;
+
+  /// No description provided for @profileProviderRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a provider.'**
+  String get profileProviderRequired;
+
+  /// No description provided for @profileModelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get profileModelLabel;
+
+  /// No description provided for @profileModelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a model.'**
+  String get profileModelRequired;
+
+  /// No description provided for @profileCredentialLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New provider credential'**
+  String get profileCredentialLabel;
+
+  /// No description provided for @profileCredentialHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. This value is write-only and is never shown again.'**
+  String get profileCredentialHint;
+
+  /// No description provided for @profileReadinessNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving sends one ‘Hi’ through Hermes to verify that this provider and model can answer.'**
+  String get profileReadinessNotice;
 
   /// No description provided for @cloneFromAgent.
   ///

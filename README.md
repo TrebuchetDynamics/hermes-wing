@@ -57,7 +57,9 @@ tools, approvals, profiles, and configuration.
 
 Hermes Agent is a self-hosted AI agent with tools, persistent sessions, profiles,
 and messaging gateways. Wing adds a dedicated visual client for conversations,
-run activity, approvals, configuration, and voice.
+run activity, approvals, capability-gated administration, and voice. See the
+[official Hermes Agent documentation](https://hermes-agent.nousresearch.com/docs/)
+for Agent installation, providers, models, profiles, and gateway configuration.
 
 ## Try it
 
@@ -105,9 +107,11 @@ credential over non-loopback plaintext HTTP.
 
 ### Set up a Hermes host and pair Android
 
-[Wing Link](wing_link/) is the optional host-local setup and pairing helper. It
-can install or adopt the pinned Hermes Agent build, prepare authentication, start
-the gateway, and create a short-lived pairing QR code.
+[Wing Link](docs/product/wing-link.md) is the authenticated remote management API
+that runs beside Hermes Agent. It can install or adopt the pinned Agent build,
+prepare authentication, control the gateway, and create a short-lived pairing QR
+code. The current HTTP service binds loopback plus a selected or automatically
+discovered local private-LAN/Tailscale interface.
 
 The host needs Git, Go 1.26 or newer, and network access for the pinned Hermes
 installer. Persistent Wing Link service management is currently implemented for
@@ -119,24 +123,46 @@ cd hermes-wing
 ./install-wing-link.sh --build
 ~/.local/bin/wing-link setup
 hermes setup
-hermes gateway restart
 ```
 
 The installer defaults to `~/.local/bin`; add it to `PATH` if you prefer the
-unqualified `wing-link` command. Profile, provider, and model setup belongs to
-Hermes-owned interfaces. Deprecated Wing Link profile/provider adapters remain
-compiled only for rollback compatibility and their routes are disabled. After
-Hermes is ready, pair the phone:
+unqualified `wing-link` command. `wing-link setup` installs or adopts Hermes,
+prepares API access, and starts the local runtime. `hermes setup` remains the
+authoritative wizard for provider, model, tools, and messaging configuration.
+Today, Wing Link's Agent-domain compatibility surface is fixed profile
+list/create/rename/delete plus transactional new-profile setup for an allowlisted
+provider, model, and optional write-only provider credential. General provider
+management, all existing-profile provider or credential edits, and per-profile
+Hermes Project creation remain unshipped. After Hermes is ready, pair the phone.
+
+`wing-link setup` deliberately binds the Hermes Agent API to loopback. Exposing
+Wing Link does **not** expose the direct Agent data plane. Before remote Android
+pairing, make the Agent listener reachable on the same trusted VPN address, then
+restart and verify it:
+
+```bash
+hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
+hermes gateway restart
+curl --fail http://<trusted-vpn-ip>:8642/health
+```
+
+Do not bind the Agent API to a public interface. With both services reachable on
+the trusted VPN address:
 
 ```bash
 WING_HERMES_URL=http://<trusted-host-ip>:8642 \
 WING_LINK_URL=http://<trusted-host-ip>:8654 \
-~/.local/bin/wing-link pair
+WING_LINK_PAIRING_OVER_ENCRYPTED_VPN=1 \
+~/.local/bin/wing-link pair --remote
 ```
 
+Plaintext pairing is loopback-only by default. The explicit VPN flag is accepted
+only for an authenticated encrypted VPN interface; it must never be used to
+authorize ordinary LAN or public-interface pairing.
+
 Scan the code from **Connect to Hermes → Scan QR code**, review the origins and
-requested access, then confirm. The pairing code is single-use, expires after five
-minutes, and contains no bearer credential.
+requested access, then confirm. The pairing code expires after five minutes and
+contains no bearer credential; exchange is idempotent until acknowledgment.
 
 See [Android Hermes setup](docs/runbooks/android-hermes-setup.md) for VPN routing,
 firewalls, service management, and recovery.
@@ -144,13 +170,16 @@ firewalls, service management, and recovery.
 ## The three pieces
 
 - **Hermes Wing** is the Flutter client on Android, web, and desktop.
-- **Wing Link** is an optional local helper for installation, pairing, service
-  lifecycle, health, and diagnostics. Deprecated domain adapters are disabled.
+- **Wing Link** is the remote management API on the Agent host for installation,
+  pairing, service lifecycle, health, diagnostics, and the shipped fixed profile
+  adapter, including bounded new-profile provider setup. Approved-directory and
+  general provider operations are planned. It is not a general CLI or file bridge.
 - **Hermes Agent** owns the agent runtime and its sessions, profiles, tools,
   providers, approvals, and configuration.
 
-Wing connects to the Hermes HTTPS API and SSE event stream. It does not read
-Hermes files or keep a second copy of agent state. The
+Wing connects directly to the Hermes HTTP(S) API and SSE event stream for chat
+and Agent state, and separately to Wing Link for host management. It does not
+keep a second copy of Agent state. The
 [compatibility contract](docs/product/hermes-compatibility.md) documents the API,
 permissions, and version behavior.
 
@@ -158,8 +187,10 @@ permissions, and version behavior.
 
 Wing stores credentials through platform secure storage, never puts bearer
 credentials in pairing QR codes, and does not replay administrative changes after
-a reconnect. Provider keys are write-only in Wing. Use HTTPS or a trusted encrypted
-network for remote access.
+a reconnect. New-profile provider credentials are write-only and travel to the
+Hermes CLI through stdin; existing-profile credential edits remain blocked. The
+planned Wing Link folder picker returns only child folders under locally approved
+roots, never file entries. Use HTTPS or a trusted encrypted VPN for remote access.
 
 Read [SECURITY.md](SECURITY.md) and the
 [threat model](docs/security/threat-model.md) before exposing Hermes beyond a
@@ -190,6 +221,9 @@ required checks, and current contribution guidance.
 - [Documentation index](docs/README.md)
 - [Android setup](docs/runbooks/android-hermes-setup.md)
 - [Hermes compatibility](docs/product/hermes-compatibility.md)
+- [Wing Link remote management](docs/product/wing-link.md)
+- [Wing Link implementation plan](docs/plans/wing-link-remote-management.md)
+- [Official Hermes Agent documentation](https://hermes-agent.nousresearch.com/docs/)
 - [Architecture decisions](docs/adr/README.md)
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)

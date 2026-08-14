@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/features/hermes_chat/voice/hermes_voice_input_controller.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_capture_failures.dart';
@@ -39,6 +40,57 @@ void main() {
       expect(channel.state.activeMessages, isEmpty);
     },
   );
+
+  test(
+    'captured audio is transcribed by Hermes Agent before sending',
+    () async {
+      final channel = _AudioFakeHermesChannel();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => FakeVoiceCaptureService(
+          audio: Uint8List.fromList([1, 2]),
+          transcript: 'device transcript',
+          duration: const Duration(seconds: 1),
+          confidence: 0.9,
+        ),
+        textToSpeechService: () => null,
+        settings: () => const WingVoiceSettings(),
+        onDraft: (_) {},
+      );
+      addTearDown(controller.dispose);
+
+      await controller.captureAndSend();
+
+      expect(channel.uploadedPcm, [1, 2]);
+      expect(channel.sentVoiceTranscripts, ['agent transcript']);
+    },
+  );
+
+  test('session switch during audio upload discards the voice turn', () async {
+    final channel = _AudioFakeHermesChannel(blockTranscription: true);
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => FakeVoiceCaptureService(
+        audio: Uint8List.fromList([1, 2]),
+        transcript: 'device transcript',
+        duration: const Duration(seconds: 1),
+        confidence: 0.9,
+      ),
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    final sending = controller.captureAndSend();
+    await pumpEventQueue();
+    await channel.selectSession('sess_2');
+    channel.completeTranscription();
+    await sending;
+
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(controller.error, contains('session changed'));
+  });
 
   test(
     'one-shot voice sends and speaks the Hermes reply without rearming',
@@ -1551,6 +1603,26 @@ class _SynchronouslyThrowingStoppingTextToSpeechService
 
   @override
   Future<void> dispose() => stop();
+}
+
+class _AudioFakeHermesChannel extends FakeHermesChannel
+    implements HermesAudioChannel {
+  _AudioFakeHermesChannel({bool blockTranscription = false})
+    : _transcription = blockTranscription ? Completer<String>() : null;
+
+  final Completer<String>? _transcription;
+  List<int>? uploadedPcm;
+
+  @override
+  Future<String> transcribePcm16(Uint8List pcm16) async {
+    uploadedPcm = pcm16;
+    return _transcription?.future ?? 'agent transcript';
+  }
+
+  void completeTranscription() => _transcription?.complete('agent transcript');
+
+  @override
+  Future<Uint8List> synthesizeSpeech(String text) async => Uint8List(0);
 }
 
 class _StreamingVoiceChannel extends FakeHermesChannel {

@@ -115,6 +115,103 @@ void main() {
     );
   });
 
+  final enrollmentBoundaryCases =
+      <({String name, HermesEndpointConfig candidate})>[
+        (
+          name:
+              'managed profile enrollment rejects a different Hermes authority',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://other.example:8642/p/link',
+            apiKey: 'candidate-key',
+            wingLinkOrigin: 'https://control.example:8654',
+          ),
+        ),
+        (
+          name:
+              'managed profile enrollment rejects a different Wing Link authority',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://hermes.example:8642/p/link',
+            apiKey: 'candidate-key',
+            wingLinkOrigin: 'https://other-control.example:8654',
+          ),
+        ),
+        (
+          name:
+              'managed profile enrollment rejects a blank endpoint credential',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://hermes.example:8642/p/link',
+            apiKey: '   ',
+            wingLinkOrigin: 'https://control.example:8654',
+          ),
+        ),
+      ];
+
+  for (final boundaryCase in enrollmentBoundaryCases) {
+    test(boundaryCase.name, () async {
+      const source = HermesEndpointConfig(
+        id: 'source',
+        baseUrl: 'https://hermes.example:8642/p/default',
+        apiKey: 'source-key',
+        wingLinkOrigin: 'https://control.example:8654',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(
+          profiles: [source, boundaryCase.candidate],
+        ),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'source': gatewaySummary(['default']),
+          'candidate': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      await directory.refresh();
+
+      expect(
+        directory.enrolledGatewayIdForManagedProfile(
+          sourceGatewayId: 'source',
+          profileId: 'link',
+        ),
+        isNull,
+      );
+    });
+  }
+
+  test('profile-prefixed endpoints keep distinct contact identities', () async {
+    const config = HermesEndpointConfig(
+      id: 'sidon-endpoint',
+      label: 'BlueBlack · sidon',
+      baseUrl: 'https://home.example/p/sidon',
+    );
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: const [config]),
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'sidon-endpoint': const GatewaySummary(
+          profiles: [],
+          sessionsByProfile: {},
+          unscopedSessions: [],
+        ),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+
+    await directory.refresh();
+
+    expect(directory.contacts.single.id.profileId, 'sidon');
+    expect(directory.contacts.single.gatewayLabel, 'BlueBlack');
+    expect(directory.contacts.single.profileName, 'sidon');
+  });
+
   test(
     'API summary loader does not probe profiles without profiles read scope',
     () async {
@@ -1074,6 +1171,9 @@ class _ThrowingHermesEndpointStore implements HermesEndpointStore {
   @override
   Future<List<HermesEndpointConfig>> loadProfiles() async =>
       throw StateError('secure storage unavailable');
+
+  @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {}
 
   @override
   Future<void> save({

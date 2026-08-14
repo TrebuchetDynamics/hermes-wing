@@ -124,6 +124,10 @@ class WingLinkException implements Exception {
   String toString() => message;
 }
 
+class WingLinkPreconditionFailed extends WingLinkException {
+  const WingLinkPreconditionFailed() : super('Wing Link HTTP 412');
+}
+
 class WingLinkClient {
   WingLinkClient({
     required Uri origin,
@@ -249,12 +253,23 @@ class WingLinkClient {
   Future<WingLinkProfile> createProfile({
     required String name,
     String? cloneFrom,
+    String? description,
+    String? provider,
+    String? model,
+    String? providerApiKey,
   }) => _mutate(
     'POST',
     '/v1/profiles',
     body: {
       'name': name,
       if (cloneFrom != null && cloneFrom.isNotEmpty) 'clone_from': cloneFrom,
+      if (description != null && description.trim().isNotEmpty)
+        'description': description.trim(),
+      if (provider != null && provider.trim().isNotEmpty)
+        'provider': provider.trim(),
+      if (model != null && model.trim().isNotEmpty) 'model': model.trim(),
+      if (providerApiKey != null && providerApiKey.isNotEmpty)
+        'provider_api_key': providerApiKey,
     },
   );
 
@@ -262,20 +277,35 @@ class WingLinkClient {
     required String id,
     required String name,
     required String revision,
-  }) => _mutate(
-    'PATCH',
-    '/v1/profiles/${Uri.encodeComponent(id)}',
-    body: {'name': name, 'revision': revision},
+  }) => _profileMutation(
+    () => _mutate(
+      'PATCH',
+      '/v1/profiles/${Uri.encodeComponent(id)}',
+      body: {'name': name, 'revision': revision},
+    ),
   );
 
   Future<void> deleteProfile({
     required String id,
     required String revision,
   }) async {
-    await _delete(_uri('/v1/profiles/${Uri.encodeComponent(id)}'), {
-      ..._headers,
-      'If-Match': revision,
-    });
+    await _profileMutation(
+      () => _delete(_uri('/v1/profiles/${Uri.encodeComponent(id)}'), {
+        ..._headers,
+        'If-Match': revision,
+      }),
+    );
+  }
+
+  Future<T> _profileMutation<T>(Future<T> Function() mutation) async {
+    try {
+      return await mutation();
+    } catch (error) {
+      if (error.toString().contains('HTTP 412')) {
+        throw const WingLinkPreconditionFailed();
+      }
+      rethrow;
+    }
   }
 
   Future<WingLinkProfile> _mutate(

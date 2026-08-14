@@ -778,8 +778,10 @@ void main() {
 
     expect(harness.directory.activeContactId, isNull);
     expect(harness.store.deleteProfileCalls, isEmpty);
-    expect(find.text('Alpha · AGENT-A'), findsOneWidget);
-    expect(find.text('Beta · AGENT-B'), findsOneWidget);
+    expect(find.text('AGENT-A'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+    expect(find.text('AGENT-B'), findsOneWidget);
+    expect(find.text('Beta'), findsOneWidget);
   });
 
   testWidgets('contact opens when restoring its latest session fails', (
@@ -823,8 +825,10 @@ void main() {
 
     expect(harness.directory.activeContactId, isNull);
     expect(harness.store.deleteProfileCalls, isEmpty);
-    expect(find.text('Alpha · AGENT-A'), findsOneWidget);
-    expect(find.text('Beta · AGENT-B'), findsOneWidget);
+    expect(find.text('AGENT-A'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+    expect(find.text('AGENT-B'), findsOneWidget);
+    expect(find.text('Beta'), findsOneWidget);
   });
 
   testWidgets('system back preserves the active-work switch guard', (
@@ -882,8 +886,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(harness.store.deleteProfileCalls, ['a']);
-    expect(find.text('Alpha · AGENT-A'), findsNothing);
-    expect(find.text('Beta · AGENT-B'), findsOneWidget);
+    expect(find.text('AGENT-A'), findsNothing);
+    expect(find.text('Alpha'), findsNothing);
+    expect(find.text('AGENT-B'), findsOneWidget);
+    expect(find.text('Beta'), findsOneWidget);
   });
 
   testWidgets('resume fully reconnects the active contact only', (

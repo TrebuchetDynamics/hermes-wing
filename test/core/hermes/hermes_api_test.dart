@@ -6,7 +6,105 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 
+const _providerModelContracts =
+    <String, ({String method, String path, String scope})>{
+      'providers': (
+        method: 'GET',
+        path: '/api/providers',
+        scope: 'providers:read',
+      ),
+      'provider_credential_set': (
+        method: 'PUT',
+        path: '/api/providers/{slug}/credential',
+        scope: 'providers:write',
+      ),
+      'provider_credential_delete': (
+        method: 'DELETE',
+        path: '/api/providers/{slug}/credential',
+        scope: 'providers:write',
+      ),
+      'provider_credential_validate': (
+        method: 'POST',
+        path: '/api/providers/{slug}/credential/validate',
+        scope: 'providers:write',
+      ),
+      'models': (method: 'GET', path: '/api/models', scope: 'models:read'),
+      'models_refresh': (
+        method: 'POST',
+        path: '/api/models/refresh',
+        scope: 'models:write',
+      ),
+      'models_assignment': (
+        method: 'PUT',
+        path: '/api/models/assignment',
+        scope: 'models:write',
+      ),
+    };
+
+Map<String, Object?> _providerModelReadinessCapabilities({
+  String? omitEndpoint,
+  String? corruptMethodFor,
+  String? corruptPathFor,
+  String? omitDomainScopeFor,
+  String? omitUniqueGrantFor,
+}) {
+  final uniqueScopes = {
+    for (final name in _providerModelContracts.keys) name: 'contract:$name',
+  };
+  final grants = <String>{
+    for (final contract in _providerModelContracts.values) contract.scope,
+    ...uniqueScopes.values,
+  };
+  if (omitUniqueGrantFor case final name?) {
+    grants.remove(uniqueScopes[name]);
+  }
+  return {
+    'schema_version': 1,
+    'profile_context': {
+      'type': 'query',
+      'name': 'profile',
+      'required': true,
+      'default_profile_id': 'default',
+    },
+    'auth': {
+      'type': 'bearer',
+      'required': true,
+      'granted_scopes': grants.toList(growable: false),
+    },
+    'endpoints': {
+      for (final entry in _providerModelContracts.entries)
+        if (entry.key != omitEndpoint)
+          entry.key: {
+            'method': entry.key == corruptMethodFor
+                ? '${entry.value.method}_WRONG'
+                : entry.value.method,
+            'path': entry.key == corruptPathFor
+                ? '${entry.value.path}/wrong'
+                : entry.value.path,
+            'required_scopes': [
+              if (entry.key != omitDomainScopeFor) entry.value.scope,
+              uniqueScopes[entry.key]!,
+            ],
+          },
+    },
+  };
+}
+
 void main() {
+  test('an explicit malformed connection bundle fails closed', () {
+    expect(
+      () => HermesIssuedOperatorToken.fromJson({
+        'token': 'broad-compatibility-token',
+        'connections': [
+          {'profile_id': 'sidon', 'origin': 'https://hermes.example/p/sidon'},
+        ],
+      }),
+      throwsFormatException,
+      reason:
+          'an authoritative bundle must never downgrade to the top-level token',
+    );
+  });
+
   test('summarizes multimodal history without exposing image data', () {
     final message = HermesMessage.fromJson({
       'id': 'message-1',
@@ -704,6 +802,9 @@ void main() {
           'Jobs/schedules admin',
           'Messaging gateways',
           'Persona/SOUL',
+          'Provider/model configuration',
+          'Skills/toolset mutation',
+          'Profile enrollment/readiness',
           'Attachments/media',
           'Files/context folders',
           'Bounded diagnostics',
@@ -748,6 +849,27 @@ void main() {
         details['Persona/SOUL'],
         contains('exact scoped profile soul contract'),
       );
+      expect(
+        statuses['Provider/model configuration'],
+        HermesSurfaceStatus.deferred,
+      );
+      expect(
+        details['Provider/model configuration'],
+        contains('exact scoped provider and model contracts'),
+      );
+      expect(statuses['Skills/toolset mutation'], HermesSurfaceStatus.deferred);
+      expect(
+        details['Skills/toolset mutation'],
+        contains('read-only inventory'),
+      );
+      expect(
+        statuses['Profile enrollment/readiness'],
+        HermesSurfaceStatus.deferred,
+      );
+      expect(
+        details['Profile enrollment/readiness'],
+        contains('credential acknowledgment and revocation contract'),
+      );
       expect(statuses['Attachments/media'], HermesSurfaceStatus.available);
       expect(details['Attachments/media'], contains('bounded UTF-8 text'));
       expect(statuses['Files/context folders'], HermesSurfaceStatus.deferred);
@@ -775,6 +897,186 @@ void main() {
       expect(statuses.containsKey('Legacy durable reconnect'), isFalse);
     },
   );
+
+  test('complete provider/model readiness contract is available', () {
+    final capabilities = HermesCapabilityDocument.fromJson(
+      _providerModelReadinessCapabilities(),
+    );
+
+    final providerModels = hermesSurfaceReadiness(
+      capabilities,
+    ).singleWhere((item) => item.title == 'Provider/model configuration');
+
+    expect(providerModels.status, HermesSurfaceStatus.available);
+  });
+
+  test('every provider/model readiness contract guard is required', () {
+    for (final name in _providerModelContracts.keys) {
+      final mutations = <({String label, Map<String, Object?> document})>[
+        (
+          label: '$name missing endpoint',
+          document: _providerModelReadinessCapabilities(omitEndpoint: name),
+        ),
+        (
+          label: '$name wrong method',
+          document: _providerModelReadinessCapabilities(corruptMethodFor: name),
+        ),
+        (
+          label: '$name wrong path',
+          document: _providerModelReadinessCapabilities(corruptPathFor: name),
+        ),
+        (
+          label: '$name missing domain scope',
+          document: _providerModelReadinessCapabilities(
+            omitDomainScopeFor: name,
+          ),
+        ),
+        (
+          label: '$name missing unique advertised grant',
+          document: _providerModelReadinessCapabilities(
+            omitUniqueGrantFor: name,
+          ),
+        ),
+      ];
+      for (final mutation in mutations) {
+        final capabilities = HermesCapabilityDocument.fromJson(
+          mutation.document,
+        );
+        final providerModels = hermesSurfaceReadiness(
+          capabilities,
+        ).singleWhere((item) => item.title == 'Provider/model configuration');
+        expect(
+          providerModels.status,
+          HermesSurfaceStatus.deferred,
+          reason: mutation.label,
+        );
+      }
+    }
+  });
+
+  test('provider/model readiness requires every advertised endpoint scope', () {
+    final capabilities = HermesCapabilityDocument.fromJson({
+      'schema_version': 1,
+      'profile_context': {
+        'type': 'query',
+        'name': 'profile',
+        'required': true,
+        'default_profile_id': 'default',
+      },
+      'auth': {
+        'type': 'bearer',
+        'required': true,
+        'granted_scopes': [
+          'providers:read',
+          'providers:write',
+          'models:read',
+          'models:write',
+        ],
+      },
+      'endpoints': {
+        'providers': {
+          'method': 'GET',
+          'path': '/api/providers',
+          'required_scopes': ['providers:read'],
+        },
+        'provider_credential_set': {
+          'method': 'PUT',
+          'path': '/api/providers/{slug}/credential',
+          'required_scopes': ['providers:write', 'admin:write'],
+        },
+        'provider_credential_delete': {
+          'method': 'DELETE',
+          'path': '/api/providers/{slug}/credential',
+          'required_scopes': ['providers:write'],
+        },
+        'provider_credential_validate': {
+          'method': 'POST',
+          'path': '/api/providers/{slug}/credential/validate',
+          'required_scopes': ['providers:write'],
+        },
+        'models': {
+          'method': 'GET',
+          'path': '/api/models',
+          'required_scopes': ['models:read'],
+        },
+        'models_refresh': {
+          'method': 'POST',
+          'path': '/api/models/refresh',
+          'required_scopes': ['models:write'],
+        },
+        'models_assignment': {
+          'method': 'PUT',
+          'path': '/api/models/assignment',
+          'required_scopes': ['models:write'],
+        },
+      },
+    });
+
+    final providerModels = hermesSurfaceReadiness(
+      capabilities,
+    ).singleWhere((item) => item.title == 'Provider/model configuration');
+
+    expect(providerModels.status, HermesSurfaceStatus.deferred);
+  });
+
+  test('provider/model readiness requires profile query context', () {
+    final capabilities = HermesCapabilityDocument.fromJson({
+      'schema_version': 1,
+      'auth': {
+        'type': 'bearer',
+        'required': true,
+        'granted_scopes': [
+          'providers:read',
+          'providers:write',
+          'models:read',
+          'models:write',
+        ],
+      },
+      'endpoints': {
+        'providers': {
+          'method': 'GET',
+          'path': '/api/providers',
+          'required_scopes': ['providers:read'],
+        },
+        'provider_credential_set': {
+          'method': 'PUT',
+          'path': '/api/providers/{slug}/credential',
+          'required_scopes': ['providers:write'],
+        },
+        'provider_credential_delete': {
+          'method': 'DELETE',
+          'path': '/api/providers/{slug}/credential',
+          'required_scopes': ['providers:write'],
+        },
+        'provider_credential_validate': {
+          'method': 'POST',
+          'path': '/api/providers/{slug}/credential/validate',
+          'required_scopes': ['providers:write'],
+        },
+        'models': {
+          'method': 'GET',
+          'path': '/api/models',
+          'required_scopes': ['models:read'],
+        },
+        'models_refresh': {
+          'method': 'POST',
+          'path': '/api/models/refresh',
+          'required_scopes': ['models:write'],
+        },
+        'models_assignment': {
+          'method': 'PUT',
+          'path': '/api/models/assignment',
+          'required_scopes': ['models:write'],
+        },
+      },
+    });
+
+    final providerModels = hermesSurfaceReadiness(
+      capabilities,
+    ).singleWhere((item) => item.title == 'Provider/model configuration');
+
+    expect(providerModels.status, HermesSurfaceStatus.deferred);
+  });
 
   test('surface readiness rejects ungranted session scopes', () {
     final capabilities = HermesCapabilityDocument.fromJson({

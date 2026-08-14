@@ -1,21 +1,35 @@
 # Security and privacy
 
-Status: current
+Status: current decision
 
 ## Decision
 
-Credentials and enrollment secrets belong in platform secure storage. Do not place bearer credentials in URLs, QR payloads, logs, analytics, shared text, or ordinary preferences. Keep non-secret endpoint metadata separate from secrets.
+Credentials and enrollment secrets belong in platform secure storage. Never put
+bearer credentials in URLs, QR payloads, logs, analytics, shared text, command
+arguments, or ordinary preferences. Keep Hermes Agent and Wing Link credentials
+separate.
 
-Prefer revocable scoped authorization. When an older Hermes release requires a full-access compatibility credential, label that authority clearly, require explicit operator review, and keep it separate from Wing Link credentials.
+Current Wing Link transport is authenticated HTTP on loopback plus a selected or
+automatically discovered local private-LAN/Tailscale interface. Non-loopback
+plaintext requires explicit client review; use a trusted HTTPS reverse proxy or
+encrypted VPN for remote operation. Network location is not authorization.
 
-Use loopback or authenticated encrypted transport where possible. Plaintext private-network use requires explicit operator confirmation and an encrypted VPN or similarly isolated trusted network; network location alone is never authorization.
+Use least-privilege scopes for read, mutation, secret-write, lifecycle, and
+filesystem grants. A compatibility full-access Hermes key must be clearly labeled
+and separately reviewed.
 
-Analytics remains opt-in and content-free. Wing does not take custody of wallet recovery phrases. SSH host identity, filesystem access, backups, account authorization, and release artifacts require an explicit trusted authority or user-approved platform mechanism.
+Provider credentials are write-only. New-profile setup may use the released
+stdin-driven `hermes auth add` contract over HTTPS or an authenticated encrypted
+VPN; existing-profile credential mutation remains blocked. Never place provider
+secrets in argv, logs, diagnostics, responses, or ordinary preferences.
 
-## Flexible guidance
+Folder selection is limited to locally approved roots. Use opaque handles,
+canonical containment checks, symlink-escape prevention, bounded child-folder
+listings, revocation, and path-redacted diagnostics. Wing Link never returns file
+entries, file metadata, or file contents.
 
-- Use platform-standard security mechanisms rather than prescribing one implementation for every OS.
-- Add checks in proportion to risk, but never simplify away trust-boundary validation, secret handling, data-loss prevention, consent, or accessible operation.
-- Security-sensitive compatibility paths should be narrow, visible, testable, and removable when the authoritative API becomes available.
+Security-sensitive compatibility adapters must be narrow, typed, testable, and
+removable when Hermes Agent provides the authoritative API. Never expose arbitrary
+shell, CLI, config keys, executable paths, or host paths.
 
-See [SECURITY.md](../../SECURITY.md) and the threat model for operational detail.
+See [SECURITY.md](../../SECURITY.md) and the [threat model](../security/threat-model.md).

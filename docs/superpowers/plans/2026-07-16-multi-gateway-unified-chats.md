@@ -1,5 +1,10 @@
 # Multi-Gateway Unified Chats Implementation Plan
 
+> **Status: foundation implemented; preserved execution history.** The current
+> gateway directory and secure endpoint store implement the one-active-channel
+> contact model. Current profile discovery may also come from Wing Link's fixed
+> compatibility adapter; this plan's unchecked boxes are not a current backlog.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Present the Hermes profiles from every saved Hermes Agent endpoint as one Telegram-style contact list while keeping only the open contact on a full streaming channel.

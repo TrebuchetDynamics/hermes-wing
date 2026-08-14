@@ -1,19 +1,31 @@
 # API and state
 
-Status: current
+Status: current decision
 
 ## Decision
 
-Hermes Wing communicates through advertised, typed Hermes interfaces. Capability discovery determines which optional operations the client offers.
+Hermes Wing uses two typed planes:
 
-Keep profile-owned work explicitly associated with a profile. Prefer normal request/response APIs for commands and queries and event streams for live work, but follow the authoritative Hermes contract when it provides an equivalent supported mechanism.
+- Hermes Agent APIs for authoritative domain and run state; and
+- Wing Link for authenticated host management and reviewed compatibility
+  operations missing from the Agent API.
 
-Server state wins after reconnects or interruptions. Cached reads and drafts may remain visible, but the client must not silently replay mutations. A retry that could change state requires fresh user intent or an idempotent server contract.
+Capability discovery determines which operations Wing offers. A broad version or
+`admin` flag is insufficient: mutations require the exact operation,
+authorization, and current resource identity.
 
-Use opaque server handles instead of exposing arbitrary remote filesystem paths. Use revisions or another server-supported concurrency check where concurrent edits could overwrite one another. Apply disruptive runtime changes explicitly rather than hiding restarts inside an ordinary save.
+Server state wins after reconnect. Cached reads and drafts may remain visible,
+but Wing never silently replays a mutation. Destructive, secret, filesystem, and
+lifecycle operations require fresh intent or an idempotent contract.
 
-## Flexible guidance
+Host folder selection uses server-issued opaque handles rooted in locally approved
+directories. Results contain child folders only, never file entries. Clients
+never send arbitrary absolute paths. Every lookup revalidates canonical
+containment and grant status.
 
-- Exact paths, query parameters, event formats, and schema versions belong to the negotiated API contract, not this decision.
-- Partial feature availability is acceptable when unsupported operations fail clearly and independently.
-- Transport details may evolve if authentication, profile context, error handling, and reconnection behavior remain sound.
+Profile-to-folder assignment uses Agent-owned Hermes Projects. Profile, project,
+and directory identities remain explicit on every request; no operation changes a
+global active profile or project as a side effect.
+
+Use revisions or another authoritative concurrency check where edits can collide.
+Report reload/restart requirements separately from persistence success.

@@ -103,6 +103,7 @@ class GatewayContactsView extends StatelessWidget {
             itemBuilder: (context, index) {
               final contact = contacts[index];
               final contactTitle = _contactTitle(contact);
+              final profileTitle = _profileTitle(contact);
               final contactStatus = contact.chatAvailable
                   ? contact.availability.name
                   : AppLocalizations.of(context).profileChatUnavailable;
@@ -126,22 +127,37 @@ class GatewayContactsView extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    _contactTitle(contact),
+                    profileTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        contact.chatAvailable
-                            ? contact.availability.name
-                            : AppLocalizations.of(
-                                context,
-                              ).profileChatUnavailable,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      if (contact.gatewayLabel.trim().isNotEmpty &&
+                          contact.gatewayLabel.trim().toLowerCase() !=
+                              contact.profileName.trim().toLowerCase())
+                        Text(
+                          contact.gatewayLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      if (!contact.chatAvailable)
+                        Text(
+                          AppLocalizations.of(context).profileChatUnavailable,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       if (contact.latestSession?.preview case final preview?)
                         Text(
                           preview,
@@ -169,6 +185,13 @@ class GatewayContactsView extends StatelessWidget {
       ],
     );
   }
+}
+
+String _profileTitle(GatewayContact contact) {
+  final value = contact.profileName.trim();
+  if (value.isEmpty) return '?';
+  final first = value.characters.first;
+  return '${first.toUpperCase()}${value.substring(first.length)}';
 }
 
 String _contactTitle(GatewayContact contact) {
@@ -199,20 +222,12 @@ class _ContactStatus extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          !contact.chatAvailable
-              ? Icons.settings_outlined
-              : contact.availability == GatewayAvailability.online
-              ? Icons.circle
-              : Icons.cloud_off_outlined,
-          size:
-              contact.chatAvailable &&
-                  contact.availability == GatewayAvailability.online
-              ? 10
-              : 18,
-          color:
-              contact.chatAvailable &&
-                  contact.availability == GatewayAvailability.online
-              ? Colors.green
+          contact.chatAvailable ? Icons.circle : Icons.settings_outlined,
+          size: contact.chatAvailable ? 10 : 18,
+          color: contact.chatAvailable
+              ? contact.availability == GatewayAvailability.online
+                    ? Colors.green
+                    : Colors.red
               : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         if (activity != null)

@@ -1,7 +1,10 @@
 # Milestone 2 — Providers & Models — Design
 
 **Date:** 2026-07-14
-**Status:** Approved
+**Status:** Superseded planning history (2026-08-14)
+**Current direction:** Adapt Wing to Hermes Agent's advertised read-only
+`/api/model/options` contract. Keep model/provider mutation unavailable until an
+exact API route is advertised; do not execute this historical proposal.
 **Depends on:** milestone 1 (Profiles/Agents); reuses the milestone-0 scoped-token,
 `If-Match`, capability-advertisement, and profile-scoping patterns.
 **Roadmap row:** hermes-desktop-parity.md milestone 2 — "Provider presence/set/remove,

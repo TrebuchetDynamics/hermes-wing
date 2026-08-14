@@ -76,7 +76,10 @@ Hermes reply text
 - The Android/native engine owns the microphone and speaker streams, audio session IDs, DSP state, model instances, PCM rings, and native worker threads.
 - Dart owns conversation/session generations, consent, visible states, transcript review, Hermes requests, and cancellation policy.
 - Every native callback carries immutable `voiceSessionId`, `captureGeneration`, and (for playback) `speechGeneration`. Dart rejects stale events exactly as it does today.
-- Hermes receives `{session, localePair, text, timing metadata}` only. It never receives PCM unless a future, separately consented feature introduces an explicit audio-upload boundary.
+- The offline path sends text only. A separate capability-gated Hermes audio path
+  may upload bounded WAV audio only when the connected Agent advertises the exact
+  audio endpoint; supported Agent 0.20 currently advertises `audio_api: false`,
+  so this is implemented client plumbing rather than qualified runtime evidence.
 - The real-time audio callback only timestamps/copies bounded PCM into lock-free/single-producer rings. Resampling, ONNX inference, JSON, allocation, logging, disk, and Dart method-channel work happen off that callback.
 
 ## Capture and audio processing

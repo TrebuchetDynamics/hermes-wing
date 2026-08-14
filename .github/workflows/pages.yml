@@ -76,7 +76,7 @@ jobs:
           PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ \
             npx playwright test --config=playwright.config.mjs \
             playwright/tests/regression/pages-landing.spec.mjs --reporter=list
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build/pages
       - name: Deploy GitHub Pages

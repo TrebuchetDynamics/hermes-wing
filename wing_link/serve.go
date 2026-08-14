@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -114,7 +115,7 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 			for _, opened := range listeners {
 				_ = opened.Close()
 			}
-			_, _ = fmt.Fprintf(stderr, "serve: %v\n", err)
+			writeServeListenError(stderr, address, err)
 			return 1
 		}
 		listeners = append(listeners, listener)
@@ -130,6 +131,19 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		return 1
 	}
 	return 0
+}
+
+func writeServeListenError(writer io.Writer, address string, err error) {
+	if errors.Is(err, syscall.EADDRINUSE) {
+		_, _ = fmt.Fprintf(writer, `serve: %s is already in use
+
+Wing Link may already be running.
+  Check it:    wing-link status
+  Restart it:  wing-link restart
+`, address)
+		return
+	}
+	_, _ = fmt.Fprintf(writer, "serve: %v\n", err)
 }
 
 func parseServeOptions(args []string) (serveOptions, error) {

@@ -209,7 +209,7 @@ func TestRunRejectsUnknownCommands(t *testing.T) {
 	if stdout.Len() != 0 {
 		t.Fatalf("unexpected stdout: %q", stdout.String())
 	}
-	if !strings.Contains(stderr.String(), "usage: wing-link") {
+	if !strings.Contains(stderr.String(), "Usage:") {
 		t.Fatalf("missing usage: %q", stderr.String())
 	}
 }
@@ -224,13 +224,33 @@ func TestRunPrintsVersion(t *testing.T) {
 	}
 }
 
+func TestHelpExplainsTheNormalServiceWorkflow(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"help"}, &stdout, &stderr); code != 0 {
+		t.Fatalf("exit code = %d", code)
+	}
+	for _, want := range []string{
+		"Wing Link\n  Local supervisor",
+		"Managed service:",
+		"Typical first run:",
+		`Most users should not run "serve" directly`,
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("help missing %q:\n%s", want, stdout.String())
+		}
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("unexpected stderr: %q", stderr.String())
+	}
+}
+
 func TestServiceCommandsRejectExtraArgumentsWithoutExecution(t *testing.T) {
 	for _, command := range []string{"status", "start", "stop", "restart"} {
 		var stdout, stderr bytes.Buffer
 		if code := run([]string{command, "extra"}, &stdout, &stderr); code != 2 {
 			t.Fatalf("%s exit code = %d", command, code)
 		}
-		if stdout.Len() != 0 || !strings.Contains(stderr.String(), "usage: wing-link") {
+		if stdout.Len() != 0 || !strings.Contains(stderr.String(), "Usage:") {
 			t.Fatalf("%s stdout=%q stderr=%q", command, stdout.String(), stderr.String())
 		}
 	}

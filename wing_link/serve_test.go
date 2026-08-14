@@ -12,9 +12,24 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
+
+func TestServeListenErrorExplainsAnOccupiedAddress(t *testing.T) {
+	var stderr bytes.Buffer
+	writeServeListenError(&stderr, "127.0.0.1:8654", syscall.EADDRINUSE)
+	for _, want := range []string{
+		"serve: 127.0.0.1:8654 is already in use",
+		"wing-link status",
+		"wing-link restart",
+	} {
+		if !strings.Contains(stderr.String(), want) {
+			t.Fatalf("error missing %q: %q", want, stderr.String())
+		}
+	}
+}
 
 type profileHarness struct {
 	server   *httptest.Server

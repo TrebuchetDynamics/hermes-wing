@@ -54,22 +54,43 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 func usage(writer io.Writer) {
-	_, _ = fmt.Fprintln(writer, `usage: wing-link <command>
+	_, _ = fmt.Fprintln(writer, `Wing Link
+  Local supervisor for installing, pairing, and running Hermes Agent.
+  Profiles, providers, and other Agent settings stay in Hermes Agent.
 
-Commands:
-  serve     Run the independent Wing Link profile control plane.
-            Options: --listen HOST:PORT
-  status    Report daemon and runtime state.
-  inspect   Detect the local Hermes installation without exposing paths.
-            Options: [--json]
-  setup     Install or adopt pinned Hermes Agent, secure API access, and start
-            the gateway. Runtime-owned provider/profile setup follows through
-            Hermes APIs.
-            Options: [--json | --json-lines]
-  pair      Pair direct Hermes and independent Wing Link credentials.
-  start     Start the daemon if it is not running.
-  stop      Stop the running daemon.
-  restart   Stop, then start, the daemon.
-  version   Print the build version.
-  help      Show this help.`)
+Usage:
+  wing-link <command> [options]
+
+Get started:
+  inspect    Check for a local Hermes Agent installation without showing paths.
+             --json                  Print machine-readable output
+  setup      Install or adopt Hermes Agent, secure API access, and start it.
+             --json                  Print one JSON result
+             --json-lines            Stream progress as JSON lines
+  pair       Create a secure pairing handoff for Hermes Wing.
+             --local                 Pair on this device only
+             --origin URL            Use a specific Hermes Agent API origin
+             --label NAME            Name this Hermes Wing installation
+
+Managed service:
+  status     Show whether the Wing Link user service is running.
+  start      Start the Wing Link user service.
+  stop       Stop the Wing Link user service.
+  restart    Restart the Wing Link user service.
+
+Advanced:
+  serve      Run Wing Link in the foreground.
+             --listen HOST:PORT       Listen on an approved local address
+
+Other:
+  version    Print the build version.
+  help       Show this help.
+
+Typical first run:
+  wing-link inspect
+  wing-link setup
+  wing-link pair
+
+Most users should not run "serve" directly. Pair installs and starts the
+managed service; use status, start, stop, or restart afterward.`)
 }

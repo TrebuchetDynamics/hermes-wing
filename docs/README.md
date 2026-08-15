@@ -31,6 +31,7 @@ checking whether a Hermes Agent release exposes the routes Wing needs.
 ## Operations and qualification
 
 - [Alpha release runbook](runbooks/release-alpha.md)
+- [Android release handoff](runbooks/android/release-handoff.md)
 - [Evidence matrix](quality/evidence-matrix.md)
 - [Hermes readiness audit](runbooks/hermes-readiness-audit.md)
 - [Hermes platform smoke](runbooks/hermes-platform-smoke.md)

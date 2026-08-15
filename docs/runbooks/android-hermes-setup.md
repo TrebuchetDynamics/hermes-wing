@@ -3,6 +3,17 @@
 This runbook pairs Android with a Linux Hermes host that has a functioning
 systemd user session. Android/Termux Wing Link service hosting is not qualified.
 
+## Before you start
+
+Have Git, `curl`, Go 1.26 or newer, network access, a trusted encrypted VPN, and
+Hermes Wing on the Android device. Clone the repository on the Linux host and
+enter its root directory:
+
+```bash
+git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
+cd hermes-wing
+```
+
 1. Install Wing Link and prepare Hermes on the Linux host:
 
    ```bash

@@ -132,12 +132,18 @@ flutter devices
 flutter run -d <device-id>
 ```
 
-This starts a development build. For a release APK:
+This starts a development build. For a local release-mode APK:
 
 ```bash
 flutter build apk --release
 adb install -r build/app/outputs/flutter-apk/app-release.apk
 ```
+
+Without a complete release-signing configuration, Gradle deliberately falls
+back to the debug signing key. That APK is for local testing only; do not
+redistribute it. See the
+[Android release handoff](docs/runbooks/android/release-handoff.md) for
+trusted-tester builds, signing boundaries, and verification.
 
 When Wing opens, choose **Connect to Hermes** and enter the API URL and credential
 configured for your Hermes gateway. Existing Hermes users can keep their current

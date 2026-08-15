@@ -67,8 +67,8 @@ Status: alpha baseline; not an independent security assessment
 
 - No independent penetration test or formal privacy review.
 - No shipped directory/project or existing-profile configuration API. A
-  new-profile description, allowlisted provider/model, and credential may be
-  supplied only through the transactional bounded Wing Link setup operation;
+  new-profile description, allowlisted provider, bounded model string, and
+  credential may be supplied only through the transactional bounded Wing Link setup operation;
   credential bytes reach Hermes only through stdin.
 - Current persistent Wing Link service management is Linux/systemd-user only.
 - Public signed packages, desktop signing/notarization, and authenticated updates

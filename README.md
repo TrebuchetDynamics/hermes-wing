@@ -64,12 +64,22 @@ for Agent installation, providers, models, profiles, and gateway configuration.
 ## Quick start
 
 The shortest supported path uses a Linux host with a working systemd user
-session. One paste builds Wing Link from the checked-out source, installs or
-adopts the pinned Hermes Agent build, prepares API access, and starts the Hermes
-gateway. It requires Git and Go 1.26 or newer:
+session. Before starting, have:
+
+- Git, `curl`, and Go 1.26 or newer on the host;
+- network access for the Hermes Agent installation;
+- an existing Hermes provider configuration or the credential needed to create
+  one with `hermes setup`; and
+- Hermes Wing open on the phone, browser, or desktop you want to connect.
+
+One paste builds Wing Link from the current checkout, installs or adopts the
+pinned Hermes Agent build, prepares API access, and starts the Hermes gateway:
 
 ```bash
-git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git && cd hermes-wing && ./install-wing-link.sh --build --setup
+git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
+cd hermes-wing
+./install-wing-link.sh --build --setup
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 Then complete Hermes's provider and model wizard:
@@ -78,8 +88,17 @@ Then complete Hermes's provider and model wizard:
 hermes setup
 ```
 
-Finally, open Hermes Wing and choose **Connect to Hermes**. For a phone or
-another computer, follow the [three-minute pairing path](#pair-a-phone-or-another-computer).
+Check the host before pairing:
+
+```bash
+~/.local/bin/wing-link inspect
+curl --fail http://127.0.0.1:8642/health
+```
+
+Finally, open Hermes Wing and choose **Connect to Hermes**. A client on the same
+host can use the loopback endpoint. For a phone or another computer, loopback
+points back to that device, not to the Hermes host; follow the
+[trusted-VPN pairing path](#pair-a-phone-or-another-computer) instead.
 
 The installer is safe to run again. It validates Wing Link before installation
 and adopts a supported Hermes installation instead of replacing its home,
@@ -144,24 +163,25 @@ prepare authentication, control the gateway, and create a short-lived pairing QR
 code. The current HTTP service binds loopback plus a selected or automatically
 discovered local private-LAN/Tailscale interface.
 
-The source path needs Git, Go 1.26 or newer, and network access. Persistent Wing
-Link service management is currently implemented for Linux with a per-user
-systemd service.
+The source path needs Git, `curl`, Go 1.26 or newer, and network access.
+Persistent Wing Link service management is currently implemented for Linux with
+a per-user systemd service.
 
 ```bash
 git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
 ./install-wing-link.sh --build --setup
+export PATH="$HOME/.local/bin:$PATH"
 hermes setup
 ```
 
-The installer defaults to `~/.local/bin`. `--build` builds the reviewed checkout;
+The installer defaults to `~/.local/bin`. `--build` builds the current checkout;
 `--setup` then runs that installed Wing Link binary to install or adopt Hermes,
 prepare API access, and start the local runtime. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
 Today, Wing Link's Agent-domain compatibility surface is fixed profile
 list/create/rename/delete plus transactional new-profile setup for an allowlisted
-provider, model, and optional write-only provider credential. The special
+provider, bounded model string, and optional write-only provider credential. The special
 `omniroute` provider is a fixed, keyless local adapter: it maps only to Hermes'
 `custom` provider at `http://127.0.0.1:20128/v1`; enter an OmniRoute model such as
 `auto/best-coding` and leave the credential field empty. It does not expose a
@@ -200,6 +220,53 @@ contains no bearer credential; exchange is idempotent until acknowledgment.
 
 See [Android Hermes setup](docs/runbooks/android-hermes-setup.md) for VPN routing,
 firewalls, service management, and recovery.
+
+## Troubleshooting first connection
+
+### `wing-link` is not found
+
+The installer defaults to `~/.local/bin`. Run it by its full path or add that
+directory to your shell `PATH`:
+
+```bash
+~/.local/bin/wing-link inspect
+```
+
+### The phone cannot reach `127.0.0.1`
+
+Loopback always means the device running the client. Keep Hermes bound to
+loopback for same-host use. For a phone, expose the Agent API only on a trusted
+encrypted VPN address or through HTTPS, verify `/health`, and create a remote
+pairing handoff as shown above. Do not bind it to a public interface.
+
+### Hermes is healthy but Wing Link is unavailable
+
+Check the managed user service, then restart only Wing Link if necessary:
+
+```bash
+~/.local/bin/wing-link status
+~/.local/bin/wing-link restart
+```
+
+Wing Link and Hermes Agent are separate services. Restarting Wing Link does not
+restart the Agent gateway; use `hermes gateway restart` only when the Agent
+listener or configuration changed.
+
+### The web alpha opens but cannot connect
+
+The browser must be able to reach the Hermes API directly, and the Agent must
+allow the exact web origin through its CORS configuration. A successful page
+load proves only that the client loaded—not that your private Hermes endpoint is
+reachable or authorized.
+
+For bounded host diagnostics that do not print credentials or host paths, run:
+
+```bash
+~/.local/bin/wing-link inspect --json
+```
+
+The [Android setup runbook](docs/runbooks/android-hermes-setup.md) covers VPN
+routing, firewall checks, profile multiplexing, and recovery in more detail.
 
 ## The three pieces
 

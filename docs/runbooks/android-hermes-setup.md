@@ -7,6 +7,7 @@ systemd user session. Android/Termux Wing Link service hosting is not qualified.
 
    ```bash
    ./install-wing-link.sh --build --setup
+   export PATH="$HOME/.local/bin:$PATH"
    ```
 
 2. Complete Hermes configuration. Wing Link has installed or adopted the runtime
@@ -43,21 +44,48 @@ systemd user session. Android/Termux Wing Link service hosting is not qualified.
    Open the generated `wing://connect` link or scan its QR. Review the label,
    direct Hermes origin, access, and plain-HTTP warning, then confirm. The link
    contains only a short-lived code and no bearer credential. Exchange is
-   idempotent until acknowledgment and issues separate
-   Hermes and Wing Link credentials; Wing acknowledges the pending control
-   credential before storing it.
+   idempotent until acknowledgment and issues separate Hermes credentials plus a
+   pending Wing Link credential. Wing first stores the endpoint bundle with that
+   pending marker, acknowledges it, then persists the bundle without the marker.
+   Wing Link persists its server-side control credential only after acknowledgment.
 
 5. Confirm direct Hermes `/health` and `/v1/capabilities` load. Confirm Wing Link
    `/healthz` is reachable and the Profiles screen lists the paired local profiles.
    In multiplex mode each named profile uses `/p/<profile>/...` and its own
    `API_SERVER_KEY`; the default key must not authenticate a named prefix.
 6. Verify local profile create/clone, rename, and typed-confirmation delete through
-   Wing Link's fixed Hermes CLI adapter. A rename changes the Agent-local profile
+   Wing Link's fixed Hermes CLI adapter. A create request may also set a
+   description, allowlisted provider, bounded model string, and optional write-only
+   credential;
+   setup failure rolls back that new profile. Existing-profile provider or
+   credential edits are not shipped. A rename changes the Agent-local profile
    name; Wing's saved gateway identity remains endpoint-scoped. Persona,
-   provider, directory, and Hermes Project administration are planned Wing Link
-   operations, not current behavior.
+   directory, and Hermes Project administration remain planned Wing Link
+   operations.
 7. The planned repository flow is profile → approved directory → per-profile
    Hermes Project. Do not expose arbitrary host paths or use `profile use` or
    `project use` as hidden global state.
 8. Prefer HTTPS outside a trusted VPN/LAN. Plain HTTP with credentials requires
    explicit confirmation and can expose traffic on an untrusted network.
+
+## Recovery checks
+
+Run these on the Linux host; they do not require exposing credentials:
+
+```bash
+~/.local/bin/wing-link inspect
+~/.local/bin/wing-link status
+curl --fail http://127.0.0.1:8642/health
+```
+
+- If `wing-link` is not found, use the full `~/.local/bin/wing-link` path.
+- If local Agent health works but the phone cannot connect, verify the trusted
+  VPN address with `curl` from another device. `127.0.0.1` on the phone is the
+  phone itself.
+- If Wing Link is stopped, use `wing-link restart`. This does not restart Hermes
+  Agent. Use `hermes gateway restart` only after changing the Agent listener or
+  Agent configuration.
+- If pairing expired, create a new handoff. Never copy a bearer credential into
+  a QR code, URL, issue, or diagnostic log.
+- If a named profile fails while the default profile works, verify that the named
+  profile has its own API key and that the client uses `/p/<profile>/...`.

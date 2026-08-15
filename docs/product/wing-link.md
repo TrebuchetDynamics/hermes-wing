@@ -48,8 +48,8 @@ The current Linux implementation provides:
   argument vectors.
 
 Persistent service management is Linux/systemd-user only. New-profile setup can
-write an allowlisted provider, model, and provider credential through fixed Hermes
-CLI operations. Existing-profile provider editing, profile persona editing,
+write an allowlisted provider, bounded model string, and provider credential
+through fixed Hermes CLI operations. Existing-profile provider editing, profile persona editing,
 workspace browsing, and project assignment are not shipped behavior.
 
 ## Target management surface
@@ -61,7 +61,7 @@ Wing Link will expose typed, capability-advertised operations in four areas:
 2. **Profiles** — list, create/clone, rename, describe, and delete. Hermes Agent
    remains authoritative; Wing Link delegates only reviewed fixed operations.
 3. **Providers and models** — new-profile setup selects an allowlisted provider and
-   model and may write a credential through `hermes auth add` stdin without ever
+   bounded model string and may write a credential through `hermes auth add` stdin without ever
    returning the secret. General provider editing remains a target surface.
 4. **Projects and folders** — browse explicitly approved host directories and
    create or update a Hermes Project inside a selected profile.

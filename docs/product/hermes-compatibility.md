@@ -109,8 +109,8 @@ surface invokes only fixed Hermes CLI argument vectors for:
 - `hermes profile delete`.
 
 For a profile created by the same request, Wing Link may additionally run fixed
-description, allowlisted provider/model, stdin-only `hermes auth add`, exact
-postcondition, and bounded `Hi` readiness commands. Failure deletes that newly
+description, allowlisted provider, bounded model string, stdin-only
+`hermes auth add`, exact postcondition, and bounded `Hi` readiness commands. Failure deletes that newly
 created profile. Existing-profile description/provider/model/credential editing
 is rejected before mutation because the released CLI offers no transactional
 restore contract.

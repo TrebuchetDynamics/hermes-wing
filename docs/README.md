@@ -9,21 +9,33 @@ Use the [official Hermes Agent documentation](https://hermes-agent.nousresearch.
 for current Agent installation, CLI, provider, profile, and gateway behavior.
 The Wing documents below describe only this client's integration and evidence.
 
-## Current product and architecture
+## Start here
+
+- [Android and remote-host setup](runbooks/android-hermes-setup.md)
+- [Hermes Agent compatibility](product/hermes-compatibility.md)
+- [Wing Link remote management](product/wing-link.md)
+- [Security policy](../SECURITY.md) and [threat model](security/threat-model.md)
+
+Use these first when installing, pairing, troubleshooting a connection, or
+checking whether a Hermes Agent release exposes the routes Wing needs.
+
+## Product and architecture
 
 - [Architecture decision records](adr/README.md)
 - [Product requirements](product/prd.md)
-- [Wing Link remote management](product/wing-link.md)
 - [Wing Link implementation plan](plans/wing-link-remote-management.md)
-- [Hermes compatibility](product/hermes-compatibility.md)
 - [Gateway, profile, and Project management](product/gateway-profile-management.md)
 - [Routes](product/routes.md)
 - [Hermes Desktop capability parity ledger](product/hermes-desktop-parity.md)
-- [Android Hermes setup](runbooks/android-hermes-setup.md)
+
+## Operations and qualification
+
 - [Alpha release runbook](runbooks/release-alpha.md)
-- [Threat model](security/threat-model.md)
 - [Evidence matrix](quality/evidence-matrix.md)
 - [Hermes readiness audit](runbooks/hermes-readiness-audit.md)
+- [Hermes platform smoke](runbooks/hermes-platform-smoke.md)
+- [Hermes Agent release compatibility audit](runbooks/hermes-agent-release-compatibility.md)
+- [Android live microphone smoke](runbooks/android/live-mic-smoke.md)
 
 ## Historical plans and comparison studies
 

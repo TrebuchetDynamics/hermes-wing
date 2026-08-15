@@ -17,8 +17,8 @@ reviewed **typed compatibility operation** to the installed Hermes CLI. Each
 operation must use a fixed executable and argument shape, bounded machine-readable
 output, no shell, explicit authorization, and no shadow state. The current
 exception covers profile list/create/rename/delete plus transactional new-profile
-description, allowlisted provider/model setup, stdin-only provider credential
-input, and a bounded readiness probe. Existing-profile configuration, Hermes
+description, allowlisted provider and bounded model string setup, stdin-only
+provider credential input, and a bounded readiness probe. Existing-profile configuration, Hermes
 Project, and general provider operations remain blocked; arbitrary commands,
 config keys, and paths remain prohibited.
 

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestCustomProviderCRUDUsesFixedHermesConfigCommands(t *testing.T) {
@@ -179,7 +178,7 @@ func TestCustomProviderRouteRequiresWingLinkAuthorization(t *testing.T) {
 			return []byte(`{"acme":{"base_url":"https://api.example.test/v1","model":"v1"}}`), nil
 		},
 	}
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)

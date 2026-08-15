@@ -458,7 +458,7 @@ func createScopedHermesEnrollment(origin *url.URL, token, label string) (string,
 	_, wildcard := grantedScopes["*"]
 	for _, scope := range endpoint.RequiredScopes {
 		if _, granted := grantedScopes[scope]; !granted && !wildcard {
-			return "", true, fmt.Errorf("Hermes credential lacks required enrollment scope %q", scope)
+			return "", true, fmt.Errorf("hermes credential lacks required enrollment scope %q", scope)
 		}
 	}
 	var response struct {

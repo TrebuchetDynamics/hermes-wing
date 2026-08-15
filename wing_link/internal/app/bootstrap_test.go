@@ -208,7 +208,7 @@ func TestParseBootstrapOptionsRejectsRuntimeDomainFlags(t *testing.T) {
 }
 
 func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json")}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)
@@ -290,7 +290,7 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 }
 
 func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json")}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)

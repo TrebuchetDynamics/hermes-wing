@@ -122,7 +122,7 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 	}
 	server := &http.Server{
 		Handler: newWingLinkServerWithBootstrap(
-			backend, &StateStore{path: options.StatePath}, providers, bootstrap,
+			backend, newStateStore(options.StatePath), providers, bootstrap,
 		),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second,
@@ -564,14 +564,15 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 		return
 	}
 	defer server.profileMutations.Unlock()
-	row, err := server.profiles.create(request.Context(), body.Name, body.CloneFrom)
-	if err != nil {
-		if row.ID != "" {
-			if rollbackErr := server.rollbackCreatedProfile(request.Context(), row.ID); rollbackErr != nil {
-				err = errors.Join(err, rollbackErr)
+	row, createErr := server.profiles.create(request.Context(), body.Name, body.CloneFrom)
+	createdProfileID := row.ID
+	if createErr != nil {
+		if createdProfileID != "" {
+			if rollbackErr := server.rollbackCreatedProfile(request.Context(), createdProfileID); rollbackErr != nil {
+				createErr = errors.Join(createErr, rollbackErr)
 			}
 		}
-		writeProfileError(writer, err)
+		writeProfileError(writer, createErr)
 		return
 	}
 	if err := server.profiles.configure(

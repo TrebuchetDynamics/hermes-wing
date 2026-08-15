@@ -1,10 +1,22 @@
 package app
 
-import "github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/hostexec"
+import (
+	"context"
+
+	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/hostexec"
+)
 
 type CommandSpec = hostexec.CommandSpec
 type ProcessResult = hostexec.ProcessResult
 
-var runProcess = hostexec.Run
-var runProcessCapture = hostexec.Capture
-var sanitizeOutput = hostexec.Sanitize
+func runProcess(ctx context.Context, spec CommandSpec, onLine func(string)) ProcessResult {
+	return hostexec.Run(ctx, spec, onLine)
+}
+
+func runProcessCapture(ctx context.Context, spec CommandSpec, maximumBytes int) ([]byte, ProcessResult) {
+	return hostexec.Capture(ctx, spec, maximumBytes)
+}
+
+func sanitizeOutput(value string, secrets []string) string {
+	return hostexec.Sanitize(value, secrets)
+}

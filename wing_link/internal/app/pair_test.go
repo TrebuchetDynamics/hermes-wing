@@ -121,7 +121,7 @@ if [ "$1" = "--profile" ] && [ "$3 $4" = "config env-path" ]; then /bin/printf '
 	t.Setenv("HOME", directory)
 	t.Setenv("PATH", directory)
 	statePath := filepath.Join(directory, "state.json")
-	controlState := &StateStore{path: statePath}
+	controlState := newStateStore(statePath)
 	controlHandler := newWingLinkServer(&profileBackend{}, controlState)
 	healthServer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path == "/v1/capabilities" || request.URL.Path == "/p/default/v1/capabilities" {
@@ -894,7 +894,7 @@ func testPairOptions(t *testing.T, token string) pairOptions {
 	}
 	return pairOptions{
 		Origin: origin, ControlOrigin: controlOrigin,
-		ControlState: &StateStore{path: filepath.Join(t.TempDir(), "state.json")},
+		ControlState: newStateStore(filepath.Join(t.TempDir(), "state.json")),
 		Label:        "phone", Token: token,
 	}
 }

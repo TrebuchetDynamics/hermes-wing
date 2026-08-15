@@ -16,7 +16,6 @@ import (
 	"strings"
 	"syscall"
 	"testing"
-	"time"
 )
 
 func TestServeListenErrorExplainsAnOccupiedAddress(t *testing.T) {
@@ -176,7 +175,7 @@ func newProfileHarness(t *testing.T) *profileHarness {
 			return harness.secretErr
 		},
 	}
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)
@@ -235,7 +234,7 @@ func TestWingLinkProfileRoutesAreExposedButProviderRoutesStayQuarantined(t *test
 			return nil
 		},
 	}
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	enrollment, err := store.CreateEnrollment()
 	if err != nil {
 		t.Fatal(err)
@@ -278,7 +277,7 @@ func TestPendingCredentialCanVerifyReadsButCannotMutateBeforeAcknowledgment(t *t
 	if !wingLinkProfileCompatibilityEnabled {
 		t.Skip("legacy profile domain routes are quarantined")
 	}
-	store := &StateStore{path: filepath.Join(t.TempDir(), "state.json"), now: time.Now}
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
 	credentialID, token, err := store.StageControlToken()
 	if err != nil {
 		t.Fatal(err)

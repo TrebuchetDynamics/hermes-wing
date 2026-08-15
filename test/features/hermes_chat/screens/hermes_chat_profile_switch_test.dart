@@ -53,6 +53,40 @@ void main() {
     expect(channel.selectProfileCalls, ['coder']);
   });
 
+  testWidgets('agent switcher scrolls a long profile inventory', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final profiles = [
+      for (var index = 0; index < 20; index++)
+        HermesProfile(
+          id: 'agent-$index',
+          displayName: 'Agent $index',
+          revision: 'r$index',
+        ),
+    ];
+    final channel = FakeHermesChannel(profiles: profiles);
+    addTearDown(channel.dispose);
+
+    await _pumpChat(tester, channel);
+    await tester.tap(find.byKey(const ValueKey('hermes-profile-switcher')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    await tester.scrollUntilVisible(
+      find.text('Agent 19'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Agent 19'));
+    await tester.pumpAndSettle();
+
+    expect(channel.selectProfileCalls, ['agent-19']);
+  });
+
   testWidgets('switching agents clears stale pending approvals', (
     tester,
   ) async {

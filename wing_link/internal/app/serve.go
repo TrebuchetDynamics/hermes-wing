@@ -586,6 +586,8 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 		writeProfileError(writer, err)
 		return
 	}
+	row.Description = strings.TrimSpace(body.Description)
+	row.Model = strings.TrimSpace(body.Model)
 	writeJSON(writer, http.StatusCreated, map[string]any{"profile": row})
 }
 

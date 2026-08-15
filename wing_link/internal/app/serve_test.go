@@ -476,7 +476,14 @@ func TestProfileCreateConfiguresDescriptionProviderModelAndWriteOnlyCredential(t
 	if created.StatusCode != http.StatusCreated {
 		t.Fatalf("create status = %d", created.StatusCode)
 	}
-	_ = created.Body.Close()
+	var createBody struct {
+		Profile profileRow `json:"profile"`
+	}
+	decodeBody(t, created, &createBody)
+	if createBody.Profile.Description != "Physical lifecycle profile" ||
+		createBody.Profile.Model != "openai/gpt-5.2" {
+		t.Fatalf("created profile = %#v", createBody.Profile)
+	}
 
 	want := [][]string{
 		{"profile", "create", "readyqa", "--no-alias", "--clone-from", "link"},

@@ -417,25 +417,32 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 ),
               ),
             ),
-            for (final profile in state.profiles)
-              ListTile(
-                leading: Icon(
-                  profile.id == selectedId
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
-                ),
-                title: Text(
-                  _safeHermesUiPreview(
-                    profile.displayName.isEmpty
-                        ? profile.id
-                        : profile.displayName,
-                    maxLength: 64,
-                  ),
-                ),
-                subtitle: Text(strings.agentStableId(profile.id)),
-                selected: profile.id == selectedId,
-                onTap: () => Navigator.of(sheetContext).pop(profile.id),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final profile in state.profiles)
+                    ListTile(
+                      leading: Icon(
+                        profile.id == selectedId
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                      ),
+                      title: Text(
+                        _safeHermesUiPreview(
+                          profile.displayName.isEmpty
+                              ? profile.id
+                              : profile.displayName,
+                          maxLength: 64,
+                        ),
+                      ),
+                      subtitle: Text(strings.agentStableId(profile.id)),
+                      selected: profile.id == selectedId,
+                      onTap: () => Navigator.of(sheetContext).pop(profile.id),
+                    ),
+                ],
               ),
+            ),
           ],
         ),
       ),

@@ -96,6 +96,15 @@ func newProfileHarness(t *testing.T) *profileHarness {
 			if reflect.DeepEqual(args, []string{"--profile", "readyqa", "config", "get", "model.default"}) {
 				return []byte("openai/gpt-5.2\n"), nil
 			}
+			if reflect.DeepEqual(args, []string{"--profile", "omniqa", "config", "get", "model.provider"}) {
+				return []byte("custom\n"), nil
+			}
+			if reflect.DeepEqual(args, []string{"--profile", "omniqa", "config", "get", "model.base_url"}) {
+				return []byte("http://127.0.0.1:20128/v1\n"), nil
+			}
+			if reflect.DeepEqual(args, []string{"--profile", "omniqa", "config", "get", "model.default"}) {
+				return []byte("auto/best-coding\n"), nil
+			}
 			if reflect.DeepEqual(args, []string{"--profile", "cancelledqa", "config", "get", "model.provider"}) {
 				return []byte("openrouter\n"), nil
 			}
@@ -149,6 +158,8 @@ func newProfileHarness(t *testing.T) *profileHarness {
 			case len(args) == 7 && reflect.DeepEqual(args[2:6], []string{"config", "set", "--force", "model.provider"}):
 				return nil
 			case len(args) == 7 && reflect.DeepEqual(args[2:6], []string{"config", "set", "--force", "model.default"}):
+				return nil
+			case len(args) == 7 && reflect.DeepEqual(args[2:6], []string{"config", "set", "--force", "model.base_url"}):
 				return nil
 			case len(args) == 5 && reflect.DeepEqual(args[2:4], []string{"auth", "status"}):
 				return nil
@@ -489,6 +500,48 @@ func TestProfileCreateConfiguresDescriptionProviderModelAndWriteOnlyCredential(t
 	}
 	if strings.Contains(fmt.Sprint(harness.commands, harness.secretCommands), secret) {
 		t.Fatal("provider secret entered Hermes argv")
+	}
+}
+
+func TestProfileCreateConfiguresFixedLoopbackOmniRouteAdapter(t *testing.T) {
+	harness := newProfileHarness(t)
+	created := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": "omniqa", "clone_from": "link",
+		"description": "Physical OmniRoute profile",
+		"provider":    "omniroute", "model": "auto/best-coding",
+	}, true, nil)
+	if created.StatusCode != http.StatusCreated {
+		t.Fatalf("create status = %d", created.StatusCode)
+	}
+	_ = created.Body.Close()
+
+	want := [][]string{
+		{"profile", "create", "omniqa", "--no-alias", "--clone-from", "link"},
+		{"profile", "describe", "omniqa", "--text", "Physical OmniRoute profile"},
+		{"--profile", "omniqa", "config", "set", "--force", "model.provider", "custom"},
+		{"--profile", "omniqa", "config", "set", "--force", "model.base_url", "http://127.0.0.1:20128/v1"},
+		{"--profile", "omniqa", "config", "set", "--force", "model.default", "auto/best-coding"},
+	}
+	if !reflect.DeepEqual(harness.commands, want) {
+		t.Fatalf("commands = %#v, want %#v", harness.commands, want)
+	}
+	if len(harness.secretCommands) != 0 {
+		t.Fatalf("OmniRoute setup unexpectedly handled a secret: %#v", harness.secretCommands)
+	}
+}
+
+func TestProfileCreateRejectsOmniRouteCredentialBeforeMutation(t *testing.T) {
+	harness := newProfileHarness(t)
+	response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": "omniqa", "provider": "omniroute", "model": "auto/best-coding",
+		"provider_api_key": "must-not-be-forwarded",
+	}, true, nil)
+	if response.StatusCode != http.StatusBadRequest {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+	_ = response.Body.Close()
+	if len(harness.commands) != 0 || len(harness.secretCommands) != 0 {
+		t.Fatalf("invalid setup spawned commands: %#v %#v", harness.commands, harness.secretCommands)
 	}
 }
 

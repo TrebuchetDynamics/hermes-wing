@@ -22,6 +22,7 @@ import (
 )
 
 const defaultWingLinkPort = 8654
+const omniRouteBaseURL = "http://127.0.0.1:20128/v1"
 
 var profileIDPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
 var reservedProfileIDs = map[string]struct{}{
@@ -37,6 +38,7 @@ var supportedProfileSetupProviders = map[string]struct{}{
 	"minimax-oauth": {}, "minimax-cn": {}, "ollama-cloud": {}, "arcee": {},
 	"gmi": {}, "kilocode": {}, "opencode-zen": {}, "opencode-go": {},
 	"bedrock": {}, "azure-foundry": {}, "ai-gateway": {}, "qwen-oauth": {},
+	"omniroute": {},
 }
 
 type serveOptions struct {
@@ -701,6 +703,7 @@ func validateProfileSetup(description, provider, model, providerAPIKey string) e
 	if len([]rune(description)) > 500 || hasControl(description) ||
 		(provider == "") != (model == "") ||
 		(provider != "" && (!providerSupported || len([]rune(model)) > 200 || hasControl(model))) ||
+		(provider == "omniroute" && providerAPIKey != "") ||
 		(providerAPIKey != "" && provider == "") ||
 		len(providerAPIKey) > 16<<10 || strings.ContainsAny(providerAPIKey, "\r\n\x00") {
 		return errProfileInvalidSetup
@@ -724,6 +727,10 @@ func (backend *profileBackend) configure(
 	if err := validateProfileSetup(description, provider, model, providerAPIKey); err != nil {
 		return err
 	}
+	effectiveProvider := provider
+	if provider == "omniroute" {
+		effectiveProvider = "custom"
+	}
 	if description != "" {
 		if err := backend.runHermes(ctx, "profile", "describe", profile, "--text", description); err != nil {
 			return errProfileSetupFailed
@@ -732,8 +739,13 @@ func (backend *profileBackend) configure(
 	if provider == "" {
 		return nil
 	}
-	if err := backend.runHermes(ctx, "--profile", profile, "config", "set", "--force", "model.provider", provider); err != nil {
+	if err := backend.runHermes(ctx, "--profile", profile, "config", "set", "--force", "model.provider", effectiveProvider); err != nil {
 		return errProfileSetupFailed
+	}
+	if provider == "omniroute" {
+		if err := backend.runHermes(ctx, "--profile", profile, "config", "set", "--force", "model.base_url", omniRouteBaseURL); err != nil {
+			return errProfileSetupFailed
+		}
 	}
 	if err := backend.runHermes(ctx, "--profile", profile, "config", "set", "--force", "model.default", model); err != nil {
 		return errProfileSetupFailed
@@ -742,8 +754,14 @@ func (backend *profileBackend) configure(
 		return errProfileSetupFailed
 	}
 	configuredProvider, err := backend.readHermes(ctx, "--profile", profile, "config", "get", "model.provider")
-	if err != nil || strings.TrimSpace(string(configuredProvider)) != provider {
+	if err != nil || strings.TrimSpace(string(configuredProvider)) != effectiveProvider {
 		return errProfilePostcondition
+	}
+	if provider == "omniroute" {
+		configuredBaseURL, err := backend.readHermes(ctx, "--profile", profile, "config", "get", "model.base_url")
+		if err != nil || strings.TrimSpace(string(configuredBaseURL)) != omniRouteBaseURL {
+			return errProfilePostcondition
+		}
 	}
 	configuredModel, err := backend.readHermes(ctx, "--profile", profile, "config", "get", "model.default")
 	if err != nil || strings.TrimSpace(string(configuredModel)) != model {

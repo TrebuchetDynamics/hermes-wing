@@ -98,6 +98,7 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
       );
 
   final SharedPreferences _preferences;
+  final Set<String> _knownProfileIds = {..._profileIds};
 
   late final Map<String, HermesProfileSoul> _souls = {
     for (final id in _profileIds)
@@ -113,7 +114,7 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     String profileId, {
     bool allowDiscovered = false,
   }) async {
-    if (!_profileIds.contains(profileId)) {
+    if (!_knownProfileIds.contains(profileId)) {
       throw StateError('unknown fixture profile $profileId');
     }
     final sessionId = 'session-$profileId';
@@ -121,6 +122,32 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
       HermesSession(id: sessionId, source: 'fixture', title: profileId),
     ], activeSessionId: sessionId);
     await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+  }
+
+  @override
+  Future<void> createProfile({required String name, String? cloneFrom}) async {
+    await super.createProfile(name: name, cloneFrom: cloneFrom);
+    final id = name.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+    _knownProfileIds.add(id);
+    final cloneSoul = _souls[cloneFrom];
+    _souls[id] = HermesProfileSoul(
+      soul: cloneSoul?.soul ?? 'persona-initial-$id',
+      revision: 'soul-rev-$id-1',
+    );
+    replaceCapabilitiesAndProfiles(_profileCapabilities, [
+      for (final profile in state.profiles)
+        if (profile.id == id)
+          HermesProfile(
+            id: id,
+            displayName: profile.displayName,
+            revision: profile.revision,
+            description: 'Cloned from ${cloneFrom ?? 'default'}',
+            model: cloneFrom == 'mineru' ? 'gpt-5.6-sol' : profile.model,
+            gatewayRunning: true,
+          )
+        else
+          profile,
+    ]);
   }
 
   @override
@@ -165,6 +192,22 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
       revision: 'soul-rev-$profileId-2',
     );
     await _preferences.setString('profile-soul-$profileId', soul);
+  }
+
+  @override
+  Future<void> deleteProfile({
+    required String profileId,
+    required String revision,
+  }) async {
+    final deletedSelection = state.selectedProfileId == profileId;
+    await super.deleteProfile(profileId: profileId, revision: revision);
+    if (deletedSelection && state.profiles.isNotEmpty) {
+      await selectProfile(state.profiles.first.id);
+    }
+    _knownProfileIds.remove(profileId);
+    _souls.remove(profileId);
+    await _preferences.remove('profile-name-$profileId');
+    await _preferences.remove('profile-soul-$profileId');
   }
 
   @override

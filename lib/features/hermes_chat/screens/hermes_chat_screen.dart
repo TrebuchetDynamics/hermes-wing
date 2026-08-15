@@ -46,6 +46,7 @@ import '../controllers/hermes_follow_up_queue.dart';
 import '../voice/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
+import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../widgets/hermes_profile_identity.dart';
@@ -243,6 +244,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
+  late final HermesGatewayDirectory _gatewayDirectory;
   late final HermesApprovalQueue _approvals;
   final HermesFollowUpQueue _followUps = HermesFollowUpQueue(
     capacity: _maxQueuedFollowUps,
@@ -280,6 +282,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       channel: () => ref.read(hermesChannelProvider),
       onResolveError: _showApprovalError,
     )..addListener(_onApprovalsChanged);
+    _gatewayDirectory = ref.read(hermesGatewayDirectoryProvider);
     _channelProviderSubscription = ref.listenManual<HermesChannel>(
       hermesChannelProvider,
       (_, channel) => _subscribeToChannel(channel),
@@ -532,13 +535,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   }
 
   void _refreshActiveGatewayContact() {
-    final directory = ref.read(hermesGatewayDirectoryProvider);
-    final gatewayId = directory.activeContactId?.gatewayId;
+    final gatewayId = _gatewayDirectory.activeContactId?.gatewayId;
     if (gatewayId == null) return;
     // This runs automatically after every completed turn and session action,
     // so a gateway that stopped being saved must not raise here.
     fireAndForget(
-      directory.reconnectGateway(gatewayId),
+      _gatewayDirectory.reconnectGateway(gatewayId),
       'active gateway contact refresh',
     );
   }

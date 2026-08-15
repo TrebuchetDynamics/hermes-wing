@@ -161,9 +161,13 @@ prepare API access, and start the local runtime. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
 Today, Wing Link's Agent-domain compatibility surface is fixed profile
 list/create/rename/delete plus transactional new-profile setup for an allowlisted
-provider, model, and optional write-only provider credential. General provider
-management, all existing-profile provider or credential edits, and per-profile
-Hermes Project creation remain unshipped. After Hermes is ready, pair the phone.
+provider, model, and optional write-only provider credential. The special
+`omniroute` provider is a fixed, keyless local adapter: it maps only to Hermes'
+`custom` provider at `http://127.0.0.1:20128/v1`; enter an OmniRoute model such as
+`auto/best-coding` and leave the credential field empty. It does not expose a
+caller-selected base URL. General provider management, all existing-profile
+provider or credential edits, and per-profile Hermes Project creation remain
+unshipped. After Hermes is ready, pair the phone.
 
 `wing-link setup` deliberately binds the Hermes Agent API to loopback. Exposing
 Wing Link does **not** expose the direct Agent data plane. Before remote Android

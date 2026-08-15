@@ -195,4 +195,9 @@ name: strict_profile_lifecycle_fixture
 - assertVisible: "(?s).*persona-initial-mineru.*"
 - pressKey: back
 - assertVisible: "(?s).*Profiles.*"
+
+# Create, clone, edit, chat through, and delete a disposable profile.
+- runFlow:
+    file: profile_create_edit_chat_delete.yaml
+- assertVisible: "(?s).*Profiles.*"
 - takeScreenshot: strict_profile_lifecycle_status_complete

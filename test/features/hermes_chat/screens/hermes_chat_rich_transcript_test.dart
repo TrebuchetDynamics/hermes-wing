@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -1073,6 +1075,147 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
   });
 
+  testWidgets('inline API transcript images render without network access', (
+    tester,
+  ) async {
+    const onePixelPng =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Generated screenshot](data:image/png;base64,$onePixelPng)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.textContaining('image not loaded'), findsNothing);
+  });
+
+  testWidgets('inline transcript images share a decoded-pixel budget', (
+    tester,
+  ) async {
+    const image =
+        '![pixel](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=)';
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '$image\n\n$image\n\n$image',
+            inlineImagePixelBudget: 2,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(Image), findsNWidgets(2));
+    expect(find.text('pixel (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images require matching image bytes', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Untrusted image](data:image/png;base64,SGVybWVzIFdpbmc=)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Untrusted image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject extreme dimensions', (
+    tester,
+  ) async {
+    final data = base64Encode(_pngHeader(width: 9000, height: 1));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Oversized image](data:image/png;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Oversized image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject excessive decoded pixels', (
+    tester,
+  ) async {
+    final data = base64Encode(_pngHeader(width: 5000, height: 5000));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Pixel-heavy image](data:image/png;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Pixel-heavy image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject excessive animation frames', (
+    tester,
+  ) async {
+    final data = base64Encode(_animatedGif(frameCount: 61));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Busy animation](data:image/gif;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Busy animation (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images expose their alt text to semantics', (
+    tester,
+  ) async {
+    const onePixelPng =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Generated screenshot](data:image/png;base64,$onePixelPng)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.bySemanticsLabel('Generated screenshot'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('remote transcript images stay deferred', (tester) async {
     final channel = FakeHermesChannel();
     channel.beginStreamingTurn('Show the diagram.');
@@ -1142,4 +1285,23 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     expect(launchCount, 0);
   });
+}
+
+Uint8List _pngHeader({required int width, required int height}) {
+  final bytes = Uint8List(24);
+  bytes.setAll(0, const [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  bytes.setAll(8, const [0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+  final data = ByteData.sublistView(bytes);
+  data.setUint32(16, width);
+  data.setUint32(20, height);
+  return bytes;
+}
+
+Uint8List _animatedGif({required int frameCount}) {
+  final bytes = <int>[...ascii.encode('GIF89a'), 1, 0, 1, 0, 0, 0, 0];
+  for (var index = 0; index < frameCount; index++) {
+    bytes.addAll(const [0x2c, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 1, 0, 0]);
+  }
+  bytes.add(0x3b);
+  return Uint8List.fromList(bytes);
 }

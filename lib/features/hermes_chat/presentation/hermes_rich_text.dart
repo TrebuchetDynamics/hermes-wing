@@ -7,6 +7,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'inline_transcript_image_safety.dart';
 
 typedef HermesUriLauncher = Future<bool> Function(Uri uri);
 
@@ -16,12 +17,14 @@ class HermesRichText extends StatelessWidget {
     this.data, {
     this.launchUri,
     this.selectable = true,
+    this.inlineImagePixelBudget = maxInlineTranscriptAggregatePixels,
     super.key,
   });
 
   final String data;
   final HermesUriLauncher? launchUri;
   final bool selectable;
+  final int inlineImagePixelBudget;
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +56,21 @@ class HermesRichText extends StatelessWidget {
       blockSpacing: 12,
       listIndent: 22,
     );
+    var remainingImagePixels = inlineImagePixelBudget;
     final content = MarkdownBody(
       data: data,
       styleSheet: markdownStyle,
       shrinkWrap: true,
       builders: {'pre': _HermesCodeBlockBuilder()},
-      imageBuilder: (uri, title, alt) => Text(
-        '${(alt == null || alt.trim().isEmpty) ? strings.transcriptImageFallbackLabel : alt.trim()} '
-        '(${strings.transcriptImageNotLoaded})',
+      imageBuilder: (uri, title, alt) => _buildTranscriptImage(
+        strings: strings,
+        uri: uri,
+        alt: alt,
+        reservePixels: (pixels) {
+          if (pixels > remainingImagePixels) return false;
+          remainingImagePixels -= pixels;
+          return true;
+        },
       ),
       onTapLink: (text, href, title) {
         final uri = href == null ? null : Uri.tryParse(href);
@@ -76,6 +86,81 @@ class HermesRichText extends StatelessWidget {
 }
 
 const _safeLinkSchemes = {'http', 'https', 'mailto'};
+const _maxInlineTranscriptImageBytes = 5 * 1024 * 1024;
+
+Widget _buildTranscriptImage({
+  required AppLocalizations strings,
+  required Uri uri,
+  required String? alt,
+  required bool Function(int pixels) reservePixels,
+}) {
+  final label = alt == null || alt.trim().isEmpty
+      ? strings.transcriptImageFallbackLabel
+      : alt.trim();
+  final image = _safeInlineImage(uri);
+  if (image == null || !reservePixels(image.metadata.animationPixels)) {
+    return Text('$label (${strings.transcriptImageNotLoaded})');
+  }
+  return Semantics(
+    image: true,
+    label: label,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 420),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.memory(
+          image.bytes,
+          fit: BoxFit.contain,
+          gaplessPlayback: true,
+          cacheWidth: maxInlineTranscriptDecodeDimension,
+          cacheHeight: maxInlineTranscriptDecodeDimension,
+          errorBuilder: (_, _, _) =>
+              Text('$label (${strings.transcriptImageNotLoaded})'),
+        ),
+      ),
+    ),
+  );
+}
+
+_SafeInlineTranscriptImage? _safeInlineImage(Uri uri) {
+  if (uri.scheme.toLowerCase() != 'data' ||
+      uri.toString().length > 7 * 1024 * 1024) {
+    return null;
+  }
+  try {
+    final data = uri.data;
+    final mimeType = data?.mimeType.toLowerCase();
+    if (data == null ||
+        !const {
+          'image/png',
+          'image/jpeg',
+          'image/gif',
+          'image/webp',
+        }.contains(mimeType)) {
+      return null;
+    }
+    final bytes = data.contentAsBytes();
+    if (bytes.isEmpty || bytes.length > _maxInlineTranscriptImageBytes) {
+      return null;
+    }
+    final metadata = inlineTranscriptImageMetadata(bytes, mimeType!);
+    return metadata == null
+        ? null
+        : _SafeInlineTranscriptImage(bytes: bytes, metadata: metadata);
+  } catch (_) {
+    return null;
+  }
+}
+
+class _SafeInlineTranscriptImage {
+  const _SafeInlineTranscriptImage({
+    required this.bytes,
+    required this.metadata,
+  });
+
+  final Uint8List bytes;
+  final InlineTranscriptImageMetadata metadata;
+}
 
 Future<bool> _launchUri(Uri uri) => launchUrl(uri);
 

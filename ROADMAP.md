@@ -58,6 +58,33 @@ explicit direct-Agent Project/working-directory contract.
   evidence before expanding stores or platforms.
 - Record physical-device voice evidence before expanding acoustic claims.
 
+## Engineering quality (audit remediation, 2026-08)
+
+A technical audit (in [docs/superpowers/plans/2026-08-17-audit-remediation.md](docs/superpowers/plans/2026-08-17-audit-remediation.md))
+flagged the channel god-object, brittle meta-tests, and vendored forks as the
+main technical debt. This track addresses those findings plus the hardening
+items they surface; feature work above stays on the product tracks.
+
+- [ ] **Baseline (Milestone 0).** Land the in-flight pocket_speech removal while
+      preserving an unrelated dirty worktree; rerun the complete validation gate
+      and record results in the evidence matrix.
+- [ ] **Vendored forks (Milestone 0).** Document fork purpose/patches and an
+      upgrade or upstream plan for `third_party/speech_to_text` and
+      `third_party/malsami`.
+- [ ] **Cache-key hygiene (Milestone 1).** Replace `sha256(apiKey)` in the
+      in-memory `_recentTurnKey` with a non-secret discriminator.
+- [ ] **Taxonomy tests (Milestone 1).** Retire the 7 tautological taxonomy tests
+      in favor of behavioral widget coverage or a single route-resolution test.
+- [ ] **Channel services (Milestone 2).** Extract the approvals and session
+      concerns out of the `HermesApiChannel` part files into injectable,
+      independently testable services.
+- [ ] **Contract-test surface (Milestone 2).** Shrink `test/tooling/` from 17
+      source-contract files to 3-5 high-value ones; convert the rest to
+      behavioral tests.
+- [ ] **Property tests + lints (Milestone 3).** Add property-based coverage for
+      redaction and URL validation, enrich the linter, and document the channel
+      lifecycle states.
+
 ## Next
 
 | Area | Next safe slice |

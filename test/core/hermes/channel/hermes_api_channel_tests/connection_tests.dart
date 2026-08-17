@@ -627,4 +627,59 @@ void _hermesApiChannelConnectionTests() {
     expect(channel.state.activeSessionId, 'fresh');
     expect(channel.state.activeMessages.single.text, 'Fresh connection');
   });
+
+  test('recent turns never survive a reconnect: the turn cache is scoped to '
+      'the connection, not the credential', () async {
+    var messageReads = 0;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              messageReads++ == 0
+                  ? '''
+{
+  "object": "list",
+  "session_id": "sess_1",
+  "data": [
+    {
+      "id": "msg_1",
+      "session_id": "sess_1",
+      "role": "user",
+      "content": "Hello",
+      "usage": {"input_tokens": 100, "output_tokens": 1, "total_tokens": 101}
+    }
+  ]
+}'''
+                  : _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642', apiKey: 'key-one');
+    await channel.selectSession('sess_1');
+    expect(channel.state.activeMessages.single.usage?.totalTokens, 101);
+
+    // A different credential on the same base URL starts from a fresh
+    // fetch, never the previous credential's cached turns.
+    await channel.disconnect();
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642', apiKey: 'key-two');
+    await channel.selectSession('sess_1');
+    expect(channel.state.activeMessages.single.usage, isNull);
+
+    // Even reusing the exact same credential must not resurrect the old
+    // connection's cached turns: the discriminator changes per connection,
+    // it is not a stable hash of the credential.
+    await channel.disconnect();
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642', apiKey: 'key-one');
+    await channel.selectSession('sess_1');
+    expect(channel.state.activeMessages.single.usage, isNull);
+  });
 }

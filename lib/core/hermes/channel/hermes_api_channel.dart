@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -110,9 +108,13 @@ class HermesApiChannel extends ChangeNotifier
     String sessionId, {
     String? profileId,
   }) {
-    final credential = sha256.convert(utf8.encode(client.config.apiKey ?? ''));
+    // _recentTurns is never cleared on connect(), so the discriminator must
+    // change across connections, not across credentials: a new connection
+    // (even reusing the same credential) must never reconcile against the
+    // previous connection's cached turns. _connectionGeneration increments on
+    // every connect()/disconnect() and is stable within a connection.
     final profile = profileId ?? _state.selectedProfileId ?? 'default';
-    return '${client.config.baseUri}|$credential|$profile|$sessionId';
+    return '${client.config.baseUri}|$_connectionGeneration|$profile|$sessionId';
   }
 
   void _setState(HermesChannelState next) {

@@ -637,8 +637,10 @@ void _hermesApiChannelProfileTests() {
       );
       addTearDown(channel.dispose);
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
-      await channel.disconnect();
-      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      // Refresh history within the same connection: the recent-turn cache is
+      // connection-scoped and never survives a reconnect, so reconciliation
+      // must be exercised without disconnecting.
+      await channel.selectSession('sess_1');
 
       final turn = channel.state.activeMessages.single;
       expect(turn.id, 'server-id');

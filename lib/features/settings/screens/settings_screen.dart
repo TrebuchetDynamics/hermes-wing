@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
@@ -20,7 +16,6 @@ import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
-import '../../voice/services/tts/text_to_speech_service.dart';
 import '../../voice/services/models/offline_voice_model_manifests.dart';
 import '../providers/offline_stt_pack_provider.dart';
 import '../providers/theme_settings_provider.dart';
@@ -161,14 +156,7 @@ class SettingsScreen extends ConsumerWidget {
                     key: const ValueKey('settings-voice-link'),
                     leading: const Icon(Icons.graphic_eq),
                     title: Text(strings.voiceSettingsTitle),
-                    subtitle: Text(
-                      strings.settingsVoiceLinkSummary(
-                        settings.pocketSpeechModel.label,
-                        settings.pocketSpeechVoicePackReady
-                            ? strings.settingsVoiceInstalled
-                            : strings.settingsVoiceNotInstalled,
-                      ),
-                    ),
+                    subtitle: Text(strings.voiceSpeakRepliesSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.settingsVoice),
                   ),

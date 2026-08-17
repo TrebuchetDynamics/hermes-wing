@@ -312,14 +312,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.12"
-  flutter_onnxruntime:
-    dependency: transitive
-    description:
-      name: flutter_onnxruntime
-      sha256: "616f0e296840edb63278c647baf4475232d21cba45478ff26348e474f3f6a913"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.8.0"
   flutter_riverpod:
     dependency: "direct main"
     description:
@@ -691,15 +683,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  pocket_speech:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "17f45643e65a834b6852f433e2b4b2c0a6630597"
-      resolved-ref: "17f45643e65a834b6852f433e2b4b2c0a6630597"
-      url: "https://github.com/TrebuchetDynamics/pocket-speech-dart.git"
-    source: git
-    version: "0.1.0"
   pool:
     dependency: transitive
     description:

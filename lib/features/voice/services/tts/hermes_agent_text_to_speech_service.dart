@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../../../../shared/voice/text_to_speech_service.dart';
 
 typedef HermesSpeechSynthesizer = Future<Uint8List> Function(String text);
+typedef HermesSpeechAudioPlayerFactory = HermesSpeechAudioPlayer Function();
 
 abstract interface class HermesSpeechAudioPlayer {
   Stream<void> get onComplete;
@@ -37,18 +38,13 @@ final class AudioplayersHermesSpeechAudioPlayer
 final class HermesAgentTextToSpeechService implements TextToSpeechService {
   HermesAgentTextToSpeechService(
     this._synthesize, {
-    HermesSpeechAudioPlayer? player,
-  }) : _player = player ?? AudioplayersHermesSpeechAudioPlayer() {
-    _completionSubscription = _player.onComplete.listen((_) {
-      final completion = _playbackCompletion;
-      if (completion != null && !completion.isCompleted) completion.complete();
-    });
-  }
+    HermesSpeechAudioPlayerFactory? playerFactory,
+  }) : _playerFactory =
+           playerFactory ?? AudioplayersHermesSpeechAudioPlayer.new;
 
   final HermesSpeechSynthesizer _synthesize;
-  final HermesSpeechAudioPlayer _player;
-  late final StreamSubscription<void> _completionSubscription;
-  Completer<void>? _playbackCompletion;
+  final HermesSpeechAudioPlayerFactory _playerFactory;
+  _HermesSpeechPlayback? _playback;
   int _generation = 0;
 
   @override
@@ -62,15 +58,17 @@ final class HermesAgentTextToSpeechService implements TextToSpeechService {
 
     await _stopPlayback();
     if (generation != _generation) return;
-    final completion = Completer<void>();
-    _playbackCompletion = completion;
+    final player = _playerFactory();
+    final playback = _HermesSpeechPlayback(player);
+    _playback = playback;
     try {
-      await _player.play(audio);
-      await completion.future;
+      await player.play(audio);
+      await playback.completion;
     } finally {
-      if (identical(_playbackCompletion, completion)) {
-        _playbackCompletion = null;
+      if (identical(_playback, playback)) {
+        _playback = null;
       }
+      await playback.dispose();
     }
   }
 
@@ -81,16 +79,61 @@ final class HermesAgentTextToSpeechService implements TextToSpeechService {
   }
 
   Future<void> _stopPlayback() async {
-    await _player.stop();
-    final completion = _playbackCompletion;
-    _playbackCompletion = null;
-    if (completion != null && !completion.isCompleted) completion.complete();
+    final playback = _playback;
+    _playback = null;
+    await playback?.stop();
   }
 
   @override
   Future<void> dispose() async {
     await stop();
-    await _completionSubscription.cancel();
-    await _player.dispose();
+  }
+}
+
+final class _HermesSpeechPlayback {
+  _HermesSpeechPlayback(this.player) {
+    _subscription = player.onComplete.listen(
+      (_) => _complete(),
+      onError: (Object error, StackTrace stackTrace) {
+        if (!_completion.isCompleted) {
+          _completion.completeError(error, stackTrace);
+        }
+      },
+    );
+  }
+
+  final HermesSpeechAudioPlayer player;
+  final Completer<void> _completion = Completer<void>();
+  late final StreamSubscription<void> _subscription;
+  Future<void>? _disposeFuture;
+
+  Future<void> get completion => _completion.future;
+
+  void _complete() {
+    if (!_completion.isCompleted) _completion.complete();
+  }
+
+  Future<void> stop() async {
+    Object? stopError;
+    StackTrace? stopStackTrace;
+    try {
+      await player.stop();
+    } catch (error, stackTrace) {
+      stopError = error;
+      stopStackTrace = stackTrace;
+    } finally {
+      _complete();
+      await dispose();
+    }
+    if (stopError != null) {
+      Error.throwWithStackTrace(stopError, stopStackTrace!);
+    }
+  }
+
+  Future<void> dispose() => _disposeFuture ??= _dispose();
+
+  Future<void> _dispose() async {
+    await _subscription.cancel();
+    await player.dispose();
   }
 }

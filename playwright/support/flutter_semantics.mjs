@@ -12,15 +12,29 @@ export const INTERACTIVE_SEMANTIC_SELECTORS = [
 
 export async function enableFlutterAccessibility(page, { delay = 2000 } = {}) {
   await page
-    .waitForSelector('flt-semantics-placeholder, text=Enable accessibility', { timeout: 10000 })
-    .catch(() => {});
-  await page.evaluate(() => {
-    document
-      .querySelector('flt-semantics-placeholder')
-      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-  });
-  await page.getByText('Enable accessibility').click({ timeout: 1000 }).catch(() => {});
-  await page.waitForSelector('flt-semantics', { timeout: 10000 }).catch(() => {});
+    .locator('flt-semantics, flt-semantics-placeholder')
+    .first()
+    .waitFor({ timeout: 10000 });
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (await page.locator('flt-semantics').count()) break;
+
+    await page.evaluate(() => {
+      document.querySelector('flt-semantics-placeholder')?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          view: window,
+        }),
+      );
+    });
+    await page
+      .waitForSelector('flt-semantics', { timeout: 3000 })
+      .catch(() => {});
+  }
+
+  await page.waitForSelector('flt-semantics', { timeout: 10000 });
   if (delay > 0) await page.waitForTimeout(delay);
 }
 

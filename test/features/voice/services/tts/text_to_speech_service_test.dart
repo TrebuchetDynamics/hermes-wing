@@ -34,6 +34,21 @@ void main() {
   });
 
   test(
+    'hung platform completion is stopped so voice capture can re-arm',
+    () async {
+      final engine = _FakeFlutterTtsEngine(hangSpeak: true);
+      final service = FlutterTextToSpeechService(
+        engine: engine,
+        completionTimeoutForText: (_) => const Duration(milliseconds: 10),
+      );
+
+      await service.speak('reply').timeout(const Duration(milliseconds: 100));
+
+      expect(engine.calls, containsAllInOrder(['speak:reply', 'stop']));
+    },
+  );
+
+  test(
     'an explicit language configuration is retried on the next speak',
     () async {
       final engine = _FakeFlutterTtsEngine(failNextSetLanguage: true);
@@ -185,6 +200,27 @@ void main() {
   });
 
   test(
+    'fallback stop does not wait on an inactive failed primary backend',
+    () async {
+      final primary = _FailingThenHungRestopTextToSpeechService();
+      final fallback = _BlockingRecordingTextToSpeechService();
+      final service = FallbackTextToSpeechService(primary, fallback);
+      final speaking = service.speak('fallback reply');
+      await fallback.started.future;
+
+      try {
+        await service.stop().timeout(const Duration(milliseconds: 50));
+      } finally {
+        primary.finishHungRestop();
+      }
+      await speaking;
+
+      expect(primary.stopCalls, 1);
+      expect(fallback.stopCalls, 1);
+    },
+  );
+
+  test(
     'fallback stop is attempted when primary stop throws synchronously',
     () async {
       final primary = _SynchronouslyThrowingTextToSpeechService();
@@ -304,6 +340,49 @@ class _DelayedConfigureFlutterTtsEngine extends _FakeFlutterTtsEngine {
   void completeConfiguration() => _configuration.complete();
 }
 
+class _FailingThenHungRestopTextToSpeechService implements TextToSpeechService {
+  final _hungRestop = Completer<void>();
+  int stopCalls = 0;
+
+  @override
+  Future<void> speak(String text) =>
+      Future<void>.error(StateError('primary unavailable'));
+
+  @override
+  Future<void> stop() {
+    stopCalls += 1;
+    return stopCalls == 1 ? Future<void>.value() : _hungRestop.future;
+  }
+
+  @override
+  Future<void> dispose() => stop();
+
+  void finishHungRestop() {
+    if (!_hungRestop.isCompleted) _hungRestop.complete();
+  }
+}
+
+class _BlockingRecordingTextToSpeechService implements TextToSpeechService {
+  final started = Completer<void>();
+  final _speaking = Completer<void>();
+  int stopCalls = 0;
+
+  @override
+  Future<void> speak(String text) {
+    started.complete();
+    return _speaking.future;
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls += 1;
+    if (!_speaking.isCompleted) _speaking.complete();
+  }
+
+  @override
+  Future<void> dispose() => stop();
+}
+
 class _SynchronouslyThrowingTextToSpeechService implements TextToSpeechService {
   @override
   Future<void> speak(String text) async {}
@@ -386,12 +465,15 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
   _FakeFlutterTtsEngine({
     this.failNextSetLanguage = false,
     this.systemLanguage,
+    this.hangSpeak = false,
   });
 
   final calls = <String>[];
   bool failNextSetLanguage;
   bool failNextReset = false;
   final String? systemLanguage;
+  final bool hangSpeak;
+  final _hungSpeak = Completer<void>();
   String? currentLanguage;
 
   @override
@@ -435,13 +517,15 @@ class _FakeFlutterTtsEngine implements FlutterTtsEngine {
   }
 
   @override
-  Future<void> speak(String text) async {
+  Future<void> speak(String text) {
     calls.add('speak:$text');
+    return hangSpeak ? _hungSpeak.future : Future<void>.value();
   }
 
   @override
   Future<void> stop() async {
     calls.add('stop');
+    if (!_hungSpeak.isCompleted) _hungSpeak.complete();
   }
 
   @override

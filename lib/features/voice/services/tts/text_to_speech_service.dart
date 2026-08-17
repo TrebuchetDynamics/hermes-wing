@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -8,8 +9,6 @@ import '../../../../shared/voice/voice_text_language_detector.dart';
 import '../platform/voice_capture_platform.dart';
 
 export '../../../../shared/voice/text_to_speech_service.dart';
-export 'pocket_speech_asset_download_service.dart';
-export 'pocket_speech_text_to_speech_service.dart';
 
 /// Reads the live voice settings at speak-time (not cached), so a rate/voice
 /// change takes effect on the very next utterance.
@@ -162,35 +161,52 @@ class PluginFlutterTtsEngine implements FlutterTtsEngine {
   }
 }
 
+enum _FallbackTtsBackend { primary, fallback }
+
 class FallbackTextToSpeechService implements TextToSpeechService {
   FallbackTextToSpeechService(this._primary, this._fallback);
 
   final TextToSpeechService _primary;
   final TextToSpeechService _fallback;
   int _operationGeneration = 0;
+  _FallbackTtsBackend? _activeBackend;
 
   @override
   Future<void> speak(String text) async {
     final operationGeneration = ++_operationGeneration;
+    _activeBackend = _FallbackTtsBackend.primary;
     try {
-      await _primary.speak(text);
-    } catch (_) {
-      if (operationGeneration != _operationGeneration) return;
       try {
-        await _primary.stop();
-      } catch (_) {}
-      if (operationGeneration != _operationGeneration) return;
-      await _fallback.speak(text);
+        await _primary.speak(text);
+      } catch (_) {
+        if (operationGeneration != _operationGeneration) return;
+        try {
+          await _primary.stop();
+        } catch (_) {}
+        if (operationGeneration != _operationGeneration) return;
+        _activeBackend = _FallbackTtsBackend.fallback;
+        await _fallback.speak(text);
+      }
+    } finally {
+      if (operationGeneration == _operationGeneration) {
+        _activeBackend = null;
+      }
     }
   }
 
   @override
   Future<void> stop() {
     _operationGeneration += 1;
-    return Future.wait<void>([
-      Future<void>.sync(_primary.stop),
-      Future<void>.sync(_fallback.stop),
-    ]);
+    final activeBackend = _activeBackend;
+    _activeBackend = null;
+    return switch (activeBackend) {
+      _FallbackTtsBackend.primary => Future<void>.sync(_primary.stop),
+      _FallbackTtsBackend.fallback => Future<void>.sync(_fallback.stop),
+      null => Future.wait<void>([
+        Future<void>.sync(_primary.stop),
+        Future<void>.sync(_fallback.stop),
+      ]),
+    };
   }
 
   @override
@@ -210,6 +226,7 @@ class FlutterTextToSpeechService implements TextToSpeechService {
     this.speechRate = 0.45,
     this.volume = 1,
     this.pitch = 1,
+    this.completionTimeoutForText = _defaultCompletionTimeoutForText,
     TtsSettingsReader? settings,
     VoiceTextLanguageDetector? languageDetector,
   }) : _engine = engine ?? PluginFlutterTtsEngine(),
@@ -226,6 +243,7 @@ class FlutterTextToSpeechService implements TextToSpeechService {
   final double speechRate;
   final double volume;
   final double pitch;
+  final Duration Function(String text) completionTimeoutForText;
   final TtsSettingsReader? _settings;
   bool _configured = false;
   int _operationGeneration = 0;
@@ -240,7 +258,18 @@ class FlutterTextToSpeechService implements TextToSpeechService {
     if (operationGeneration != _operationGeneration) return;
     await _applySettings(_languageDetector.detect(trimmed));
     if (operationGeneration != _operationGeneration) return;
-    await _engine.speak(trimmed);
+    await _engine
+        .speak(trimmed)
+        .timeout(completionTimeoutForText(trimmed), onTimeout: _engine.stop);
+  }
+
+  static Duration _defaultCompletionTimeoutForText(String text) {
+    final wordCount = RegExp(r'\S+').allMatches(text).length;
+    final characterCount = text.replaceAll(RegExp(r'\s'), '').length;
+    final estimatedMilliseconds = max(wordCount * 400, characterCount * 70);
+    return Duration(
+      milliseconds: (estimatedMilliseconds + 2000).clamp(5000, 180000),
+    );
   }
 
   /// Applies the reply language before the selected voice so speech follows

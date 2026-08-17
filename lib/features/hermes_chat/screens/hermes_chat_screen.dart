@@ -26,6 +26,7 @@ import '../../profiles/providers/profile_selection_provider.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';
+import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../settings/providers/voice_settings_provider.dart';
@@ -36,7 +37,6 @@ import '../../voice/services/platform/voice_capture_platform.dart';
 import '../../voice/services/speech/offline_first_voice_capture_service.dart';
 import '../../voice/services/speech/offline_voice_capture_factory.dart';
 import '../../voice/services/tts/hermes_agent_text_to_speech_service.dart';
-import '../../voice/services/tts/text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/staged_attachment.dart';
 import '../messaging/approvals/hermes_approval_queue.dart';
@@ -107,14 +107,6 @@ final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
   (_) => openFile,
 );
 
-typedef HermesPlatformTtsFactory =
-    TextToSpeechService? Function(TtsSettingsReader settings);
-
-final hermesPlatformTtsFactoryProvider = Provider<HermesPlatformTtsFactory>(
-  (_) =>
-      (settings) => createDefaultTextToSpeechService(settings: settings),
-);
-
 typedef HermesAgentTtsFactory =
     TextToSpeechService Function(HermesSpeechSynthesizer synthesize);
 
@@ -124,29 +116,22 @@ final hermesAgentTtsFactoryProvider = Provider<HermesAgentTtsFactory>(
 );
 
 final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
-  WingVoiceSettings settings() => ref.read(wingVoiceSettingsProvider);
-  final platformService = ref.watch(hermesPlatformTtsFactoryProvider)(settings);
   final channel = ref.watch(hermesChannelProvider);
-  final agentService = channel is HermesAudioChannel
-      ? ref.watch(hermesAgentTtsFactoryProvider)(
-          (channel as HermesAudioChannel).synthesizeSpeech,
-        )
-      : null;
-  final TextToSpeechService? service;
-  if (agentService != null && platformService != null) {
-    service = FallbackTextToSpeechService(agentService, platformService);
-  } else {
-    service = agentService ?? platformService;
-  }
-  if (service == null) return null;
-  final resolvedService = service;
-  final owner = ref.watch(offlineTtsRuntimeOwnerProvider);
-  final predecessorRelease = owner.adopt(
-    resolvedService,
-    ownsOfflineModels: false,
+  final capabilities = ref.watch(
+    hermesChannelStateProvider.select((state) => state.capabilities),
   );
-  ref.onDispose(() => unawaited(owner.release(resolvedService)));
-  return ReleaseBarrierTextToSpeechService(resolvedService, predecessorRelease);
+  if (channel is! HermesAudioChannel ||
+      capabilities == null ||
+      !HermesTransportPolicy(capabilities).supportsSpeechSynthesis) {
+    return null;
+  }
+  final service = ref.watch(hermesAgentTtsFactoryProvider)(
+    (channel as HermesAudioChannel).synthesizeSpeech,
+  );
+  ref.onDispose(
+    () => fireAndForget(service.dispose(), 'Hermes Agent TTS disposal'),
+  );
+  return service;
 });
 
 const _hermesBaseUrlHint =

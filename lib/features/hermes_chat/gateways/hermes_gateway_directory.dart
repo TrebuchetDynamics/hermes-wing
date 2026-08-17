@@ -128,6 +128,8 @@ class HermesGatewayDirectory extends ChangeNotifier
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
   Future<void> _profileSelectionTail = Future.value();
+  Future<void> _selectionPersistenceTail = Future.value();
+  bool _observingActiveChannel = false;
   Timer? _foregroundTimer;
 
   List<GatewayContact> get contacts => List.unmodifiable(_contacts);
@@ -210,9 +212,27 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (_started) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
+    _activeChannel.addListener(_onActiveChannelChanged);
+    _observingActiveChannel = true;
+    final rememberedSelection = await _cache.loadSelection();
     _contacts = await _cache.load();
     notifyListeners();
     await refresh();
+    if (rememberedSelection != null &&
+        _contacts.any(
+          (contact) =>
+              contact.id == rememberedSelection.contactId &&
+              contact.chatAvailable,
+        )) {
+      try {
+        await activate(
+          rememberedSelection.contactId,
+          preferredSessionId: rememberedSelection.sessionId,
+        );
+      } catch (_) {
+        // Keep the directory usable when a remembered endpoint is offline.
+      }
+    }
     if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
       _startForegroundRefresh();
     }
@@ -685,6 +705,7 @@ class HermesGatewayDirectory extends ChangeNotifier
         _requireCurrentProfileSelection(generation, currentId, profileId);
       }
       _activeContactId = targetId;
+      await _rememberActiveSelection();
       notifyListeners();
     } finally {
       release.complete();
@@ -725,7 +746,10 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> activate(GatewayContactId id) async {
+  Future<void> activate(
+    GatewayContactId id, {
+    String? preferredSessionId,
+  }) async {
     final contact = _contacts.firstWhere((item) => item.id == id);
     if (!contact.chatAvailable) {
       throw StateError('This Hermes profile is not available for chat.');
@@ -764,17 +788,24 @@ class HermesGatewayDirectory extends ChangeNotifier
       }
       if (generation != _activationGeneration) return;
 
-      final latestId = contact.latestSession?.id;
-      if (latestId != null &&
+      final sessionId =
+          preferredSessionId != null &&
+              _activeChannel.state.sessions.any(
+                (session) => session.id == preferredSessionId,
+              )
+          ? preferredSessionId
+          : contact.latestSession?.id;
+      if (sessionId != null &&
           _activeChannel.state.sessions.any(
-            (session) => session.id == latestId,
+            (session) => session.id == sessionId,
           )) {
         try {
-          await _activeChannel.selectSession(latestId);
+          await _activeChannel.selectSession(sessionId);
         } catch (_) {
           // A stale or slow session preview must not block a healthy gateway.
         }
       }
+      await _rememberActiveSelection();
     } catch (_) {
       clearFailedActivation();
       rethrow;
@@ -785,7 +816,47 @@ class HermesGatewayDirectory extends ChangeNotifier
     ++_activationGeneration;
     await _activeChannel.disconnect();
     _activeContactId = null;
+    await _clearRememberedSelection();
     notifyListeners();
+  }
+
+  Future<void> _rememberActiveSelection() async {
+    final contactId = _activeContactId;
+    if (contactId == null) return;
+    final selection = GatewayContactSelection(
+      contactId: contactId,
+      sessionId: _activeChannel.state.activeSession?.id,
+    );
+    final operation = _selectionPersistenceTail.then(
+      (_) => _cache.saveSelection(selection),
+    );
+    _selectionPersistenceTail = operation.catchError((Object _) {});
+    try {
+      await operation;
+    } catch (_) {
+      // A failed local preference write must not break a healthy chat.
+    }
+  }
+
+  Future<void> _clearRememberedSelection() async {
+    final operation = _selectionPersistenceTail.then(
+      (_) => _cache.clearSelection(),
+    );
+    _selectionPersistenceTail = operation.catchError((Object _) {});
+    try {
+      await operation;
+    } catch (_) {
+      // Selection persistence is a convenience, not a navigation dependency.
+    }
+  }
+
+  void _onActiveChannelChanged() {
+    if (_activeContactId == null ||
+        !_activeChannel.state.isConnected ||
+        _activeChannel.state.activeSession == null) {
+      return;
+    }
+    unawaited(_rememberActiveSelection());
   }
 
   @override
@@ -810,6 +881,9 @@ class HermesGatewayDirectory extends ChangeNotifier
   @override
   void dispose() {
     _foregroundTimer?.cancel();
+    if (_observingActiveChannel) {
+      _activeChannel.removeListener(_onActiveChannelChanged);
+    }
     if (_started) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

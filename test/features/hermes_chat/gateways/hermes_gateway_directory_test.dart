@@ -33,6 +33,22 @@ class _QueuedProfileChannel extends FakeHermesChannel {
   }
 }
 
+class _ProfileSessionChannel extends FakeHermesChannel {
+  _ProfileSessionChannel() : super(status: HermesConnectionStatus.disconnected);
+
+  @override
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
+    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    replaceSessions(const [
+      HermesSession(id: 'sess_1', source: 'test'),
+      HermesSession(id: 'sess_2', source: 'test'),
+    ], activeSessionId: 'sess_1');
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
@@ -426,6 +442,52 @@ void main() {
       directory.activeContactId,
       const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
     );
+  });
+
+  test('start restores the last active profile and session', () async {
+    final cache = FakeGatewayContactCache();
+    final firstChannel = _ProfileSessionChannel();
+    final firstDirectory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default', 'coder']),
+      }),
+      cache: cache,
+      activeChannel: firstChannel,
+    );
+    await firstDirectory.start();
+    await firstDirectory.activate(
+      const GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+    );
+    await firstChannel.selectSession('sess_2');
+    await Future<void>.delayed(Duration.zero);
+    firstDirectory.dispose();
+    firstChannel.dispose();
+
+    final restoredChannel = _ProfileSessionChannel();
+    final restoredDirectory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default', 'coder']),
+      }),
+      cache: cache,
+      activeChannel: restoredChannel,
+    );
+    addTearDown(restoredDirectory.dispose);
+    addTearDown(restoredChannel.dispose);
+
+    await restoredDirectory.start();
+
+    expect(
+      restoredDirectory.activeContactId,
+      const GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+    );
+    expect(restoredChannel.selectProfileCalls, ['coder']);
+    expect(restoredChannel.selectSessionCalls, ['sess_2']);
   });
 
   test('activateGateway connects the gateway default profile', () async {

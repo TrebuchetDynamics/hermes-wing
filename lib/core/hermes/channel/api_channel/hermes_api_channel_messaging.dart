@@ -436,7 +436,9 @@ extension _MessagingExtension on HermesApiChannel {
               );
               return;
             }
-            if (runId != null) _approvalRunIds[request.id] = runId;
+            if (runId != null) {
+              _approvalResponder.registerApproval(request.id, runId);
+            }
             _approvalController.add(request);
             return;
           }
@@ -573,7 +575,7 @@ extension _MessagingExtension on HermesApiChannel {
       _activeRunIds.remove(sessionId);
     }
     if (runId != null) {
-      _approvalRunIds.removeWhere((_, approvalRunId) => approvalRunId == runId);
+      _approvalResponder.forgetApprovalsForRun(runId);
       if (terminalRunLifecycleReceived) {
         await _releaseDetachedRunBestEffort(
           runId: runId,
@@ -1475,7 +1477,7 @@ extension _MessagingExtension on HermesApiChannel {
                         'Hermes approval request was missing an approval id. The run is still active.',
                   );
                 } else {
-                  _approvalRunIds[request.id] = runId;
+                  _approvalResponder.registerApproval(request.id, runId);
                   _approvalController.add(request);
                 }
                 return;
@@ -1555,7 +1557,7 @@ extension _MessagingExtension on HermesApiChannel {
       _setTurns(sessionId, List.of(turns));
       return;
     }
-    _approvalRunIds.removeWhere((_, approvalRunId) => approvalRunId == runId);
+    _approvalResponder.forgetApprovalsForRun(runId);
     await _releaseDetachedRunBestEffort(
       runId: runId,
       sessionId: sessionId,
@@ -1818,7 +1820,7 @@ extension _MessagingExtension on HermesApiChannel {
     if (stream != null) unawaited(stream.cancel());
     final runId = _activeRunIds.remove(sessionId);
     if (runId != null) {
-      _approvalRunIds.removeWhere((_, approvalRunId) => approvalRunId == runId);
+      _approvalResponder.forgetApprovalsForRun(runId);
     }
     final completer = _activeStreamCompleters.remove(sessionId);
     if (completer != null && !completer.isCompleted) {

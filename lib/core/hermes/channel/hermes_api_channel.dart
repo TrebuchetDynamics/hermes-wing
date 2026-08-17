@@ -21,6 +21,7 @@ import '../../../shared/security/wing_redaction.dart';
 import '../setup/hermes_endpoint_store.dart';
 import '../shared/hermes_api_http.dart';
 import '../sse/hermes_sse_event_decoder.dart';
+import 'approvals/hermes_approval_responder.dart';
 import 'hermes_channel.dart';
 import 'hermes_detached_run_store.dart';
 
@@ -29,7 +30,6 @@ part 'api_channel/hermes_api_channel_sessions.dart';
 part 'api_channel/hermes_api_channel_profiles.dart';
 part 'api_channel/hermes_api_channel_providers.dart';
 part 'api_channel/hermes_api_channel_messaging.dart';
-part 'api_channel/hermes_api_channel_approvals.dart';
 part 'api_channel/hermes_api_channel_voice.dart';
 part 'api_channel/hermes_api_channel_errors.dart';
 
@@ -67,7 +67,7 @@ class HermesApiChannel extends ChangeNotifier
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};
   final _activeRunIds = <String, String>{};
-  final _approvalRunIds = <String, String>{};
+  final HermesApprovalResponder _approvalResponder = HermesApprovalResponder();
   final _sessionStreamGenerations = <String, int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
   final _confirmedDetachedRunKeys = <String>{};
@@ -157,7 +157,7 @@ class HermesApiChannel extends ChangeNotifier
     _activeStreams.clear();
     _activeStreamCompleters.clear();
     _activeRunIds.clear();
-    _approvalRunIds.clear();
+    _approvalResponder.clear();
     _sessionStreamGenerations.clear();
   }
 
@@ -328,6 +328,27 @@ class HermesApiChannel extends ChangeNotifier
     required String approvalId,
     required HermesApprovalDecision decision,
   }) => _respondToApproval(approvalId: approvalId, decision: decision);
+
+  Future<void> _respondToApproval({
+    required String approvalId,
+    required HermesApprovalDecision decision,
+  }) async {
+    final client = _client;
+    if (client == null) {
+      throw StateError('Hermes channel is not connected.');
+    }
+    await _approvalResponder.respond(
+      client: client,
+      state: _state,
+      approvalId: approvalId,
+      decision: decision,
+      activeRunIds: _activeRunIds.values,
+      selectedProfileId: _state.selectedProfileId,
+      safeError: _safeHermesError,
+      reportError: (message) =>
+          _setState(_state.copyWith(errorMessage: message)),
+    );
+  }
 
   @override
   String startVoiceRun() => _startVoiceRun();

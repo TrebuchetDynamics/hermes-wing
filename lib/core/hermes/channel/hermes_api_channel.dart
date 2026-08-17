@@ -78,6 +78,8 @@ class HermesApiChannel extends ChangeNotifier
   bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
+  int _profileSelectionGeneration = 0;
+  String? _pendingProfileSelectionId;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
   final _deletingSessionOperations = <String, Object>{};
@@ -94,6 +96,7 @@ class HermesApiChannel extends ChangeNotifier
   void dispose() {
     _client = null;
     _connectionGeneration += 1;
+    _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();
@@ -115,6 +118,31 @@ class HermesApiChannel extends ChangeNotifier
   void _setState(HermesChannelState next) {
     _state = next;
     notifyListeners();
+  }
+
+  int _beginProfileSelection(String profileId) {
+    _profileSelectionGeneration += 1;
+    _pendingProfileSelectionId = profileId;
+    return _profileSelectionGeneration;
+  }
+
+  bool _isCurrentProfileSelection(
+    int selectionGeneration,
+    int connectionGeneration,
+    HermesApiClient client,
+  ) =>
+      selectionGeneration == _profileSelectionGeneration &&
+      _isCurrentConnection(connectionGeneration, client);
+
+  void _finishProfileSelection(int selectionGeneration) {
+    if (selectionGeneration == _profileSelectionGeneration) {
+      _pendingProfileSelectionId = null;
+    }
+  }
+
+  void _invalidateProfileSelection() {
+    _profileSelectionGeneration += 1;
+    _pendingProfileSelectionId = null;
   }
 
   void _clearActiveRunTracking() {
@@ -259,10 +287,17 @@ class HermesApiChannel extends ChangeNotifier
 
   void _requireAudioEndpoint(String name, String method, String path) {
     final capabilities = _state.capabilities;
-    if (capabilities == null ||
-        !capabilities.supportsSchema ||
-        !capabilities.supportsFeature('audio_api') ||
-        !capabilities.advertisesEndpoint(name, method, path)) {
+    final policy = capabilities == null
+        ? null
+        : HermesTransportPolicy(capabilities);
+    final authorized = switch ((name, method, path)) {
+      ('audio_speak', 'POST', '/api/audio/speak') =>
+        policy?.supportsSpeechSynthesis ?? false,
+      ('audio_transcribe', 'POST', '/api/audio/transcribe') =>
+        policy?.supportsSpeechTranscription ?? false,
+      _ => false,
+    };
+    if (!authorized) {
       throw StateError('Hermes did not advertise its audio API.');
     }
   }

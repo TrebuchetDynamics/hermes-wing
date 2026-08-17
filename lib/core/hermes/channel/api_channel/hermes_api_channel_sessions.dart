@@ -4,6 +4,7 @@ extension _SessionsExtension on HermesApiChannel {
   Future<void> _disconnect() async {
     _client = null;
     _connectionGeneration += 1;
+    _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();

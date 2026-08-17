@@ -48,6 +48,12 @@ class HermesTransportPolicy {
       capabilities.supportsFeature('memory_write_api');
   bool get supportsAudioApi =>
       capabilities.supportsSchema && capabilities.supportsFeature('audio_api');
+  bool get supportsSpeechSynthesis =>
+      supportsAudioApi &&
+      _endpointReady('audio_speak', 'POST', '/api/audio/speak');
+  bool get supportsSpeechTranscription =>
+      supportsAudioApi &&
+      _endpointReady('audio_transcribe', 'POST', '/api/audio/transcribe');
   bool get supportsRealtimeVoice =>
       capabilities.supportsSchema &&
       capabilities.supportsFeature('realtime_voice');

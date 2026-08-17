@@ -21,8 +21,16 @@ extension _ProvidersExtension on HermesApiChannel {
     );
     final profile = _requireSelectedProfile('list providers');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final providers = await client.listProviders(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _setState(_state.copyWith(providers: providers));
   }
 
@@ -106,8 +114,16 @@ extension _ProvidersExtension on HermesApiChannel {
     );
     final profile = _requireSelectedProfile('list models');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final inventory = await client.getModelInventory(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _setState(_state.copyWith(modelInventory: inventory));
   }
 
@@ -196,6 +212,16 @@ extension _ProvidersExtension on HermesApiChannel {
       ),
     );
   }
+
+  bool _isCurrentProviderModelRequest(
+    int connectionGeneration,
+    int profileGeneration,
+    HermesApiClient client,
+    String profile,
+  ) =>
+      _isCurrentConnection(connectionGeneration, client) &&
+      _profileSelectionGeneration == profileGeneration &&
+      _state.selectedProfileId == profile;
 
   /// Requires the endpoint to be advertised AND the connected token to hold
   /// [scope], failing before any network I/O when either is missing.

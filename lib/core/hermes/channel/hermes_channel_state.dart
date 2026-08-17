@@ -273,6 +273,7 @@ class HermesChannelState {
     bool clearSelectedProfileId = false,
     List<HermesProvider>? providers,
     HermesModelInventory? modelInventory,
+    bool clearModelInventory = false,
     String? connectedBaseUrl,
     bool clearConnectedBaseUrl = false,
     bool? connectedWithApiKey,
@@ -297,6 +298,10 @@ class HermesChannelState {
     assert(
       !clearSelectedProfileId || selectedProfileId == null,
       'copyWith cannot set and clear selectedProfileId at the same time.',
+    );
+    assert(
+      !clearModelInventory || modelInventory == null,
+      'copyWith cannot set and clear modelInventory at the same time.',
     );
     return HermesChannelState(
       status: status ?? this.status,
@@ -326,7 +331,9 @@ class HermesChannelState {
           ? null
           : selectedProfileId ?? this.selectedProfileId,
       providers: providers ?? this.providers,
-      modelInventory: modelInventory ?? this.modelInventory,
+      modelInventory: clearModelInventory
+          ? null
+          : modelInventory ?? this.modelInventory,
       connectedBaseUrl: clearConnectedBaseUrl
           ? null
           : connectedBaseUrl ?? this.connectedBaseUrl,

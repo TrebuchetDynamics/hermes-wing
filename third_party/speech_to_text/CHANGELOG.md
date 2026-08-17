@@ -1,3 +1,26 @@
+# Wing fork changelog
+
+## Fork 2026-08-11 — vendored at upstream 7.4.0 (commit 22367e5ac5e9c4427ff7179ad0b4d0336168a302)
+
+Local patches applied on top of the upstream baseline. The full inventory,
+rationale, and upgrade path live in `README.md` in this directory.
+
+- Android `SpeechToTextPlugin.kt`: session-generation guards
+  (`recognitionSession` + `SessionRecognitionListener`) and recognizer-lifecycle
+  fixes (identity-checked destroy on stop/cancel, immediate destroy, terminal
+  status published only by result/error callbacks).
+- `lib/speech_to_text.dart`: listen handoff generation guards
+  (`ListenFailedException` on overlapping listen; predecessor callbacks dropped
+  for a successor listen).
+- `lib/speech_to_text_provider.dart`: explicit `bool debugLogging` type.
+- `pubspec.yaml`: stable `speech_to_text_platform_interface: ^2.4.0` and
+  `speech_to_text_windows: ^1.0.1` constraints.
+
+Documented 2026-08-17. The changelog below is the upstream changelog, copied
+verbatim from the pinned baseline (trailing whitespace normalized).
+
+---
+
 # Changelog
 
 ## 7.4.0-beta

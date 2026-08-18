@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/TrebuchetDynamics/hermes-wing#readme",
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.1",
     "playwright": "^1.60.0"
   }
 }

@@ -9,8 +9,6 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyVoiceEnabled = 'wing.voice.continuous_enabled';
   static const _keySpeakReplies = 'wing.voice.speak_replies_enabled';
   static const _keyCommandWord = 'wing.voice.command_word';
-  static const _keySpeechRate = 'tts_speech_rate';
-  static const _keyTtsVoiceName = 'tts_voice_name';
   static const _keyLanguageMode = 'wing.voice.language_mode';
 
   SharedPreferences? _prefs;
@@ -36,8 +34,6 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
         continuousVoiceEnabled: _prefs?.getBool(_keyVoiceEnabled) ?? true,
         speakRepliesEnabled: _prefs?.getBool(_keySpeakReplies) ?? false,
         commandWord: _prefs?.getString(_keyCommandWord) ?? 'navi',
-        speechRate: _prefs?.getDouble(_keySpeechRate) ?? 1.0,
-        ttsVoiceName: _prefs?.getString(_keyTtsVoiceName),
         languageMode: VoiceLanguageMode.values.firstWhere(
           (candidate) => candidate.name == savedLanguageMode,
           orElse: () => VoiceLanguageMode.autoEnglishSpanish,
@@ -55,12 +51,6 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
       await prefs.setBool(_keyVoiceEnabled, state.continuousVoiceEnabled);
       await prefs.setBool(_keySpeakReplies, state.speakRepliesEnabled);
       await prefs.setString(_keyCommandWord, state.commandWord);
-      await prefs.setDouble(_keySpeechRate, state.speechRate);
-      if (state.ttsVoiceName case final voice?) {
-        await prefs.setString(_keyTtsVoiceName, voice);
-      } else {
-        await prefs.remove(_keyTtsVoiceName);
-      }
       await prefs.setString(_keyLanguageMode, state.languageMode.name);
     } catch (_) {
       // Settings remain usable in memory when platform persistence is down.
@@ -87,18 +77,6 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
     if (normalized.isEmpty) return;
     _mutationGeneration += 1;
     state = state.copyWith(commandWord: normalized);
-    _save();
-  }
-
-  void setSpeechRate(double rate) {
-    _mutationGeneration += 1;
-    state = state.copyWith(speechRate: rate.clamp(0.25, 3.0));
-    _save();
-  }
-
-  void setTtsVoiceName(String? name) {
-    _mutationGeneration += 1;
-    state = state.copyWith(ttsVoiceName: name, clearTtsVoiceName: name == null);
     _save();
   }
 

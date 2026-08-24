@@ -3,12 +3,13 @@ package app
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-
+	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -17,6 +18,43 @@ import (
 	"syscall"
 	"testing"
 )
+
+func TestProtocolMetadataAndNMinusOneNegotiation(t *testing.T) {
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
+	handler := newWingLinkServer(&profileBackend{}, store)
+
+	metadataRequest := httptest.NewRequest(http.MethodGet, "/meta", nil)
+	metadataResponse := httptest.NewRecorder()
+	handler.ServeHTTP(metadataResponse, metadataRequest)
+	if metadataResponse.Code != http.StatusOK ||
+		!strings.Contains(metadataResponse.Body.String(), `"protocol_generation":2`) ||
+		!strings.Contains(metadataResponse.Body.String(), `"minimum_protocol_generation":1`) ||
+		!strings.Contains(metadataResponse.Body.String(), `"host_fingerprint":"sha256/`) {
+		t.Fatalf("metadata = %d %s", metadataResponse.Code, metadataResponse.Body.String())
+	}
+
+	for generation, want := range map[string]int{
+		"":  http.StatusOK,
+		"1": http.StatusOK,
+		"2": http.StatusOK,
+		"0": http.StatusUpgradeRequired,
+		"3": http.StatusUpgradeRequired,
+		"x": http.StatusUpgradeRequired,
+	} {
+		request := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+		if generation != "" {
+			request.Header.Set("Wing-Protocol", generation)
+		}
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != want {
+			t.Fatalf("generation %q status = %d; want %d", generation, response.Code, want)
+		}
+		if response.Header().Get("Wing-Protocol") != "2" {
+			t.Fatalf("generation %q omitted response protocol header", generation)
+		}
+	}
+}
 
 func TestServeListenErrorExplainsAnOccupiedAddress(t *testing.T) {
 	var stderr bytes.Buffer
@@ -47,6 +85,8 @@ type profileHarness struct {
 	failReadAfterCreate bool
 	retainRenameSource  bool
 	cancelRequest       context.CancelFunc
+	approvals           *ApprovalStore
+	requestSequence     int
 }
 
 func renderProfileList(profiles map[string]string) []byte {
@@ -185,6 +225,10 @@ func newProfileHarness(t *testing.T) *profileHarness {
 		t.Fatal(err)
 	}
 	harness.handler = newWingLinkServer(backend, store)
+	harness.approvals, err = openApprovalStore(store.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
 	harness.server = httptest.NewServer(harness.handler)
 	t.Cleanup(harness.server.Close)
 	return harness
@@ -200,20 +244,41 @@ func (h *profileHarness) request(t *testing.T, method, path string, body any, au
 			t.Fatal(err)
 		}
 	}
-	request, err := http.NewRequest(method, h.server.URL+path, bytes.NewReader(payload))
-	if err != nil {
-		t.Fatal(err)
+	h.requestSequence++
+	idempotencyKey := fmt.Sprintf("profile-test-%d", h.requestSequence)
+	doRequest := func() *http.Response {
+		request, err := http.NewRequest(method, h.server.URL+path, bytes.NewReader(payload))
+		if err != nil {
+			t.Fatal(err)
+		}
+		request.Header.Set("Content-Type", "application/json")
+		if authorized {
+			request.Header.Set("Authorization", "Bearer "+h.token)
+		}
+		if method == http.MethodPost || method == http.MethodPatch || method == http.MethodDelete {
+			request.Header.Set("Idempotency-Key", idempotencyKey)
+		}
+		for name, value := range headers {
+			request.Header.Set(name, value)
+		}
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return response
 	}
-	request.Header.Set("Content-Type", "application/json")
-	if authorized {
-		request.Header.Set("Authorization", "Bearer "+h.token)
-	}
-	for name, value := range headers {
-		request.Header.Set(name, value)
-	}
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		t.Fatal(err)
+	response := doRequest()
+	if response.StatusCode == http.StatusAccepted && h.approvals != nil {
+		var pending struct {
+			ApprovalID string `json:"approval_id"`
+		}
+		if err := json.NewDecoder(response.Body).Decode(&pending); err == nil && pending.ApprovalID != "" {
+			_ = response.Body.Close()
+			if _, err := h.approvals.Decide(pending.ApprovalID, true); err != nil {
+				t.Fatal(err)
+			}
+			return doRequest()
+		}
 	}
 	return response
 }
@@ -270,6 +335,132 @@ func TestWingLinkProfileRoutesAreExposedButProviderRoutesStayQuarantined(t *test
 	}
 	if len(commands) != 0 {
 		t.Fatalf("quarantined domain route ran Hermes: %#v", commands)
+	}
+}
+
+func TestDeviceScopesAreEnforcedPerRoute(t *testing.T) {
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
+	credentialID, token, err := store.StageDeviceCredential(
+		"Health display",
+		ed25519.PublicKey(bytes.Repeat([]byte{7}, ed25519.PublicKeySize)),
+		[]string{ScopeHealthRead},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.AcknowledgeControlToken(credentialID, token); err != nil {
+		t.Fatal(err)
+	}
+	handler := newWingLinkServer(
+		&profileBackend{
+			revisionSalt: "scope-test-salt",
+			readHermes: func(context.Context, ...string) ([]byte, error) {
+				return renderProfileList(map[string]string{"default": "stopped"}), nil
+			},
+		},
+		store,
+	)
+	for _, testCase := range []struct {
+		method string
+		path   string
+		status int
+	}{
+		{http.MethodGet, "/v1/status", http.StatusOK},
+		{http.MethodGet, "/v1/profiles", http.StatusUnauthorized},
+		{http.MethodPost, "/v1/setup", http.StatusUnauthorized},
+	} {
+		request := httptest.NewRequest(testCase.method, testCase.path, strings.NewReader(`{}`))
+		request.Header.Set("Authorization", "Bearer "+token)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != testCase.status {
+			t.Fatalf("%s %s status = %d; want %d", testCase.method, testCase.path, response.Code, testCase.status)
+		}
+	}
+}
+
+func TestSignedUpdateRoutesFailClosedWithEmptyProductionKeys(t *testing.T) {
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
+	enrollment, err := store.CreateEnrollment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := store.ExchangeEnrollment(enrollment.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := newWingLinkServer(&profileBackend{}, store)
+	status := httptest.NewRequest(http.MethodGet, "/v1/update/status", nil)
+	status.Header.Set("Authorization", "Bearer "+token)
+	statusResponse := httptest.NewRecorder()
+	handler.ServeHTTP(statusResponse, status)
+	if statusResponse.Code != http.StatusOK || !strings.Contains(statusResponse.Body.String(), `"state":"unavailable"`) || !strings.Contains(statusResponse.Body.String(), `"reason":"release_keys_empty"`) {
+		t.Fatalf("update status=%d body=%s", statusResponse.Code, statusResponse.Body.String())
+	}
+	apply := httptest.NewRequest(http.MethodPost, "/v1/update/apply", strings.NewReader(`{}`))
+	apply.Header.Set("Authorization", "Bearer "+token)
+	apply.Header.Set("Content-Type", "application/json")
+	applyResponse := httptest.NewRecorder()
+	handler.ServeHTTP(applyResponse, apply)
+	if applyResponse.Code != http.StatusServiceUnavailable || !strings.Contains(applyResponse.Body.String(), `"code":"update_unavailable"`) {
+		t.Fatalf("update apply=%d body=%s", applyResponse.Code, applyResponse.Body.String())
+	}
+}
+
+func TestServerFailsClosedWhenAuditLogIsUnsafe(t *testing.T) {
+	directory := t.TempDir()
+	store := newStateStore(filepath.Join(directory, "state.json"))
+	if err := os.WriteFile(filepath.Join(directory, "wing-link-audit.jsonl"), []byte("{}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	handler := newWingLinkServer(&profileBackend{}, store)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/healthz", nil))
+	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), "host_state_unavailable") {
+		t.Fatalf("unsafe audit state response = %d %s", response.Code, response.Body.String())
+	}
+}
+
+func TestDeviceCanInspectAndRevokeOnlyItself(t *testing.T) {
+	store := newStateStore(filepath.Join(t.TempDir(), "state.json"))
+	credentialID, token, err := store.StageDeviceCredential(
+		"Pixel 9",
+		ed25519.PublicKey(bytes.Repeat([]byte{8}, ed25519.PublicKeySize)),
+		[]string{ScopeHealthRead, ScopeDeviceSelfRead, ScopeDeviceSelfRevoke},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.AcknowledgeControlToken(credentialID, token); err != nil {
+		t.Fatal(err)
+	}
+	handler := newWingLinkServer(&profileBackend{}, store)
+
+	inspect := httptest.NewRequest(http.MethodGet, "/v2/devices/self", nil)
+	inspect.Header.Set("Authorization", "Bearer "+token)
+	inspectResponse := httptest.NewRecorder()
+	handler.ServeHTTP(inspectResponse, inspect)
+	if inspectResponse.Code != http.StatusOK || !strings.Contains(inspectResponse.Body.String(), `"device_id":"`+credentialID+`"`) || strings.Contains(inspectResponse.Body.String(), "token_hash") {
+		t.Fatalf("self inspection = %d %s", inspectResponse.Code, inspectResponse.Body.String())
+	}
+
+	revoke := httptest.NewRequest(http.MethodDelete, "/v2/devices/self", nil)
+	revoke.Header.Set("Authorization", "Bearer "+token)
+	revokeResponse := httptest.NewRecorder()
+	handler.ServeHTTP(revokeResponse, revoke)
+	if revokeResponse.Code != http.StatusNoContent {
+		t.Fatalf("self revoke = %d %s", revokeResponse.Code, revokeResponse.Body.String())
+	}
+	if store.Authorize(token) {
+		t.Fatal("self-revoked device remained authorized")
+	}
+	auditLog, err := openAuditLog(store.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
+	events, err := auditLog.List()
+	if err != nil || len(events) != 2 || events[0].Operation != "device.self.read" || events[1].Operation != "device.self.revoke" || events[1].DeviceID != credentialID {
+		t.Fatalf("self-device audit=%#v err=%v", events, err)
 	}
 }
 
@@ -604,15 +795,52 @@ func TestProfileCreateRollsBackWhenProviderCredentialSetupFails(t *testing.T) {
 	}
 }
 
+func TestSensitiveProfileMutationsWaitForHostApproval(t *testing.T) {
+	harness := newProfileHarness(t)
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/profiles",
+		strings.NewReader(`{"name":"guarded","provider":"openrouter","model":"openai/gpt-5.2","provider_api_key":"write-only"}`),
+	)
+	request.Header.Set("Authorization", "Bearer "+harness.token)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Idempotency-Key", "guarded-create")
+	response := httptest.NewRecorder()
+	harness.handler.ServeHTTP(response, request)
+	if response.Code != http.StatusAccepted || len(harness.commands) != 0 || len(harness.secretCommands) != 0 {
+		t.Fatalf("status=%d commands=%#v secret=%#v body=%s", response.Code, harness.commands, harness.secretCommands, response.Body.String())
+	}
+	if strings.Contains(response.Body.String(), "write-only") {
+		t.Fatalf("approval response leaked provider secret: %s", response.Body.String())
+	}
+}
+
 func TestProfileCreateRollbackSurvivesRequestCancellation(t *testing.T) {
 	harness := newProfileHarness(t)
 	harness.secretErr = errors.New("credential setup cancelled")
+	const rawPayload = `{"name":"cancelledqa","provider":"openrouter","model":"openai/gpt-5.2","provider_api_key":"secret-value"}`
+	pendingRequest := httptest.NewRequest(http.MethodPost, "/v1/profiles", strings.NewReader(rawPayload))
+	pendingRequest.Header.Set("Authorization", "Bearer "+harness.token)
+	pendingRequest.Header.Set("Content-Type", "application/json")
+	pendingRequest.Header.Set("Idempotency-Key", "cancelled-create")
+	pendingResponse := httptest.NewRecorder()
+	harness.handler.ServeHTTP(pendingResponse, pendingRequest)
+	var pending struct {
+		ApprovalID string `json:"approval_id"`
+	}
+	if err := json.NewDecoder(pendingResponse.Body).Decode(&pending); err != nil || pending.ApprovalID == "" {
+		t.Fatalf("pending approval = %#v err=%v body=%s", pending, err, pendingResponse.Body.String())
+	}
+	if _, err := harness.approvals.Decide(pending.ApprovalID, true); err != nil {
+		t.Fatal(err)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	harness.cancelRequest = cancel
-	payload := strings.NewReader(`{"name":"cancelledqa","provider":"openrouter","model":"openai/gpt-5.2","provider_api_key":"secret-value"}`)
+	payload := strings.NewReader(rawPayload)
 	request := httptest.NewRequest(http.MethodPost, "/v1/profiles", payload).WithContext(ctx)
 	request.Header.Set("Authorization", "Bearer "+harness.token)
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Idempotency-Key", "cancelled-create")
 	response := httptest.NewRecorder()
 	harness.handler.ServeHTTP(response, request)
 	if len(harness.secretCommands) != 1 || ctx.Err() == nil {

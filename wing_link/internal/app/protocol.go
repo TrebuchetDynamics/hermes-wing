@@ -3,6 +3,10 @@ package app
 import "github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/protocol"
 
 const ProtocolVersion = protocol.ProtocolVersion
+const MinimumProtocolGeneration = protocol.MinimumProtocolGeneration
+
+var supportsProtocolGeneration = protocol.SupportsProtocolGeneration
+var currentProtocolMetadata = protocol.CurrentMetadata
 
 type Component = protocol.Component
 

@@ -86,19 +86,35 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup separately. Prefer loopback `wing-link pair`, or `wing-link pair
-  --remote` only through an authenticated encrypted VPN, then use **Connect to
-  Hermes → Scan QR code**. For an existing gateway, enter its origin and
-  credential manually.
+- Share setup separately. Configure Hermes Agent and Wing Link with an address
+  the phone can reach over a trusted VPN/Tailscale network or isolated trusted
+  LAN, then run non-loopback pairing:
+
+  ```bash
+  WING_HERMES_URL=http://<phone-reachable-address>:8642 \
+  WING_LINK_URL=https://<phone-reachable-address>:8654 \
+  wing-link pair --remote
+  ```
+
+  Remote pairing uses TLS 1.3. In Wing choose **Connect to Hermes → Scan QR
+  code** and scan from the host screen; native Wing verifies the self-signed
+  broker with the reviewed SPKI pin. Browsers cannot validate that pin. For a
+  pairing link already in a text message, use Android **Share → Hermes Wing**.
+  The ordinary `/open` helper is loopback-only for same-host clients. Entering a
+  Hermes API URL and token manually is a one-profile fallback only and does not
+  import Wing Link or other Hermes profiles.
+
 - Treat release signing keys as external secrets; do not add them to this repository or to issue reports.
 
 ## Quick smoke after install
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Pair locally with `wing-link pair`, pair through an authenticated encrypted VPN
-   with the documented `--remote` flow, or enter a reachable Hermes origin and
-   existing credential through the manual connection form.
+3. Use the documented `--remote` command with a phone-reachable trusted
+   VPN/Tailscale or isolated-LAN address. Verify the QR flow from the host screen
+   and Android **Share → Hermes Wing** for an existing pairing message. Use
+   loopback `/open` only when Wing runs on that same host, and manual URL/token
+   entry only as a one-profile fallback.
 4. Send one short text turn to confirm the installed app can reach the trusted gateway.
 
 ## Continuous voice smoke after install

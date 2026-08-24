@@ -2,6 +2,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
 
 void main() {
+  test('extracts one pairing URI from explicit shared text', () {
+    final payload = HermesEnrollmentPayload.parseExplicitHandoff(
+      'Pair this phone:\n'
+      'wing://connect?origin=https%3A%2F%2Fhermes.example&code=once',
+    );
+
+    expect(payload.origin, Uri.parse('https://hermes.example'));
+    expect(payload.code, 'once');
+  });
+
+  test('trims only allowed wrappers around a standalone pairing URI', () {
+    final payload = HermesEnrollmentPayload.parseExplicitHandoff(
+      'Open <"wing://connect?origin=https%3A%2F%2Fhermes.example&code=once">',
+    );
+
+    expect(payload.code, 'once');
+  });
+
+  test('rejects shared text containing two pairing URIs', () {
+    expect(
+      () => HermesEnrollmentPayload.parseExplicitHandoff(
+        'wing://connect?origin=https%3A%2F%2Fa.example&code=a '
+        'wing://connect?origin=https%3A%2F%2Fb.example&code=b',
+      ),
+      throwsFormatException,
+    );
+  });
+
+  test('rejects oversized shared text before URI parsing', () {
+    expect(
+      () => HermesEnrollmentPayload.parseExplicitHandoff('x' * 4097),
+      throwsFormatException,
+    );
+  });
+
+  test('rejects a pairing URI embedded inside another token', () {
+    expect(
+      () => HermesEnrollmentPayload.parseExplicitHandoff(
+        'prefixwing://connect?origin=https%3A%2F%2Fa.example&code=a',
+      ),
+      throwsFormatException,
+    );
+  });
+
   test('accepts only wing connect payload with HTTPS origin and code', () {
     final payload = HermesEnrollmentPayload.parse(
       'wing://connect?origin=https%3A%2F%2Fhermes.example&code=one-time',
@@ -29,12 +73,29 @@ void main() {
     );
   });
 
-  test('accepts a same-host Wing Link control origin', () {
+  test('accepts a same-host Wing Link control origin with a host pin', () {
     final payload = HermesEnrollmentPayload.parse(
       'wing://connect?origin=https%3A%2F%2Fhermes.example%3A8642'
-      '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+      '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time'
+      '&protocol_generation=2'
+      '&host_fingerprint=sha256%2FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     );
     expect(payload.wingLinkOrigin, Uri.parse('https://hermes.example:8654'));
+    expect(
+      payload.wingLinkHostFingerprint,
+      'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    );
+  });
+
+  test('rejects remote Wing Link HTTPS without a host pin', () {
+    expect(
+      () => HermesEnrollmentPayload.parse(
+        'wing://connect?origin=https%3A%2F%2Fhermes.example%3A8642'
+        '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time'
+        '&protocol_generation=2',
+      ),
+      throwsFormatException,
+    );
   });
 
   test('rejects a Wing Link control origin on a different host', () {

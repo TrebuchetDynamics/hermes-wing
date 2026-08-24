@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,26 @@ const _issued = HermesIssuedOperatorToken(
   credentialId: 'hoc_1',
 );
 
+HermesIssuedOperatorToken _issuedBundleWithCount(int count) =>
+    HermesIssuedOperatorToken(
+      token: _secretToken,
+      label: 'BlueBlack',
+      credentialId: 'hoc_default',
+      wingLinkOrigin: 'https://hermes.example:8654',
+      wingLinkToken: 'wing-link-secret',
+      wingLinkCredentialId: 'cred_bundle',
+      connections: [
+        for (var index = 0; index < count; index++)
+          HermesIssuedConnection(
+            origin: 'https://hermes.example/p/profile-$index',
+            token: 'profile-$index-secret',
+            label: 'BlueBlack · profile-$index',
+            profileId: 'profile-$index',
+            credentialId: 'hoc_profile_$index',
+          ),
+      ],
+    );
+
 const _issuedBundle = HermesIssuedOperatorToken(
   token: _secretToken,
   label: 'BlueBlack',
@@ -63,6 +84,31 @@ const _issuedBundle = HermesIssuedOperatorToken(
     ),
   ],
 );
+
+class _BlockingEnrollmentStore extends FakeHermesEndpointStore {
+  _BlockingEnrollmentStore({super.profiles});
+
+  Completer<void>? loadBlock;
+  Completer<void>? firstSaveBlock;
+  final loadStarted = Completer<void>();
+  final firstSavePersisted = Completer<void>();
+
+  @override
+  Future<List<HermesEndpointConfig>> loadProfiles() async {
+    if (!loadStarted.isCompleted) loadStarted.complete();
+    await loadBlock?.future;
+    return super.loadProfiles();
+  }
+
+  @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {
+    await super.saveAll(profiles);
+    if (!firstSavePersisted.isCompleted) {
+      firstSavePersisted.complete();
+      await firstSaveBlock?.future;
+    }
+  }
+}
 
 class _FakeConnectIntentSource implements HermesConnectIntentSource {
   _FakeConnectIntentSource({this.initial, this.scanned});
@@ -91,6 +137,244 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
 
 void main() {
   group('HermesEnrollmentController (fake inspect/exchange)', () {
+    test('rejects a changed host identity before exchange', () async {
+      var exchangeCalls = 0;
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            HermesEnrollmentPreview(
+              label: 'Host',
+              origin: origin.toString(),
+              scopes: const ['health:read'],
+              hostFingerprint:
+                  'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+              protocolGeneration: 2,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async {
+          exchangeCalls++;
+          return _issued;
+        },
+        endpointStore: FakeHermesEndpointStore(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(
+        HermesEnrollmentPayload(
+          origin: Uri.parse('https://hermes.example'),
+          code: 'once',
+          wingLinkOrigin: Uri.parse('https://hermes.example:8654'),
+          wingLinkHostFingerprint:
+              'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          protocolGeneration: 2,
+        ),
+      );
+      await controller.confirm();
+
+      expect(controller.status, HermesEnrollmentStatus.inspectionFailed);
+      expect(exchangeCalls, 0);
+    });
+
+    test(
+      'generation 2 broker inspect and exchange use pinned transport seams',
+      () async {
+        var ordinaryInspect = 0;
+        var ordinaryExchange = 0;
+        var pinnedInspect = 0;
+        var pinnedExchange = 0;
+        const fingerprint =
+            'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async {
+            ordinaryInspect++;
+            return _preview;
+          },
+          exchangeEnrollment: ({required origin, required code}) async {
+            ordinaryExchange++;
+            return _issued;
+          },
+          inspectPinnedEnrollment:
+              ({
+                required origin,
+                required code,
+                required hostFingerprint,
+              }) async {
+                pinnedInspect++;
+                expect(hostFingerprint, fingerprint);
+                return HermesEnrollmentPreview(
+                  label: 'Pinned host',
+                  origin: 'http://192.0.2.1:18642',
+                  scopes: const ['health:read'],
+                  hostFingerprint: fingerprint,
+                  protocolGeneration: 2,
+                );
+              },
+          exchangePinnedEnrollment:
+              ({
+                required origin,
+                required code,
+                required hostFingerprint,
+              }) async {
+                pinnedExchange++;
+                expect(hostFingerprint, fingerprint);
+                return const HermesIssuedOperatorToken(
+                  token: _secretToken,
+                  label: 'Pinned host',
+                  credentialId: 'hermes_credential',
+                  wingLinkOrigin: 'https://192.0.2.1:18654',
+                  wingLinkToken: 'wing-link-secret',
+                  wingLinkCredentialId: 'cred_phone',
+                  hostFingerprint: fingerprint,
+                  protocolGeneration: 2,
+                  deviceId: 'cred_phone',
+                  deviceScopes: ['health.read'],
+                );
+              },
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {},
+          endpointStore: FakeHermesEndpointStore(),
+        );
+        addTearDown(controller.dispose);
+        await controller.inspect(
+          HermesEnrollmentPayload(
+            origin: Uri.parse('http://192.0.2.1:18642'),
+            brokerOrigin: Uri.parse('https://192.0.2.1:40000'),
+            code: 'once',
+            wingLinkOrigin: Uri.parse('https://192.0.2.1:18654'),
+            wingLinkHostFingerprint: fingerprint,
+            protocolGeneration: 2,
+          ),
+        );
+        await controller.confirm();
+        expect((pinnedInspect, pinnedExchange), (1, 1));
+        expect((ordinaryInspect, ordinaryExchange), (0, 0));
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+      },
+    );
+
+    test('countdown is derived from the injected clock', () async {
+      var now = DateTime.utc(2026, 8, 22, 12, 0, 1);
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) async =>
+            HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: const ['Full Hermes access'],
+              expiresAt: DateTime.utc(2026, 8, 22, 12, 5),
+            ),
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: FakeHermesEndpointStore(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+
+      expect(controller.remainingTime, const Duration(minutes: 4, seconds: 59));
+      now = DateTime.utc(2026, 8, 22, 12, 3, 30);
+      expect(controller.remainingTime, const Duration(minutes: 1, seconds: 30));
+    });
+
+    test('expiry immediately before confirm prevents exchange', () async {
+      var now = DateTime.utc(2026, 8, 22, 12);
+      var exchangeCalls = 0;
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) async =>
+            HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: const ['Full Hermes access'],
+              expiresAt: DateTime.utc(2026, 8, 22, 12, 1),
+            ),
+        exchangeEnrollment: ({required origin, required code}) async {
+          exchangeCalls++;
+          return _issued;
+        },
+        endpointStore: FakeHermesEndpointStore(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      now = DateTime.utc(2026, 8, 22, 12, 1);
+      await controller.confirm();
+
+      expect(controller.status, HermesEnrollmentStatus.expired);
+      expect(exchangeCalls, 0);
+      now = DateTime.utc(2026, 8, 22, 12);
+      await controller.confirm();
+      expect(exchangeCalls, 0, reason: 'the one-time code must stay cleared');
+    });
+
+    testWidgets('expiry does not abort an exchange already confirming', (
+      tester,
+    ) async {
+      var now = DateTime.utc(2026, 8, 22, 12);
+      var exchangeCalls = 0;
+      final exchange = Completer<HermesIssuedOperatorToken>();
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) async =>
+            HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: const ['Full Hermes access'],
+              expiresAt: DateTime.utc(2026, 8, 22, 12, 1),
+            ),
+        exchangeEnrollment: ({required origin, required code}) {
+          exchangeCalls++;
+          return exchange.future;
+        },
+        endpointStore: FakeHermesEndpointStore(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      final confirmation = controller.confirm();
+      expect(controller.status, HermesEnrollmentStatus.confirming);
+      expect(exchangeCalls, 1);
+
+      now = DateTime.utc(2026, 8, 22, 12, 1);
+      await tester.pump(const Duration(seconds: 1));
+      expect(controller.status, HermesEnrollmentStatus.confirming);
+
+      exchange.complete(_issued);
+      await confirmation;
+      expect(controller.status, HermesEnrollmentStatus.confirmed);
+    });
+
+    testWidgets('dispose prevents a pending inspection from starting a timer', (
+      tester,
+    ) async {
+      final now = DateTime.utc(2026, 8, 22, 12);
+      final inspection = Completer<HermesEnrollmentPreview>();
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) =>
+            inspection.future,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: FakeHermesEndpointStore(),
+      );
+
+      final pending = controller.inspect(
+        HermesEnrollmentPayload.parse(_validPayload),
+      );
+      controller.dispose();
+      inspection.complete(
+        HermesEnrollmentPreview(
+          label: 'BlueBlack',
+          origin: 'https://hermes.example',
+          scopes: const ['Full Hermes access'],
+          expiresAt: now.add(const Duration(minutes: 5)),
+        ),
+      );
+      await pending;
+      await tester.pump(const Duration(seconds: 2));
+    });
+
     test('does not exchange before confirm', () async {
       var inspectCalls = 0;
       var exchangeCalls = 0;
@@ -187,7 +471,12 @@ void main() {
         );
         final controller = HermesEnrollmentController(
           inspectEnrollment: ({required origin, required code}) async =>
-              _preview,
+              const HermesEnrollmentPreview(
+                label: 'Galaxy S24',
+                origin: 'https://hermes.example',
+                scopes: ['chat:write', 'profiles:read'],
+                connectionCount: 2,
+              ),
           exchangeEnrollment: ({required origin, required code}) async =>
               _issuedBundle,
           verifyEnrollment:
@@ -202,6 +491,7 @@ void main() {
                 required origin,
                 required token,
                 required credentialId,
+                required hostFingerprint,
               }) async {},
           endpointStore: store,
         );
@@ -256,7 +546,7 @@ void main() {
       await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
       await controller.confirm();
 
-      expect(controller.status, HermesEnrollmentStatus.failed);
+      expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
       expect(store.saveAllCalls, isEmpty);
     });
 
@@ -312,7 +602,7 @@ void main() {
         );
         await controller.confirm();
 
-        expect(controller.status, HermesEnrollmentStatus.failed);
+        expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
         expect(
           verifyCalls,
           0,
@@ -321,6 +611,115 @@ void main() {
         expect(store.saveAllCalls, isEmpty);
       },
     );
+
+    test(
+      'bundle count mismatch fails before verification or persistence',
+      () async {
+        var verifyCalls = 0;
+        var acknowledgeCalls = 0;
+        var connectCalls = 0;
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 2,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundleWithCount(3),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {
+                verifyCalls++;
+              },
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {
+                acknowledgeCalls++;
+              },
+          endpointStore: store,
+          connectSavedEndpoint: (_) async {
+            connectCalls++;
+          },
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
+        expect(verifyCalls, 0);
+        expect(store.saveAllCalls, isEmpty);
+        expect(acknowledgeCalls, 0);
+        expect(connectCalls, 0);
+      },
+    );
+
+    test(
+      'legacy exchange is accepted only for a one-connection preview',
+      () async {
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 2,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
+        expect(store.saveAllCalls, isEmpty);
+      },
+    );
+
+    test('invalid direct preview count fails before exchange', () async {
+      var exchangeCalls = 0;
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: ['Full Hermes access'],
+              connectionCount: 101,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async {
+          exchangeCalls++;
+          return _issuedBundleWithCount(100);
+        },
+        endpointStore: FakeHermesEndpointStore(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+
+      expect(controller.status, HermesEnrollmentStatus.inspectionFailed);
+      await controller.confirm();
+      expect(exchangeCalls, 0);
+    });
 
     test('hostile labels are bounded before review and persistence', () async {
       final store = FakeHermesEndpointStore();
@@ -383,7 +782,7 @@ void main() {
     );
 
     test(
-      'bundle verifies and commits before Wing Link acknowledgment',
+      'bundle saves and acknowledges before connecting its imported ID',
       () async {
         final events = <String>[];
         final store = FakeHermesEndpointStore(
@@ -409,10 +808,18 @@ void main() {
                 events.add('verified');
               },
           acknowledgeWingLinkCredential:
-              ({required origin, required token, required credentialId}) async {
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {
                 events.add('$origin|$token|$credentialId');
               },
           endpointStore: store,
+          connectSavedEndpoint: (gatewayId) async {
+            events.add('connected:$gatewayId');
+          },
         );
         addTearDown(controller.dispose);
 
@@ -429,6 +836,7 @@ void main() {
           'committed',
           'https://hermes.example:8654|wlc-control-secret|cred_123',
           'committed',
+          'connected:${hermesEndpointIdForBaseUrl('https://hermes.example')}',
         ]);
         expect(controller.status, HermesEnrollmentStatus.confirmed);
         expect(store.saveAllCalls, hasLength(2));
@@ -452,6 +860,263 @@ void main() {
         );
       },
     );
+
+    test(
+      'activation failure preserves the committed enrollment outcome',
+      () async {
+        final activatedIds = <String>[];
+        HermesEnrollmentStatus? statusDuringActivation;
+        int? countDuringActivation;
+        final store = FakeHermesEndpointStore();
+        late final HermesEnrollmentController controller;
+        controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 9,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundleWithCount(9),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {},
+          endpointStore: store,
+          connectSavedEndpoint: (gatewayId) async {
+            statusDuringActivation = controller.status;
+            countDuringActivation = controller.connectedProfileCount;
+            activatedIds.add(gatewayId);
+            throw StateError('gateway reload failed');
+          },
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(activatedIds, [
+          hermesEndpointIdForBaseUrl('https://hermes.example/p/profile-0'),
+        ]);
+        expect(statusDuringActivation, HermesEnrollmentStatus.confirmed);
+        expect(countDuringActivation, 9);
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+        expect(controller.connectedProfileCount, 9);
+        expect(controller.errorMessage, isNull);
+      },
+    );
+
+    test(
+      'retains the connected profile count only after commit and acknowledgment',
+      () async {
+        final acknowledgment = Completer<void>();
+        var acknowledgmentStarted = false;
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 9,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundleWithCount(9),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) {
+                acknowledgmentStarted = true;
+                return acknowledgment.future;
+              },
+          endpointStore: store,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        expect(controller.preview!.connectionCount, 9);
+        expect(controller.connectedProfileCount, isNull);
+
+        final confirmation = controller.confirm();
+        while (!acknowledgmentStarted) {
+          await Future<void>.delayed(Duration.zero);
+        }
+        expect(store.saveAllCalls, hasLength(1));
+        expect(controller.connectedProfileCount, isNull);
+
+        acknowledgment.complete();
+        await confirmation;
+
+        expect(controller.status, HermesEnrollmentStatus.confirmed);
+        expect(controller.connectedProfileCount, 9);
+        controller.clearConfirmed();
+        expect(controller.status, HermesEnrollmentStatus.idle);
+        expect(controller.connectedProfileCount, isNull);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=another-time',
+          ),
+        );
+        await controller.confirm();
+        expect(controller.connectedProfileCount, 9);
+        controller.cancel();
+        expect(controller.status, HermesEnrollmentStatus.idle);
+        expect(controller.connectedProfileCount, isNull);
+      },
+    );
+
+    test(
+      'acknowledgment failure retains the complete pending bundle for recovery',
+      () async {
+        var activationCalls = 0;
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 9,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundleWithCount(9),
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {
+                throw StateError('ack response lost');
+              },
+          endpointStore: store,
+          connectSavedEndpoint: (_) async {
+            activationCalls++;
+          },
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        await controller.confirm();
+
+        expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
+        expect(controller.connectedProfileCount, isNull);
+        expect(activationCalls, 0);
+        expect(store.saveAllCalls, hasLength(1));
+        final retained = await store.loadProfiles();
+        expect(retained, hasLength(9));
+        expect(
+          retained.map((profile) => profile.id),
+          containsAll([
+            for (var index = 0; index < 9; index++)
+              hermesEndpointIdForBaseUrl(
+                'https://hermes.example/p/profile-$index',
+              ),
+          ]),
+        );
+        expect(
+          retained.every(
+            (profile) =>
+                profile.wingLinkOrigin == 'https://hermes.example:8654' &&
+                profile.wingLinkToken == 'wing-link-secret' &&
+                profile.wingLinkPendingCredentialId == 'cred_bundle',
+          ),
+          isTrue,
+          reason: 'response-loss recovery needs every pending credential',
+        );
+      },
+    );
+
+    test('failed enrollment never connects an imported gateway', () async {
+      var verifyCalls = 0;
+      var connectCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: ['Full Hermes access'],
+              connectionCount: 9,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundleWithCount(9),
+        verifyEnrollment:
+            ({
+              required hermesOrigin,
+              required hermesToken,
+              required wingLinkOrigin,
+              required wingLinkToken,
+            }) async {
+              verifyCalls++;
+              if (verifyCalls == 9) throw StateError('verification failed');
+            },
+        endpointStore: store,
+        connectSavedEndpoint: (_) async {
+          connectCalls++;
+        },
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(
+        HermesEnrollmentPayload.parse(
+          'wing://connect?origin=https%3A%2F%2Fhermes.example'
+          '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+        ),
+      );
+      await controller.confirm();
+
+      expect(verifyCalls, 9);
+      expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
+      expect(controller.connectedProfileCount, isNull);
+      expect(store.saveAllCalls, isEmpty);
+      expect(connectCalls, 0);
+    });
 
     test('confirm before a successful inspection is a no-op', () async {
       var exchangeCalls = 0;
@@ -490,8 +1155,8 @@ void main() {
       await controller.confirm();
 
       expect(exchangeCalls, 1);
-      expect(controller.status, HermesEnrollmentStatus.failed);
-      expect(controller.errorMessage, isNotNull);
+      expect(controller.status, HermesEnrollmentStatus.exchangeFailed);
+      expect(controller.errorMessage, isNull);
       expect(store.saveCalls, isEmpty);
 
       // Retrying confirm after a failure must not attempt a second
@@ -517,7 +1182,7 @@ void main() {
 
       await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
 
-      expect(controller.status, HermesEnrollmentStatus.failed);
+      expect(controller.status, HermesEnrollmentStatus.inspectionFailed);
       expect(exchangeCalls, 0);
       expect(store.saveCalls, isEmpty);
     });
@@ -546,6 +1211,287 @@ void main() {
       expect(controller.status, HermesEnrollmentStatus.idle);
       expect(controller.preview, isNull);
     });
+
+    test('a new inspection is ignored while confirmation is active', () async {
+      final exchange = Completer<HermesIssuedOperatorToken>();
+      var inspectCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) =>
+            exchange.future,
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(HermesEnrollmentPayload.parse(_validPayload));
+      final confirmation = controller.confirm();
+      await Future<void>.delayed(Duration.zero);
+      await controller.inspect(
+        HermesEnrollmentPayload.parse(
+          'wing://connect?origin=https%3A%2F%2Fhermes.example&code=new-code',
+        ),
+      );
+
+      expect(inspectCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.confirming);
+      exchange.complete(_issued);
+      await confirmation;
+      expect(controller.status, HermesEnrollmentStatus.confirmed);
+    });
+
+    test('cancel during verification never persists or acknowledges', () async {
+      final verification = Completer<void>();
+      var verifyStarted = false;
+      var acknowledgeCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: ['Full Hermes access'],
+              connectionCount: 2,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundle,
+        verifyEnrollment:
+            ({
+              required hermesOrigin,
+              required hermesToken,
+              required wingLinkOrigin,
+              required wingLinkToken,
+            }) {
+              verifyStarted = true;
+              return verification.future;
+            },
+        acknowledgeWingLinkCredential:
+            ({
+              required origin,
+              required token,
+              required credentialId,
+              required hostFingerprint,
+            }) async {
+              acknowledgeCalls++;
+            },
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(
+        HermesEnrollmentPayload.parse(
+          'wing://connect?origin=https%3A%2F%2Fhermes.example'
+          '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+        ),
+      );
+      final confirmation = controller.confirm();
+      while (!verifyStarted) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      controller.cancel();
+      verification.complete();
+      await confirmation;
+
+      expect(controller.status, HermesEnrollmentStatus.idle);
+      expect(store.saveAllCalls, isEmpty);
+      expect(acknowledgeCalls, 0);
+    });
+
+    test('cancel during profile load never persists or acknowledges', () async {
+      final loadBlock = Completer<void>();
+      var acknowledgeCalls = 0;
+      final store = _BlockingEnrollmentStore()..loadBlock = loadBlock;
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: ['Full Hermes access'],
+              connectionCount: 2,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundle,
+        verifyEnrollment:
+            ({
+              required hermesOrigin,
+              required hermesToken,
+              required wingLinkOrigin,
+              required wingLinkToken,
+            }) async {},
+        acknowledgeWingLinkCredential:
+            ({
+              required origin,
+              required token,
+              required credentialId,
+              required hostFingerprint,
+            }) async {
+              acknowledgeCalls++;
+            },
+        endpointStore: store,
+      );
+      addTearDown(controller.dispose);
+
+      await controller.inspect(
+        HermesEnrollmentPayload.parse(
+          'wing://connect?origin=https%3A%2F%2Fhermes.example'
+          '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+        ),
+      );
+      final confirmation = controller.confirm();
+      await store.loadStarted.future;
+      controller.cancel();
+      loadBlock.complete();
+      await confirmation;
+
+      expect(controller.status, HermesEnrollmentStatus.idle);
+      expect(store.saveAllCalls, isEmpty);
+      expect(acknowledgeCalls, 0);
+    });
+
+    test(
+      'cancel during the first save restores the exact existing snapshot',
+      () async {
+        const existingSnapshot = [
+          HermesEndpointConfig(
+            id: 'existing-a',
+            baseUrl: 'https://a.example',
+            apiKey: 'a-secret',
+            label: 'Alpha',
+          ),
+          HermesEndpointConfig(
+            id: 'existing-b',
+            baseUrl: 'https://b.example',
+            apiKey: 'b-secret',
+            label: 'Beta',
+            wingLinkOrigin: 'https://b.example:8654',
+            wingLinkToken: 'existing-wing-secret',
+          ),
+        ];
+        final firstSaveBlock = Completer<void>();
+        var acknowledgeCalls = 0;
+        var activationCalls = 0;
+        final store = _BlockingEnrollmentStore(profiles: existingSnapshot)
+          ..firstSaveBlock = firstSaveBlock;
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 2,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundle,
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {
+                acknowledgeCalls++;
+              },
+          endpointStore: store,
+          connectSavedEndpoint: (_) async {
+            activationCalls++;
+          },
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        final confirmation = controller.confirm();
+        await store.firstSavePersisted.future;
+        controller.cancel();
+        firstSaveBlock.complete();
+        await confirmation;
+
+        expect(controller.status, HermesEnrollmentStatus.idle);
+        expect(await store.loadProfiles(), existingSnapshot);
+        expect(store.saveAllCalls, hasLength(2));
+        expect(store.saveAllCalls.last, existingSnapshot);
+        expect(acknowledgeCalls, 0);
+        expect(activationCalls, 0);
+      },
+    );
+
+    test(
+      'cancel after acknowledgment starts still finalizes pending credentials',
+      () async {
+        final acknowledgeStarted = Completer<void>();
+        final acknowledgeBlock = Completer<void>();
+        var activationCalls = 0;
+        final store = FakeHermesEndpointStore();
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 2,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issuedBundle,
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {
+                acknowledgeStarted.complete();
+                await acknowledgeBlock.future;
+              },
+          endpointStore: store,
+          connectSavedEndpoint: (_) async {
+            activationCalls++;
+          },
+        );
+        addTearDown(controller.dispose);
+
+        await controller.inspect(
+          HermesEnrollmentPayload.parse(
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+          ),
+        );
+        final confirmation = controller.confirm();
+        await acknowledgeStarted.future;
+        controller.cancel();
+        acknowledgeBlock.complete();
+        await confirmation;
+
+        expect(controller.status, HermesEnrollmentStatus.idle);
+        expect(activationCalls, 0);
+        final saved = await store.loadProfiles();
+        expect(saved, hasLength(2));
+        expect(
+          saved.every((profile) => profile.wingLinkPendingCredentialId == null),
+          isTrue,
+        );
+      },
+    );
 
     test('cancel during exchange does not save a stale token', () async {
       final exchange = Completer<HermesIssuedOperatorToken>();
@@ -587,7 +1533,7 @@ void main() {
           exchangeEnrollment: ({required origin, required code}) async =>
               _issued,
           endpointStore: store,
-          connectSavedEndpoint: () async {
+          connectSavedEndpoint: (_) async {
             reloadCalls++;
           },
         );
@@ -713,14 +1659,355 @@ void main() {
       );
     }
 
-    bool anyTextContainsToken(WidgetTester tester) {
+    bool anyTextContains(WidgetTester tester, String value) {
       final texts = tester.widgetList<Text>(find.byType(Text));
       for (final text in texts) {
         final data = text.data ?? text.textSpan?.toPlainText() ?? '';
-        if (data.contains(_secretToken)) return true;
+        if (data.contains(value)) return true;
       }
       return false;
     }
+
+    bool anyTextContainsToken(WidgetTester tester) =>
+        anyTextContains(tester, _secretToken);
+
+    testWidgets(
+      'Android chooser actions are ordered, full width, and bounded',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+
+        final paste = find.byKey(
+          const ValueKey('hermes-enrollment-paste-link'),
+        );
+        final scan = find.byKey(const ValueKey('hermes-enrollment-scan-qr'));
+        final manual = find.byKey(
+          const ValueKey('hermes-enrollment-manual-connect'),
+        );
+        expect(find.text('Paste pairing link'), findsOneWidget);
+        expect(find.text('Scan QR from another screen'), findsOneWidget);
+        expect(find.text('Connect one profile manually'), findsOneWidget);
+        expect(
+          find.text(
+            'If the link is on this phone, tap it or share it to Hermes Wing.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.text('This does not import Wing Link or other Hermes profiles.'),
+          findsOneWidget,
+        );
+        expect(
+          tester.getTopLeft(paste).dy,
+          lessThan(tester.getTopLeft(scan).dy),
+        );
+        expect(
+          tester.getTopLeft(scan).dy,
+          lessThan(tester.getTopLeft(manual).dy),
+        );
+        for (final action in [paste, scan, manual]) {
+          expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+          expect(tester.getSize(action).width, greaterThan(300));
+        }
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
+    testWidgets('clipboard is read only after Paste and inspected once', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      var clipboardReads = 0;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.getData') {
+              clipboardReads++;
+              return <String, Object?>{
+                'text': 'Pair this phone:\n$_validPayload',
+              };
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      var inspectCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      expect(clipboardReads, 0);
+
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(clipboardReads, 1);
+      expect(inspectCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets(
+      'invalid pasted secrets are never retained in rendered errors',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        const rawSecret = 'pairing-code-must-not-render';
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+              if (call.method == 'Clipboard.getData') {
+                return <String, Object?>{
+                  'text': 'wing://connect?origin=invalid&code=$rawSecret',
+                };
+              }
+              return null;
+            });
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(SystemChannels.platform, null),
+        );
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-payload-error')),
+          findsOneWidget,
+        );
+        expect(anyTextContains(tester, rawSecret), isFalse);
+        expect(anyTextContains(tester, 'wing://connect'), isFalse);
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
+    testWidgets('empty clipboard shows inline recovery without clearing it', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final methods = <String>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            methods.add(call.method);
+            if (call.method == 'Clipboard.getData') {
+              return <String, Object?>{'text': '   '};
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('The clipboard does not contain a pairing link.'),
+        findsOneWidget,
+      );
+      expect(methods.where((method) => method.startsWith('Clipboard.')), [
+        'Clipboard.getData',
+      ]);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('Android chooser remains usable at 200 percent text scale', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        findsOneWidget,
+      );
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('Linux chooser preserves local setup and manual actions', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsNothing,
+      );
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('shared prose routes through explicit handoff extraction', (
+      tester,
+    ) async {
+      var inspectCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        initial: 'Shared from Android:\n$_validPayload',
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(inspectCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.ready);
+    });
+
+    testWidgets('explicit handoff preserves cleartext review before inspect', (
+      tester,
+    ) async {
+      const cleartextCode = 'cleartext-code-must-not-render';
+      var inspectCalls = 0;
+      Uri? inspectedOrigin;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        initial:
+            'Shared link: wing://connect?origin=http%3A%2F%2Fhermes.example'
+            '&code=$cleartextCode',
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          inspectedOrigin = origin;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-cleartext-warning')),
+        findsOneWidget,
+      );
+      expect(inspectCalls, 0);
+      expect(anyTextContains(tester, cleartextCode), isFalse);
+
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-cleartext-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(inspectCalls, 1);
+      expect(inspectedOrigin, Uri.parse('http://hermes.example'));
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      expect(anyTextContains(tester, cleartextCode), isFalse);
+    });
 
     testWidgets('scan QR opens pairing review', (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
@@ -771,7 +2058,7 @@ void main() {
       );
       expect(find.text('Pairing link couldn’t be opened'), findsOneWidget);
       expect(
-        find.text('Scan a new QR code or enter the gateway manually.'),
+        find.text('Paste another pairing link or scan a new QR code.'),
         findsOneWidget,
       );
       expect(
@@ -807,6 +2094,216 @@ void main() {
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsOneWidget,
       );
+    });
+
+    testWidgets('review and success remain usable at 200 percent text scale', (
+      tester,
+    ) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        initial:
+            'wing://connect?origin=https%3A%2F%2Fhermes.example'
+            '&control=https%3A%2F%2Fhermes.example%3A8654&code=one-time',
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: ['Full Hermes access'],
+              connectionCount: 9,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundleWithCount(9),
+        verifyEnrollment:
+            ({
+              required hermesOrigin,
+              required hermesToken,
+              required wingLinkOrigin,
+              required wingLinkToken,
+            }) async {},
+        acknowledgeWingLinkCredential:
+            ({
+              required origin,
+              required token,
+              required credentialId,
+              required hostFingerprint,
+            }) async {},
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final confirm = find.byKey(const ValueKey('hermes-enrollment-confirm'));
+      expect(confirm, findsOneWidget);
+      await tester.ensureVisible(confirm);
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-confirmed')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-view-profiles')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-open-chat')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'review and persistent success show the nine-profile outcome securely',
+      (tester) async {
+        const rawCode = 'raw-pairing-code-must-not-render';
+        var exchangeCalls = 0;
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource(
+          initial:
+              'wing://connect?origin=https%3A%2F%2Fhermes.example'
+              '&control=https%3A%2F%2Fhermes.example%3A8654&code=$rawCode',
+        );
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              const HermesEnrollmentPreview(
+                label: 'BlueBlack',
+                origin: 'https://hermes.example',
+                scopes: ['Full Hermes access'],
+                connectionCount: 9,
+              ),
+          exchangeEnrollment: ({required origin, required code}) async {
+            exchangeCalls++;
+            return _issuedBundleWithCount(9);
+          },
+          verifyEnrollment:
+              ({
+                required hermesOrigin,
+                required hermesToken,
+                required wingLinkOrigin,
+                required wingLinkToken,
+              }) async {},
+          acknowledgeWingLinkCredential:
+              ({
+                required origin,
+                required token,
+                required credentialId,
+                required hostFingerprint,
+              }) async {},
+          endpointStore: store,
+        );
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Connect 9 Hermes profiles from BlueBlack?'),
+          findsOneWidget,
+        );
+        expect(find.text('Profiles'), findsOneWidget);
+        expect(find.text('9'), findsOneWidget);
+        expect(find.text('Connect 9 profiles'), findsOneWidget);
+        expect(exchangeCalls, 0);
+        expect(anyTextContains(tester, rawCode), isFalse);
+        expect(anyTextContainsToken(tester), isFalse);
+        final semantics = tester.ensureSemantics();
+        expect(find.bySemanticsLabel(RegExp(rawCode)), findsNothing);
+        expect(find.bySemanticsLabel(RegExp(_secretToken)), findsNothing);
+        semantics.dispose();
+
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-confirm')),
+        );
+        await tester.pumpAndSettle();
+
+        expect(exchangeCalls, 1);
+        expect(find.text('9 profiles connected'), findsOneWidget);
+        expect(
+          find.text('Wing Link is ready for profile and gateway management.'),
+          findsOneWidget,
+        );
+        expect(find.text('View profiles'), findsOneWidget);
+        expect(find.text('Open chat'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-confirmed')),
+          findsOneWidget,
+        );
+        expect(anyTextContains(tester, rawCode), isFalse);
+        expect(anyTextContainsToken(tester), isFalse);
+
+        final router = GoRouter.of(
+          tester.element(
+            find.byKey(const ValueKey('hermes-enrollment-confirmed')),
+          ),
+        );
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          AppRoutes.enroll,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-view-profiles')),
+        );
+        await tester.pump();
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          AppRoutes.profiles,
+        );
+        expect(controller.connectedProfileCount, isNull);
+      },
+    );
+
+    testWidgets('one-profile review and success use singular grammar', (
+      tester,
+    ) async {
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(initial: _validPayload);
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Connect 1 Hermes profile from Galaxy S24?'),
+        findsOneWidget,
+      );
+      expect(find.text('Connect 1 profile'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('hermes-enrollment-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 profile connected'), findsOneWidget);
+      expect(find.text('1 profiles connected'), findsNothing);
+      final router = GoRouter.of(
+        tester.element(
+          find.byKey(const ValueKey('hermes-enrollment-confirmed')),
+        ),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-open-chat')),
+      );
+      await tester.pump();
+      expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
+      expect(controller.connectedProfileCount, isNull);
     });
 
     testWidgets(
@@ -880,7 +2377,7 @@ void main() {
     );
 
     testWidgets(
-      'confirm exchanges once, saves the token, redirects, and never renders it',
+      'confirm exchanges once, saves the token, and never renders it',
       (tester) async {
         var exchangeCalls = 0;
         final store = FakeHermesEndpointStore();
@@ -942,6 +2439,140 @@ void main() {
       expect(store.saveCalls, isEmpty);
     });
 
+    testWidgets('expired recovery remains usable at 200 percent text scale', (
+      tester,
+    ) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final now = DateTime.utc(2026, 8, 22, 12);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(initial: _validPayload);
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) async =>
+            HermesEnrollmentPreview(
+              label: 'BlueBlack',
+              origin: 'https://hermes.example',
+              scopes: const ['Full Hermes access'],
+              connectionCount: 9,
+              expiresAt: now,
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundleWithCount(9),
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-expired')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-another')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-scan-another')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('countdown expires into actionable paste and scan recovery', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      var now = DateTime.utc(2026, 8, 22, 12, 0, 1);
+      var inspectCalls = 0;
+      var clipboardReads = 0;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.getData') {
+              clipboardReads++;
+              return <String, Object?>{'text': _validPayload};
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        initial: _validPayload,
+        scanned: _validPayload,
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        clock: () => now,
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          return HermesEnrollmentPreview(
+            label: 'BlueBlack',
+            origin: 'https://hermes.example',
+            scopes: const ['Full Hermes access'],
+            connectionCount: 9,
+            expiresAt: DateTime.utc(2026, 8, 22, 12, 4 + inspectCalls),
+          );
+        },
+        exchangeEnrollment: ({required origin, required code}) async =>
+            _issuedBundleWithCount(9),
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('4:59'), findsOneWidget);
+      now = DateTime.utc(2026, 8, 22, 12, 5);
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('This pairing link expired'), findsOneWidget);
+      expect(
+        find.text(
+          'Run wing-link pair again, then open the new link or scan its QR.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Paste another link'), findsOneWidget);
+      expect(find.text('Scan another QR'), findsOneWidget);
+      expect(anyTextContains(tester, 'one-time'), isFalse);
+
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-paste-another')),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(clipboardReads, 1);
+      expect(inspectCalls, 2);
+
+      now = DateTime.utc(2026, 8, 22, 12, 6);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-scan-another')),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(source.scanCalls, 1);
+      expect(inspectCalls, 3);
+      controller.cancel();
+      debugDefaultTargetPlatformOverride = null;
+    });
+
     testWidgets('an expired/reused response fails closed with no save', (
       tester,
     ) async {
@@ -970,6 +2601,10 @@ void main() {
       );
       expect(store.saveCalls, isEmpty);
       expect(anyTextContainsToken(tester), isFalse);
+      expect(
+        anyTextContains(tester, 'pairing code expired or already used'),
+        isFalse,
+      );
     });
   });
 }

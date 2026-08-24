@@ -144,21 +144,6 @@ foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
   install(FILES "${bundled_library}"
     DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
-  # flutter_onnxruntime links against libonnxruntime.so.1, while its downloaded
-  # bundle input is named libonnxruntime.so. Keep both names in the release.
-  if("${bundled_library}" MATCHES
-      "flutter_onnxruntime/onnxruntime/.*/libonnxruntime\\.so$")
-    get_filename_component(onnxruntime_library_dir
-      "${bundled_library}" DIRECTORY)
-    get_filename_component(onnxruntime_runtime_file
-      "${bundled_library}" REALPATH)
-    target_link_options(${BINARY_NAME} PRIVATE
-      "-Wl,-rpath-link,${onnxruntime_library_dir}")
-    install(FILES "${onnxruntime_runtime_file}"
-      DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-      RENAME "libonnxruntime.so.1"
-      COMPONENT Runtime)
-  endif()
 endforeach(bundled_library)
 
 # Copy the native assets provided by the build.dart from all packages.

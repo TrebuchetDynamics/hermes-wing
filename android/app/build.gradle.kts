@@ -44,15 +44,6 @@ android {
         versionName = flutter.versionName
     }
 
-    packaging {
-        jniLibs.pickFirsts += setOf(
-            "lib/arm64-v8a/libonnxruntime.so",
-            "lib/armeabi-v7a/libonnxruntime.so",
-            "lib/x86/libonnxruntime.so",
-            "lib/x86_64/libonnxruntime.so",
-        )
-    }
-
     val releaseKeystorePath = releaseSigningValue(
         "wing.release.storeFile",
         "WING_RELEASE_STORE_FILE",

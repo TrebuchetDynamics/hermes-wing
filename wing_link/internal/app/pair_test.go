@@ -3,8 +3,15 @@ package app
 import (
 	"bufio"
 	"bytes"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"html"
 	"io"
 	"net"
 	"net/http"
@@ -12,6 +19,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -27,12 +35,191 @@ func TestPairingAdvertiseHostDefaultsToLoopback(t *testing.T) {
 	}
 }
 
-func TestPairingBrokerRejectsPlaintextNonLoopbackByDefault(t *testing.T) {
+func TestPairHumanOutputLeadsWithAndroidSafeURL(t *testing.T) {
+	pairingURI, err := url.Parse("wing://connect?broker=http%3A%2F%2F127.0.0.1%3A43001&code=one-time&origin=http%3A%2F%2F127.0.0.1%3A8642")
+	if err != nil {
+		t.Fatal(err)
+	}
+	openURL, err := url.Parse("http://127.0.0.1:43001/open")
+	if err != nil {
+		t.Fatal(err)
+	}
+	broker := &pairingBroker{PairingURI: pairingURI, OpenURL: openURL}
 	options := testPairOptions(t, "superuser-secret")
-	options.Origin = &url.URL{Scheme: "http", Host: "192.0.2.1:8642"}
-	if _, err := startPairingBroker(options); err == nil ||
-		!strings.Contains(err.Error(), "authenticated encrypted VPN") {
-		t.Fatalf("non-loopback broker error = %v", err)
+	var stdout, stderr bytes.Buffer
+
+	writePairHumanOutput(&stdout, &stderr, broker, options)
+
+	output := stderr.String()
+	if !strings.Contains(output, "On the same device, open:") {
+		t.Fatal("missing same-device instruction")
+	}
+	if !strings.Contains(output, broker.OpenURL.String()) {
+		t.Fatal("missing ordinary handoff URL")
+	}
+	if strings.Contains(output, "pair: code:") {
+		t.Fatal("raw code must not be printed separately")
+	}
+	if strings.Contains(output, broker.PairingURI.String()) {
+		t.Fatal("raw wing URI must not be printed")
+	}
+	if strings.Index(output, broker.OpenURL.String()) > strings.Index(output, "Scan this QR in Hermes Wing:") {
+		t.Fatal("same-device path must be presented before QR")
+	}
+	if !strings.Contains(output, "Review the host, access, and profile count in Hermes Wing, then confirm.") {
+		t.Fatal("missing review instruction")
+	}
+	if stdout.Len() == 0 {
+		t.Fatal("missing QR output")
+	}
+}
+
+func TestPairingBrokerUsesPinnedTLSWithoutVPNOptIn(t *testing.T) {
+	options := testPairOptions(t, "superuser-secret")
+	options.Origin = &url.URL{Scheme: "http", Host: "0.0.0.0:8642"}
+	broker, err := startPairingBroker(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer broker.Close()
+	brokerOrigin := broker.PairingURI.Query().Get("broker")
+	if broker.OpenURL != nil {
+		t.Fatalf("remote self-signed broker advertised browser URL %q", broker.OpenURL)
+	}
+	if !strings.HasPrefix(brokerOrigin, "https://") {
+		t.Fatalf("broker origin = %q; want HTTPS", brokerOrigin)
+	}
+	expectedFingerprint := broker.PairingURI.Query().Get("host_fingerprint")
+	if broker.TLSCertificate == nil {
+		t.Fatal("remote broker did not retain its TLS certificate")
+	}
+	roots := x509.NewCertPool()
+	roots.AddCert(broker.TLSCertificate)
+	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{
+		MinVersion: tls.VersionTLS13,
+		RootCAs:    roots,
+		VerifyConnection: func(connection tls.ConnectionState) error {
+			if _, ok := connection.PeerCertificates[0].PublicKey.(*rsa.PublicKey); !ok {
+				return errors.New("pairing certificate did not use the durable TLS key")
+			}
+			digest := sha256.Sum256(connection.PeerCertificates[0].RawSubjectPublicKeyInfo)
+			got := "sha256/" + base64.RawURLEncoding.EncodeToString(digest[:])
+			if got != expectedFingerprint {
+				return fmt.Errorf("pairing identity mismatch: %s", got)
+			}
+			return nil
+		},
+	}}}
+	body, err := json.Marshal(map[string]string{
+		"origin": brokerOrigin,
+		"code":   broker.PairingURI.Query().Get("code"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, err := http.NewRequest(http.MethodPost, brokerOrigin+"/v1/operator/enrollments/inspect", bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := client.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = response.Body.Close() }()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("pinned TLS inspect status = %d", response.StatusCode)
+	}
+}
+
+func TestPairingBrokerInspectionReportsBoundedConnectionCountWithoutCredentials(t *testing.T) {
+	options := testPairOptions(t, "superuser-secret")
+	options.CredentialMode = "compatibility_full_access"
+	for index := 0; index < 9; index++ {
+		options.Connections = append(options.Connections, issuedHermesConnection{
+			ProfileID:    fmt.Sprintf("profile-%d", index),
+			Origin:       fmt.Sprintf("http://127.0.0.1:8642/p/profile-%d", index),
+			Token:        fmt.Sprintf("profile-token-%d", index),
+			CredentialID: fmt.Sprintf("credential-%d", index),
+			Label:        fmt.Sprintf("Profile %d", index),
+		})
+	}
+	broker, err := startPairingBroker(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer broker.Close()
+
+	brokerOrigin := broker.PairingURI.Query().Get("broker")
+	response := postPairBroker(
+		t,
+		brokerOrigin+"/v1/operator/enrollments/inspect",
+		brokerOrigin,
+		broker.PairingURI.Query().Get("code"),
+	)
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("inspect = %d %s", response.StatusCode, response.Body)
+	}
+	var preview map[string]any
+	if err := json.Unmarshal(response.Body, &preview); err != nil {
+		t.Fatal(err)
+	}
+	if got := int(preview["connection_count"].(float64)); got != 9 {
+		t.Fatalf("connection_count = %d, want 9", got)
+	}
+	fingerprint := broker.PairingURI.Query().Get("host_fingerprint")
+	if fingerprint == "" || preview["host_fingerprint"] != fingerprint {
+		t.Fatalf("host fingerprint was not bound across the pairing request: uri=%q preview=%v", fingerprint, preview["host_fingerprint"])
+	}
+	for _, forbidden := range []string{"connections", "token", "credential_id", "profile_id"} {
+		if _, present := preview[forbidden]; present {
+			t.Fatalf("inspection exposed %q", forbidden)
+		}
+	}
+	body := string(response.Body)
+	if strings.Contains(body, "profile-token-") || strings.Contains(body, "credential-") {
+		t.Fatalf("inspection exposed credential material: %s", body)
+	}
+}
+
+func TestPairingBrokerRejectsCompatibilityBundlesOverOneHundredConnections(t *testing.T) {
+	options := testPairOptions(t, "superuser-secret")
+	options.CredentialMode = "compatibility_full_access"
+	for index := 0; index < 101; index++ {
+		options.Connections = append(options.Connections, issuedHermesConnection{
+			ProfileID: fmt.Sprintf("profile-%d", index),
+		})
+	}
+
+	broker, err := startPairingBroker(options)
+	if broker != nil || err == nil || !strings.Contains(err.Error(), "at most 100 connections") {
+		t.Fatalf("startPairingBroker() = (%v, %v), want nil compatibility bundle limit error", broker, err)
+	}
+}
+
+func TestPairingBrokerInspectionDefaultsScopedEnrollmentToOneConnection(t *testing.T) {
+	options := testPairOptions(t, "superuser-secret")
+	options.CredentialMode = "scoped"
+	options.Connections = []issuedHermesConnection{{ProfileID: "ignored"}}
+	broker, err := startPairingBroker(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer broker.Close()
+
+	brokerOrigin := broker.PairingURI.Query().Get("broker")
+	response := postPairBroker(
+		t,
+		brokerOrigin+"/v1/operator/enrollments/inspect",
+		brokerOrigin,
+		broker.PairingURI.Query().Get("code"),
+	)
+	var preview map[string]any
+	if err := json.Unmarshal(response.Body, &preview); err != nil {
+		t.Fatal(err)
+	}
+	if got := int(preview["connection_count"].(float64)); got != 1 {
+		t.Fatalf("connection_count = %d, want 1", got)
 	}
 }
 
@@ -66,7 +253,8 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 		!strings.Contains(string(exchange.Body), `"token":"superuser-secret"`) ||
 		!strings.Contains(string(exchange.Body), `"wing_link_token":"wlc_`) ||
 		!strings.Contains(string(exchange.Body), `"setup:write"`) ||
-		strings.Contains(string(exchange.Body), `"wing_link_scopes":["profiles:read"`) {
+		!strings.Contains(string(exchange.Body), `"profiles:read"`) ||
+		!strings.Contains(string(exchange.Body), `"device:self:revoke"`) {
 		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
 	}
 	var issued map[string]any
@@ -91,6 +279,13 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 	}
 	if !options.ControlState.Authorize(controlToken) {
 		t.Fatal("acknowledged control token was not authorized")
+	}
+	devices, err := options.ControlState.ListDevices()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(devices) != 1 || devices[0].Name != "phone" || !devices[0].Bearer || !slices.Contains(devices[0].Scopes, ScopeProfilesWrite) {
+		t.Fatalf("paired device metadata = %#v", devices)
 	}
 	select {
 	case <-broker.Done:
@@ -148,22 +343,50 @@ if [ "$1" = "--profile" ] && [ "$3 $4" = "config env-path" ]; then /bin/printf '
 	}()
 
 	scanner := bufio.NewScanner(reader)
-	var exchangeEndpoint, code string
+	var openURL string
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.Contains(line, "code valid") {
-			fields := strings.Fields(line)
-			exchangeEndpoint = fields[len(fields)-1]
+		if strings.Contains(line, "On the same device, open:") {
+			if !scanner.Scan() {
+				t.Fatal("missing ordinary handoff URL")
+			}
+			openURL = strings.TrimSpace(strings.TrimPrefix(scanner.Text(), "pair:"))
 		}
-		if strings.HasPrefix(line, "pair: code: ") {
-			code = strings.TrimPrefix(line, "pair: code: ")
+		if strings.Contains(line, "Review the host, access, and profile count") {
 			break
 		}
 	}
-	if exchangeEndpoint == "" || code == "" {
-		t.Fatalf("endpoint=%q code=%q", exchangeEndpoint, code)
+	if openURL == "" {
+		t.Fatal("pair output did not include the ordinary handoff URL")
 	}
-	brokerOrigin := strings.TrimSuffix(exchangeEndpoint, "/v1/operator/enrollments/exchange")
+	openResponse, err := http.Get(openURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	openBody, err := io.ReadAll(openResponse.Body)
+	_ = openResponse.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	hrefStart := strings.Index(string(openBody), `href="`)
+	if hrefStart < 0 {
+		t.Fatalf("open page missing intent link: %s", openBody)
+	}
+	href := string(openBody)[hrefStart+len(`href="`):]
+	hrefEnd := strings.IndexByte(href, '"')
+	if hrefEnd < 0 {
+		t.Fatalf("open page has malformed intent link: %s", openBody)
+	}
+	intentURI, err := url.Parse(html.UnescapeString(href[:hrefEnd]))
+	if err != nil {
+		t.Fatal(err)
+	}
+	brokerOrigin := intentURI.Query().Get("broker")
+	code := intentURI.Query().Get("code")
+	if brokerOrigin == "" || code == "" {
+		t.Fatalf("intent URI omitted broker or code: %s", intentURI)
+	}
+	exchangeEndpoint := brokerOrigin + "/v1/operator/enrollments/exchange"
 	inspect := postPairBroker(t, brokerOrigin+"/v1/operator/enrollments/inspect", brokerOrigin, code)
 	if inspect.StatusCode != http.StatusOK {
 		t.Fatalf("inspect status = %d", inspect.StatusCode)
@@ -381,9 +604,15 @@ func TestControlCredentialStagingPrecedesHermesExchange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	controlState := newStateStore(filepath.Join(t.TempDir(), "state.json"))
+	hostIdentity, err := controlState.HostIdentity()
+	if err != nil {
+		t.Fatal(err)
+	}
 	broker, err := startPairingBroker(pairOptions{
 		Origin:               hermesOrigin,
 		ControlOrigin:        controlOrigin,
+		HostIdentity:         hostIdentity,
 		Label:                "phone",
 		ScopedEnrollmentCode: "one-time-hermes-code",
 		CredentialMode:       "scoped",
@@ -896,6 +1125,25 @@ func testPairOptions(t *testing.T, token string) pairOptions {
 		Origin: origin, ControlOrigin: controlOrigin,
 		ControlState: newStateStore(filepath.Join(t.TempDir(), "state.json")),
 		Label:        "phone", Token: token,
+	}
+}
+
+func TestStageControlCredentialUsesLoopbackHTTPForRemoteTLSOrigin(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/v1/pairing/control-credentials" || request.Method != http.MethodPost {
+			t.Fatalf("request=%s %s", request.Method, request.URL.Path)
+		}
+		writeJSON(writer, http.StatusOK, map[string]any{"credential_id": "cred_test", "token": "wlc_test"})
+	}))
+	defer server.Close()
+	origin, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	origin.Scheme = "https"
+	id, token, err := stageControlCredential(origin, "Phone", []string{ScopeHealthRead})
+	if err != nil || id != "cred_test" || token != "wlc_test" {
+		t.Fatalf("id=%q token=%q err=%v", id, token, err)
 	}
 }
 

@@ -18,13 +18,14 @@ Hermes Wing ── data plane ─────────────▶ Hermes 
                                             └─ approved host directories
 ```
 
-Wing Link and Hermes Agent run on the same host. The current service automatically
-selects a local private/Tailscale address when available and also binds loopback;
-`--listen` can select an exact loopback, private-LAN, or Tailscale address. It
-currently serves HTTP. Wing requires explicit review before sending credentials
-over non-loopback plaintext; use HTTPS through a trusted reverse proxy or an
-encrypted VPN for remote access. A separate Wing Link credential is required, and
-a Hermes API key is never accepted by Wing Link.
+Wing Link and Hermes Agent run on the same host. The service automatically selects
+a local private/Tailscale address when available and also binds loopback;
+`--listen` can select an exact loopback, private-LAN, or Tailscale address. HTTP is
+loopback-only. Every non-loopback listener uses TLS 1.3 tied to the durable Wing
+Link host identity. Native clients pin its reviewed SHA-256 SPKI fingerprint;
+browser clients require normally trusted HTTPS. Each device receives a separate,
+named, scoped, individually revocable Wing Link credential, and a Hermes API key
+is never accepted by Wing Link.
 
 Wing Link exposure and Hermes Agent exposure are separate. `wing-link setup`
 configures the Agent API on `127.0.0.1`; Wing Link does not proxy it. A remote Wing
@@ -43,7 +44,11 @@ The current Linux implementation provides:
 - install or adopt a pinned Hermes Agent runtime;
 - configure API bootstrap and profile multiplexing;
 - start, stop, restart, inspect, and diagnose the managed services;
-- short-lived QR pairing without bearer tokens in the QR; and
+- short-lived QR pairing without bearer tokens in the QR;
+- persistent pinned host identity and named per-device credentials;
+- host-local approval for install, secret-write, and destructive operations;
+- durable idempotent operation tracking and explicit cancellation;
+- current/previous protocol-generation negotiation; and
 - profile list, create/clone, rename, and delete through fixed Hermes CLI
   argument vectors.
 

@@ -256,8 +256,9 @@ InlineTranscriptImageMetadata? _webpMetadata(Uint8List bytes) {
       width ??= _uint16Little(bytes, dataOffset + 6) & 0x3fff;
       height ??= _uint16Little(bytes, dataOffset + 8) & 0x3fff;
     } else if (_matches(bytes, offset, const [0x56, 0x50, 0x38, 0x4c])) {
-      if (size < 5 || foundStaticImage || bytes[dataOffset] != 0x2f)
+      if (size < 5 || foundStaticImage || bytes[dataOffset] != 0x2f) {
         return null;
+      }
       foundStaticImage = true;
       final bits = _uint32Little(bytes, dataOffset + 1);
       width ??= 1 + (bits & 0x3fff);

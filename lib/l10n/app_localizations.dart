@@ -1042,6 +1042,102 @@ abstract class AppLocalizations {
   /// **'Gateway'**
   String get gatewayStatusTitle;
 
+  /// No description provided for @gatewayTrustTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link trust'**
+  String get gatewayTrustTitle;
+
+  /// No description provided for @gatewayTrustLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking pinned host identity and device grants…'**
+  String get gatewayTrustLoading;
+
+  /// No description provided for @gatewayTrustUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link trust status is unavailable. Verify the host is online and the saved identity has not changed.'**
+  String get gatewayTrustUnavailable;
+
+  /// No description provided for @gatewayTrustFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Host fingerprint'**
+  String get gatewayTrustFingerprint;
+
+  /// No description provided for @gatewayTrustProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'Protocol'**
+  String get gatewayTrustProtocol;
+
+  /// No description provided for @gatewayTrustDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get gatewayTrustDevice;
+
+  /// No description provided for @gatewayTrustScopes.
+  ///
+  /// In en, this message translates to:
+  /// **'Granted scopes'**
+  String get gatewayTrustScopes;
+
+  /// No description provided for @gatewayTrustHostInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust changes require the host console: wing-link devices list · wing-link approvals list'**
+  String get gatewayTrustHostInstructions;
+
+  /// No description provided for @gatewayTrustRevokeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke this device'**
+  String get gatewayTrustRevokeAction;
+
+  /// No description provided for @gatewayTrustRevokeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke this device?'**
+  String get gatewayTrustRevokeTitle;
+
+  /// No description provided for @gatewayTrustRevokeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes only this device\'s Wing Link credential. Reconnecting requires a new host pairing flow.'**
+  String get gatewayTrustRevokeBody;
+
+  /// No description provided for @gatewayTrustRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'This device was revoked. Pair it again from the host to restore management access.'**
+  String get gatewayTrustRevoked;
+
+  /// No description provided for @gatewayTrustChangedIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'The host fingerprint changed. Wing Link access is blocked; review the fingerprint at the host and pair again explicitly.'**
+  String get gatewayTrustChangedIdentity;
+
+  /// No description provided for @gatewayTrustUpgradeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This Wing Link protocol is outside the supported compatibility window. Upgrade Hermes Wing before reconnecting.'**
+  String get gatewayTrustUpgradeRequired;
+
+  /// No description provided for @gatewayTrustCredentialExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This device credential is expired or revoked. Create a new pairing flow at the host.'**
+  String get gatewayTrustCredentialExpired;
+
+  /// No description provided for @gatewayTrustApprovalPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Host confirmation is pending. Run wing-link approvals list on the host, review the request, then retry with the same operation.'**
+  String get gatewayTrustApprovalPending;
+
   /// No description provided for @gatewayStatusSubtitle.
   ///
   /// In en, this message translates to:
@@ -2310,74 +2406,8 @@ abstract class AppLocalizations {
   /// No description provided for @voiceRecognitionLanguageSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.'**
+  /// **'Automatic lets the device recognizer choose; fixed modes request one language.'**
   String get voiceRecognitionLanguageSubtitle;
-
-  /// No description provided for @voiceOfflineRecognitionSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Offline recognition'**
-  String get voiceOfflineRecognitionSection;
-
-  /// No description provided for @voiceOfflineSttPackTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Whisper Base INT8 · English + Español'**
-  String get voiceOfflineSttPackTitle;
-
-  /// No description provided for @voiceOfflineSttChecking.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking the verified model pack…'**
-  String get voiceOfflineSttChecking;
-
-  /// No description provided for @voiceOfflineSttAbsent.
-  ///
-  /// In en, this message translates to:
-  /// **'Not installed · about 163 MB · Android recognition remains available.'**
-  String get voiceOfflineSttAbsent;
-
-  /// No description provided for @voiceOfflineSttInstalling.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading and verifying every model artifact…'**
-  String get voiceOfflineSttInstalling;
-
-  /// No description provided for @voiceOfflineSttInstalled.
-  ///
-  /// In en, this message translates to:
-  /// **'Installed and verified. {provenance}'**
-  String voiceOfflineSttInstalled(String provenance);
-
-  /// No description provided for @voiceOfflineSttDeleting.
-  ///
-  /// In en, this message translates to:
-  /// **'Removing the offline model pack…'**
-  String get voiceOfflineSttDeleting;
-
-  /// No description provided for @voiceOfflineSttUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'The offline speech pack is unavailable.'**
-  String get voiceOfflineSttUnavailable;
-
-  /// No description provided for @voiceOfflineSttDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Download'**
-  String get voiceOfflineSttDownload;
-
-  /// No description provided for @voiceOfflineSttRemove.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get voiceOfflineSttRemove;
-
-  /// No description provided for @voiceOfflineSttRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get voiceOfflineSttRetry;
 
   /// No description provided for @voiceCommandWordTitle.
   ///
@@ -2592,14 +2622,14 @@ abstract class AppLocalizations {
   /// No description provided for @enrollInvalidLinkBody.
   ///
   /// In en, this message translates to:
-  /// **'Scan a new QR code or enter the gateway manually.'**
+  /// **'Paste another pairing link or scan a new QR code.'**
   String get enrollInvalidLinkBody;
 
-  /// No description provided for @enrollInvalidLinkDetail.
+  /// No description provided for @enrollClipboardEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Details: {message}'**
-  String enrollInvalidLinkDetail(String message);
+  /// **'The clipboard does not contain a pairing link.'**
+  String get enrollClipboardEmpty;
 
   /// No description provided for @enrollCleartextDialogTitle.
   ///
@@ -2622,7 +2652,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollScanPrompt.
   ///
   /// In en, this message translates to:
-  /// **'Scan the QR code shown by wing-cli.'**
+  /// **'Choose how to connect this device.'**
   String get enrollScanPrompt;
 
   /// No description provided for @enrollVerifying.
@@ -2631,11 +2661,29 @@ abstract class AppLocalizations {
   /// **'Verifying pairing code…'**
   String get enrollVerifying;
 
-  /// No description provided for @enrollConnected.
+  /// No description provided for @enrollConnectedProfiles.
   ///
   /// In en, this message translates to:
-  /// **'Connected. Returning to Hermes…'**
-  String get enrollConnected;
+  /// **'{count, plural, =1{1 profile connected} other{{count} profiles connected}}'**
+  String enrollConnectedProfiles(int count);
+
+  /// No description provided for @enrollConnectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link is ready for profile and gateway management.'**
+  String get enrollConnectedBody;
+
+  /// No description provided for @enrollViewProfilesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View profiles'**
+  String get enrollViewProfilesAction;
+
+  /// No description provided for @enrollOpenChatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chat'**
+  String get enrollOpenChatAction;
 
   /// No description provided for @enrollFailed.
   ///
@@ -2643,11 +2691,71 @@ abstract class AppLocalizations {
   /// **'Pairing failed.'**
   String get enrollFailed;
 
+  /// No description provided for @enrollInspectionFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing host couldn’t be reached'**
+  String get enrollInspectionFailedTitle;
+
+  /// No description provided for @enrollInspectionFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that the host is online and this device is on the right network, then paste or scan a new pairing link.'**
+  String get enrollInspectionFailedBody;
+
+  /// No description provided for @enrollExchangeFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing couldn’t be completed'**
+  String get enrollExchangeFailedTitle;
+
+  /// No description provided for @enrollExchangeFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing did not report a completed connection. Any pending credentials remain available for safe recovery; paste or scan a new pairing link to try again.'**
+  String get enrollExchangeFailedBody;
+
   /// No description provided for @enrollCloseAction.
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get enrollCloseAction;
+
+  /// No description provided for @enrollExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This pairing link expired'**
+  String get enrollExpiredTitle;
+
+  /// No description provided for @enrollExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Run wing-link pair again, then open the new link or scan its QR.'**
+  String get enrollExpiredBody;
+
+  /// No description provided for @enrollPasteAnotherLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste another link'**
+  String get enrollPasteAnotherLink;
+
+  /// No description provided for @enrollScanAnotherQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan another QR'**
+  String get enrollScanAnotherQr;
+
+  /// No description provided for @enrollPasteLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste pairing link'**
+  String get enrollPasteLink;
+
+  /// No description provided for @enrollSameDeviceHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'If the link is on this phone, tap it or share it to Hermes Wing.'**
+  String get enrollSameDeviceHelper;
 
   /// No description provided for @enrollOpeningScanner.
   ///
@@ -2658,20 +2766,50 @@ abstract class AppLocalizations {
   /// No description provided for @enrollScanQr.
   ///
   /// In en, this message translates to:
-  /// **'Scan QR code'**
+  /// **'Scan QR from another screen'**
   String get enrollScanQr;
 
   /// No description provided for @enrollManualConnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Enter gateway manually'**
+  /// **'Connect one profile manually'**
   String get enrollManualConnectAction;
+
+  /// No description provided for @enrollManualConnectWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This does not import Wing Link or other Hermes profiles.'**
+  String get enrollManualConnectWarning;
 
   /// No description provided for @enrollGrantQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Grant Hermes Wing access to this Hermes endpoint?'**
-  String get enrollGrantQuestion;
+  /// **'{count, plural, =1{Connect 1 Hermes profile from {label}?} other{Connect {count} Hermes profiles from {label}?}}'**
+  String enrollGrantQuestion(int count, String label);
+
+  /// No description provided for @enrollConnectProfilesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Connect 1 profile} other{Connect {count} profiles}}'**
+  String enrollConnectProfilesAction(int count);
+
+  /// No description provided for @enrollHermesAgentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent'**
+  String get enrollHermesAgentLabel;
+
+  /// No description provided for @enrollWingLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link'**
+  String get enrollWingLinkLabel;
+
+  /// No description provided for @enrollProfilesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profiles'**
+  String get enrollProfilesLabel;
 
   /// No description provided for @enrollEndpointLabel.
   ///

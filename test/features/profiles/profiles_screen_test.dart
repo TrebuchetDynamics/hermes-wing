@@ -183,8 +183,12 @@ void main() {
         _profilesTestApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) =>
-              WingLinkClient(
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
                 origin: origin,
                 token: token,
                 get: (_, _) async {
@@ -242,8 +246,12 @@ void main() {
         _profilesTestApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) =>
-              WingLinkClient(
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
                 origin: origin,
                 token: token,
                 get: (_, _) async =>
@@ -308,8 +316,12 @@ void main() {
         _profilesTestApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) =>
-              WingLinkClient(
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
                 origin: origin,
                 token: token,
                 get: (_, _) async =>
@@ -364,8 +376,12 @@ void main() {
       _profilesTestApp(
         channel,
         directory: directory,
-        wingLinkClientBuilder: ({required origin, required token}) =>
-            WingLinkClient(
+        wingLinkClientBuilder:
+            ({
+              required origin,
+              required token,
+              required hostFingerprint,
+            }) => WingLinkClient(
               origin: origin,
               token: token,
               get: (_, _) async {
@@ -440,15 +456,16 @@ void main() {
       _profilesTestApp(
         channel,
         directory: directory,
-        wingLinkClientBuilder: ({required origin, required token}) =>
-            WingLinkClient(
-              origin: origin,
-              token: token,
-              get: (_, _) async {
-                wingLinkCalls++;
-                return '{"profiles":[]}';
-              },
-            ),
+        wingLinkClientBuilder:
+            ({required origin, required token, required hostFingerprint}) =>
+                WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (_, _) async {
+                    wingLinkCalls++;
+                    return '{"profiles":[]}';
+                  },
+                ),
       ),
     );
     await tester.pumpAndSettle();
@@ -485,12 +502,13 @@ void main() {
         _profilesTestApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) =>
-              WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) => wingLinkResponse.future,
-              ),
+          wingLinkClientBuilder:
+              ({required origin, required token, required hostFingerprint}) =>
+                  WingLinkClient(
+                    origin: origin,
+                    token: token,
+                    get: (_, _) => wingLinkResponse.future,
+                  ),
         ),
       );
       await tester.pump();

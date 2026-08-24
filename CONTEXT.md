@@ -6,15 +6,15 @@ the Hermes host.
 
 ## Product language
 
-**Hermes Wing** — the Android, web, and desktop client. Avoid *companion* and
-*Electron clone*.
+**Hermes Wing** — the Android, web, and desktop client. Avoid _companion_ and
+_Electron clone_.
 
 **Hermes Agent** — the authoritative runtime for profiles, projects, providers,
 models, sessions, tools, schedules, memory, and gateway state.
 
 **Wing Link** — the remote management plane for setup, pairing, lifecycle,
 health, diagnostics, approved host directories, and reviewed fixed compatibility
-operations. Avoid *proxy*, *shell bridge*, and *second backend*.
+operations. Avoid _proxy_, _shell bridge_, and _second backend_.
 
 **Hermes Agent data plane** — direct authenticated Agent API traffic for chat,
 sessions, runs, tools, approvals, and advertised administration. It does not
@@ -47,7 +47,9 @@ is reconciled on return.
   diagnostics.
 - Remote folder selection is rooted, handle-based, bounded, and revocable. Wing
   Link returns folders only; it never enumerates file names, metadata, or content.
-- Server state wins after reconnect; mutations are never queued or replayed.
+- Server state wins after reconnect. Wing does not queue mutations offline; retryable
+  Wing Link mutations use bounded idempotency keys and replay the same durable
+  terminal operation status rather than executing twice.
 
 ## Connections
 
@@ -56,10 +58,20 @@ A paired host has two independent connections:
 1. a Hermes Agent origin and profile-bound credential; and
 2. a Wing Link origin and management credential.
 
-Wing Link currently serves HTTP on loopback plus a selected or automatically
-discovered local private-LAN/Tailscale interface. Non-loopback plaintext requires
-explicit review; use trusted HTTPS or an encrypted VPN remotely. Plain
-public-internet HTTP is not supported.
+Wing Link serves HTTP only on loopback. Every non-loopback listener uses TLS 1.3
+with a durable owner-only host identity bundle: the preserved Ed25519 host root
+and a persistent Android-compatible RSA TLS key. Native Wing clients pin the reviewed TLS key's SHA-256
+SPKI fingerprint; browser clients still require normally trusted HTTPS
+because web code cannot override the browser trust store. A changed or missing
+fingerprint fails closed and requires an explicit new pairing flow. Network
+location is never authorization.
+
+Each paired device receives a named, individually revocable bearer credential
+with exact grants. The host console is the trust administrator: remote devices
+may inspect and revoke only themselves, while peer revocation, permission
+expansion, identity rotation, sensitive secret writes, destructive actions, and
+install/update approval remain local. Current Wing Link protocol generation is 2
+and implementations support only the current and immediately previous generation.
 
 ## Profile and workspace flow
 
@@ -92,7 +104,15 @@ acoustic evidence.
 
 ## Security language
 
-Bearer credentials, Wing Link control tokens, pairing codes, provider keys, and
-recognized speech are secrets. Never place them in URLs, QR payloads, logs,
-clipboards, shared text, command arguments, or ordinary preferences. Diagnostics
-must redact host paths and content.
+A pairing handoff may carry a random single-use pairing code in a QR code,
+`wing://connect` intent, explicit Android share, or the ephemeral local handoff
+page, which must use `Cache-Control: no-store`. The code expires after
+five minutes, never contains a bearer credential, and must not be persisted,
+analyzed, included in diagnostics, or written to ordinary logs. Explicit paste is a
+user-initiated fallback, not background clipboard monitoring; the app drops the
+raw text immediately after parsing.
+
+Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
+bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
+text, command arguments, and ordinary preferences. Recognized speech remains
+secret, and diagnostics must redact credentials, host paths, and content.

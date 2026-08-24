@@ -581,6 +581,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayStatusTitle => 'Gateway';
 
   @override
+  String get gatewayTrustTitle => 'Wing Link trust';
+
+  @override
+  String get gatewayTrustLoading =>
+      'Checking pinned host identity and device grants…';
+
+  @override
+  String get gatewayTrustUnavailable =>
+      'Wing Link trust status is unavailable. Verify the host is online and the saved identity has not changed.';
+
+  @override
+  String get gatewayTrustFingerprint => 'Host fingerprint';
+
+  @override
+  String get gatewayTrustProtocol => 'Protocol';
+
+  @override
+  String get gatewayTrustDevice => 'This device';
+
+  @override
+  String get gatewayTrustScopes => 'Granted scopes';
+
+  @override
+  String get gatewayTrustHostInstructions =>
+      'Trust changes require the host console: wing-link devices list · wing-link approvals list';
+
+  @override
+  String get gatewayTrustRevokeAction => 'Revoke this device';
+
+  @override
+  String get gatewayTrustRevokeTitle => 'Revoke this device?';
+
+  @override
+  String get gatewayTrustRevokeBody =>
+      'This removes only this device\'s Wing Link credential. Reconnecting requires a new host pairing flow.';
+
+  @override
+  String get gatewayTrustRevoked =>
+      'This device was revoked. Pair it again from the host to restore management access.';
+
+  @override
+  String get gatewayTrustChangedIdentity =>
+      'The host fingerprint changed. Wing Link access is blocked; review the fingerprint at the host and pair again explicitly.';
+
+  @override
+  String get gatewayTrustUpgradeRequired =>
+      'This Wing Link protocol is outside the supported compatibility window. Upgrade Hermes Wing before reconnecting.';
+
+  @override
+  String get gatewayTrustCredentialExpired =>
+      'This device credential is expired or revoked. Create a new pairing flow at the host.';
+
+  @override
+  String get gatewayTrustApprovalPending =>
+      'Host confirmation is pending. Run wing-link approvals list on the host, review the request, then retry with the same operation.';
+
+  @override
   String get gatewayStatusSubtitle =>
       'Bounded health status advertised by the selected Hermes gateway.';
 
@@ -1312,46 +1369,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceRecognitionLanguageSubtitle =>
-      'Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.';
-
-  @override
-  String get voiceOfflineRecognitionSection => 'Offline recognition';
-
-  @override
-  String get voiceOfflineSttPackTitle =>
-      'Whisper Base INT8 · English + Español';
-
-  @override
-  String get voiceOfflineSttChecking => 'Checking the verified model pack…';
-
-  @override
-  String get voiceOfflineSttAbsent =>
-      'Not installed · about 163 MB · Android recognition remains available.';
-
-  @override
-  String get voiceOfflineSttInstalling =>
-      'Downloading and verifying every model artifact…';
-
-  @override
-  String voiceOfflineSttInstalled(String provenance) {
-    return 'Installed and verified. $provenance';
-  }
-
-  @override
-  String get voiceOfflineSttDeleting => 'Removing the offline model pack…';
-
-  @override
-  String get voiceOfflineSttUnavailable =>
-      'The offline speech pack is unavailable.';
-
-  @override
-  String get voiceOfflineSttDownload => 'Download';
-
-  @override
-  String get voiceOfflineSttRemove => 'Remove';
-
-  @override
-  String get voiceOfflineSttRetry => 'Retry';
+      'Automatic lets the device recognizer choose; fixed modes request one language.';
 
   @override
   String get voiceCommandWordTitle => 'Command word';
@@ -1473,12 +1491,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollInvalidLinkBody =>
-      'Scan a new QR code or enter the gateway manually.';
+      'Paste another pairing link or scan a new QR code.';
 
   @override
-  String enrollInvalidLinkDetail(String message) {
-    return 'Details: $message';
-  }
+  String get enrollClipboardEmpty =>
+      'The clipboard does not contain a pairing link.';
 
   @override
   String get enrollCleartextDialogTitle => 'Pair over plain HTTP?';
@@ -1492,32 +1509,115 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollContinueAction => 'Continue';
 
   @override
-  String get enrollScanPrompt => 'Scan the QR code shown by wing-cli.';
+  String get enrollScanPrompt => 'Choose how to connect this device.';
 
   @override
   String get enrollVerifying => 'Verifying pairing code…';
 
   @override
-  String get enrollConnected => 'Connected. Returning to Hermes…';
+  String enrollConnectedProfiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count profiles connected',
+      one: '1 profile connected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enrollConnectedBody =>
+      'Wing Link is ready for profile and gateway management.';
+
+  @override
+  String get enrollViewProfilesAction => 'View profiles';
+
+  @override
+  String get enrollOpenChatAction => 'Open chat';
 
   @override
   String get enrollFailed => 'Pairing failed.';
 
   @override
+  String get enrollInspectionFailedTitle => 'Pairing host couldn’t be reached';
+
+  @override
+  String get enrollInspectionFailedBody =>
+      'Check that the host is online and this device is on the right network, then paste or scan a new pairing link.';
+
+  @override
+  String get enrollExchangeFailedTitle => 'Pairing couldn’t be completed';
+
+  @override
+  String get enrollExchangeFailedBody =>
+      'Wing did not report a completed connection. Any pending credentials remain available for safe recovery; paste or scan a new pairing link to try again.';
+
+  @override
   String get enrollCloseAction => 'Close';
+
+  @override
+  String get enrollExpiredTitle => 'This pairing link expired';
+
+  @override
+  String get enrollExpiredBody =>
+      'Run wing-link pair again, then open the new link or scan its QR.';
+
+  @override
+  String get enrollPasteAnotherLink => 'Paste another link';
+
+  @override
+  String get enrollScanAnotherQr => 'Scan another QR';
+
+  @override
+  String get enrollPasteLink => 'Paste pairing link';
+
+  @override
+  String get enrollSameDeviceHelper =>
+      'If the link is on this phone, tap it or share it to Hermes Wing.';
 
   @override
   String get enrollOpeningScanner => 'Opening scanner…';
 
   @override
-  String get enrollScanQr => 'Scan QR code';
+  String get enrollScanQr => 'Scan QR from another screen';
 
   @override
-  String get enrollManualConnectAction => 'Enter gateway manually';
+  String get enrollManualConnectAction => 'Connect one profile manually';
 
   @override
-  String get enrollGrantQuestion =>
-      'Grant Hermes Wing access to this Hermes endpoint?';
+  String get enrollManualConnectWarning =>
+      'This does not import Wing Link or other Hermes profiles.';
+
+  @override
+  String enrollGrantQuestion(int count, String label) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Connect $count Hermes profiles from $label?',
+      one: 'Connect 1 Hermes profile from $label?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String enrollConnectProfilesAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Connect $count profiles',
+      one: 'Connect 1 profile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enrollHermesAgentLabel => 'Hermes Agent';
+
+  @override
+  String get enrollWingLinkLabel => 'Wing Link';
+
+  @override
+  String get enrollProfilesLabel => 'Profiles';
 
   @override
   String get enrollEndpointLabel => 'Endpoint';

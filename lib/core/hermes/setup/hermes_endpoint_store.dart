@@ -42,6 +42,8 @@ class HermesEndpointConfig {
     this.wingLinkOrigin,
     this.wingLinkToken,
     this.wingLinkPendingCredentialId,
+    this.wingLinkHostFingerprint,
+    this.wingLinkDeviceId,
   });
 
   final String baseUrl;
@@ -51,6 +53,8 @@ class HermesEndpointConfig {
   final String? wingLinkOrigin;
   final String? wingLinkToken;
   final String? wingLinkPendingCredentialId;
+  final String? wingLinkHostFingerprint;
+  final String? wingLinkDeviceId;
 
   String get displayLabel {
     final trimmed = label?.trim();
@@ -82,6 +86,8 @@ abstract interface class HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   });
 
   Future<void> deleteProfile(String profileId);
@@ -112,6 +118,8 @@ class EmptyHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   }) async {}
 
   @override

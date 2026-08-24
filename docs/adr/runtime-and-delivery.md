@@ -28,11 +28,19 @@ for a fixed Project operation. It must not create a separate profile `workdir`
 store or invoke global `profile use`/`project use` state.
 
 Listeners stay on loopback plus at most one local private-LAN/Tailscale interface.
-The current HTTP service may auto-select that interface; non-loopback plaintext
-requires explicit client review and should run inside an encrypted VPN or behind
-trusted HTTPS. Remote access requires a separate revocable Wing Link credential.
-Hermes API credentials are never accepted by the management listener.
+Loopback may use HTTP; every non-loopback listener uses TLS 1.3 tied to the durable
+Wing Link host identity. Remote access requires a named, scoped, individually
+revocable Wing Link credential. Hermes API credentials are never accepted by the
+management listener.
 
-Runtime and application artifacts must be versioned and verified before
-activation. Platform and service support require real target evidence; a
-cross-compiled binary is not a qualified service.
+Wing Link speaks the current and immediately previous protocol generation. Typed
+compatibility adapters must record their authoritative Agent endpoint, supported
+release window, and removal trigger; no adapter is permanent.
+
+Runtime and application artifacts must be versioned and signature/digest verified
+before activation. Wing Link updates stage under versioned owner-only paths,
+activate through a stable target, health-check locally, and restore the previous
+version on failure. An empty production release-key set makes updating unavailable;
+it never enables unsigned installation. Production service qualification is Linux
+systemd-user first and requires restart, state-permission, activation, health, and
+rollback evidence on Linux. A cross-compiled binary is not a qualified service.

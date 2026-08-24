@@ -1,8 +1,14 @@
 # Offline bilingual mobile voice architecture (Android/Flutter)
 
-Status: research recommendation
-Scope: offline STT/TTS, full-duplex barge-in, Android first, Flutter UI
-Boundary: **Wing owns audio; Hermes Agent receives completed text only**
+Status: archived, not adopted
+Scope: historical offline STT/TTS and full-duplex research
+
+> Hermes Wing no longer ships or loads app-owned voice models. Current voice
+> input uses device speech recognition, and speech output is available only
+> through Agent synthesis when advertised. The design below is retained only as
+> historical research.
+
+Boundary considered by this research: **Wing owns audio; Hermes Agent receives completed text only**
 
 ## Recommendation in one page
 

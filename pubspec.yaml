@@ -19,21 +19,12 @@ dependencies:
   web: ^1.1.1
   speech_to_text:
     path: third_party/speech_to_text
-  flutter_tts: ^4.2.5
   audioplayers: ^6.5.1
-  path_provider: ^2.1.5
-  crypto: ^3.0.7
   flutter_markdown_plus: ^1.0.12
   url_launcher: ^6.3.2
   markdown: ^7.3.1
   file_selector: ^1.1.0
-  betto_lang_detector: ^0.1.0-dev.1
-  unorm_dart: ^0.3.2
-  sherpa_onnx: ^1.13.4
-
-dependency_overrides:
-  malsami:
-    path: third_party/malsami
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -46,5 +37,3 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
-  assets:
-    - hermes-wing-icon.png

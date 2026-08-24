@@ -78,11 +78,11 @@ editing.
 
 ## Remote boundary
 
-Wing Link runs on the Agent host and currently serves HTTP on loopback plus a
-selected or automatically discovered private-LAN/Tailscale interface. Use a
-trusted HTTPS reverse proxy or encrypted VPN remotely and a dedicated management
-credential. Plaintext requires explicit Wing review. Wing Link does not proxy
-Agent chat or accept Agent API keys.
+Wing Link runs on the Agent host. It serves HTTP only on loopback and TLS 1.3 on
+the selected private-LAN/Tailscale interface, using its durable host identity and
+a dedicated named management credential. Native clients pin the reviewed SPKI;
+browser clients require normally trusted HTTPS. Wing Link does not proxy Agent
+chat or accept Agent API keys.
 
 `wing-link setup` leaves the direct Hermes Agent API bound to `127.0.0.1`.
 Remote pairing requires the operator to expose that separate Agent listener on a

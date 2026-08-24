@@ -53,4 +53,4 @@ historical plan differs.
 - [Hermes WebUI feature and architecture study](product/hermes-webui-feature-study.md) — long-run chat, recovery, session, onboarding, and operations lessons with authority-safe Wing dispositions
 - [Buzz UX and archived Nostr research](research/buzz-nostr-lessons.md) — Nostr control transport deferred
 - [Matrix messaging lessons for Wing and Wing Link](research/matrix-messaging-lessons.md)
-- [Offline bilingual mobile voice architecture](research/offline-bilingual-voice-architecture.md)
+- [Archived offline bilingual mobile voice research](research/offline-bilingual-voice-architecture.md) — not adopted; Wing does not ship or load app-owned voice models

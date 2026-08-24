@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const ProtocolVersion = 1
+const ProtocolVersion = 2
 
 type Component string
 

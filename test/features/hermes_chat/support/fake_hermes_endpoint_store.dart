@@ -44,6 +44,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   }) async {
     final publicBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     _config = HermesEndpointConfig(
@@ -54,6 +56,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
       wingLinkOrigin: wingLinkOrigin,
       wingLinkToken: wingLinkToken,
       wingLinkPendingCredentialId: wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: wingLinkHostFingerprint,
+      wingLinkDeviceId: wingLinkDeviceId,
     );
     _profiles.removeWhere(
       (profile) =>

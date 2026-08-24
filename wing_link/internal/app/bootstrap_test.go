@@ -237,28 +237,48 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 	}
 	_ = unauthorized.Body.Close()
 
-	request, err := http.NewRequest(http.MethodPost, server.URL+"/v1/setup", strings.NewReader(`{}`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	request.Header.Set("Authorization", "Bearer "+token)
-	request.Header.Set("Content-Type", "application/json")
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if response.StatusCode != http.StatusAccepted {
-		t.Fatalf("setup status = %d", response.StatusCode)
-	}
-	var accepted struct {
+	postSetup := func() struct {
 		OperationID string `json:"operation_id"`
+		ApprovalID  string `json:"approval_id"`
+	} {
+		request, err := http.NewRequest(http.MethodPost, server.URL+"/v1/setup", strings.NewReader(`{}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		request.Header.Set("Authorization", "Bearer "+token)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Idempotency-Key", "setup-approved-1")
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = response.Body.Close() }()
+		if response.StatusCode != http.StatusAccepted {
+			t.Fatalf("setup status = %d", response.StatusCode)
+		}
+		var accepted struct {
+			OperationID string `json:"operation_id"`
+			ApprovalID  string `json:"approval_id"`
+		}
+		if err := json.NewDecoder(response.Body).Decode(&accepted); err != nil {
+			t.Fatal(err)
+		}
+		return accepted
 	}
-	if err := json.NewDecoder(response.Body).Decode(&accepted); err != nil {
+	pending := postSetup()
+	if pending.OperationID == "" || pending.ApprovalID == "" {
+		t.Fatalf("missing pending approval metadata: %#v", pending)
+	}
+	approvals, err := openApprovalStore(store.Path())
+	if err != nil {
 		t.Fatal(err)
 	}
-	_ = response.Body.Close()
-	if accepted.OperationID == "" {
-		t.Fatal("missing operation id")
+	if _, err := approvals.Decide(pending.ApprovalID, true); err != nil {
+		t.Fatal(err)
+	}
+	accepted := postSetup()
+	if accepted.OperationID != pending.OperationID || accepted.ApprovalID != "" {
+		t.Fatalf("approved operation = %#v; pending=%#v", accepted, pending)
 	}
 
 	var terminal OperationEvent
@@ -286,6 +306,83 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 	}
 	if !terminal.Terminal || terminal.ErrorCode != "" {
 		t.Fatalf("terminal = %#v", terminal)
+	}
+}
+
+func TestBootstrapRouteReplaysIdempotencyKeyWithoutDuplicateWork(t *testing.T) {
+	directory := t.TempDir()
+	store := newStateStore(filepath.Join(directory, "state.json"))
+	enrollment, err := store.CreateEnrollment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := store.ExchangeEnrollment(enrollment.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	operations, err := NewDurableOperationManager(filepath.Join(directory, "operations.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	calls := 0
+	bootstrap := &BootstrapManager{
+		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
+			calls++
+			return HermesInspection{Executable: "/safe/hermes", Adopted: true}, nil
+		},
+	}
+	server := httptest.NewServer(newWingLinkServerWithOperations(
+		&profileBackend{}, store, nil, bootstrap, operations,
+	))
+	defer server.Close()
+
+	type setupResponse struct {
+		OperationID string         `json:"operation_id"`
+		ApprovalID  string         `json:"approval_id"`
+		Operation   OperationEvent `json:"operation"`
+		Replayed    bool           `json:"replayed"`
+	}
+	post := func() setupResponse {
+		request, err := http.NewRequest(http.MethodPost, server.URL+"/v1/setup", strings.NewReader(`{}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		request.Header.Set("Authorization", "Bearer "+token)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Idempotency-Key", "setup-retry-1")
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = response.Body.Close() }()
+		if response.StatusCode != http.StatusAccepted {
+			t.Fatalf("setup status = %d", response.StatusCode)
+		}
+		var body setupResponse
+		if err := json.NewDecoder(response.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		return body
+	}
+	pending := post()
+	approvalStore, err := openApprovalStore(store.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := approvalStore.Decide(pending.ApprovalID, true); err != nil {
+		t.Fatal(err)
+	}
+	first := post()
+	for attempt := 0; attempt < 100; attempt++ {
+		if event, ok := operations.Snapshot(first.OperationID); ok && event.Terminal {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+	second := post()
+	if first.OperationID == "" || second.OperationID != first.OperationID ||
+		!second.Replayed || second.Operation.Phase != "committed" || !second.Operation.Terminal || calls != 1 {
+		t.Fatalf("first=%#v second=%#v calls=%d", first, second, calls)
 	}
 }
 

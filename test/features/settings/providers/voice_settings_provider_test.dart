@@ -55,7 +55,7 @@ void main() {
     final savingContainer = ProviderContainer();
     final controller = savingContainer.read(wingVoiceSettingsProvider.notifier);
     await pumpEventQueue();
-    controller.setSpeechRate(1.5);
+    controller.setSpeakRepliesEnabled(true);
     savingContainer.dispose();
 
     await pumpEventQueue();
@@ -77,7 +77,7 @@ void main() {
     final controller = container.read(wingVoiceSettingsProvider.notifier);
     await pumpEventQueue();
 
-    controller.setSpeechRate(1.5);
+    controller.setSpeakRepliesEnabled(true);
     await pumpEventQueue();
   });
 

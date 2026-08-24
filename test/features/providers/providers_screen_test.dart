@@ -451,15 +451,16 @@ void main() {
         _testApp(
           channel,
           directory: directory,
-          wingLinkClientBuilder: ({required origin, required token}) =>
-              WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) async {
-                  wingLinkCalls++;
-                  return '{"providers":[]}';
-                },
-              ),
+          wingLinkClientBuilder:
+              ({required origin, required token, required hostFingerprint}) =>
+                  WingLinkClient(
+                    origin: origin,
+                    token: token,
+                    get: (_, _) async {
+                      wingLinkCalls++;
+                      return '{"providers":[]}';
+                    },
+                  ),
         ),
       );
       await tester.pumpAndSettle();
@@ -498,15 +499,16 @@ void main() {
       _testApp(
         channel,
         directory: directory,
-        wingLinkClientBuilder: ({required origin, required token}) =>
-            WingLinkClient(
-              origin: origin,
-              token: token,
-              get: (uri, headers) async {
-                wingLinkReads++;
-                throw StateError('Wing Link unavailable');
-              },
-            ),
+        wingLinkClientBuilder:
+            ({required origin, required token, required hostFingerprint}) =>
+                WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (uri, headers) async {
+                    wingLinkReads++;
+                    throw StateError('Wing Link unavailable');
+                  },
+                ),
       ),
     );
     await tester.pumpAndSettle();

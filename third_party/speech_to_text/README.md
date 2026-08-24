@@ -69,9 +69,9 @@ three contract tests and `hasGenerationBoundCallbacks` depend on them.
   `flutter analyze`, `flutter test --concurrency=1 test/tooling`, and the voice
   tests under `test/features/voice/` and `test/features/hermes_chat/voice/`.
 - **Drop the fork when:** upstream merges equivalent session-generation guards
-  and recognizer-lifecycle handling, or a maintained alternative (e.g. the
-  on-device sherpa/whisper path) fully replaces the platform `SpeechRecognizer`
-  in Wing. Until then, `test/tooling/fork_drift_contract_test.dart` and the
+  and recognizer-lifecycle handling, or another maintained device-recognition
+  implementation fully replaces the platform `SpeechRecognizer` in Wing. Until
+  then, `test/tooling/fork_drift_contract_test.dart` and the
   other vendored-plugin contract tests must keep passing.
 
 ---

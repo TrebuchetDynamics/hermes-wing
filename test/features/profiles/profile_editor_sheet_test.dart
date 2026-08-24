@@ -81,7 +81,7 @@ void main() {
   });
 
   testWidgets(
-    'configured create requires provider and model and keeps credential write-only',
+    'configured fresh create requires provider and model and keeps credential write-only',
     (tester) async {
       final channel = FakeHermesChannel();
       addTearDown(channel.dispose);
@@ -137,6 +137,10 @@ void main() {
             .obscureText,
         isTrue,
       );
+      await tester.tap(find.text('default').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start fresh').last);
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Profile name'),
         'readyqa',
@@ -170,7 +174,7 @@ void main() {
 
       expect(submitted, {
         'name': 'readyqa',
-        'cloneFrom': 'default',
+        'cloneFrom': null,
         'description': 'Physical lifecycle profile',
         'provider': 'openrouter',
         'model': 'openai/gpt-5.2',
@@ -179,6 +183,67 @@ void main() {
       expect(find.text('write-only-secret'), findsNothing);
     },
   );
+
+  testWidgets('configured clone can inherit provider and model', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    Map<String, String?>? submitted;
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [
+            HermesProfile(
+              id: 'link',
+              displayName: 'link',
+              revision: 'rev-link',
+            ),
+          ],
+          stableNames: true,
+          canConfigure: true,
+          onCreate:
+              ({
+                required name,
+                cloneFrom,
+                description,
+                provider,
+                model,
+                providerApiKey,
+              }) async {
+                submitted = {
+                  'name': name,
+                  'cloneFrom': cloneFrom,
+                  'description': description,
+                  'provider': provider,
+                  'model': model,
+                  'providerApiKey': providerApiKey,
+                };
+              },
+        ),
+      ),
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Profile name'),
+      'device-wing-e2e',
+    );
+    final createButton = find.widgetWithText(FilledButton, 'Create');
+    await tester.ensureVisible(createButton);
+    await tester.tap(createButton);
+    await tester.pumpAndSettle();
+
+    expect(submitted, {
+      'name': 'device-wing-e2e',
+      'cloneFrom': 'link',
+      'description': '',
+      'provider': '',
+      'model': '',
+      'providerApiKey': null,
+    });
+  });
 
   testWidgets('editing a persona writes the loaded SOUL revision', (
     tester,

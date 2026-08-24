@@ -190,7 +190,7 @@ class LocalWingLinkHost {
   }
 
   void _requireProtocol(Map<String, Object?> json) {
-    if (json['protocol_version'] != 1) {
+    if (json['protocol_version'] != 1 && json['protocol_version'] != 2) {
       throw const LocalWingLinkException(
         'protocol_mismatch',
         'Wing Link uses an unsupported protocol version.',

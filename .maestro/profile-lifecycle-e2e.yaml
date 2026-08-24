@@ -1,0 +1,134 @@
+# Full profile lifecycle on a physical Android device: create -> configure ->
+# chat -> delete. Runs against the deterministic profile-lifecycle fixture
+# entrypoint, so it needs no live Hermes credential:
+#
+#   flutter build apk --debug -t integration_test/hermes_profile_lifecycle_maestro_main.dart
+#   adb install -r build/app/outputs/flutter-apk/app-debug.apk
+#   maestro test .maestro/profile-lifecycle-e2e.yaml
+#
+# The fixture echoes assistant-only identity receipts of the form
+# PROFILE_RECEIPT::<profileId>::<sessionId>::<text>::assistant and persists
+# profile name/persona mutations in fixture-backed app storage.
+appId: com.trebuchetdynamics.hermes.wing
+name: profile_lifecycle_e2e
+---
+- launchApp:
+    stopApp: true
+    clearState: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 60000
+
+# Open the Profiles destination.
+- tapOn: "Open more destinations"
+- tapOn: "^Profiles$"
+- extendedWaitUntil:
+    visible: "(?s).*New Profile.*"
+    timeout: 30000
+- assertVisible: "(?s).*ID: default.*"
+
+# --- CREATE a profile -------------------------------------------------------
+- scrollUntilVisible:
+    element:
+      text: "^New Profile$"
+    direction: UP
+    timeout: 30000
+- tapOn: "^New Profile$"
+- extendedWaitUntil:
+    visible: "^Create$"
+    timeout: 30000
+- assertVisible: "(?s).*Create profile.*"
+- tapOn: "Profile name"
+- inputText: "maestro-e2e"
+- hideKeyboard
+- tapOn: "^Create$"
+- extendedWaitUntil:
+    notVisible: "^Create$"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*ID: maestro-e2e.*"
+    direction: DOWN
+    timeout: 60000
+    speed: 20
+    visibilityPercentage: 20
+
+# --- CONFIGURE: rename + persona -------------------------------------------
+- scrollUntilVisible:
+    element:
+      text: "Edit maestro-e2e"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit maestro-e2e"
+- extendedWaitUntil:
+    visible: "^Save$"
+    timeout: 30000
+- tapOn: "Profile name"
+- eraseText: 80
+- inputText: "maestro-configured"
+- tapOn: "Persona"
+- eraseText: 200
+- inputText: "persona-verified-on-device"
+- hideKeyboard
+- tapOn: "^Save$"
+- extendedWaitUntil:
+    notVisible: "^Save$"
+    timeout: 30000
+# Read-back the saved configuration.
+- scrollUntilVisible:
+    element:
+      text: "Edit maestro-configured"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit maestro-configured"
+- assertVisible: "(?s).*persona-verified-on-device.*"
+- pressKey: back
+
+# --- TALK: send a real turn through the profile's own session --------------
+- scrollUntilVisible:
+    element:
+      text: "Chat with maestro-configured"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Chat with maestro-configured"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 30000
+- tapOn: "(?s).*Message Hermes….*"
+- inputText: "nonce-profile-e2e"
+- hideKeyboard
+- tapOn: "^Send$"
+- extendedWaitUntil:
+    visible: "(?s).*PROFILE_RECEIPT::maestro-e2e::session-maestro-e2e::nonce-profile-e2e::assistant.*"
+    timeout: 30000
+
+# --- DELETE: typed confirmation removes the profile ------------------------
+- pressKey: back
+- extendedWaitUntil:
+    visible: "(?s).*Profiles.*"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Edit maestro-configured"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit maestro-configured"
+- tapOn: "Delete profile"
+- extendedWaitUntil:
+    visible: "^Delete maestro-configured\\?$"
+    timeout: 30000
+- tapOn: "Profile name"
+- inputText: "maestro-configured"
+- hideKeyboard
+- tapOn: "^Delete profile$"
+- extendedWaitUntil:
+    notVisible: "(?s).*ID: maestro-e2e.*"
+    timeout: 30000
+- assertNotVisible: "Edit maestro-configured"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*ID: default.*"
+    direction: UP
+    timeout: 30000
+- takeScreenshot: profile_lifecycle_e2e_complete

@@ -1,5 +1,6 @@
 enum VoiceLanguageMode {
-  autoEnglishSpanish('Auto · English + Español', null),
+  // Keep the legacy enum name because settings persist enum.name.
+  autoEnglishSpanish('Automatic · device recognizer', null),
   english('English', 'en-US'),
   spanish('Español', 'es-US');
 
@@ -15,8 +16,6 @@ class WingVoiceSettings {
     this.speakRepliesEnabled = false,
     this.languageMode = VoiceLanguageMode.autoEnglishSpanish,
     this.commandWord = 'navi',
-    this.speechRate = 1.0,
-    this.ttsVoiceName,
   });
 
   final bool continuousVoiceEnabled;
@@ -27,17 +26,12 @@ class WingVoiceSettings {
   final bool speakRepliesEnabled;
   final VoiceLanguageMode languageMode;
   final String commandWord;
-  final double speechRate;
-  final String? ttsVoiceName;
 
   WingVoiceSettings copyWith({
     bool? continuousVoiceEnabled,
     bool? speakRepliesEnabled,
     VoiceLanguageMode? languageMode,
     String? commandWord,
-    double? speechRate,
-    String? ttsVoiceName,
-    bool clearTtsVoiceName = false,
   }) {
     return WingVoiceSettings(
       continuousVoiceEnabled:
@@ -45,10 +39,6 @@ class WingVoiceSettings {
       speakRepliesEnabled: speakRepliesEnabled ?? this.speakRepliesEnabled,
       languageMode: languageMode ?? this.languageMode,
       commandWord: commandWord ?? this.commandWord,
-      speechRate: speechRate ?? this.speechRate,
-      ttsVoiceName: clearTtsVoiceName
-          ? null
-          : ttsVoiceName ?? this.ttsVoiceName,
     );
   }
 }

@@ -3,10 +3,73 @@
 import 'dart:convert';
 
 import '../hermes/client/hermes_api_transport.dart';
-import '../hermes/client/platform/hermes_api_transport_stub.dart'
-    if (dart.library.io) '../hermes/client/platform/hermes_api_transport_io.dart'
-    if (dart.library.html) '../hermes/client/platform/hermes_api_transport_web.dart'
-    as transport;
+import 'models/wing_link_device.dart';
+import 'wing_link_transport.dart';
+
+class WingLinkMetadata {
+  const WingLinkMetadata({
+    required this.protocolGeneration,
+    required this.minimumProtocolGeneration,
+    required this.supportedProtocolGenerations,
+    required this.version,
+    required this.hostFingerprint,
+    required this.capabilities,
+  });
+
+  factory WingLinkMetadata.fromJson(Map<String, Object?> json) {
+    final current = json['protocol_generation'];
+    final minimum = json['minimum_protocol_generation'];
+    final supported = json['supported_protocol_generations'];
+    final capabilities = json['capabilities'];
+    if (current is! int ||
+        minimum is! int ||
+        current < minimum ||
+        supported is! List ||
+        supported.isEmpty ||
+        supported.length > 2 ||
+        capabilities is! List ||
+        capabilities.length > 64) {
+      throw const WingLinkException('Wing Link returned invalid metadata');
+    }
+    final generations = <int>[];
+    for (final generation in supported) {
+      if (generation is! int || generations.contains(generation)) {
+        throw const WingLinkException('Wing Link returned invalid metadata');
+      }
+      generations.add(generation);
+    }
+    generations.sort();
+    final parsedCapabilities = <String>[];
+    for (final capability in capabilities) {
+      if (capability is! String ||
+          capability.isEmpty ||
+          capability.runes.length > 64) {
+        throw const WingLinkException('Wing Link returned invalid metadata');
+      }
+      parsedCapabilities.add(capability);
+    }
+    final version = json['version']?.toString() ?? '';
+    final fingerprint = json['host_fingerprint']?.toString() ?? '';
+    if (version.runes.length > 64 || fingerprint.runes.length > 96) {
+      throw const WingLinkException('Wing Link returned invalid metadata');
+    }
+    return WingLinkMetadata(
+      protocolGeneration: current,
+      minimumProtocolGeneration: minimum,
+      supportedProtocolGenerations: List.unmodifiable(generations),
+      version: version,
+      hostFingerprint: fingerprint,
+      capabilities: List.unmodifiable(parsedCapabilities),
+    );
+  }
+
+  final int protocolGeneration;
+  final int minimumProtocolGeneration;
+  final List<int> supportedProtocolGenerations;
+  final String version;
+  final String hostFingerprint;
+  final List<String> capabilities;
+}
 
 class WingLinkProfile {
   const WingLinkProfile({
@@ -128,20 +191,61 @@ class WingLinkPreconditionFailed extends WingLinkException {
   const WingLinkPreconditionFailed() : super('Wing Link HTTP 412');
 }
 
+class WingLinkUpgradeRequired extends WingLinkException {
+  const WingLinkUpgradeRequired()
+    : super('This Wing Link host requires a compatible Hermes Wing version');
+}
+
+class WingLinkApprovalRequired extends WingLinkException {
+  const WingLinkApprovalRequired({
+    required this.approvalId,
+    required this.operationId,
+    required this.idempotencyKey,
+    required this.expiresAt,
+  }) : super('This operation requires approval on the Wing Link host');
+
+  final String approvalId;
+  final String operationId;
+  final String idempotencyKey;
+  final int expiresAt;
+}
+
 class WingLinkClient {
-  WingLinkClient({
+  factory WingLinkClient({
     required Uri origin,
     required String token,
+    String? hostFingerprint,
     HermesApiGet? get,
     HermesApiPost? post,
     HermesApiPatch? patch,
     HermesApiDelete? delete,
+  }) {
+    final transport = WingLinkTransport(
+      expectedHostFingerprint: hostFingerprint,
+    );
+    return WingLinkClient._(
+      origin: origin,
+      token: token,
+      get: get ?? transport.get,
+      post: post ?? transport.post,
+      patch: patch ?? transport.patch,
+      delete: delete ?? transport.delete,
+    );
+  }
+
+  const WingLinkClient._({
+    required Uri origin,
+    required String token,
+    required HermesApiGet get,
+    required HermesApiPost post,
+    required HermesApiPatch patch,
+    required HermesApiDelete delete,
   }) : _origin = origin,
        _token = token,
-       _get = get ?? transport.defaultGet,
-       _post = post ?? transport.defaultPost,
-       _patch = patch ?? transport.defaultPatch,
-       _delete = delete ?? transport.defaultDelete;
+       _get = get,
+       _post = post,
+       _patch = patch,
+       _delete = delete;
 
   final Uri _origin;
   final String _token;
@@ -150,8 +254,40 @@ class WingLinkClient {
   final HermesApiPatch _patch;
   final HermesApiDelete _delete;
 
+  Future<WingLinkMetadata> getMetadata() async {
+    final Map<String, Object?> json;
+    try {
+      json = _decode(await _get(_uri('/meta'), _headers));
+    } catch (error) {
+      if (error.toString().contains('HTTP 426')) {
+        throw const WingLinkUpgradeRequired();
+      }
+      rethrow;
+    }
+    final metadata = WingLinkMetadata.fromJson(json);
+    if (!metadata.supportedProtocolGenerations.any(
+      (generation) => generation == 1 || generation == 2,
+    )) {
+      throw const WingLinkUpgradeRequired();
+    }
+    return metadata;
+  }
+
   Future<void> verifyPendingCredential() async {
     _decode(await _get(_uri('/v1/status'), _headers));
+  }
+
+  Future<WingLinkDevice> getCurrentDevice() async {
+    final json = _decode(await _get(_uri('/v2/devices/self'), _headers));
+    try {
+      return WingLinkDevice.fromJson(json);
+    } on FormatException {
+      throw const WingLinkException('Wing Link returned invalid device data');
+    }
+  }
+
+  Future<void> revokeCurrentDevice() async {
+    await _delete(_uri('/v2/devices/self'), _headers);
   }
 
   Future<void> acknowledgeCredential(String credentialId) async {
@@ -162,10 +298,37 @@ class WingLinkClient {
     );
   }
 
-  Future<String> startSetup() async {
-    final json = _decode(await _post(_uri('/v1/setup'), _headers, '{}'));
+  Future<String> startSetup({String? idempotencyKey}) async {
+    final key =
+        idempotencyKey ??
+        'setup-${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}';
+    if (!_idempotencyKeyPattern.hasMatch(key)) {
+      throw const WingLinkException('Wing Link idempotency key is invalid');
+    }
+    final json = _decode(
+      await _post(_uri('/v1/setup'), {
+        ..._headers,
+        'Idempotency-Key': key,
+      }, '{}'),
+    );
     final operationId = json['operation_id']?.toString() ?? '';
     _requireOperationId(operationId);
+    final error = json['error'];
+    if (error is Map && error['code'] == 'approval_required') {
+      final approvalId = json['approval_id']?.toString() ?? '';
+      final expiresAt = json['expires_at'];
+      if (!_approvalIdPattern.hasMatch(approvalId) || expiresAt is! int) {
+        throw const WingLinkException(
+          'Wing Link returned invalid approval data',
+        );
+      }
+      throw WingLinkApprovalRequired(
+        approvalId: approvalId,
+        operationId: operationId,
+        idempotencyKey: key,
+        expiresAt: expiresAt,
+      );
+    }
     return operationId;
   }
 
@@ -257,6 +420,7 @@ class WingLinkClient {
     String? provider,
     String? model,
     String? providerApiKey,
+    String? idempotencyKey,
   }) => _mutate(
     'POST',
     '/v1/profiles',
@@ -271,6 +435,7 @@ class WingLinkClient {
       if (providerApiKey != null && providerApiKey.isNotEmpty)
         'provider_api_key': providerApiKey,
     },
+    idempotencyKey: idempotencyKey,
   );
 
   Future<WingLinkProfile> renameProfile({
@@ -288,13 +453,19 @@ class WingLinkClient {
   Future<void> deleteProfile({
     required String id,
     required String revision,
+    String? idempotencyKey,
   }) async {
-    await _profileMutation(
+    final key = idempotencyKey ?? _newIdempotencyKey('profile-delete');
+    final response = await _profileMutation(
       () => _delete(_uri('/v1/profiles/${Uri.encodeComponent(id)}'), {
         ..._headers,
         'If-Match': revision,
+        'Idempotency-Key': key,
       }),
     );
+    if (response.trim().isNotEmpty) {
+      _throwIfApprovalRequired(_decode(response), key);
+    }
   }
 
   Future<T> _profileMutation<T>(Future<T> Function() mutation) async {
@@ -312,14 +483,19 @@ class WingLinkClient {
     String method,
     String path, {
     required Map<String, Object?> body,
+    String? idempotencyKey,
   }) async {
     final payload = jsonEncode(body);
+    final key = idempotencyKey ?? _newIdempotencyKey('profile-mutation');
+    final headers = {..._headers, 'Idempotency-Key': key};
     final response = switch (method) {
-      'POST' => await _post(_uri(path), _headers, payload),
-      'PATCH' => await _patch(_uri(path), _headers, payload),
+      'POST' => await _post(_uri(path), headers, payload),
+      'PATCH' => await _patch(_uri(path), headers, payload),
       _ => throw const WingLinkException('Unsupported Wing Link request'),
     };
-    final profile = _decode(response)['profile'];
+    final json = _decode(response);
+    _throwIfApprovalRequired(json, key);
+    final profile = json['profile'];
     if (profile is! Map) {
       throw const WingLinkException('Wing Link returned invalid data');
     }
@@ -345,13 +521,45 @@ class WingLinkClient {
     return WingLinkProvider.fromJson(provider.cast<String, Object?>());
   }
 
+  void _throwIfApprovalRequired(
+    Map<String, Object?> json,
+    String idempotencyKey,
+  ) {
+    final error = json['error'];
+    if (error is! Map || error['code'] != 'approval_required') {
+      return;
+    }
+    final approvalId = json['approval_id']?.toString() ?? '';
+    final operationId = json['operation_id']?.toString() ?? '';
+    final expiresAt = json['expires_at'];
+    if (!_approvalIdPattern.hasMatch(approvalId) ||
+        !_operationIdPattern.hasMatch(operationId) ||
+        expiresAt is! int) {
+      throw const WingLinkException('Wing Link returned invalid approval data');
+    }
+    throw WingLinkApprovalRequired(
+      approvalId: approvalId,
+      operationId: operationId,
+      idempotencyKey: idempotencyKey,
+      expiresAt: expiresAt,
+    );
+  }
+
+  String _newIdempotencyKey(String prefix) =>
+      '$prefix-${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}';
+
   Map<String, String> get _headers => {
     'Authorization': 'Bearer $_token',
+    'Wing-Protocol': '2',
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
 
   static final RegExp _operationIdPattern = RegExp(r'^op_[A-Za-z0-9_-]{1,92}$');
+  static final RegExp _approvalIdPattern = RegExp(
+    r'^appr_[A-Za-z0-9_-]{1,91}$',
+  );
+  static final RegExp _idempotencyKeyPattern = RegExp(r'^[!-~]{1,128}$');
 
   void _requireOperationId(String value) {
     if (!_operationIdPattern.hasMatch(value)) {
@@ -375,6 +583,11 @@ class WingLinkClient {
     if (decoded is! Map) {
       throw const WingLinkException('Wing Link returned invalid data');
     }
-    return decoded.cast<String, Object?>();
+    final json = decoded.cast<String, Object?>();
+    final generation = json['protocol_version'];
+    if (generation != null && generation != 1 && generation != 2) {
+      throw const WingLinkUpgradeRequired();
+    }
+    return json;
   }
 }

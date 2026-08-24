@@ -108,6 +108,19 @@ surface invokes only fixed Hermes CLI argument vectors for:
 - `hermes profile rename`; and
 - `hermes profile delete`.
 
+### Compatibility-adapter registry
+
+| Adapter | Authoritative Agent endpoint | Supported release window | Removal trigger |
+| --- | --- | --- | --- |
+| Profile inventory | Advertised profile-list HTTP route | Agent 0.20 plus the next audited release | Remove after every supported release advertises an equivalent bounded inventory route. |
+| Profile create/clone | Advertised profile-create HTTP route | Agent 0.20 plus the next audited release | Remove after every supported release advertises create/clone with stable typed errors. |
+| Profile rename/delete | Advertised profile mutation routes | Agent 0.20 plus the next audited release | Remove after every supported release advertises revision-aware rename and delete. |
+| New-profile setup | Advertised typed profile configuration and secret-write routes | Agent 0.20 plus the next audited release | Remove after every supported release provides allowlisted configuration and stdin-equivalent write-only credentials. |
+
+The Agent API remains authoritative in every row. Adapters retain no shadow domain
+state, and the release compatibility audit must update this registry before the
+supported window changes.
+
 For a profile created by the same request, Wing Link may additionally run fixed
 description, allowlisted provider, bounded model string, stdin-only
 `hermes auth add`, exact postcondition, and bounded `Hi` readiness commands. Failure deletes that newly

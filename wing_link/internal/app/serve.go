@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,10 +17,13 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/audit"
 )
 
 const defaultWingLinkPort = 8654
@@ -88,7 +93,11 @@ type wingLinkServer struct {
 	providers        *providerBackend
 	bootstrap        *BootstrapManager
 	operations       *OperationManager
+	approvals        *ApprovalStore
+	audit            *AuditLog
+	updater          wingLinkUpdater
 	state            *StateStore
+	hostFingerprint  string
 	profileMutations sync.Mutex
 }
 
@@ -120,9 +129,22 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		runHermes:  runHermes,
 		readHermes: bootstrap.ReadHermes,
 	}
+	controlState := newStateStore(options.StatePath)
+	hostIdentity, err := controlState.HostIdentity()
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "serve: could not initialize host identity")
+		return 1
+	}
+	operations, err := NewDurableOperationManager(
+		filepath.Join(filepath.Dir(options.StatePath), "wing-link-operations.json"),
+	)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "serve: could not initialize operation journal")
+		return 1
+	}
 	server := &http.Server{
-		Handler: newWingLinkServerWithBootstrap(
-			backend, newStateStore(options.StatePath), providers, bootstrap,
+		Handler: newWingLinkServerWithOperations(
+			backend, controlState, providers, bootstrap, operations,
 		),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second,
@@ -139,11 +161,18 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 			return 1
 		}
 		listeners = append(listeners, listener)
-		_, _ = fmt.Fprintf(stdout, "wing-link management listening on http://%s\n", address)
+		_, _ = fmt.Fprintf(
+			stdout,
+			"wing-link management listening on %s://%s\n",
+			managementListenerScheme(listener.Addr()),
+			address,
+		)
 	}
 	errChannel := make(chan error, len(listeners))
 	for _, listener := range listeners {
-		go func(listener net.Listener) { errChannel <- server.Serve(listener) }(listener)
+		go func(listener net.Listener) {
+			errChannel <- serveManagementListener(server, listener, hostIdentity)
+		}(listener)
 	}
 	if err := <-errChannel; !errors.Is(err, http.ErrServerClosed) {
 		_ = server.Close()
@@ -354,14 +383,74 @@ func newWingLinkServer(profiles *profileBackend, state *StateStore, providers ..
 }
 
 func newWingLinkServerWithBootstrap(profiles *profileBackend, state *StateStore, provider *providerBackend, bootstrap *BootstrapManager) http.Handler {
+	operations, err := NewDurableOperationManager(
+		filepath.Join(filepath.Dir(state.Path()), "wing-link-operations.json"),
+	)
+	if err != nil {
+		operations = NewOperationManager()
+	}
+	return newWingLinkServerWithOperations(profiles, state, provider, bootstrap, operations)
+}
+
+func newWingLinkServerWithOperations(profiles *profileBackend, state *StateStore, provider *providerBackend, bootstrap *BootstrapManager, operations *OperationManager) http.Handler {
+	hostFingerprint := ""
+	if identity, err := state.HostIdentity(); err == nil {
+		hostFingerprint = identity.Fingerprint
+	}
+	approvals, approvalErr := openApprovalStore(state.Path())
+	auditLog, auditErr := openAuditLog(state.Path())
+	if approvalErr != nil || auditErr != nil {
+		return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writeJSON(writer, http.StatusServiceUnavailable, map[string]any{
+				"error": APIError{Code: "host_state_unavailable", Message: "Wing Link host state is unavailable"},
+			})
+		})
+	}
 	return &wingLinkServer{
 		profiles: profiles, providers: provider, bootstrap: bootstrap,
-		operations: NewOperationManager(), state: state,
+		operations: operations, approvals: approvals, audit: auditLog, state: state,
+		hostFingerprint: hostFingerprint,
 	}
 }
 
 func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if operation := auditOperationForRequest(request); operation != "" {
+		started := time.Now()
+		deviceID := "unauthenticated"
+		if token, ok := bearerToken(request); ok {
+			if authorization, authorized := server.state.AuthorizeDevice(token); authorized {
+				deviceID = authorization.Device.ID
+			}
+		}
+		audited := &auditResponseWriter{ResponseWriter: writer}
+		writer = audited
+		defer func() {
+			status := audited.status
+			if status == 0 {
+				status = http.StatusOK
+			}
+			server.recordAudit(deviceID, operation, audit.SourceNone, auditResultForStatus(status), started)
+		}()
+	}
 	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set("Wing-Protocol", strconv.Itoa(ProtocolVersion))
+	if request.URL.Path == "/meta" && request.Method == http.MethodGet {
+		writeJSON(
+			writer,
+			http.StatusOK,
+			currentProtocolMetadata(version, server.hostFingerprint),
+		)
+		return
+	}
+	generation, ok := requestProtocolGeneration(request)
+	if !ok || !supportsProtocolGeneration(generation) {
+		writeJSON(writer, http.StatusUpgradeRequired, map[string]any{
+			"error":                       APIError{Code: "upgrade_required", Message: "Wing Link protocol generation is not supported"},
+			"minimum_protocol_generation": MinimumProtocolGeneration,
+			"protocol_generation":         ProtocolVersion,
+		})
+		return
+	}
 	if request.URL.Path == "/healthz" && request.Method == http.MethodGet {
 		writeJSON(writer, http.StatusOK, map[string]any{"status": "ok", "protocol_version": ProtocolVersion})
 		return
@@ -375,43 +464,78 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 		return
 	}
 	if request.URL.Path == "/v1/pairing/acknowledged" && request.Method == http.MethodGet {
-		if server.requireAuthorization(writer, request) {
+		if server.requireScopeAuthorization(writer, request, ScopeDeviceSelfRead, false) {
 			writeJSON(writer, http.StatusOK, map[string]any{"acknowledged": true})
 		}
 		return
 	}
 	if request.URL.Path == "/v1/status" && request.Method == http.MethodGet {
-		if server.requireReadAuthorization(writer, request) {
+		if server.requireScopeAuthorization(writer, request, ScopeHealthRead, true) {
 			writeJSON(writer, http.StatusOK, map[string]any{"status": "ok", "protocol_version": ProtocolVersion})
 		}
 		return
 	}
-	if request.URL.Path == "/v1/setup" && request.Method == http.MethodPost {
-		if !server.requireAuthorization(writer, request) {
-			return
-		}
-		server.startBootstrap(writer, request)
+	if request.URL.Path == "/v2/devices/self" {
+		server.serveDeviceSelf(writer, request)
 		return
 	}
-	if id, ok := operationRoute(request.URL.Path); ok && request.Method == http.MethodGet {
-		if !server.requireReadAuthorization(writer, request) {
+	if request.URL.Path == "/v1/update/status" && request.Method == http.MethodGet {
+		if !server.requireScopeAuthorization(writer, request, ScopeDiagnosticsRead, false) {
 			return
 		}
-		server.operationSnapshot(writer, id)
+		server.updateStatus(writer)
+		return
+	}
+	if request.URL.Path == "/v1/update/apply" && request.Method == http.MethodPost {
+		authorization, ok := server.requireDeviceAuthorization(writer, request, ScopeLifecycleWrite, false)
+		if !ok {
+			return
+		}
+		server.applyUpdate(writer, request, authorization)
+		return
+	}
+	if request.URL.Path == "/v1/setup" && request.Method == http.MethodPost {
+		authorization, ok := server.requireDeviceAuthorization(writer, request, ScopeSetupWrite, false)
+		if !ok {
+			return
+		}
+		server.startBootstrap(writer, request, authorization)
+		return
+	}
+	if id, ok := operationRoute(request.URL.Path); ok {
+		switch request.Method {
+		case http.MethodGet:
+			if !server.requireScopeAuthorization(writer, request, ScopeDiagnosticsRead, true) {
+				return
+			}
+			server.operationSnapshot(writer, id)
+		case http.MethodDelete:
+			if !server.requireScopeAuthorization(writer, request, ScopeLifecycleWrite, false) {
+				return
+			}
+			if !server.operations.Cancel(id) {
+				writer.WriteHeader(http.StatusNotFound)
+				return
+			}
+			writer.WriteHeader(http.StatusNoContent)
+		default:
+			writer.WriteHeader(http.StatusMethodNotAllowed)
+		}
 		return
 	}
 	if wingLinkProfileCompatibilityEnabled && request.URL.Path == "/v1/profiles" {
 		switch request.Method {
 		case http.MethodGet:
-			if !server.requireReadAuthorization(writer, request) {
+			if !server.requireScopeAuthorization(writer, request, ScopeProfilesRead, true) {
 				return
 			}
 			server.listProfiles(writer)
 		case http.MethodPost:
-			if !server.requireAuthorization(writer, request) {
+			authorization, ok := server.requireDeviceAuthorization(writer, request, ScopeProfilesWrite, false)
+			if !ok {
 				return
 			}
-			server.createProfile(writer, request)
+			server.createProfile(writer, request, authorization)
 		default:
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -419,14 +543,15 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 	if wingLinkProfileCompatibilityEnabled {
 		if id, ok := profileRoute(request.URL.Path); ok {
-			if !server.requireAuthorization(writer, request) {
+			authorization, authorized := server.requireDeviceAuthorization(writer, request, ScopeProfilesWrite, false)
+			if !authorized {
 				return
 			}
 			switch request.Method {
 			case http.MethodPatch:
 				server.renameProfile(writer, request, id)
 			case http.MethodDelete:
-				server.deleteProfile(writer, request, id)
+				server.deleteProfile(writer, request, id, authorization)
 			default:
 				writer.WriteHeader(http.StatusMethodNotAllowed)
 			}
@@ -439,6 +564,55 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 	writer.WriteHeader(http.StatusNotFound)
 }
 
+func (server *wingLinkServer) serveDeviceSelf(writer http.ResponseWriter, request *http.Request) {
+	token, ok := bearerToken(request)
+	if !ok {
+		writeJSON(writer, http.StatusUnauthorized, map[string]any{
+			"error": APIError{Code: "unauthorized", Message: "Wing Link device credential required"},
+		})
+		return
+	}
+	scope := ScopeDeviceSelfRead
+	if request.Method == http.MethodDelete {
+		scope = ScopeDeviceSelfRevoke
+	} else if request.Method != http.MethodGet {
+		writer.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	authorization, ok := server.state.AuthorizeDevice(token, scope)
+	if !ok {
+		writeJSON(writer, http.StatusUnauthorized, map[string]any{
+			"error": APIError{Code: "unauthorized", Message: "Wing Link device credential lacks the required grant"},
+		})
+		return
+	}
+	if request.Method == http.MethodDelete {
+		if err := server.state.RevokeDevice(authorization.Device.ID); err != nil {
+			writeJSON(writer, http.StatusConflict, map[string]any{
+				"error": APIError{Code: "credential_unavailable", Message: "Device credential could not be revoked"},
+			})
+			return
+		}
+		writer.WriteHeader(http.StatusNoContent)
+		return
+	}
+	device := authorization.Device
+	payload := map[string]any{
+		"device_id":  device.ID,
+		"name":       device.Name,
+		"scopes":     device.Scopes,
+		"created_at": device.CreatedAt.Format(time.RFC3339),
+		"legacy":     device.Legacy,
+	}
+	if !device.LastUsedAt.IsZero() {
+		payload["last_used_at"] = device.LastUsedAt.Format(time.RFC3339)
+	}
+	if !device.ExpiresAt.IsZero() {
+		payload["expires_at"] = device.ExpiresAt.Format(time.RFC3339)
+	}
+	writeJSON(writer, http.StatusOK, payload)
+}
+
 func (server *wingLinkServer) stageControlCredential(writer http.ResponseWriter, request *http.Request) {
 	host, _, err := net.SplitHostPort(request.RemoteAddr)
 	if err != nil || !net.ParseIP(host).IsLoopback() {
@@ -447,7 +621,25 @@ func (server *wingLinkServer) stageControlCredential(writer http.ResponseWriter,
 		})
 		return
 	}
-	id, token, err := server.state.StageControlToken()
+	var payload struct {
+		Name   string   `json:"name"`
+		Scopes []string `json:"scopes"`
+	}
+	request.Body = http.MaxBytesReader(writer, request.Body, 8<<10)
+	decoder := json.NewDecoder(request.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&payload); err != nil && !errors.Is(err, io.EOF) {
+		writeJSON(writer, http.StatusBadRequest, map[string]any{
+			"error": APIError{Code: "invalid_request", Message: "Pairing device metadata is invalid"},
+		})
+		return
+	}
+	var id, token string
+	if strings.TrimSpace(payload.Name) == "" && len(payload.Scopes) == 0 {
+		id, token, err = server.state.StageControlToken()
+	} else {
+		id, token, err = server.state.StageBearerDeviceCredential(payload.Name, payload.Scopes)
+	}
 	if err != nil {
 		writeJSON(writer, http.StatusServiceUnavailable, map[string]any{
 			"error": APIError{Code: "credential_unavailable", Message: "Could not stage control credential"},
@@ -477,7 +669,13 @@ func (server *wingLinkServer) acknowledgeCredential(writer http.ResponseWriter, 
 		})
 		return
 	}
-	if server.state.Authorize(token) {
+	if authorization, active := server.state.AuthorizeDevice(token); active {
+		if authorization.Device.ID != id {
+			writeJSON(writer, http.StatusUnauthorized, map[string]any{
+				"error": APIError{Code: "unauthorized", Message: "Credential acknowledgment did not match this device"},
+			})
+			return
+		}
 		writeJSON(writer, http.StatusOK, map[string]any{"credential_id": id, "acknowledged": true})
 		return
 	}
@@ -497,25 +695,51 @@ func (server *wingLinkServer) acknowledgeCredential(writer http.ResponseWriter, 
 }
 
 func (server *wingLinkServer) requireReadAuthorization(writer http.ResponseWriter, request *http.Request) bool {
-	token, ok := bearerToken(request)
-	if !ok || !server.state.Authorize(token) && !server.state.AuthorizePendingToken(token) {
-		writeJSON(writer, http.StatusUnauthorized, map[string]any{
-			"error": APIError{Code: "unauthorized", Message: "Wing Link control token required"},
-		})
-		return false
-	}
-	return true
+	return server.requireScopeAuthorization(writer, request, ScopeProvidersRead, true)
 }
 
 func (server *wingLinkServer) requireAuthorization(writer http.ResponseWriter, request *http.Request) bool {
-	token, ok := bearerToken(request)
-	if !ok || !server.state.Authorize(token) {
-		writeJSON(writer, http.StatusUnauthorized, map[string]any{
-			"error": APIError{Code: "unauthorized", Message: "Wing Link control token required"},
-		})
-		return false
+	return server.requireScopeAuthorization(writer, request, ScopeProvidersWrite, false)
+}
+
+func (server *wingLinkServer) requireScopeAuthorization(
+	writer http.ResponseWriter,
+	request *http.Request,
+	scope string,
+	allowPending bool,
+) bool {
+	_, ok := server.requireDeviceAuthorization(writer, request, scope, allowPending)
+	return ok
+}
+
+func (server *wingLinkServer) requireDeviceAuthorization(
+	writer http.ResponseWriter,
+	request *http.Request,
+	scope string,
+	allowPending bool,
+) (DeviceAuthorization, bool) {
+	token, present := bearerToken(request)
+	if present {
+		if authorization, ok := server.state.AuthorizeDevice(token, scope); ok {
+			return authorization, true
+		}
 	}
-	return true
+	if present && allowPending && server.state.AuthorizePendingScope(token, scope) {
+		return DeviceAuthorization{}, true
+	}
+	writeJSON(writer, http.StatusUnauthorized, map[string]any{
+		"error": APIError{Code: "unauthorized", Message: "Wing Link control credential lacks the required grant"},
+	})
+	return DeviceAuthorization{}, false
+}
+
+func requestProtocolGeneration(request *http.Request) (int, bool) {
+	value := strings.TrimSpace(request.Header.Get("Wing-Protocol"))
+	if value == "" {
+		return MinimumProtocolGeneration, true
+	}
+	generation, err := strconv.Atoi(value)
+	return generation, err == nil
 }
 
 func bearerToken(request *http.Request) (string, bool) {
@@ -541,15 +765,17 @@ func (server *wingLinkServer) listProfiles(writer http.ResponseWriter) {
 	})
 }
 
-func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request *http.Request) {
-	var body struct {
-		Name           string `json:"name"`
-		CloneFrom      string `json:"clone_from"`
-		Description    string `json:"description"`
-		Provider       string `json:"provider"`
-		Model          string `json:"model"`
-		ProviderAPIKey string `json:"provider_api_key"`
-	}
+type profileCreateRequest struct {
+	Name           string `json:"name"`
+	CloneFrom      string `json:"clone_from"`
+	Description    string `json:"description"`
+	Provider       string `json:"provider"`
+	Model          string `json:"model"`
+	ProviderAPIKey string `json:"provider_api_key"`
+}
+
+func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request *http.Request, authorization DeviceAuthorization) {
+	var body profileCreateRequest
 	if !decodeJSON(writer, request, &body) {
 		return
 	}
@@ -559,9 +785,42 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 		writeProfileError(writer, err)
 		return
 	}
+	operationID := ""
+	if strings.TrimSpace(body.ProviderAPIKey) != "" {
+		payload, _ := json.Marshal(body)
+		digest := sha256.Sum256(payload)
+		var allowed bool
+		operationID, allowed = server.approvalGate(
+			writer, request, authorization, ApprovalOpProfileCreateSecret,
+			"/v1/profiles", hex.EncodeToString(digest[:]),
+			"Create a profile and write a provider secret",
+		)
+		if !allowed {
+			return
+		}
+	}
+	if operationID != "" {
+		started := time.Now()
+		err := server.operations.RunReservedSync(operationID, func(context.Context, func(OperationEvent)) error {
+			return server.performCreateProfile(writer, request, body)
+		})
+		if errors.Is(err, ErrOperationInProgress) {
+			writeProfileError(writer, errProfileOperationBusy)
+		}
+		result := audit.ResultSuccess
+		if err != nil {
+			result = audit.ResultOperationFailed
+		}
+		server.recordAudit(authorization.Device.ID, ApprovalOpProfileCreateSecret, audit.SourceHostCLI, result, started)
+		return
+	}
+	_ = server.performCreateProfile(writer, request, body)
+}
+
+func (server *wingLinkServer) performCreateProfile(writer http.ResponseWriter, request *http.Request, body profileCreateRequest) error {
 	if !server.profileMutations.TryLock() {
 		writeProfileError(writer, errProfileOperationBusy)
-		return
+		return errProfileOperationBusy
 	}
 	defer server.profileMutations.Unlock()
 	row, createErr := server.profiles.create(request.Context(), body.Name, body.CloneFrom)
@@ -573,7 +832,7 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 			}
 		}
 		writeProfileError(writer, createErr)
-		return
+		return createErr
 	}
 	if err := server.profiles.configure(
 		request.Context(), row.ID, body.Description, body.Provider, body.Model,
@@ -585,11 +844,12 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 			err = errors.Join(err, rollbackErr)
 		}
 		writeProfileError(writer, err)
-		return
+		return err
 	}
 	row.Description = strings.TrimSpace(body.Description)
 	row.Model = strings.TrimSpace(body.Model)
 	writeJSON(writer, http.StatusCreated, map[string]any{"profile": row})
+	return nil
 }
 
 func (server *wingLinkServer) rollbackCreatedProfile(requestContext context.Context, id string) error {
@@ -651,17 +911,39 @@ func (server *wingLinkServer) renameProfile(writer http.ResponseWriter, request 
 	writeJSON(writer, http.StatusOK, map[string]any{"profile": row})
 }
 
-func (server *wingLinkServer) deleteProfile(writer http.ResponseWriter, request *http.Request, id string) {
-	if !server.profileMutations.TryLock() {
+func (server *wingLinkServer) deleteProfile(writer http.ResponseWriter, request *http.Request, id string, authorization DeviceAuthorization) {
+	revision := strings.TrimSpace(request.Header.Get("If-Match"))
+	digest := sha256.Sum256([]byte(id + "\x00" + revision))
+	operationID, allowed := server.approvalGate(
+		writer, request, authorization, ApprovalOpProfileDelete,
+		"/v1/profiles/"+id, hex.EncodeToString(digest[:]),
+		"Delete profile "+id,
+	)
+	if !allowed {
+		return
+	}
+	started := time.Now()
+	err := server.operations.RunReservedSync(operationID, func(context.Context, func(OperationEvent)) error {
+		if !server.profileMutations.TryLock() {
+			writeProfileError(writer, errProfileOperationBusy)
+			return errProfileOperationBusy
+		}
+		defer server.profileMutations.Unlock()
+		if err := server.profiles.delete(request.Context(), id, revision); err != nil {
+			writeProfileError(writer, err)
+			return err
+		}
+		writeJSON(writer, http.StatusOK, map[string]any{"id": id, "deleted": true})
+		return nil
+	})
+	if errors.Is(err, ErrOperationInProgress) {
 		writeProfileError(writer, errProfileOperationBusy)
-		return
 	}
-	defer server.profileMutations.Unlock()
-	if err := server.profiles.delete(request.Context(), id, strings.TrimSpace(request.Header.Get("If-Match"))); err != nil {
-		writeProfileError(writer, err)
-		return
+	result := audit.ResultSuccess
+	if err != nil {
+		result = audit.ResultOperationFailed
 	}
-	writeJSON(writer, http.StatusOK, map[string]any{"id": id, "deleted": true})
+	server.recordAudit(authorization.Device.ID, ApprovalOpProfileDelete, audit.SourceHostCLI, result, started)
 }
 
 func profileRoute(path string) (string, bool) {

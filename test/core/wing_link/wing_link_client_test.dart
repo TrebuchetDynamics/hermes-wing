@@ -4,12 +4,64 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 
 void main() {
+  test('negotiates current and previous Wing Link generations', () async {
+    late Map<String, String> requestedHeaders;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requestedHeaders = headers;
+        expect(uri.path, '/meta');
+        return jsonEncode({
+          'protocol_generation': 2,
+          'minimum_protocol_generation': 1,
+          'supported_protocol_generations': [1, 2],
+          'version': '0.2.0',
+          'host_fingerprint': 'sha256/test-pin',
+          'capabilities': ['device.self.read', 'future.unknown'],
+        });
+      },
+    );
+
+    final metadata = await client.getMetadata();
+
+    expect(metadata.protocolGeneration, 2);
+    expect(metadata.supportedProtocolGenerations, [1, 2]);
+    expect(metadata.capabilities, contains('future.unknown'));
+    expect(requestedHeaders['Wing-Protocol'], '2');
+  });
+
+  test(
+    'rejects servers outside the N minus one compatibility window',
+    () async {
+      final client = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        get: (_, _) async => jsonEncode({
+          'protocol_generation': 4,
+          'minimum_protocol_generation': 3,
+          'supported_protocol_generations': [3, 4],
+          'version': 'future',
+          'host_fingerprint': 'sha256/future',
+          'capabilities': <String>[],
+        }),
+      );
+
+      await expectLater(
+        client.getMetadata(),
+        throwsA(isA<WingLinkUpgradeRequired>()),
+      );
+    },
+  );
+
   test('starts bounded setup and polls its operation', () async {
     final requests = <String>[];
+    late Map<String, String> setupHeaders;
     final client = WingLinkClient(
       origin: Uri.parse('https://hermes.example:8654'),
       token: 'wlc-secret',
       post: (uri, headers, body) async {
+        setupHeaders = headers;
         requests.add('POST ${uri.path} $body');
         return '{"protocol_version":1,"operation_id":"op_setup"}';
       },
@@ -19,14 +71,78 @@ void main() {
       },
     );
 
-    final operationId = await client.startSetup();
+    final operationId = await client.startSetup(idempotencyKey: 'setup-test-1');
     final operation = await client.getOperation(operationId);
 
     expect(operationId, 'op_setup');
     expect(operation.phase, 'gateway');
     expect(operation.percent, 96);
     expect(operation.terminal, isFalse);
+    expect(setupHeaders['Idempotency-Key'], 'setup-test-1');
     expect(requests, ['POST /v1/setup {}', 'GET /v1/operations/op_setup']);
+  });
+
+  test('surfaces host approval with a retryable idempotency key', () async {
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      post: (uri, headers, body) async => jsonEncode({
+        'protocol_version': 2,
+        'operation_id': 'op_pending',
+        'approval_id': 'appr_pending',
+        'expires_at': 1800000000,
+        'error': {'code': 'approval_required'},
+      }),
+    );
+
+    await expectLater(
+      client.startSetup(idempotencyKey: 'setup-retry-1'),
+      throwsA(
+        isA<WingLinkApprovalRequired>()
+            .having((error) => error.approvalId, 'approvalId', 'appr_pending')
+            .having((error) => error.operationId, 'operationId', 'op_pending')
+            .having(
+              (error) => error.idempotencyKey,
+              'idempotencyKey',
+              'setup-retry-1',
+            ),
+      ),
+    );
+  });
+
+  test('destructive profile approval preserves exact retry key', () async {
+    late Map<String, String> sentHeaders;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      delete: (uri, headers) async {
+        sentHeaders = headers;
+        return jsonEncode({
+          'protocol_version': 2,
+          'operation_id': 'op_delete',
+          'approval_id': 'appr_delete',
+          'expires_at': 1800000000,
+          'error': {'code': 'approval_required'},
+        });
+      },
+    );
+
+    await expectLater(
+      client.deleteProfile(
+        id: 'qa',
+        revision: 'rev-1',
+        idempotencyKey: 'delete-retry-1',
+      ),
+      throwsA(
+        isA<WingLinkApprovalRequired>().having(
+          (error) => error.idempotencyKey,
+          'idempotencyKey',
+          'delete-retry-1',
+        ),
+      ),
+    );
+    expect(sentHeaders['If-Match'], 'rev-1');
+    expect(sentHeaders['Idempotency-Key'], 'delete-retry-1');
   });
 
   test('rejects unsafe operation identifiers before transport', () async {
@@ -45,6 +161,37 @@ void main() {
       throwsA(isA<WingLinkException>()),
     );
     expect(requested, isFalse);
+  });
+
+  test('inspects and self-revokes only the current device', () async {
+    final requested = <String>[];
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requested.add('GET ${uri.path}');
+        return jsonEncode({
+          'device_id': 'cred_phone',
+          'name': 'Pixel 9',
+          'scopes': ['device:self:read', 'device:self:revoke'],
+          'created_at': '2026-08-24T12:00:00Z',
+          'last_used_at': '2026-08-24T12:05:00Z',
+          'legacy': false,
+        });
+      },
+      delete: (uri, headers) async {
+        requested.add('DELETE ${uri.path}');
+        return '';
+      },
+    );
+
+    final device = await client.getCurrentDevice();
+    await client.revokeCurrentDevice();
+
+    expect(device.id, 'cred_phone');
+    expect(device.name, 'Pixel 9');
+    expect(device.scopes, contains('device:self:revoke'));
+    expect(requested, ['GET /v2/devices/self', 'DELETE /v2/devices/self']);
   });
 
   test('pending credential verification reads host status only', () async {

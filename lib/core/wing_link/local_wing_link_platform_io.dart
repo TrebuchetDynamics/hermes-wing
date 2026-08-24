@@ -119,7 +119,8 @@ class _IOSetupOperation implements LocalWingLinkSetupOperation {
           continue;
         }
         if (decoded is! Map<String, dynamic> ||
-            decoded['protocol_version'] != 1) {
+            (decoded['protocol_version'] != 1 &&
+                decoded['protocol_version'] != 2)) {
           invalidOutput = true;
           continue;
         }

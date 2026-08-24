@@ -4,6 +4,7 @@
 .packages
 build/
 android/.kotlin/
+/.gradle/
 coverage/
 
 # Local secrets
@@ -37,6 +38,7 @@ node_modules/
 playwright/results.json
 playwright/test-results/
 playwright/screenshots/*.png
+.maestro/device-evidence/
 phone-screenshot*.png
 /*.png
 !/hermes-wing-icon.png

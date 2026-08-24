@@ -81,6 +81,8 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
               : hermesPublicEndpointBaseUrl(profile.wingLinkOrigin!),
           wingLinkToken: profile.wingLinkToken,
           wingLinkPendingCredentialId: profile.wingLinkPendingCredentialId,
+          wingLinkHostFingerprint: profile.wingLinkHostFingerprint,
+          wingLinkDeviceId: profile.wingLinkDeviceId,
         ),
       );
     }
@@ -97,6 +99,10 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
             'wingLinkToken': profile.wingLinkToken,
           if (profile.wingLinkPendingCredentialId?.isNotEmpty ?? false)
             'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId,
+          if (profile.wingLinkHostFingerprint?.isNotEmpty ?? false)
+            'wingLinkHostFingerprint': profile.wingLinkHostFingerprint,
+          if (profile.wingLinkDeviceId?.isNotEmpty ?? false)
+            'wingLinkDeviceId': profile.wingLinkDeviceId,
         },
     ]);
     final prefs = await SharedPreferences.getInstance();
@@ -146,6 +152,8 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   }) async {
     final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     final profiles = await loadProfiles();
@@ -172,6 +180,16 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           : wingLinkPendingCredentialId.trim().isEmpty
           ? null
           : wingLinkPendingCredentialId.trim(),
+      wingLinkHostFingerprint: wingLinkHostFingerprint == null
+          ? existing?.wingLinkHostFingerprint
+          : wingLinkHostFingerprint.trim().isEmpty
+          ? null
+          : wingLinkHostFingerprint.trim(),
+      wingLinkDeviceId: wingLinkDeviceId == null
+          ? existing?.wingLinkDeviceId
+          : wingLinkDeviceId.trim().isEmpty
+          ? null
+          : wingLinkDeviceId.trim(),
     );
     await saveAll([
       next,
@@ -251,6 +269,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           wingLinkToken: wingLinkToken,
           wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
               ?.toString(),
+          wingLinkDeviceId: item['wingLinkDeviceId']?.toString(),
         ),
       );
     }
@@ -292,6 +311,8 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           wingLinkToken: item['wingLinkToken']?.toString(),
           wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
               ?.toString(),
+          wingLinkHostFingerprint: item['wingLinkHostFingerprint']?.toString(),
+          wingLinkDeviceId: item['wingLinkDeviceId']?.toString(),
         ),
       );
     }
@@ -320,6 +341,8 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           if (profile.wingLinkPendingCredentialId?.trim().isNotEmpty ?? false)
             'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId!
                 .trim(),
+          if (profile.wingLinkDeviceId?.trim().isNotEmpty ?? false)
+            'wingLinkDeviceId': profile.wingLinkDeviceId!.trim(),
         },
     ]);
     await prefs.setString(_profilesPreferenceKey, encoded);

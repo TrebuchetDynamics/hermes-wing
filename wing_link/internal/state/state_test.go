@@ -42,18 +42,24 @@ func TestEnrollmentExchangesOnceAndStoresHashes(t *testing.T) {
 	}
 }
 
-func TestPendingControlCredentialStaysInMemoryUntilAcknowledged(t *testing.T) {
+func TestPendingControlCredentialPersistsOnlyHashedRecoveryUntilAcknowledged(t *testing.T) {
 	now := time.Unix(1000, 0)
 	store := newTestStateStore(t, func() time.Time { return now })
 	id, token, err := store.StageControlToken()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(store.path); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("pending state was persisted: %v", err)
+	persisted, err := os.ReadFile(store.path)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if !store.AuthorizePending(id, token) || (&StateStore{path: store.path}).AuthorizePending(id, token) {
-		t.Fatal("pending credential escaped its staging process")
+	if bytes.Contains(persisted, []byte(token)) {
+		t.Fatal("raw pending credential was persisted")
+	}
+	restarted := New(store.path)
+	restarted.now = func() time.Time { return now }
+	if !store.AuthorizePending(id, token) || !restarted.AuthorizePending(id, token) || restarted.Authorize(token) {
+		t.Fatal("pending credential recovery or isolation failed")
 	}
 	if err := store.AcknowledgeControlToken(id, token); err != nil {
 		t.Fatal(err)
@@ -71,8 +77,12 @@ func TestExpiredPendingControlCredentialIsErasedOnAccess(t *testing.T) {
 		t.Fatal(err)
 	}
 	now = now.Add(5 * time.Minute)
-	if store.AuthorizePending(id, token) || len(store.pending) != 0 {
+	if store.AuthorizePending(id, token) {
 		t.Fatal("expired pending credential remained available")
+	}
+	state, err := store.load()
+	if err != nil || len(state.PendingDevices) != 0 {
+		t.Fatalf("expired pending transaction was not erased: count=%d err=%v", len(state.PendingDevices), err)
 	}
 }
 
@@ -182,6 +192,40 @@ func TestEnrollmentExchangeIsSingleUseAcrossStores(t *testing.T) {
 	wg.Wait()
 	if successes != 1 {
 		t.Fatalf("successful exchanges = %d", successes)
+	}
+}
+
+func TestPendingAcknowledgmentIsSingleUseAcrossRestartStores(t *testing.T) {
+	now := time.Unix(1000, 0)
+	store := newTestStateStore(t, func() time.Time { return now })
+	id, token, err := store.StageControlToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	stores := []*StateStore{New(store.path), New(store.path)}
+	for _, candidate := range stores {
+		candidate.now = func() time.Time { return now }
+	}
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	var successes int
+	var mu sync.Mutex
+	for _, candidate := range stores {
+		wg.Add(1)
+		go func(candidate *StateStore) {
+			defer wg.Done()
+			<-start
+			if candidate.AcknowledgeControlToken(id, token) == nil {
+				mu.Lock()
+				successes++
+				mu.Unlock()
+			}
+		}(candidate)
+	}
+	close(start)
+	wg.Wait()
+	if successes != 1 || !store.Authorize(token) {
+		t.Fatalf("successful acknowledgments=%d authorized=%v", successes, store.Authorize(token))
 	}
 }
 

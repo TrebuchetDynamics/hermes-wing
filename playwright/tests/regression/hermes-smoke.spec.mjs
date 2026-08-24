@@ -33,7 +33,7 @@ test("Hermes route opens manual enrollment from the agent empty state", async ({
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Enter gateway manually" }),
+    page.getByRole("button", { name: "Connect one profile manually" }),
   ).toBeVisible();
 });
 

@@ -50,6 +50,36 @@ class PairingHandoffIntentParserTest {
     }
 
     @Test
+    fun directAppOpenAtTheLimitIsAccepted() {
+        val prefix = "wing://connect?code="
+        val payload = prefix + "x".repeat(4096 - prefix.length)
+
+        val parsed = PairingHandoffIntentParser.parse(
+            action = PairingHandoffIntentParser.ACTION_VIEW,
+            type = null,
+            data = payload,
+            text = null,
+        )
+
+        assertEquals(payload, parsed?.payload)
+    }
+
+    @Test
+    fun oversizedDirectAppOpenIsRejected() {
+        val prefix = "wing://connect?code="
+        val payload = prefix + "x".repeat(4097 - prefix.length)
+
+        val parsed = PairingHandoffIntentParser.parse(
+            action = PairingHandoffIntentParser.ACTION_VIEW,
+            type = null,
+            data = payload,
+            text = null,
+        )
+
+        assertNull(parsed)
+    }
+
+    @Test
     fun directAppOpenRejectsOtherUris() {
         val parsed = PairingHandoffIntentParser.parse(
             action = PairingHandoffIntentParser.ACTION_VIEW,
@@ -130,14 +160,53 @@ class PairingHandoffIntentParserTest {
     }
 
     @Test
-    fun sharedTextRejectsNonTextMimeTypes() {
+    fun oversizedSharedTextIsRejected() {
         val parsed = PairingHandoffIntentParser.parse(
             action = PairingHandoffIntentParser.ACTION_SEND,
-            type = "image/png",
+            type = "text/plain",
             data = null,
-            text = "wing://connect?token=secret-token",
+            text = "x".repeat(4097),
         )
 
         assertNull(parsed)
+    }
+
+    @Test
+    fun sharedTextAtTheLimitIsAccepted() {
+        val payload = "x".repeat(4096)
+        val parsed = PairingHandoffIntentParser.parse(
+            action = PairingHandoffIntentParser.ACTION_SEND,
+            type = "text/plain",
+            data = null,
+            text = payload,
+        )
+
+        assertEquals(payload, parsed?.payload)
+    }
+
+    @Test
+    fun sharedTextRejectsBlankPayloads() {
+        val parsed = PairingHandoffIntentParser.parse(
+            action = PairingHandoffIntentParser.ACTION_SEND,
+            type = "text/plain",
+            data = null,
+            text = "  \n  ",
+        )
+
+        assertNull(parsed)
+    }
+
+    @Test
+    fun sharedTextRejectsNonPlainTextMimeTypes() {
+        for (type in listOf("image/png", "text/html")) {
+            val parsed = PairingHandoffIntentParser.parse(
+                action = PairingHandoffIntentParser.ACTION_SEND,
+                type = type,
+                data = null,
+                text = "wing://connect?token=secret-token",
+            )
+
+            assertNull(parsed)
+        }
     }
 }

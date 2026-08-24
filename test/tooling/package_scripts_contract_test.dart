@@ -130,11 +130,6 @@ void main() {
     );
     expect(cmake, contains('BUILD_WITH_INSTALL_RPATH TRUE'));
     expect(cmake, contains(r'INSTALL_RPATH "$ORIGIN"'));
-    expect(cmake, contains('flutter_onnxruntime/onnxruntime/'));
-    expect(cmake, contains('-Wl,-rpath-link,'));
-    expect(cmake, contains('get_filename_component(onnxruntime_runtime_file'));
-    expect(cmake, contains('REALPATH'));
-    expect(cmake, contains('RENAME "libonnxruntime.so.1"'));
   });
 
   test('package scripts expose Hermes and platform closeout helpers', () {
@@ -691,4 +686,20 @@ void main() {
     expect(version.exitCode, 0);
     expect(version.stdout, contains('dev'));
   });
+
+  test(
+    'pairing policy distinguishes handoff codes from bearer credentials',
+    () {
+      final context = File('CONTEXT.md').readAsStringSync();
+      final adr = File('docs/adr/security-and-privacy.md').readAsStringSync();
+      final threat = File('docs/security/threat-model.md').readAsStringSync();
+
+      for (final document in [context, adr, threat]) {
+        expect(document, contains('single-use pairing code'));
+        expect(document, contains('five minutes'));
+        expect(document, contains('never contains a bearer credential'));
+        expect(document, contains('no-store'));
+      }
+    },
+  );
 }

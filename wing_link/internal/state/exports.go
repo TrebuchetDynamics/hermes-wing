@@ -1,5 +1,10 @@
 package state
 
+// Path returns the configured owner-only state file location for internal service stores.
+func (s *StateStore) Path() string {
+	return s.path
+}
+
 // RandomSecret returns a URL-safe random secret with an optional prefix.
 func RandomSecret(size int, prefix string) (string, error) {
 	return randomSecret(size, prefix)

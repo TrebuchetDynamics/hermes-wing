@@ -47,18 +47,26 @@ cd hermes-wing
 
    ```bash
    WING_HERMES_URL=http://<trusted-vpn-ip>:8642 \
-   WING_LINK_URL=http://<trusted-vpn-ip>:8654 \
-   WING_LINK_PAIRING_OVER_ENCRYPTED_VPN=1 \
-   wing-link pair --remote
+   WING_LINK_URL=https://<trusted-vpn-ip>:8654 \
+   wing-link pair --remote --label "My Android device"
    ```
 
-   Open the generated `wing://connect` link or scan its QR. Review the label,
-   direct Hermes origin, access, and plain-HTTP warning, then confirm. The link
+   On Android, choose **Connect to Hermes → Scan QR code** and scan the generated
+   QR from the host screen. Native Wing verifies the self-signed broker with the
+   reviewed SPKI pin; a browser cannot do so. If a pairing link is already in a
+   message, use Android **Share → Hermes Wing**. The ordinary `/open` helper is
+   loopback-only for same-host clients.
+
+   Do not publish the raw `wing://connect` URI. Review the host, access,
+   profile count, protocol generation, and SHA-256 host fingerprint in Wing, then
+   confirm. A changed fingerprint requires a new explicit pairing review. The handoff
    contains only a short-lived code and no bearer credential. Exchange is
    idempotent until acknowledgment and issues separate Hermes credentials plus a
    pending Wing Link credential. Wing first stores the endpoint bundle with that
    pending marker, acknowledges it, then persists the bundle without the marker.
    Wing Link persists its server-side control credential only after acknowledgment.
+   Entering a Hermes API URL and token manually is a one-profile fallback only; it
+   does not import Wing Link or other Hermes profiles.
 
 5. Confirm direct Hermes `/health` and `/v1/capabilities` load. Confirm Wing Link
    `/healthz` is reachable and the Profiles screen lists the paired local profiles.
@@ -76,8 +84,11 @@ cd hermes-wing
 7. The planned repository flow is profile → approved directory → per-profile
    Hermes Project. Do not expose arbitrary host paths or use `profile use` or
    `project use` as hidden global state.
-8. Prefer HTTPS outside a trusted VPN/LAN. Plain HTTP with credentials requires
-   explicit confirmation and can expose traffic on an untrusted network.
+8. Wing Link uses HTTP only on loopback and TLS 1.3 remotely. Native Android Wing
+   verifies the reviewed SPKI pin. Web Wing requires normally trusted HTTPS.
+9. Install/update, provider-secret writes, and destructive profile actions pause
+   for local host approval. Review them with `wing-link approvals list`, then use
+   `wing-link approvals approve <id>` or `reject <id>`; never approve from remote UI.
 
 ## Recovery checks
 
@@ -96,7 +107,18 @@ curl --fail http://127.0.0.1:8642/health
 - If Wing Link is stopped, use `wing-link restart`. This does not restart Hermes
   Agent. Use `hermes gateway restart` only after changing the Agent listener or
   Agent configuration.
+- Use `wing-link devices list` to inspect safe local trust metadata and
+  `wing-link devices revoke <device-id>` for a stolen device. Revoke-all is a
+  local recovery action and does not delete Agent profiles or data.
 - If pairing expired, create a new handoff. Never copy a bearer credential into
   a QR code, URL, issue, or diagnostic log.
+- A reinstall that preserves the complete owner-only Wing Link state preserves the
+  TLS fingerprint. Upgrading a pre-hardening state that has only the legacy
+  Ed25519 key generates the persistent Android-compatible TLS key once and therefore
+  requires explicit re-pairing; it must never be silently accepted as the old pin.
+  If state or either host key is lost or intentionally rotated, every
+  pinned client must fail closed. Review the replacement fingerprint at the host,
+  revoke obsolete device entries, and complete a new explicit pairing flow; never
+  accept an identity change as an automatic reconnect.
 - If a named profile fails while the default profile works, verify that the named
   profile has its own API key and that the client uses `/p/<profile>/...`.

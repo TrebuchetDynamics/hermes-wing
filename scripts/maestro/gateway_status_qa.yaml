@@ -16,6 +16,10 @@ name: gateway_status_qa
       - tapOn: "(?s).*All chats.*"
 - assertVisible: "(?s).*Default profile.*"
 - tapOn: "Open more destinations"
+- scrollUntilVisible:
+    element:
+      text: "^Gateway$"
+    direction: DOWN
 - tapOn: "^Gateway$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"

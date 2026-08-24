@@ -19,7 +19,7 @@ import (
 var ErrEnrollmentUnavailable = errors.New("enrollment unavailable")
 
 const (
-	stateSchema      = 1
+	stateSchema      = 2
 	maxControlTokens = 16
 )
 
@@ -29,10 +29,9 @@ type Enrollment struct {
 }
 
 type StateStore struct {
-	path    string
-	now     func() time.Time
-	mu      sync.Mutex
-	pending map[string]pendingControlToken
+	path string
+	now  func() time.Time
+	mu   sync.Mutex
 }
 
 // New creates a secure Wing Link state store at path.
@@ -40,16 +39,28 @@ func New(path string) *StateStore {
 	return &StateStore{path: path}
 }
 
-type pendingControlToken struct {
-	Hash      string `json:"hash"`
-	ExpiresAt int64  `json:"expires_at"`
+type persistedPendingCredential struct {
+	ID              string   `json:"id"`
+	Hash            string   `json:"token_hash"`
+	ExpiresAt       int64    `json:"expires_at"`
+	Name            string   `json:"name"`
+	PublicKey       string   `json:"public_key,omitempty"`
+	Scopes          []string `json:"scopes"`
+	CreatedAt       int64    `json:"created_at"`
+	DeviceExpiresAt int64    `json:"device_expires_at,omitempty"`
+	Legacy          bool     `json:"legacy,omitempty"`
+	Bearer          bool     `json:"bearer,omitempty"`
 }
 
 type persistedState struct {
-	Schema             int      `json:"schema"`
-	EnrollmentHash     string   `json:"enrollment_hash,omitempty"`
-	EnrollmentExpires  int64    `json:"enrollment_expires,omitempty"`
-	ControlTokenHashes []string `json:"control_token_hashes,omitempty"`
+	Schema                 int                          `json:"schema"`
+	EnrollmentHash         string                       `json:"enrollment_hash,omitempty"`
+	EnrollmentExpires      int64                        `json:"enrollment_expires,omitempty"`
+	ControlTokenHashes     []string                     `json:"control_token_hashes,omitempty"`
+	Devices                []persistedDeviceCredential  `json:"devices,omitempty"`
+	PendingDevices         []persistedPendingCredential `json:"pending_devices,omitempty"`
+	HostIdentityPrivateKey string                       `json:"host_identity_private_key,omitempty"`
+	HostTLSPrivateKey      string                       `json:"host_tls_private_key,omitempty"`
 }
 
 func (s *StateStore) CreateEnrollment() (Enrollment, error) {
@@ -106,10 +117,10 @@ func (s *StateStore) issueControlToken(validate func(*persistedState) error) (st
 		if err != nil {
 			return err
 		}
-		state.ControlTokenHashes = append(state.ControlTokenHashes, hashSecret(token))
-		if len(state.ControlTokenHashes) > maxControlTokens {
-			state.ControlTokenHashes = state.ControlTokenHashes[len(state.ControlTokenHashes)-maxControlTokens:]
+		if len(state.ControlTokenHashes)+len(state.Devices) >= maxControlTokens {
+			return errors.New("too many control tokens")
 		}
+		state.ControlTokenHashes = append(state.ControlTokenHashes, hashSecret(token))
 		return s.save(state)
 	})
 	if err != nil {
@@ -119,103 +130,97 @@ func (s *StateStore) issueControlToken(validate func(*persistedState) error) (st
 }
 
 func (s *StateStore) StageControlToken() (string, string, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.removeExpiredPendingLocked()
-	if len(s.pending) >= maxControlTokens {
-		return "", "", errors.New("too many pending control tokens")
-	}
-	id, err := randomSecret(16, "cred_")
-	if err != nil {
-		return "", "", err
-	}
-	token, err := randomSecret(32, "wlc_")
-	if err != nil {
-		return "", "", err
-	}
-	if s.pending == nil {
-		s.pending = make(map[string]pendingControlToken)
-	}
-	s.pending[id] = pendingControlToken{
-		Hash: hashSecret(token), ExpiresAt: s.currentTime().Add(5 * time.Minute).Unix(),
-	}
-	return id, token, nil
+	return s.stageDeviceCredential(
+		"Hermes Wing device",
+		nil,
+		allControlScopes,
+		0,
+		true,
+	)
 }
 
 func (s *StateStore) AcknowledgeControlToken(id, token string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.removeExpiredPendingLocked()
-	pending, ok := s.pending[id]
-	if !ok || !matchesHash(token, pending.Hash) {
-		return ErrEnrollmentUnavailable
-	}
-	if err := s.withFileLock(func() error {
+	return s.withFileLock(func() error {
 		state, err := s.load()
 		if err != nil {
 			return err
 		}
-		state.ControlTokenHashes = append(state.ControlTokenHashes, pending.Hash)
-		if len(state.ControlTokenHashes) > maxControlTokens {
-			state.ControlTokenHashes = state.ControlTokenHashes[len(state.ControlTokenHashes)-maxControlTokens:]
+		now := s.currentTime().UTC()
+		prunePendingState(&state, now)
+		index := -1
+		var pending persistedPendingCredential
+		for candidate := range state.PendingDevices {
+			if state.PendingDevices[candidate].ID == id && matchesHash(token, state.PendingDevices[candidate].Hash) {
+				index = candidate
+				pending = state.PendingDevices[candidate]
+				break
+			}
 		}
+		if index < 0 {
+			return ErrEnrollmentUnavailable
+		}
+		if len(state.Devices)+len(state.ControlTokenHashes) >= maxControlTokens {
+			return errors.New("too many control tokens")
+		}
+		state.Devices = append(state.Devices, persistedDeviceCredential{
+			ID: id, Name: pending.Name, TokenHash: pending.Hash, PublicKey: pending.PublicKey,
+			Scopes: append([]string(nil), pending.Scopes...), CreatedAt: pending.CreatedAt,
+			ExpiresAt: pending.DeviceExpiresAt, Legacy: pending.Legacy, Bearer: pending.Bearer,
+		})
+		state.PendingDevices = append(state.PendingDevices[:index], state.PendingDevices[index+1:]...)
 		return s.save(state)
-	}); err != nil {
-		return err
-	}
-	delete(s.pending, id)
-	return nil
+	})
 }
 
 func (s *StateStore) AuthorizePending(id, token string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.removeExpiredPendingLocked()
-	pending, ok := s.pending[id]
-	return ok && matchesHash(token, pending.Hash)
+	return s.authorizePending(token, func(pending persistedPendingCredential) bool { return pending.ID == id })
 }
 
 func (s *StateStore) AuthorizePendingToken(token string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.removeExpiredPendingLocked()
-	for _, pending := range s.pending {
-		if matchesHash(token, pending.Hash) {
-			return true
-		}
-	}
-	return false
+	return s.AuthorizePendingScope(token)
 }
 
-func (s *StateStore) removeExpiredPendingLocked() {
-	for id, pending := range s.pending {
-		if !s.currentTime().Before(time.Unix(pending.ExpiresAt, 0)) {
-			delete(s.pending, id)
-		}
-	}
+func (s *StateStore) AuthorizePendingScope(token string, requiredScopes ...string) bool {
+	return s.authorizePending(token, func(pending persistedPendingCredential) bool {
+		return containsEveryScope(pending.Scopes, requiredScopes)
+	})
 }
 
-func (s *StateStore) Authorize(token string) bool {
+func (s *StateStore) authorizePending(token string, predicate func(persistedPendingCredential) bool) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
 	authorized := false
-	if err := s.withFileLock(func() error {
+	_ = s.withFileLock(func() error {
 		state, err := s.load()
 		if err != nil {
 			return err
 		}
-		for _, expected := range state.ControlTokenHashes {
-			authorized = authorized || matchesHash(token, expected)
+		prunePendingState(&state, s.currentTime().UTC())
+		for _, pending := range state.PendingDevices {
+			if predicate(pending) && matchesHash(token, pending.Hash) {
+				authorized = true
+				break
+			}
 		}
-		return nil
-	}); err != nil {
-		return false
+		return s.save(state)
+	})
+	return authorized
+}
+
+func prunePendingState(state *persistedState, now time.Time) {
+	kept := state.PendingDevices[:0]
+	for _, pending := range state.PendingDevices {
+		if now.Before(time.Unix(pending.ExpiresAt, 0)) {
+			kept = append(kept, pending)
+		}
 	}
+	state.PendingDevices = kept
+}
+
+func (s *StateStore) Authorize(token string) bool {
+	_, authorized := s.AuthorizeDevice(token)
 	return authorized
 }
 
@@ -231,7 +236,8 @@ func (s *StateStore) RevokeAll() error {
 		state.EnrollmentHash = ""
 		state.EnrollmentExpires = 0
 		state.ControlTokenHashes = nil
-		s.pending = nil
+		state.Devices = nil
+		state.PendingDevices = nil
 		return s.save(state)
 	})
 }
@@ -289,7 +295,12 @@ func (s *StateStore) load() (persistedState, error) {
 		return state, fmt.Errorf("open state: %w", err)
 	}
 	defer func() { _ = file.Close() }()
-	decoder := json.NewDecoder(io.LimitReader(file, 64<<10))
+	return decodePersistedState(io.LimitReader(file, 64<<10))
+}
+
+func decodePersistedState(reader io.Reader) (persistedState, error) {
+	state := persistedState{Schema: stateSchema}
+	decoder := json.NewDecoder(reader)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&state); err != nil {
 		return state, fmt.Errorf("decode state: %w", err)
@@ -304,24 +315,78 @@ func (s *StateStore) load() (persistedState, error) {
 }
 
 func validatePersistedState(state persistedState) error {
-	if state.Schema != stateSchema {
+	if state.Schema != 1 && state.Schema != stateSchema {
 		return errors.New("unsupported state schema")
+	}
+	if state.Schema == 1 && state.HostIdentityPrivateKey != "" {
+		return errors.New("legacy state contains a host identity")
 	}
 	if state.EnrollmentHash != "" && !validHash(state.EnrollmentHash) {
 		return errors.New("invalid enrollment hash")
 	}
-	if len(state.ControlTokenHashes) > maxControlTokens {
+	if len(state.ControlTokenHashes)+len(state.Devices) > maxControlTokens || len(state.PendingDevices) > maxControlTokens {
 		return errors.New("too many control tokens")
 	}
+	seenHashes := make(map[string]struct{}, len(state.ControlTokenHashes)+len(state.Devices))
+	seenDeviceIDs := make(map[string]struct{}, len(state.Devices))
 	for _, hash := range state.ControlTokenHashes {
 		if !validHash(hash) {
 			return errors.New("invalid control token hash")
+		}
+		if _, duplicate := seenHashes[hash]; duplicate {
+			return errors.New("duplicate control token hash")
+		}
+		seenHashes[hash] = struct{}{}
+	}
+	for _, device := range state.Devices {
+		if err := validatePersistedDevice(device); err != nil {
+			return err
+		}
+		if _, duplicate := seenDeviceIDs[device.ID]; duplicate {
+			return errors.New("duplicate device credential id")
+		}
+		if _, duplicate := seenHashes[device.TokenHash]; duplicate {
+			return errors.New("duplicate control token hash")
+		}
+		seenDeviceIDs[device.ID] = struct{}{}
+		seenHashes[device.TokenHash] = struct{}{}
+	}
+	for _, pending := range state.PendingDevices {
+		candidate := persistedDeviceCredential{
+			ID: pending.ID, Name: pending.Name, TokenHash: pending.Hash, PublicKey: pending.PublicKey,
+			Scopes: pending.Scopes, CreatedAt: pending.CreatedAt, ExpiresAt: pending.DeviceExpiresAt,
+			Legacy: pending.Legacy, Bearer: pending.Bearer,
+		}
+		if err := validatePersistedDevice(candidate); err != nil || pending.ExpiresAt <= pending.CreatedAt {
+			return errors.New("invalid pending device credential")
+		}
+		if _, duplicate := seenDeviceIDs[pending.ID]; duplicate {
+			return errors.New("duplicate device credential id")
+		}
+		if _, duplicate := seenHashes[pending.Hash]; duplicate {
+			return errors.New("duplicate control token hash")
+		}
+		seenDeviceIDs[pending.ID] = struct{}{}
+		seenHashes[pending.Hash] = struct{}{}
+	}
+	if state.HostIdentityPrivateKey == "" && state.HostTLSPrivateKey != "" {
+		return errors.New("host TLS identity is missing its signing identity")
+	}
+	if state.HostIdentityPrivateKey != "" {
+		if state.HostTLSPrivateKey == "" {
+			decoded, err := base64.RawURLEncoding.DecodeString(state.HostIdentityPrivateKey)
+			if err != nil || len(decoded) != 64 {
+				return errors.New("invalid host identity private key")
+			}
+		} else if _, err := decodeHostIdentity(state.HostIdentityPrivateKey, state.HostTLSPrivateKey); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
 func (s *StateStore) save(state persistedState) error {
+	state.Schema = stateSchema
 	payload, err := json.Marshal(state)
 	if err != nil {
 		return fmt.Errorf("encode state: %w", err)

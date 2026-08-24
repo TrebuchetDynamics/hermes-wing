@@ -242,7 +242,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     final generation = ++_refreshGeneration;
     _refreshing = true;
     notifyListeners();
-    final List<HermesEndpointConfig> configs;
+    List<HermesEndpointConfig> configs;
     try {
       configs = await _store.loadProfiles();
     } catch (_) {
@@ -255,7 +255,7 @@ class HermesGatewayDirectory extends ChangeNotifier
       return;
     }
     if (generation != _refreshGeneration) return;
-    await Future.wait(configs.map(_recoverPendingWingLinkCredential));
+    configs = await _recoverPendingWingLinkCredentials(configs);
     if (generation != _refreshGeneration) return;
 
     _configsById
@@ -302,32 +302,56 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> _recoverPendingWingLinkCredential(
-    HermesEndpointConfig config,
+  Future<List<HermesEndpointConfig>> _recoverPendingWingLinkCredentials(
+    List<HermesEndpointConfig> configs,
   ) async {
-    final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
-    final controlToken = config.wingLinkToken ?? '';
-    final credentialId = config.wingLinkPendingCredentialId ?? '';
-    if (origin == null ||
-        origin.host.isEmpty ||
-        controlToken.isEmpty ||
-        credentialId.isEmpty) {
-      return;
+    final recovered = [...configs];
+    final groups = <(String, String, String), List<int>>{};
+    for (var index = 0; index < configs.length; index++) {
+      final config = configs[index];
+      final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
+      final controlToken = config.wingLinkToken ?? '';
+      final credentialId = config.wingLinkPendingCredentialId ?? '';
+      if (origin == null ||
+          origin.host.isEmpty ||
+          controlToken.isEmpty ||
+          credentialId.isEmpty) {
+        continue;
+      }
+      groups
+          .putIfAbsent((
+            origin.toString(),
+            controlToken,
+            credentialId,
+          ), () => <int>[])
+          .add(index);
     }
-    try {
-      if (!await _pendingCredentialRecovery(config)) return;
-      await _store.save(
-        baseUrl: config.baseUrl,
-        apiKey: config.apiKey,
-        label: config.label,
-        profileId: config.id,
-        wingLinkOrigin: origin.toString(),
-        wingLinkToken: controlToken,
-        wingLinkPendingCredentialId: '',
-      );
-    } catch (_) {
-      // Leave the securely stored pending transaction for the next refresh.
+
+    for (final entry in groups.entries) {
+      try {
+        if (!await _pendingCredentialRecovery(configs[entry.value.first])) {
+          continue;
+        }
+        for (final index in entry.value) {
+          final config = configs[index];
+          recovered[index] = HermesEndpointConfig(
+            id: config.id,
+            baseUrl: config.baseUrl,
+            apiKey: config.apiKey,
+            label: config.label,
+            wingLinkOrigin: config.wingLinkOrigin,
+            wingLinkToken: config.wingLinkToken,
+            wingLinkPendingCredentialId: '',
+            wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+            wingLinkDeviceId: config.wingLinkDeviceId,
+          );
+        }
+        await _store.saveAll(recovered);
+      } catch (_) {
+        // Leave every securely stored bundle member pending for a later refresh.
+      }
     }
+    return recovered;
   }
 
   static Future<bool> _verifyAndAcknowledgePendingCredential(
@@ -340,7 +364,11 @@ class HermesGatewayDirectory extends ChangeNotifier
         apiKey: config.apiKey,
       ),
     ).health();
-    final client = WingLinkClient(origin: origin, token: config.wingLinkToken!);
+    final client = WingLinkClient(
+      origin: origin,
+      token: config.wingLinkToken!,
+      hostFingerprint: config.wingLinkHostFingerprint,
+    );
     await client.verifyPendingCredential();
     await client.acknowledgeCredential(config.wingLinkPendingCredentialId!);
     return true;
@@ -394,8 +422,12 @@ class HermesGatewayDirectory extends ChangeNotifier
       final apiProfiles = {
         for (final profile in summary.profiles) profile.id: profile,
       };
-      final profileIds = apiProfiles.keys;
       final endpointProfileId = _profileIdFromEndpoint(config.baseUrl);
+      final profileIds = endpointProfileId == null
+          ? apiProfiles.keys
+          : apiProfiles.containsKey(endpointProfileId)
+          ? [endpointProfileId]
+          : const <String>[];
       final projected = profileIds.isEmpty
           ? [
               GatewayContact(
@@ -422,7 +454,10 @@ class HermesGatewayDirectory extends ChangeNotifier
                     gatewayId: gatewayId,
                     profileId: profileId,
                   ),
-                  gatewayLabel: config.displayLabel,
+                  gatewayLabel: _gatewayLabelForProfile(
+                    config.displayLabel,
+                    endpointProfileId,
+                  ),
                   profileName:
                       apiProfiles[profileId]?.displayName ??
                       (profileId == 'default' ? 'Default profile' : profileId),
@@ -440,10 +475,13 @@ class HermesGatewayDirectory extends ChangeNotifier
                   availability: GatewayAvailability.online,
                   lastRefreshedAt: refreshedAt,
                   isFallbackProfile:
-                      profileId == 'default' &&
-                      !apiProfiles.containsKey(profileId),
+                      endpointProfileId != null ||
+                      (profileId == 'default' &&
+                          !summary.profileContextAvailable),
                   chatAvailable:
-                      profileId == 'default' || summary.profileContextAvailable,
+                      endpointProfileId != null ||
+                      profileId == 'default' ||
+                      summary.profileContextAvailable,
                 ),
             ];
       _replaceGatewayContacts(gatewayId, projected);
@@ -529,6 +567,11 @@ class HermesGatewayDirectory extends ChangeNotifier
       apiKey: config.apiKey,
       label: normalizedLabel,
       profileId: gatewayId,
+      wingLinkOrigin: config.wingLinkOrigin,
+      wingLinkToken: config.wingLinkToken,
+      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     final displayLabel = normalizedLabel ?? config.baseUrl;
     _configsById[gatewayId] = HermesEndpointConfig(
@@ -536,6 +579,11 @@ class HermesGatewayDirectory extends ChangeNotifier
       label: normalizedLabel,
       baseUrl: config.baseUrl,
       apiKey: config.apiKey,
+      wingLinkOrigin: config.wingLinkOrigin,
+      wingLinkToken: config.wingLinkToken,
+      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     _contacts = sortGatewayContacts([
       for (final contact in _contacts)

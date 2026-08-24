@@ -38,6 +38,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return inspectCommand(stdout, stderr, args[1:])
 	case "serve":
 		return serveCommand(stdout, stderr, args[1:])
+	case "devices":
+		return devicesCommand(stdout, stderr, args[1:])
+	case "approvals":
+		return approvalsCommand(stdout, stderr, args[1:])
+	case "audit":
+		return auditCommand(stdout, stderr, args[1:])
 	case "status", "start", "stop", "restart":
 		if len(args) != 1 {
 			usage(stderr)
@@ -69,10 +75,21 @@ Get started:
              --json                  Print one JSON result
              --json-lines            Stream progress as JSON lines
   pair       Create a secure pairing handoff for Hermes Wing.
+             Prints a QR; local same-host pairing also prints a loopback URL.
              --remote                Pair through an authenticated encrypted VPN
              --local                 Pair on this device only (default)
              --origin URL            Use a specific Hermes Agent API origin
              --label NAME            Name this Hermes Wing installation
+
+Host trust:
+  devices list                 List paired device IDs, names, and grants.
+  devices revoke DEVICE_ID     Revoke one paired device.
+  devices revoke-all           Revoke every paired device.
+  approvals list               List bounded pending host approvals.
+  approvals approve ID         Approve one host operation.
+  approvals reject ID          Reject one host operation.
+  audit                        List privacy-safe local audit events.
+  audit clear --confirm        Clear the local audit log explicitly.
 
 Managed service:
   status     Show whether the Wing Link user service is running.

@@ -47,6 +47,16 @@ type OmniRouteComponent struct {
 	Integrity string `json:"integrity"`
 }
 
+// WingLinkComponent describes the optional signed Wing Link Linux release
+// artifact carried by a component catalog. MinimumProtocolGeneration is the
+// lowest Wing Link protocol generation the artifact can speak; hosts running
+// an older generation must refuse to install it.
+type WingLinkComponent struct {
+	Version                   string   `json:"version"`
+	Linux                     Artifact `json:"linux"`
+	MinimumProtocolGeneration int      `json:"minimum_protocol_generation"`
+}
+
 type ComponentCatalog struct {
 	Schema          int                      `json:"schema"`
 	SigningKeyID    string                   `json:"signing_key_id"`
@@ -56,6 +66,7 @@ type ComponentCatalog struct {
 	Hermes          *HermesComponent         `json:"hermes,omitempty"`
 	StarterProfile  *StarterProfileComponent `json:"starter_profile,omitempty"`
 	OmniRoute       *OmniRouteComponent      `json:"omniroute,omitempty"`
+	WingLink        *WingLinkComponent       `json:"wing_link,omitempty"`
 }
 
 func VerifyComponentManifest(manifest, signature []byte, trustedKeys map[string]ed25519.PublicKey) (ComponentCatalog, error) {
@@ -98,6 +109,17 @@ func (catalog ComponentCatalog) validate(now time.Time) error {
 	}
 	if catalog.IssuedAt.After(now.Add(5*time.Minute)) || !catalog.ExpiresAt.After(now) || catalog.ExpiresAt.Sub(catalog.IssuedAt) > 366*24*time.Hour {
 		return fmt.Errorf("%w: release is not currently valid", ErrComponentManifest)
+	}
+	if catalog.WingLink != nil {
+		if _, err := ParseVersion(catalog.WingLink.Version); err != nil {
+			return fmt.Errorf("%w: wing_link version: %v", ErrComponentManifest, err)
+		}
+		if catalog.WingLink.MinimumProtocolGeneration < 1 {
+			return fmt.Errorf("%w: wing_link minimum protocol generation", ErrComponentManifest)
+		}
+		if err := validateLinuxArtifact(catalog.WingLink.Linux); err != nil {
+			return fmt.Errorf("%w: wing_link linux artifact: %v", ErrComponentManifest, err)
+		}
 	}
 	return nil
 }

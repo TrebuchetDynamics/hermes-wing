@@ -247,6 +247,22 @@
   "scheduleLastErrorNotice": "Last run reported an error.",
   "gatewayDestination": "Gateway",
   "gatewayStatusTitle": "Gateway",
+  "gatewayTrustTitle": "Wing Link trust",
+  "gatewayTrustLoading": "Checking pinned host identity and device grants…",
+  "gatewayTrustUnavailable": "Wing Link trust status is unavailable. Verify the host is online and the saved identity has not changed.",
+  "gatewayTrustFingerprint": "Host fingerprint",
+  "gatewayTrustProtocol": "Protocol",
+  "gatewayTrustDevice": "This device",
+  "gatewayTrustScopes": "Granted scopes",
+  "gatewayTrustHostInstructions": "Trust changes require the host console: wing-link devices list · wing-link approvals list",
+  "gatewayTrustRevokeAction": "Revoke this device",
+  "gatewayTrustRevokeTitle": "Revoke this device?",
+  "gatewayTrustRevokeBody": "This removes only this device's Wing Link credential. Reconnecting requires a new host pairing flow.",
+  "gatewayTrustRevoked": "This device was revoked. Pair it again from the host to restore management access.",
+  "gatewayTrustChangedIdentity": "The host fingerprint changed. Wing Link access is blocked; review the fingerprint at the host and pair again explicitly.",
+  "gatewayTrustUpgradeRequired": "This Wing Link protocol is outside the supported compatibility window. Upgrade Hermes Wing before reconnecting.",
+  "gatewayTrustCredentialExpired": "This device credential is expired or revoked. Create a new pairing flow at the host.",
+  "gatewayTrustApprovalPending": "Host confirmation is pending. Run wing-link approvals list on the host, review the request, then retry with the same operation.",
   "gatewayStatusSubtitle": "Bounded health status advertised by the selected Hermes gateway.",
   "gatewayStatusHelp": "View status from the selected gateway.",
   "gatewayStatusConnectionRequiredBody": "Open a saved gateway chat before viewing gateway status.",
@@ -696,25 +712,7 @@
   "voiceSpeakRepliesSubtitle": "Allow hands-free voice to speak Hermes replies aloud; the chat's hands-free switch turns this on and off",
   "voiceAdvancedSection": "Advanced",
   "voiceRecognitionLanguageTitle": "Recognition language",
-  "voiceRecognitionLanguageSubtitle": "Auto keeps one multilingual English and Spanish profile; fixed modes constrain recognition to one language.",
-  "voiceOfflineRecognitionSection": "Offline recognition",
-  "voiceOfflineSttPackTitle": "Whisper Base INT8 · English + Español",
-  "voiceOfflineSttChecking": "Checking the verified model pack…",
-  "voiceOfflineSttAbsent": "Not installed · about 163 MB · Android recognition remains available.",
-  "voiceOfflineSttInstalling": "Downloading and verifying every model artifact…",
-  "voiceOfflineSttInstalled": "Installed and verified. {provenance}",
-  "@voiceOfflineSttInstalled": {
-    "placeholders": {
-      "provenance": {
-        "type": "String"
-      }
-    }
-  },
-  "voiceOfflineSttDeleting": "Removing the offline model pack…",
-  "voiceOfflineSttUnavailable": "The offline speech pack is unavailable.",
-  "voiceOfflineSttDownload": "Download",
-  "voiceOfflineSttRemove": "Remove",
-  "voiceOfflineSttRetry": "Retry",
+  "voiceRecognitionLanguageSubtitle": "Automatic lets the device recognizer choose; fixed modes request one language.",
   "voiceCommandWordTitle": "Command word",
   "voiceCommandWordHint": "Say this before “stop”, “pause”, “mute”, or “cancel” while the foreground voice loop is listening.",
   "voiceRemoveAction": "Remove",
@@ -764,15 +762,8 @@
   },
   "enrollTitle": "Connect to Hermes",
   "enrollInvalidLinkTitle": "Pairing link couldn’t be opened",
-  "enrollInvalidLinkBody": "Scan a new QR code or enter the gateway manually.",
-  "enrollInvalidLinkDetail": "Details: {message}",
-  "@enrollInvalidLinkDetail": {
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
+  "enrollInvalidLinkBody": "Paste another pairing link or scan a new QR code.",
+  "enrollClipboardEmpty": "The clipboard does not contain a pairing link.",
   "enrollCleartextDialogTitle": "Pair over plain HTTP?",
   "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
   "@enrollCleartextDialogBody": {
@@ -783,15 +774,57 @@
     }
   },
   "enrollContinueAction": "Continue",
-  "enrollScanPrompt": "Scan the QR code shown by wing-cli.",
+  "enrollScanPrompt": "Choose how to connect this device.",
   "enrollVerifying": "Verifying pairing code…",
-  "enrollConnected": "Connected. Returning to Hermes…",
+  "enrollConnectedProfiles": "{count, plural, =1{1 profile connected} other{{count} profiles connected}}",
+  "@enrollConnectedProfiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enrollConnectedBody": "Wing Link is ready for profile and gateway management.",
+  "enrollViewProfilesAction": "View profiles",
+  "enrollOpenChatAction": "Open chat",
   "enrollFailed": "Pairing failed.",
+  "enrollInspectionFailedTitle": "Pairing host couldn’t be reached",
+  "enrollInspectionFailedBody": "Check that the host is online and this device is on the right network, then paste or scan a new pairing link.",
+  "enrollExchangeFailedTitle": "Pairing couldn’t be completed",
+  "enrollExchangeFailedBody": "Wing did not report a completed connection. Any pending credentials remain available for safe recovery; paste or scan a new pairing link to try again.",
   "enrollCloseAction": "Close",
+  "enrollExpiredTitle": "This pairing link expired",
+  "enrollExpiredBody": "Run wing-link pair again, then open the new link or scan its QR.",
+  "enrollPasteAnotherLink": "Paste another link",
+  "enrollScanAnotherQr": "Scan another QR",
+  "enrollPasteLink": "Paste pairing link",
+  "enrollSameDeviceHelper": "If the link is on this phone, tap it or share it to Hermes Wing.",
   "enrollOpeningScanner": "Opening scanner…",
-  "enrollScanQr": "Scan QR code",
-  "enrollManualConnectAction": "Enter gateway manually",
-  "enrollGrantQuestion": "Grant Hermes Wing access to this Hermes endpoint?",
+  "enrollScanQr": "Scan QR from another screen",
+  "enrollManualConnectAction": "Connect one profile manually",
+  "enrollManualConnectWarning": "This does not import Wing Link or other Hermes profiles.",
+  "enrollGrantQuestion": "{count, plural, =1{Connect 1 Hermes profile from {label}?} other{Connect {count} Hermes profiles from {label}?}}",
+  "@enrollGrantQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "enrollConnectProfilesAction": "{count, plural, =1{Connect 1 profile} other{Connect {count} profiles}}",
+  "@enrollConnectProfilesAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enrollHermesAgentLabel": "Hermes Agent",
+  "enrollWingLinkLabel": "Wing Link",
+  "enrollProfilesLabel": "Profiles",
   "enrollEndpointLabel": "Endpoint",
   "enrollDeviceLabel": "Device label",
   "enrollUnlabeled": "(unlabeled)",

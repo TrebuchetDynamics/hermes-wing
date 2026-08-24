@@ -132,7 +132,7 @@ func TestInstallStatusJSONOmitsEmptyOptionalFields(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const want = `{"protocol_version":1,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"starter_profile_installed":false,"omniroute_installed":false,"omniroute_healthy":false}`
+	const want = `{"protocol_version":2,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"starter_profile_installed":false,"omniroute_installed":false,"omniroute_healthy":false}`
 	if string(got) != want {
 		t.Fatalf("got %s", got)
 	}

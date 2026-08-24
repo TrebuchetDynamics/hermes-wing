@@ -30,12 +30,8 @@ import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../settings/providers/voice_settings_provider.dart';
-import '../../settings/providers/offline_stt_pack_provider.dart';
-import '../../voice/services/models/default_voice_model_pack_installer.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/platform/voice_capture_platform.dart';
-import '../../voice/services/speech/offline_first_voice_capture_service.dart';
-import '../../voice/services/speech/offline_voice_capture_factory.dart';
 import '../../voice/services/tts/hermes_agent_text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/staged_attachment.dart';
@@ -68,39 +64,14 @@ final hermesVoiceCapturePlatformProvider = Provider<VoiceCapturePlatform>(
 );
 
 final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>((ref) {
-  final packStatus = ref.watch(
-    offlineSttPackControllerProvider.select((state) => state.status),
-  );
-  final offlineSttTier = ref.watch(offlineSttModelTierProvider);
   final platform = ref.watch(hermesVoiceCapturePlatformProvider);
-  final runtimeOwner = ref.watch(offlineVoiceRuntimeOwnerProvider);
   final languageMode = ref.watch(
     wingVoiceSettingsProvider.select((settings) => settings.languageMode),
   );
-  final fallback = createDefaultVoiceCaptureService(
+  return createDefaultVoiceCaptureService(
     platform: platform,
     localeId: languageMode.localeId,
   );
-  if (fallback == null || packStatus != OfflineSttPackStatus.installed) {
-    return fallback;
-  }
-  late final Future<void> predecessorRelease;
-  final service = OfflineFirstVoiceCaptureService(
-    fallback: fallback,
-    loadOffline: () async {
-      await predecessorRelease;
-      if (!platform.isAndroid) return null;
-      final installer = await createDefaultVoiceModelPackInstaller();
-      return loadInstalledOfflineVoiceCapture(
-        installer: installer,
-        tier: offlineSttTier,
-        languageMode: () => ref.read(wingVoiceSettingsProvider).languageMode,
-      );
-    },
-  );
-  predecessorRelease = runtimeOwner.adopt(service);
-  ref.onDispose(() => unawaited(runtimeOwner.release(service)));
-  return service;
 });
 
 final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(

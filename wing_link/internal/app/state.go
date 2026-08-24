@@ -3,6 +3,21 @@ package app
 import wingstate "github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/state"
 
 type StateStore = wingstate.StateStore
+type HostIdentity = wingstate.HostIdentity
+type DeviceAuthorization = wingstate.DeviceAuthorization
+
+const (
+	ScopeSetupWrite       = wingstate.ScopeSetupWrite
+	ScopeLifecycleWrite   = wingstate.ScopeLifecycleWrite
+	ScopeHealthRead       = wingstate.ScopeHealthRead
+	ScopeDiagnosticsRead  = wingstate.ScopeDiagnosticsRead
+	ScopeProfilesRead     = wingstate.ScopeProfilesRead
+	ScopeProfilesWrite    = wingstate.ScopeProfilesWrite
+	ScopeProvidersRead    = wingstate.ScopeProvidersRead
+	ScopeProvidersWrite   = wingstate.ScopeProvidersWrite
+	ScopeDeviceSelfRead   = wingstate.ScopeDeviceSelfRead
+	ScopeDeviceSelfRevoke = wingstate.ScopeDeviceSelfRevoke
+)
 
 func newStateStore(path string) *StateStore {
 	return wingstate.New(path)

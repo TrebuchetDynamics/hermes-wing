@@ -327,12 +327,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     ),
                     validator: (value) {
                       final provider = value?.trim() ?? '';
-                      if (!_editing && provider.isEmpty) {
-                        return strings.profileProviderRequired;
-                      }
-                      if (_editing &&
-                          provider.isEmpty &&
-                          _modelController.text.trim().isNotEmpty) {
+                      final needsExplicitConfiguration =
+                          _cloneFrom == null ||
+                          _modelController.text.trim().isNotEmpty ||
+                          _credentialController.text.isNotEmpty;
+                      if (provider.isEmpty && needsExplicitConfiguration) {
                         return strings.profileProviderRequired;
                       }
                       return null;
@@ -348,12 +347,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     ),
                     validator: (value) {
                       final model = value?.trim() ?? '';
-                      if (!_editing && model.isEmpty) {
-                        return strings.profileModelRequired;
-                      }
-                      if (_editing &&
-                          model.isEmpty &&
-                          _providerController.text.trim().isNotEmpty) {
+                      final needsExplicitConfiguration =
+                          _cloneFrom == null ||
+                          _providerController.text.trim().isNotEmpty ||
+                          _credentialController.text.isNotEmpty;
+                      if (model.isEmpty && needsExplicitConfiguration) {
                         return strings.profileModelRequired;
                       }
                       return null;

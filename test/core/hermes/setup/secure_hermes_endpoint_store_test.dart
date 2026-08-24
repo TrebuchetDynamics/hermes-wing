@@ -85,6 +85,9 @@ void main() {
         wingLinkOrigin: 'https://hermes.example:8654',
         wingLinkToken: 'wing-link-secret',
         wingLinkPendingCredentialId: 'cred_pending',
+        wingLinkHostFingerprint:
+            'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        wingLinkDeviceId: 'cred_device',
       );
 
       final loaded = await store.load();
@@ -92,7 +95,14 @@ void main() {
       expect(loaded?.wingLinkOrigin, 'https://hermes.example:8654');
       expect(loaded?.wingLinkToken, 'wing-link-secret');
       expect(loaded?.wingLinkPendingCredentialId, 'cred_pending');
+      expect(
+        loaded?.wingLinkHostFingerprint,
+        'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      );
+      expect(loaded?.wingLinkDeviceId, 'cred_device');
       expect(await _preferenceDump(), isNot(contains('wing-link-secret')));
+      expect(await _preferenceDump(), isNot(contains('sha256/AAAA')));
+      expect(await _preferenceDump(), contains('cred_device'));
       expect(loaded?.apiKey, 'hermes-secret');
 
       await store.save(

@@ -23,17 +23,34 @@ Status: alpha baseline; not an independent security assessment
 
 ## Current controls
 
-- Bearer credentials are excluded from pairing QR payloads and ordinary
-  preferences; Wing Link and Agent credentials are separate.
+- A pairing handoff may carry a random single-use pairing code in a QR code,
+  `wing://connect` intent, explicit Android share, or the ephemeral local handoff
+  page, which must use `Cache-Control: no-store`. The code expires after
+  five minutes, never contains a bearer credential, and must not be persisted,
+  analyzed, included in diagnostics, or written to ordinary logs.
+- Explicit paste is a user-initiated fallback, not background clipboard
+  monitoring; the app drops the raw text immediately after parsing.
+- Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
+  bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
+  text, command arguments, and ordinary preferences. Wing Link and Agent
+  credentials remain separate.
 - Wing Link uses fixed operations and argument vectors, no shell, bounded input
   and output, and pending-token acknowledgment before mutation.
 - Profile compatibility delegates list/create/rename/delete to Hermes CLI without
   retaining a shadow profile inventory.
-- Plain non-loopback HTTP requires explicit warning; remote deployments should use
-  HTTPS or an encrypted VPN.
-- Diagnostics redact credentials, authorization headers, transcripts, and paths.
-- Reconnect refreshes authoritative state; Wing does not queue or replay mutations.
-- Capability checks keep unsupported operations hidden or explicitly unavailable.
+- HTTP is loopback-only. Non-loopback Wing Link uses TLS 1.3 and native clients
+  pin the durable host identity's SHA-256 SPKI fingerprint; browsers require a
+  normally trusted certificate.
+- Named device credentials have exact scopes and independent revocation. A remote
+  device can inspect and revoke only itself; the host console administers trust.
+- Sensitive operations consume a short-lived local approval bound to requester,
+  route, idempotency key, and payload digest. Changed payload replay is rejected.
+- Diagnostics and bounded local audit events redact credentials, authorization
+  headers, pairing codes, transcripts, and paths and never retain request bodies.
+- Reconnect refreshes authoritative state. Wing does not queue mutations offline;
+  explicit retries replay the same durable operation instead of executing twice.
+- Current/previous protocol negotiation keeps stale or future operations hidden or
+  explicitly unavailable.
 
 ## Required controls for planned remote management
 
@@ -62,6 +79,24 @@ Status: alpha baseline; not an independent security assessment
 - Destructive actions require fresh confirmation and stable resource identity.
 - Revocation takes effect without deleting Agent profiles, Projects, or host data.
 - No route accepts arbitrary commands, executables, URLs, config keys, or paths.
+
+### Adversarial cases
+
+- **Stolen device:** revoke that named credential locally without rotating peers;
+  its self-revoke route cannot affect other devices.
+- **LAN impersonation:** TLS and the reviewed SPKI pin fail before response parsing;
+  network locality grants no authority.
+- **Host-key loss or rotation:** stored pins fail closed and users must perform a
+  new explicit pairing review. Identity is never silently replaced.
+- **Stale or future client:** protocol negotiation permits only N/N-1 and returns a
+  typed upgrade requirement before mutation.
+- **Approval replay:** approval and operation records bind device, route, revision,
+  idempotency key, and payload digest and are one-use or terminal.
+- **Audit injection:** events use allowlisted enums and bounded sanitized strings;
+  callers cannot append generic request data.
+- **Update compromise:** catalogs require an approved Ed25519 key and artifacts
+  require exact size and SHA-256. Failed restart/health restores `previous`; an
+  empty trusted-key set disables updates before network access.
 
 ## Known gaps
 

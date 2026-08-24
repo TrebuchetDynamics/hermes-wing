@@ -14,13 +14,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/release"
 )
 
 const wingLinkServiceName = "hermes-wing-link.service"
 
 func EnsureWingLinkService(controlOrigin, hermesOrigin *url.URL) error {
 	if strings.EqualFold(strings.TrimSpace(os.Getenv("WING_LINK_SERVICE")), "external") {
-		return verifyWingLinkHealth(controlOrigin)
+		return verifyWingLinkHealth(loopbackControlOrigin(controlOrigin))
 	}
 	systemctl, err := exec.LookPath("systemctl")
 	if err != nil {
@@ -42,14 +44,17 @@ func EnsureWingLinkService(controlOrigin, hermesOrigin *url.URL) error {
 	if err != nil {
 		return err
 	}
+	hermesHome, err := resolveHermesHome()
+	if err != nil {
+		return err
+	}
 	unit := wingLinkSystemdUnit(
 		binary,
 		controlOrigin.Host,
 		hermesOrigin.String(),
 		os.Getenv("PATH"),
 		statePath,
-		os.Getenv("WING_HERMES_HOME"),
-		os.Getenv("HERMES_HOME"),
+		hermesHome,
 	)
 	unitPath := filepath.Join(unitDir, wingLinkServiceName)
 	if err := writeOwnerOnlyFile(unitPath, []byte(unit)); err != nil {
@@ -64,7 +69,7 @@ func EnsureWingLinkService(controlOrigin, hermesOrigin *url.URL) error {
 	if err := runSystemctl(systemctl, "restart", wingLinkServiceName); err != nil {
 		return err
 	}
-	return verifyWingLinkHealth(controlOrigin)
+	return verifyWingLinkHealth(loopbackControlOrigin(controlOrigin))
 }
 
 func WingLinkServiceCommand(command string, stdout io.Writer) error {
@@ -106,9 +111,18 @@ func installServiceBinary() (string, error) {
 	if err != nil {
 		return "", errors.New("could not locate the user home")
 	}
-	destination := filepath.Join(userHome, ".local", "lib", "hermes-wing", "wing-link")
+	releaseVersion := version
+	if _, err := release.ParseVersion(releaseVersion); err != nil {
+		releaseVersion = "0.0.0"
+	}
+	releasesRoot := filepath.Join(userHome, ".local", "lib", "hermes-wing", "releases")
+	destination := filepath.Join(releasesRoot, "versions", releaseVersion, "wing-link")
+	current := filepath.Join(releasesRoot, "current")
 	if filepath.Clean(executable) == destination {
-		return destination, nil
+		if err := installCurrentServiceTarget(releasesRoot, releaseVersion); err != nil {
+			return "", err
+		}
+		return current, nil
 	}
 	if err := os.MkdirAll(filepath.Dir(destination), 0o700); err != nil {
 		return "", errors.New("could not create the Wing Link service directory")
@@ -142,7 +156,27 @@ func installServiceBinary() (string, error) {
 	if err := os.Rename(tempPath, destination); err != nil {
 		return "", errors.New("could not install the Wing Link service executable")
 	}
-	return destination, nil
+	if err := installCurrentServiceTarget(releasesRoot, releaseVersion); err != nil {
+		return "", err
+	}
+	return current, nil
+}
+
+func installCurrentServiceTarget(releasesRoot, releaseVersion string) error {
+	if err := os.MkdirAll(releasesRoot, 0o700); err != nil {
+		return errors.New("could not create the Wing Link releases directory")
+	}
+	temporary := filepath.Join(releasesRoot, ".current.tmp")
+	_ = os.Remove(temporary)
+	target := filepath.Join("versions", releaseVersion, "wing-link")
+	if err := os.Symlink(target, temporary); err != nil {
+		return errors.New("could not stage the Wing Link service target")
+	}
+	if err := os.Rename(temporary, filepath.Join(releasesRoot, "current")); err != nil {
+		_ = os.Remove(temporary)
+		return errors.New("could not activate the Wing Link service target")
+	}
+	return nil
 }
 
 func writeOwnerOnlyFile(path string, payload []byte) error {
@@ -196,13 +230,12 @@ func verifyWingLinkHealth(origin *url.URL) error {
 	return errors.New("wing link service did not become healthy")
 }
 
-func wingLinkSystemdUnit(binary, listen, hermesOrigin, path, statePath, wingHermesHome, hermesHome string) string {
-	overrides := "Environment=WING_LINK_STATE=" + systemdQuote(statePath) + "\n"
-	if strings.TrimSpace(wingHermesHome) != "" {
-		overrides += "Environment=WING_HERMES_HOME=" + systemdQuote(wingHermesHome) + "\n"
-	}
-	if strings.TrimSpace(hermesHome) != "" {
-		overrides += "Environment=HERMES_HOME=" + systemdQuote(hermesHome) + "\n"
+func wingLinkSystemdUnit(binary, listen, hermesOrigin, path, statePath, hermesHome string) string {
+	overrides := "Environment=WING_LINK_STATE=" + systemdQuote(statePath) + "\n" +
+		"Environment=WING_HERMES_HOME=" + systemdQuote(hermesHome) + "\n"
+	writablePaths := []string{filepath.Dir(statePath), hermesHome}
+	for _, writablePath := range writablePaths {
+		overrides += "ReadWritePaths=" + systemdQuote(writablePath) + "\n"
 	}
 	return fmt.Sprintf(`[Unit]
 Description=Hermes Wing Link profile management
@@ -217,6 +250,9 @@ Environment=PATH=%s
 RestartSec=2
 NoNewPrivileges=true
 PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=default.target

@@ -30,7 +30,7 @@ test("Hermes empty state opens secure web enrollment", async ({ page }) => {
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Enter gateway manually" }),
+    page.getByRole("button", { name: "Connect one profile manually" }),
   ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(
     0,

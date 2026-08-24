@@ -27,7 +27,7 @@ void main() {
     expect(adr, contains('arbitrary commands,'));
     expect(adr, contains('config keys, and paths'));
     expect(adr, contains('private-LAN/Tailscale interface'));
-    expect(adr, contains('non-loopback plaintext'));
+    expect(adr, contains('every non-loopback listener uses TLS 1.3'));
     expect(context, contains('remote management API'));
     expect(threatModel, contains('opaque handles'));
     expect(roadmap, contains('Profiles, directories, and Projects'));
@@ -38,7 +38,7 @@ void main() {
       wingLinkGuide,
       contains('does not enumerate file names or metadata'),
     );
-    expect(wingLinkGuide, contains('currently serves HTTP'));
+    expect(wingLinkGuide, contains('Every non-loopback listener uses TLS 1.3'));
     expect(wingLinkGuide, contains('not a chat proxy'));
     expect(wingLinkGuide, isNot(contains('arbitrary remote shell')));
     expect(compatibility, isNot(contains('/api/model/set')));

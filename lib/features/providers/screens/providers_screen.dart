@@ -26,13 +26,21 @@ import '../widgets/provider_credential_sheet.dart';
 /// profile changes (the deferred profile-switch reload), always write-only —
 /// no raw key ever enters this tree.
 typedef ProvidersWingLinkClientBuilder =
-    WingLinkClient Function({required Uri origin, required String token});
+    WingLinkClient Function({
+      required Uri origin,
+      required String token,
+      required String? hostFingerprint,
+    });
 
 final providersWingLinkClientBuilderProvider =
     Provider<ProvidersWingLinkClientBuilder>(
       (ref) =>
-          ({required origin, required token}) =>
-              WingLinkClient(origin: origin, token: token),
+          ({required origin, required token, required hostFingerprint}) =>
+              WingLinkClient(
+                origin: origin,
+                token: token,
+                hostFingerprint: hostFingerprint,
+              ),
     );
 
 class ProvidersScreen extends ConsumerStatefulWidget {
@@ -141,6 +149,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         ? ref.read(providersWingLinkClientBuilderProvider)(
             origin: origin,
             token: token,
+            hostFingerprint: config?.wingLinkHostFingerprint,
           )
         : null;
     setState(() {

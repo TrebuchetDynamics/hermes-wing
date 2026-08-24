@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"strings"
 )
 
-func (server *wingLinkServer) startBootstrap(writer http.ResponseWriter, request *http.Request) {
+func (server *wingLinkServer) startBootstrap(writer http.ResponseWriter, request *http.Request, authorization DeviceAuthorization) {
 	if server.bootstrap == nil || server.operations == nil {
 		writeJSON(writer, http.StatusNotImplemented, map[string]any{
 			"error": APIError{Code: "setup_unavailable", Message: "Hermes setup is unavailable"},
@@ -24,10 +26,31 @@ func (server *wingLinkServer) startBootstrap(writer http.ResponseWriter, request
 		})
 		return
 	}
-	operationID, err := server.operations.Start("setup", func(ctx context.Context, emit func(OperationEvent)) error {
+	digest := sha256.Sum256([]byte(`{}`))
+	payloadDigest := hex.EncodeToString(digest[:])
+	operationID, allowed := server.approvalGate(
+		writer,
+		request,
+		authorization,
+		ApprovalOpSetupInstall,
+		"/v1/setup",
+		payloadDigest,
+		"Install or update the managed Hermes runtime",
+	)
+	if !allowed {
+		return
+	}
+	work := func(ctx context.Context, emit func(OperationEvent)) error {
 		_, err := server.bootstrap.Bootstrap(ctx, body, emit)
 		return err
-	})
+	}
+	err := server.operations.RunReserved(operationID, work)
+	if errors.Is(err, ErrIdempotencyConflict) {
+		writeJSON(writer, http.StatusConflict, map[string]any{
+			"error": APIError{Code: "idempotency_conflict", Message: "Idempotency key was already used for a different request"},
+		})
+		return
+	}
 	if errors.Is(err, ErrOperationInProgress) {
 		writeJSON(writer, http.StatusConflict, map[string]any{
 			"error": APIError{Code: "operation_in_progress", Message: "Another setup operation is active"},

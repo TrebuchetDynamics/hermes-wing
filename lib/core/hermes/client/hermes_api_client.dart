@@ -646,22 +646,46 @@ class HermesEnrollmentPreview {
     required this.label,
     required this.origin,
     required this.scopes,
+    this.connectionCount = 1,
     this.expiresAt,
+    this.hostFingerprint = '',
+    this.protocolGeneration = 1,
   });
 
   factory HermesEnrollmentPreview.fromJson(Map<String, Object?> json) {
+    final connectionCount = json.containsKey('connection_count')
+        ? json['connection_count']
+        : 1;
+    if (connectionCount is! int ||
+        connectionCount < 1 ||
+        connectionCount > 100) {
+      throw const FormatException(
+        'Hermes enrollment connection count is invalid.',
+      );
+    }
     return HermesEnrollmentPreview(
       label: wingStringFromJson(json['label'], fallback: ''),
       origin: wingStringFromJson(json['origin'], fallback: ''),
       scopes: wingStringListFromJson(json['scopes']),
+      connectionCount: connectionCount,
       expiresAt: _epochSecondsToUtcDateTime(json['expires_at']),
+      hostFingerprint: wingStringFromJson(
+        json['host_fingerprint'],
+        fallback: '',
+      ),
+      protocolGeneration: json['protocol_generation'] is int
+          ? json['protocol_generation']! as int
+          : 1,
     );
   }
 
   final String label;
   final String origin;
   final List<String> scopes;
+  final int connectionCount;
   final DateTime? expiresAt;
+  final String hostFingerprint;
+  final int protocolGeneration;
 }
 
 /// Result of a successful one-time enrollment exchange. [token] is the raw
@@ -675,6 +699,10 @@ class HermesIssuedOperatorToken {
     this.wingLinkOrigin = '',
     this.wingLinkToken = '',
     this.wingLinkCredentialId = '',
+    this.hostFingerprint = '',
+    this.deviceId = '',
+    this.deviceScopes = const [],
+    this.protocolGeneration = 1,
     this.connections = const [],
   });
 
@@ -714,6 +742,15 @@ class HermesIssuedOperatorToken {
         json['wing_link_credential_id'],
         fallback: '',
       ),
+      hostFingerprint: wingStringFromJson(
+        json['host_fingerprint'],
+        fallback: '',
+      ),
+      deviceId: wingStringFromJson(json['device_id'], fallback: ''),
+      deviceScopes: wingStringListFromJson(json['device_scopes']),
+      protocolGeneration: json['protocol_generation'] is int
+          ? json['protocol_generation']! as int
+          : 1,
       connections: List.unmodifiable(connections),
     );
   }
@@ -724,6 +761,10 @@ class HermesIssuedOperatorToken {
   final String wingLinkOrigin;
   final String wingLinkToken;
   final String wingLinkCredentialId;
+  final String hostFingerprint;
+  final String deviceId;
+  final List<String> deviceScopes;
+  final int protocolGeneration;
   final List<HermesIssuedConnection> connections;
 }
 

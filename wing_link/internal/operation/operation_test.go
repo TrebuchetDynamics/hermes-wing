@@ -2,7 +2,10 @@ package operation
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -42,7 +45,7 @@ func TestManagerRetainsNormalizedTerminalSnapshot(t *testing.T) {
 		t.Fatal(err)
 	}
 	event := waitForTerminal(t, manager, id)
-	if event.ProtocolVersion != ProtocolVersion || event.OperationID != id || !event.Terminal || event.Percent != 100 {
+	if event.ProtocolVersion != ProtocolVersion || event.OperationID != id || event.Phase != PhaseCommitted || !event.Terminal || event.Percent != 100 {
 		t.Fatalf("event = %#v", event)
 	}
 	if len([]rune(event.Message)) > 240 {
@@ -89,6 +92,55 @@ func TestManagerAllowsNextOperationAfterCompletion(t *testing.T) {
 	waitForTerminal(t, manager, id)
 	if _, err := manager.Start("second", func(context.Context, func(OperationEvent)) error { return nil }); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDurableManagerReplaysIdempotentWorkAndCancelsByContext(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "operations.json")
+	manager, err := NewDurableOperationManager(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := sha256.Sum256([]byte(`{}`))
+	request := IdempotencyRequest{
+		DeviceID: "cred_phone", Route: "POST /v1/setup", Key: "retry-1",
+		PayloadDigest: hex.EncodeToString(digest[:]), Kind: "setup",
+	}
+	started := make(chan struct{})
+	id, replayed, err := manager.StartIdempotent(request, func(ctx context.Context, emit func(OperationEvent)) error {
+		close(started)
+		<-ctx.Done()
+		return ctx.Err()
+	})
+	if err != nil || replayed {
+		t.Fatalf("start id=%q replayed=%v err=%v", id, replayed, err)
+	}
+	<-started
+	replayedID, replayed, err := manager.StartIdempotent(request, func(context.Context, func(OperationEvent)) error {
+		t.Fatal("idempotent retry executed duplicate work")
+		return nil
+	})
+	if err != nil || !replayed || replayedID != id {
+		t.Fatalf("retry id=%q replayed=%v err=%v", replayedID, replayed, err)
+	}
+	if !manager.Cancel(id) {
+		t.Fatal("active operation was not cancelled")
+	}
+	event, ok := manager.Snapshot(id)
+	if !ok || !event.Terminal || event.ErrorCode != "operation_cancelled" {
+		t.Fatalf("cancelled event = %#v, ok=%v", event, ok)
+	}
+
+	reopened, err := NewDurableOperationManager(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replayedID, replayed, err = reopened.StartIdempotent(request, func(context.Context, func(OperationEvent)) error {
+		t.Fatal("terminal replay executed duplicate work")
+		return nil
+	})
+	if err != nil || !replayed || replayedID != id {
+		t.Fatalf("terminal replay id=%q replayed=%v err=%v", replayedID, replayed, err)
 	}
 }
 

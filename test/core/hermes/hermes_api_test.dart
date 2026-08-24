@@ -91,6 +91,30 @@ Map<String, Object?> _providerModelReadinessCapabilities({
 }
 
 void main() {
+  test('enrollment preview defaults a missing connection count to one', () {
+    final preview = HermesEnrollmentPreview.fromJson({
+      'label': 'BlueBlack',
+      'origin': 'https://hermes.example',
+      'scopes': <String>[],
+    });
+
+    expect(preview.connectionCount, 1);
+  });
+
+  test('enrollment preview accepts only bounded explicit integer counts', () {
+    expect(
+      HermesEnrollmentPreview.fromJson({'connection_count': 9}).connectionCount,
+      9,
+    );
+    for (final invalid in <Object?>[0, -1, 101, 1.0, '9', true, null]) {
+      expect(
+        () => HermesEnrollmentPreview.fromJson({'connection_count': invalid}),
+        throwsFormatException,
+        reason: 'connection_count=$invalid must fail closed',
+      );
+    }
+  });
+
   test('an explicit malformed connection bundle fails closed', () {
     expect(
       () => HermesIssuedOperatorToken.fromJson({

@@ -20,12 +20,20 @@ import '../providers/profile_selection_provider.dart';
 import '../widgets/profile_editor_sheet.dart';
 
 typedef WingLinkClientBuilder =
-    WingLinkClient Function({required Uri origin, required String token});
+    WingLinkClient Function({
+      required Uri origin,
+      required String token,
+      required String? hostFingerprint,
+    });
 
 final wingLinkClientBuilderProvider = Provider<WingLinkClientBuilder>(
   (ref) =>
-      ({required origin, required token}) =>
-          WingLinkClient(origin: origin, token: token),
+      ({required origin, required token, required hostFingerprint}) =>
+          WingLinkClient(
+            origin: origin,
+            token: token,
+            hostFingerprint: hostFingerprint,
+          ),
 );
 
 class ProfilesScreen extends ConsumerStatefulWidget {
@@ -461,6 +469,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final client = ref.read(wingLinkClientBuilderProvider)(
       origin: origin,
       token: token,
+      hostFingerprint: config?.wingLinkHostFingerprint,
     );
     if (mounted) {
       setState(() {

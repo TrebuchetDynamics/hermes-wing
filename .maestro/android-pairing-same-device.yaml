@@ -1,0 +1,159 @@
+# Deterministic Android pairing UX flow. This is a fixture-harness contract, not
+# physical-device qualification or evidence by itself.
+#
+# Required harness behavior:
+#   1. Build/install a test entrypoint that opens /enroll with no pending input.
+#   2. Serve PAIRING_OPEN_URL as a fixture-only ordinary /open page whose explicit
+#      Open Hermes Wing button launches a freshly generated fixture handoff.
+#   3. Register the two non-secret trigger URIs below to a fixture helper app.
+#   4. On each trigger, send an Android ACTION_SEND text/plain intent to Hermes
+#      Wing containing a freshly generated fixture-only wing://connect payload.
+#   5. Serve a cleartext fixture broker whose valid case previews and exchanges
+#      exactly nine named fixture profiles; its expired case returns an already
+#      expired preview. No environment value may contain a live payload, pairing
+#      code, or credential.
+#
+# Example invocation (values are fixture URLs, helper triggers, and labels; never
+# live pairing payloads, codes, or credentials):
+#   maestro test \
+#     -e PAIRING_OPEN_URL="$PAIRING_OPEN_URL" \
+#     -e PAIRING_VALID_SHARE_TRIGGER="$PAIRING_VALID_SHARE_TRIGGER" \
+#     -e PAIRING_EXPIRED_SHARE_TRIGGER="$PAIRING_EXPIRED_SHARE_TRIGGER" \
+#     -e PAIRING_FIXTURE_HOST="$PAIRING_FIXTURE_HOST" \
+#     -e PAIRING_PROFILE_1="$PAIRING_PROFILE_1" \
+#     -e PAIRING_PROFILE_2="$PAIRING_PROFILE_2" \
+#     -e PAIRING_PROFILE_3="$PAIRING_PROFILE_3" \
+#     -e PAIRING_PROFILE_4="$PAIRING_PROFILE_4" \
+#     -e PAIRING_PROFILE_5="$PAIRING_PROFILE_5" \
+#     -e PAIRING_PROFILE_6="$PAIRING_PROFILE_6" \
+#     -e PAIRING_PROFILE_7="$PAIRING_PROFILE_7" \
+#     -e PAIRING_PROFILE_8="$PAIRING_PROFILE_8" \
+#     -e PAIRING_PROFILE_9="$PAIRING_PROFILE_9" \
+#     .maestro/android-pairing-same-device.yaml
+appId: com.trebuchetdynamics.hermes.wing
+name: android_pairing_same_device_fixture
+
+env:
+  PAIRING_OPEN_URL: ${PAIRING_OPEN_URL}
+  PAIRING_VALID_SHARE_TRIGGER: ${PAIRING_VALID_SHARE_TRIGGER}
+  PAIRING_EXPIRED_SHARE_TRIGGER: ${PAIRING_EXPIRED_SHARE_TRIGGER}
+  PAIRING_FIXTURE_HOST: ${PAIRING_FIXTURE_HOST}
+  PAIRING_PROFILE_1: ${PAIRING_PROFILE_1}
+  PAIRING_PROFILE_2: ${PAIRING_PROFILE_2}
+  PAIRING_PROFILE_3: ${PAIRING_PROFILE_3}
+  PAIRING_PROFILE_4: ${PAIRING_PROFILE_4}
+  PAIRING_PROFILE_5: ${PAIRING_PROFILE_5}
+  PAIRING_PROFILE_6: ${PAIRING_PROFILE_6}
+  PAIRING_PROFILE_7: ${PAIRING_PROFILE_7}
+  PAIRING_PROFILE_8: ${PAIRING_PROFILE_8}
+  PAIRING_PROFILE_9: ${PAIRING_PROFILE_9}
+---
+- launchApp:
+    stopApp: true
+    clearState: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Choose how to connect this device."
+    timeout: 30000
+- assertVisible: "Paste pairing link"
+- assertVisible: "Scan QR from another screen"
+- assertVisible: "Connect one profile manually"
+
+# Exercise the primary same-device browser path first. PAIRING_OPEN_URL is a
+# fixture-only ordinary /open URL and must not contain a payload or pairing code.
+- openLink:
+    link: ${PAIRING_OPEN_URL}
+- extendedWaitUntil:
+    visible: "Open Hermes Wing"
+    timeout: 30000
+- tapOn: "Open Hermes Wing"
+- extendedWaitUntil:
+    visible: "Pair over plain HTTP?"
+    timeout: 30000
+- assertVisible: "(?s).*trusted VPN, Tailscale network, or isolated LAN.*"
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Connect 9 profiles"
+    timeout: 30000
+- assertVisible: "${PAIRING_FIXTURE_HOST}"
+- assertVisible: "Profiles"
+- assertVisible: "9"
+- tapOn: "Connect 9 profiles"
+- extendedWaitUntil:
+    visible: "9 profiles connected"
+    timeout: 60000
+- tapOn: "View profiles"
+- extendedWaitUntil:
+    visible: "${PAIRING_PROFILE_1}"
+    timeout: 30000
+- assertVisible: "${PAIRING_PROFILE_1}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_2}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_2}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_3}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_3}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_4}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_4}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_5}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_5}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_6}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_6}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_7}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_7}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_8}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_8}"
+- scrollUntilVisible:
+    element:
+      text: "${PAIRING_PROFILE_9}"
+    direction: DOWN
+- assertVisible: "${PAIRING_PROFILE_9}"
+
+# After the ordinary /open flow, exercise the ACTION_SEND fallback. The helper
+# trigger must not contain the pairing URI or one-time code.
+- launchApp:
+    stopApp: true
+    clearState: true
+- extendedWaitUntil:
+    visible: "Choose how to connect this device."
+    timeout: 30000
+- openLink:
+    link: ${PAIRING_VALID_SHARE_TRIGGER}
+- extendedWaitUntil:
+    visible: "Pair over plain HTTP?"
+    timeout: 30000
+
+# Reset the fixture app, then inject the already-expired ACTION_SEND case.
+- launchApp:
+    stopApp: true
+    clearState: true
+- extendedWaitUntil:
+    visible: "Choose how to connect this device."
+    timeout: 30000
+- openLink:
+    link: ${PAIRING_EXPIRED_SHARE_TRIGGER}
+- extendedWaitUntil:
+    visible: "This pairing link expired"
+    timeout: 30000
+- assertVisible: "Run wing-link pair again, then open the new link or scan its QR."
+- assertVisible: "Paste another link"
+- assertVisible: "Scan another QR"

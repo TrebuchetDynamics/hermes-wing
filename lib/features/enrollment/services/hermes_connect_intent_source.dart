@@ -16,6 +16,10 @@ abstract interface class HermesConnectIntentSource {
   /// Returns `null` when canceled, unavailable, or unsupported.
   Future<String?> scanQrCode();
 
+  /// Lets the operator choose a local QR image and returns its decoded payload.
+  /// The image remains local; returns `null` when canceled or unsupported.
+  Future<String?> importQrImage();
+
   /// Payloads delivered to an already-running activity (`onNewIntent`).
   /// Empty on unsupported platforms; never throws or emits an error.
   Stream<String> payloadEvents();
@@ -70,6 +74,21 @@ class MethodChannelHermesConnectIntentSource
     if (!_supportsNativeChannel) return null;
     try {
       final result = await _methodChannel.invokeMethod<Object?>('scanQrCode');
+      if (result is! String) return null;
+      final trimmed = result.trim();
+      return trimmed.isEmpty ? null : trimmed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> importQrImage() async {
+    if (!_supportsNativeChannel) return null;
+    try {
+      final result = await _methodChannel.invokeMethod<Object?>(
+        'importQrImage',
+      );
       if (result is! String) return null;
       final trimmed = result.trim();
       return trimmed.isEmpty ? null : trimmed;

@@ -801,6 +801,7 @@
   "enrollSameDeviceHelper": "If the link is on this phone, tap it or share it to Hermes Wing.",
   "enrollOpeningScanner": "Opening scanner…",
   "enrollScanQr": "Scan QR from another screen",
+  "enrollImportQrImage": "Choose QR image",
   "enrollManualConnectAction": "Connect one profile manually",
   "enrollManualConnectWarning": "This does not import Wing Link or other Hermes profiles.",
   "enrollGrantQuestion": "{count, plural, =1{Connect 1 Hermes profile from {label}?} other{Connect {count} Hermes profiles from {label}?}}",

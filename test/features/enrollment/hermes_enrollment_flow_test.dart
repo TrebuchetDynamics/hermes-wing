@@ -111,11 +111,13 @@ class _BlockingEnrollmentStore extends FakeHermesEndpointStore {
 }
 
 class _FakeConnectIntentSource implements HermesConnectIntentSource {
-  _FakeConnectIntentSource({this.initial, this.scanned});
+  _FakeConnectIntentSource({this.initial, this.scanned, this.imported});
 
   final String? initial;
   final String? scanned;
+  final String? imported;
   int scanCalls = 0;
+  int importCalls = 0;
   final _events = StreamController<String>.broadcast();
 
   @override
@@ -123,6 +125,12 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
 
   @override
   Stream<String> payloadEvents() => _events.stream;
+
+  @override
+  Future<String?> importQrImage() async {
+    importCalls++;
+    return imported;
+  }
 
   @override
   Future<String?> scanQrCode() async {
@@ -2028,6 +2036,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(source.scanCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      expect(find.text('hermes.example'), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('chosen QR image opens pairing review', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(imported: _validPayload);
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-import-qr-image')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(source.importCalls, 1);
       expect(controller.status, HermesEnrollmentStatus.ready);
       expect(find.text('hermes.example'), findsOneWidget);
       debugDefaultTargetPlatformOverride = null;

@@ -1582,6 +1582,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollScanQr => 'Scan QR from another screen';
 
   @override
+  String get enrollImportQrImage => 'Choose QR image';
+
+  @override
   String get enrollManualConnectAction => 'Connect one profile manually';
 
   @override

@@ -34,6 +34,7 @@ class _HermesEnrollmentScreenState
   _EnrollmentInputError? _payloadError;
   bool _bootstrapped = false;
   bool _scanning = false;
+  bool _importingImage = false;
 
   @override
   void didChangeDependencies() {
@@ -104,6 +105,7 @@ class _HermesEnrollmentScreenState
     if (_scanning) return;
     setState(() {
       _scanning = true;
+      _importingImage = false;
       _payloadError = null;
     });
     final payload = await ref
@@ -111,6 +113,24 @@ class _HermesEnrollmentScreenState
         .scanQrCode();
     if (!mounted) return;
     setState(() => _scanning = false);
+    if (payload != null) _handleExplicitHandoff(payload);
+  }
+
+  Future<void> _importQrImage() async {
+    if (_scanning) return;
+    setState(() {
+      _scanning = true;
+      _importingImage = true;
+      _payloadError = null;
+    });
+    final payload = await ref
+        .read(hermesConnectIntentSourceProvider)
+        .importQrImage();
+    if (!mounted) return;
+    setState(() {
+      _scanning = false;
+      _importingImage = false;
+    });
     if (payload != null) _handleExplicitHandoff(payload);
   }
 
@@ -344,6 +364,8 @@ class _HermesEnrollmentScreenState
               icon: const Icon(Icons.qr_code_scanner),
               label: Text(strings.enrollScanAnotherQr),
             ),
+            const SizedBox(height: 12),
+            _importQrImageButton(style: buttonStyle),
           ],
         ),
       ),
@@ -390,6 +412,8 @@ class _HermesEnrollmentScreenState
               icon: const Icon(Icons.qr_code_scanner),
               label: Text(strings.enrollScanAnotherQr),
             ),
+            const SizedBox(height: 12),
+            _importQrImageButton(style: buttonStyle),
           ],
         ),
       ),
@@ -421,6 +445,8 @@ class _HermesEnrollmentScreenState
           ),
           const SizedBox(height: 12),
           _scanButton(style: buttonStyle),
+          const SizedBox(height: 12),
+          _importQrImageButton(style: buttonStyle),
           const SizedBox(height: 12),
           Text(strings.enrollSameDeviceHelper, textAlign: TextAlign.center),
           const SizedBox(height: 12),
@@ -479,6 +505,23 @@ class _HermesEnrollmentScreenState
       label: Text(
         _scanning ? strings.enrollOpeningScanner : strings.enrollScanQr,
       ),
+    );
+  }
+
+  Widget _importQrImageButton({ButtonStyle? style}) {
+    final strings = AppLocalizations.of(context);
+    return OutlinedButton.icon(
+      key: const ValueKey('hermes-enrollment-import-qr-image'),
+      style: style,
+      onPressed: _scanning ? null : () => unawaited(_importQrImage()),
+      icon: _importingImage
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.image_outlined),
+      label: Text(strings.enrollImportQrImage),
     );
   }
 

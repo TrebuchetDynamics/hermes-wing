@@ -2769,6 +2769,12 @@ abstract class AppLocalizations {
   /// **'Scan QR from another screen'**
   String get enrollScanQr;
 
+  /// No description provided for @enrollImportQrImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose QR image'**
+  String get enrollImportQrImage;
+
   /// No description provided for @enrollManualConnectAction.
   ///
   /// In en, this message translates to:

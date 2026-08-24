@@ -16,7 +16,7 @@ void main() {
     expect(surfaces, contains('No Hermes profiles available'));
     expect(surfaces, contains('openConnected(page, "/profiles")'));
     expect(surfaces, contains('Profiles unavailable'));
-    expect(surfaces, contains('Enter gateway manually'));
+    expect(surfaces, contains('Connect one profile manually'));
 
     for (final stale in [
       'Add gateway or agent',

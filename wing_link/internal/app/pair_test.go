@@ -20,18 +20,63 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestPairingAdvertiseHostDefaultsToLoopback(t *testing.T) {
+func TestPairingAdvertiseHostUsesLoopbackForExplicitLocalMode(t *testing.T) {
 	host, err := pairingAdvertiseHost(false)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if host != "127.0.0.1" {
-		t.Fatalf("default pairing host = %q", host)
+		t.Fatalf("local pairing host = %q", host)
+	}
+}
+
+func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/v1/capabilities":
+			writePairJSON(writer, http.StatusOK, map[string]any{
+				"endpoints": map[string]any{
+					"operator_enrollment_create": map[string]any{"method": http.MethodPost, "path": "/v1/operator/enrollments"},
+				},
+			})
+		case "/v1/operator/enrollments":
+			writePairJSON(writer, http.StatusCreated, map[string]any{"pairing_uri": "wing://connect?code=test-code"})
+		default:
+			writer.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+	port := server.Listener.Addr().(*net.TCPAddr).Port
+	t.Setenv("WING_HERMES_URL", "")
+	t.Setenv("WING_HERMES_PORT", strconv.Itoa(port))
+	t.Setenv("WING_HERMES_TOKEN", "secret")
+	t.Setenv("WING_LINK_URL", "http://127.0.0.1:8654")
+	t.Setenv("WING_LINK_STATE", filepath.Join(t.TempDir(), "state.json"))
+
+	for _, test := range []struct {
+		args       []string
+		wantRemote bool
+	}{
+		{wantRemote: true},
+		{args: []string{"--local"}, wantRemote: false},
+	} {
+		observedRemote := false
+		_, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (string, error) {
+			observedRemote = remote
+			return "127.0.0.1", nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if observedRemote != test.wantRemote {
+			t.Fatalf("args %v remote = %t, want %t", test.args, observedRemote, test.wantRemote)
+		}
 	}
 }
 
@@ -683,9 +728,9 @@ func TestParseHermesProfileListExtractsRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 3 || rows[0].ID != "default" || rows[0].Model != "" ||
-		rows[1].ID != "link" || rows[1].Model != "gpt-5.6-sol" ||
-		rows[1].GatewayState != "running" || rows[2].ID != "sidon" {
+	if len(rows) != 3 || rows[0].ID != "default" || rows[0].Model != "" || rows[0].Current ||
+		rows[1].ID != "link" || rows[1].Model != "gpt-5.6-sol" || !rows[1].Current ||
+		rows[1].GatewayState != "running" || rows[2].ID != "sidon" || rows[2].Current {
 		t.Fatalf("rows = %#v", rows)
 	}
 }
@@ -733,7 +778,7 @@ if [ "$1 $2" = "profile list" ]; then
  Profile          Model                        Gateway      Alias        Distribution
  ───────────────  ───────────────────────────  ───────────  ───────────  ────────────────────
   default         —                            stopped      —            —
-  sidon           gpt-5.6-sol                  running      sidon        —
+ ◆sidon           gpt-5.6-sol                  running      sidon        —
 EOF
  exit
 fi
@@ -752,7 +797,7 @@ exit 1
 	if err := os.WriteFile(filepath.Join(directory, ".hermes", ".env"), []byte("API_SERVER_KEY=default-key\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(directory, ".hermes", "profiles", "sidon", ".env"), []byte("API_SERVER_KEY=sidon-key\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(directory, ".hermes", "profiles", "sidon", ".env"), []byte("API_SERVER_KEY=full-key\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("HOME", directory)
@@ -772,7 +817,7 @@ exit 1
 	if issued.Connections[0].ProfileID != "default" || issued.Connections[0].Origin != "http://127.0.0.1:8642/p/default" || issued.Connections[0].Token != "full-key" || issued.Connections[0].Label != "BlueBlack · default" {
 		t.Fatalf("default connection = %#v", issued.Connections[0])
 	}
-	if issued.Connections[1].ProfileID != "sidon" || issued.Connections[1].Origin != "http://127.0.0.1:8642/p/sidon" || issued.Connections[1].Token != "sidon-key" || issued.Connections[0].CredentialID == issued.Connections[1].CredentialID {
+	if issued.Connections[1].ProfileID != "sidon" || issued.Connections[1].Origin != "http://127.0.0.1:8642/p/sidon" || issued.Connections[1].Token != "full-key" || issued.Connections[0].CredentialID == issued.Connections[1].CredentialID {
 		t.Fatalf("sidon connection = %#v", issued.Connections[1])
 	}
 }
@@ -1073,7 +1118,7 @@ case "$1 $2" in
   /bin/printf '%s\n' \
    ' Profile          Model                        Gateway      Alias        Distribution' \
    ' ───────────────  ───────────────────────────  ───────────  ───────────  ────────────────────' \
-   '  default         —                            stopped      —            —' \
+   ' ◆default         —                            stopped      —            —' \
    '  sidon           gpt-5.6-sol                  running      sidon        —'
   ;;
  'config set') ;;

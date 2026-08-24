@@ -120,6 +120,7 @@ type BootstrapManager struct {
 	EnsureHermes      func(context.Context, func(OperationEvent)) (HermesInspection, error)
 	EnsureAPIKey      func(context.Context) error
 	EnsureAPIEndpoint func(context.Context) error
+	GatewayHealthy    func(context.Context) bool
 	StartGateway      func(context.Context) error
 	VerifyGateway     func(context.Context) error
 	RunHermes         func(context.Context, ...string) error
@@ -151,11 +152,15 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 			return BootstrapResult{}, fmt.Errorf("%w: API endpoint", ErrHermesInstall)
 		}
 	}
-	if manager.StartGateway != nil {
+	gatewayReady := manager.GatewayHealthy != nil && manager.GatewayHealthy(ctx)
+	if gatewayReady {
+		emitBootstrap(emit, "gateway", "Hermes gateway already healthy", 96)
+	} else if manager.StartGateway != nil {
 		emitBootstrap(emit, "gateway", "Starting Hermes gateway", 96)
 		if err := manager.StartGateway(ctx); err != nil {
 			return BootstrapResult{}, fmt.Errorf("%w: gateway", ErrHermesInstall)
 		}
+		gatewayReady = true
 	}
 	if manager.VerifyGateway != nil {
 		emitBootstrap(emit, "health", "Verifying Hermes gateway health", 98)
@@ -163,7 +168,7 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 			return BootstrapResult{}, fmt.Errorf("%w: gateway health", ErrHermesInstall)
 		}
 	}
-	result.GatewayStarted = manager.StartGateway != nil
+	result.GatewayStarted = gatewayReady
 	emitBootstrap(emit, "complete", "Hermes setup complete", 100)
 	return result, nil
 }
@@ -215,6 +220,23 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 		output, result := runProcessCapture(ctx, CommandSpec{Path: executable, Args: args, Env: []string{"HERMES_HOME=" + home}, Timeout: 30 * time.Second}, 256*1024)
 		return output, result.Err
 	}
+	verifyGateway := func(ctx context.Context) error {
+		port, err := resolveHermesAPIPort()
+		if err != nil {
+			return err
+		}
+		output, err := readHermes(ctx, "config", "env-path")
+		path := strings.TrimSpace(string(output))
+		if err != nil || !filepath.IsAbs(path) || strings.ContainsAny(path, "\r\n") ||
+			!pathWithin(home, path) || rejectSymlinkedAncestors(path) != nil {
+			return ErrHermesInstall
+		}
+		token, err := readHermesTokenFile(path)
+		if err != nil {
+			return err
+		}
+		return waitForHermesAPIHealth(ctx, port, token)
+	}
 	return &BootstrapManager{
 		EnsureHermes: installer.Ensure,
 		EnsureAPIKey: func(ctx context.Context) error {
@@ -232,12 +254,35 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 			if err != nil {
 				return err
 			}
-			for _, args := range hermesAPIEndpointCommands(port) {
+			output, err := readHermes(ctx, "profile", "list")
+			if err != nil {
+				return err
+			}
+			rows, err := parseHermesProfileList(output)
+			if err != nil {
+				return err
+			}
+			secondaryCommands, err := hermesSecondaryAPICommands(rows)
+			if err != nil {
+				return err
+			}
+			for _, args := range append(hermesAPIEndpointCommands(port), secondaryCommands...) {
 				if err := runHermes(ctx, args...); err != nil {
 					return err
 				}
 			}
-			return nil
+			output, err = readHermes(ctx, "config", "env-path")
+			path := strings.TrimSpace(string(output))
+			if err != nil || !filepath.IsAbs(path) || strings.ContainsAny(path, "\r\n") ||
+				!pathWithin(home, path) || rejectSymlinkedAncestors(path) != nil {
+				return ErrHermesInstall
+			}
+			return ensureHermesAPIEnvironment(path, port)
+		},
+		GatewayHealthy: func(ctx context.Context) bool {
+			preflightCtx, cancel := context.WithTimeout(ctx, 750*time.Millisecond)
+			defer cancel()
+			return verifyGateway(preflightCtx) == nil
 		},
 		StartGateway: func(ctx context.Context) error {
 			for _, args := range hermesGatewayCommands() {
@@ -247,14 +292,8 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 			}
 			return nil
 		},
-		VerifyGateway: func(ctx context.Context) error {
-			port, err := resolveHermesAPIPort()
-			if err != nil {
-				return err
-			}
-			return waitForHermesAPIHealth(ctx, port)
-		},
-		RunHermes: runHermes, RunHermesSecret: runHermesSecret,
+		VerifyGateway: verifyGateway,
+		RunHermes:     runHermes, RunHermesSecret: runHermesSecret,
 		ReadHermes: readHermes,
 	}
 }
@@ -272,7 +311,57 @@ func resolveHermesAPIPort() (int, error) {
 }
 
 func hermesGatewayCommands() [][]string {
-	return [][]string{{"gateway", "install"}, {"gateway", "restart"}}
+	return [][]string{{"gateway", "install"}, {"gateway", "restart", "--all"}}
+}
+
+func hermesSecondaryAPICommands(rows []profileRow) ([][]string, error) {
+	commands := make([][]string, 0, len(rows))
+	current := 0
+	for _, row := range rows {
+		if row.Current {
+			current++
+			continue
+		}
+		commands = append(commands, []string{
+			"--profile", row.ID, "config", "set", "--force", "platforms.api_server.enabled", "false",
+		})
+	}
+	if current != 1 {
+		return nil, errors.New("hermes profile inventory has no unique current profile")
+	}
+	return commands, nil
+}
+
+func ensureHermesAPIEnvironment(path string, port int) error {
+	if port < 1 || port > 65535 {
+		return errors.New("invalid Hermes API port")
+	}
+	unlock, err := acquireStateLock(path + ".wing-link.lock")
+	if err != nil {
+		return errors.New("could not lock the Hermes environment file")
+	}
+	defer func() { _ = unlock() }()
+	info, err := os.Lstat(path)
+	if err != nil || !info.Mode().IsRegular() {
+		return errors.New("hermes environment file is unavailable")
+	}
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		return errors.New("hermes environment file is unavailable")
+	}
+	var payload []byte
+	for _, line := range strings.Split(string(contents), "\n") {
+		trimmed := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "export "))
+		key, _, _ := strings.Cut(trimmed, "=")
+		key = strings.TrimSpace(key)
+		if key == "API_SERVER_HOST" || key == "API_SERVER_PORT" || line == "" {
+			continue
+		}
+		payload = append(payload, line...)
+		payload = append(payload, '\n')
+	}
+	payload = fmt.Appendf(payload, "API_SERVER_HOST=127.0.0.1\nAPI_SERVER_PORT=%d\n", port)
+	return writeHermesTokenFile(path, payload)
 }
 
 func hermesAPIEndpointCommands(port int) [][]string {
@@ -284,28 +373,29 @@ func hermesAPIEndpointCommands(port int) [][]string {
 	}
 }
 
-func waitForHermesAPIHealth(ctx context.Context, port int) error {
+func waitForHermesAPIHealth(ctx context.Context, port int, token string) error {
 	healthCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	client := &http.Client{Timeout: 2 * time.Second}
-	endpoint := fmt.Sprintf("http://127.0.0.1:%d/health", port)
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/v1/capabilities", port)
 	ticker := time.NewTicker(250 * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		request, err := http.NewRequestWithContext(healthCtx, http.MethodGet, endpoint, nil)
 		if err == nil {
+			request.Header.Set("Authorization", "Bearer "+token)
 			response, requestErr := client.Do(request)
 			if requestErr == nil {
-				var health struct {
-					Status   string `json:"status"`
-					Platform string `json:"platform"`
-					Version  string `json:"version"`
+				var capabilities struct {
+					Object    string                     `json:"object"`
+					Platform  string                     `json:"platform"`
+					Endpoints map[string]json.RawMessage `json:"endpoints"`
 				}
-				decodeErr := json.NewDecoder(io.LimitReader(response.Body, 16*1024)).Decode(&health)
+				decodeErr := json.NewDecoder(io.LimitReader(response.Body, 1<<20)).Decode(&capabilities)
 				_ = response.Body.Close()
 				if response.StatusCode >= http.StatusOK && response.StatusCode < http.StatusMultipleChoices &&
-					decodeErr == nil && health.Status == "ok" && health.Platform == "hermes-agent" &&
-					strings.TrimSpace(health.Version) != "" {
+					decodeErr == nil && capabilities.Object == "hermes.api_server.capabilities" &&
+					capabilities.Platform == "hermes-agent" && len(capabilities.Endpoints) > 0 {
 					return nil
 				}
 			}

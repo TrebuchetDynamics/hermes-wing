@@ -78,7 +78,7 @@ pinned Hermes Agent build, prepares API access, and starts the Hermes gateway:
 ```bash
 git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
-./install-wing-link.sh --build --setup
+./install-wing-link.sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
@@ -179,14 +179,15 @@ a per-user systemd service.
 ```bash
 git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
-./install-wing-link.sh --build --setup
+./install-wing-link.sh
 export PATH="$HOME/.local/bin:$PATH"
 hermes setup
 ```
 
-The installer defaults to `~/.local/bin`. `--build` builds the current checkout;
-`--setup` then runs that installed Wing Link binary to install or adopt Hermes,
-prepare API access, and start the local runtime. `hermes setup` remains the
+The installer defaults to building the current checkout into `~/.local/bin`, then
+runs the installed Wing Link binary to install or adopt Hermes, prepare API
+access, and start the local runtime. Use `--release` to install the most recent
+published alpha instead. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
 Today, Wing Link's Agent-domain compatibility surface is fixed profile
 list/create/rename/delete plus transactional new-profile setup for an allowlisted
@@ -215,11 +216,12 @@ the trusted VPN address:
 ```bash
 WING_HERMES_URL=http://<trusted-host-ip>:8642 \
 WING_LINK_URL=https://<trusted-host-ip>:8654 \
-~/.local/bin/wing-link pair --remote
+~/.local/bin/wing-link pair
 ```
 
-Remote Wing Link pairing uses TLS 1.3 and the persistent host identity. Plaintext
-Wing Link pairing is loopback-only.
+Wing Link pairing defaults to the host's Tailscale address, then another trusted
+private address, and uses TLS 1.3 with the persistent host identity. Use `--local`
+only for same-host pairing; plaintext Wing Link pairing is loopback-only.
 
 For remote pairing, open Wing on Android, choose **Connect to Hermes → Scan QR
 code**, and scan the displayed QR. The broker uses a self-signed identity that

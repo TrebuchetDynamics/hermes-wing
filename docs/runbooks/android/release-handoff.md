@@ -93,7 +93,7 @@ build/app/outputs/bundle/release/app-release.aab
   ```bash
   WING_HERMES_URL=http://<phone-reachable-address>:8642 \
   WING_LINK_URL=https://<phone-reachable-address>:8654 \
-  wing-link pair --remote
+  wing-link pair
   ```
 
   Remote pairing uses TLS 1.3. In Wing choose **Connect to Hermes → Scan QR
@@ -110,10 +110,11 @@ build/app/outputs/bundle/release/app-release.aab
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Use the documented `--remote` command with a phone-reachable trusted
-   VPN/Tailscale or isolated-LAN address. Verify the QR flow from the host screen
-   and Android **Share → Hermes Wing** for an existing pairing message. Use
-   loopback `/open` only when Wing runs on that same host, and manual URL/token
+3. Run the default pairing command with a phone-reachable trusted VPN/Tailscale
+   or isolated-LAN address. Use `--local` only for same-host pairing. Verify the QR
+   flow from the host screen and Android **Share → Hermes Wing** for an existing
+   pairing message. Use loopback `/open` only when Wing runs on that same host,
+   and manual URL/token
    entry only as a one-profile fallback.
 4. Send one short text turn to confirm the installed app can reach the trusted gateway.
 

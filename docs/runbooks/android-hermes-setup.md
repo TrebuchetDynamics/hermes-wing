@@ -17,7 +17,7 @@ cd hermes-wing
 1. Install Wing Link and prepare Hermes on the Linux host:
 
    ```bash
-   ./install-wing-link.sh --build --setup
+   ./install-wing-link.sh
    export PATH="$HOME/.local/bin:$PATH"
    ```
 
@@ -48,7 +48,7 @@ cd hermes-wing
    ```bash
    WING_HERMES_URL=http://<trusted-vpn-ip>:8642 \
    WING_LINK_URL=https://<trusted-vpn-ip>:8654 \
-   wing-link pair --remote --label "My Android device"
+   wing-link pair --label "My Android device"
    ```
 
    On Android, choose **Connect to Hermes → Scan QR code** and scan the generated

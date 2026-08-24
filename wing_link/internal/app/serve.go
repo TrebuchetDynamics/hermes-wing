@@ -75,6 +75,7 @@ type profileRow struct {
 	SkillsCount   int            `json:"skills_count,omitempty"`
 	GatewayState  string         `json:"gateway_state"`
 	Actions       profileActions `json:"actions"`
+	Current       bool           `json:"-"`
 	localEvidence bool
 }
 

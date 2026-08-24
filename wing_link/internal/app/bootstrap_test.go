@@ -425,11 +425,50 @@ func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
 	}
 }
 
-func TestHermesGatewayCommandsRestartToApplyEndpointChanges(t *testing.T) {
+func TestHermesGatewayCommandsRestartAllProfilesToReleaseLocalEndpoint(t *testing.T) {
 	commands := hermesGatewayCommands()
-	want := [][]string{{"gateway", "install"}, {"gateway", "restart"}}
+	want := [][]string{{"gateway", "install"}, {"gateway", "restart", "--all"}}
 	if !reflect.DeepEqual(commands, want) {
 		t.Fatalf("commands = %#v, want %#v", commands, want)
+	}
+}
+
+func TestHermesAPIEnvironmentOverridesStaleRemoteEndpoint(t *testing.T) {
+	path := filepath.Join(t.TempDir(), ".env")
+	contents := "API_SERVER_KEY=secret\nAPI_SERVER_HOST=100.64.0.1\nAPI_SERVER_PORT=9000\nAPI_SERVER_HOST=stale\n"
+	if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := ensureHermesAPIEnvironment(path, 9864); err != nil {
+		t.Fatal(err)
+	}
+	updated, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(updated)
+	if strings.Count(text, "API_SERVER_HOST=") != 1 || !strings.Contains(text, "API_SERVER_HOST=127.0.0.1\n") ||
+		strings.Count(text, "API_SERVER_PORT=") != 1 || !strings.Contains(text, "API_SERVER_PORT=9864\n") ||
+		!strings.Contains(text, "API_SERVER_KEY=secret\n") {
+		t.Fatalf("environment = %q", text)
+	}
+}
+
+func TestHermesProfileMultiplexDisablesSecondaryAPIServers(t *testing.T) {
+	rows := []profileRow{{ID: "default"}, {ID: "link", Current: true}, {ID: "sidon"}}
+	want := [][]string{
+		{"--profile", "default", "config", "set", "--force", "platforms.api_server.enabled", "false"},
+		{"--profile", "sidon", "config", "set", "--force", "platforms.api_server.enabled", "false"},
+	}
+	commands, err := hermesSecondaryAPICommands(rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(commands, want) {
+		t.Fatalf("commands = %#v, want %#v", commands, want)
+	}
+	if _, err := hermesSecondaryAPICommands([]profileRow{{ID: "default"}}); err == nil {
+		t.Fatal("profile inventory without a current profile was accepted")
 	}
 }
 
@@ -450,16 +489,25 @@ func TestHermesAPIEndpointUsesFixedLocalConfigurationAndHealth(t *testing.T) {
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path != "/health" {
-			t.Fatalf("health path = %q", request.URL.Path)
+		if request.URL.Path != "/v1/capabilities" {
+			t.Fatalf("capabilities path = %q", request.URL.Path)
+		}
+		if request.Header.Get("Authorization") != "Bearer secret" {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
 		}
 		writer.Header().Set("Content-Type", "application/json")
-		_, _ = writer.Write([]byte(`{"status":"ok","platform":"hermes-agent","version":"0.20.0"}`))
+		_, _ = writer.Write([]byte(`{"object":"hermes.api_server.capabilities","platform":"hermes-agent","endpoints":{"health":{}}}`))
 	}))
 	defer server.Close()
 	healthPort := server.Listener.Addr().(*net.TCPAddr).Port
-	if err := waitForHermesAPIHealth(context.Background(), healthPort); err != nil {
+	if err := waitForHermesAPIHealth(context.Background(), healthPort, "secret"); err != nil {
 		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	if err := waitForHermesAPIHealth(ctx, healthPort, "wrong"); err == nil {
+		t.Fatal("different Hermes credential was accepted")
 	}
 }
 
@@ -471,7 +519,7 @@ func TestHermesAPIHealthRejectsUnrelatedHTTPService(t *testing.T) {
 	port := server.Listener.Addr().(*net.TCPAddr).Port
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
-	if err := waitForHermesAPIHealth(ctx, port); err == nil {
+	if err := waitForHermesAPIHealth(ctx, port, "secret"); err == nil {
 		t.Fatal("unrelated health service accepted as Hermes")
 	}
 }

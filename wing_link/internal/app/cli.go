@@ -76,8 +76,8 @@ Get started:
              --json-lines            Stream progress as JSON lines
   pair       Create a secure pairing handoff for Hermes Wing.
              Prints a QR; local same-host pairing also prints a loopback URL.
-             --remote                Pair through an authenticated encrypted VPN
-             --local                 Pair on this device only (default)
+             --remote                Pair through Tailscale or a trusted VPN (default)
+             --local                 Pair on this device only
              --origin URL            Use a specific Hermes Agent API origin
              --label NAME            Name this Hermes Wing installation
 

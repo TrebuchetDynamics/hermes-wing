@@ -44,6 +44,8 @@ func TestHelpExplainsTheNormalServiceWorkflow(t *testing.T) {
 		"Wing Link\n  Local supervisor",
 		"Managed service:",
 		"Typical first run:",
+		"--remote                Pair through Tailscale or a trusted VPN (default)",
+		"--local                 Pair on this device only",
 		`Most users should not run "serve" directly`,
 	} {
 		if !strings.Contains(stdout.String(), want) {

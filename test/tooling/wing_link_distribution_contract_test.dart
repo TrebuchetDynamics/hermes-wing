@@ -49,15 +49,17 @@ void main() {
     expect(text, isNot(contains('wget |')));
   });
 
-  test('installer defaults to the most recent alpha release', () async {
-    final temp = await Directory.systemTemp.createTemp('wing-link-release-');
-    addTearDown(() => temp.delete(recursive: true));
-    final fakeBin = Directory('${temp.path}/bin')..createSync();
-    final releasedBinary = File('${temp.path}/wing-link')
-      ..writeAsStringSync('#!/bin/sh\nsleep 0.1\necho 1.2.3-alpha.4\n');
-    await Process.run('chmod', ['+x', releasedBinary.path]);
-    final curl = File('${fakeBin.path}/curl')
-      ..writeAsStringSync('''#!/bin/sh
+  test(
+    'explicit release mode installs the most recent alpha release',
+    () async {
+      final temp = await Directory.systemTemp.createTemp('wing-link-release-');
+      addTearDown(() => temp.delete(recursive: true));
+      final fakeBin = Directory('${temp.path}/bin')..createSync();
+      final releasedBinary = File('${temp.path}/wing-link')
+        ..writeAsStringSync('#!/bin/sh\nsleep 0.1\necho 1.2.3-alpha.4\n');
+      await Process.run('chmod', ['+x', releasedBinary.path]);
+      final curl = File('${fakeBin.path}/curl')
+        ..writeAsStringSync('''#!/bin/sh
 output=''
 url=''
 while [ "\$#" -gt 0 ]; do
@@ -75,22 +77,23 @@ case "\$url" in
   *) echo "unexpected URL: \$url" >&2; exit 1 ;;
 esac
 ''');
-    await Process.run('chmod', ['+x', curl.path]);
-    final installDir = Directory('${temp.path}/install');
+      await Process.run('chmod', ['+x', curl.path]);
+      final installDir = Directory('${temp.path}/install');
 
-    final install = await Process.run(
-      './install-wing-link.sh',
-      ['--prefix', installDir.path],
-      environment: {
-        'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
-        'FAKE_WING_LINK': releasedBinary.path,
-      },
-    );
+      final install = await Process.run(
+        './install-wing-link.sh',
+        ['--release', '--prefix', installDir.path],
+        environment: {
+          'PATH': '${fakeBin.path}:${Platform.environment['PATH']}',
+          'FAKE_WING_LINK': releasedBinary.path,
+        },
+      );
 
-    expect(install.exitCode, 0, reason: install.stderr as String);
-    expect(install.stdout, contains('v1.2.3-alpha.4'));
-    expect(File('${installDir.path}/wing-link').existsSync(), isTrue);
-  });
+      expect(install.exitCode, 0, reason: install.stderr as String);
+      expect(install.stdout, contains('v1.2.3-alpha.4'));
+      expect(File('${installDir.path}/wing-link').existsSync(), isTrue);
+    },
+  );
 
   test('release interruption restores the existing Wing Link', () async {
     final temp = await Directory.systemTemp.createTemp(
@@ -148,7 +151,7 @@ if [[ "\$target_path" == *.backup.* ]]; then kill -TERM "\$PPID"; fi
     ]);
   });
 
-  test('quick setup builds Wing Link then bootstraps Hermes', () async {
+  test('default mode builds Wing Link then bootstraps Hermes', () async {
     final temp = await Directory.systemTemp.createTemp('wing-link-quick-');
     addTearDown(() => temp.delete(recursive: true));
     final fakeBin = Directory('${temp.path}/bin')..createSync();
@@ -182,8 +185,6 @@ chmod +x "\$output"
     };
 
     final install = await Process.run('./install-wing-link.sh', [
-      '--build',
-      '--setup',
       '--prefix',
       installDir.path,
     ], environment: environment);

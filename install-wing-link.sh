@@ -7,6 +7,7 @@ expected_sha256=""
 expected_size=""
 install_dir=""
 build=false
+release=false
 quick_setup=false
 use_sudo=false
 custom_prefix=false
@@ -14,16 +15,19 @@ custom_prefix=false
 usage() {
   cat <<'EOF'
 Usage:
-  ./install-wing-link.sh [--setup] [--prefix DIR]
-  ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--prefix DIR]
+  ./install-wing-link.sh [--prefix DIR]
   ./install-wing-link.sh --build [--setup] [--system | --prefix DIR]
+  ./install-wing-link.sh --release [--setup] [--prefix DIR]
+  ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--setup] [--prefix DIR]
 
-By default, downloads the most recent alpha Wing Link release and verifies it
-against its published checksum. Supplying immutable release metadata verifies
-both the expected SHA-256 and exact byte size out-of-band. The binary is always
-validated and atomically installed for the current user.
+By default, builds and installs the local Go wing_link package, then installs or
+adopts Hermes Agent and starts its gateway. Release mode downloads an alpha Wing
+Link binary and verifies it against its published checksum. Supplying immutable
+release metadata verifies both the expected SHA-256 and exact byte size
+out-of-band. The binary is always validated and atomically installed.
 
-  --build       Build and install the local Go wing_link package instead
+  --build       Build and install the local Go wing_link package
+  --release     Download and install the most recent alpha release
   --setup       Install/adopt Hermes Agent, prepare API access, and start its gateway
   --system      With --build, install in /usr/local/bin (uses sudo when needed)
   --prefix DIR  Install in a custom directory
@@ -33,6 +37,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --build) build=true; shift ;;
+    --release) release=true; shift ;;
     --setup) quick_setup=true; shift ;;
     --tag) tag="${2:?--tag requires a value}"; shift 2 ;;
     --sha256) expected_sha256="${2:?--sha256 requires a value}"; shift 2 ;;
@@ -44,12 +49,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ "$build" == false && "$release" == false && -z "$tag" && -z "$expected_sha256" && -z "$expected_size" ]]; then
+  build=true
+  quick_setup=true
+fi
 [[ "$use_sudo" == false || "$custom_prefix" == false ]] || {
   echo "--system and --prefix cannot be combined." >&2
   exit 2
 }
-if [[ "$build" == true && ( -n "$tag" || -n "$expected_sha256" || -n "$expected_size" ) ]]; then
-  echo "Release verification options cannot be combined with --build." >&2
+if [[ "$build" == true && ( "$release" == true || -n "$tag" || -n "$expected_sha256" || -n "$expected_size" ) ]]; then
+  echo "Release options cannot be combined with --build." >&2
+  exit 2
+fi
+if [[ "$release" == true && ( -n "$tag" || -n "$expected_sha256" || -n "$expected_size" ) ]]; then
+  echo "--release cannot be combined with immutable release metadata." >&2
   exit 2
 fi
 
@@ -222,10 +235,8 @@ fi
   echo "--system requires --build." >&2
   exit 2
 }
-auto_release=false
-if [[ -z "$tag" && -z "$expected_sha256" && -z "$expected_size" ]]; then
-  auto_release=true
-elif [[ -z "$tag" || -z "$expected_sha256" || -z "$expected_size" ]]; then
+auto_release=$release
+if [[ "$auto_release" == false && ( -z "$tag" || -z "$expected_sha256" || -z "$expected_size" ) ]]; then
   echo "--tag, --sha256, and --size must be supplied together." >&2
   exit 2
 fi

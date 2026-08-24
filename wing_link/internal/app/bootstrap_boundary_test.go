@@ -43,6 +43,34 @@ func TestBootstrapRunsOnlySupervisorOwnedStages(t *testing.T) {
 	}
 }
 
+func TestBootstrapAdoptsHealthyGatewayWithoutRestart(t *testing.T) {
+	var messages []string
+	manager := &BootstrapManager{
+		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
+			return HermesInspection{Executable: "/safe/hermes", Adopted: true}, nil
+		},
+		GatewayHealthy: func(context.Context) bool { return true },
+		StartGateway: func(context.Context) error {
+			t.Fatal("healthy gateway was restarted")
+			return nil
+		},
+		VerifyGateway: func(context.Context) error { return nil },
+	}
+
+	result, err := manager.Bootstrap(context.Background(), BootstrapRequest{}, func(event OperationEvent) {
+		messages = append(messages, event.Message)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.GatewayStarted {
+		t.Fatalf("result = %#v", result)
+	}
+	if !reflect.DeepEqual(messages, []string{"Hermes gateway already healthy", "Verifying Hermes gateway health", "Hermes setup complete"}) {
+		t.Fatalf("messages = %#v", messages)
+	}
+}
+
 func TestBootstrapRequestHasNoRuntimeDomainFields(t *testing.T) {
 	assertNoRuntimeDomainFields(t, reflect.TypeOf(BootstrapRequest{}))
 }

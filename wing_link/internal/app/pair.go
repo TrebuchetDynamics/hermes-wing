@@ -400,12 +400,19 @@ func writePairJSON(writer http.ResponseWriter, status int, payload map[string]an
 }
 
 func parsePairOptions(args []string) (pairOptions, error) {
+	return parsePairOptionsWithAdvertiseHost(args, pairingAdvertiseHost)
+}
+
+func parsePairOptionsWithAdvertiseHost(
+	args []string,
+	advertiseHost func(bool) (string, error),
+) (pairOptions, error) {
 	label, err := os.Hostname()
 	if err != nil || strings.TrimSpace(label) == "" {
 		label = "Hermes Wing"
 	}
 	originValue := strings.TrimSpace(os.Getenv("WING_HERMES_URL"))
-	remote := false
+	remote := true
 	for index := 0; index < len(args); index++ {
 		switch args[index] {
 		case "--remote", "--lan":
@@ -432,7 +439,7 @@ func parsePairOptions(args []string) (pairOptions, error) {
 		return pairOptions{}, fmt.Errorf("%w: --label must be at most 80 characters", errPairUsage)
 	}
 	if originValue == "" {
-		host, hostErr := pairingAdvertiseHost(remote)
+		host, hostErr := advertiseHost(remote)
 		if hostErr != nil {
 			return pairOptions{}, hostErr
 		}
@@ -677,6 +684,7 @@ func parseHermesProfileList(output []byte) ([]profileRow, error) {
 		if model == "—" {
 			model = ""
 		}
+		current := strings.HasPrefix(fields[0], "◆")
 		rawID := strings.TrimPrefix(fields[0], "◆")
 		id, err := normalizeProfileID(rawID)
 		if err != nil || id != rawID {
@@ -686,7 +694,7 @@ func parseHermesProfileList(output []byte) ([]profileRow, error) {
 			return nil, errors.New("hermes profile list returned duplicate profiles")
 		}
 		seen[id] = struct{}{}
-		rows = append(rows, profileRow{ID: id, Name: id, Model: model, GatewayState: state})
+		rows = append(rows, profileRow{ID: id, Name: id, Model: model, GatewayState: state, Current: current})
 	}
 	if err := scanner.Err(); err != nil || phase != 2 || len(rows) == 0 {
 		return nil, errors.New("hermes profile list returned invalid data")

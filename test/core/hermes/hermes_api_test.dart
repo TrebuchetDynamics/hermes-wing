@@ -1645,6 +1645,25 @@ void main() {
     },
   );
 
+  test('jobs inventory requests disabled schedules explicitly', () async {
+    Uri? requestedUri;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        requestedUri = uri;
+        return _jobsFixture;
+      },
+    );
+
+    await client.listJobs(profile: 'blue');
+
+    expect(requestedUri?.path, '/api/jobs');
+    expect(requestedUri?.queryParameters, {
+      'profile': 'blue',
+      'include_disabled': 'true',
+    });
+  });
+
   test('session usage metadata preserves zeroes and rejects unsafe values', () {
     final session = HermesSession.fromJson({
       'id': 'session-bounds',
@@ -1978,7 +1997,7 @@ void main() {
       );
       expect(posts['/v1/runs/run_1/approval'], {
         'approval_id': 'appr_1',
-        'decision': 'once',
+        'choice': 'once',
       });
 
       await client.steerRun(run.id, text: 'focus on tests');
@@ -2330,6 +2349,19 @@ void main() {
     );
     expect(
       () => config.profileScopedUri(config.sessionsUri, '  '),
+      throwsArgumentError,
+    );
+
+    final enrolled = HermesApiConfig.fromBaseUrl(
+      'https://hermes.example/p/coder',
+    );
+    expect(enrolled.pathProfileId, 'coder');
+    expect(
+      enrolled.profileScopedUri(enrolled.sessionsUri, 'coder').toString(),
+      'https://hermes.example/p/coder/api/sessions',
+    );
+    expect(
+      () => enrolled.profileScopedUri(enrolled.sessionsUri, 'writer'),
       throwsArgumentError,
     );
   });

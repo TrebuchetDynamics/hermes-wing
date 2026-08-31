@@ -137,7 +137,17 @@ class HermesApiClient {
   }
 
   Future<List<HermesJob>> listJobs({String? profile}) async {
-    final body = await _getJson(_scoped(config.jobsUri, profile));
+    // Hermes Agent omits disabled jobs unless the caller opts in. Include them
+    // so a paused schedule remains visible and can be resumed from Wing once
+    // the corresponding mutation contract is advertised.
+    final scopedUri = _scoped(config.jobsUri, profile);
+    final uri = scopedUri.replace(
+      queryParameters: {
+        ...scopedUri.queryParameters,
+        'include_disabled': 'true',
+      },
+    );
+    final body = await _getJson(uri);
     final rawJobs = body['jobs'] ?? body['data'];
     return wingMapListFromJson(rawJobs)
         .map(HermesJob.fromJson)
@@ -329,10 +339,9 @@ class HermesApiClient {
     required String decision,
     String? profile,
   }) async {
-    await _postJson(_scoped(config.runApprovalUri(runId), profile), {
-      'approval_id': approvalId,
-      'decision': decision,
-    });
+    final body = <String, Object?>{'choice': decision};
+    if (approvalId.trim().isNotEmpty) body['approval_id'] = approvalId.trim();
+    await _postJson(_scoped(config.runApprovalUri(runId), profile), body);
   }
 
   Future<void> stopRun(String runId, {String? profile}) async {

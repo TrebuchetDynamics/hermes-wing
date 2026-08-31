@@ -11,10 +11,12 @@ HermesApprovalRequest _request({
   String toolCallId = 'tool-1',
   String prompt = 'Run the deploy script?',
   String? sessionId,
+  String? runId,
 }) => HermesApprovalRequest(
   id: id,
   toolCallId: toolCallId,
   prompt: prompt,
+  runId: runId,
   sessionId: sessionId,
 );
 
@@ -123,7 +125,19 @@ void main() {
     },
   );
 
-  test('an approval without an id is never sent', () async {
+  test('an approval without an id uses its run identity', () async {
+    build();
+    final request = _request(id: '   ', toolCallId: 't1', runId: 'run-1');
+    queue.add(request);
+
+    await queue.resolve(HermesApprovalDecision.once, request);
+
+    expect(channel.respondToApprovalCalls.single['approvalId'], isEmpty);
+    expect(channel.respondToApprovalCalls.single['runId'], 'run-1');
+    expect(queue.pending, isEmpty);
+  });
+
+  test('an approval without an id or run identity is never sent', () async {
     build();
     final request = _request(id: '   ', toolCallId: 't1');
     queue.add(request);

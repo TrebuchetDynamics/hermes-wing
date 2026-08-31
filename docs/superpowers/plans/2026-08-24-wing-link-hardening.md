@@ -25,6 +25,7 @@
 ### Task 1: Persistent host identity and state-schema migration
 
 **Files:**
+
 - Create: `wing_link/internal/state/identity.go`
 - Create: `wing_link/internal/state/identity_test.go`
 - Modify: `wing_link/internal/state/state.go`
@@ -33,6 +34,7 @@
 - Modify: `wing_link/internal/app/state.go`
 
 **Interfaces:**
+
 - Produces: `type HostIdentity struct { PublicKey ed25519.PublicKey; PrivateKey ed25519.PrivateKey; TLSPrivateKey *rsa.PrivateKey; Fingerprint string }`
 - Produces: `func (s *StateStore) HostIdentity() (HostIdentity, error)`
 - Produces state schema 2 with `devices`, while accepting and migrating schema 1 `control_token_hashes` into restricted legacy device records.
@@ -46,6 +48,7 @@
 ### Task 2: Named device credentials, capability grants, and individual revocation
 
 **Files:**
+
 - Create: `wing_link/internal/state/device.go`
 - Create: `wing_link/internal/state/device_test.go`
 - Modify: `wing_link/internal/state/state.go`
@@ -55,6 +58,7 @@
 - Modify: `wing_link/internal/app/cli_test.go`
 
 **Interfaces:**
+
 - Produces: `DeviceCredential { ID, Name, TokenHash, PublicKey, Scopes, CreatedAt, LastUsedAt, ExpiresAt, Legacy }`.
 - Produces: `StageDeviceCredential(name string, publicKey []byte, scopes []string) (id, token string, err error)`.
 - Produces: `AuthorizeDevice(token string, requiredScopes ...string) (DeviceAuthorization, bool)`.
@@ -71,6 +75,7 @@
 ### Task 3: Pinned host TLS and secure pairing
 
 **Files:**
+
 - Create: `wing_link/internal/state/certificate.go`
 - Create: `wing_link/internal/state/certificate_test.go`
 - Create: `wing_link/internal/app/listeners.go`
@@ -82,6 +87,7 @@
 - Modify: `wing_link/internal/app/service_linux_test.go`
 
 **Interfaces:**
+
 - Produces: `HostIdentity.TLSCertificate(now time.Time, hosts []net.IP) (tls.Certificate, error)` with certificate SPKI equal to the pinned persistent RSA TLS public key; the separate Ed25519 key remains in the same owner-only identity bundle.
 - Pairing URI and inspect response add `host_fingerprint`; exchange response adds `device_id`, `device_scopes`, and `protocol_generation`.
 - Loopback listener uses HTTP. Non-loopback listener uses TLS 1.3 with the identity certificate.
@@ -96,6 +102,7 @@
 ### Task 4: N/N-1 protocol negotiation and typed contracts
 
 **Files:**
+
 - Create: `wing_link/internal/protocol/metadata.go`
 - Create: `wing_link/internal/protocol/metadata_test.go`
 - Modify: `wing_link/internal/protocol/protocol.go`
@@ -105,6 +112,7 @@
 - Modify: `test/core/wing_link/wing_link_client_test.dart`
 
 **Interfaces:**
+
 - Current generation is 2; supported generations are `[1, 2]`.
 - Public unauthenticated `GET /meta` returns only version, supported generations, host fingerprint, and bounded capability identifiers.
 - Requests send `Wing-Protocol: 2`; responses send `Wing-Protocol`.
@@ -119,6 +127,7 @@
 ### Task 5: Native pinned HTTPS client and secure enrollment persistence
 
 **Files:**
+
 - Create: `lib/core/wing_link/wing_link_transport.dart`
 - Create: `lib/core/wing_link/wing_link_transport_io.dart`
 - Create: `lib/core/wing_link/wing_link_transport_stub.dart`
@@ -132,6 +141,7 @@
 - Modify: `pubspec.yaml`, `pubspec.lock`
 
 **Interfaces:**
+
 - `WingLinkTransport` accepts an expected SHA-256 SPKI fingerprint and verifies it both in `badCertificateCallback` and after successful TLS handshakes.
 - `HermesEndpointConfig` gains secure `wingLinkHostFingerprint` and non-secret `wingLinkDeviceId`.
 - Pair parsing requires the fingerprint for non-loopback HTTPS and rejects fingerprint changes on re-enrollment without a new explicit pairing flow.
@@ -145,6 +155,7 @@
 ### Task 6: Idempotent durable operations and atomic pairing transactions
 
 **Files:**
+
 - Create: `wing_link/internal/operation/journal.go`
 - Create: `wing_link/internal/operation/journal_test.go`
 - Modify: `wing_link/internal/operation/operation.go`
@@ -155,6 +166,7 @@
 - Modify: related app tests
 
 **Interfaces:**
+
 - Mutations require bounded `Idempotency-Key` and optional `If-Match` revision.
 - Durable operation phases: `pending`, `approved`, `running`, `committed`, `failed`, `cancelled`.
 - Same device + route + idempotency key + payload digest returns the same operation/result; a changed payload returns HTTP 409 `idempotency_conflict`.
@@ -170,6 +182,7 @@
 ### Task 7: Risk-tiered host approvals
 
 **Files:**
+
 - Create: `wing_link/internal/approval/approval.go`
 - Create: `wing_link/internal/approval/approval_test.go`
 - Create: `wing_link/internal/app/approval.go`
@@ -180,6 +193,7 @@
 - Modify: `wing_link/internal/protocol/protocol.go`
 
 **Interfaces:**
+
 - Risk tiers: `routine`, `sensitive`, `trust`.
 - Sensitive/trust requests create an expiring approval containing requester device ID, typed operation, payload digest, and bounded public summary—never the secret or host path.
 - CLI: `wing-link approvals list`, `approve <id>`, `reject <id>`; only the local process can mutate approval state.
@@ -194,6 +208,7 @@
 ### Task 8: Bounded privacy-safe audit log
 
 **Files:**
+
 - Create: `wing_link/internal/audit/audit.go`
 - Create: `wing_link/internal/audit/audit_test.go`
 - Modify: `wing_link/internal/app/serve.go`
@@ -201,6 +216,7 @@
 - Modify: `wing_link/internal/app/cli_test.go`
 
 **Interfaces:**
+
 - Audit events contain timestamp, device ID, typed operation, risk tier, approval source, result code, protocol generation, and bounded duration.
 - Owner-only rolling JSON-lines file, maximum 10,000 events and 4 MiB; rotation is atomic.
 - CLI `wing-link audit` prints bounded events locally; no remote audit-list endpoint.
@@ -214,6 +230,7 @@
 ### Task 9: Signed Linux update staging and rollback
 
 **Files:**
+
 - Create: `wing_link/internal/release/updater.go`
 - Create: `wing_link/internal/release/updater_test.go`
 - Modify: `wing_link/internal/release/components.go`
@@ -223,6 +240,7 @@
 - Modify: `wing_link/internal/app/serve_test.go`
 
 **Interfaces:**
+
 - Signed catalog gains an optional Linux `wing_link` artifact with version, size, SHA-256, URL, and minimum protocol generation.
 - Updater stages to an owner-only versioned path, verifies size/digest/signature, atomically switches a `current` symlink, restarts, health-checks through loopback, and restores `previous` on failure.
 - Update always requires host approval; an empty production release-key set makes update unavailable, not insecure.
@@ -236,6 +254,7 @@
 ### Task 10: Device, approval, and compatibility UX in Hermes Wing
 
 **Files:**
+
 - Create: `lib/core/wing_link/models/wing_link_device.dart`
 - Create: `lib/core/wing_link/models/wing_link_approval.dart`
 - Modify: `lib/core/wing_link/wing_link_client.dart`
@@ -244,6 +263,7 @@
 - Create/modify corresponding client and widget tests
 
 **Interfaces:**
+
 - Gateway screen shows the current device identity, granted scopes, host fingerprint status, protocol compatibility, pending operation state, and actionable host-confirmation instructions.
 - Remote UI may self-revoke but cannot list/revoke peers, approve requests, rotate host identity, or expand permissions.
 
@@ -255,6 +275,7 @@
 ### Task 11: Documentation, compatibility removal rules, and release evidence
 
 **Files:**
+
 - Modify: `CONTEXT.md`
 - Modify: `README.md`
 - Modify: `docs/adr/runtime-and-delivery.md`
@@ -272,6 +293,7 @@
 ### Task 12: Complete verification and Waydroid evidence
 
 **Files:**
+
 - Create or modify only sanitized `.maestro` flows when executable evidence requires them; never retain credentials, QR contents, or private screenshots.
 
 - [x] Run `gofmt -w` on scoped Go files and `go test -race ./...`, `go vet ./...`, plus state/protocol decoder fuzz tests.

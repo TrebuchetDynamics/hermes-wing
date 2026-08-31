@@ -669,6 +669,46 @@ void main() {
     );
   });
 
+  testWidgets('a SOUL revision conflict reloads server content before retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      writeProfileSoulFails: true,
+      profileSoul: const HermesProfileSoul(
+        soul: 'Server version',
+        revision: 'server-rev',
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          profile: const HermesProfile(
+            id: 'coder',
+            displayName: 'Coding Agent',
+            revision: 'rev-1',
+          ),
+          canEditSoul: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).last, 'Local version');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(channel.readProfileSoulCalls, ['coder', 'coder']);
+    expect(find.text('Server version'), findsOneWidget);
+    expect(
+      find.textContaining('This profile changed elsewhere'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a non-conflict mutation failure shows the generic message', (
     tester,
   ) async {

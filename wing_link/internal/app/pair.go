@@ -671,8 +671,6 @@ var wingLinkControlScopes = []string{
 	ScopeDiagnosticsRead,
 	ScopeProfilesRead,
 	ScopeProfilesWrite,
-	ScopeProvidersRead,
-	ScopeProvidersWrite,
 	ScopeDirectoriesRead,
 	ScopeDeviceSelfRead,
 	ScopeDeviceSelfRevoke,

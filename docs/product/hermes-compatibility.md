@@ -39,6 +39,13 @@ The API server uses `Authorization: Bearer <API_SERVER_KEY>`. The key grants ful
 access to the API server, including tools. Keep browser CORS origins narrow and do
 not expose the server to an untrusted network.
 
+Hermes Agent 0.20 does not advertise a network WebSocket or ACP transport for
+these surfaces. Hermes Desktop's authenticated dashboard WebSocket is a separate
+Desktop transport, not an Agent compatibility contract. Wing may add a direct
+Agent WebSocket only after an exact advertised endpoint, authentication method,
+scope model, and close/event contract are available. It must not be tunneled
+through Wing Link.
+
 ## Wing capability policy
 
 Wing treats an absent `schema_version` as schema 1 and currently understands only

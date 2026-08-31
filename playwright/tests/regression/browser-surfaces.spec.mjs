@@ -73,6 +73,15 @@ test("Profiles fail closed when profile administration is not advertised", async
   await expect(page.getByText("New Agent")).toHaveCount(0);
 });
 
+test("Standalone persona route stays explicit without a selected profile", async ({
+  page,
+}) => {
+  await openConnected(page, "/soul");
+
+  await expect(page.getByText("No profiles available")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Persona" })).toHaveCount(0);
+});
+
 test("Providers exposes runtime models without unsupported mutation controls", async ({
   page,
 }) => {

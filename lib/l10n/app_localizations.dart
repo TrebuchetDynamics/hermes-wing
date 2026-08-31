@@ -3808,25 +3808,103 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectTitle.
   ///
   /// In en, this message translates to:
-  /// **'Connect to your Hermes VPS'**
+  /// **'Add Hermes'**
   String get chatLayoutConnectTitle;
 
   /// No description provided for @chatLayoutConnectBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.'**
+  /// **'Connect directly to Hermes Agent. Choose how this device can reach it; Wing Link host management stays separate.'**
   String get chatLayoutConnectBody;
+
+  /// No description provided for @chatLayoutConnectionModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How will Wing reach Hermes?'**
+  String get chatLayoutConnectionModeLabel;
+
+  /// No description provided for @chatLayoutConnectionModeLocalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get chatLayoutConnectionModeLocalLabel;
+
+  /// No description provided for @chatLayoutConnectionModeRemoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote HTTPS'**
+  String get chatLayoutConnectionModeRemoteLabel;
+
+  /// No description provided for @chatLayoutConnectionModeVpnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'VPN / Tailscale'**
+  String get chatLayoutConnectionModeVpnLabel;
+
+  /// No description provided for @chatLayoutConnectionModeSshLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH tunnel'**
+  String get chatLayoutConnectionModeSshLabel;
+
+  /// No description provided for @chatLayoutConnectionModeLocalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a local Agent URL, or install Hermes on this device when local setup is available.'**
+  String get chatLayoutConnectionModeLocalBody;
+
+  /// No description provided for @chatLayoutConnectionModeRemoteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.'**
+  String get chatLayoutConnectionModeRemoteBody;
+
+  /// No description provided for @chatLayoutConnectionModeVpnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.'**
+  String get chatLayoutConnectionModeVpnBody;
+
+  /// No description provided for @chatLayoutConnectionModeSshBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a fixed, trusted SSH tunnel outside Wing, then enter its local Agent URL. Wing never runs arbitrary SSH commands or stores SSH keys.'**
+  String get chatLayoutConnectionModeSshBody;
+
+  /// No description provided for @chatLayoutConnectionModeLocalUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the local Agent URL. This device usually uses http://127.0.0.1:8642.'**
+  String get chatLayoutConnectionModeLocalUrlHelper;
+
+  /// No description provided for @chatLayoutConnectionModeRemoteUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the HTTPS Agent URL. Wing currently uses HTTPS/SSE; WebSocket support waits for an exact Hermes contract.'**
+  String get chatLayoutConnectionModeRemoteUrlHelper;
+
+  /// No description provided for @chatLayoutConnectionModeVpnUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.'**
+  String get chatLayoutConnectionModeVpnUrlHelper;
+
+  /// No description provided for @chatLayoutConnectionModeSshUrlHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the fixed tunnel outside Wing, then enter the local Agent URL it exposes.'**
+  String get chatLayoutConnectionModeSshUrlHelper;
 
   /// No description provided for @chatLayoutVpsConnectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'VPS connection'**
+  /// **'Hermes Agent connection'**
   String get chatLayoutVpsConnectionTitle;
 
   /// No description provided for @chatLayoutVpsConnectionBody.
   ///
   /// In en, this message translates to:
-  /// **'Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.'**
+  /// **'Use an HTTPS or trusted private-network URL. Never expose an unauthenticated Hermes port to the internet.'**
   String get chatLayoutVpsConnectionBody;
 
   /// No description provided for @chatLayoutScanQrAction.
@@ -3838,7 +3916,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutServerUrlLabel.
   ///
   /// In en, this message translates to:
-  /// **'Hermes server URL'**
+  /// **'Hermes Agent URL'**
   String get chatLayoutServerUrlLabel;
 
   /// No description provided for @chatLayoutServerUrlHint.
@@ -3850,7 +3928,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutServerUrlHelper.
   ///
   /// In en, this message translates to:
-  /// **'Enter the HTTPS or private-network URL without /v1.'**
+  /// **'Enter the Agent URL without /v1. For a trusted local or SSH tunnel, a loopback HTTP URL may be used.'**
   String get chatLayoutServerUrlHelper;
 
   /// No description provided for @chatLayoutAccessTokenLabel.
@@ -3880,13 +3958,13 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutVpsNameLabel.
   ///
   /// In en, this message translates to:
-  /// **'VPS name (optional)'**
+  /// **'Connection name (optional)'**
   String get chatLayoutVpsNameLabel;
 
   /// No description provided for @chatLayoutVpsNameHint.
   ///
   /// In en, this message translates to:
-  /// **'My Hermes VPS'**
+  /// **'My Hermes connection'**
   String get chatLayoutVpsNameHint;
 
   /// No description provided for @chatLayoutVpsNameHelper.
@@ -3901,6 +3979,18 @@ abstract class AppLocalizations {
   /// **'Your token is stored in secure device storage and is never shown after connecting.'**
   String get chatLayoutTokenStorageBody;
 
+  /// No description provided for @chatLayoutCredentialBoundaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two separate connections'**
+  String get chatLayoutCredentialBoundaryTitle;
+
+  /// No description provided for @chatLayoutCredentialBoundaryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This token is only for Hermes Agent chat. Wing Link pairing, when available, uses a separate management credential and never carries chat traffic.'**
+  String get chatLayoutCredentialBoundaryBody;
+
   /// No description provided for @chatLayoutConnectingAction.
   ///
   /// In en, this message translates to:
@@ -3910,7 +4000,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Connect to VPS'**
+  /// **'Add Hermes'**
   String get chatLayoutConnectAction;
 
   /// No description provided for @chatLayoutDevShortcutsTitle.

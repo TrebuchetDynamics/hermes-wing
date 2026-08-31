@@ -223,7 +223,7 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 		},
 	}
 	server := httptest.NewServer(newWingLinkServerWithBootstrap(
-		&profileBackend{}, store, nil, manager,
+		&profileBackend{}, store, manager,
 	))
 	defer server.Close()
 
@@ -332,7 +332,7 @@ func TestBootstrapRouteReplaysIdempotencyKeyWithoutDuplicateWork(t *testing.T) {
 		},
 	}
 	server := httptest.NewServer(newWingLinkServerWithOperations(
-		&profileBackend{}, store, nil, bootstrap, operations,
+		&profileBackend{}, store, bootstrap, operations,
 	))
 	defer server.Close()
 
@@ -410,7 +410,7 @@ func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
 			return HermesInspection{}, nil
 		},
 	}
-	server := httptest.NewServer(newWingLinkServerWithBootstrap(nil, store, nil, manager))
+	server := httptest.NewServer(newWingLinkServerWithBootstrap(nil, store, manager))
 	defer server.Close()
 
 	request, err := http.NewRequest(

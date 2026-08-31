@@ -157,7 +157,13 @@ void main() {
   testWidgets(
     'composer model chip stays disabled without model assignment capability',
     (tester) async {
-      final channel = FakeHermesChannel(models: const ['gpt-5']);
+      final channel = FakeHermesChannel(
+        models: const ['gpt-5'],
+        capabilities: HermesCapabilityDocument.fromJson(const {
+          'schema_version': 1,
+          'model': 'hermes-agent',
+        }),
+      );
       addTearDown(channel.dispose);
       await tester.pumpWidget(_testApp(channel));
       await tester.pumpAndSettle();
@@ -166,6 +172,7 @@ void main() {
         find.byKey(const ValueKey('hermes-composer-model-chip')),
       );
       expect(chip.onPressed, isNull);
+      expect((chip.label as Text).data, 'Hermes model');
       expect(find.text('Select model'), findsNothing);
       expect(channel.assignModelCalls, isEmpty);
     },

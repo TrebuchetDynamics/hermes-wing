@@ -12,7 +12,7 @@ import (
 )
 
 func TestRemoteDirectoryLoopbackHostBrowseAndRevoke(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	store := newStateStore(statePath)
 	token := stageDirectoryDevice(t, store, "Loopback browser", 21, []string{ScopeDirectoriesRead})
 

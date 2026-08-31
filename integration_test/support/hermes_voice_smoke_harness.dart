@@ -369,6 +369,7 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {}
 
   @override

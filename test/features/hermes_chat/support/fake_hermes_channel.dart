@@ -205,10 +205,31 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Stream<HermesApprovalRequest> get approvalRequests =>
       _approvalController.stream;
 
+  VoidCallback? _staleListener;
+  int _listenerCount = 0;
+
+  @override
+  void addListener(VoidCallback listener) {
+    // The chat screen is the second listener in this fixture; the first is
+    // the gateway directory listener, and later listeners are Riverpod state
+    // projections that cannot be invoked after their scope is disposed.
+    if (++_listenerCount == 2) _staleListener = listener;
+    super.addListener(listener);
+  }
+
   @override
   void dispose() {
     _approvalController.close();
     super.dispose();
+  }
+
+  void emitStaleActiveSessionChange() {
+    _state = _state.copyWith(
+      sessions: [const HermesSession(id: 'sess_2', source: 'fake')],
+      activeSessionId: 'sess_2',
+      messages: const {},
+    );
+    _staleListener?.call();
   }
 
   void _setState(HermesChannelState next) {
@@ -953,10 +974,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {
     respondToApprovalCalls.add({
       'approvalId': approvalId,
       'decision': decision,
+      'runId': runId,
     });
     await approvalResponseGate?.call();
     if (!approvalResponsesFail) return;

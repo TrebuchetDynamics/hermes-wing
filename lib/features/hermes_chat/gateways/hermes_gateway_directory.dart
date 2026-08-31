@@ -56,9 +56,12 @@ class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
     final supportsProfileContext =
         capabilities.supportsSchema &&
         capabilities.profileContext.isSupportedQueryContext;
+    final profileEndpoint = capabilities.endpoints['profiles'];
     final supportsProfiles =
         supportsProfileContext &&
+        profileEndpoint != null &&
         capabilities.auth.allows('profiles:read') &&
+        profileEndpoint.requiredScopes.every(capabilities.auth.allows) &&
         capabilities.advertisesScopedEndpoint(
           'profiles',
           'GET',

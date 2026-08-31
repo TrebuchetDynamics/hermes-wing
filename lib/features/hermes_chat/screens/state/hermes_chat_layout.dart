@@ -1,5 +1,43 @@
 part of '../hermes_chat_screen.dart';
 
+String _connectionModeLabel(
+  AppLocalizations strings,
+  _HermesConnectionMode mode,
+) => switch (mode) {
+  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalLabel,
+  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteLabel,
+  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnLabel,
+  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshLabel,
+};
+
+String _connectionModeBody(
+  AppLocalizations strings,
+  _HermesConnectionMode mode,
+) => switch (mode) {
+  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalBody,
+  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteBody,
+  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnBody,
+  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshBody,
+};
+
+IconData _connectionModeIcon(_HermesConnectionMode mode) => switch (mode) {
+  _HermesConnectionMode.local => Icons.devices_outlined,
+  _HermesConnectionMode.remote => Icons.cloud_outlined,
+  _HermesConnectionMode.vpn => Icons.shield_outlined,
+  _HermesConnectionMode.ssh => Icons.terminal_outlined,
+};
+
+String _connectionModeUrlHelper(
+  AppLocalizations strings,
+  _HermesConnectionMode mode,
+) => switch (mode) {
+  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalUrlHelper,
+  _HermesConnectionMode.remote =>
+    strings.chatLayoutConnectionModeRemoteUrlHelper,
+  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnUrlHelper,
+  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshUrlHelper,
+};
+
 extension _HermesChatScreenLayout on _HermesChatScreenState {
   Widget _buildConnectForm(
     BuildContext context,
@@ -65,6 +103,38 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   ],
                 ),
                 const SizedBox(height: 28),
+                Text(
+                  strings.chatLayoutConnectionModeLabel,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final mode in _HermesConnectionMode.values)
+                      ChoiceChip(
+                        key: ValueKey('hermes-connection-mode-${mode.name}'),
+                        selected: _connectionMode == mode,
+                        onSelected: connecting
+                            ? null
+                            : (_) => _selectConnectionMode(mode),
+                        avatar: Icon(_connectionModeIcon(mode), size: 18),
+                        label: Text(_connectionModeLabel(strings, mode)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _connectionModeBody(strings, _connectionMode),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
                 FutureBuilder<List<HermesEndpointConfig>>(
                   future: _endpointProfilesFuture,
                   builder: (context, snapshot) {
@@ -137,7 +207,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           decoration: InputDecoration(
                             labelText: strings.chatLayoutServerUrlLabel,
                             hintText: strings.chatLayoutServerUrlHint,
-                            helperText: strings.chatLayoutServerUrlHelper,
+                            helperText: _connectionModeUrlHelper(
+                              strings,
+                              _connectionMode,
+                            ),
                             helperMaxLines: 2,
                             prefixIcon: const Icon(Icons.language_outlined),
                           ),
@@ -185,6 +258,50 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           ),
                         ),
                         const SizedBox(height: 20),
+                        Container(
+                          key: const ValueKey('hermes-credential-boundary'),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.secondaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.account_tree_outlined,
+                                size: 20,
+                                color: colors.onSecondaryContainer,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      strings.chatLayoutCredentialBoundaryTitle,
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            color: colors.onSecondaryContainer,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      strings.chatLayoutCredentialBoundaryBody,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: colors.onSecondaryContainer,
+                                            height: 1.4,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -425,10 +542,6 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         final sessionModelLabel =
             activeSession?.model?.trim().isNotEmpty == true
             ? activeSession!.model!.trim()
-            : state.models.isNotEmpty
-            ? state.models.first
-            : state.capabilities?.model.trim().isNotEmpty == true
-            ? state.capabilities!.model.trim()
             : strings.chatLayoutModelFallbackLabel;
         final useCompactFollowUpActions =
             constraints.maxWidth < 600 ||
@@ -946,9 +1059,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         ? lockedModel
         : assignedModel != null && assignedModel.isNotEmpty
         ? assignedModel
-        : state.models.isEmpty
-        ? state.capabilities?.model ?? strings.chatLayoutModelFallbackLabel
-        : state.models.first;
+        : strings.chatLayoutModelFallbackLabel;
     final voiceLabel = _voiceInputController.continuousEnabled
         ? strings.chatLayoutVoiceLoopOnLabel
         : strings.chatLayoutVoiceReadyLabel;

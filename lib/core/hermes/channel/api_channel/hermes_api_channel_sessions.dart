@@ -4,6 +4,7 @@ extension _SessionsExtension on HermesApiChannel {
   Future<void> _disconnect() async {
     _client = null;
     _connectionGeneration += 1;
+    _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
@@ -17,9 +18,15 @@ extension _SessionsExtension on HermesApiChannel {
       throw StateError('Hermes channel is not connected.');
     }
     _requireKnownSession(sessionId);
+    final selectionGeneration = ++_sessionSelectionGeneration;
+    final connectionGeneration = _connectionGeneration;
     final profileId = _state.selectedProfileId;
     final baseUrl = _state.connectedBaseUrl;
     final capabilities = _state.capabilities;
+    bool isCurrentSelection() =>
+        selectionGeneration == _sessionSelectionGeneration &&
+        _isCurrentConnection(connectionGeneration, client) &&
+        _state.selectedProfileId == profileId;
     final detachedRunStillActive = baseUrl != null && capabilities != null
         ? await _recoverDetachedRun(
             client: client,
@@ -29,10 +36,17 @@ extension _SessionsExtension on HermesApiChannel {
             sessionId: sessionId,
           )
         : false;
-    final turns = _state.isSessionStreaming(sessionId)
-        ? List<HermesChatTurn>.from(_state.messages[sessionId] ?? const [])
-        : await _fetchTurns(client, sessionId, profileId: profileId);
-    if (!_isConnectedProfile(client, profileId)) return;
+    if (!isCurrentSelection()) return;
+    final List<HermesChatTurn> turns;
+    try {
+      turns = _state.isSessionStreaming(sessionId)
+          ? List<HermesChatTurn>.from(_state.messages[sessionId] ?? const [])
+          : await _fetchTurns(client, sessionId, profileId: profileId);
+    } catch (_) {
+      if (!isCurrentSelection()) return;
+      rethrow;
+    }
+    if (!isCurrentSelection()) return;
     _setState(
       _state.copyWith(
         activeSessionId: sessionId,

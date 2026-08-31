@@ -69,52 +69,51 @@ Record all of the following before claiming the required physical-mic evidence:
    screenshots, or diagnostics export.
 10. Record the manual receipt only after all observations above are true:
 
-   ```bash
-   WING_ANDROID_DEVICE_ID=<device-id> \
-   WING_ANDROID_HERMES_URL=<android-reachable-hermes-url> \
-   WING_ANDROID_SPOKEN_PHRASE='<unique spoken phrase>' \
-   WING_ANDROID_PROVIDER_REPLY='<observed provider reply excerpt>' \
-   WING_ANDROID_SECOND_SPOKEN_PHRASE='<different second spoken phrase after re-arm>' \
-   WING_ANDROID_PHYSICAL_DEVICE_OBSERVED=true \
-   WING_ANDROID_PHYSICAL_MIC_OBSERVED=true \
-   WING_ANDROID_TTS_OBSERVED=true \
-   WING_ANDROID_REARM_OBSERVED=true \
-   WING_ANDROID_NO_SECRET_LEAKS=true \
-   WING_ANDROID_SYNTHETIC_AUDIO_USED=false \
-   npm run android:live-mic-receipt
-   ```
+```bash
+WING_ANDROID_DEVICE_ID=<device-id> \
+WING_ANDROID_HERMES_URL=<android-reachable-hermes-url> \
+WING_ANDROID_SPOKEN_PHRASE='<unique spoken phrase>' \
+WING_ANDROID_PROVIDER_REPLY='<observed provider reply excerpt>' \
+WING_ANDROID_SECOND_SPOKEN_PHRASE='<different second spoken phrase after re-arm>' \
+WING_ANDROID_PHYSICAL_DEVICE_OBSERVED=true \
+WING_ANDROID_PHYSICAL_MIC_OBSERVED=true \
+WING_ANDROID_TTS_OBSERVED=true \
+WING_ANDROID_REARM_OBSERVED=true \
+WING_ANDROID_NO_SECRET_LEAKS=true \
+WING_ANDROID_SYNTHETIC_AUDIO_USED=false \
+npm run android:live-mic-receipt
+```
 
-   This writes `build/receipts/android-live-mic-smoke.json`; the helper strips
-   URL userinfo, query strings, fragments, and copied route/path state from the
-   recorded Hermes URL, records the current git `HEAD`, records Android device properties from
-   `adb shell getprop`, records installed Hermes Wing package/version details from
-   `pm path` and `dumpsys package`, and rejects secret-looking or overlong spoken
-   phrases/provider reply excerpts; keep each manual evidence value to 240
-   characters or less. The helper and audit require an explicit physical-device
-   and physical-mic manual observation gate, reject emulator targets for this
-   live-mic receipt, require `WING_ANDROID_SYNTHETIC_AUDIO_USED=false`,
-   require the receipt path labels `physical_android_microphone`,
-   `local_device_stt_to_hermes_text`, `provider_backed_hermes_text_reply`, and
-   `tts_observed_before_rearm`, require the second spoken phrase to differ from
-   the first, require the provider reply excerpt to differ from both spoken
-   phrases, require the receipt `head_sha` to match the current git `HEAD`,
-   require non-empty manufacturer/model/SDK/fingerprint device properties plus
-   `android_target_type=physical_device` and `device_properties.is_emulator=false`,
-   require the expected Hermes Wing package to be installed with version metadata and
-   `RECORD_AUDIO` granted, and validate the required fields/caveats while still
-   treating unrelated blockers as open.
-11. Run strict readiness audit after recording the receipt:
+This writes `build/receipts/android-live-mic-smoke.json`; the helper strips
+URL userinfo, query strings, fragments, and copied route/path state from the
+recorded Hermes URL, records the current git `HEAD`, records Android device properties from
+`adb shell getprop`, records installed Hermes Wing package/version details from
+`pm path` and `dumpsys package`, and rejects secret-looking or overlong spoken
+phrases/provider reply excerpts; keep each manual evidence value to 240
+characters or less. The helper and audit require an explicit physical-device
+and physical-mic manual observation gate, reject emulator targets for this
+live-mic receipt, require `WING_ANDROID_SYNTHETIC_AUDIO_USED=false`,
+require the receipt path labels `physical_android_microphone`,
+`local_device_stt_to_hermes_text`, `provider_backed_hermes_text_reply`, and
+`tts_observed_before_rearm`, require the second spoken phrase to differ from
+the first, require the provider reply excerpt to differ from both spoken
+phrases, require the receipt `head_sha` to match the current git `HEAD`,
+require non-empty manufacturer/model/SDK/fingerprint device properties plus
+`android_target_type=physical_device` and `device_properties.is_emulator=false`,
+require the expected Hermes Wing package to be installed with version metadata and
+`RECORD_AUDIO` granted, and validate the required fields/caveats while still
+treating unrelated blockers as open. 11. Run strict readiness audit after recording the receipt:
 
-   ```bash
-   WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit
-   ```
+```bash
+WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit
+```
 
-   If unrelated blockers remain, the expected result is exit 3 with
-   `Completion verdict: NOT COMPLETE`; do not promote this Android physical-mic
-   receipt, passing tests, APK hashes, configured Hermes home, workflow YAML, or
-   dispatch-only output to whole-goal completion. If the physical-mic receipt is
-   absent, strict readiness must keep the real spoken Android receipt blocker
-   open even when the deterministic Android voice-loop receipt is current.
+If unrelated blockers remain, the expected result is exit 3 with
+`Completion verdict: NOT COMPLETE`; do not promote this Android physical-mic
+receipt, passing tests, APK hashes, configured Hermes home, workflow YAML, or
+dispatch-only output to whole-goal completion. If the physical-mic receipt is
+absent, strict readiness must keep the real spoken Android receipt blocker
+open even when the deterministic Android voice-loop receipt is current.
 
 ## Do not count as completion
 

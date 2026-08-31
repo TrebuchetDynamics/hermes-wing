@@ -265,7 +265,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
             ],
           ),
         ],
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         if (profiles.isEmpty)
           WingEmptyState(
             icon: Icons.support_agent_outlined,
@@ -273,150 +273,186 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
             body: strings.agentsEmptyBody,
           )
         else
-          for (var index = 0; index < profiles.length; index++) ...[
-            if (index > 0) const SizedBox(height: 12),
-            _ProfileCard(
-              profile: profiles[index],
-              managedByWingLink:
-                  isWingLinkRow(profiles[index]) &&
-                  wingLinkRowsById[profiles[index].id]?.source != 'api',
-              gatewayStateUnknown:
-                  isWingLinkRow(profiles[index]) &&
-                  wingLinkRowsById[profiles[index].id]?.gatewayState ==
-                      'unknown',
-              enrolled: isWingLinkRow(profiles[index])
-                  ? enrolledGatewayIdsByProfile[profiles[index].id] != null
-                  : null,
-              selected: profiles[index].id == selectedId,
-              canEdit: isWingLinkRow(profiles[index])
-                  ? wingLinkRowsById[profiles[index].id]?.canRename ?? false
-                  : _canUseEndpoint(
-                      capabilities,
-                      scope: 'profiles:write',
-                      name: 'profile_update',
-                      method: 'PATCH',
-                      path: '/api/profiles/{name}',
-                    ),
-              canDelete: isWingLinkRow(profiles[index])
-                  ? wingLinkRowsById[profiles[index].id]?.canDelete ?? false
-                  : profiles[index].id != 'default' &&
-                        _canUseEndpoint(
-                          capabilities,
-                          scope: 'profiles:write',
-                          name: 'profile_delete',
-                          method: 'DELETE',
-                          path: '/api/profiles/{name}',
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 900 ? 2 : 1;
+              final gap = 12.0;
+              final cardWidth = columns == 1
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - gap) / columns;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (var index = 0; index < profiles.length; index++)
+                    SizedBox(
+                      width: cardWidth,
+                      child: _ProfileCard(
+                        profile: profiles[index],
+                        managedByWingLink:
+                            isWingLinkRow(profiles[index]) &&
+                            wingLinkRowsById[profiles[index].id]?.source !=
+                                'api',
+                        gatewayStateUnknown:
+                            isWingLinkRow(profiles[index]) &&
+                            wingLinkRowsById[profiles[index].id]
+                                    ?.gatewayState ==
+                                'unknown',
+                        enrolled: isWingLinkRow(profiles[index])
+                            ? enrolledGatewayIdsByProfile[profiles[index].id] !=
+                                  null
+                            : null,
+                        selected: profiles[index].id == selectedId,
+                        canEdit: isWingLinkRow(profiles[index])
+                            ? wingLinkRowsById[profiles[index].id]?.canRename ??
+                                  false
+                            : _canUseEndpoint(
+                                capabilities,
+                                scope: 'profiles:write',
+                                name: 'profile_update',
+                                method: 'PATCH',
+                                path: '/api/profiles/{name}',
+                              ),
+                        canDelete: isWingLinkRow(profiles[index])
+                            ? wingLinkRowsById[profiles[index].id]?.canDelete ??
+                                  false
+                            : profiles[index].id != 'default' &&
+                                  _canUseEndpoint(
+                                    capabilities,
+                                    scope: 'profiles:write',
+                                    name: 'profile_delete',
+                                    method: 'DELETE',
+                                    path: '/api/profiles/{name}',
+                                  ),
+                        strings: strings,
+                        switching: _switchingProfileId == profiles[index].id,
+                        onChat: isWingLinkRow(profiles[index])
+                            ? wingLinkChatAction(profiles[index])
+                            : _switchingProfileId == null
+                            ? () => _selectProfile(channel, profiles[index])
+                            : null,
+                        onBrowseDirectories:
+                            isWingLinkRow(profiles[index]) &&
+                                wingLinkRowsById[profiles[index].id]?.source !=
+                                    'api'
+                            ? () => unawaited(_browseWingLinkDirectories())
+                            : null,
+                        onEdit: () => _openEditor(
+                          channel: channel,
+                          profiles: profiles,
+                          profile: profiles[index],
+                          stableNames:
+                              isWingLinkRow(profiles[index]) &&
+                              hasStableLocalName(profiles[index]),
+                          canEditSoul:
+                              canUseHermesProfileContext(profiles[index]) &&
+                              _canUseEndpoint(
+                                capabilities,
+                                scope: 'profiles:read',
+                                name: 'profile_soul',
+                                method: 'GET',
+                                path: '/api/profiles/{name}/soul',
+                              ) &&
+                              _canUseEndpoint(
+                                capabilities,
+                                scope: 'profiles:write',
+                                name: 'profile_soul_update',
+                                method: 'PUT',
+                                path: '/api/profiles/{name}/soul',
+                              ),
+                          canDelete: isWingLinkRow(profiles[index])
+                              ? wingLinkRowsById[profiles[index].id]
+                                        ?.canDelete ??
+                                    false
+                              : profiles[index].id != 'default' &&
+                                    _canUseEndpoint(
+                                      capabilities,
+                                      scope: 'profiles:write',
+                                      name: 'profile_delete',
+                                      method: 'DELETE',
+                                      path: '/api/profiles/{name}',
+                                    ),
+                          // Existing profile configuration is intentionally fail-closed:
+                          // the released CLI cannot roll back provider credentials.
+                          canConfigure: false,
+                          onRename: isWingLinkRow(profiles[index])
+                              ? ({
+                                  required profileId,
+                                  required name,
+                                  required revision,
+                                }) async {
+                                  await _runWingLinkMutation(
+                                    directory,
+                                    activeGatewayId!,
+                                    () => _wingLinkClient!.renameProfile(
+                                      id: profileId,
+                                      name: name,
+                                      revision:
+                                          wingLinkRowsById[profileId]
+                                              ?.renameRevision ??
+                                          revision,
+                                    ),
+                                  );
+                                  await _loadWingLinkProfiles(
+                                    directory,
+                                    activeGatewayId,
+                                  );
+                                }
+                              : null,
+                          onDelete: isWingLinkRow(profiles[index])
+                              ? (id, revision) async {
+                                  await _runWingLinkMutation(
+                                    directory,
+                                    activeGatewayId!,
+                                    () => _wingLinkClient!.deleteProfile(
+                                      id: id,
+                                      revision:
+                                          wingLinkRowsById[id]
+                                              ?.deleteRevision ??
+                                          revision,
+                                    ),
+                                  );
+                                  await _loadWingLinkProfiles(
+                                    directory,
+                                    activeGatewayId,
+                                  );
+                                }
+                              : null,
                         ),
-              strings: strings,
-              switching: _switchingProfileId == profiles[index].id,
-              onChat: isWingLinkRow(profiles[index])
-                  ? wingLinkChatAction(profiles[index])
-                  : _switchingProfileId == null
-                  ? () => _selectProfile(channel, profiles[index])
-                  : null,
-              onBrowseDirectories:
-                  isWingLinkRow(profiles[index]) &&
-                      wingLinkRowsById[profiles[index].id]?.source != 'api'
-                  ? () => unawaited(_browseWingLinkDirectories())
-                  : null,
-              onEdit: () => _openEditor(
-                channel: channel,
-                profiles: profiles,
-                profile: profiles[index],
-                stableNames:
-                    isWingLinkRow(profiles[index]) &&
-                    hasStableLocalName(profiles[index]),
-                canEditSoul:
-                    canUseHermesProfileContext(profiles[index]) &&
-                    _canUseEndpoint(
-                      capabilities,
-                      scope: 'profiles:read',
-                      name: 'profile_soul',
-                      method: 'GET',
-                      path: '/api/profiles/{name}/soul',
-                    ) &&
-                    _canUseEndpoint(
-                      capabilities,
-                      scope: 'profiles:write',
-                      name: 'profile_soul_update',
-                      method: 'PUT',
-                      path: '/api/profiles/{name}/soul',
+                        onDelete: () => _openEditor(
+                          channel: channel,
+                          profiles: profiles,
+                          profile: profiles[index],
+                          stableNames:
+                              isWingLinkRow(profiles[index]) &&
+                              hasStableLocalName(profiles[index]),
+                          canDelete: true,
+                          onDelete: isWingLinkRow(profiles[index])
+                              ? (id, revision) async {
+                                  await _runWingLinkMutation(
+                                    directory,
+                                    activeGatewayId!,
+                                    () => _wingLinkClient!.deleteProfile(
+                                      id: id,
+                                      revision:
+                                          wingLinkRowsById[id]
+                                              ?.deleteRevision ??
+                                          revision,
+                                    ),
+                                  );
+                                  await _loadWingLinkProfiles(
+                                    directory,
+                                    activeGatewayId,
+                                  );
+                                }
+                              : null,
+                        ),
+                      ),
                     ),
-                canDelete: isWingLinkRow(profiles[index])
-                    ? wingLinkRowsById[profiles[index].id]?.canDelete ?? false
-                    : profiles[index].id != 'default' &&
-                          _canUseEndpoint(
-                            capabilities,
-                            scope: 'profiles:write',
-                            name: 'profile_delete',
-                            method: 'DELETE',
-                            path: '/api/profiles/{name}',
-                          ),
-                // Existing profile configuration is intentionally fail-closed:
-                // the released CLI cannot roll back provider credentials.
-                canConfigure: false,
-                onRename: isWingLinkRow(profiles[index])
-                    ? ({
-                        required profileId,
-                        required name,
-                        required revision,
-                      }) async {
-                        await _runWingLinkMutation(
-                          directory,
-                          activeGatewayId!,
-                          () => _wingLinkClient!.renameProfile(
-                            id: profileId,
-                            name: name,
-                            revision:
-                                wingLinkRowsById[profileId]?.renameRevision ??
-                                revision,
-                          ),
-                        );
-                        await _loadWingLinkProfiles(directory, activeGatewayId);
-                      }
-                    : null,
-                onDelete: isWingLinkRow(profiles[index])
-                    ? (id, revision) async {
-                        await _runWingLinkMutation(
-                          directory,
-                          activeGatewayId!,
-                          () => _wingLinkClient!.deleteProfile(
-                            id: id,
-                            revision:
-                                wingLinkRowsById[id]?.deleteRevision ??
-                                revision,
-                          ),
-                        );
-                        await _loadWingLinkProfiles(directory, activeGatewayId);
-                      }
-                    : null,
-              ),
-              onDelete: () => _openEditor(
-                channel: channel,
-                profiles: profiles,
-                profile: profiles[index],
-                stableNames:
-                    isWingLinkRow(profiles[index]) &&
-                    hasStableLocalName(profiles[index]),
-                canDelete: true,
-                onDelete: isWingLinkRow(profiles[index])
-                    ? (id, revision) async {
-                        await _runWingLinkMutation(
-                          directory,
-                          activeGatewayId!,
-                          () => _wingLinkClient!.deleteProfile(
-                            id: id,
-                            revision:
-                                wingLinkRowsById[id]?.deleteRevision ??
-                                revision,
-                          ),
-                        );
-                        await _loadWingLinkProfiles(directory, activeGatewayId);
-                      }
-                    : null,
-              ),
-            ),
-          ],
+                ],
+              );
+            },
+          ),
       ],
     );
   }
@@ -815,7 +851,7 @@ class _ProfileCard extends StatelessWidget {
       label: semanticsLabel,
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -823,13 +859,13 @@ class _ProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    radius: 24,
+                    radius: 20,
                     child: Text(
                       displayName.characters.first.toUpperCase(),
                       semanticsLabel: '',
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -850,10 +886,10 @@ class _ProfileCard extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 6,
+                runSpacing: 4,
                 children: [
                   if (profile.id == 'default')
                     Chip(label: Text(strings.defaultAgent)),
@@ -907,10 +943,10 @@ class _ProfileCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 6,
+                runSpacing: 4,
                 children: [
                   Semantics(
                     button: true,

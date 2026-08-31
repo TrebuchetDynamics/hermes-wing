@@ -107,7 +107,8 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     final id = profile.id;
     if (id == null || id.trim().isEmpty) return;
     await ref.read(hermesEndpointStoreProvider).deleteProfile(id);
-    if (_connectionForm.baseUrl.text.trim() == profile.baseUrl) {
+    if (hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text) ==
+        hermesPublicEndpointBaseUrl(profile.baseUrl)) {
       _connectionForm.clear();
     }
     _refreshEndpointProfiles();
@@ -163,6 +164,16 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _reconnect(HermesChannel channel) async {
+    if (_reconnectInFlight) return;
+    _reconnectInFlight = true;
+    try {
+      await _reconnectOnce(channel);
+    } finally {
+      _reconnectInFlight = false;
+    }
+  }
+
+  Future<void> _reconnectOnce(HermesChannel channel) async {
     final saved = await ref.read(hermesEndpointStoreProvider).load();
     final stateBaseUrl = channel.state.connectedBaseUrl;
     final controllerBaseUrl = hermesPublicEndpointBaseUrl(
@@ -173,7 +184,12 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         : saved?.baseUrl.trim().isNotEmpty == true
         ? saved!.baseUrl
         : controllerBaseUrl;
-    final apiKey = saved?.baseUrl == baseUrl
+    final savedBaseUrl = saved?.baseUrl;
+    final savedMatchesTarget =
+        savedBaseUrl != null &&
+        hermesPublicEndpointBaseUrl(savedBaseUrl) ==
+            hermesPublicEndpointBaseUrl(baseUrl);
+    final apiKey = savedMatchesTarget
         ? saved?.apiKey
         : _connectionForm.apiKey.text.trim().isEmpty
         ? null

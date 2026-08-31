@@ -153,6 +153,7 @@ abstract interface class HermesChannel implements Listenable {
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   });
 
   String startVoiceRun();

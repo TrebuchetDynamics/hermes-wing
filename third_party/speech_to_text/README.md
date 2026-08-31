@@ -39,15 +39,15 @@ pinned baseline commit. Files not listed are byte-identical or differ only in
 trailing whitespace, or are upstream-only files dropped when vendoring
 (`example/`, `test/`, `.github/`, `pubspec.lock`, `.metadata`, editor metadata).
 
-| File | Patch | Why |
-| --- | --- | --- |
-| `android/src/main/kotlin/com/csdcorp/speech_to_text/SpeechToTextPlugin.kt` | Session-generation guards: a `recognitionSession` counter is checked before every async dispatch (`startListening`, `createRecognizer`, `setupRecognizerIntent`, `sendError`, `onRmsChanged`) and a new `SessionRecognitionListener(session)` wrapper is bound to every created recognizer (intent-lookup, on-device, and default paths), dropping callbacks from superseded sessions. | Stale native callbacks must never reach the current capture. `test/tooling/package_scripts_contract_test.dart` asserts `sendError`/`onRmsChanged` re-check `session != recognitionSession`. |
-| same file | Recognizer lifecycle: `createRecognizer` always increments the session, cancels the pending timer, destroys the previous recognizer, and rebuilds; `stop`/`cancel` capture `recognizerToStop`/`recognizerToCancel` and only destroy + `notifyListening(isRecording = false)` when the captured recognizer is still current; `destroyRecognizer()` is immediate and identity-checked instead of `handler.postDelayed(50ms)`. | A quick stop/cancel must not destroy a successor's recognizer or fabricate terminal status. `test/tooling/native_speech_terminal_contract_test.dart` asserts stop/cancel acknowledge without inventing terminal status and that only `updateResults` publishes terminal status. |
-| same file | `updateResults` publishes `notifyListening(isRecording = false)` after a final result while still listening. | Final result and recognizer teardown are separate Android events; replacement capture is blocked until the recognizer reports its terminal status. |
-| `lib/speech_to_text.dart` | Listen handoff guards: `_listenHandoffGeneration`/`_pendingListenHandoff`; `listen()` throws `ListenFailedException('listen already active')` while a native handoff is pending; predecessor status/error/sound-level callbacks are dropped for a successor listen and `listening` status is re-published only after the handoff completes. | The native Android method publishes `listening` before completing its method result; without the guard a predecessor's callbacks reach successor listeners. `test/tooling/vendored_speech_to_text_handoff_test.dart` asserts both behaviors. |
-| `lib/speech_to_text_provider.dart` | `bool debugLogging = false` explicit type annotation (one line). | Keeps the provider constructor analyzable under the app's lint set. |
-| `pubspec.yaml` | Stabilizes constraints: `speech_to_text_platform_interface: ^2.4.0` and `speech_to_text_windows: ^1.0.1` instead of the upstream `-beta` pins. | The app resolves the stable platform interface; no behavior change. |
-| `android/build.gradle`, `darwin/speech_to_text/Sources/speech_to_text/SpeechToTextPlugin.swift`, `CHANGELOG.md`, upstream `README.md` body | Trailing-whitespace normalization only; no functional change. | — |
+| File                                                                                                                                       | Patch                                                                                                                                                                                                                                                                                                                                                                                                                       | Why                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `android/src/main/kotlin/com/csdcorp/speech_to_text/SpeechToTextPlugin.kt`                                                                 | Session-generation guards: a `recognitionSession` counter is checked before every async dispatch (`startListening`, `createRecognizer`, `setupRecognizerIntent`, `sendError`, `onRmsChanged`) and a new `SessionRecognitionListener(session)` wrapper is bound to every created recognizer (intent-lookup, on-device, and default paths), dropping callbacks from superseded sessions.                                      | Stale native callbacks must never reach the current capture. `test/tooling/package_scripts_contract_test.dart` asserts `sendError`/`onRmsChanged` re-check `session != recognitionSession`.                                                                                     |
+| same file                                                                                                                                  | Recognizer lifecycle: `createRecognizer` always increments the session, cancels the pending timer, destroys the previous recognizer, and rebuilds; `stop`/`cancel` capture `recognizerToStop`/`recognizerToCancel` and only destroy + `notifyListening(isRecording = false)` when the captured recognizer is still current; `destroyRecognizer()` is immediate and identity-checked instead of `handler.postDelayed(50ms)`. | A quick stop/cancel must not destroy a successor's recognizer or fabricate terminal status. `test/tooling/native_speech_terminal_contract_test.dart` asserts stop/cancel acknowledge without inventing terminal status and that only `updateResults` publishes terminal status. |
+| same file                                                                                                                                  | `updateResults` publishes `notifyListening(isRecording = false)` after a final result while still listening.                                                                                                                                                                                                                                                                                                                | Final result and recognizer teardown are separate Android events; replacement capture is blocked until the recognizer reports its terminal status.                                                                                                                              |
+| `lib/speech_to_text.dart`                                                                                                                  | Listen handoff guards: `_listenHandoffGeneration`/`_pendingListenHandoff`; `listen()` throws `ListenFailedException('listen already active')` while a native handoff is pending; predecessor status/error/sound-level callbacks are dropped for a successor listen and `listening` status is re-published only after the handoff completes.                                                                                 | The native Android method publishes `listening` before completing its method result; without the guard a predecessor's callbacks reach successor listeners. `test/tooling/vendored_speech_to_text_handoff_test.dart` asserts both behaviors.                                    |
+| `lib/speech_to_text_provider.dart`                                                                                                         | `bool debugLogging = false` explicit type annotation (one line).                                                                                                                                                                                                                                                                                                                                                            | Keeps the provider constructor analyzable under the app's lint set.                                                                                                                                                                                                             |
+| `pubspec.yaml`                                                                                                                             | Stabilizes constraints: `speech_to_text_platform_interface: ^2.4.0` and `speech_to_text_windows: ^1.0.1` instead of the upstream `-beta` pins.                                                                                                                                                                                                                                                                              | The app resolves the stable platform interface; no behavior change.                                                                                                                                                                                                             |
+| `android/build.gradle`, `darwin/speech_to_text/Sources/speech_to_text/SpeechToTextPlugin.swift`, `CHANGELOG.md`, upstream `README.md` body | Trailing-whitespace normalization only; no functional change.                                                                                                                                                                                                                                                                                                                                                               | —                                                                                                                                                                                                                                                                               |
 
 ## Why the patch is not upstreamed
 
@@ -95,8 +95,8 @@ conversion or always on listening.
 
 | Support | Android | iOS | MacOS | Web\* | Linux | Windows |
 | :-----: | :-----: | :-: | :---: | :---: | :---: | :-----: |
-|  build  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |    ✅    |
-| speech  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |    ✅    |
+|  build  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |   ✅    |
+| speech  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |   ✅    |
 
 _build: means you can build and run with the plugin on that platform_
 
@@ -107,15 +107,17 @@ _speech: means most speech recognition features work. Platforms with build but n
 ## Recent Updates
 
 7.3.0
-* Now supports speech recognition on Windows with many thanks to @asherchok
-for the PR! Note that Windows support is currently in beta, if anyone can try
-it out please provide feedback, there are known issues and this is not yet
-ready for production use.
-* iOS and Mac speech recognition does more work in the background avoiding UI pauses
+
+- Now supports speech recognition on Windows with many thanks to @asherchok
+  for the PR! Note that Windows support is currently in beta, if anyone can try
+  it out please provide feedback, there are known issues and this is not yet
+  ready for production use.
+- iOS and Mac speech recognition does more work in the background avoiding UI pauses
 
 7.0.0
-* Now supports speech recognition on MacOS with many thanks to @alexrabin-sentracam for the PR!
-* Now supports WASM compliation for web with many thanks to yeikel16 for the PR!
+
+- Now supports speech recognition on MacOS with many thanks to @alexrabin-sentracam for the PR!
+- Now supports WASM compliation for web with many thanks to yeikel16 for the PR!
 
 6.6.0 `listen` now uses 'SpeechListenOptions' to specify the options for the current listen session, including new
 options for controlling haptics and punctuation during recognition on iOS.
@@ -315,6 +317,7 @@ You can only request permissions if you run the app directly from Xcode.
 
 If you are upgrading an existing MacOS app to use the new plugin don't forget to update your dependencies
 and the pods by opening the project directory in your terminal and:
+
 ```
 flutter clean
 flutter pub get

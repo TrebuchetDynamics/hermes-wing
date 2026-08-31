@@ -318,7 +318,7 @@ func TestWingLinkProfileRoutesAreExposedButProviderRoutesStayQuarantined(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := newWingLinkServer(backend, store, &providerBackend{})
+	handler := newWingLinkServer(backend, store)
 	cases := []struct {
 		method string
 		path   string

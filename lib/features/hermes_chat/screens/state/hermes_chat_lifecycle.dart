@@ -167,7 +167,10 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     }
     if (mounted) {
       _setState(() {});
-      unawaited(_voiceInputController.maybeContinue());
+      fireAndForget(
+        _voiceInputController.maybeContinue(),
+        'Hermes voice continuation after channel change',
+      );
     }
   }
 }

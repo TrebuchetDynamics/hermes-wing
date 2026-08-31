@@ -206,6 +206,7 @@ void main() {
       'platform:workflow-smoke': './scripts/run_hermes_platform_workflow.sh',
       'release:verify-artifacts': './scripts/verify_release_artifacts.sh',
       'linux:release-build': './scripts/run_linux_release_build.sh',
+      'linux:e2e': './scripts/run_linux_e2e.sh',
     };
 
     for (final entry in expectedScripts.entries) {

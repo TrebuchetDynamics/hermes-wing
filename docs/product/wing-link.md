@@ -37,6 +37,13 @@ Pairing gives Wing two independently verified connections:
 - a profile-bound Hermes Agent origin and credential; and
 - a Wing Link origin and management credential.
 
+For VPS deployments, Agent chat and run traffic may use an advertised
+HTTPS/WebSocket transport through a TLS 1.3 reverse proxy or a private VPN. The
+connection remains direct from Wing to Hermes Agent; Wing Link never relays the
+Agent data plane. ACP is an optional local desktop stdio transport, not a remote
+Wing Link tunnel. Wing reuses ACP's session, event, and approval semantics while
+keeping its privileged terminal/file toolset out of remote connections.
+
 ## Current implementation
 
 The current Linux implementation provides:
@@ -68,9 +75,12 @@ Wing Link will expose typed, capability-advertised operations in four areas:
    gateway settings, lifecycle, health, repair, and diagnostics.
 2. **Profiles** — list, create/clone, rename, describe, and delete. Hermes Agent
    remains authoritative; Wing Link delegates only reviewed fixed operations.
-3. **Providers and models** — new-profile setup selects an allowlisted provider and
-   bounded model string and may write a credential through `hermes auth add` stdin without ever
-   returning the secret. General provider editing remains a target surface.
+3. **Agent-owned providers and models** — Wing uses Hermes Agent's advertised
+   provider/model APIs directly. Wing Link does not expose provider inventory,
+   custom-provider CRUD, or general provider configuration. The only compatibility
+   exception is transactional new-profile setup, which may select an allowlisted
+   provider and bounded model string and write a credential through `hermes auth
+add` stdin without ever returning the secret.
 4. **Projects and folders** — browsing explicitly approved host directories is
    implemented; creating or updating a Hermes Project remains blocked on an
    advertised Agent contract.
@@ -135,21 +145,15 @@ or download file contents.
 
 ## Provider boundary
 
-Provider and model state belongs to Hermes Agent. Wing Link may offer a typed
-compatibility adapter only when the official Agent API lacks an equivalent and
-the exact operation is reviewed.
+Provider and model state belongs to Hermes Agent and is accessed through its
+advertised APIs. Wing Link exposes no provider inventory, custom-provider CRUD,
+or general provider configuration endpoints.
 
-- Provider IDs and configurable fields come from an allowlist or authoritative
-  Agent inventory; clients cannot submit arbitrary config keys.
-- Credentials are write-only: set/remove and configured/not-configured only.
-- Secrets never appear in responses, command arguments, logs, diagnostics, or
-  persisted Wing Link state.
-- A change reports whether an Agent reload or gateway restart is required; Wing
-  does not hide disruptive lifecycle work inside an ordinary save.
-
-Credential replacement on existing profiles remains blocked. New-profile setup
-uses the released stdin-driven `hermes auth add` contract and rolls back the new
-profile if setup or readiness fails; direct `.env` editing remains prohibited.
+Credential replacement on existing profiles remains blocked. The only setup
+exception is transactional new-profile setup, which uses an allowlisted provider,
+a bounded model string, and the released stdin-driven `hermes auth add` contract;
+it rolls back the new profile if setup or readiness fails. Direct `.env` editing
+remains prohibited.
 
 ## Non-goals
 

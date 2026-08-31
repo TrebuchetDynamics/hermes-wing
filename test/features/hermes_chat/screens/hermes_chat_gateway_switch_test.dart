@@ -11,6 +11,7 @@ import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/shared/async/fire_and_forget.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -1549,7 +1550,7 @@ void main() {
     expect(find.text('Beta'), findsOneWidget);
   });
 
-  testWidgets('resume fully reconnects the active contact only', (
+  testWidgets('resume keeps a healthy active contact connected', (
     tester,
   ) async {
     final harness = await _pumpGatewayChat(tester);
@@ -1562,11 +1563,40 @@ void main() {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pumpAndSettle();
 
-    expect(harness.channel.connectCalls, hasLength(2));
-    expect(harness.channel.disconnectCalls, 1);
+    expect(harness.channel.connectCalls, hasLength(1));
+    expect(harness.channel.disconnectCalls, 0);
     expect(
       harness.directory.activeContactId,
       const GatewayContactId(gatewayId: 'a', profileId: 'agent-a'),
+    );
+  });
+
+  testWidgets('resume reports a failed activation without an uncaught error', (
+    tester,
+  ) async {
+    final defaultReporter = reportFireAndForgetFailure;
+    final reported = <({String operation, Object error})>[];
+    reportFireAndForgetFailure = (operation, error) =>
+        reported.add((operation: operation, error: error));
+    addTearDown(() => reportFireAndForgetFailure = defaultReporter);
+
+    var selectionCount = 0;
+    final channel = FakeHermesChannel(
+      selectProfileGate: (_) async {
+        selectionCount += 1;
+        if (selectionCount > 1) throw StateError('profile selection failed');
+      },
+    );
+    final harness = await _pumpGatewayChat(tester, channel: channel);
+    harness.channel.addFailedExchange('resume failure');
+    await tester.pump();
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+
+    expect(
+      reported.map((failure) => failure.operation),
+      contains('Hermes reconnect after resume'),
     );
   });
 

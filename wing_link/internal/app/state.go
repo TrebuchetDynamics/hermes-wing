@@ -13,8 +13,6 @@ const (
 	ScopeDiagnosticsRead  = wingstate.ScopeDiagnosticsRead
 	ScopeProfilesRead     = wingstate.ScopeProfilesRead
 	ScopeProfilesWrite    = wingstate.ScopeProfilesWrite
-	ScopeProvidersRead    = wingstate.ScopeProvidersRead
-	ScopeProvidersWrite   = wingstate.ScopeProvidersWrite
 	ScopeDirectoriesRead  = wingstate.ScopeDirectoriesRead
 	ScopeDeviceSelfRead   = wingstate.ScopeDeviceSelfRead
 	ScopeDeviceSelfRevoke = wingstate.ScopeDeviceSelfRevoke

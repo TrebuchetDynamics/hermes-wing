@@ -2273,31 +2273,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatErrorConnectGenericBody => 'Check the endpoint and try again.';
 
   @override
-  String get chatLayoutConnectTitle => 'Connect to your Hermes VPS';
+  String get chatLayoutConnectTitle => 'Add Hermes';
 
   @override
   String get chatLayoutConnectBody =>
-      'Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.';
+      'Connect directly to Hermes Agent. Choose how this device can reach it; Wing Link host management stays separate.';
 
   @override
-  String get chatLayoutVpsConnectionTitle => 'VPS connection';
+  String get chatLayoutConnectionModeLabel => 'How will Wing reach Hermes?';
+
+  @override
+  String get chatLayoutConnectionModeLocalLabel => 'This device';
+
+  @override
+  String get chatLayoutConnectionModeRemoteLabel => 'Remote HTTPS';
+
+  @override
+  String get chatLayoutConnectionModeVpnLabel => 'VPN / Tailscale';
+
+  @override
+  String get chatLayoutConnectionModeSshLabel => 'SSH tunnel';
+
+  @override
+  String get chatLayoutConnectionModeLocalBody =>
+      'Use a local Agent URL, or install Hermes on this device when local setup is available.';
+
+  @override
+  String get chatLayoutConnectionModeRemoteBody =>
+      'Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.';
+
+  @override
+  String get chatLayoutConnectionModeVpnBody =>
+      'Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.';
+
+  @override
+  String get chatLayoutConnectionModeSshBody =>
+      'Start a fixed, trusted SSH tunnel outside Wing, then enter its local Agent URL. Wing never runs arbitrary SSH commands or stores SSH keys.';
+
+  @override
+  String get chatLayoutConnectionModeLocalUrlHelper =>
+      'Enter the local Agent URL. This device usually uses http://127.0.0.1:8642.';
+
+  @override
+  String get chatLayoutConnectionModeRemoteUrlHelper =>
+      'Enter the HTTPS Agent URL. Wing currently uses HTTPS/SSE; WebSocket support waits for an exact Hermes contract.';
+
+  @override
+  String get chatLayoutConnectionModeVpnUrlHelper =>
+      'Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.';
+
+  @override
+  String get chatLayoutConnectionModeSshUrlHelper =>
+      'Start the fixed tunnel outside Wing, then enter the local Agent URL it exposes.';
+
+  @override
+  String get chatLayoutVpsConnectionTitle => 'Hermes Agent connection';
 
   @override
   String get chatLayoutVpsConnectionBody =>
-      'Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.';
+      'Use an HTTPS or trusted private-network URL. Never expose an unauthenticated Hermes port to the internet.';
 
   @override
   String get chatLayoutScanQrAction => 'Scan wing-cli QR code';
 
   @override
-  String get chatLayoutServerUrlLabel => 'Hermes server URL';
+  String get chatLayoutServerUrlLabel => 'Hermes Agent URL';
 
   @override
   String get chatLayoutServerUrlHint => 'https://hermes.example.com';
 
   @override
   String get chatLayoutServerUrlHelper =>
-      'Enter the HTTPS or private-network URL without /v1.';
+      'Enter the Agent URL without /v1. For a trusted local or SSH tunnel, a loopback HTTP URL may be used.';
 
   @override
   String get chatLayoutAccessTokenLabel => 'Access token';
@@ -2313,10 +2360,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutHideAccessTokenTooltip => 'Hide access token';
 
   @override
-  String get chatLayoutVpsNameLabel => 'VPS name (optional)';
+  String get chatLayoutVpsNameLabel => 'Connection name (optional)';
 
   @override
-  String get chatLayoutVpsNameHint => 'My Hermes VPS';
+  String get chatLayoutVpsNameHint => 'My Hermes connection';
 
   @override
   String get chatLayoutVpsNameHelper =>
@@ -2327,10 +2374,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your token is stored in secure device storage and is never shown after connecting.';
 
   @override
+  String get chatLayoutCredentialBoundaryTitle => 'Two separate connections';
+
+  @override
+  String get chatLayoutCredentialBoundaryBody =>
+      'This token is only for Hermes Agent chat. Wing Link pairing, when available, uses a separate management credential and never carries chat traffic.';
+
+  @override
   String get chatLayoutConnectingAction => 'Connecting…';
 
   @override
-  String get chatLayoutConnectAction => 'Connect to VPS';
+  String get chatLayoutConnectAction => 'Add Hermes';
 
   @override
   String get chatLayoutDevShortcutsTitle => 'Connecting to a local Agent?';

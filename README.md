@@ -213,15 +213,18 @@ runs the installed Wing Link binary to install or adopt Hermes, prepare API
 access, and start the local runtime. Use `--release` to install the most recent
 published alpha instead. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
-Today, Wing Link's Agent-domain compatibility surface is fixed profile
-list/create/rename/delete plus transactional new-profile setup for an allowlisted
-provider, bounded model string, and optional write-only provider credential. The special
-`omniroute` provider is a fixed, keyless local adapter: it maps only to Hermes'
-`custom` provider at `http://127.0.0.1:20128/v1`; enter an OmniRoute model such as
-`auto/best-coding` and leave the credential field empty. It does not expose a
-caller-selected base URL. General provider management, all existing-profile
-provider or credential edits, and per-profile Hermes Project creation remain
-unshipped. After Hermes is ready, pair the phone.
+Today, Wing Link's Agent-domain compatibility surface (see
+[the detailed contract](docs/product/wing-link.md)) is fixed profile
+list/create/clone/rename/delete plus transactional new-profile
+setup for an allowlisted provider, bounded model string, and optional write-only provider
+credential. The special `omniroute` provider is a fixed, keyless local adapter: it
+maps only to Hermes' `custom` provider at `http://127.0.0.1:20128/v1`; enter an
+OmniRoute model such as `auto/best-coding` and leave the credential field empty. It
+does not expose a caller-selected base URL. Wing also reads Agent-advertised
+provider/model inventory and exposes supported write-only credential controls
+directly through Agent. General/custom provider CRUD, Wing Link provider edits,
+and per-profile Hermes Project creation remain unshipped; general provider operations are planned.
+After Hermes is ready, pair the phone.
 
 `wing-link setup` initially binds the Hermes Agent API to loopback. Exposing
 Wing Link does **not** proxy the direct Agent data plane. When Tailscale is active,
@@ -331,9 +334,11 @@ routing, firewall checks, profile multiplexing, and recovery in more detail.
 
 - **Hermes Wing** is the Flutter client on Android, web, and desktop.
 - **Wing Link** is the remote management API on the Agent host for installation,
-  pairing, service lifecycle, health, diagnostics, and the shipped fixed profile
-  adapter, including bounded new-profile provider setup. Approved-directory and
-  general provider operations are planned. It is not a general CLI or file bridge.
+  pairing, service lifecycle, health, diagnostics, the shipped fixed profile
+  adapter (including clone and bounded new-profile provider setup), and read-only
+  browsing of locally approved child folders through opaque handles. General or
+  custom provider CRUD and Hermes Project creation are not shipped. It is not a
+  general CLI or file bridge.
 - **Hermes Agent** owns the agent runtime and its sessions, profiles, tools,
   providers, approvals, and configuration.
 
@@ -347,10 +352,12 @@ permissions, and version behavior.
 
 Wing stores credentials through platform secure storage, never puts bearer
 credentials in pairing QR codes, and does not replay administrative changes after
-a reconnect. New-profile provider credentials are write-only and travel to the
-Hermes CLI through stdin; existing-profile credential edits remain blocked. The
-planned Wing Link folder picker returns only child folders under locally approved
-roots, never file entries. Use HTTPS or a trusted encrypted VPN for remote access.
+a reconnect. Provider credentials are write-only: new-profile setup sends them to
+the Hermes CLI through stdin, while Agent API credential controls never echo raw
+values. Provider setup remains narrow: existing-profile credential edits remain blocked.
+The Wing Link folder picker returns only bounded child folders under locally approved roots
+through opaque, revocable handles; it never returns file entries. Use HTTPS or a
+trusted encrypted VPN for remote access.
 
 Read [SECURITY.md](SECURITY.md) and the
 [threat model](docs/security/threat-model.md) before exposing Hermes beyond a

@@ -48,20 +48,20 @@ Current local receipts (refreshed through 2026-07-03):
      pointing at `<prefix>/usr/include`. The helper script
      `scripts/run_linux_release_build.sh` automates this fallback and is exposed
      as `npm run linux:release-build`.
-  The resulting binary links the real system `libsecret-1.so.0` at runtime
-  (confirmed via `ldd`) — the local prefix is a build-time-only stand-in for
-  the missing dev headers/symlink, not something the shipped binary depends
-  on. The helper accepts a relative or absolute `WING_LINUX_BUILD_DEPS_DIR`
-  and resolves it before rewriting `.pc` files so nested CMake builds can still
-  find the extracted headers/libs. This recipe is only needed in root-less
-  containers; CI/normal dev machines should just `apt-get install
-  libsecret-1-dev`.
+     The resulting binary links the real system `libsecret-1.so.0` at runtime
+     (confirmed via `ldd`) — the local prefix is a build-time-only stand-in for
+     the missing dev headers/symlink, not something the shipped binary depends
+     on. The helper accepts a relative or absolute `WING_LINUX_BUILD_DEPS_DIR`
+     and resolves it before rewriting `.pc` files so nested CMake builds can still
+     find the extracted headers/libs. This recipe is only needed in root-less
+     containers; CI/normal dev machines should just `apt-get install
+libsecret-1-dev`.
 - `flutter build windows --debug` — blocked here because Flutter only supports
   this command on Windows hosts (`"build windows" only supported on Windows
-  hosts.`; latest local reprobe exited 1 on 2026-07-03).
+hosts.`; latest local reprobe exited 1 on 2026-07-03).
 - `flutter build ios` — blocked here because this Linux Flutter toolchain does
   not expose usable iOS simulator build options (`flutter build ios --simulator
-  --debug` exits 64 with `Could not find an option named "--simulator".`);
+--debug` exits 64 with `Could not find an option named "--simulator".`);
   validate on macOS/Xcode.
 - `flutter build macos` — blocked here because this Linux Flutter toolchain does
   not expose a macOS build subcommand (`flutter build macos` exits 64 with

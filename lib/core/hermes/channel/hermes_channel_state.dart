@@ -201,7 +201,8 @@ class HermesChannelState {
     return document != null &&
         document.supportsSchema &&
         document.auth.allows(scope) &&
-        document.advertisesScopedEndpoint(name, method, path, scope);
+        document.advertisesScopedEndpoint(name, method, path, scope) &&
+        _authorizesEndpoint(name, method, path);
   }
 
   HermesProfile? get selectedProfile {

@@ -887,6 +887,22 @@ void _hermesApiChannelRunFailureTests() {
         channel.state.activeMessages.last.status,
         HermesTurnStatus.streaming,
       );
+
+      stream.emit(
+        'event: tool.started\ndata: {"run_id":"run_detached","session_id":"sess_2","tool":"search","tool_call_id":"call-1","preview":"Looking up results"}\n\n',
+      );
+      HermesChatTurn? toolTurn;
+      final toolDeadline = DateTime.now().add(const Duration(seconds: 1));
+      while (toolTurn == null && DateTime.now().isBefore(toolDeadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        toolTurn = channel.state.activeMessages
+            .where((turn) => turn.kind == HermesTurnKind.toolCall)
+            .firstOrNull;
+      }
+      expect(toolTurn, isNotNull);
+      expect(toolTurn!.toolCall?.name, 'search');
+      expect(toolTurn.toolCall?.status, 'running');
+
       await expectLater(
         channel.sendText('must not duplicate'),
         throwsStateError,
@@ -1098,6 +1114,57 @@ void _hermesApiChannelRunFailureTests() {
     expect(store.leases, isEmpty);
     expect(channel.state.hasUnreconciledRun, isFalse);
   });
+
+  test(
+    'reattachment reconciles terminal status after the event stream closes',
+    () async {
+      final store = _MemoryDetachedRunStore()
+        ..leases = [
+          HermesDetachedRunLease(
+            runId: 'run_detached',
+            sessionId: 'sess_1',
+            baseUrl: 'http://127.0.0.1:8642',
+            createdAt: DateTime.now().toUtc(),
+          ),
+        ];
+      var statusRequests = 0;
+      final channel = HermesApiChannel(
+        detachedRunStore: store,
+        runStatusReconcileInterval: const Duration(milliseconds: 1),
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _reconciledMessagesFixture,
+            '/v1/runs/run_detached' =>
+              ++statusRequests == 1
+                  ? '{"run_id":"run_detached","session_id":"sess_1","status":"running"}'
+                  : '{"run_id":"run_detached","session_id":"sess_1","status":"completed","output":"recovered"}',
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          getStream: (uri, headers) => Stream<String>.empty(),
+        ),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      final deadline = DateTime.now().add(const Duration(seconds: 1));
+      while (statusRequests < 2 && DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+
+      expect(statusRequests, greaterThanOrEqualTo(2));
+      expect(store.leases, isEmpty);
+      expect(channel.state.hasUnreconciledRun, isFalse);
+      expect(channel.state.errorMessage, isNull);
+      expect(
+        channel.state.activeMessages.last.status,
+        HermesTurnStatus.completed,
+      );
+    },
+  );
 
   test(
     'delayed stop completion cannot clear reconnected run ownership',

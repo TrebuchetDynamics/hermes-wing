@@ -35,6 +35,15 @@ func stageDirectoryDevice(t *testing.T, store *StateStore, name string, seed byt
 	return token
 }
 
+func directoryTestStatePath(t *testing.T) string {
+	t.Helper()
+	directory, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return filepath.Join(directory, "state.json")
+}
+
 func fetchDirectoryRoot(t *testing.T, handler http.Handler, token string) remoteDirectory {
 	t.Helper()
 	request := httptest.NewRequest(http.MethodGet, remoteDirectoryBasePath, nil)
@@ -52,7 +61,7 @@ func fetchDirectoryRoot(t *testing.T, handler http.Handler, token string) remote
 }
 
 func TestRemoteDirectoryRoutesReturnHandlesAndNamesOnly(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	store := newStateStore(statePath)
 	credentialID, token, err := store.StageDeviceCredential(
 		"Folder browser",
@@ -140,7 +149,7 @@ func TestRemoteDirectoryRoutesReturnHandlesAndNamesOnly(t *testing.T) {
 }
 
 func TestRemoteDirectoryRoutesEnforceScopeAndStrictRequests(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	store := newStateStore(statePath)
 	directoryToken := stageDirectoryDevice(t, store, "Folder browser", 10, []string{ScopeDirectoriesRead})
 	healthToken := stageDirectoryDevice(t, store, "Health only", 11, []string{ScopeHealthRead})
@@ -235,7 +244,7 @@ func TestRemoteDirectoryRoutesEnforceScopeAndStrictRequests(t *testing.T) {
 }
 
 func TestRemoteDirectoryHandlesExpireBindToDeviceAndObserveRevocation(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	store := newStateStore(statePath)
 	firstToken := stageDirectoryDevice(t, store, "First phone", 12, []string{ScopeDirectoriesRead})
 	secondToken := stageDirectoryDevice(t, store, "Second phone", 13, []string{ScopeDirectoriesRead})
@@ -334,7 +343,7 @@ func TestRemoteDirectoryTooLargeReturnsNoPartialInventory(t *testing.T) {
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			statePath := filepath.Join(t.TempDir(), "state.json")
+			statePath := directoryTestStatePath(t)
 			store := newStateStore(statePath)
 			token := stageDirectoryDevice(t, store, "Folder browser", 14, []string{ScopeDirectoriesRead})
 			root := t.TempDir()
@@ -360,7 +369,7 @@ func TestRemoteDirectoryTooLargeReturnsNoPartialInventory(t *testing.T) {
 }
 
 func TestMetadataAdvertisesOnlyAvailableDirectoryReads(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	handler := newWingLinkServer(&profileBackend{}, newStateStore(statePath))
 	request := httptest.NewRequest(http.MethodGet, "/meta", nil)
 	response := httptest.NewRecorder()
@@ -371,7 +380,7 @@ func TestMetadataAdvertisesOnlyAvailableDirectoryReads(t *testing.T) {
 }
 
 func TestDirectoryStateFailureOmitsCapabilitiesWithoutDisablingWingLink(t *testing.T) {
-	statePath := filepath.Join(t.TempDir(), "state.json")
+	statePath := directoryTestStatePath(t)
 	store := newStateStore(statePath)
 	token := stageDirectoryDevice(t, store, "Folder browser", 15, []string{ScopeDirectoriesRead})
 	directoryState := filepath.Join(filepath.Dir(statePath), "wing-link-directories.json")

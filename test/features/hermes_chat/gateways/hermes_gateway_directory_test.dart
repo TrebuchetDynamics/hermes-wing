@@ -552,6 +552,53 @@ void main() {
   );
 
   test(
+    'API summary loader does not probe profiles when a declared scope is missing',
+    () async {
+      final requestedPaths = <String>[];
+      final loader = HermesApiGatewaySummaryLoader(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            requestedPaths.add(uri.path);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' =>
+                '''
+{
+  "schema_version": 1,
+  "profile_context": {"type": "query", "name": "profile", "required": true, "default_profile_id": "default"},
+  "auth": {"type": "bearer", "required": true, "granted_scopes": ["profiles:read"]},
+  "endpoints": {
+    "profiles": {
+      "method": "GET",
+      "path": "/api/profiles",
+      "required_scopes": ["profiles:read", "profiles:admin"]
+    }
+  }
+}
+''',
+              '/api/sessions' => '{"object":"list","data":[]}',
+              '/api/profiles' => throw StateError('must not be requested'),
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+
+      final summary = await loader.load(
+        const HermesEndpointConfig(
+          id: 'missing-declared-scope',
+          baseUrl: 'https://missing-declared-scope.example',
+        ),
+      );
+
+      expect(requestedPaths, isNot(contains('/api/profiles')));
+      expect(summary.profiles, isEmpty);
+      expect(summary.unscopedSessions, isEmpty);
+    },
+  );
+
+  test(
     'API summary loader never infers profile session query context',
     () async {
       final requestedUris = <Uri>[];
@@ -676,10 +723,7 @@ void main() {
     final channel = _EmptySessionChannel();
     final directory = directoryFor(
       configs: const [
-        HermesEndpointConfig(
-          id: 'beta',
-          baseUrl: 'https://beta.example',
-        ),
+        HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
       ],
       loader: FakeGatewaySummaryLoader(const {
         'beta': GatewaySummary(

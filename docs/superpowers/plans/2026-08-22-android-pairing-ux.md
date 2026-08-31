@@ -86,12 +86,14 @@
 ### Task 1: Align the pairing security contract
 
 **Files:**
+
 - Modify: `CONTEXT.md:93-98`
 - Modify: `docs/adr/security-and-privacy.md:5-19`
 - Modify: `docs/security/threat-model.md`
 - Test: `test/tooling/package_scripts_contract_test.dart`
 
 **Interfaces:**
+
 - Consumes: existing five-minute single-use broker and review-before-exchange contract.
 - Produces: one unambiguous policy used by every later task: ephemeral pairing codes are allowed only in bounded handoff surfaces; bearer credentials remain forbidden everywhere outside secure exchange/storage.
 
@@ -163,11 +165,13 @@ git commit -m "docs: clarify pairing handoff security boundary"
 ### Task 2: Add an ordinary same-device handoff page to Wing Link
 
 **Files:**
+
 - Create: `wing_link/internal/app/pair_open.go`
 - Create: `wing_link/internal/app/pair_open_test.go`
 - Modify: `wing_link/internal/app/pair.go:150-273`
 
 **Interfaces:**
+
 - Consumes: `pairingBroker.PairingURI`, broker origin, and `expiresAt` from `createPairingBroker`.
 - Produces: `pairingBroker.OpenURL *url.URL`, `GET /open`, and `androidIntentURI(pairingURI *url.URL) string`.
 
@@ -306,6 +310,7 @@ git commit -m "feat: add same-device Android pairing handoff"
 ### Task 3: Make the CLI output lead with the Android-safe URL
 
 **Files:**
+
 - Modify: `wing_link/internal/app/pair.go:80-125`
 - Modify: `wing_link/internal/app/cli.go:80-115`
 - Modify: `wing_link/internal/app/pair_test.go`
@@ -314,6 +319,7 @@ git commit -m "feat: add same-device Android pairing handoff"
 - Modify: `docs/runbooks/android/release-handoff.md`
 
 **Interfaces:**
+
 - Consumes: `pairingBroker.OpenURL` from Task 2.
 - Produces: default human output with an ordinary `http(s)://.../open` URL first, QR second, and no separately printed raw code.
 
@@ -398,6 +404,7 @@ git commit -m "feat: lead pairing with same-device Android link"
 ### Task 4: Add explicit paste/share recovery to the Android chooser
 
 **Files:**
+
 - Modify: `lib/features/enrollment/models/hermes_enrollment_payload.dart`
 - Modify: `lib/features/enrollment/screens/hermes_enrollment_screen.dart`
 - Modify: `android/app/src/main/kotlin/com/trebuchetdynamics/hermes/wing/pairing/PairingHandoffIntentParser.kt`
@@ -409,6 +416,7 @@ git commit -m "feat: lead pairing with same-device Android link"
 - Test: `android/app/src/test/kotlin/com/trebuchetdynamics/hermes/wing/pairing/PairingHandoffIntentParserTest.kt`
 
 **Interfaces:**
+
 - Consumes: existing strict `HermesEnrollmentPayload.parse` and Android ACTION_SEND channel.
 - Produces: `HermesEnrollmentPayload.parseExplicitHandoff(String value, {bool cleartextOriginConfirmed = false})` and an explicit user-triggered paste action.
 
@@ -540,6 +548,7 @@ git commit -m "feat: add same-device pairing input options"
 ### Task 5: Make multi-profile import visible before and after confirmation
 
 **Files:**
+
 - Modify: `wing_link/internal/app/pair.go:187-202`
 - Modify: `wing_link/internal/app/pair_test.go`
 - Modify: `lib/core/hermes/client/hermes_api_client.dart`
@@ -552,6 +561,7 @@ git commit -m "feat: add same-device pairing input options"
 - Test: `test/core/hermes/hermes_api_test.dart`
 
 **Interfaces:**
+
 - Produces: inspection JSON field `connection_count` as an integer from 1 through 100.
 - Produces: `HermesEnrollmentPreview.connectionCount`, `HermesEnrollmentController.connectedProfileCount`, and `HermesEnrollmentController.clearConfirmed()`.
 
@@ -659,6 +669,7 @@ git commit -m "feat: show multi-profile pairing outcome"
 ### Task 6: Add expiry recovery and complete Android qualification
 
 **Files:**
+
 - Modify: `lib/features/enrollment/providers/hermes_enrollment_provider.dart`
 - Modify: `lib/features/enrollment/screens/hermes_enrollment_screen.dart`
 - Modify: `lib/l10n/app_en.arb`
@@ -669,6 +680,7 @@ git commit -m "feat: show multi-profile pairing outcome"
 - Create: `.maestro/android-pairing-same-device.yaml`
 
 **Interfaces:**
+
 - Produces: actionable `expired`, `unreachable`, `invalid`, and `exchangeFailed` presentation states without exposing server response bodies or secrets.
 
 - [ ] **Step 1: Write failing expiry/recovery widget tests**

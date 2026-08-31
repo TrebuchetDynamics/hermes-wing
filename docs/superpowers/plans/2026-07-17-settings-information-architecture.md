@@ -37,6 +37,7 @@
 ### Task 1: Extract the Diagnostics page
 
 **Files:**
+
 - Modify: `lib/features/settings/screens/settings_screen.dart`
 - Create: `lib/features/settings/screens/settings_diagnostics_screen.dart`
 - Modify: `lib/router/routes/app_routes.dart`
@@ -45,6 +46,7 @@
 - Modify: `test/features/settings/settings_screen_test.dart`
 
 **Interfaces:**
+
 - Consumes: `hermesChannelProvider`, `HermesChannelState`, `hermesDiagnosticsExport(HermesChannelState)`.
 - Produces: `const DiagnosticsSettingsScreen()`, `AppRoutes.settingsDiagnostics == '/settings/diagnostics'`, and overview key `settings-diagnostics-link`.
 
@@ -347,6 +349,7 @@ git commit -m "refactor(settings): move diagnostics to detail page"
 ### Task 2: Extract Voice & speech and add quick controls
 
 **Files:**
+
 - Modify: `lib/features/settings/screens/settings_screen.dart`
 - Create: `lib/features/settings/screens/settings_voice_screen.dart`
 - Modify: `lib/router/routes/app_routes.dart`
@@ -355,6 +358,7 @@ git commit -m "refactor(settings): move diagnostics to detail page"
 - Modify: `test/features/settings/settings_screen_test.dart`
 
 **Interfaces:**
+
 - Consumes: `wingVoiceSettingsProvider` and existing Pocket Speech providers/services.
 - Produces: `const VoiceSettingsScreen()`, `AppRoutes.settingsVoice == '/settings/voice'`, overview keys `voice-continuous-enabled`, `voice-speak-replies-enabled`, and `settings-voice-link`.
 
@@ -814,10 +818,12 @@ git commit -m "refactor(settings): move voice controls to detail page"
 ### Task 3: Compact the overview and preserve gateway operations
 
 **Files:**
+
 - Modify: `lib/features/settings/screens/settings_screen.dart`
 - Modify: `test/features/settings/settings_screen_test.dart`
 
 **Interfaces:**
+
 - Consumes: `hermesGatewayDirectoryProvider`, `wingVoiceSettingsProvider`, and the two detail route constants.
 - Produces: a three-section `/settings` overview: Gateways, Voice, Diagnostics.
 
@@ -990,10 +996,12 @@ git commit -m "refactor(settings): compact the settings overview"
 ### Task 4: Verify production routing, shell selection, and accessibility basics
 
 **Files:**
+
 - Create: `test/router/settings_routes_test.dart`
 - Modify: `test/shared/widgets/app_shell_test.dart`
 
 **Interfaces:**
+
 - Consumes: `routerProvider`, `AppRoutes.settingsVoice`, `AppRoutes.settingsDiagnostics`, and existing Settings path-prefix classification.
 - Produces: regression evidence that both detail pages render in the production router while Settings remains the selected shell destination.
 

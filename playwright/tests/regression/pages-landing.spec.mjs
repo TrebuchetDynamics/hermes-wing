@@ -29,30 +29,41 @@ async function expectLanding(page) {
     page.getByRole("heading", { name: "Your agent. Within reach." }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Try the web alpha" })).toHaveAttribute(
-    "href",
-    "app/",
-  );
-  await expect(page.getByRole("heading", { name: "Hermes stays in charge." })).toBeVisible();
-  await expect(page.getByRole("table", { name: "Platform status" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Main navigation" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Try the web alpha" }),
+  ).toHaveAttribute("href", "app/");
+  await expect(
+    page.getByRole("heading", { name: "Hermes stays in charge." }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("table", { name: "Platform status" }),
+  ).toBeVisible();
   await expect(page.locator("img")).toHaveCount(5);
   for (const image of await page.locator("img").all()) {
     await image.scrollIntoViewIfNeeded();
   }
   await expect
     .poll(() =>
-      page.locator("img").evaluateAll((images) =>
-        images.every((image) => image.complete && image.naturalWidth > 0),
-      ),
+      page
+        .locator("img")
+        .evaluateAll((images) =>
+          images.every((image) => image.complete && image.naturalWidth > 0),
+        ),
     )
     .toBeTruthy();
   expect(
-    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
   ).toBeTruthy();
 }
 
-test("Pages root is a responsive Hermes Wing landing page", async ({ page }) => {
+test("Pages root is a responsive Hermes Wing landing page", async ({
+  page,
+}) => {
   const failures = collectPageFailures(page);
   await page.goto(root, { waitUntil: "networkidle" });
   await expectLanding(page);
@@ -65,27 +76,36 @@ test("Pages root is a responsive Hermes Wing landing page", async ({ page }) => 
       page.evaluate(() => {
         const heading = document.querySelector("#status-title");
         const header = document.querySelector(".site-header");
-        return heading.getBoundingClientRect().top >= header.getBoundingClientRect().bottom;
+        return (
+          heading.getBoundingClientRect().top >=
+          header.getBoundingClientRect().bottom
+        );
       }),
     )
     .toBeTruthy();
   expect(failures).toEqual([]);
 });
 
-test("landing page remains usable at a compact mobile viewport", async ({ page }) => {
+test("landing page remains usable at a compact mobile viewport", async ({
+  page,
+}) => {
   const failures = collectPageFailures(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(root, { waitUntil: "networkidle" });
   await expectLanding(page);
   expect(
-    await page.locator(".product-frame img").evaluate((image) =>
-      image.currentSrc.endsWith("/assets/showcase-mobile.png"),
-    ),
+    await page
+      .locator(".product-frame img")
+      .evaluate((image) =>
+        image.currentSrc.endsWith("/assets/showcase-mobile.png"),
+      ),
   ).toBeTruthy();
   expect(
-    await page.locator(".flow-frame img").evaluate((image) =>
-      image.currentSrc.endsWith("/assets/runtime-flow-mobile.svg"),
-    ),
+    await page
+      .locator(".flow-frame img")
+      .evaluate((image) =>
+        image.currentSrc.endsWith("/assets/runtime-flow-mobile.svg"),
+      ),
   ).toBeTruthy();
   await expect(
     page
@@ -95,7 +115,9 @@ test("landing page remains usable at a compact mobile viewport", async ({ page }
   expect(failures).toEqual([]);
 });
 
-test("nested Flutter web alpha initializes under the app route", async ({ page }) => {
+test("nested Flutter web alpha initializes under the app route", async ({
+  page,
+}) => {
   const failures = collectPageFailures(page);
   await page.goto(`${root}app/`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForSelector("flt-glass-pane", {

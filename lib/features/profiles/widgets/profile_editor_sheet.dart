@@ -40,6 +40,7 @@ class ProfileEditorSheet extends StatefulWidget {
     this.canDelete = false,
     this.stableNames = false,
     this.canConfigure = false,
+    this.soulOnly = false,
     this.onCreate,
     this.onRename,
     this.onDelete,
@@ -53,6 +54,7 @@ class ProfileEditorSheet extends StatefulWidget {
   final bool canDelete;
   final bool stableNames;
   final bool canConfigure;
+  final bool soulOnly;
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
@@ -298,11 +300,17 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         });
       }
     } catch (error) {
+      final conflict = error.toString().contains('412');
+      if (conflict && widget.canEditSoul && mounted) {
+        // A rejected SOUL write means the server has newer content. Reconcile
+        // before showing the conflict so a retry cannot overwrite stale text.
+        await _loadPersona();
+      }
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
       setState(() {
         _clearPendingApproval();
-        _error = error.toString().contains('412')
+        _error = conflict
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
       });
@@ -331,32 +339,38 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                profile == null ? strings.createAgentTitle : strings.editAgent,
+                profile == null
+                    ? strings.createAgentTitle
+                    : widget.soulOnly
+                    ? strings.profilePersonaTitle(profile.displayName)
+                    : strings.editAgent,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (profile != null) ...[
                 const SizedBox(height: 6),
                 Text(strings.agentStableId(profile.id)),
               ],
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _nameController,
-                enabled: !_payloadFrozen,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: strings.agentDisplayName,
-                  border: const OutlineInputBorder(),
+              if (!widget.soulOnly) ...[
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _nameController,
+                  enabled: !_payloadFrozen,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.agentDisplayName,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final name = value?.trim() ?? '';
+                    if (name.isEmpty) return strings.agentNameRequired;
+                    if (widget.stableNames &&
+                        !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
+                      return strings.profileStableNameHint;
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  final name = value?.trim() ?? '';
-                  if (name.isEmpty) return strings.agentNameRequired;
-                  if (widget.stableNames &&
-                      !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
-                    return strings.profileStableNameHint;
-                  }
-                  return null;
-                },
-              ),
+              ],
               if (profile == null) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String?>(

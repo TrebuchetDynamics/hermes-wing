@@ -22,6 +22,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"unicode"
 
 	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/audit"
 	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/workspaces"
@@ -92,7 +93,6 @@ type profileBackend struct {
 
 type wingLinkServer struct {
 	profiles              *profileBackend
-	providers             *providerBackend
 	bootstrap             *BootstrapManager
 	operations            *OperationManager
 	approvals             *ApprovalStore
@@ -107,9 +107,8 @@ type wingLinkServer struct {
 
 // Hermes Agent remains the sole domain authority. Supported releases lack the
 // required profile lifecycle contract, so Wing Link exposes only the fixed
-// profile compatibility adapter. Provider fallbacks remain quarantined.
+// profile compatibility adapter.
 const wingLinkProfileCompatibilityEnabled = true
-const wingLinkProviderFallbacksEnabled = false
 
 func serveCommand(stdout, stderr io.Writer, args []string) int {
 	options, err := parseServeOptions(args)
@@ -129,10 +128,6 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		_, _ = fmt.Fprintln(stderr, "serve: could not initialize profile revision authority")
 		return 1
 	}
-	providers := &providerBackend{
-		runHermes:  runHermes,
-		readHermes: bootstrap.ReadHermes,
-	}
 	controlState := newStateStore(options.StatePath)
 	hostIdentity, err := controlState.HostIdentity()
 	if err != nil {
@@ -148,7 +143,7 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 	}
 	server := &http.Server{
 		Handler: newWingLinkServerWithOperations(
-			backend, controlState, providers, bootstrap, operations,
+			backend, controlState, bootstrap, operations,
 		),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second,
@@ -378,25 +373,21 @@ func isTrustedControlPlaneIP(ip net.IP) bool {
 	return ipv4 != nil && ipv4[0] == 100 && ipv4[1] >= 64 && ipv4[1] <= 127
 }
 
-func newWingLinkServer(profiles *profileBackend, state *StateStore, providers ...*providerBackend) http.Handler {
-	var provider *providerBackend
-	if len(providers) > 0 {
-		provider = providers[0]
-	}
-	return newWingLinkServerWithBootstrap(profiles, state, provider, nil)
+func newWingLinkServer(profiles *profileBackend, state *StateStore) http.Handler {
+	return newWingLinkServerWithBootstrap(profiles, state, nil)
 }
 
-func newWingLinkServerWithBootstrap(profiles *profileBackend, state *StateStore, provider *providerBackend, bootstrap *BootstrapManager) http.Handler {
+func newWingLinkServerWithBootstrap(profiles *profileBackend, state *StateStore, bootstrap *BootstrapManager) http.Handler {
 	operations, err := NewDurableOperationManager(
 		filepath.Join(filepath.Dir(state.Path()), "wing-link-operations.json"),
 	)
 	if err != nil {
 		operations = NewOperationManager()
 	}
-	return newWingLinkServerWithOperations(profiles, state, provider, bootstrap, operations)
+	return newWingLinkServerWithOperations(profiles, state, bootstrap, operations)
 }
 
-func newWingLinkServerWithOperations(profiles *profileBackend, state *StateStore, provider *providerBackend, bootstrap *BootstrapManager, operations *OperationManager) http.Handler {
+func newWingLinkServerWithOperations(profiles *profileBackend, state *StateStore, bootstrap *BootstrapManager, operations *OperationManager) http.Handler {
 	hostFingerprint := ""
 	if identity, err := state.HostIdentity(); err == nil {
 		hostFingerprint = identity.Fingerprint
@@ -420,7 +411,7 @@ func newWingLinkServerWithOperations(profiles *profileBackend, state *StateStore
 		}
 	}
 	return &wingLinkServer{
-		profiles: profiles, providers: provider, bootstrap: bootstrap,
+		profiles: profiles, bootstrap: bootstrap,
 		operations: operations, approvals: approvals, audit: auditLog, state: state,
 		directories: directories, hostFingerprint: hostFingerprint,
 		localPairingProofHash: hashSecret(localPairingProof),
@@ -586,9 +577,6 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 			return
 		}
 	}
-	if wingLinkProviderFallbacksEnabled && server.providers != nil && server.serveProviderRoute(writer, request) {
-		return
-	}
 	writer.WriteHeader(http.StatusNotFound)
 }
 
@@ -722,14 +710,6 @@ func (server *wingLinkServer) acknowledgeCredential(writer http.ResponseWriter, 
 		return
 	}
 	writeJSON(writer, http.StatusOK, map[string]any{"credential_id": id, "acknowledged": true})
-}
-
-func (server *wingLinkServer) requireReadAuthorization(writer http.ResponseWriter, request *http.Request) bool {
-	return server.requireScopeAuthorization(writer, request, ScopeProvidersRead, true)
-}
-
-func (server *wingLinkServer) requireAuthorization(writer http.ResponseWriter, request *http.Request) bool {
-	return server.requireScopeAuthorization(writer, request, ScopeProvidersWrite, false)
 }
 
 func (server *wingLinkServer) requireScopeAuthorization(
@@ -1006,6 +986,10 @@ var (
 	errProfileSetupFailed   = errors.New("profile setup failed")
 	errProfileInvalidSetup  = errors.New("profile setup is invalid")
 )
+
+func hasControl(value string) bool {
+	return strings.IndexFunc(value, unicode.IsControl) >= 0
+}
 
 func validateProfileSetup(description, provider, model, providerAPIKey string) error {
 	description = strings.TrimSpace(description)

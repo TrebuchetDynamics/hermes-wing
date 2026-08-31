@@ -304,7 +304,8 @@ extension _ProvidersExtension on HermesApiChannel {
       (profile == null || _state.selectedProfileId == profile);
 
   /// Requires the endpoint to be advertised AND the connected token to hold
-  /// [scope], failing before any network I/O when either is missing.
+  /// every scope declared by it, failing before any network I/O when either is
+  /// missing.
   void _requireProviderModelCapability(
     String name,
     String method,
@@ -313,12 +314,15 @@ extension _ProvidersExtension on HermesApiChannel {
     String action,
   ) {
     final capabilities = _state.capabilities;
+    final endpoint = capabilities?.endpoints[name];
     if (capabilities == null ||
         !capabilities.supportsSchema ||
+        endpoint == null ||
         !capabilities.advertisesScopedEndpoint(name, method, path, scope)) {
       throw StateError('Hermes did not advertise support to $action.');
     }
-    if (!capabilities.auth.allows(scope)) {
+    if (!capabilities.auth.allows(scope) ||
+        !endpoint.requiredScopes.every(capabilities.auth.allows)) {
       throw StateError('This device is not authorized to $action.');
     }
   }

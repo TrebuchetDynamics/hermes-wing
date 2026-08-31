@@ -4,6 +4,7 @@ extension _ConnectionExtension on HermesApiChannel {
   Future<void> _connect({required String baseUrl, String? apiKey}) async {
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
+    _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();

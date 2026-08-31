@@ -134,6 +134,7 @@ const _composerImageInsertionMimeTypes = <String>[
   'image/webp',
 ];
 const _configuredHermesBaseUrl = String.fromEnvironment('WING_HERMES_BASE_URL');
+const _hermesLocalBaseUrl = 'http://127.0.0.1:8642';
 const _composerEmojis = [
   '😀',
   '😂',
@@ -162,6 +163,8 @@ const _composerEmojis = [
 ];
 
 enum _ComposerMenuAction { sessions, handsFree }
+
+enum _HermesConnectionMode { local, remote, vpn, ssh }
 
 enum _TranscriptCopyFormat { text, markdown }
 
@@ -327,6 +330,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final HermesChannelObservation _observation = HermesChannelObservation();
   final LinkedHashSet<String> _unreadCompletedSessionIds = LinkedHashSet();
   bool _reconnectingOnResume = false;
+  bool _reconnectInFlight = false;
+  _HermesConnectionMode _connectionMode = _HermesConnectionMode.remote;
   late bool _editingConnection;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
@@ -499,6 +504,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (mounted) setState(() {});
   }
 
+  void _selectConnectionMode(_HermesConnectionMode mode) {
+    if (_connectionMode == mode) return;
+    if ((mode == _HermesConnectionMode.local ||
+            mode == _HermesConnectionMode.ssh) &&
+        _connectionForm.baseUrl.text.trim().isEmpty) {
+      _connectionForm.baseUrl.text = _hermesLocalBaseUrl;
+    }
+    setState(() => _connectionMode = mode);
+  }
+
   void _onSessionPinsChanged() {
     if (mounted) setState(() {});
   }
@@ -575,7 +590,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_reconnectAfterResumeIfRecoverable());
+      fireAndForget(
+        _reconnectAfterResumeIfRecoverable(),
+        'Hermes reconnect after resume',
+      );
     } else {
       _voiceInputController.pause(
         _hermesStrings(context).chatShellVoicePausedBackgroundBody,
@@ -1095,7 +1113,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               ),
         title: activeContact == null
             ? Text(
-                showingDirectory
+                _editingConnection
+                    ? strings.chatLayoutConnectTitle
+                    : showingDirectory
                     ? strings.agentsTitle
                     : _safeHermesUiPreview(
                         activeSession?.title ?? strings.chatShellHermesTitle,

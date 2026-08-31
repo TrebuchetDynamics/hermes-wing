@@ -1082,6 +1082,42 @@ void main() {
     );
   });
 
+  testWidgets('uses a compact two-column profile layout on wide screens', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Hermes One', revision: 'd'),
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+        HermesProfile(
+          id: 'writer',
+          displayName: 'Writing Agent',
+          revision: 'w',
+        ),
+      ],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_profilesTestApp(channel));
+    await tester.pumpAndSettle();
+
+    final cards = find.byType(Card);
+    expect(cards, findsNWidgets(3));
+    expect(
+      tester.getTopLeft(cards.at(1)).dx,
+      greaterThan(tester.getTopLeft(cards.at(0)).dx),
+    );
+    expect(
+      tester.getTopLeft(cards.at(2)).dy,
+      greaterThan(tester.getTopLeft(cards.at(0)).dy),
+    );
+  });
+
   testWidgets('marks the selected agent with a selected semantics node', (
     tester,
   ) async {

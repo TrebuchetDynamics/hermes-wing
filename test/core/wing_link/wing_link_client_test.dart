@@ -582,64 +582,6 @@ void main() {
     expect(profiles.single.canDelete, isTrue);
   });
 
-  test('CRUDs custom providers with revision guards', () async {
-    final requests = <String>[];
-    final client = WingLinkClient(
-      origin: Uri.parse('https://hermes.example:8654'),
-      token: 'wlc-secret',
-      get: (uri, headers) async {
-        requests.add('GET ${uri.path} ${uri.queryParameters['profile']}');
-        return '{"providers":[{"id":"acme","base_url":"https://api.example/v1","model":"v1","revision":"rev-1"}]}';
-      },
-      post: (uri, headers, body) async {
-        requests.add(
-          'POST ${uri.path} ${uri.queryParameters['profile']} $body',
-        );
-        return '{"provider":{"id":"new","base_url":"https://new.example/v1","model":"m","revision":"rev-2"}}';
-      },
-      patch: (uri, headers, body) async {
-        requests.add(
-          'PATCH ${uri.path} ${uri.queryParameters['profile']} $body',
-        );
-        return '{"provider":{"id":"acme","base_url":"https://new.example/v1","model":"v2","revision":"rev-3"}}';
-      },
-      delete: (uri, headers) async {
-        requests.add(
-          'DELETE ${uri.path} ${uri.queryParameters['profile']} ${headers['If-Match']}',
-        );
-        return '{}';
-      },
-    );
-
-    final listed = await client.listProviders(profile: 'default');
-    final created = await client.createProvider(
-      profile: 'default',
-      id: 'new',
-      baseUrl: 'https://new.example/v1',
-      model: 'm',
-    );
-    final updated = await client.updateProvider(
-      profile: 'default',
-      id: 'acme',
-      baseUrl: 'https://new.example/v1',
-      model: 'v2',
-      revision: 'rev-1',
-    );
-    await client.deleteProvider(
-      profile: 'default',
-      id: 'acme',
-      revision: 'rev-3',
-    );
-
-    expect(listed.single.id, 'acme');
-    expect(created.id, 'new');
-    expect(updated.model, 'v2');
-    expect(requests.first, 'GET /v1/providers default');
-    expect(requests[1], contains('"id":"new"'));
-    expect(requests[2], contains('"revision":"rev-1"'));
-    expect(requests.last, 'DELETE /v1/providers/acme default rev-3');
-  });
-
   test('profile mutation exposes a typed stale-revision failure', () async {
     final client = WingLinkClient(
       origin: Uri.parse('https://hermes.example:8654'),

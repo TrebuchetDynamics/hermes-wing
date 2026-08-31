@@ -243,7 +243,7 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.readOnly
           : HermesSurfaceStatus.deferred,
       detail: supportsPersonaRead && supportsPersonaWrite
-          ? 'Persona/SOUL is available through the gateway-scoped profile editor.'
+          ? 'Persona/SOUL is available through the gateway-scoped profile editor and standalone editor.'
           : supportsPersonaRead
           ? 'Persona/SOUL is readable, but this device cannot write it.'
           : 'Persona/SOUL remains hidden until the gateway advertises the exact scoped profile soul contract.',

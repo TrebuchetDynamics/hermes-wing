@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/profiles/screens/profiles_screen.dart';
 import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/gateway/screens/gateway_screen.dart';
+import '../../features/hermes_chat/screens/hermes_add_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/local_setup/screens/local_hermes_setup_screen.dart';
 import '../../features/local_setup/screens/termux_hermes_setup_screen.dart';
@@ -13,6 +14,7 @@ import '../../features/office/screens/office_screen.dart';
 import '../../features/providers/screens/providers_screen.dart';
 import '../../features/schedules/screens/schedules_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/soul/screens/soul_screen.dart';
 import '../../features/tools/screens/tools_screen.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_shell.dart';
@@ -60,6 +62,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: AppRoutes.addHermes,
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const HermesAddScreen(),
+            ),
+          ),
+          GoRoute(
             path: AppRoutes.office,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
@@ -71,6 +80,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
               child: const ProfilesScreen(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.soul,
+            pageBuilder: (context, state) => wingFadeThroughPage(
+              key: state.pageKey,
+              child: const SoulScreen(),
             ),
           ),
           GoRoute(

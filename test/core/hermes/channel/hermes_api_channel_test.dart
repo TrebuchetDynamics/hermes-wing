@@ -1304,6 +1304,38 @@ void _hermesApiChannelProfileTests() {
     expect(posted, isFalse);
   });
 
+  test('profile operations require every declared endpoint scope', () async {
+    final capabilityMap =
+        jsonDecode(_profileCapabilitiesFixture) as Map<String, dynamic>;
+    final endpoints = capabilityMap['endpoints'] as Map<String, dynamic>;
+    (endpoints['profile_create'] as Map<String, dynamic>)['required_scopes'] = [
+      'profiles:write',
+      'profiles:admin',
+    ];
+    var posted = false;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => jsonEncode(capabilityMap),
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async {
+          posted = true;
+          return '{}';
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await expectLater(channel.createProfile(name: 'X'), throwsStateError);
+    expect(posted, isFalse);
+  });
+
   test('profile reads require profiles:read before network I/O', () async {
     final capabilityMap =
         jsonDecode(_profileCapabilitiesFixture) as Map<String, dynamic>;
@@ -2086,6 +2118,23 @@ void _hermesApiChannelProviderModelTests() {
     expect(modelsGets, getsBefore + 1);
     expect(requests.any((uri) => uri.path == '/api/models'), isTrue);
     expect(channel.state.modelInventory!.assignment.revision, 'mrev-9');
+  });
+
+  test('provider/model operations require every declared endpoint scope', () async {
+    final requests = <Uri>[];
+    final capabilities = _providerModelCapabilitiesFixture.replaceFirst(
+      '"models": {"method": "GET", "path": "/api/models", "profile_scoped": true, "required_scopes": ["models:read"]}',
+      '"models": {"method": "GET", "path": "/api/models", "profile_scoped": true, "required_scopes": ["models:read", "models:admin"]}',
+    );
+    final channel = await _connectedProviderModelChannel(
+      capabilities: capabilities,
+      requests: requests,
+      get: (uri) async =>
+          uri.path == '/api/models' ? _modelsInventoryBody : null,
+    );
+
+    await expectLater(channel.loadModels(), throwsStateError);
+    expect(requests.where((uri) => uri.path == '/api/models'), isEmpty);
   });
 
   test('read-only scopes gate write operations and visibility hooks before '

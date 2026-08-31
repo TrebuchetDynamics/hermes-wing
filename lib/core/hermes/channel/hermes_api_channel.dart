@@ -78,6 +78,7 @@ class HermesApiChannel extends ChangeNotifier
   bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
+  int _sessionSelectionGeneration = 0;
   int _profileSelectionGeneration = 0;
   String? _pendingProfileSelectionId;
   final _approvalController =
@@ -96,6 +97,7 @@ class HermesApiChannel extends ChangeNotifier
   void dispose() {
     _client = null;
     _connectionGeneration += 1;
+    _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
@@ -387,11 +389,17 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
-  }) => _respondToApproval(approvalId: approvalId, decision: decision);
+    String? runId,
+  }) => _respondToApproval(
+    approvalId: approvalId,
+    decision: decision,
+    runId: runId,
+  );
 
   Future<void> _respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {
     final client = _client;
     if (client == null) {
@@ -403,6 +411,7 @@ class HermesApiChannel extends ChangeNotifier
       approvalId: approvalId,
       decision: decision,
       activeRunIds: _activeRunIds.values,
+      runId: runId,
       selectedProfileId: _state.selectedProfileId,
       safeError: _safeHermesError,
       reportError: (message) =>

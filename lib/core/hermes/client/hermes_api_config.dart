@@ -28,6 +28,16 @@ class HermesApiConfig {
   final Uri baseUri;
   final String? apiKey;
 
+  /// Profile identity carried by an enrolled `/p/<profile>` base URL.
+  String? get pathProfileId {
+    final segments = baseUri.pathSegments
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+    return segments.length == 2 && segments.first == 'p'
+        ? Uri.decodeComponent(segments.last)
+        : null;
+  }
+
   Uri get healthUri => _withPath('/health');
   Uri get healthDetailedUri => _withPath('/health/detailed');
   Uri get capabilitiesUri => _withPath('/v1/capabilities');
@@ -127,11 +137,22 @@ class HermesApiConfig {
   Uri get modelAssignmentUri => _withPath('/api/models/assignment');
 
   /// Adds the mandatory `profile` query to a profile-owned request or SSE URL,
-  /// including the literal `default` profile. The id is validated (non-blank)
-  /// so an implicit/empty profile scope can never reach the wire, and existing
-  /// query parameters on [uri] are preserved.
+  /// including the literal `default` profile. An enrolled `/p/<profile>` base
+  /// already carries that identity and therefore must not receive a second
+  /// scope. The id is validated and must match the enrolled profile.
   Uri profileScopedUri(Uri uri, String profileId) {
     final id = hermesApiRequiredTrimmedValue(profileId, 'profileId');
+    final pathProfile = pathProfileId;
+    if (pathProfile != null) {
+      if (pathProfile != id) {
+        throw ArgumentError.value(
+          profileId,
+          'profileId',
+          'does not match the enrolled profile URL',
+        );
+      }
+      return uri;
+    }
     return uri.replace(
       queryParameters: {...uri.queryParameters, 'profile': id},
     );

@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	wingstate "github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/state"
 )
 
 func TestDirectoryGrantStoreCanonicalizesDeduplicatesAndRevokes(t *testing.T) {
@@ -82,12 +84,12 @@ func TestDirectoryGrantStoreResolvesSymlinksAndPersistsOwnerOnly(t *testing.T) {
 	if grant.Path != canonicalTarget || grant.Name != filepath.Base(canonicalTarget) {
 		t.Fatalf("grant = %#v", grant)
 	}
-	info, err := os.Stat(statePath)
+	ownerOnly, err := wingstate.PathOwnerOnly(statePath, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if info.Mode().Perm() != 0o600 {
-		t.Fatalf("state mode = %o", info.Mode().Perm())
+	if !ownerOnly {
+		t.Fatal("state file is not owner-only")
 	}
 	reopened, err := Open(statePath)
 	if err != nil {

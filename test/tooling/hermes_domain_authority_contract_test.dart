@@ -25,12 +25,8 @@ void main() {
       authorityText,
       contains('const wingLinkProfileCompatibilityEnabled = true;'),
     );
-    expect(
-      authorityText,
-      contains('const wingLinkProviderFallbacksEnabled = false;'),
-    );
     expect(profiles, contains('wingLinkProfileCompatibilityEnabled'));
-    expect(providers, contains('wingLinkProviderFallbacksEnabled'));
+    expect(providers, isNot(contains('WingLinkProvider')));
     expect(
       wingLinkClient,
       contains(
@@ -45,18 +41,12 @@ void main() {
       server,
       contains('const wingLinkProfileCompatibilityEnabled = true'),
     );
-    expect(server, contains('const wingLinkProviderFallbacksEnabled = false'));
     expect(
       server,
       contains(
         'if wingLinkProfileCompatibilityEnabled && request.URL.Path == "/v1/profiles"',
       ),
     );
-    expect(
-      server,
-      contains(
-        'if wingLinkProviderFallbacksEnabled && server.providers != nil',
-      ),
-    );
+    expect(server, isNot(contains('providerBackend')));
   });
 }

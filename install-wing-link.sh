@@ -21,7 +21,8 @@ Usage:
   ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--setup] [--prefix DIR]
 
 By default, builds and installs the local Go wing_link package, then installs or
-adopts Hermes Agent and starts its gateway. Release mode downloads an alpha Wing
+adopts Hermes Agent and starts its gateway. Provider/model configuration remains
+a separate interactive `hermes setup` step. Release mode downloads an alpha Wing
 Link binary and verifies it against its published checksum. Supplying immutable
 release metadata verifies both the expected SHA-256 and exact byte size
 out-of-band. The binary is always validated and atomically installed.
@@ -135,11 +136,13 @@ run_quick_setup() {
     WING_LINK_SERVICE=external "$binary" pair --local --same-device
     return
   fi
-  printf '\nHermes runtime is ready for provider setup.\n'
-  printf 'Next: run hermes setup to choose a provider and model.\n'
+  printf '\nHermes Agent gateway is running.\n'
+  printf 'Required next step (unless already configured): hermes setup\n'
+  printf 'Choose a provider and model in that Hermes wizard before pairing.\n'
   printf 'Same host: wing-link pair --local\n'
   printf 'Android with Tailscale: wing-link pair\n'
   printf 'Other VPNs: bind the Hermes API to its trusted address and set WING_HERMES_URL.\n'
+  printf 'Pairing stays in the foreground until Wing confirms; leave that terminal open.\n'
   printf 'Guide: docs/runbooks/android-hermes-setup.md\n'
 }
 

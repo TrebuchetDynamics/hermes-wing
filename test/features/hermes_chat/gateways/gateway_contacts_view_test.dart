@@ -36,6 +36,13 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
+    final avatarColors = find
+        .byType(CircleAvatar)
+        .evaluate()
+        .map((element) => (element.widget as CircleAvatar).backgroundColor)
+        .whereType<Color>()
+        .toSet();
+    expect(avatarColors.length, greaterThan(1));
     expect(find.text('Agent A1'), findsOneWidget);
     expect(find.text('Agent B2'), findsOneWidget);
     expect(find.text('Alpha'), findsNWidgets(3));

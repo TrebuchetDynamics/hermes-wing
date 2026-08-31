@@ -59,6 +59,25 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
     );
   }
 
+  Future<void> _openTermuxInstallGuide() async {
+    try {
+      final opened = await launchUrl(
+        _termuxInstallUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (opened || !mounted) return;
+    } on Object {
+      if (!mounted) return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).termuxInstallGuideFailedMessage,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
@@ -82,10 +101,7 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
                     style: const ButtonStyle(
                       minimumSize: WidgetStatePropertyAll(Size.fromHeight(48)),
                     ),
-                    onPressed: () => launchUrl(
-                      _termuxInstallUri,
-                      mode: LaunchMode.externalApplication,
-                    ),
+                    onPressed: _openTermuxInstallGuide,
                     icon: const Icon(Icons.open_in_new),
                     label: Text(strings.termuxInstallAction),
                   ),

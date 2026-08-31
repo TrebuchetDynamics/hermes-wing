@@ -5599,6 +5599,12 @@ abstract class AppLocalizations {
   /// **'Install Termux'**
   String get termuxInstallAction;
 
+  /// No description provided for @termuxInstallGuideFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.'**
+  String get termuxInstallGuideFailedMessage;
+
   /// No description provided for @termuxCopyAction.
   ///
   /// In en, this message translates to:

@@ -132,7 +132,22 @@ flutter devices
 flutter run -d <device-id>
 ```
 
-This starts a development build. For a local release-mode APK:
+This starts a development build.
+
+### Install the Linux desktop app
+
+From the repository root, run:
+
+```bash
+./scripts/install_linux.sh
+```
+
+The script runs `flutter pub get`, builds the release bundle, and installs the
+complete relocatable app at `~/.local/opt/hermes-wing/wing`. Run that file to
+start Hermes Wing. Set `WING_LINUX_INSTALL_DIR` to choose another install
+location.
+
+For a local release-mode APK:
 
 ```bash
 flutter build apk --release
@@ -207,6 +222,11 @@ address with a fixed configuration operation, restarts the gateway, and continue
 ```bash
 ~/.local/bin/wing-link pair
 ```
+
+`pair` prints the handoff and then stays in the foreground until Hermes Wing
+confirms it. Leave that terminal open while you paste or scan the handoff; it
+exits after confirmation. Press `Ctrl-C` to cancel and start a new five-minute
+handoff later.
 
 Automatic exposure is limited to a locally detected Tailscale address. For another
 trusted VPN, bind Hermes explicitly and set `WING_HERMES_URL` as documented in the

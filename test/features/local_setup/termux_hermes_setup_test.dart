@@ -135,6 +135,16 @@ void main() {
     );
   });
 
+  testWidgets('install guide action has an async callback', (tester) async {
+    await tester.pumpWidget(_testApp(_validMetadata()));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<FilledButton>(
+      find.byKey(const ValueKey('termux-install')),
+    );
+    expect(button.onPressed, isNotNull);
+  });
+
   testWidgets('actions remain reachable at 320dp and 200 percent text', (
     tester,
   ) async {

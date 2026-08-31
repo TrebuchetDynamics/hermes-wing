@@ -1975,6 +1975,7 @@
   "termuxSetupTitle": "Install Hermes Agent on this phone",
   "termuxSetupBody": "Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.",
   "termuxInstallAction": "Install Termux",
+  "termuxInstallGuideFailedMessage": "The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.",
   "termuxCopyAction": "Copy setup command",
   "termuxCopiedMessage": "Setup command copied. Open Termux and run it without changes.",
   "termuxCopyFailedMessage": "The setup command could not be copied. Select the command and copy it manually.",

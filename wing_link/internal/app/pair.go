@@ -127,6 +127,7 @@ func writePairHumanOutput(stdout, stderr io.Writer, broker *pairingBroker, optio
 			_, _ = fmt.Fprintln(stdout, broker.OpenURL.String())
 		}
 		_, _ = fmt.Fprintln(stderr, "pair: Review the host and access in Hermes Wing, then confirm.")
+		_, _ = fmt.Fprintln(stderr, "pair: Leave this command running; it exits after confirmation. Press Ctrl-C to cancel.")
 		return
 	}
 	if broker.OpenURL != nil {
@@ -142,6 +143,7 @@ func writePairHumanOutput(stdout, stderr io.Writer, broker *pairingBroker, optio
 		qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
 	}
 	_, _ = fmt.Fprintln(stderr, "pair:")
+	_, _ = fmt.Fprintln(stderr, "pair: Leave this command running; it exits after confirmation. Press Ctrl-C to cancel.")
 	_, _ = fmt.Fprintln(stderr, "pair: Review the host, access, and profile count in Hermes Wing, then confirm.")
 	if options.Origin.Scheme == "http" && !isLoopbackHost(options.Origin.Hostname()) {
 		_, _ = fmt.Fprintln(stderr, "pair: Plaintext HTTP requires confirmation in Wing; prefer a trusted VPN.")

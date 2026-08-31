@@ -5,6 +5,26 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'live smoke rejects credentialed URLs without echoing credentials',
+    () async {
+      final result = await Process.run('node', [
+        'scripts/hermes_live_smoke.mjs',
+        '--base-url',
+        'http://user:super-secret@example.com/path?q=x',
+        '--json',
+      ]);
+      final output = '${result.stdout}\n${result.stderr}';
+
+      expect(result.exitCode, isNot(0));
+      expect(output, isNot(contains('super-secret')));
+      expect(
+        output,
+        contains('HTTP(S) origin without credentials or route state'),
+      );
+    },
+  );
+
   test('Waydroid speech fixture ends speech before its final result', () {
     final fixture = File(
       'android/headless_voice_fixture/src/main/kotlin/'

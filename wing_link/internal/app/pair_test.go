@@ -182,6 +182,10 @@ func TestPairHumanOutputLeadsWithAndroidSafeURL(t *testing.T) {
 	if !strings.Contains(output, "Review the host, access, and profile count in Hermes Wing, then confirm.") {
 		t.Fatal("missing review instruction")
 	}
+	if !strings.Contains(output, "Leave this command running") ||
+		!strings.Contains(output, "Ctrl-C") {
+		t.Fatalf("missing wait/cancel instruction: %q", output)
+	}
 	if stdout.Len() == 0 {
 		t.Fatal("missing QR output")
 	}

@@ -192,7 +192,11 @@ chmod +x "\$output"
 
     expect(install.exitCode, 0, reason: install.stderr as String);
     expect(calls.readAsStringSync(), 'setup\n');
-    expect(install.stdout, contains('Hermes runtime is ready'));
+    expect(install.stdout, contains('Hermes Agent gateway is running'));
+    expect(
+      install.stdout,
+      contains('Required next step (unless already configured): hermes setup'),
+    );
 
     final failedInstallDir = Directory('${temp.path}/failed-install');
     final failedSetup = await Process.run(

@@ -3404,6 +3404,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termuxInstallAction => 'Install Termux';
 
   @override
+  String get termuxInstallGuideFailedMessage =>
+      'The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.';
+
+  @override
   String get termuxCopyAction => 'Copy setup command';
 
   @override

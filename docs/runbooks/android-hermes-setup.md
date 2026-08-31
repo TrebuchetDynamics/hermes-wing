@@ -38,6 +38,10 @@ cd hermes-wing
    wing-link pair --label "My Android device"
    ```
 
+   The command prints the handoff and stays in the foreground until Wing
+   confirms it. Leave this terminal open while you paste or scan the handoff;
+   press `Ctrl-C` only to cancel and create a new one.
+
    Automatic exposure is limited to a locally detected Tailscale address. Never
    bind the Agent API to a public interface. For another encrypted VPN or trusted
    HTTPS reverse proxy, bind Hermes explicitly and set `WING_HERMES_URL` and

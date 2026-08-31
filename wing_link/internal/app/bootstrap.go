@@ -173,7 +173,7 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 		}
 	}
 	result.GatewayStarted = gatewayReady
-	emitBootstrap(emit, "complete", "Hermes setup complete", 100)
+	emitBootstrap(emit, "complete", "Hermes gateway is running", 100)
 	return result, nil
 }
 

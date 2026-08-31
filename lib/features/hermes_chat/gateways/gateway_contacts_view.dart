@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../groups/chat_group_controller.dart';
+import '../widgets/hermes_profile_identity.dart';
 import 'gateway_contact.dart';
 
 class GatewayContactsView extends StatelessWidget {
@@ -132,17 +133,7 @@ class GatewayContactsView extends StatelessWidget {
                 label: '$contactTitle, $contactStatus',
                 child: ListTile(
                   key: const ValueKey('gateway-contact-row'),
-                  leading: CircleAvatar(
-                    child: Text(
-                      contact.profileName.trim().isEmpty
-                          ? '?'
-                          : contact.profileName
-                                .trim()
-                                .characters
-                                .first
-                                .toUpperCase(),
-                    ),
-                  ),
+                  leading: _ContactAvatar(contact: contact),
                   title: Text(
                     profileTitle,
                     maxLines: 1,
@@ -392,6 +383,28 @@ class _GroupedGatewayContacts extends StatelessWidget {
 
 enum _GroupAction { rename, delete }
 
+class _ContactAvatar extends StatelessWidget {
+  const _ContactAvatar({required this.contact});
+
+  final GatewayContact contact;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = hermesProfileColor(
+      '${contact.id.gatewayId}:${contact.id.profileId}',
+    );
+    return CircleAvatar(
+      backgroundColor: color,
+      foregroundColor: hermesProfileForeground(color),
+      child: Text(
+        contact.profileName.trim().isEmpty
+            ? '?'
+            : contact.profileName.trim().characters.first.toUpperCase(),
+      ),
+    );
+  }
+}
+
 class _GroupedContactTile extends StatelessWidget {
   const _GroupedContactTile({
     required this.contact,
@@ -416,13 +429,7 @@ class _GroupedContactTile extends StatelessWidget {
       label: '${_contactTitle(contact)}, $contactStatus',
       child: ListTile(
         key: const ValueKey('gateway-contact-row'),
-        leading: CircleAvatar(
-          child: Text(
-            contact.profileName.trim().isEmpty
-                ? '?'
-                : contact.profileName.trim().characters.first.toUpperCase(),
-          ),
-        ),
+        leading: _ContactAvatar(contact: contact),
         title: Text(
           _profileTitle(contact),
           maxLines: 1,

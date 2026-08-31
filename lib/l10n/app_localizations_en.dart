@@ -910,6 +910,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modelPickerTitle => 'Select model';
 
   @override
+  String get sessionModelPickerTitle => 'Use a model for this session';
+
+  @override
+  String get sessionModelPickerDescription =>
+      'Hermes Agent will keep this model selection scoped to the current session.';
+
+  @override
+  String get sessionModelLockAction => 'Use for session';
+
+  @override
+  String get sessionModelLockFailed =>
+      'Hermes could not confirm this session model.';
+
+  @override
   String get modelSlotLabel => 'Slot';
 
   @override
@@ -1833,6 +1847,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String chatQueuedSendError(String message) {
     return 'Could not send queued follow-up: $message';
+  }
+
+  @override
+  String chatSteerFailed(String message) {
+    return 'Could not guide the active Hermes run: $message';
   }
 
   @override

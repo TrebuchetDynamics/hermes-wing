@@ -1005,7 +1005,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesTextToSpeechServiceProvider.overrideWithValue(null),
+        ],
         child: _localizedApp(const HermesChatScreen()),
       ),
     );

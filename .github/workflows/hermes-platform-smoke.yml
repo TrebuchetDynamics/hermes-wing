@@ -186,6 +186,38 @@ jobs:
           WING_PROVIDER_HERMES_API_KEY: ${{ secrets.WING_PROVIDER_HERMES_API_KEY }}
         run: npm run hermes:provider-smoke
 
+  wing-link-directory-host:
+    name: Wing Link directory host tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
+      - name: Run directory host tests
+        working-directory: wing_link
+        run: go test ./internal/workspaces ./internal/app -run 'Directory|Browser|OpenRoot' -count=1
+
+  wing-link-directory-android-build:
+    name: Wing Link Android/Termux directory host compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
+      - name: Compile Android/Termux Wing Link host
+        working-directory: wing_link
+        run: GOOS=android GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o /tmp/wing-link-android-arm64 .
+
   windows-build:
     name: Windows desktop build
     runs-on: windows-latest

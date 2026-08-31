@@ -124,6 +124,15 @@ class HermesApiChannel extends ChangeNotifier
     notifyListeners();
   }
 
+  String? _requestProfileForEndpoint(String endpointName) {
+    final endpoint = _state.capabilities?.endpoints[endpointName];
+    if (endpoint?.profileScoped != true) return null;
+    if (_state.capabilities?.profileContext.isSupportedQueryContext == true) {
+      return _requireSelectedProfile('send a profile-scoped request');
+    }
+    return null;
+  }
+
   int _beginProfileSelection(String profileId) {
     _profileSelectionGeneration += 1;
     _pendingProfileSelectionId = profileId;
@@ -258,6 +267,18 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> loadModels() => _loadModels();
 
   @override
+  Future<void> loadModelOptions({bool refresh = false}) =>
+      _loadModelOptions(refresh: refresh);
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) =>
+      _lockSessionModel(sessionId: sessionId, provider: provider, model: model);
+
+  @override
   Future<void> refreshModels() => _refreshModels();
 
   @override
@@ -324,10 +345,43 @@ class HermesApiChannel extends ChangeNotifier
   );
 
   @override
+  bool get canSteerActiveTurn {
+    final sessionId = _state.activeSessionId;
+    return sessionId != null &&
+        _state.canSteerRuns &&
+        _activeRunIds.containsKey(sessionId);
+  }
+
+  @override
   void cancelActiveTurn() => _cancelActiveTurn();
 
   @override
   void stopActiveTurn() => _stopActiveTurn();
+
+  @override
+  Future<void> steerActiveTurn(String text) async {
+    final client = _requireConnectedClient();
+    if (!_state.canSteerRuns) {
+      throw StateError('Hermes did not advertise run steering.');
+    }
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) {
+      throw StateError('Hermes has no active session to steer.');
+    }
+    final runId = _activeRunIds[sessionId];
+    if (runId == null) {
+      throw StateError('The active Hermes turn cannot accept steer input.');
+    }
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(text, 'text', 'Steer input cannot be blank.');
+    }
+    await client.steerRun(
+      runId,
+      text: trimmed,
+      profile: _requestProfileForEndpoint('run_steer'),
+    );
+  }
 
   @override
   Future<void> respondToApproval({

@@ -176,8 +176,8 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   Future<void> readAloud(String text, {String? turnId}) async {
-    final phrase = hermesSpokenText(text);
-    if (phrase.isEmpty || _disposed || _capturing || _continuousEnabled) {
+    final phrases = hermesSpokenTextChunks(text);
+    if (phrases.isEmpty || _disposed || _capturing || _continuousEnabled) {
       return;
     }
     if (_speaking) await _interruptActiveSpeech();
@@ -196,7 +196,6 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     _speakNextReply = false;
     _activeTextToSpeechService = tts;
-    _activeSpokenChunk = phrase;
     _readAloudTurnId = turnId;
     _playbackUnavailable = false;
     _error = null;
@@ -204,7 +203,11 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speaking = true;
     notifyListeners();
     try {
-      await tts.speak(phrase).timeout(_speechTimeout);
+      for (final phrase in phrases) {
+        if (_disposed || speechGeneration != _speechGeneration) return;
+        _activeSpokenChunk = phrase;
+        await tts.speak(phrase).timeout(_speechTimeout);
+      }
     } catch (_) {
       if (_disposed || speechGeneration != _speechGeneration) return;
       _activeTextToSpeechService = null;

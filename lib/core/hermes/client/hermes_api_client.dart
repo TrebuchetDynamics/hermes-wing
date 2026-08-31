@@ -7,6 +7,7 @@ import '../models/hermes_capabilities.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
 import '../models/hermes_model_assignment.dart';
+import '../models/hermes_model_options.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_provider.dart';
 import '../models/hermes_run.dart';
@@ -120,6 +121,19 @@ class HermesApiClient {
         .map(HermesSession.fromJson)
         .where((session) => session.id.isNotEmpty)
         .toList(growable: false);
+  }
+
+  Future<HermesModelOptions> getModelOptions({
+    String? profile,
+    bool refresh = false,
+  }) async {
+    final uri = _scoped(config.modelOptionsUri, profile);
+    final requestUri = refresh
+        ? uri.replace(
+            queryParameters: {...uri.queryParameters, 'refresh': 'true'},
+          )
+        : uri;
+    return HermesModelOptions.fromJson(await _getJson(requestUri));
   }
 
   Future<List<HermesJob>> listJobs({String? profile}) async {
@@ -323,6 +337,33 @@ class HermesApiClient {
 
   Future<void> stopRun(String runId, {String? profile}) async {
     await _postJson(_scoped(config.runStopUri(runId), profile), const {});
+  }
+
+  Future<void> steerRun(
+    String runId, {
+    required String text,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.runSteerUri(runId), profile),
+      {'input': text.trim()},
+    );
+    if (!wingBoolFromJson(response['accepted'])) {
+      throw StateError('Hermes did not accept the steer input.');
+    }
+  }
+
+  Future<HermesSessionModelLock> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.sessionModelLockUri(sessionId), profile),
+      {'provider': provider.trim(), 'model': model.trim()},
+    );
+    return HermesSessionModelLock.fromJson(response);
   }
 
   /// Inspects a one-time pairing code against the operator-supplied

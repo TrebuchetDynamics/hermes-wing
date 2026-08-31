@@ -862,8 +862,45 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Future<void> _openComposerModelPicker(HermesChannel channel) async {
-    if (!channel.state.canReadModels || !channel.state.canWriteModels) return;
+    final state = channel.state;
+    final sessionId = state.activeSessionId;
+    final useSessionModelPicker =
+        sessionId != null &&
+        state.canReadModelOptions &&
+        state.canLockSessionModel;
+    if (!useSessionModelPicker &&
+        (!state.canReadModels || !state.canWriteModels)) {
+      return;
+    }
     try {
+      if (useSessionModelPicker) {
+        var options = channel.state.modelOptions;
+        if (options == null) {
+          await channel.loadModelOptions();
+          options = channel.state.modelOptions;
+        }
+        if (!mounted || options == null) {
+          throw StateError('Model options unavailable');
+        }
+        final selectedOptions = options;
+        final selectedSessionId = sessionId;
+        await showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          showDragHandle: true,
+          builder: (context) => SessionModelPickerSheet(
+            options: selectedOptions,
+            onLock: (provider, model) => channel.lockSessionModel(
+              sessionId: selectedSessionId,
+              provider: provider,
+              model: model,
+            ),
+          ),
+        );
+        return;
+      }
+
       var inventory = channel.state.modelInventory;
       if (inventory == null) {
         await channel.loadModels();
@@ -901,8 +938,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   ) {
     _scheduleInitialDesktopComposerFocus(canSendTurns);
     final strings = AppLocalizations.of(context);
+    final lockedModel = state.activeSessionId == null
+        ? null
+        : state.sessionModelLocks[state.activeSessionId]?.model.trim();
     final assignedModel = state.modelInventory?.assignment.activeModel.trim();
-    final modelLabel = assignedModel != null && assignedModel.isNotEmpty
+    final modelLabel = lockedModel != null && lockedModel.isNotEmpty
+        ? lockedModel
+        : assignedModel != null && assignedModel.isNotEmpty
         ? assignedModel
         : state.models.isEmpty
         ? state.capabilities?.model ?? strings.chatLayoutModelFallbackLabel
@@ -924,7 +966,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       onStop: () => _stopActiveTurn(channel),
       onRetry: () => _retryLastFailedTurn(channel),
       onSelectModel:
-          !isTurnActive && state.canReadModels && state.canWriteModels
+          !isTurnActive &&
+              ((state.activeSessionId != null &&
+                      state.canReadModelOptions &&
+                      state.canLockSessionModel) ||
+                  (state.canReadModels && state.canWriteModels))
           ? () => unawaited(_openComposerModelPicker(channel))
           : null,
     );

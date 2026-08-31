@@ -48,6 +48,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     String? selectedProfileId,
     List<HermesProvider> providers = const [],
     this.modelInventory,
+    this.modelOptions,
     this.validateProviderResult = const HermesCredentialProbe(
       ok: true,
       detail: 'Credential accepted.',
@@ -101,6 +102,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                selectedProfileId: selectedProfileId,
                providers: providers,
                modelInventory: modelInventory,
+               modelOptions: modelOptions,
                activeSessionId:
                    activeSessionId ??
                    ((sessions != null && sessions.isEmpty) ? null : sessionId),
@@ -157,7 +159,9 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   int loadModelsCalls = 0;
   int refreshModelsCalls = 0;
   final List<Map<String, String?>> assignModelCalls = [];
+  final List<Map<String, String>> lockSessionModelCalls = [];
   final HermesModelInventory? modelInventory;
+  final HermesModelOptions? modelOptions;
   final HermesCredentialProbe validateProviderResult;
   final List<Map<String, Object?>> respondToApprovalCalls = [];
   final bool createSessionFails;
@@ -181,6 +185,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final bool writeProfileSoulFails;
   final String profileMutationFailureMessage;
   int stopActiveTurnCalls = 0;
+  final List<String> steerActiveTurnCalls = [];
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
 
@@ -188,6 +193,13 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
 
   @override
   HermesChannelState get state => _state;
+
+  @override
+  bool get canSteerActiveTurn =>
+      _state.canSteerRuns && _state.activeSessionId != null && _isStreaming;
+
+  bool get _isStreaming =>
+      _state.activeMessages.lastOrNull?.status == HermesTurnStatus.streaming;
 
   @override
   Stream<HermesApprovalRequest> get approvalRequests =>
@@ -576,6 +588,37 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
+  Future<void> loadModelOptions({bool refresh = false}) async {
+    _setState(_state.copyWith(modelOptions: modelOptions));
+  }
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) async {
+    lockSessionModelCalls.add({
+      'sessionId': sessionId,
+      'provider': provider,
+      'model': model,
+    });
+    _setState(
+      _state.copyWith(
+        sessionModelLocks: {
+          ..._state.sessionModelLocks,
+          sessionId: HermesSessionModelLock(
+            sessionId: sessionId,
+            provider: provider,
+            model: model,
+            accepted: true,
+          ),
+        },
+      ),
+    );
+  }
+
+  @override
   Future<void> refreshModels() async {
     refreshModelsCalls += 1;
   }
@@ -880,6 +923,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
 
   @override
   void cancelActiveTurn() {}
+
+  @override
+  Future<void> steerActiveTurn(String text) async {
+    steerActiveTurnCalls.add(text);
+  }
 
   @override
   void stopActiveTurn() {

@@ -183,6 +183,8 @@ extension _ProfilesExtension on HermesApiChannel {
           jobs: jobs,
           providers: const [],
           clearModelInventory: true,
+          clearModelOptions: true,
+          sessionModelLocks: const {},
           optionalResourceErrors: errors,
           errorMessage: detachedRunStillActive
               ? 'Hermes run is still active. Reconnect later before retrying.'
@@ -307,6 +309,8 @@ extension _ProfilesExtension on HermesApiChannel {
         messages: const {},
         providers: const [],
         clearModelInventory: true,
+        clearModelOptions: true,
+        sessionModelLocks: const {},
       ),
     );
   }

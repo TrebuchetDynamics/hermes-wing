@@ -67,6 +67,28 @@ void main() {
     },
   );
 
+  test('read aloud starts each natural sentence independently', () async {
+    final channel = FakeHermesChannel();
+    final tts = FakeTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    await controller.readAloud(
+      'The first sentence is ready. The second sentence follows later.',
+    );
+
+    expect(tts.spoken, [
+      'The first sentence is ready.',
+      'The second sentence follows later.',
+    ]);
+  });
+
   test('read aloud tracks and stops its source message', () async {
     final channel = FakeHermesChannel();
     final tts = _ControlledTextToSpeechService();

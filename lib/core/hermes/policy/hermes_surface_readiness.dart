@@ -183,7 +183,11 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.blocked
           : HermesSurfaceStatus.deferred,
       detail: advertisedServerAudio
-          ? 'Hermes server audio/realtime voice is advertised, but Hermes Wing has not wired server audio; device STT -> Hermes text remains the voice path.'
+          ? policy.supportsSpeechStreaming
+                ? 'Agent speech is available with capability-gated streaming playback; device STT -> Hermes text remains the voice input path.'
+                : policy.supportsSpeechSynthesis
+                ? 'Agent speech is available with buffered playback; streaming TTS is not advertised.'
+                : 'Hermes server audio/realtime voice is advertised, but no supported Wing audio route is available; device STT -> Hermes text remains the voice path.'
           : 'Hermes realtime/server audio is not advertised; device STT -> Hermes text remains the voice path.',
     ),
     HermesSurfaceReadiness(

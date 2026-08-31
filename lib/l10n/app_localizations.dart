@@ -1610,6 +1610,30 @@ abstract class AppLocalizations {
   /// **'Select model'**
   String get modelPickerTitle;
 
+  /// No description provided for @sessionModelPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a model for this session'**
+  String get sessionModelPickerTitle;
+
+  /// No description provided for @sessionModelPickerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent will keep this model selection scoped to the current session.'**
+  String get sessionModelPickerDescription;
+
+  /// No description provided for @sessionModelLockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use for session'**
+  String get sessionModelLockAction;
+
+  /// No description provided for @sessionModelLockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes could not confirm this session model.'**
+  String get sessionModelLockFailed;
+
   /// No description provided for @modelSlotLabel.
   ///
   /// In en, this message translates to:
@@ -3140,6 +3164,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not send queued follow-up: {message}'**
   String chatQueuedSendError(String message);
+
+  /// No description provided for @chatSteerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not guide the active Hermes run: {message}'**
+  String chatSteerFailed(String message);
 
   /// No description provided for @chatConnectionRenameProfileTitle.
   ///

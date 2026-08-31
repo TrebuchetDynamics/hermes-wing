@@ -1149,7 +1149,10 @@ void main() {
       final capture = _CommandThenBlockCaptureService('play this reply');
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesTextToSpeechServiceProvider.overrideWithValue(null),
+          ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

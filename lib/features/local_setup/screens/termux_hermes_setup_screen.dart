@@ -73,11 +73,6 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                Text(
-                  strings.termuxSetupTitle,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
                 Text(strings.termuxSetupBody),
                 const SizedBox(height: 24),
                 _SetupStep(

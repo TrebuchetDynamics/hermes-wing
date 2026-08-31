@@ -20,6 +20,7 @@ dependencies:
   speech_to_text:
     path: third_party/speech_to_text
   audioplayers: ^6.5.1
+  flutter_tts: ^4.2.5
   flutter_markdown_plus: ^1.0.12
   url_launcher: ^6.3.2
   markdown: ^7.3.1

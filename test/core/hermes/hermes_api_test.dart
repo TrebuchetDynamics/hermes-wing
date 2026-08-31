@@ -777,6 +777,26 @@ void main() {
     expect(policy.supportsSessionChatStream, isFalse);
   });
 
+  test('streaming speech requires the exact advertised WebSocket endpoint', () {
+    final document = HermesCapabilityDocument.fromJson({
+      'features': {'audio_api': true},
+      'auth': {
+        'type': 'bearer',
+        'required': true,
+        'granted_scopes': ['audio:speak'],
+      },
+      'endpoints': {
+        'audio_speak_stream': {
+          'method': 'GET',
+          'path': '/api/audio/speak-stream',
+          'required_scopes': ['audio:speak'],
+        },
+      },
+    });
+
+    expect(HermesTransportPolicy(document).supportsSpeechStreaming, isTrue);
+  });
+
   test(
     'schema version 2 exposes no transport operations until the client supports it',
     () {
@@ -797,6 +817,7 @@ void main() {
       expect(policy.supportsConfigWrite, isFalse);
       expect(policy.supportsMemoryWrite, isFalse);
       expect(policy.supportsAudioApi, isFalse);
+      expect(policy.supportsSpeechStreaming, isFalse);
       expect(policy.supportsRealtimeVoice, isFalse);
     },
   );
@@ -1405,6 +1426,76 @@ void main() {
     expect(await client.listRuntimeModels(), hasLength(128));
   });
 
+  test('model options preserve selectable provider rows and bounds', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        expect(uri.path, '/api/model/options');
+        expect(uri.queryParameters, {'profile': 'default'});
+        return jsonEncode({
+          'provider': 'openrouter',
+          'model': 'openai/gpt-5',
+          'providers': [
+            {
+              'slug': 'openrouter',
+              'label': 'OpenRouter',
+              'models': [' openai/gpt-5 ', 'openai/gpt-5', 'bad\u0000model'],
+              'is_current': true,
+            },
+            {
+              'slug': 'unconfigured',
+              'label': 'Unconfigured',
+              'models': ['model-a'],
+            },
+          ],
+        });
+      },
+    );
+
+    final options = await client.getModelOptions(profile: 'default');
+
+    expect(options.currentProvider, 'openrouter');
+    expect(options.currentModel, 'openai/gpt-5');
+    expect(options.providers, hasLength(2));
+    expect(options.providers.first.slug, 'openrouter');
+    expect(options.providers.first.models, ['openai/gpt-5']);
+    expect(options.selectableProviders.single.slug, 'openrouter');
+  });
+
+  test(
+    'session model lock posts the explicit profile and parses confirmation',
+    () async {
+      final client = HermesApiClient(
+        config: HermesApiConfig.fromBaseUrl(
+          'http://127.0.0.1:8642',
+          apiKey: 'api-key',
+        ),
+        post: (uri, headers, body) async {
+          expect(uri.path, '/api/sessions/sess_1/model');
+          expect(uri.queryParameters, {'profile': 'default'});
+          expect(headers['Authorization'], 'Bearer api-key');
+          expect(jsonDecode(body), {
+            'provider': 'openrouter',
+            'model': 'openai/gpt-5',
+          });
+          return '{"session_id":"sess_1","runtime":{"provider":"openrouter","model":"openai/gpt-5","route_source":"raw_request","model_lock":"accepted"}}';
+        },
+      );
+
+      final lock = await client.lockSessionModel(
+        sessionId: 'sess_1',
+        provider: 'openrouter',
+        model: 'openai/gpt-5',
+        profile: 'default',
+      );
+
+      expect(lock.sessionId, 'sess_1');
+      expect(lock.provider, 'openrouter');
+      expect(lock.model, 'openai/gpt-5');
+      expect(lock.accepted, isTrue);
+    },
+  );
+
   test('toolset inventory preserves bounded resolved metadata', () async {
     final client = HermesApiClient(
       config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
@@ -1847,6 +1938,7 @@ void main() {
           return switch (uri.path) {
             '/v1/runs' =>
               '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+            '/v1/runs/run_1/steer' => '{"accepted":true}',
             _ => '{}',
           };
         },
@@ -1888,6 +1980,9 @@ void main() {
         'approval_id': 'appr_1',
         'decision': 'once',
       });
+
+      await client.steerRun(run.id, text: 'focus on tests');
+      expect(posts['/v1/runs/run_1/steer'], {'input': 'focus on tests'});
 
       await client.stopRun(run.id);
       expect(posts['/v1/runs/run_1/stop'], <String, Object?>{});

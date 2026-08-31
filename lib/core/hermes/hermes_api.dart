@@ -5,6 +5,7 @@ export 'models/hermes_capabilities.dart';
 export 'models/hermes_health.dart';
 export 'models/hermes_job.dart';
 export 'models/hermes_model_assignment.dart';
+export 'models/hermes_model_options.dart';
 export 'models/hermes_profile.dart';
 export 'models/hermes_provider.dart';
 export 'models/hermes_run.dart';

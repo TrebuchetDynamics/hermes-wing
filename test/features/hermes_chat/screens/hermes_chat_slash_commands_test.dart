@@ -1339,6 +1339,44 @@ void main() {
     );
   });
 
+  testWidgets('plain follow-up steers an active advertised run', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel()..beginStreamingTurn('Running work');
+    channel.setCapabilities(
+      HermesCapabilityDocument.fromJson({
+        'schema_version': 1,
+        'auth': {'type': 'none', 'required': false},
+        'features': {'run_steer': true, 'session_chat_streaming': true},
+        'endpoints': {
+          'run_steer': {'method': 'POST', 'path': '/v1/runs/{run_id}/steer'},
+          'session_chat_stream': {
+            'method': 'POST',
+            'path': '/api/sessions/{session_id}/chat/stream',
+          },
+        },
+      }),
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      'Keep going with the next step',
+    );
+    await tester.pump();
+    final sendButton = tester.widget<IconButton>(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
+    expect(sendButton.onPressed, isNotNull);
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pump();
+
+    expect(channel.steerActiveTurnCalls, ['Keep going with the next step']);
+    expect(find.byKey(const ValueKey('hermes-queued-follow-up')), findsNothing);
+  });
+
   testWidgets('operator can cancel one queued follow-up', (tester) async {
     final channel = FakeHermesChannel()..beginStreamingTurn('Running work');
     addTearDown(channel.dispose);

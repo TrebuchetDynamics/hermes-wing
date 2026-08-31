@@ -25,6 +25,15 @@ Status chart''',
     );
   });
 
+  test('starts speech at natural sentence boundaries', () {
+    expect(
+      hermesSpokenTextChunks(
+        'The first sentence is ready. The second sentence follows later.',
+      ),
+      ['The first sentence is ready.', 'The second sentence follows later.'],
+    );
+  });
+
   test('does not speak leaked tool payloads', () {
     expect(
       hermesSpokenText(

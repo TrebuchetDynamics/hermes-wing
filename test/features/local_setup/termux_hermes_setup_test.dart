@@ -72,7 +72,7 @@ void main() {
     await tester.pumpWidget(_testApp(metadata));
     await tester.pumpAndSettle();
 
-    expect(find.text('Install Hermes Agent on this phone'), findsNWidgets(2));
+    expect(find.text('Install Hermes Agent on this phone'), findsOneWidget);
     expect(find.textContaining('official verified installer'), findsOneWidget);
     expect(clipboardText, isNull);
 

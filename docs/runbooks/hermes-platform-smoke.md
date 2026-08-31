@@ -92,6 +92,35 @@ instead of hanging:
   on a GitHub-hosted Android emulator through the same hardened `scripts/run_android_*`
   wrappers used locally.
 
+## Wing Link directory host qualification
+
+Run the focused host checks locally from the repo root:
+
+```bash
+(cd wing_link && go test ./internal/workspaces ./internal/app -run 'Directory|Browser|OpenRoot' -count=1)
+```
+
+The `wing-link-directory-host` CI matrix runs that same command on
+`ubuntu-latest`, `windows-latest`, and `macos-latest`, using the Go version in
+`wing_link/go.mod`. Its success is a filesystem/HTTP regression receipt only:
+it covers opaque browse, rooted traversal, revocation, symlink cases where the
+runner permits them, and bounded responses. It is not a claim that Hermes Wing
+has been manually qualified on each desktop OS.
+
+Android/Termux has a separate compile-only `wing-link-directory-android-build`
+workflow job. The exact cross-build check is:
+
+```bash
+(cd wing_link && GOOS=android GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o /tmp/wing-link-android-arm64 .)
+```
+
+A successful cross-build does not qualify a physical Android/Termux host,
+background behavior, permissions, symlink behavior, or service lifecycle.
+Those require a connected Android/Termux run and a retained command/output
+receipt. The Flutter directory browser's widget tests cover keyboard operation,
+200% text scale, and live semantics; TalkBack, VoiceOver, and desktop assistive
+technology remain unverified until exercised on their named physical targets.
+
 The workflow file must be visible to GitHub before this counts as a receipt.
 A local YAML file is not enough, and dispatch-only output is not enough. The
 workflow is now published remotely as `Hermes platform smoke`; the source of

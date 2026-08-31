@@ -25,6 +25,7 @@ import '../../../l10n/app_localizations_en.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../profiles/providers/profile_selection_provider.dart';
 import '../../providers/widgets/model_picker_sheet.dart';
+import '../widgets/session_model_picker_sheet.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';
@@ -36,6 +37,7 @@ import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/platform/voice_capture_platform.dart';
 import '../../voice/services/tts/hermes_agent_text_to_speech_service.dart';
+import '../../voice/services/tts/platform_text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/hermes_image_attachment_normalizer.dart';
 import '../composer/attachments/staged_attachment.dart';
@@ -98,14 +100,20 @@ final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
   final capabilities = ref.watch(
     hermesChannelStateProvider.select((state) => state.capabilities),
   );
-  if (channel is! HermesAudioChannel ||
-      capabilities == null ||
-      !HermesTransportPolicy(capabilities).supportsSpeechSynthesis) {
+  final TextToSpeechService service;
+  if (channel is HermesAudioChannel &&
+      capabilities != null &&
+      HermesTransportPolicy(capabilities).supportsSpeechSynthesis) {
+    service = ref.watch(hermesAgentTtsFactoryProvider)(
+      (channel as HermesAudioChannel).synthesizeSpeech,
+    );
+  } else if (kIsWeb || defaultTargetPlatform != TargetPlatform.linux) {
+    // Agent synthesis is authoritative when advertised. Device speech keeps
+    // replies usable with older Agents that do not expose audio_api.
+    service = PlatformTextToSpeechService();
+  } else {
     return null;
   }
-  final service = ref.watch(hermesAgentTtsFactoryProvider)(
-    (channel as HermesAudioChannel).synthesizeSpeech,
-  );
   ref.onDispose(
     () => fireAndForget(service.dispose(), 'Hermes Agent TTS disposal'),
   );

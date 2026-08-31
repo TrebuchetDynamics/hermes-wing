@@ -134,6 +134,21 @@ void main() {
 
   test('package scripts expose Hermes and platform closeout helpers', () {
     final serveWeb = File('serve_web.mjs').readAsStringSync();
+    final playwrightRunner = File(
+      'playwright/scripts/run_tests.sh',
+    ).readAsStringSync();
+    expect(
+      playwrightRunner,
+      contains(r'export PORT="${PORT:-8767}"'),
+      reason: 'Playwright passes its configurable port to the test server',
+    );
+    expect(
+      playwrightRunner,
+      contains(
+        r'export WING_APP_URL="${WING_APP_URL:-http://127.0.0.1:$PORT/}"',
+      ),
+      reason: 'Playwright follows its configurable test-server port',
+    );
     expect(
       serveWeb,
       contains('const relativePath = path.relative(root, filePath)'),
@@ -220,6 +235,19 @@ void main() {
       expect(
         helperText,
         contains('WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+      );
+    }
+    for (final helperText in [
+      androidVoiceSmoke,
+      androidLoopSmoke,
+      androidDurableKeySmoke,
+    ]) {
+      expect(
+        helperText,
+        contains(
+          'WebSocketChannelException: HttpException: Connection closed before full header was received',
+        ),
+        reason: 'Android smoke retries Flutter VM service startup disconnects',
       );
     }
     expect(androidVoiceSmoke, contains('Manual continuous-voice closeout'));

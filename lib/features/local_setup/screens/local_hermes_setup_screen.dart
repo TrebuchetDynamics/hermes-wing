@@ -70,11 +70,6 @@ class _LocalHermesSetupScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    strings.localSetupTitle,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 12),
                   Text(strings.localSetupBody),
                   const SizedBox(height: 24),
                   Card(

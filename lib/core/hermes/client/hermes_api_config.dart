@@ -32,11 +32,13 @@ class HermesApiConfig {
   Uri get healthDetailedUri => _withPath('/health/detailed');
   Uri get capabilitiesUri => _withPath('/v1/capabilities');
   Uri get modelsUri => _withPath('/v1/models');
+  Uri get modelOptionsUri => _withPath('/api/model/options');
   Uri get skillsUri => _withPath('/v1/skills');
   Uri get toolsetsUri => _withPath('/v1/toolsets');
   Uri get sessionsUri => _withPath('/api/sessions');
   Uri get audioTranscribeUri => _withPath('/api/audio/transcribe');
   Uri get audioSpeakUri => _withPath('/api/audio/speak');
+  Uri get audioSpeakStreamUri => _withPath('/api/audio/speak-stream');
   Uri get jobsUri => _withPath('/api/jobs');
   Uri get runsUri => _withPath('/v1/runs');
 
@@ -67,6 +69,10 @@ class HermesApiConfig {
     '/api/sessions/${hermesApiTrimmedPathSegment(sessionId, name: 'sessionId')}/chat/stream',
   );
 
+  Uri sessionModelLockUri(String sessionId) => _withPath(
+    '/api/sessions/${hermesApiTrimmedPathSegment(sessionId, name: 'sessionId')}/model',
+  );
+
   Uri runUri(String runId) => _withPath(
     '/v1/runs/${hermesApiTrimmedPathSegment(runId, name: 'runId')}',
   );
@@ -77,6 +83,10 @@ class HermesApiConfig {
 
   Uri runApprovalUri(String runId) => _withPath(
     '/v1/runs/${hermesApiTrimmedPathSegment(runId, name: 'runId')}/approval',
+  );
+
+  Uri runSteerUri(String runId) => _withPath(
+    '/v1/runs/${hermesApiTrimmedPathSegment(runId, name: 'runId')}/steer',
   );
 
   Uri runStopUri(String runId) => _withPath(

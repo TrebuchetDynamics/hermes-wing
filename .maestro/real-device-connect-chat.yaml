@@ -17,8 +17,6 @@
 # .maestro/device-evidence/README.md — this file is the declarative form.
 appId: com.trebuchetdynamics.hermes.wing
 name: real_device_connect_chat
-env:
-  WING_API_KEY: ${WING_API_KEY}
 ---
 - launchApp:
     stopApp: true
@@ -32,7 +30,7 @@ env:
 - extendedWaitUntil:
     visible: "(?s).*Connect to Hermes.*"
     timeout: 30000
-- tapOn: "(?s).*Enter gateway manually.*"
+- tapOn: "(?s).*Connect one profile manually.*"
 - extendedWaitUntil:
     visible: "(?s).*Hermes server URL.*"
     timeout: 30000

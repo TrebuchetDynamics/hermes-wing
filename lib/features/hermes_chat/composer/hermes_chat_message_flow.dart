@@ -16,6 +16,13 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       return;
     }
     if (_isTurnActive(channel.state)) {
+      if (staged == null && channel.canSteerActiveTurn) {
+        _rememberComposerText(text);
+        _composerController.clear();
+        _setState(() => _followUps.error = null);
+        unawaited(_steerActiveTurn(channel, text));
+        return;
+      }
       if (_followUps.isFull) {
         _setState(() {
           _followUps.error = AppLocalizations.of(
@@ -223,6 +230,29 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canCreateSession(HermesChannelState state) => state.canCreateSessions;
+
+  Future<void> _steerActiveTurn(HermesChannel channel, String text) async {
+    try {
+      await channel.steerActiveTurn(text);
+    } catch (error) {
+      if (!mounted || !channel.state.isConnected) return;
+      if (_composerController.text.isEmpty) {
+        _composerController.text = text;
+        _composerController.selection = TextSelection.collapsed(
+          offset: text.length,
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).chatSteerFailed(_safeHermesUiError(error)),
+          ),
+        ),
+      );
+    }
+  }
 
   void _sendQueuedFollowUpIfIdle(HermesChannel channel) {
     final queued = _followUps.takeNextIfEligible(

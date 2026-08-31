@@ -405,6 +405,10 @@
   "chooseModelAction": "Choose model",
   "refreshCatalogAction": "Refresh catalog",
   "modelPickerTitle": "Select model",
+  "sessionModelPickerTitle": "Use a model for this session",
+  "sessionModelPickerDescription": "Hermes Agent will keep this model selection scoped to the current session.",
+  "sessionModelLockAction": "Use for session",
+  "sessionModelLockFailed": "Hermes could not confirm this session model.",
   "modelSlotLabel": "Slot",
   "modelSlotMain": "Main",
   "modelProviderLabel": "Provider",
@@ -947,6 +951,14 @@
   },
   "chatQueuedSendError": "Could not send queued follow-up: {message}",
   "@chatQueuedSendError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSteerFailed": "Could not guide the active Hermes run: {message}",
+  "@chatSteerFailed": {
     "placeholders": {
       "message": {
         "type": "String"

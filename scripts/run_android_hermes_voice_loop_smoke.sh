@@ -28,6 +28,13 @@ PY
   rm -f "$devices_json"
 }
 
+receipt_path="${WING_ANDROID_VOICE_PATH_RECEIPT:-build/receipts/android-hermes-voice-loop-smoke.json}"
+# Invalidate an older pass before any new attempt so a failed run cannot leave
+# readiness reporting stale success evidence.
+if [ -f "$receipt_path" ]; then
+  rm -f "$receipt_path"
+fi
+
 device="${WING_ANDROID_DEVICE_ID:-}"
 if [ -z "$device" ]; then
   for _ in $(seq 1 "${WING_ANDROID_DEVICE_WAIT_SECONDS:-120}"); do
@@ -87,7 +94,7 @@ run_flutter_test_with_install_retry() {
     rm -f "$log"
     return 0
   fi
-  if [ "${WING_ANDROID_RETRY_ON_INSTALL_FLAKE:-1}" = "1" ] && grep -Eqi "Can't find service: package|Broken pipe|device offline|Unable to start the app on the device" "$log"; then
+  if [ "${WING_ANDROID_RETRY_ON_INSTALL_FLAKE:-1}" = "1" ] && grep -Eqi "Can't find service: package|Broken pipe|device offline|Unable to start the app on the device|WebSocketChannelException: HttpException: Connection closed before full header was received" "$log"; then
     echo "Android install/start flake detected; waiting for framework services and retrying once..." >&2
     wait_for_android_ready
     timeout "${WING_ANDROID_TEST_TIMEOUT_SECONDS:-900}" \
@@ -101,7 +108,6 @@ run_flutter_test_with_install_retry() {
 
 run_flutter_test_with_install_retry
 
-receipt_path="${WING_ANDROID_VOICE_PATH_RECEIPT:-build/receipts/android-hermes-voice-loop-smoke.json}"
 mkdir -p "$(dirname "$receipt_path")"
 python3 - "$receipt_path" "$device" <<'PY'
 import datetime, json, os, subprocess, sys

@@ -17,12 +17,16 @@ func TestDirectoryGrantStoreCanonicalizesDeduplicatesAndRevokes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	canonicalRepository, err := canonicalDirectory(repository)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	first, err := store.Grant(filepath.Join(repository, "."))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.ID == "" || first.Name != "repository" || first.Path != repository {
+	if first.ID == "" || first.Name != filepath.Base(canonicalRepository) || first.Path != canonicalRepository {
 		t.Fatalf("unexpected grant: %#v", first)
 	}
 	second, err := store.Grant(repository)
@@ -67,11 +71,15 @@ func TestDirectoryGrantStoreResolvesSymlinksAndPersistsOwnerOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	canonicalTarget, err := canonicalDirectory(target)
+	if err != nil {
+		t.Fatal(err)
+	}
 	grant, err := store.Grant(alias)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if grant.Path != target || grant.Name != "target" {
+	if grant.Path != canonicalTarget || grant.Name != filepath.Base(canonicalTarget) {
 		t.Fatalf("grant = %#v", grant)
 	}
 	info, err := os.Stat(statePath)

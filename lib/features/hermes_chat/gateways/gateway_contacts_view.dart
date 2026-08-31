@@ -213,23 +213,31 @@ class _GroupedGatewayContacts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final sections = <({String? id, String name, List<GatewayContact> items})>[
-      for (final group in controller.groups)
-        (
-          id: group.id,
-          name: group.name,
-          items: contacts
-              .where((contact) => controller.groupIdFor(contact.id) == group.id)
-              .toList(),
-        ),
-      (
-        id: null,
-        name: strings.chatGroupsUngrouped,
-        items: contacts
-            .where((contact) => controller.groupIdFor(contact.id) == null)
-            .toList(),
-      ),
-    ].where((section) => section.items.isNotEmpty).toList();
+    final sections =
+        <({String? id, String name, List<GatewayContact> items})>[
+              for (final group in controller.groups)
+                (
+                  id: group.id,
+                  name: group.name,
+                  items: contacts
+                      .where(
+                        (contact) =>
+                            controller.groupIdFor(contact.id) == group.id,
+                      )
+                      .toList(),
+                ),
+              (
+                id: null,
+                name: strings.chatGroupsUngrouped,
+                items: contacts
+                    .where(
+                      (contact) => controller.groupIdFor(contact.id) == null,
+                    )
+                    .toList(),
+              ),
+            ]
+            .where((section) => section.id != null || section.items.isNotEmpty)
+            .toList();
 
     return Stack(
       children: [
@@ -342,42 +350,68 @@ class _GroupedGatewayContacts extends StatelessWidget {
     BuildContext context, {
     ChatGroup? group,
   }) async {
-    final strings = AppLocalizations.of(context);
-    final text = TextEditingController(text: group?.name);
     final name = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          group == null
-              ? strings.chatGroupsNewTitle
-              : strings.chatGroupsRenameTitle,
-        ),
-        content: TextField(
-          key: const ValueKey('chat-group-name-field'),
-          controller: text,
-          autofocus: true,
-          decoration: InputDecoration(labelText: strings.chatGroupsNameLabel),
-          onSubmitted: (value) => Navigator.pop(context, value),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(strings.cancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, text.text),
-            child: Text(strings.saveAction),
-          ),
-        ],
-      ),
+      builder: (_) =>
+          _GroupNameDialog(initialName: group?.name, isNew: group == null),
     );
-    text.dispose();
     if (name == null || name.trim().isEmpty) return;
     if (group == null) {
       await controller.createGroup(name);
     } else {
       await controller.renameGroup(group.id, name);
     }
+  }
+}
+
+class _GroupNameDialog extends StatefulWidget {
+  const _GroupNameDialog({this.initialName, required this.isNew});
+
+  final String? initialName;
+  final bool isNew;
+
+  @override
+  State<_GroupNameDialog> createState() => _GroupNameDialogState();
+}
+
+class _GroupNameDialogState extends State<_GroupNameDialog> {
+  late final TextEditingController _textController = TextEditingController(
+    text: widget.initialName,
+  );
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(
+        widget.isNew
+            ? strings.chatGroupsNewTitle
+            : strings.chatGroupsRenameTitle,
+      ),
+      content: TextField(
+        key: const ValueKey('chat-group-name-field'),
+        controller: _textController,
+        autofocus: true,
+        decoration: InputDecoration(labelText: strings.chatGroupsNameLabel),
+        onSubmitted: (value) => Navigator.pop(context, value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(strings.cancelAction),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _textController.text),
+          child: Text(strings.saveAction),
+        ),
+      ],
+    );
   }
 }
 

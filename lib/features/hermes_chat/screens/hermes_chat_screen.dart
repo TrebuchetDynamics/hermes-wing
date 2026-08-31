@@ -462,13 +462,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   @override
   void dispose() {
+    final subscribed = _subscribed;
+    _subscribed = null;
+    subscribed?.removeListener(_onChannelChanged);
     appShellNavigationVisible.value = true;
     WidgetsBinding.instance.removeObserver(this);
     _channelProviderSubscription.close();
     _completionSoundSubscription.close();
     _voiceInputController.removeListener(_onVoiceInputChanged);
     _voiceInputController.dispose();
-    _subscribed?.removeListener(_onChannelChanged);
     _approvals.removeListener(_onApprovalsChanged);
     _approvals.dispose();
     _chatGroupController.dispose();

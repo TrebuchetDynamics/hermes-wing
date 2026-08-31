@@ -127,6 +127,18 @@ jobs:
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-1.0, AGPL-3.0
+          # Dart package metadata is not normalized to SPDX by dependency review;
+          # these exact versions are verified BSD-3-Clause packages.
+          allow-dependencies-licenses: >-
+            pkg:pub/cupertino_ui@1.0.1,
+            pkg:pub/flutter_secure_storage@11.0.0,
+            pkg:pub/go_router@17.5.0,
+            pkg:pub/go_router@18.0.0,
+            pkg:pub/material_ui@1.1.0,
+            pkg:pub/matcher@0.12.20,
+            pkg:pub/test@1.31.1,
+            pkg:pub/test_api@0.7.12,
+            pkg:pub/test_core@0.6.18
 
   android-emulator-smoke:
     name: Android emulator voice and durable-key smoke

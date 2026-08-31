@@ -487,12 +487,39 @@ async function handleHermesApi(req, res, url) {
     if (action === "stop") {
       hermesState.stopCount += 1;
     } else {
-      hermesState.decisions.push(body.decision);
+      const decision = body.choice ?? body.decision;
+      hermesState.decisions.push(decision);
+      run?.release?.(decision);
+      return json(res, 200, {});
     }
-    run?.release?.(action === "stop" ? "stop" : body.decision);
+    run?.release?.("stop");
     return json(res, 200, {});
   }
   return false;
+}
+
+function safeStaticFilePath(requestPath) {
+  let decoded;
+  try {
+    decoded = decodeURIComponent(requestPath);
+  } catch {
+    return null;
+  }
+  if (decoded.includes("\0")) return null;
+
+  const relativeRequestPath = decoded.replace(/^[/\\]+/, "");
+  if (relativeRequestPath.split(/[\\/]/).includes("..")) return null;
+
+  const filePath = path.normalize(`${root}/${relativeRequestPath}`);
+  const relativePath = path.relative(root, filePath);
+  if (
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    return null;
+  }
+  return filePath;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -502,11 +529,13 @@ const server = http.createServer(async (req, res) => {
     if (handled !== false) return;
     if (url === "/") url = "/index.html";
 
-    const filePath = path.join(root, url);
-    const relativePath = path.relative(root, filePath);
+    const filePath = safeStaticFilePath(url);
+    const relativePath =
+      filePath === null ? ".." : path.relative(root, filePath);
 
-    // Security: prevent directory traversal and sibling-prefix escapes.
+    // Security: reject malformed or out-of-root paths before filesystem access.
     if (
+      filePath === null ||
       relativePath === ".." ||
       relativePath.startsWith(`..${path.sep}`) ||
       path.isAbsolute(relativePath)

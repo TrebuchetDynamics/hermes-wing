@@ -33,6 +33,16 @@ class _QueuedProfileChannel extends FakeHermesChannel {
   }
 }
 
+class _EmptySessionChannel extends FakeHermesChannel {
+  _EmptySessionChannel() : super(status: HermesConnectionStatus.disconnected);
+
+  @override
+  Future<void> connect({required String baseUrl, String? apiKey}) async {
+    await super.connect(baseUrl: baseUrl, apiKey: apiKey);
+    replaceSessions(const [], activeSessionId: null);
+  }
+}
+
 class _ProfileSessionChannel extends FakeHermesChannel {
   _ProfileSessionChannel() : super(status: HermesConnectionStatus.disconnected);
 
@@ -660,6 +670,42 @@ void main() {
       ),
       isTrue,
     );
+  });
+
+  test('activate creates a session when the opened profile has none', () async {
+    final channel = _EmptySessionChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'beta',
+          baseUrl: 'https://beta.example',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader(const {
+        'beta': GatewaySummary(
+          profileContextAvailable: true,
+          profiles: [
+            HermesProfile(
+              id: 'agent-2',
+              displayName: 'Agent 2',
+              revision: 'r2',
+            ),
+          ],
+          sessionsByProfile: {'agent-2': []},
+        ),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(channel.dispose);
+    addTearDown(directory.dispose);
+    await directory.refresh();
+
+    await directory.activate(
+      const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
+    );
+
+    expect(channel.createSessionCalls, [isNull]);
+    expect(channel.state.activeSessionId, 'sess_1');
   });
 
   test('activate isolates a Telegram session in a new Wing session', () async {

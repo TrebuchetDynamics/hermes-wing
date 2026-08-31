@@ -290,8 +290,10 @@ extension _ConnectionExtension on HermesApiChannel {
           _recentTurns[cacheKey] ??
           const [],
     );
+    // Tool results are model context, not user-visible transcript text.
+    final visibleHistory = history.where((message) => message.role != 'tool');
     final turns = [
-      for (final message in history)
+      for (final message in visibleHistory)
         (() {
           final author = switch (message.role) {
             'user' => HermesTurnAuthor.user,

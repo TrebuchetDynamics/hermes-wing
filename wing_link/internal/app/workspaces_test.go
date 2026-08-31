@@ -251,7 +251,10 @@ func TestRemoteDirectoryHandlesExpireBindToDeviceAndObserveRevocation(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := newWingLinkServer(&profileBackend{}, store).(*wingLinkServer)
+	handler, ok := newWingLinkServer(&profileBackend{}, store).(*wingLinkServer)
+	if !ok {
+		t.Fatal("expected a healthy Wing Link server")
+	}
 	rootEntry := fetchDirectoryRoot(t, handler, firstToken)
 	childrenPath := remoteDirectoryBasePath + "/" + rootEntry.Handle + "/children"
 

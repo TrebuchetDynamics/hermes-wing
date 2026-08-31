@@ -864,12 +864,16 @@ class HermesGatewayDirectory extends ChangeNotifier
           // conversation as the current Wing chat.
           _activeChannel.clearActiveSession();
         }
-      } else if (sessionId != null &&
-          _activeChannel.state.sessions.any(
-            (session) => session.id == sessionId,
-          )) {
+      } else if (sessionId == null) {
+        // Opening a profile is an explicit chat action; give it a writable
+        // session when it has no prior session at all.
+        if (_activeChannel.state.canCreateSessions) {
+          await _activeChannel.createSession();
+          if (generation != _activationGeneration) return;
+        }
+      } else if (session != null) {
         try {
-          await _activeChannel.selectSession(sessionId);
+          await _activeChannel.selectSession(session.id);
         } catch (_) {
           // A stale or slow session preview must not block a healthy gateway.
         }

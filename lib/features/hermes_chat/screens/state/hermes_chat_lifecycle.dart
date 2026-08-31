@@ -7,12 +7,9 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     final state = channel.state;
     final directory = ref.read(hermesGatewayDirectoryProvider);
     final activeContactId = directory.activeContactId;
-    if (activeContactId != null &&
-        state.isConnected &&
-        state.hasStreamingSessions) {
-      return;
-    }
     if (activeContactId != null && state.isConnected) {
+      final recoverable = state.errorMessage != null && !_isTurnActive(state);
+      if (!recoverable) return;
       _reconnectingOnResume = true;
       try {
         await directory.activate(
@@ -119,6 +116,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
   }
 
   void _onChannelChanged() {
+    if (!mounted) return;
     final channel = _subscribed;
     if (channel != null) {
       if (channel.state.isConnected) {

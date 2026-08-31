@@ -73,7 +73,8 @@ void main() {
           redirectDestinations.add(location);
           continue;
         }
-        final state = matchList.last.buildState(
+        final state = _buildRouteState(
+          matchList.last,
           router.configuration,
           matchList,
         );
@@ -123,7 +124,11 @@ void main() {
       Uri.parse(AppRoutes.localSetup),
     );
     final route = matchList.last.route;
-    final state = matchList.last.buildState(router.configuration, matchList);
+    final state = _buildRouteState(
+      matchList.last,
+      router.configuration,
+      matchList,
+    );
 
     expect(
       _leafScreenWidget(route.builder!(_FakeContext(), state)),
@@ -149,6 +154,25 @@ void main() {
 }
 
 class _FakeContext extends Fake implements BuildContext {}
+
+// go_router 18 added required metadata to this internal test seam; keep the
+// test runnable with the locked 17.x API until the dependency is upgraded.
+GoRouterState _buildRouteState(
+  dynamic match,
+  dynamic configuration,
+  dynamic matches,
+) {
+  try {
+    return match.buildState(
+          configuration,
+          matches,
+          metadata: const <String, dynamic>{},
+        )
+        as GoRouterState;
+  } on NoSuchMethodError {
+    return match.buildState(configuration, matches) as GoRouterState;
+  }
+}
 
 /// The screen widget underneath the router's page and shell wrappers.
 ///

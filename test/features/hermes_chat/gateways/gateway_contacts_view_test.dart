@@ -115,6 +115,49 @@ void main() {
     expect(find.text('Ungrouped'), findsNothing);
   });
 
+  testWidgets('new group remains visible before any profile is assigned', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = ChatGroupController(idFactory: () => 'wing');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'host',
+                'architect',
+                'Coding Architect',
+                'Wing host',
+                '2026-07-16T05:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            groupController: controller,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('chat-groups-new')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('chat-group-name-field')),
+      'Hermes Wing',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes Wing'), findsOneWidget);
+  });
+
   testWidgets('makes the profile primary and uses a dot for availability', (
     tester,
   ) async {

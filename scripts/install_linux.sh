@@ -28,8 +28,31 @@ printf '[2/3] Building the Linux release bundle...\n'
 }
 
 printf '[3/3] Installing the complete bundle and launcher...\n'
-mkdir -p "$install_dir" "$bin_dir"
-cp -a "$bundle/." "$install_dir/"
+install_parent="$(dirname -- "$install_dir")"
+mkdir -p "$install_parent" "$bin_dir"
+[[ ! -L "$install_dir" ]] || {
+  echo "Install directory must not be a symlink: $install_dir" >&2
+  exit 1
+}
+
+staging="$(mktemp -d "${install_dir}.new.XXXXXX")"
+backup="${install_dir}.old.$$"
+trap 'rm -rf "$staging"' EXIT
+cp -a "$bundle/." "$staging/"
+if [[ -e "$install_dir" ]]; then
+  [[ ! -e "$backup" && ! -L "$backup" ]] || {
+    echo "Could not prepare the previous Linux installation." >&2
+    exit 1
+  }
+  mv "$install_dir" "$backup"
+fi
+if ! mv "$staging" "$install_dir"; then
+  if [[ -e "$backup" ]]; then mv "$backup" "$install_dir"; fi
+  echo "Could not activate the Linux installation." >&2
+  exit 1
+fi
+trap - EXIT
+rm -rf "$backup"
 
 launcher="$bin_dir/hermes-wing"
 [[ ! -L "$launcher" ]] || {

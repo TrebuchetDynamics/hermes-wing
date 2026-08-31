@@ -72,12 +72,19 @@ session. Before starting, have:
   one with `hermes setup`; and
 - Hermes Wing open on the phone, browser, or desktop you want to connect.
 
-One paste builds Wing Link from the current checkout, installs or adopts the
-pinned Hermes Agent build, prepares API access, and starts the Hermes gateway:
+If this Linux host is also the desktop client, install Hermes Wing from the
+same checkout with:
 
 ```bash
 git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
+./scripts/install_linux.sh
+```
+
+The host setup is separate: Wing Link installs or adopts the pinned Hermes
+Agent build, prepares API access, and starts the Hermes gateway:
+
+```bash
 ./install-wing-link.sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
@@ -142,10 +149,12 @@ From the repository root, run:
 ./scripts/install_linux.sh
 ```
 
-The script runs `flutter pub get`, builds the release bundle, and installs the
-complete relocatable app at `~/.local/opt/hermes-wing/wing`. Run that file to
-start Hermes Wing. Set `WING_LINUX_INSTALL_DIR` to choose another install
-location.
+The script runs `flutter pub get`, builds the release bundle, installs the
+complete relocatable app at `~/.local/opt/hermes-wing/wing`, and creates the
+`hermes-wing` command in `~/.local/bin`. Run `hermes-wing` to start Hermes Wing.
+Set `WING_LINUX_INSTALL_DIR` to choose another app location or
+`WING_LINUX_BIN_DIR` to choose another command location. Add `~/.local/bin` to
+`PATH` if the command is not found.
 
 For a local release-mode APK:
 

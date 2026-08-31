@@ -64,6 +64,10 @@ func auditOperationForRequest(request *http.Request) string {
 		return "profile.list"
 	case request.Method == http.MethodGet && request.URL.Path == "/v1/update/status":
 		return "update.status"
+	case request.Method == http.MethodGet && request.URL.Path == remoteDirectoryBasePath:
+		return "directory.roots.read"
+	case request.Method == http.MethodGet && isRemoteDirectoryChildrenPath(request.URL.Path):
+		return "directory.children.read"
 	case request.Method == http.MethodGet && request.URL.Path == "/v2/devices/self":
 		return "device.self.read"
 	case request.Method == http.MethodDelete && request.URL.Path == "/v2/devices/self":
@@ -79,6 +83,8 @@ func auditResultForStatus(status int) audit.Result {
 	switch {
 	case status >= 200 && status < 300:
 		return audit.ResultSuccess
+	case status == http.StatusBadRequest:
+		return audit.ResultInvalidRequest
 	case status == http.StatusUnauthorized:
 		return audit.ResultUnauthorized
 	case status == http.StatusForbidden:

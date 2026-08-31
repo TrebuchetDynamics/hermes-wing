@@ -45,10 +45,7 @@ func (server *wingLinkServer) approvalGate(
 		})
 		return "", false
 	}
-	if tier == approval.TierRoutine {
-		return "", true
-	}
-	if server.approvals == nil || server.operations == nil {
+	if server.operations == nil || (tier != approval.TierRoutine && server.approvals == nil) {
 		writeJSON(writer, http.StatusServiceUnavailable, map[string]any{
 			"error": APIError{Code: "approval_unavailable", Message: "Host approval service is unavailable"},
 		})
@@ -87,14 +84,17 @@ func (server *wingLinkServer) approvalGate(
 		})
 		return operationID, false
 	}
+	if tier == approval.TierRoutine {
+		return operationID, true
+	}
 	approvalRoute := request.Method + " " + route
-	if _, err := server.approvals.Consume(authorization.Device.ID, approvalRoute, payloadDigest); err == nil {
+	if _, err := server.approvals.Consume(authorization.Device.ID, approvalRoute, payloadDigest, key); err == nil {
 		return operationID, true
 	}
 	pending, err := server.approvals.Request(approval.Request{
 		DeviceID: authorization.Device.ID, DeviceName: authorization.Device.Name,
 		Operation: operationName, Route: approvalRoute, PayloadDigest: payloadDigest,
-		Summary: summary,
+		IdempotencyKey: key, Summary: summary,
 	}, tier, 5*time.Minute)
 	if err != nil {
 		writeJSON(writer, http.StatusServiceUnavailable, map[string]any{

@@ -133,7 +133,7 @@ func (s *StateStore) StageControlToken() (string, string, error) {
 	return s.stageDeviceCredential(
 		"Hermes Wing device",
 		nil,
-		allControlScopes,
+		legacyControlScopes,
 		0,
 		true,
 	)

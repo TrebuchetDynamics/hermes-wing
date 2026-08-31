@@ -43,9 +43,15 @@ func TestHelpExplainsTheNormalServiceWorkflow(t *testing.T) {
 	for _, want := range []string{
 		"Wing Link\n  Local supervisor",
 		"Managed service:",
-		"Typical first run:",
+		"Typical first run with Tailscale:",
+		"wing-link pair --local",
 		"--remote                Pair through Tailscale or a trusted VPN (default)",
+		"Tailscale API binding is configured automatically",
+		"Prints a single-use paste link by default",
 		"--local                 Pair on this device only",
+		"--same-device           Print only the code-free local /open URL",
+		"--qr                    Print a scannable QR instead of the link",
+		"WING_HERMES_URL to name it",
 		`Most users should not run "serve" directly`,
 	} {
 		if !strings.Contains(stdout.String(), want) {
@@ -153,7 +159,8 @@ func TestApprovalsCLIListsAndApprovesWithoutPayloads(t *testing.T) {
 	pending, err := store.Request(approval.Request{
 		DeviceID: "cred_phone", DeviceName: "Pixel 9",
 		Operation: approval.OpSetupInstall, Route: "POST /v1/setup",
-		PayloadDigest: strings.Repeat("d", 64), Summary: "Install managed runtime",
+		PayloadDigest: strings.Repeat("d", 64), IdempotencyKey: "setup-cli-1",
+		Summary: "Install managed runtime",
 	}, approval.TierTrust, 5*time.Minute)
 	if err != nil {
 		t.Fatal(err)

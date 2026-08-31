@@ -32,7 +32,7 @@ func inspectLocalInstallation(
 		ProtocolVersion: ProtocolVersion,
 		Platform:        runtime.GOOS,
 		WingLinkVersion: version,
-		SetupAvailable:  runtime.GOOS == "linux",
+		SetupAvailable:  setupAvailableForPlatform(runtime.GOOS),
 	}
 	executable, err := resolve()
 	if err != nil || strings.TrimSpace(executable) == "" {
@@ -54,6 +54,10 @@ func inspectLocalInstallation(
 	inspection.HermesHealthy = true
 	inspection.HermesVersion = version
 	return inspection
+}
+
+func setupAvailableForPlatform(platform string) bool {
+	return platform == "linux" || platform == "android"
 }
 
 var hermesVersionPattern = regexp.MustCompile(`(?m)^Hermes Agent v[0-9]+(?:\.[0-9]+){1,3}(?:$|[[:space:]])`)

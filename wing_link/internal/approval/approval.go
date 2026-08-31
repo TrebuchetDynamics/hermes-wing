@@ -74,12 +74,13 @@ var (
 )
 
 type Request struct {
-	DeviceID      string `json:"device_id"`
-	DeviceName    string `json:"device_name"`
-	Operation     string `json:"operation"`
-	Route         string `json:"route"`
-	PayloadDigest string `json:"payload_digest"`
-	Summary       string `json:"summary"`
+	DeviceID       string `json:"device_id"`
+	DeviceName     string `json:"device_name"`
+	Operation      string `json:"operation"`
+	Route          string `json:"route"`
+	PayloadDigest  string `json:"payload_digest"`
+	IdempotencyKey string `json:"idempotency_key,omitempty"`
+	Summary        string `json:"summary"`
 }
 
 type Approval struct {
@@ -117,7 +118,7 @@ func (s *Store) Request(request Request, tier RiskTier, ttl time.Duration) (Appr
 		return Approval{}, errors.New("invalid approval policy")
 	}
 	request = sanitizeRequest(request)
-	if err := validateRequest(request); err != nil {
+	if err := validateRequest(request, true); err != nil {
 		return Approval{}, err
 	}
 	var result Approval
@@ -128,7 +129,8 @@ func (s *Store) Request(request Request, tier RiskTier, ttl time.Duration) (Appr
 		for _, approval := range *approvals {
 			if approval.State == StatePending || approval.State == StateApproved {
 				pending++
-				if approval.Request.DeviceID == request.DeviceID && approval.Request.Route == request.Route && approval.Request.PayloadDigest == request.PayloadDigest {
+				if approval.Request.DeviceID == request.DeviceID && approval.Request.Route == request.Route &&
+					approval.Request.PayloadDigest == request.PayloadDigest && approval.Request.IdempotencyKey == request.IdempotencyKey {
 					result = approval
 					return nil
 				}
@@ -193,14 +195,18 @@ func (s *Store) Decide(id string, approve bool) (Approval, error) {
 	return result, err
 }
 
-func (s *Store) Consume(deviceID, route, payloadDigest string) (Approval, error) {
+func (s *Store) Consume(deviceID, route, payloadDigest, idempotencyKey string) (Approval, error) {
+	if !validIdempotencyKey(idempotencyKey) {
+		return Approval{}, ErrApprovalRequired
+	}
 	var result Approval
 	err := s.mutate(func(approvals *[]Approval) error {
 		now := s.now().UTC()
 		sweepExpired(*approvals, now)
 		for index := range *approvals {
 			approval := &(*approvals)[index]
-			if approval.Request.DeviceID != deviceID || approval.Request.Route != route || approval.Request.PayloadDigest != payloadDigest {
+			if approval.Request.DeviceID != deviceID || approval.Request.Route != route ||
+				approval.Request.PayloadDigest != payloadDigest || approval.Request.IdempotencyKey != idempotencyKey {
 				continue
 			}
 			if approval.State != StateApproved {
@@ -326,9 +332,11 @@ func sanitizeRequest(request Request) Request {
 	return request
 }
 
-func validateRequest(request Request) error {
+func validateRequest(request Request, requireIdempotencyKey bool) error {
 	if !bounded(request.DeviceID, 96) || !bounded(request.Operation, 64) || !bounded(request.Route, 128) ||
 		len(request.PayloadDigest) != 64 || !lowerHex(request.PayloadDigest) ||
+		(requireIdempotencyKey && !validIdempotencyKey(request.IdempotencyKey)) ||
+		(!requireIdempotencyKey && request.IdempotencyKey != "" && !validIdempotencyKey(request.IdempotencyKey)) ||
 		len([]rune(request.DeviceName)) > 80 || len([]rune(request.Summary)) > 200 {
 		return errors.New("invalid approval request")
 	}
@@ -343,7 +351,7 @@ func validateApproval(approval Approval) error {
 		(approval.Tier != TierSensitive && approval.Tier != TierTrust) || !validState(approval.State) {
 		return errors.New("invalid approval record")
 	}
-	return validateRequest(approval.Request)
+	return validateRequest(approval.Request, false)
 }
 
 func validState(state State) bool {
@@ -382,6 +390,18 @@ func trimApprovals(approvals *[]Approval) {
 func bounded(value string, maximum int) bool {
 	if value == "" || len(value) > maximum || strings.ContainsAny(value, "\r\n\x00") {
 		return false
+	}
+	return true
+}
+
+func validIdempotencyKey(value string) bool {
+	if len(value) < 1 || len(value) > 128 {
+		return false
+	}
+	for _, character := range value {
+		if character < '!' || character > '~' {
+			return false
+		}
 	}
 	return true
 }

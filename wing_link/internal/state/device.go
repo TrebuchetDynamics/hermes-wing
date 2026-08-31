@@ -22,11 +22,12 @@ const (
 	ScopeProfilesWrite    = "profiles:write"
 	ScopeProvidersRead    = "providers:read"
 	ScopeProvidersWrite   = "providers:write"
+	ScopeDirectoriesRead  = "directories:read"
 	ScopeDeviceSelfRead   = "device:self:read"
 	ScopeDeviceSelfRevoke = "device:self:revoke"
 )
 
-var allControlScopes = []string{
+var legacyControlScopes = []string{
 	ScopeSetupWrite,
 	ScopeLifecycleWrite,
 	ScopeHealthRead,
@@ -38,6 +39,11 @@ var allControlScopes = []string{
 	ScopeDeviceSelfRead,
 	ScopeDeviceSelfRevoke,
 }
+
+var allControlScopes = append(
+	append([]string(nil), legacyControlScopes...),
+	ScopeDirectoriesRead,
+)
 
 var allowedControlScopes = func() map[string]struct{} {
 	result := make(map[string]struct{}, len(allControlScopes))
@@ -134,8 +140,8 @@ func (s *StateStore) stageDeviceCredentialMode(name string, publicKey ed25519.Pu
 			return err
 		}
 		prunePendingState(&state, now)
-		if len(state.PendingDevices) >= maxControlTokens {
-			return errors.New("too many pending control tokens")
+		if len(state.Devices)+len(state.ControlTokenHashes)+len(state.PendingDevices) >= maxControlTokens {
+			return errors.New("too many control tokens")
 		}
 		state.PendingDevices = append(state.PendingDevices, pending)
 		return s.save(state)
@@ -180,13 +186,13 @@ func (s *StateStore) AuthorizeDevice(token string, requiredScopes ...string) (De
 			return nil
 		}
 		for _, expected := range state.ControlTokenHashes {
-			if !matchesHash(token, expected) || !containsEveryScope(allControlScopes, requiredScopes) {
+			if !matchesHash(token, expected) || !containsEveryScope(legacyControlScopes, requiredScopes) {
 				continue
 			}
 			authorization = DeviceAuthorization{Device: DeviceCredential{
 				ID:        legacyDeviceID(expected),
 				Name:      "Legacy paired device",
-				Scopes:    append([]string(nil), allControlScopes...),
+				Scopes:    append([]string(nil), legacyControlScopes...),
 				CreatedAt: time.Unix(0, 0).UTC(),
 				Legacy:    true,
 			}}
@@ -217,7 +223,7 @@ func (s *StateStore) ListDevices() ([]DeviceCredential, error) {
 			devices = append(devices, DeviceCredential{
 				ID:        legacyDeviceID(hash),
 				Name:      "Legacy paired device",
-				Scopes:    append([]string(nil), allControlScopes...),
+				Scopes:    append([]string(nil), legacyControlScopes...),
 				CreatedAt: time.Unix(0, 0).UTC(),
 				Legacy:    true,
 			})

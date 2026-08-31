@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -78,6 +79,9 @@ func (installer *HermesInstaller) Ensure(ctx context.Context, emit func(Operatio
 	defer func() { _ = os.Remove(path) }()
 	emitBootstrap(emit, "install", "Installing Hermes Agent", 45)
 	spec := installer.installCommand(path)
+	if err := validateInstallerShell(runtime.GOOS, spec.Path); err != nil {
+		return HermesInspection{}, fmt.Errorf("%w: %v", ErrHermesInstall, err)
+	}
 	if result := installer.Run(ctx, spec, nil); result.Err != nil {
 		return HermesInspection{}, ErrHermesInstall
 	}
@@ -180,7 +184,8 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 	}
 	artifact := pinnedHermesArtifact()
 	installer := &HermesInstaller{
-		Home: home, Commit: pinnedHermesCommit, Resolve: resolver, Run: runner,
+		Home: home, Commit: pinnedHermesCommit, Shell: resolveInstallerShell(runtime.GOOS),
+		Resolve: resolver, Run: runner,
 		Download: func(ctx context.Context) (string, error) {
 			return downloadVerifiedArtifact(
 				ctx, &http.Client{Timeout: 2 * time.Minute}, artifact, os.TempDir(),
@@ -285,12 +290,11 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 			return verifyGateway(preflightCtx) == nil
 		},
 		StartGateway: func(ctx context.Context) error {
-			for _, args := range hermesGatewayCommands() {
-				if err := runHermes(ctx, args...); err != nil {
-					return err
-				}
+			executable, err := resolver()
+			if err != nil {
+				return err
 			}
-			return nil
+			return startHermesGateway(ctx, executable, home, runHermes)
 		},
 		VerifyGateway: verifyGateway,
 		RunHermes:     runHermes, RunHermesSecret: runHermesSecret,
@@ -333,6 +337,13 @@ func hermesSecondaryAPICommands(rows []profileRow) ([][]string, error) {
 }
 
 func ensureHermesAPIEnvironment(path string, port int) error {
+	return ensureHermesAPIEnvironmentHost(path, "127.0.0.1", port)
+}
+
+func ensureHermesAPIEnvironmentHost(path, host string, port int) error {
+	if net.ParseIP(host) == nil {
+		return errors.New("invalid Hermes API host")
+	}
 	if port < 1 || port > 65535 {
 		return errors.New("invalid Hermes API port")
 	}
@@ -360,7 +371,7 @@ func ensureHermesAPIEnvironment(path string, port int) error {
 		payload = append(payload, line...)
 		payload = append(payload, '\n')
 	}
-	payload = fmt.Appendf(payload, "API_SERVER_HOST=127.0.0.1\nAPI_SERVER_PORT=%d\n", port)
+	payload = fmt.Appendf(payload, "API_SERVER_HOST=%s\nAPI_SERVER_PORT=%d\n", host, port)
 	return writeHermesTokenFile(path, payload)
 }
 
@@ -416,6 +427,38 @@ func pinnedHermesArtifact() release.Artifact {
 }
 
 func resolveHermesExecutable(home, hint string) (string, error) {
+	return resolveHermesExecutableForPlatform(runtime.GOOS, home, hint)
+}
+
+func resolveHermesExecutableForPlatform(platform, home, hint string) (string, error) {
+	candidates, err := hermesExecutableCandidates(platform, home, hint)
+	if err != nil {
+		return "", err
+	}
+	for _, candidate := range candidates {
+		if candidate == "" {
+			continue
+		}
+		info, err := os.Stat(candidate)
+		if err == nil && info.Mode().IsRegular() && (platform == "windows" || info.Mode().Perm()&0o111 != 0) {
+			return candidate, nil
+		}
+	}
+	return "", os.ErrNotExist
+}
+
+func hermesExecutableCandidates(platform, home, hint string) ([]string, error) {
+	if platform == "android" {
+		canonical := filepath.Join(termuxPrefix, "bin", "hermes")
+		if err := validateTermuxHermesGatewayShape(canonical, home); err != nil {
+			return nil, err
+		}
+		if candidate := filepath.Clean(strings.TrimSpace(hint)); strings.TrimSpace(hint) != "" && candidate != canonical {
+			return nil, errors.New("alternate Hermes executable is not allowed on android")
+		}
+		return []string{canonical}, nil
+	}
+
 	candidates := []string{strings.TrimSpace(hint)}
 	if found, err := exec.LookPath("hermes"); err == nil {
 		candidates = append(candidates, found)
@@ -426,17 +469,7 @@ func resolveHermesExecutable(home, hint string) (string, error) {
 	if prefix := strings.TrimSpace(os.Getenv("PREFIX")); prefix != "" {
 		candidates = append(candidates, filepath.Join(prefix, "bin", executableName("hermes")))
 	}
-	candidates = append(candidates, filepath.Join(home, "hermes-agent", "venv", "bin", executableName("hermes")))
-	for _, candidate := range candidates {
-		if candidate == "" {
-			continue
-		}
-		info, err := os.Stat(candidate)
-		if err == nil && info.Mode().IsRegular() && (runtime.GOOS == "windows" || info.Mode().Perm()&0o111 != 0) {
-			return candidate, nil
-		}
-	}
-	return "", os.ErrNotExist
+	return append(candidates, filepath.Join(home, "hermes-agent", "venv", "bin", executableName("hermes"))), nil
 }
 
 func executableName(name string) string {

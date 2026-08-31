@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/audit"
+	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/workspaces"
 )
 
 const defaultWingLinkPort = 8654
@@ -90,16 +91,18 @@ type profileBackend struct {
 }
 
 type wingLinkServer struct {
-	profiles         *profileBackend
-	providers        *providerBackend
-	bootstrap        *BootstrapManager
-	operations       *OperationManager
-	approvals        *ApprovalStore
-	audit            *AuditLog
-	updater          wingLinkUpdater
-	state            *StateStore
-	hostFingerprint  string
-	profileMutations sync.Mutex
+	profiles              *profileBackend
+	providers             *providerBackend
+	bootstrap             *BootstrapManager
+	operations            *OperationManager
+	approvals             *ApprovalStore
+	audit                 *AuditLog
+	updater               wingLinkUpdater
+	state                 *StateStore
+	directories           *workspaces.Browser
+	hostFingerprint       string
+	localPairingProofHash string
+	profileMutations      sync.Mutex
 }
 
 // Hermes Agent remains the sole domain authority. Supported releases lack the
@@ -400,17 +403,27 @@ func newWingLinkServerWithOperations(profiles *profileBackend, state *StateStore
 	}
 	approvals, approvalErr := openApprovalStore(state.Path())
 	auditLog, auditErr := openAuditLog(state.Path())
-	if approvalErr != nil || auditErr != nil {
+	localPairingProof, proofErr := ensureLocalPairingProof(state.Path())
+	if approvalErr != nil || auditErr != nil || proofErr != nil {
 		return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+			writer.Header().Set("Cache-Control", "no-store")
+			writer.Header().Set("Wing-Protocol", strconv.Itoa(ProtocolVersion))
 			writeJSON(writer, http.StatusServiceUnavailable, map[string]any{
 				"error": APIError{Code: "host_state_unavailable", Message: "Wing Link host state is unavailable"},
 			})
 		})
 	}
+	var directories *workspaces.Browser
+	if directoryStore, err := openDirectoryGrantStore(state.Path()); err == nil {
+		if _, err := directoryStore.List(); err == nil {
+			directories = workspaces.NewBrowser(directoryStore, time.Now, randomSecret)
+		}
+	}
 	return &wingLinkServer{
 		profiles: profiles, providers: provider, bootstrap: bootstrap,
 		operations: operations, approvals: approvals, audit: auditLog, state: state,
-		hostFingerprint: hostFingerprint,
+		directories: directories, hostFingerprint: hostFingerprint,
+		localPairingProofHash: hashSecret(localPairingProof),
 	}
 }
 
@@ -436,10 +449,21 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 	writer.Header().Set("Cache-Control", "no-store")
 	writer.Header().Set("Wing-Protocol", strconv.Itoa(ProtocolVersion))
 	if request.URL.Path == "/meta" && request.Method == http.MethodGet {
+		additionalCapabilities := []string(nil)
+		if server.directories != nil {
+			additionalCapabilities = []string{
+				"directories.children.read",
+				"directories.roots.read",
+			}
+		}
 		writeJSON(
 			writer,
 			http.StatusOK,
-			currentProtocolMetadata(version, server.hostFingerprint),
+			currentProtocolMetadata(
+				version,
+				server.hostFingerprint,
+				additionalCapabilities...,
+			),
 		)
 		return
 	}
@@ -478,6 +502,9 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 	}
 	if request.URL.Path == "/v2/devices/self" {
 		server.serveDeviceSelf(writer, request)
+		return
+	}
+	if server.serveDirectoryRoute(writer, request) {
 		return
 	}
 	if request.URL.Path == "/v1/update/status" && request.Method == http.MethodGet {
@@ -616,9 +643,11 @@ func (server *wingLinkServer) serveDeviceSelf(writer http.ResponseWriter, reques
 
 func (server *wingLinkServer) stageControlCredential(writer http.ResponseWriter, request *http.Request) {
 	host, _, err := net.SplitHostPort(request.RemoteAddr)
-	if err != nil || !net.ParseIP(host).IsLoopback() {
+	proof := request.Header.Get(localPairingProofHeader)
+	if err != nil || !net.ParseIP(host).IsLoopback() || !validLocalPairingProof(proof) ||
+		server.localPairingProofHash == "" || !matchesHash(proof, server.localPairingProofHash) {
 		writeJSON(writer, http.StatusForbidden, map[string]any{
-			"error": APIError{Code: "pairing_local_only", Message: "Pairing credential staging is local only"},
+			"error": APIError{Code: "pairing_local_only", Message: "Local pairing authority is required"},
 		})
 		return
 	}
@@ -786,36 +815,33 @@ func (server *wingLinkServer) createProfile(writer http.ResponseWriter, request 
 		writeProfileError(writer, err)
 		return
 	}
-	operationID := ""
+	payload, _ := json.Marshal(body)
+	digest := sha256.Sum256(payload)
+	operationName := ApprovalOpProfileCreate
+	summary := "Create a profile"
 	if strings.TrimSpace(body.ProviderAPIKey) != "" {
-		payload, _ := json.Marshal(body)
-		digest := sha256.Sum256(payload)
-		var allowed bool
-		operationID, allowed = server.approvalGate(
-			writer, request, authorization, ApprovalOpProfileCreateSecret,
-			"/v1/profiles", hex.EncodeToString(digest[:]),
-			"Create a profile and write a provider secret",
-		)
-		if !allowed {
-			return
-		}
+		operationName = ApprovalOpProfileCreateSecret
+		summary = "Create a profile and write a provider secret"
 	}
-	if operationID != "" {
-		started := time.Now()
-		err := server.operations.RunReservedSync(operationID, func(context.Context, func(OperationEvent)) error {
-			return server.performCreateProfile(writer, request, body)
-		})
-		if errors.Is(err, ErrOperationInProgress) {
-			writeProfileError(writer, errProfileOperationBusy)
-		}
-		result := audit.ResultSuccess
-		if err != nil {
-			result = audit.ResultOperationFailed
-		}
-		server.recordAudit(authorization.Device.ID, ApprovalOpProfileCreateSecret, audit.SourceHostCLI, result, started)
+	operationID, allowed := server.approvalGate(
+		writer, request, authorization, operationName,
+		"/v1/profiles", hex.EncodeToString(digest[:]), summary,
+	)
+	if !allowed {
 		return
 	}
-	_ = server.performCreateProfile(writer, request, body)
+	started := time.Now()
+	err := server.operations.RunReservedSync(operationID, func(context.Context, func(OperationEvent)) error {
+		return server.performCreateProfile(writer, request, body)
+	})
+	if errors.Is(err, ErrOperationInProgress) {
+		writeProfileError(writer, errProfileOperationBusy)
+	}
+	result := audit.ResultSuccess
+	if err != nil {
+		result = audit.ResultOperationFailed
+	}
+	server.recordAudit(authorization.Device.ID, operationName, audit.SourceHostCLI, result, started)
 }
 
 func (server *wingLinkServer) performCreateProfile(writer http.ResponseWriter, request *http.Request, body profileCreateRequest) error {
@@ -1125,11 +1151,6 @@ func mutableProfileID(value string) (string, error) {
 	return id, nil
 }
 
-func (backend *profileBackend) list() ([]profileRow, error) {
-	rows, _, err := backend.listWithWarnings()
-	return rows, err
-}
-
 func (backend *profileBackend) listWithWarnings() ([]profileRow, []string, error) {
 	backend.mu.Lock()
 	defer backend.mu.Unlock()
@@ -1214,7 +1235,12 @@ func (backend *profileBackend) create(ctx context.Context, name, cloneFrom strin
 	}
 	if err := backend.runHermes(ctx, args...); err != nil {
 		cause := fmt.Errorf("%w: %v", errProfileCLIFailed, err)
-		return profileRow{}, backend.observedFailureLocked(ctx, "create", id, "", cause)
+		observedErr := backend.observedFailureLocked(ctx, "create", id, "", cause)
+		var observed *profileObservedError
+		if errors.As(observedErr, &observed) && observed.outcome == "applied" {
+			return profileRow{ID: id}, observedErr
+		}
+		return profileRow{}, observedErr
 	}
 	backend.mutationGeneration++
 	row, err := backend.rowAfterMutationLocked(ctx, id)

@@ -9,6 +9,16 @@ import (
 	"testing"
 )
 
+func TestSetupAvailableForPlatform(t *testing.T) {
+	for platform, want := range map[string]bool{
+		"linux": true, "android": true, "darwin": false, "windows": false,
+	} {
+		if got := setupAvailableForPlatform(platform); got != want {
+			t.Fatalf("%s: got %v want %v", platform, got, want)
+		}
+	}
+}
+
 func TestInspectLocalInstallationReportsMissingHermes(t *testing.T) {
 	inspection := inspectLocalInstallation(
 		context.Background(),

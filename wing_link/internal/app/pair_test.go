@@ -3,6 +3,7 @@ package app
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
@@ -62,12 +63,16 @@ func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
 	for _, test := range []struct {
 		args       []string
 		wantRemote bool
+		wantLink   bool
 	}{
-		{wantRemote: true},
-		{args: []string{"--local"}, wantRemote: false},
+		{wantRemote: true, wantLink: true},
+		{args: []string{"--local"}, wantRemote: false, wantLink: true},
+		{args: []string{"--link"}, wantRemote: true, wantLink: true},
+		{args: []string{"--qr"}, wantRemote: true, wantLink: false},
+		{args: []string{"--same-device"}, wantRemote: false, wantLink: true},
 	} {
 		observedRemote := false
-		_, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (string, error) {
+		options, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (string, error) {
 			observedRemote = remote
 			return "127.0.0.1", nil
 		})
@@ -77,6 +82,69 @@ func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
 		if observedRemote != test.wantRemote {
 			t.Fatalf("args %v remote = %t, want %t", test.args, observedRemote, test.wantRemote)
 		}
+		if options.PrintLink != test.wantLink {
+			t.Fatalf("args %v print link = %t, want %t", test.args, options.PrintLink, test.wantLink)
+		}
+	}
+}
+
+func TestPairOptionsRejectSameDeviceConflicts(t *testing.T) {
+	for _, args := range [][]string{
+		{"--same-device", "--remote"},
+		{"--same-device", "--qr"},
+		{"--same-device", "--origin", "http://192.168.1.20:8642"},
+	} {
+		if _, err := parsePairOptionsWithAdvertiseHost(args, func(bool) (string, error) {
+			return "127.0.0.1", nil
+		}); !errors.Is(err, errPairUsage) {
+			t.Fatalf("args %v: err = %v", args, err)
+		}
+	}
+}
+
+func TestSameDeviceOutputContainsOnlyOpenURL(t *testing.T) {
+	pairingURI, err := url.Parse("wing://connect?broker=http%3A%2F%2F127.0.0.1%3A43001&code=one-time-code")
+	if err != nil {
+		t.Fatal(err)
+	}
+	openURL, err := url.Parse("http://127.0.0.1:43001/open")
+	if err != nil {
+		t.Fatal(err)
+	}
+	broker := &pairingBroker{PairingURI: pairingURI, OpenURL: openURL}
+	var stdout, stderr bytes.Buffer
+	writePairHumanOutput(&stdout, &stderr, broker, pairOptions{SameDevice: true})
+
+	output := stdout.String() + stderr.String()
+	if stdout.String() != openURL.String()+"\n" {
+		t.Fatalf("stdout = %q", stdout.String())
+	}
+	if strings.Contains(output, "wing://connect") || strings.Contains(output, "one-time-code") {
+		t.Fatalf("same-device output exposed code-bearing handoff: %q", output)
+	}
+}
+
+func TestPairHumanOutputPrintsOneTimeLinkByDefault(t *testing.T) {
+	pairingURI, err := url.Parse("wing://connect?broker=https%3A%2F%2F100.64.0.8%3A43001&code=one-time")
+	if err != nil {
+		t.Fatal(err)
+	}
+	broker := &pairingBroker{PairingURI: pairingURI}
+	options := testPairOptions(t, "superuser-secret")
+	options.PrintLink = true
+	var stdout, stderr bytes.Buffer
+
+	writePairHumanOutput(&stdout, &stderr, broker, options)
+
+	if stdout.String() != pairingURI.String()+"\n" {
+		t.Fatalf("stdout = %q", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "Paste pairing link") ||
+		!strings.Contains(stderr.String(), "single-use") {
+		t.Fatalf("missing manual-link guidance: %q", stderr.String())
+	}
+	if strings.Contains(stderr.String(), pairingURI.String()) {
+		t.Fatal("pairing link was duplicated into diagnostics")
 	}
 }
 
@@ -299,6 +367,7 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 		!strings.Contains(string(exchange.Body), `"wing_link_token":"wlc_`) ||
 		!strings.Contains(string(exchange.Body), `"setup:write"`) ||
 		!strings.Contains(string(exchange.Body), `"profiles:read"`) ||
+		!strings.Contains(string(exchange.Body), `"directories:read"`) ||
 		!strings.Contains(string(exchange.Body), `"device:self:revoke"`) {
 		t.Fatalf("exchange = %d %s", exchange.StatusCode, exchange.Body)
 	}
@@ -329,7 +398,7 @@ func TestPairingBrokerInspectsAndExchangesOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(devices) != 1 || devices[0].Name != "phone" || !devices[0].Bearer || !slices.Contains(devices[0].Scopes, ScopeProfilesWrite) {
+	if len(devices) != 1 || devices[0].Name != "phone" || !devices[0].Bearer || !slices.Contains(devices[0].Scopes, ScopeProfilesWrite) || !slices.Contains(devices[0].Scopes, ScopeDirectoriesRead) {
 		t.Fatalf("paired device metadata = %#v", devices)
 	}
 	select {
@@ -380,6 +449,10 @@ if [ "$1" = "--profile" ] && [ "$3 $4" = "config env-path" ]; then /bin/printf '
 	t.Setenv("WING_LINK_URL", healthServer.URL)
 	t.Setenv("WING_LINK_SERVICE", "external")
 	t.Setenv("WING_LINK_STATE", statePath)
+	proof, err := loadLocalPairingProof(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
 	reader, writer := io.Pipe()
 	result := make(chan int, 1)
 	go func() {
@@ -389,13 +462,17 @@ if [ "$1" = "--profile" ] && [ "$3 $4" = "config env-path" ]; then /bin/printf '
 
 	scanner := bufio.NewScanner(reader)
 	var openURL string
+	var pairOutput strings.Builder
 	for scanner.Scan() {
 		line := scanner.Text()
+		pairOutput.WriteString(line + "\n")
 		if strings.Contains(line, "On the same device, open:") {
 			if !scanner.Scan() {
 				t.Fatal("missing ordinary handoff URL")
 			}
-			openURL = strings.TrimSpace(strings.TrimPrefix(scanner.Text(), "pair:"))
+			line = scanner.Text()
+			pairOutput.WriteString(line + "\n")
+			openURL = strings.TrimSpace(strings.TrimPrefix(line, "pair:"))
 		}
 		if strings.Contains(line, "Review the host, access, and profile count") {
 			break
@@ -469,6 +546,10 @@ if [ "$1" = "--profile" ] && [ "$3 $4" = "config env-path" ]; then /bin/printf '
 	if !scanner.Scan() || !strings.Contains(scanner.Text(), "pairing complete") {
 		t.Fatalf("completion message = %q", scanner.Text())
 	}
+	pairOutput.WriteString(scanner.Text() + "\n")
+	if strings.Contains(pairOutput.String(), proof) {
+		t.Fatal("pair command output exposed the local pairing proof")
+	}
 	select {
 	case exitCode := <-result:
 		if exitCode != 0 {
@@ -497,6 +578,36 @@ func TestPairingBrokerRejectsWrongOriginAndCode(t *testing.T) {
 		if response.StatusCode != http.StatusNotFound {
 			t.Fatalf("status = %d", response.StatusCode)
 		}
+	}
+}
+
+type pairRoundTripFunc func(*http.Request) (*http.Response, error)
+
+func (roundTrip pairRoundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return roundTrip(request)
+}
+
+func TestScopedHermesRemoteTransportFailureExplainsLoopbackSetup(t *testing.T) {
+	origin, err := normalizeOrigin("http://192.0.2.8:8642")
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := &http.Client{Transport: pairRoundTripFunc(func(*http.Request) (*http.Response, error) {
+		return nil, errors.New("connection refused")
+	})}
+
+	_, advertised, err := createScopedHermesEnrollmentWithClient(client, origin, "full-key", "phone")
+	if err == nil || advertised {
+		t.Fatalf("advertised=%v err=%v", advertised, err)
+	}
+	message := err.Error()
+	for _, want := range []string{"selected remote origin", "setup binds it to loopback", "WING_HERMES_URL", "--local"} {
+		if !strings.Contains(message, want) {
+			t.Fatalf("error missing %q: %q", want, message)
+		}
+	}
+	if strings.Contains(message, origin.Host) {
+		t.Fatalf("error exposed private origin: %q", message)
 	}
 }
 
@@ -887,6 +998,84 @@ func TestPreferredPairingIPPrefersTailscale(t *testing.T) {
 	}
 }
 
+func TestPrepareAutomaticHermesOriginBindsUnreachableTailscaleAddress(t *testing.T) {
+	origin, err := normalizeOrigin("http://100.90.80.70:8642")
+	if err != nil {
+		t.Fatal(err)
+	}
+	probes := 0
+	configured := 0
+	err = prepareAutomaticHermesOrigin(true, origin, func() int {
+		probes++
+		if configured == 0 {
+			return 0
+		}
+		return http.StatusOK
+	}, func() error {
+		configured++
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if configured != 1 || probes != 2 {
+		t.Fatalf("configured=%d probes=%d", configured, probes)
+	}
+}
+
+func TestPrepareAutomaticHermesOriginDoesNotExposeLANOrExplicitOrigins(t *testing.T) {
+	for _, test := range []struct {
+		automatic bool
+		origin    string
+	}{
+		{automatic: false, origin: "http://100.90.80.70:8642"},
+		{automatic: true, origin: "http://10.0.0.8:8642"},
+	} {
+		origin, err := normalizeOrigin(test.origin)
+		if err != nil {
+			t.Fatal(err)
+		}
+		called := false
+		if err := prepareAutomaticHermesOrigin(test.automatic, origin, func() int {
+			called = true
+			return 0
+		}, func() error {
+			called = true
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		if called {
+			t.Fatalf("automatic=%v origin=%s triggered exposure", test.automatic, test.origin)
+		}
+	}
+}
+
+func TestConfigureHermesVPNOriginUsesFixedCommandShapes(t *testing.T) {
+	var commands [][]string
+	run := func(_ context.Context, spec CommandSpec, _ func(string)) ProcessResult {
+		commands = append(commands, append([]string(nil), spec.Args...))
+		return ProcessResult{}
+	}
+	updatedEnvironment := false
+	if err := configureHermesVPNOriginWithRunner("/usr/bin/hermes", "100.90.80.70", run, func() error {
+		updatedEnvironment = true
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	want := [][]string{
+		{"config", "set", "--force", "platforms.api_server.extra.host", "100.90.80.70"},
+		{"gateway", "restart"},
+	}
+	if !slices.EqualFunc(commands, want, slices.Equal) {
+		t.Fatalf("commands = %#v, want %#v", commands, want)
+	}
+	if !updatedEnvironment {
+		t.Fatal("Hermes API environment was not updated before restart")
+	}
+}
+
 func TestPreferredPairingIPAcceptsPrivateIPv6OnlyHosts(t *testing.T) {
 	got, err := preferredPairingIP([]net.Addr{
 		&net.IPNet{IP: net.ParseIP("fd12:3456:789a::20"), Mask: net.CIDRMask(64, 128)},
@@ -933,6 +1122,27 @@ func TestReadHermesTokenFileMatchesDotenvInlineComments(t *testing.T) {
 	}
 	if token != "local-secret" {
 		t.Fatalf("token = %q", token)
+	}
+}
+
+func TestAndroidPairHermesResolverUsesOnlyCanonicalTermuxPaths(t *testing.T) {
+	fakeDir := t.TempDir()
+	fakeHermes := filepath.Join(fakeDir, "hermes")
+	if err := os.WriteFile(fakeHermes, []byte("#!/bin/sh\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", fakeDir)
+	t.Setenv("PREFIX", termuxPrefix)
+	t.Setenv("HOME", termuxHome)
+	t.Setenv("WING_HERMES_HOME", filepath.Join(termuxHome, ".hermes"))
+
+	if _, _, err := resolvePairHermesExecutableForPlatform("android"); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("PATH Hermes should be ignored by pairing; err = %v", err)
+	}
+
+	t.Setenv("WING_HERMES_HOME", filepath.Join(fakeDir, ".hermes"))
+	if _, _, err := resolvePairHermesExecutableForPlatform("android"); err == nil {
+		t.Fatal("pairing accepted a noncanonical Android Hermes home")
 	}
 }
 
@@ -1070,7 +1280,7 @@ func TestPairOperationalErrorIsActionableWithoutGlobalHelp(t *testing.T) {
 	if code := pairCommand(&stdout, &stderr, nil); code != 1 {
 		t.Fatalf("exit code = %d", code)
 	}
-	if !strings.Contains(stderr.String(), "could not find the local Hermes API key") || strings.Contains(stderr.String(), "usage: wing-link") {
+	if !strings.Contains(stderr.String(), "local Hermes API key") || strings.Contains(stderr.String(), "usage: wing-link") {
 		t.Fatalf("stderr = %q", stderr.String())
 	}
 }
@@ -1173,10 +1383,47 @@ func testPairOptions(t *testing.T, token string) pairOptions {
 	}
 }
 
-func TestStageControlCredentialUsesLoopbackHTTPForRemoteTLSOrigin(t *testing.T) {
+func TestStageControlCredentialDoesNotRedirectOwnerProof(t *testing.T) {
+	statePath := filepath.Join(t.TempDir(), "state.json")
+	t.Setenv("WING_LINK_STATE", statePath)
+	if _, err := ensureLocalPairingProof(statePath); err != nil {
+		t.Fatal(err)
+	}
+	redirected := false
+	target := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		redirected = true
+	}))
+	defer target.Close()
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.Header().Set("Location", target.URL)
+		writer.WriteHeader(http.StatusTemporaryRedirect)
+	}))
+	defer server.Close()
+	origin, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := stageControlCredential(origin, "Phone", []string{ScopeHealthRead}); err == nil {
+		t.Fatal("redirecting credential staging unexpectedly succeeded")
+	}
+	if redirected {
+		t.Fatal("local pairing proof followed a redirect")
+	}
+}
+
+func TestStageControlCredentialUsesLoopbackHTTPAndOwnerProofForRemoteTLSOrigin(t *testing.T) {
+	statePath := filepath.Join(t.TempDir(), "state.json")
+	t.Setenv("WING_LINK_STATE", statePath)
+	proof, err := ensureLocalPairingProof(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path != "/v1/pairing/control-credentials" || request.Method != http.MethodPost {
 			t.Fatalf("request=%s %s", request.Method, request.URL.Path)
+		}
+		if request.Header.Get(localPairingProofHeader) != proof {
+			t.Fatal("request omitted the owner-only local pairing proof")
 		}
 		writeJSON(writer, http.StatusOK, map[string]any{"credential_id": "cred_test", "token": "wlc_test"})
 	}))

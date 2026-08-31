@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,6 +41,8 @@ type pairOptions struct {
 	ScopedEnrollmentCode string
 	CredentialMode       string
 	Connections          []issuedHermesConnection
+	PrintLink            bool
+	SameDevice           bool
 }
 
 type issuedHermesConnection struct {
@@ -118,13 +121,26 @@ func pairCommand(stdout, stderr io.Writer, args []string) int {
 func writePairHumanOutput(stdout, stderr io.Writer, broker *pairingBroker, options pairOptions) {
 	_, _ = fmt.Fprintln(stderr, "pair: Pair with Hermes Wing (expires in 5 minutes)")
 	_, _ = fmt.Fprintln(stderr, "pair:")
+	if options.SameDevice {
+		_, _ = fmt.Fprintln(stderr, "pair: Open this local link on the same device:")
+		if broker.OpenURL != nil {
+			_, _ = fmt.Fprintln(stdout, broker.OpenURL.String())
+		}
+		_, _ = fmt.Fprintln(stderr, "pair: Review the host and access in Hermes Wing, then confirm.")
+		return
+	}
 	if broker.OpenURL != nil {
 		_, _ = fmt.Fprintln(stderr, "pair: On the same device, open:")
 		_, _ = fmt.Fprintf(stderr, "pair:   %s\n", broker.OpenURL)
 		_, _ = fmt.Fprintln(stderr, "pair:")
 	}
-	_, _ = fmt.Fprintln(stderr, "pair: Scan this QR in Hermes Wing:")
-	qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
+	if options.PrintLink {
+		_, _ = fmt.Fprintln(stderr, "pair: In Hermes Wing, choose Paste pairing link and paste this single-use link:")
+		_, _ = fmt.Fprintln(stdout, broker.PairingURI.String())
+	} else {
+		_, _ = fmt.Fprintln(stderr, "pair: Scan this QR in Hermes Wing:")
+		qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
+	}
 	_, _ = fmt.Fprintln(stderr, "pair:")
 	_, _ = fmt.Fprintln(stderr, "pair: Review the host, access, and profile count in Hermes Wing, then confirm.")
 	if options.Origin.Scheme == "http" && !isLoopbackHost(options.Origin.Hostname()) {
@@ -413,13 +429,28 @@ func parsePairOptionsWithAdvertiseHost(
 	}
 	originValue := strings.TrimSpace(os.Getenv("WING_HERMES_URL"))
 	remote := true
+	printLink := true
+	sameDevice := false
+	remoteExplicit := false
+	qrExplicit := false
+	originExplicit := false
 	for index := 0; index < len(args); index++ {
 		switch args[index] {
 		case "--remote", "--lan":
 			remote = true
+			remoteExplicit = true
 		case "--local":
 			remote = false
+		case "--same-device":
+			sameDevice = true
+			remote = false
+		case "--link":
+			printLink = true
+		case "--qr":
+			printLink = false
+			qrExplicit = true
 		case "--origin":
+			originExplicit = true
 			index++
 			if index >= len(args) {
 				return pairOptions{}, fmt.Errorf("%w: --origin requires a URL", errPairUsage)
@@ -438,6 +469,10 @@ func parsePairOptionsWithAdvertiseHost(
 	if len([]rune(label)) > 80 {
 		return pairOptions{}, fmt.Errorf("%w: --label must be at most 80 characters", errPairUsage)
 	}
+	if sameDevice && (remoteExplicit || qrExplicit) {
+		return pairOptions{}, fmt.Errorf("%w: --same-device conflicts with --remote and --qr", errPairUsage)
+	}
+	automaticOrigin := originValue == ""
 	if originValue == "" {
 		host, hostErr := advertiseHost(remote)
 		if hostErr != nil {
@@ -456,12 +491,15 @@ func parsePairOptionsWithAdvertiseHost(
 	if err != nil {
 		return pairOptions{}, err
 	}
-	if err := requireTrustedOriginHost(origin.Hostname()); err != nil {
-		return pairOptions{}, err
-	}
 	originIP := net.ParseIP(origin.Hostname())
 	if originIP != nil && !originIP.IsLoopback() && !remote {
+		if sameDevice && originExplicit {
+			return pairOptions{}, fmt.Errorf("%w: --same-device requires a loopback --origin", errPairUsage)
+		}
 		return pairOptions{}, fmt.Errorf("%w: non-loopback pairing requires --remote", errPairUsage)
+	}
+	if err := requireTrustedOriginHost(origin.Hostname()); err != nil {
+		return pairOptions{}, err
 	}
 	controlValue := strings.TrimSpace(os.Getenv("WING_LINK_URL"))
 	if controlValue == "" {
@@ -487,6 +525,14 @@ func parsePairOptionsWithAdvertiseHost(
 	}
 	token, err := discoverHermesToken()
 	if err != nil {
+		return pairOptions{}, err
+	}
+	if err := prepareAutomaticHermesOrigin(
+		automaticOrigin,
+		origin,
+		func() int { return pairRequestStatus(origin, token, "/v1/capabilities") },
+		func() error { return configureHermesVPNOrigin(origin) },
+	); err != nil {
 		return pairOptions{}, err
 	}
 	scopedCode, scopedAdvertised, err := createScopedHermesEnrollment(origin, token, label)
@@ -520,7 +566,7 @@ func parsePairOptionsWithAdvertiseHost(
 		HostIdentity: hostIdentity,
 		Label:        label, Token: token,
 		ScopedEnrollmentCode: scopedCode, CredentialMode: credentialMode,
-		Connections: connections,
+		Connections: connections, PrintLink: printLink, SameDevice: sameDevice,
 	}, nil
 }
 
@@ -529,6 +575,91 @@ func pairingAdvertiseHost(remote bool) (string, error) {
 		return "127.0.0.1", nil
 	}
 	return advertiseIP()
+}
+
+func prepareAutomaticHermesOrigin(automatic bool, origin *url.URL, probe func() int, configure func() error) error {
+	if !automatic || !isTailscaleIP(net.ParseIP(origin.Hostname())) {
+		return nil
+	}
+	if probe() != 0 {
+		return nil
+	}
+	if err := configure(); err != nil {
+		return err
+	}
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		if probe() != 0 {
+			return nil
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	return errors.New("agent API did not become reachable on Tailscale")
+}
+
+func configureHermesVPNOrigin(origin *url.URL) error {
+	host := origin.Hostname()
+	if !isTailscaleIP(net.ParseIP(host)) {
+		return errors.New("automatic Hermes API binding requires a Tailscale address")
+	}
+	port, err := strconv.Atoi(origin.Port())
+	if err != nil || port < 1 || port > 65535 {
+		return errors.New("automatic Hermes API binding requires an explicit port")
+	}
+	hermes, err := exec.LookPath("hermes")
+	if err != nil {
+		return errors.New("could not find Hermes CLI to enable Tailscale pairing")
+	}
+	output, result := runProcessCapture(context.Background(), CommandSpec{
+		Path: hermes, Args: []string{"config", "env-path"}, Timeout: 5 * time.Second,
+	}, 4096)
+	path := strings.TrimSpace(string(output))
+	home, homeErr := resolveHermesHome()
+	if result.Err != nil || homeErr != nil || !filepath.IsAbs(path) ||
+		strings.ContainsAny(path, "\r\n") || !pathWithin(home, path) ||
+		rejectSymlinkedAncestors(path) != nil {
+		return errors.New("could not locate Hermes API environment for Tailscale pairing")
+	}
+	return configureHermesVPNOriginWithRunner(hermes, host, runProcess, func() error {
+		return ensureHermesAPIEnvironmentHost(path, host, port)
+	})
+}
+
+func configureHermesVPNOriginWithRunner(
+	hermes, host string,
+	run func(context.Context, CommandSpec, func(string)) ProcessResult,
+	updateEnvironment func() error,
+) error {
+	if !isTailscaleIP(net.ParseIP(host)) {
+		return errors.New("automatic Hermes API binding requires a Tailscale address")
+	}
+	if result := run(context.Background(), CommandSpec{
+		Path: hermes, Args: []string{"config", "set", "--force", "platforms.api_server.extra.host", host}, Timeout: 90 * time.Second,
+	}, nil); result.Err != nil {
+		return errors.New("could not enable Hermes API access over Tailscale")
+	}
+	if err := updateEnvironment(); err != nil {
+		return errors.New("could not update Hermes API environment for Tailscale")
+	}
+	if result := run(context.Background(), CommandSpec{
+		Path: hermes, Args: []string{"gateway", "restart"}, Timeout: 90 * time.Second,
+	}, nil); result.Err != nil {
+		return errors.New("could not restart Hermes API for Tailscale")
+	}
+	return nil
+}
+
+func isTailscaleIP(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+	if ipv4 := ip.To4(); ipv4 != nil {
+		return ipv4[0] == 100 && ipv4[1] >= 64 && ipv4[1] <= 127
+	}
+	ipv6 := ip.To16()
+	return ipv6 != nil &&
+		ipv6[0] == 0xfd && ipv6[1] == 0x7a && ipv6[2] == 0x11 &&
+		ipv6[3] == 0x5c && ipv6[4] == 0xa1 && ipv6[5] == 0xe0
 }
 
 var wingLinkControlScopes = []string{
@@ -540,6 +671,7 @@ var wingLinkControlScopes = []string{
 	ScopeProfilesWrite,
 	ScopeProvidersRead,
 	ScopeProvidersWrite,
+	ScopeDirectoriesRead,
 	ScopeDeviceSelfRead,
 	ScopeDeviceSelfRevoke,
 }
@@ -552,7 +684,10 @@ var wingScopedHermesScopes = []string{
 }
 
 func createScopedHermesEnrollment(origin *url.URL, token, label string) (string, bool, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
+	return createScopedHermesEnrollmentWithClient(&http.Client{Timeout: 10 * time.Second}, origin, token, label)
+}
+
+func createScopedHermesEnrollmentWithClient(client *http.Client, origin *url.URL, token, label string) (string, bool, error) {
 	var capabilities struct {
 		Endpoints map[string]apiEndpoint `json:"endpoints"`
 		Auth      struct {
@@ -560,6 +695,9 @@ func createScopedHermesEnrollment(origin *url.URL, token, label string) (string,
 		} `json:"auth"`
 	}
 	if err := pairJSONRequest(client, origin, token, http.MethodGet, "/v1/capabilities", nil, &capabilities); err != nil {
+		if errors.Is(err, errHermesEnrollmentRequestFailed) && !isLoopbackHost(origin.Hostname()) {
+			return "", false, errors.New("inspect Hermes enrollment capabilities: Hermes Agent API is unreachable at the selected remote origin; setup binds it to loopback by default—bind it to a trusted VPN address and set WING_HERMES_URL, or use --local for same-device pairing")
+		}
 		return "", false, fmt.Errorf("inspect Hermes enrollment capabilities: %w", err)
 	}
 	endpoint, advertised := capabilities.Endpoints["operator_enrollment_create"]
@@ -598,21 +736,21 @@ func ensureHermesProfileMultiplex(origin *url.URL, token string, connections []i
 	if hermesProfileMultiplexReady(origin, token, connections) {
 		return nil
 	}
-	hermes, err := exec.LookPath("hermes")
+	hermes, home, err := resolvePairHermesExecutable()
 	if err != nil {
 		return errors.New("could not find Hermes profile CLI")
 	}
-	commands := [][]string{
-		{"config", "set", "--force", "gateway.multiplex_profiles", "true"},
-		{"gateway", "restart"},
-	}
-	for _, args := range commands {
-		result := runProcess(context.Background(), CommandSpec{
-			Path: hermes, Args: args, Timeout: 90 * time.Second,
+	runHermes := func(ctx context.Context, args ...string) error {
+		result := runProcess(ctx, CommandSpec{
+			Path: hermes, Args: args, Env: []string{"HERMES_HOME=" + home}, Timeout: 90 * time.Second,
 		}, nil)
-		if result.Err != nil {
-			return errors.New("could not enable Hermes profile routing")
-		}
+		return result.Err
+	}
+	if err := runHermes(context.Background(), "config", "set", "--force", "gateway.multiplex_profiles", "true"); err != nil {
+		return errors.New("could not enable Hermes profile routing")
+	}
+	if err := restartHermesGateway(context.Background(), hermes, home, runHermes); err != nil {
+		return errors.New("could not restart Hermes profile routing")
 	}
 	deadline := time.Now().Add(30 * time.Second)
 	for time.Now().Before(deadline) {
@@ -720,12 +858,12 @@ func isHermesProfileListSeparator(fields []string) bool {
 }
 
 func compatibilityHermesEnrollment(origin *url.URL, token, label string) (issuedHermesEnrollment, error) {
-	hermes, err := exec.LookPath("hermes")
+	hermes, home, err := resolvePairHermesExecutable()
 	if err != nil {
 		return issuedHermesEnrollment{}, errors.New("could not find Hermes profile CLI")
 	}
 	output, result := runProcessCapture(context.Background(), CommandSpec{
-		Path: hermes, Args: []string{"profile", "list"}, Timeout: 30 * time.Second,
+		Path: hermes, Args: []string{"profile", "list"}, Env: []string{"HERMES_HOME=" + home}, Timeout: 30 * time.Second,
 	}, 256<<10)
 	if result.Err != nil {
 		return issuedHermesEnrollment{}, errors.New("could not list Hermes profiles")
@@ -739,7 +877,7 @@ func compatibilityHermesEnrollment(origin *url.URL, token, label string) (issued
 	for _, row := range rows {
 		profileToken := token
 		if row.ID != "default" {
-			profileToken, err = hermesProfileToken(hermes, row.ID)
+			profileToken, err = hermesProfileToken(hermes, home, row.ID)
 			if err != nil {
 				return issuedHermesEnrollment{}, err
 			}
@@ -757,10 +895,10 @@ func compatibilityHermesEnrollment(origin *url.URL, token, label string) (issued
 	}, nil
 }
 
-func hermesProfileToken(hermes, profileID string) (string, error) {
+func hermesProfileToken(hermes, home, profileID string) (string, error) {
 	output, result := runProcessCapture(context.Background(), CommandSpec{
 		Path: hermes, Args: []string{"--profile", profileID, "config", "env-path"},
-		Timeout: 30 * time.Second,
+		Env: []string{"HERMES_HOME=" + home}, Timeout: 30 * time.Second,
 	}, 4096)
 	path := strings.TrimSpace(string(output))
 	home, err := defaultHermesHome()
@@ -791,6 +929,14 @@ func exchangeScopedHermesEnrollment(options pairOptions) (issuedHermesEnrollment
 }
 
 func stageControlCredential(controlOrigin *url.URL, name string, scopes []string) (string, string, error) {
+	statePath, err := resolveWingLinkStatePath()
+	if err != nil {
+		return "", "", errors.New("wing link local pairing authority is unavailable")
+	}
+	proof, err := loadLocalPairingProof(statePath)
+	if err != nil {
+		return "", "", errors.New("wing link local pairing authority is unavailable")
+	}
 	var response struct {
 		CredentialID string `json:"credential_id"`
 		Token        string `json:"token"`
@@ -800,16 +946,27 @@ func stageControlCredential(controlOrigin *url.URL, name string, scopes []string
 		loopbackHost = "::1"
 	}
 	loopbackOrigin := &url.URL{Scheme: "http", Host: net.JoinHostPort(loopbackHost, controlOrigin.Port())}
-	if err := pairJSONRequest(
-		&http.Client{Timeout: 10 * time.Second}, loopbackOrigin, "", http.MethodPost,
+	client := &http.Client{
+		Timeout:       10 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	if err := pairJSONRequestWithHeaders(
+		client, loopbackOrigin, "", http.MethodPost,
 		"/v1/pairing/control-credentials", map[string]any{"name": name, "scopes": scopes}, &response,
+		map[string]string{localPairingProofHeader: proof},
 	); err != nil || response.CredentialID == "" || response.Token == "" {
 		return "", "", errors.New("wing link control credential staging failed")
 	}
 	return response.CredentialID, response.Token, nil
 }
 
+var errHermesEnrollmentRequestFailed = errors.New("hermes enrollment request failed")
+
 func pairJSONRequest(client *http.Client, origin *url.URL, token, method, path string, body any, target any) error {
+	return pairJSONRequestWithHeaders(client, origin, token, method, path, body, target, nil)
+}
+
+func pairJSONRequestWithHeaders(client *http.Client, origin *url.URL, token, method, path string, body any, target any, headers map[string]string) error {
 	var payload io.Reader
 	if body != nil {
 		encoded, err := json.Marshal(body)
@@ -825,10 +982,13 @@ func pairJSONRequest(client *http.Client, origin *url.URL, token, method, path s
 	if token != "" {
 		request.Header.Set("Authorization", "Bearer "+token)
 	}
+	for name, value := range headers {
+		request.Header.Set(name, value)
+	}
 	request.Header.Set("Content-Type", "application/json")
 	response, err := client.Do(request)
 	if err != nil {
-		return errors.New("hermes enrollment request failed")
+		return errHermesEnrollmentRequestFailed
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
@@ -844,18 +1004,18 @@ func discoverHermesToken() (string, error) {
 	if token := strings.TrimSpace(os.Getenv("WING_HERMES_TOKEN")); token != "" {
 		return token, nil
 	}
-	hermes, err := exec.LookPath("hermes")
+	hermes, home, err := resolvePairHermesExecutable()
 	if err != nil {
 		return "", errors.New("could not find the local Hermes API key; install/configure Hermes or set WING_HERMES_TOKEN")
 	}
 	output, result := runProcessCapture(context.Background(), CommandSpec{
 		Path:    hermes,
 		Args:    []string{"config", "env-path"},
+		Env:     []string{"HERMES_HOME=" + home},
 		Timeout: 5 * time.Second,
 	}, 4096)
 	path := strings.TrimSpace(string(output))
-	home, homeErr := resolveHermesHome()
-	if result.Err == nil && homeErr == nil && filepath.IsAbs(path) &&
+	if result.Err == nil && filepath.IsAbs(path) &&
 		!strings.ContainsAny(path, "\r\n") && pathWithin(home, path) &&
 		rejectSymlinkedAncestors(path) == nil {
 		if token, err := ensureHermesTokenFile(path); err == nil {
@@ -863,6 +1023,29 @@ func discoverHermesToken() (string, error) {
 		}
 	}
 	return "", errors.New("could not prepare the local Hermes API key")
+}
+
+func resolvePairHermesExecutable() (string, string, error) {
+	return resolvePairHermesExecutableForPlatform(runtime.GOOS)
+}
+
+func resolvePairHermesExecutableForPlatform(platform string) (string, string, error) {
+	home, err := resolveHermesHome()
+	if err != nil {
+		return "", "", err
+	}
+	if platform == "android" {
+		hermes, err := resolveHermesExecutableForPlatform(platform, home, "")
+		if err != nil {
+			return "", "", err
+		}
+		return hermes, home, nil
+	}
+	hermes, err := exec.LookPath("hermes")
+	if err != nil {
+		return "", "", err
+	}
+	return hermes, home, nil
 }
 
 func ensureHermesTokenFile(path string) (string, error) {

@@ -71,7 +71,138 @@ void main() {
     });
   });
 
+  group('leaked tool payloads', () {
+    test('replaces a leaked tool wrapper without exposing its body', () {
+      final safe = wingRedactSensitiveText(
+        'Before <some_tool>{"command":"cat /home/operator/key",'
+        '"token":"abc123value"}</some_tool> after',
+      );
+
+      expect(safe, 'Before [tool activity hidden] after');
+    });
+
+    test('fails closed while a leaked tool wrapper is still streaming', () {
+      final safe = wingRedactSensitiveText(
+        'Before <some_tool>{"command":"unfinished',
+      );
+
+      expect(safe, 'Before [tool activity hidden]');
+    });
+  });
+
+  group('host media delivery tokens', () {
+    test('replaces an explicit MEDIA token without exposing its source', () {
+      final safe = wingRedactSensitiveText(
+        'Here it is:\nMEDIA:"/home/operator/My Preview.png"\nDone.',
+      );
+
+      expect(safe, 'Here it is:\n[media not delivered]\nDone.');
+    });
+
+    test('recognizes cross-platform host audio paths outside code', () {
+      expect(
+        wingContainsHostAudioReference(
+          r'Audio created at C:\Users\operator\voice reply.wav.',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostAudioReference(
+          r'Audio created at \\host\share\voice reply.mp3.',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostAudioReference('Audio created at ~/voice/reply.ogg.'),
+        isTrue,
+      );
+      expect(
+        wingContainsHostAudioReference(
+          'Audio created at /srv/hermes/reply.mp3.',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostAudioReference(
+          'Example:\n```text\n/tmp/example.wav\n```',
+        ),
+        isFalse,
+      );
+      expect(
+        wingContainsHostAudioReference(
+          'Listen at https://example.test/etc/reply.mp3',
+        ),
+        isFalse,
+      );
+      expect(
+        wingContainsHostAudioReference('Audio at file:///tmp/reply.mp3'),
+        isTrue,
+      );
+      expect(wingContainsHostAudioReference('/tmp/report.pdf'), isFalse);
+    });
+
+    test('recognizes only labelled absolute artifact paths', () {
+      expect(
+        wingContainsHostArtifactReference(
+          'Done.\nSaved to: `/tmp/final report.pdf`',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostArtifactReference(
+          'Done.\nSaved to: `~/reports/final.pdf`',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostArtifactReference(
+          'Done.\nSaved to: `/opt/hermes/final.pdf`',
+        ),
+        isTrue,
+      );
+      expect(
+        wingContainsHostArtifactReference(
+          'File: https://example.test/etc/report.pdf',
+        ),
+        isFalse,
+      );
+      expect(
+        wingContainsHostArtifactReference('File: file:///etc/report.pdf'),
+        isTrue,
+      );
+      expect(
+        wingContainsHostArtifactReference('Output: relative/report.pdf'),
+        isFalse,
+      );
+      expect(
+        wingContainsHostArtifactReference('Run `/tmp/report.pdf` to inspect.'),
+        isFalse,
+      );
+      expect(
+        wingContainsHostArtifactReference(
+          'Example:\n```text\nFile: `/tmp/report.pdf`\n```',
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('local paths, which are excluded data', () {
+    test('ordinary HTTPS paths are preserved', () {
+      const text =
+          'Docs: https://example.test/etc/setup and '
+          'https://example.test/home/start';
+
+      expect(wingRedactSensitiveText(text), text);
+    });
+
+    test('file URLs remain fail-closed local paths', () {
+      expect(
+        wingRedactSensitiveText('created file:///etc/hermes/config.toml'),
+        'created [redacted-path]',
+      );
+    });
+
     test('a posix home path is redacted', () {
       expect(
         wingRedactSensitiveText('missing /home/operator/.hermes/config.yaml'),
@@ -79,10 +210,57 @@ void main() {
       );
     });
 
+    test('common system-root paths are redacted', () {
+      for (final path in [
+        '/root/.hermes/config.yaml',
+        '/opt/hermes/output.json',
+        '/srv/hermes/report.pdf',
+        '/etc/hermes/config.toml',
+      ]) {
+        expect(
+          wingRedactSensitiveText('missing $path'),
+          'missing [redacted-path]',
+          reason: path,
+        );
+      }
+    });
+
+    test('a tilde home path is redacted', () {
+      expect(
+        wingRedactSensitiveText('missing ~/.hermes/config.yaml'),
+        isNot(contains('~/.hermes')),
+      );
+    });
+
+    test('a temporary tool artifact path is redacted', () {
+      expect(
+        wingRedactSensitiveText('created /tmp/sidon_audio_reply.wav'),
+        isNot(contains('/tmp/sidon_audio_reply.wav')),
+      );
+    });
+
+    test('quoted host paths with spaces are fully redacted', () {
+      expect(
+        wingRedactSensitiveText('missing "/home/John Doe/private/config.yaml"'),
+        'missing [redacted-path]',
+      );
+      expect(
+        wingRedactSensitiveText(r'File: `C:\Users\Jane Doe\report.pdf`'),
+        'File: [redacted-path]',
+      );
+    });
+
     test('a windows drive path is redacted', () {
       expect(
         wingRedactSensitiveText(r'missing C:\Users\operator\hermes.yaml'),
         isNot(contains(r'C:\Users')),
+      );
+    });
+
+    test('a windows drive path with forward slashes is redacted', () {
+      expect(
+        wingRedactSensitiveText('missing C:/Users/operator/hermes.yaml'),
+        'missing [redacted-path]',
       );
     });
 

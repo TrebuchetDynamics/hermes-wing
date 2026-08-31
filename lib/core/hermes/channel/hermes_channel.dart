@@ -27,6 +27,9 @@ abstract interface class HermesChannel implements Listenable {
   Future<void> connect({required String baseUrl, String? apiKey});
   Future<void> disconnect();
 
+  /// Clears the client-side session selection without deleting or mutating
+  /// any Agent-owned session.
+  void clearActiveSession();
   Future<void> selectSession(String sessionId);
   Future<void> createSession({String? title});
   Future<void> renameSession({
@@ -59,8 +62,8 @@ abstract interface class HermesChannel implements Listenable {
   });
 
   /// Refreshes bounded gateway health only when exact `GET /health/detailed`
-  /// and declared/granted `gateway:read` are present. This is status only and
-  /// never changes gateway lifecycle.
+  /// is advertised and every scope declared by that endpoint is granted. This
+  /// is status only and never changes gateway lifecycle.
   Future<void> loadDetailedHealth();
 
   /// Refreshes the read-only scheduled-job inventory for the selected profile

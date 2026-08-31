@@ -17,6 +17,7 @@ import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../providers/profile_selection_provider.dart';
+import '../widgets/profile_directory_browser_sheet.dart';
 import '../widgets/profile_editor_sheet.dart';
 
 typedef WingLinkClientBuilder =
@@ -51,6 +52,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   String? _wingLinkGatewayId;
   WingLinkClient? _wingLinkClient;
   List<WingLinkProfile>? _wingLinkProfiles;
+  int _wingLinkLoadGeneration = 0;
 
   @override
   void initState() {
@@ -228,6 +230,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                             provider,
                             model,
                             providerApiKey,
+                            idempotencyKey,
                           }) async {
                             await _wingLinkClient!.createProfile(
                               name: name,
@@ -236,8 +239,9 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                               provider: provider,
                               model: model,
                               providerApiKey: providerApiKey,
+                              idempotencyKey: idempotencyKey,
                             );
-                            await _loadWingLinkProfiles(
+                            await _reloadWingLinkProfilesAfterCreate(
                               directory,
                               activeGatewayId!,
                             );
@@ -309,6 +313,11 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                   ? wingLinkChatAction(profiles[index])
                   : _switchingProfileId == null
                   ? () => _selectProfile(channel, profiles[index])
+                  : null,
+              onBrowseDirectories:
+                  isWingLinkRow(profiles[index]) &&
+                      wingLinkRowsById[profiles[index].id]?.source != 'api'
+                  ? () => unawaited(_browseWingLinkDirectories())
                   : null,
               onEdit: () => _openEditor(
                 channel: channel,
@@ -440,6 +449,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     HermesGatewayDirectory directory,
     String gatewayId,
   ) async {
+    final generation = ++_wingLinkLoadGeneration;
     final channel = ref.read(hermesChannelProvider);
     if (!wingLinkProfileCompatibilityEnabled ||
         _canReadProfiles(channel.state.capabilities)) {
@@ -480,7 +490,11 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     }
     try {
       final profiles = await client.listProfiles();
-      if (!mounted || _wingLinkGatewayId != gatewayId) return;
+      if (!mounted ||
+          generation != _wingLinkLoadGeneration ||
+          _wingLinkGatewayId != gatewayId) {
+        return;
+      }
       if (_canReadProfiles(channel.state.capabilities)) {
         setState(() {
           _wingLinkGatewayId = null;
@@ -491,7 +505,9 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       }
       setState(() => _wingLinkProfiles = profiles);
     } catch (_) {
-      if (mounted && _wingLinkGatewayId == gatewayId) {
+      if (mounted &&
+          generation == _wingLinkLoadGeneration &&
+          _wingLinkGatewayId == gatewayId) {
         setState(() {
           _wingLinkGatewayId = null;
           _wingLinkClient = null;
@@ -499,6 +515,29 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         });
       }
       rethrow;
+    }
+  }
+
+  Future<void> _reloadWingLinkProfilesAfterCreate(
+    HermesGatewayDirectory directory,
+    String gatewayId,
+  ) async {
+    final client = _wingLinkClient;
+    if (client == null) return;
+    try {
+      final profiles = await client.listProfiles();
+      if (!mounted ||
+          directory.activeContactId?.gatewayId != gatewayId ||
+          _wingLinkGatewayId != gatewayId ||
+          _wingLinkClient != client) {
+        return;
+      }
+      setState(() => _wingLinkProfiles = profiles);
+    } catch (_) {
+      if (!mounted) return;
+      setState(
+        () => _actionError = AppLocalizations.of(context).agentsLocalLoadError,
+      );
     }
   }
 
@@ -516,6 +555,35 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         // The loader already clears stale compatibility state on failure.
       }
       rethrow;
+    }
+  }
+
+  Future<void> _browseWingLinkDirectories() async {
+    final client = _wingLinkClient;
+    if (client == null) return;
+    final strings = AppLocalizations.of(context);
+    try {
+      final metadata = await client.getMetadata();
+      if (!metadata.capabilities.contains('directories.roots.read') ||
+          !metadata.capabilities.contains('directories.children.read')) {
+        throw const WingLinkException('Directory capabilities unavailable');
+      }
+      final device = await client.getCurrentDevice();
+      if (!device.scopes.contains('directories:read')) {
+        throw const WingLinkException('Directory scope unavailable');
+      }
+      if (!mounted) return;
+      await showProfileDirectoryBrowser(
+        context,
+        loadRoots: client.listDirectoryRoots,
+        loadChildren: (handle, offset) =>
+            client.listChildDirectories(handle: handle, offset: offset),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(strings.directoryBrowserUnavailable)),
+      );
     }
   }
 
@@ -710,6 +778,7 @@ class _ProfileCard extends StatelessWidget {
     required this.switching,
     required this.onChat,
     required this.onEdit,
+    this.onBrowseDirectories,
     required this.onDelete,
   });
 
@@ -723,6 +792,7 @@ class _ProfileCard extends StatelessWidget {
   final AppLocalizations strings;
   final bool switching;
   final VoidCallback? onChat;
+  final VoidCallback? onBrowseDirectories;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -866,6 +936,13 @@ class _ProfileCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onBrowseDirectories != null)
+                    OutlinedButton.icon(
+                      key: ValueKey('agent-browse-folders-${profile.id}'),
+                      onPressed: onBrowseDirectories,
+                      icon: const Icon(Icons.folder_open_outlined),
+                      label: Text(strings.profileBrowseFoldersAction),
+                    ),
                   if (canEdit)
                     Semantics(
                       button: true,

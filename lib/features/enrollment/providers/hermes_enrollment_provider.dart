@@ -256,6 +256,7 @@ class HermesEnrollmentController extends ChangeNotifier {
   String? _code;
   bool _exchangeAttempted = false;
   int? _connectedProfileCount;
+  bool _confirmedLoopback = false;
   int _generation = 0;
   Timer? _expiryTimer;
 
@@ -265,6 +266,7 @@ class HermesEnrollmentController extends ChangeNotifier {
   HermesEnrollmentPreview? get preview => _preview;
   String? get errorMessage => _errorMessage;
   int? get connectedProfileCount => _connectedProfileCount;
+  bool get confirmedLoopback => _confirmedLoopback;
   Duration? get remainingTime {
     final expiresAt = _preview?.expiresAt;
     if (expiresAt == null) return null;
@@ -326,6 +328,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _code = payload.code;
     _exchangeAttempted = false;
     _connectedProfileCount = null;
+    _confirmedLoopback = false;
     _preview = null;
     _errorMessage = null;
     _setStatus(HermesEnrollmentStatus.inspecting);
@@ -565,6 +568,9 @@ class HermesEnrollmentController extends ChangeNotifier {
       }
       if (generation != _generation) return;
       _connectedProfileCount = configs.length;
+      final confirmedHost = _origin?.host.toLowerCase();
+      _confirmedLoopback =
+          confirmedHost == '127.0.0.1' || confirmedHost == '::1';
       _origin = null;
       _exchangeOrigin = null;
       _wingLinkOrigin = null;
@@ -601,6 +607,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     _errorMessage = null;
     _exchangeAttempted = false;
     _connectedProfileCount = null;
+    _confirmedLoopback = false;
     _setStatus(HermesEnrollmentStatus.idle);
     _notify();
   }

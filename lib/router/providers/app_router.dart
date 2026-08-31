@@ -8,6 +8,7 @@ import '../../features/enrollment/screens/hermes_enrollment_screen.dart';
 import '../../features/gateway/screens/gateway_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/local_setup/screens/local_hermes_setup_screen.dart';
+import '../../features/local_setup/screens/termux_hermes_setup_screen.dart';
 import '../../features/office/screens/office_screen.dart';
 import '../../features/providers/screens/providers_screen.dart';
 import '../../features/schedules/screens/schedules_screen.dart';
@@ -127,17 +128,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.legacyAgents,
         redirect: (_, _) => AppRoutes.profiles,
       ),
-      // Reached only via an Android connect intent
-      // (wing://connect?...); deliberately outside the ShellRoute since
-      // no Hermes endpoint is configured yet at that point.
+      // Platform-specific local setup; deliberately outside the ShellRoute
+      // because no Hermes endpoint is configured yet.
       GoRoute(
         path: AppRoutes.localSetup,
         redirect: (_, _) =>
-            !kIsWeb && defaultTargetPlatform == TargetPlatform.linux
+            !kIsWeb &&
+                (defaultTargetPlatform == TargetPlatform.android ||
+                    defaultTargetPlatform == TargetPlatform.linux)
             ? null
             : AppRoutes.enroll,
-        builder: (context, state) =>
-            _SelectableRoute(child: const LocalHermesSetupScreen()),
+        builder: (context, state) => _SelectableRoute(
+          child: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+              ? const TermuxHermesSetupScreen()
+              : const LocalHermesSetupScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.enroll,

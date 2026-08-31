@@ -10,6 +10,9 @@ class _HermesSessionRail extends StatefulWidget {
     required this.onFork,
     required this.onDelete,
     required this.onDeleteSelected,
+    required this.pinnedSessionIds,
+    required this.unreadCompletedSessionIds,
+    required this.onTogglePinned,
   });
 
   final HermesChannelState state;
@@ -20,6 +23,9 @@ class _HermesSessionRail extends StatefulWidget {
   final ValueChanged<HermesSession> onFork;
   final ValueChanged<HermesSession> onDelete;
   final ValueChanged<List<HermesSession>> onDeleteSelected;
+  final Set<String> pinnedSessionIds;
+  final Set<String> unreadCompletedSessionIds;
+  final ValueChanged<HermesSession> onTogglePinned;
 
   @override
   State<_HermesSessionRail> createState() => _HermesSessionRailState();
@@ -29,11 +35,19 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
   final _searchController = TextEditingController();
   final _selectedSessionIds = <String>{};
   String _query = '';
+  String? _selectedSource;
   var _selecting = false;
 
   @override
   void didUpdateWidget(covariant _HermesSessionRail oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_selectedSource != null &&
+        !widget.state.sessions.any(
+          (session) => session.source == _selectedSource,
+        )) {
+      _selectedSource = null;
+      _selectedSessionIds.clear();
+    }
     if (!widget.state.canDeleteSessions) {
       _selectedSessionIds.clear();
       _selecting = false;
@@ -65,10 +79,19 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
     final theme = Theme.of(context);
     final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
-    final query = _query.trim().toLowerCase();
-    final sessions = query.isEmpty
+    final sortedSourceOptions = _sortedSessionSources(context, allSessions);
+    final selectedSource = sortedSourceOptions.contains(_selectedSource)
+        ? _selectedSource
+        : null;
+    final sourceSessions = selectedSource == null
         ? allSessions
         : allSessions
+              .where((session) => session.source == selectedSource)
+              .toList(growable: false);
+    final query = _query.trim().toLowerCase();
+    final sessions = query.isEmpty
+        ? sourceSessions
+        : sourceSessions
               .where(
                 (session) => _sessionMatchesQuery(
                   session,
@@ -218,6 +241,52 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                     onChanged: (value) => setState(() => _query = value),
                   ),
                 ),
+                if (sortedSourceOptions.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: strings.chatRailSourceFilterLabel,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String?>(
+                          key: const ValueKey(
+                            'hermes-session-rail-source-filter',
+                          ),
+                          value: selectedSource,
+                          isExpanded: true,
+                          items: [
+                            DropdownMenuItem<String?>(
+                              key: const ValueKey(
+                                'hermes-session-rail-source-all',
+                              ),
+                              value: null,
+                              child: Text(strings.chatRailAllSourcesLabel),
+                            ),
+                            for (final (index, source)
+                                in sortedSourceOptions.indexed)
+                              DropdownMenuItem<String?>(
+                                key: ValueKey(
+                                  'hermes-session-rail-source-option-$index',
+                                ),
+                                value: source,
+                                child: Text(
+                                  _sessionSourceLabel(context, source),
+                                ),
+                              ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedSource = value;
+                              _selectedSessionIds.clear();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Text(
@@ -226,6 +295,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
                       query: _query,
+                      filtered: selectedSource != null,
                     ),
                     key: const ValueKey('hermes-session-rail-count-summary'),
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -268,6 +338,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                       for (final group in _sessionGroups(
                         sessions,
                         strings: _hermesStrings(context),
+                        pinnedSessionIds: widget.pinnedSessionIds,
                       )) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
@@ -287,6 +358,9 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                               session.id,
                             ),
                             failed: widget.state.isSessionReplyFailed(
+                              session.id,
+                            ),
+                            unread: widget.unreadCompletedSessionIds.contains(
                               session.id,
                             ),
                             canRename: _canRename,
@@ -314,6 +388,11 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                             onRename: widget.onRename,
                             onFork: widget.onFork,
                             onDelete: widget.onDelete,
+                            pinned: widget.pinnedSessionIds.contains(
+                              session.id,
+                            ),
+                            onTogglePinned: widget.onTogglePinned,
+                            highlightQuery: _query,
                           ),
                       ],
                     ],
@@ -334,6 +413,11 @@ class _HermesActiveSessionBar extends StatelessWidget {
     required this.modelLabel,
     required this.isTurnActive,
     required this.canSendTurns,
+    required this.hasUnreconciledRun,
+    required this.switchableSessions,
+    required this.streamingSessionIds,
+    required this.unreadCompletedSessionIds,
+    required this.onSelectSession,
   });
 
   final HermesSession session;
@@ -341,6 +425,11 @@ class _HermesActiveSessionBar extends StatelessWidget {
   final String modelLabel;
   final bool isTurnActive;
   final bool canSendTurns;
+  final bool hasUnreconciledRun;
+  final List<HermesSession> switchableSessions;
+  final Set<String> streamingSessionIds;
+  final Set<String> unreadCompletedSessionIds;
+  final ValueChanged<HermesSession> onSelectSession;
 
   @override
   Widget build(BuildContext context) {
@@ -349,11 +438,15 @@ class _HermesActiveSessionBar extends StatelessWidget {
     final strings = _hermesStrings(context);
     final statusLabel = isTurnActive
         ? strings.chatRailStatusStreamingLabel
+        : hasUnreconciledRun
+        ? strings.chatErrorRunStillActiveTitle
         : canSendTurns
         ? strings.chatRailStatusReadyLabel
         : strings.chatRailStatusTransportUnavailableLabel;
     final statusIcon = isTurnActive
         ? Icons.autorenew
+        : hasUnreconciledRun
+        ? Icons.hourglass_top
         : canSendTurns
         ? Icons.bolt_outlined
         : Icons.block;
@@ -408,6 +501,60 @@ class _HermesActiveSessionBar extends StatelessWidget {
               ),
             );
 
+            Widget sessionSwitcher() {
+              if (switchableSessions.length < 2) return titleChip();
+              return Tooltip(
+                message: strings.chatRailCycleActiveSessionsTooltip,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final candidate in switchableSessions) ...[
+                        ChoiceChip(
+                          key: ValueKey(
+                            'hermes-active-session-chip-${candidate.id}',
+                          ),
+                          selected: candidate.id == session.id,
+                          showCheckmark: false,
+                          avatar: streamingSessionIds.contains(candidate.id)
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : unreadCompletedSessionIds.contains(candidate.id)
+                              ? Icon(
+                                  Icons.mark_chat_unread_outlined,
+                                  key: ValueKey(
+                                    'hermes-active-session-new-reply-${candidate.id}',
+                                  ),
+                                  size: 16,
+                                  semanticLabel: strings.chatRailNewReplyLabel,
+                                )
+                              : const Icon(Icons.chat_bubble_outline, size: 16),
+                          label: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 220),
+                            child: Text(
+                              _safeHermesUiPreview(
+                                candidate.title ?? candidate.id,
+                                maxLength: 96,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          onSelected: (_) => onSelectSession(candidate),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }
+
             final activeLabel = Text(
               strings.chatRailActiveLabel,
               style: theme.textTheme.labelLarge?.copyWith(
@@ -438,7 +585,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   activeLabel,
-                  SizedBox(width: titleWidth, child: titleChip()),
+                  SizedBox(width: titleWidth, child: sessionSwitcher()),
                   statusChip,
                   modelChip,
                   count,
@@ -449,7 +596,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
               children: [
                 activeLabel,
                 const SizedBox(width: 10),
-                Flexible(flex: 3, child: titleChip()),
+                Flexible(flex: 3, child: sessionSwitcher()),
                 const SizedBox(width: 10),
                 statusChip,
                 const SizedBox(width: 8),
@@ -585,18 +732,22 @@ class _HermesComposerStrip extends StatelessWidget {
     required this.voiceLabel,
     required this.isTurnActive,
     required this.canSendTurns,
+    required this.hasUnreconciledRun,
     required this.canRetry,
     required this.onStop,
     required this.onRetry,
+    required this.onSelectModel,
   });
 
   final String modelLabel;
   final String voiceLabel;
   final bool isTurnActive;
   final bool canSendTurns;
+  final bool hasUnreconciledRun;
   final bool canRetry;
   final VoidCallback onStop;
   final VoidCallback onRetry;
+  final VoidCallback? onSelectModel;
 
   @override
   Widget build(BuildContext context) {
@@ -606,9 +757,14 @@ class _HermesComposerStrip extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _ComposerChip(
-            icon: Icons.memory_outlined,
-            label: _safeHermesUiPreview(modelLabel, maxLength: 32),
+          Tooltip(
+            message: strings.chatComposerModelPickerTooltip,
+            child: ActionChip(
+              key: const ValueKey('hermes-composer-model-chip'),
+              avatar: const Icon(Icons.memory_outlined, size: 18),
+              label: Text(_safeHermesUiPreview(modelLabel, maxLength: 32)),
+              onPressed: onSelectModel,
+            ),
           ),
           const SizedBox(width: 8),
           _ComposerChip(icon: Icons.keyboard_voice_outlined, label: voiceLabel),
@@ -622,8 +778,14 @@ class _HermesComposerStrip extends StatelessWidget {
             )
           else
             _ComposerChip(
-              icon: canSendTurns ? Icons.bolt_outlined : Icons.block,
-              label: canSendTurns
+              icon: hasUnreconciledRun
+                  ? Icons.hourglass_top
+                  : canSendTurns
+                  ? Icons.bolt_outlined
+                  : Icons.block,
+              label: hasUnreconciledRun
+                  ? strings.chatErrorRunStillActiveTitle
+                  : canSendTurns
                   ? strings.chatRailStatusReadyLabel
                   : strings.chatRailStatusTransportUnavailableLabel,
             ),
@@ -668,6 +830,9 @@ class _HermesSessionsPanel extends StatefulWidget {
     required this.onFork,
     required this.onDelete,
     required this.onDeleteSelected,
+    required this.pinnedSessionIds,
+    required this.unreadCompletedSessionIds,
+    required this.onTogglePinned,
   });
 
   final HermesChannelState state;
@@ -678,6 +843,9 @@ class _HermesSessionsPanel extends StatefulWidget {
   final ValueChanged<HermesSession> onFork;
   final ValueChanged<HermesSession> onDelete;
   final ValueChanged<List<HermesSession>> onDeleteSelected;
+  final Set<String> pinnedSessionIds;
+  final Set<String> unreadCompletedSessionIds;
+  final ValueChanged<HermesSession> onTogglePinned;
 
   @override
   State<_HermesSessionsPanel> createState() => _HermesSessionsPanelState();
@@ -687,11 +855,19 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
   final _searchController = TextEditingController();
   final _selectedSessionIds = <String>{};
   var _query = '';
+  String? _selectedSource;
   var _selecting = false;
 
   @override
   void didUpdateWidget(covariant _HermesSessionsPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_selectedSource != null &&
+        !widget.state.sessions.any(
+          (session) => session.source == _selectedSource,
+        )) {
+      _selectedSource = null;
+      _selectedSessionIds.clear();
+    }
     if (!widget.state.canDeleteSessions) {
       _selectedSessionIds.clear();
       _selecting = false;
@@ -722,10 +898,19 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
   Widget build(BuildContext context) {
     final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
-    final query = _query.trim().toLowerCase();
-    final sessions = query.isEmpty
+    final sortedSourceOptions = _sortedSessionSources(context, allSessions);
+    final selectedSource = sortedSourceOptions.contains(_selectedSource)
+        ? _selectedSource
+        : null;
+    final sourceSessions = selectedSource == null
         ? allSessions
         : allSessions
+              .where((session) => session.source == selectedSource)
+              .toList(growable: false);
+    final query = _query.trim().toLowerCase();
+    final sessions = query.isEmpty
+        ? sourceSessions
+        : sourceSessions
               .where(
                 (session) => _sessionMatchesQuery(
                   session,
@@ -852,6 +1037,46 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                   onChanged: (value) => setState(() => _query = value),
                 ),
               ),
+              if (sortedSourceOptions.length > 1)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: strings.chatRailSourceFilterLabel,
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String?>(
+                        key: const ValueKey('hermes-session-source-filter'),
+                        value: selectedSource,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem<String?>(
+                            key: const ValueKey('hermes-session-source-all'),
+                            value: null,
+                            child: Text(strings.chatRailAllSourcesLabel),
+                          ),
+                          for (final (index, source)
+                              in sortedSourceOptions.indexed)
+                            DropdownMenuItem<String?>(
+                              key: ValueKey(
+                                'hermes-session-source-option-$index',
+                              ),
+                              value: source,
+                              child: Text(_sessionSourceLabel(context, source)),
+                            ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedSource = value;
+                            _selectedSessionIds.clear();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Align(
@@ -862,6 +1087,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
                       query: _query,
+                      filtered: selectedSource != null,
                     ),
                     key: const ValueKey('hermes-session-count-summary'),
                     style: Theme.of(context).textTheme.bodySmall,
@@ -893,6 +1119,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                     for (final group in _sessionGroups(
                       sessions,
                       strings: _hermesStrings(context),
+                      pinnedSessionIds: widget.pinnedSessionIds,
                     )) ...[
                       Padding(
                         key: ValueKey('hermes-session-group-${group.key}'),
@@ -910,6 +1137,9 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                             session.id,
                           ),
                           failed: widget.state.isSessionReplyFailed(session.id),
+                          unread: widget.unreadCompletedSessionIds.contains(
+                            session.id,
+                          ),
                           canRename: _canRename,
                           canFork:
                               _canFork &&
@@ -935,6 +1165,9 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                           onRename: widget.onRename,
                           onFork: widget.onFork,
                           onDelete: widget.onDelete,
+                          pinned: widget.pinnedSessionIds.contains(session.id),
+                          onTogglePinned: widget.onTogglePinned,
+                          highlightQuery: _query,
                         ),
                     ],
                   ],
@@ -952,8 +1185,9 @@ String _sessionCountSummary({
   required int visibleCount,
   required int totalCount,
   required String query,
+  bool filtered = false,
 }) {
-  if (query.trim().isEmpty) {
+  if (!filtered && query.trim().isEmpty) {
     return strings.chatRailSessionCountLabel(totalCount);
   }
   return strings.chatRailShowingSessionCountLabel(totalCount, visibleCount);
@@ -985,15 +1219,24 @@ bool _sessionMatchesQuery(
 List<_HermesSessionGroup> _sessionGroups(
   List<HermesSession> sessions, {
   required AppLocalizations strings,
+  Set<String> pinnedSessionIds = const {},
   DateTime? now,
 }) {
   final reference = (now ?? DateTime.now()).toLocal();
+  final sorted = _recentFirst(sessions);
+  final pinned = [
+    for (final session in sorted)
+      if (pinnedSessionIds.contains(session.id)) session,
+  ];
   final grouped = <String, List<HermesSession>>{};
-  for (final session in _recentFirst(sessions)) {
+  for (final session in sorted) {
+    if (pinnedSessionIds.contains(session.id)) continue;
     final key = _sessionDateGroup(session, reference);
     (grouped[key] ??= []).add(session);
   }
   return [
+    if (pinned.isNotEmpty)
+      _HermesSessionGroup('pinned', strings.chatRailPinnedGroupLabel, pinned),
     for (final group in [
       (key: 'today', label: strings.sessionsToday),
       (key: 'yesterday', label: strings.sessionsYesterday),
@@ -1044,6 +1287,19 @@ class _HermesSessionGroup {
   final String key;
   final String label;
   final List<HermesSession> sessions;
+}
+
+List<String> _sortedSessionSources(
+  BuildContext context,
+  List<HermesSession> sessions,
+) {
+  final sources = sessions.map((session) => session.source).toSet()
+    ..removeWhere((source) => source.trim().isEmpty);
+  return sources.toList(growable: false)..sort(
+    (left, right) => _sessionSourceLabel(context, left).toLowerCase().compareTo(
+      _sessionSourceLabel(context, right).toLowerCase(),
+    ),
+  );
 }
 
 String _sessionSourceLabel(BuildContext context, String source) {
@@ -1136,12 +1392,69 @@ List<String> _hermesExtendedSessionMetadataLines(
     ),
 ];
 
+List<RegExpMatch> _sessionSearchMatches(String text, String query) {
+  final needle = query.trim();
+  if (needle.isEmpty) return const [];
+  return RegExp(
+    RegExp.escape(needle),
+    caseSensitive: false,
+  ).allMatches(text).toList(growable: false);
+}
+
+Text _sessionSearchText(
+  BuildContext context, {
+  required Key key,
+  required String text,
+  required String query,
+  required int maxLines,
+}) {
+  final matches = _sessionSearchMatches(text, query);
+  if (matches.isEmpty) {
+    return Text(
+      text,
+      key: key,
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  final highlightStyle = TextStyle(
+    color: Theme.of(context).colorScheme.onTertiaryContainer,
+    backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+    fontWeight: FontWeight.w700,
+  );
+  final spans = <InlineSpan>[];
+  var offset = 0;
+  for (final match in matches) {
+    if (match.start > offset) {
+      spans.add(TextSpan(text: text.substring(offset, match.start)));
+    }
+    spans.add(
+      TextSpan(
+        text: text.substring(match.start, match.end),
+        style: highlightStyle,
+      ),
+    );
+    offset = match.end;
+  }
+  if (offset < text.length) {
+    spans.add(TextSpan(text: text.substring(offset)));
+  }
+  return Text.rich(
+    TextSpan(children: spans),
+    key: key,
+    maxLines: maxLines,
+    overflow: TextOverflow.ellipsis,
+  );
+}
+
 class _HermesSessionTile extends StatelessWidget {
   const _HermesSessionTile({
     required this.session,
     required this.active,
     required this.streaming,
     required this.failed,
+    required this.unread,
     required this.canRename,
     required this.canFork,
     required this.canDelete,
@@ -1149,6 +1462,9 @@ class _HermesSessionTile extends StatelessWidget {
     required this.onRename,
     required this.onFork,
     required this.onDelete,
+    required this.pinned,
+    required this.onTogglePinned,
+    required this.highlightQuery,
     this.selectionMode = false,
     this.selected = false,
     this.selectable = true,
@@ -1159,6 +1475,7 @@ class _HermesSessionTile extends StatelessWidget {
   final bool active;
   final bool streaming;
   final bool failed;
+  final bool unread;
   final bool canRename;
   final bool canFork;
   final bool canDelete;
@@ -1170,10 +1487,44 @@ class _HermesSessionTile extends StatelessWidget {
   final ValueChanged<HermesSession> onRename;
   final ValueChanged<HermesSession> onFork;
   final ValueChanged<HermesSession> onDelete;
+  final bool pinned;
+  final ValueChanged<HermesSession> onTogglePinned;
+  final String highlightQuery;
 
   @override
   Widget build(BuildContext context) {
     final strings = _hermesStrings(context);
+    final title = _safeHermesUiPreview(
+      session.title ?? session.id,
+      maxLength: 96,
+    );
+    final preview = session.preview == null
+        ? null
+        : _safeHermesUiPreview(session.preview!, maxLength: 160);
+    final prioritizePreview =
+        preview != null &&
+        _sessionSearchMatches(preview, highlightQuery).isNotEmpty;
+    final subtitle = [
+      if (prioritizePreview) preview,
+      _sessionSourceLabel(context, session.source),
+      if (session.model?.trim().isNotEmpty ?? false)
+        _safeHermesUiPreview(session.model!.trim(), maxLength: 80),
+      strings.chatRailTileMessageCountLabel(session.messageCount),
+      if (unread) strings.chatRailNewReplyLabel,
+      if (streaming)
+        strings.sessionStreamingReply
+      else if (failed)
+        strings.sessionReplyFailed,
+      if (session.parentSessionId != null)
+        strings.chatRailForkedFromLabel(
+          _safeHermesUiPreview(session.parentSessionId!, maxLength: 80),
+        ),
+      if (session.lastActive != null)
+        strings.chatRailLastActiveLabel(
+          _sessionLastActiveLabel(context, session.lastActive!),
+        ),
+      if (!prioritizePreview && preview != null) preview,
+    ].join(' • ');
     return ListTile(
       key: ValueKey('hermes-session-row-${session.id}'),
       selected: selectionMode ? selected : active,
@@ -1199,37 +1550,29 @@ class _HermesSessionTile extends StatelessWidget {
               color: Theme.of(context).colorScheme.error,
               semanticLabel: strings.sessionReplyFailed,
             )
+          : unread
+          ? Icon(
+              Icons.mark_chat_unread_outlined,
+              key: ValueKey('hermes-session-new-reply-${session.id}'),
+              color: Theme.of(context).colorScheme.primary,
+              semanticLabel: strings.chatRailNewReplyLabel,
+            )
           : active
           ? const Icon(Icons.check_circle_outline)
           : const Icon(Icons.chat_bubble_outline),
-      title: Text(
-        _safeHermesUiPreview(session.title ?? session.id, maxLength: 96),
+      title: _sessionSearchText(
+        context,
+        key: ValueKey('hermes-session-title-${session.id}'),
+        text: title,
+        query: highlightQuery,
         maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text(
-        [
-          _sessionSourceLabel(context, session.source),
-          if (session.model?.trim().isNotEmpty ?? false)
-            _safeHermesUiPreview(session.model!.trim(), maxLength: 80),
-          strings.chatRailTileMessageCountLabel(session.messageCount),
-          if (streaming)
-            strings.sessionStreamingReply
-          else if (failed)
-            strings.sessionReplyFailed,
-          if (session.parentSessionId != null)
-            strings.chatRailForkedFromLabel(
-              _safeHermesUiPreview(session.parentSessionId!, maxLength: 80),
-            ),
-          if (session.lastActive != null)
-            strings.chatRailLastActiveLabel(
-              _sessionLastActiveLabel(context, session.lastActive!),
-            ),
-          if (session.preview != null)
-            _safeHermesUiPreview(session.preview!, maxLength: 160),
-        ].join(' • '),
+      subtitle: _sessionSearchText(
+        context,
+        key: ValueKey('hermes-session-subtitle-${session.id}'),
+        text: subtitle,
+        query: highlightQuery,
         maxLines: 2,
-        overflow: TextOverflow.ellipsis,
       ),
       onTap: selectionMode
           ? selectable
@@ -1243,6 +1586,8 @@ class _HermesSessionTile extends StatelessWidget {
               tooltip: strings.chatRailSessionActionsTooltip,
               onSelected: (value) {
                 switch (value) {
+                  case 'pin':
+                    onTogglePinned(session);
                   case 'details':
                     unawaited(_showSessionDetails(context, session, active));
                   case 'copy':
@@ -1271,6 +1616,14 @@ class _HermesSessionTile extends StatelessWidget {
                 }
               },
               itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'pin',
+                  child: Text(
+                    pinned
+                        ? strings.chatRailUnpinSessionAction
+                        : strings.chatRailPinSessionAction,
+                  ),
+                ),
                 PopupMenuItem(
                   value: 'details',
                   child: Text(strings.chatRailViewDetailsAction),

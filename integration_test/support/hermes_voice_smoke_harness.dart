@@ -248,6 +248,9 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> disconnect() async {}
 
   @override
+  void clearActiveSession() {}
+
+  @override
   Future<void> selectSession(String sessionId) async {}
 
   @override

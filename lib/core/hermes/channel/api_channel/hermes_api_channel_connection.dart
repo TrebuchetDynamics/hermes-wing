@@ -29,14 +29,12 @@ extension _ConnectionExtension on HermesApiChannel {
           : null;
       final optionalResourceErrors = <HermesOptionalResource, String>{};
       final detailedHealthFuture = _loadOptional<HermesHealthStatus>(
-        advertised:
-            capabilities.auth.allows('gateway:read') &&
-            capabilities.advertisesScopedEndpoint(
-              'health_detailed',
-              'GET',
-              '/health/detailed',
-              'gateway:read',
-            ),
+        advertised: _capabilityEndpointAuthorized(
+          capabilities,
+          'health_detailed',
+          'GET',
+          '/health/detailed',
+        ),
         resource: HermesOptionalResource.detailedHealth,
         load: client.healthDetailed,
         errors: optionalResourceErrors,

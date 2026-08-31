@@ -163,14 +163,18 @@ async function submitComposer(page, text) {
 
 async function sendChat(page, text, { testInfo, screenshotPrefix } = {}) {
   await submitComposer(page, text);
-  await expect(page.getByText(text).first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: text, exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Approve once" }),
   ).toBeVisible();
   if (testInfo)
     await screenshot(page, testInfo, `${screenshotPrefix}-approval`);
   await page.getByRole("button", { name: "Approve once" }).click();
-  await expect(page.getByText(`Hermes echo: ${text}`).first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: `Hermes echo: ${text}`, exact: true }),
+  ).toBeVisible();
   if (testInfo) await screenshot(page, testInfo, `${screenshotPrefix}-reply`);
 }
 
@@ -182,8 +186,9 @@ async function expectVoiceInputAvailable(page) {
     name: "Hands-free voice",
   });
   await expect
-    .poll(async () =>
-      (await legacyDirectControl.count()) + (await handsFreeControl.count()),
+    .poll(
+      async () =>
+        (await legacyDirectControl.count()) + (await handsFreeControl.count()),
     )
     .toBeGreaterThan(0);
   if (await handsFreeControl.count()) {
@@ -396,8 +401,9 @@ test("Agent speech failure is bounded and recoverable", async ({
     testInfo,
     screenshotPrefix: "tts-failure",
   });
+  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText("Could not speak Hermes reply.").last(),
+    page.getByText(/The reply is available as text/).last(),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
@@ -418,9 +424,7 @@ test("Agent speech failure is bounded and recoverable", async ({
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
     .toBe(1);
-  const recoveredAudioState = await page.request.get(
-    `${APP}e2e/hermes/audio`,
-  );
+  const recoveredAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
   expect((await recoveredAudioState.json()).spokenTexts).toHaveLength(2);
   await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
@@ -466,9 +470,7 @@ test("Agent speech is cancelled when leaving chat", async ({
     testInfo,
     screenshotPrefix: "silent-after-navigation",
   });
-  const navigationAudioState = await page.request.get(
-    `${APP}e2e/hermes/audio`,
-  );
+  const navigationAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
   expect((await navigationAudioState.json()).spokenTexts).toHaveLength(1);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
@@ -505,7 +507,10 @@ test("approval review exposes bounded details before chat continues", async ({
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
-    page.getByText("Hermes echo: review approval browser turn").first(),
+    page.getByRole("group", {
+      name: "Hermes echo: review approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Hermes could not record the approval decision."),
@@ -528,7 +533,10 @@ test("a delayed mobile approval remains actionable until the operator decides", 
 
   await page.waitForTimeout(1800);
   await expect(
-    page.getByText("Hermes echo: delayed mobile approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: delayed mobile approval browser turn",
+      exact: true,
+    }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Review" }).click();
   await expect(page.getByText("Review Hermes approval")).toBeVisible();
@@ -540,7 +548,10 @@ test("a delayed mobile approval remains actionable until the operator decides", 
 
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
-    page.getByText("Hermes echo: delayed mobile approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: delayed mobile approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Hermes could not record the approval decision."),
@@ -567,7 +578,10 @@ test("a compact phone can scroll every approval action into reach", async ({
   await screenshot(page, testInfo, "compact-approval-actions-reachable");
   await approve.click();
   await expect(
-    page.getByText("Hermes echo: compact approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: compact approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await screenshot(page, testInfo, "compact-approval-completed");
 });
@@ -586,7 +600,10 @@ test("denying an approval stays silent and returns chat to a usable state", asyn
     0,
   );
   await expect(
-    page.getByText("Hermes echo: denied spoken browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: denied spoken browser turn",
+      exact: true,
+    }),
   ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: /Tool activity: bash/ }),
@@ -686,9 +703,7 @@ test("Agent speech stops when starting a new session", async ({
   await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("Agent speech preference survives reload", async ({
-  page,
-}, testInfo) => {
+test("Agent speech preference survives reload", async ({ page }, testInfo) => {
   await installAgentAudioRecorder(page);
   await page.request.post(`${APP}e2e/hermes/audio`, {
     data: { enabled: true },
@@ -790,8 +805,9 @@ test("asynchronous Agent playback errors recover", async ({
   ).toBeVisible();
 
   await page.evaluate(() => globalThis.wingE2EAgentAudio.fail());
+  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText("Could not speak Hermes reply.").last(),
+    page.getByText(/The reply is available as text/).last(),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "async-speech-failure-notice");
@@ -807,9 +823,7 @@ test("asynchronous Agent playback errors recover", async ({
   await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("Agent speech stops on disconnect", async ({
-  page,
-}, testInfo) => {
+test("Agent speech stops on disconnect", async ({ page }, testInfo) => {
   await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "disconnect active speech browser turn", {

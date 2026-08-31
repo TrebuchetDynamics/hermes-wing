@@ -1,9 +1,15 @@
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_health.dart';
+import 'package:wing/core/hermes/models/hermes_model_assignment.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/models/hermes_run.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -78,6 +84,613 @@ Widget _routerTestApp(FakeHermesChannel channel) {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('composer model chip opens the profile model picker', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: HermesCapabilityDocument.fromJson(const {
+        'schema_version': 1,
+        'profile_context': {
+          'type': 'query',
+          'name': 'profile',
+          'required': true,
+          'default_profile_id': 'default',
+        },
+        'auth': {
+          'type': 'bearer',
+          'required': true,
+          'granted_scopes': ['models:read', 'models:write'],
+        },
+        'endpoints': {
+          'models': {
+            'method': 'GET',
+            'path': '/api/models',
+            'required_scopes': ['models:read'],
+          },
+          'models_assignment': {
+            'method': 'PUT',
+            'path': '/api/models/assignment',
+            'required_scopes': ['models:write'],
+          },
+        },
+      }),
+      modelInventory: HermesModelInventory(
+        catalog: HermesModelCatalog.fromJson(const {
+          'providers': {
+            'openai': {
+              'models': [
+                {'id': 'gpt-5', 'description': 'Flagship'},
+              ],
+            },
+          },
+        }),
+        assignment: const HermesModelAssignment(
+          activeProvider: 'openai',
+          activeModel: 'gpt-5',
+          revision: 'models-rev-1',
+        ),
+      ),
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hermes-composer-model-chip')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Select model'), findsOneWidget);
+    expect(find.text('gpt-5'), findsWidgets);
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+
+    expect(channel.assignModelCalls.single, {
+      'scope': 'main',
+      'task': null,
+      'provider': 'openai',
+      'model': 'gpt-5',
+      'revision': 'models-rev-1',
+    });
+  });
+
+  testWidgets(
+    'composer model chip stays disabled without model assignment capability',
+    (tester) async {
+      final channel = FakeHermesChannel(models: const ['gpt-5']);
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+
+      final chip = tester.widget<ActionChip>(
+        find.byKey(const ValueKey('hermes-composer-model-chip')),
+      );
+      expect(chip.onPressed, isNull);
+      expect(find.text('Select model'), findsNothing);
+      expect(channel.assignModelCalls, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'desktop keyboard wraps, selects, and executes a slash suggestion without sending',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final semantics = tester.ensureSemantics();
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_routerTestApp(channel));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        '/set',
+      );
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pump();
+
+      final selected = tester.getSemantics(
+        find.byKey(const ValueKey('hermes-local-command-tools')),
+      );
+      expect(selected.flagsCollection.isSelected, Tristate.isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tools destination'), findsOneWidget);
+      expect(
+        channel.state.activeMessages.where((turn) => turn.text == '/set'),
+        isEmpty,
+      );
+      semantics.dispose();
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
+
+  testWidgets('desktop keyboard keeps the selected slash command visible', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/',
+    );
+    await tester.pump();
+    final suggestions = find.byKey(
+      const ValueKey('hermes-local-command-suggestions'),
+    );
+    final verticalScrollable = find.descendant(
+      of: suggestions,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
+    );
+    expect(verticalScrollable, findsOneWidget);
+    final position = tester.state<ScrollableState>(verticalScrollable).position;
+    expect(position.pixels, 0);
+
+    for (var index = 0; index < 8; index++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+    }
+
+    expect(position.pixels, greaterThan(0));
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop keyboard reveals a slash selection that wraps upward', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/',
+    );
+    await tester.pump();
+    final verticalScrollable = find.descendant(
+      of: find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
+    );
+    final position = tester.state<ScrollableState>(verticalScrollable).position;
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pump();
+
+    expect(position.pixels, greaterThan(0));
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('Tab executes the selected desktop slash suggestion', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_routerTestApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/sett',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-settings')),
+      findsOneWidget,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Settings destination'), findsOneWidget);
+    expect(
+      channel.state.activeMessages.where((turn) => turn.text == '/sett'),
+      isEmpty,
+    );
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop slash suggestions advertise keyboard controls', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/s',
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-keyboard-hints')),
+      findsOneWidget,
+    );
+    expect(
+      find.text('↑↓ navigate  •  Enter select  •  Tab complete'),
+      findsOneWidget,
+    );
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('slash suggestions match a command-name substring', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/ett',
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-settings')),
+      findsOneWidget,
+    );
+    expect(channel.state.activeMessages, isEmpty);
+  });
+
+  testWidgets('slash suggestions search descriptions after name prefixes', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/set',
+    );
+    await tester.pump();
+
+    final settings = find.byKey(
+      const ValueKey('hermes-local-command-settings'),
+    );
+    final tools = find.byKey(const ValueKey('hermes-local-command-tools'));
+    expect(settings, findsOneWidget);
+    expect(tools, findsOneWidget);
+    expect(
+      tester.getTopLeft(settings).dy,
+      lessThan(tester.getTopLeft(tools).dy),
+    );
+  });
+
+  testWidgets('desktop Enter sends the composer draft', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.enterText(composer, 'send from keyboard');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+
+    expect(
+      channel.state.activeMessages.where(
+        (turn) => turn.text == 'send from keyboard',
+      ),
+      hasLength(1),
+    );
+    expect(tester.widget<TextField>(composer).controller?.text, isEmpty);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop Shift+Enter keeps a multiline draft', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.enterText(composer, 'first line');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pump();
+
+    expect(channel.state.activeMessages, isEmpty);
+    expect(tester.widget<TextField>(composer).controller?.text, 'first line\n');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop Enter waits for IME composition to finish', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    final controller = tester.widget<TextField>(composer).controller!;
+    controller.value = const TextEditingValue(
+      text: 'に',
+      selection: TextSelection.collapsed(offset: 1),
+      composing: TextRange(start: 0, end: 1),
+    );
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+
+    expect(channel.state.activeMessages, isEmpty);
+    expect(controller.text, 'に');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('soft keyboard submit waits for IME composition to finish', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.tap(composer);
+    await tester.pump();
+    final controller = tester.widget<TextField>(composer).controller!;
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '안녕하세',
+        selection: TextSelection.collapsed(offset: 4),
+        composing: TextRange(start: 0, end: 4),
+      ),
+    );
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(channel.state.activeMessages, isEmpty);
+    expect(controller.text, '안녕하세');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('soft keyboard submits full text after composition ends', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.tap(composer);
+    await tester.pump();
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '안녕하세',
+        selection: TextSelection.collapsed(offset: 4),
+        composing: TextRange(start: 0, end: 4),
+      ),
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.tap(composer);
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '안녕하세요',
+        selection: TextSelection.collapsed(offset: 5),
+      ),
+    );
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(
+      channel.state.activeMessages.where((turn) => turn.text == '안녕하세요'),
+      hasLength(1),
+    );
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('composer enables an available native spellchecker by default', (
+    tester,
+  ) async {
+    tester.platformDispatcher.nativeSpellCheckServiceDefinedTestValue = true;
+    addTearDown(tester.platformDispatcher.clearNativeSpellCheckServiceDefined);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(composer.spellCheckConfiguration?.spellCheckEnabled, isTrue);
+  });
+
+  testWidgets('stored preference disables composer spellcheck', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'wing.chat.spellcheck_enabled': false,
+    });
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(
+      composer.spellCheckConfiguration,
+      const SpellCheckConfiguration.disabled(),
+    );
+  });
+
+  testWidgets('desktop prompt history restores the unfinished draft', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.enterText(composer, 'first prompt');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(composer, 'unfinished draft');
+    expect(
+      tester.widget<TextField>(composer).controller?.text,
+      'unfinished draft',
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pump();
+    expect(tester.widget<TextField>(composer).controller?.text, 'first prompt');
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(composer).controller?.text,
+      'unfinished draft',
+    );
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('Escape dismisses slash suggestions without clearing the draft', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/s',
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      findsOneWidget,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      findsNothing,
+    );
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(field.controller?.text, '/s');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('Escape dismisses slash suggestions after composer focus moves', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      '/s',
+    );
+    await tester.pump();
+    composer.focusNode!.unfocus();
+    await tester.pump();
+    expect(composer.focusNode!.hasFocus, isFalse);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      findsNothing,
+    );
+    expect(composer.controller?.text, '/s');
+    expect(composer.focusNode!.hasFocus, isTrue);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('Escape closes a dialog before slash suggestions', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final composerFinder = find.byKey(const ValueKey('hermes-composer-field'));
+    final composer = tester.widget<TextField>(composerFinder);
+    await tester.enterText(composerFinder, '/s');
+    await tester.pump();
+    composer.focusNode!.unfocus();
+    await tester.pump();
+    final dialogResult = showDialog<void>(
+      context: tester.element(composerFinder),
+      builder: (_) => const AlertDialog(title: Text('Keyboard dialog')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    await dialogResult;
+
+    expect(find.text('Keyboard dialog'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      findsOneWidget,
+    );
+    expect(composer.controller?.text, '/s');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
   testWidgets('slash suggestions execute the local new-session command', (
     tester,
   ) async {
@@ -94,7 +707,7 @@ void main() {
 
     expect(find.text('Wing commands'), findsOneWidget);
     expect(find.text('/new'), findsOneWidget);
-    expect(find.text('/sessions'), findsNothing);
+    expect(find.text('/sessions'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('hermes-local-command-new')));
     await tester.pumpAndSettle();
@@ -171,7 +784,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('/sessions'), findsOneWidget);
     expect(find.text('/settings'), findsOneWidget);
-    expect(find.text('/new'), findsNothing);
+    expect(find.text('/new'), findsOneWidget);
   });
 
   testWidgets('exact local clear command never reaches Hermes', (tester) async {
@@ -644,7 +1257,12 @@ void main() {
     await tester.pump();
 
     expect(
-      find.text('Token usage: 12 input, 7 output, 19 total'),
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.text(
+          'Latest Hermes run · 12 input · 7 output · 19 total',
+        ),
+      ),
       findsOneWidget,
     );
     expect(
@@ -670,7 +1288,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(
-      find.text('No server-reported token usage is available yet.'),
+      find.text('No server-reported Hermes run usage is available yet.'),
       findsOneWidget,
     );
     expect(channel.state.activeMessages, isEmpty);
@@ -696,10 +1314,211 @@ void main() {
     await tester.pump();
 
     expect(channel.createSessionCalls, isEmpty);
+    final queue = find.byKey(const ValueKey('hermes-queued-follow-up'));
+    expect(queue, findsOneWidget);
+
+    channel.setCapabilities(
+      HermesCapabilityDocument.fromJson({
+        'schema_version': 1,
+        'auth': {'type': 'none', 'required': false},
+        'features': <String, Object?>{},
+        'endpoints': <String, Object?>{},
+      }),
+    );
+    await tester.pump();
+
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
     expect(
-      find.byKey(const ValueKey('hermes-queued-follow-up')),
+      find.text(
+        '${strings.chatQueuedSummary(1, '/new')} '
+        '${strings.chatQueuedWaitingForTransport}',
+      ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('operator can cancel one queued follow-up', (tester) async {
+    final channel = FakeHermesChannel()..beginStreamingTurn('Running work');
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pump();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    final send = find.byKey(const ValueKey('hermes-send-button'));
+    for (final text in ['First follow-up', 'Second follow-up']) {
+      await tester.enterText(composer, text);
+      await tester.pump();
+      await tester.tap(send);
+      await tester.pump();
+    }
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-manage')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    expect(find.text(strings.chatQueuedManageTitle(2)), findsOneWidget);
+    expect(find.text('First follow-up'), findsOneWidget);
+    expect(find.text('Second follow-up'), findsOneWidget);
+    final removeFirst = find.byKey(
+      const ValueKey('hermes-queued-follow-up-remove-0'),
+    );
+    final removeLabel = tester.getSemantics(removeFirst).label;
+    expect(removeLabel, contains('First follow-up'));
+    expect(removeLabel, contains(strings.chatQueuedCancelOneAction));
+
+    await tester.tap(removeFirst);
+    await tester.pump();
+
+    expect(find.text('First follow-up'), findsNothing);
+    expect(find.text('Second follow-up'), findsOneWidget);
+    expect(find.text(strings.chatQueuedManageTitle(1)), findsOneWidget);
+  });
+
+  testWidgets('queue manager stays usable at 200% text on a narrow phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel()..beginStreamingTurn('Running work');
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel, textScale: 2));
+    await tester.pump();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.tap(composer);
+    for (var index = 0; index < 5; index++) {
+      await tester.enterText(
+        composer,
+        'Queued follow-up $index with a long readable preview',
+      );
+      await tester.pump();
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+    }
+    expect(tester.takeException(), isNull);
+    final moreActions = find.byKey(
+      const ValueKey('hermes-queued-follow-up-more-actions'),
+    );
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    expect(
+      tester.getSemantics(moreActions).label,
+      contains(strings.chatQueuedMoreActions),
+    );
+
+    await tester.tap(moreActions);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(strings.chatLayoutCopyAction), findsOneWidget);
+    expect(find.text(strings.chatLayoutCancelAllAction), findsOneWidget);
+    final sendNowItem = tester.widget<PopupMenuItem<dynamic>>(
+      find.ancestor(
+        of: find.text(strings.chatLayoutSendNowAction),
+        matching: find.byWidgetPredicate((widget) => widget is PopupMenuItem),
+      ),
+    );
+    expect(sendNowItem.enabled, isFalse);
+
+    await tester.tap(find.text(strings.chatLayoutCopyAction));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(strings.chatLayoutFollowUpsCopiedBody), findsOneWidget);
+
+    await tester.tap(moreActions);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text(strings.chatLayoutCancelAllAction));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.byKey(const ValueKey('hermes-queued-follow-up-clear-dialog')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-clear-keep')),
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-queued-follow-up-manage')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final dialog = find.byKey(
+      const ValueKey('hermes-queued-follow-up-manage-dialog'),
+    );
+    expect(dialog, findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final removeLast = find.byKey(
+      const ValueKey('hermes-queued-follow-up-remove-4'),
+    );
+    final queueList = find.descendant(
+      of: dialog,
+      matching: find.byType(Scrollable),
+    );
+    await tester.drag(queueList, const Offset(0, -240));
+    await tester.pump();
+    await tester.tap(removeLast);
+    await tester.pump();
+
+    expect(find.text(strings.chatQueuedManageTitle(4)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('full follow-up queue announces localized guidance', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel()..beginStreamingTurn('Running work');
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pump();
+
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    final send = find.byKey(const ValueKey('hermes-send-button'));
+    for (var index = 0; index < 6; index++) {
+      final text = index == 0
+          ? 'Follow-up 0 token=secret-sentinel'
+          : 'Follow-up $index';
+      await tester.enterText(composer, text);
+      await tester.pump();
+      await tester.tap(send);
+      await tester.pump();
+    }
+
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    final queue = find.byKey(const ValueKey('hermes-queued-follow-up'));
+    final queueText = tester.widget<Text>(
+      find.descendant(of: queue, matching: find.byType(Text)).first,
+    );
+    expect(
+      queueText.data,
+      '${strings.chatQueuedSummary(5, 'Follow-up 0 token=[redacted] • Follow-up 1')} '
+      '• ${strings.chatQueuedMore(3)}',
+    );
+    expect(queueText.data, isNot(contains('secret-sentinel')));
+    final error = find.byKey(const ValueKey('hermes-queued-follow-up-error'));
+    expect(error, findsOneWidget);
+    final semantics = tester.getSemantics(error);
+    expect(semantics.label, strings.chatQueuedFullError(5));
+    expect(semantics.flagsCollection.isLiveRegion, isTrue);
   });
 
   testWidgets('unknown slash commands remain server-owned messages', (

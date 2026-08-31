@@ -27,6 +27,30 @@ void main() {
     },
   );
 
+  test('completion sound defaults off and persists opt-in', () async {
+    SharedPreferences.setMockInitialValues({});
+    final firstContainer = ProviderContainer();
+    final controller = firstContainer.read(wingVoiceSettingsProvider.notifier);
+    await pumpEventQueue();
+
+    expect(
+      firstContainer.read(wingVoiceSettingsProvider).completionSoundEnabled,
+      isFalse,
+    );
+    controller.setCompletionSoundEnabled(true);
+    await pumpEventQueue();
+    firstContainer.dispose();
+
+    final secondContainer = ProviderContainer();
+    addTearDown(secondContainer.dispose);
+    secondContainer.read(wingVoiceSettingsProvider.notifier);
+    await pumpEventQueue();
+    expect(
+      secondContainer.read(wingVoiceSettingsProvider).completionSoundEnabled,
+      isTrue,
+    );
+  });
+
   test('command phrases are normalized and persisted', () async {
     SharedPreferences.setMockInitialValues({});
     final container = ProviderContainer();

@@ -68,7 +68,9 @@ test("scoped approval confirmations can be cancelled before they are committed",
   await page.getByRole("button", { name: "Allow for session" }).click();
   await page.getByRole("button", { name: "Allow for session" }).click();
   await expect(
-    page.getByText("Hermes echo: session approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: session approval browser turn",
+    }),
   ).toBeVisible();
   await screenshot(page, testInfo, "session-approval-completed");
 
@@ -87,7 +89,9 @@ test("scoped approval confirmations can be cancelled before they are committed",
   await page.getByRole("button", { name: "Always allow" }).click();
   await page.getByRole("button", { name: "Always allow" }).click();
   await expect(
-    page.getByText("Hermes echo: always approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: always approval browser turn",
+    }),
   ).toBeVisible();
   await expect
     .poll(

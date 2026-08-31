@@ -11,7 +11,7 @@ import 'inline_transcript_image_safety.dart';
 
 typedef HermesUriLauncher = Future<bool> Function(Uri uri);
 
-/// Selectable GitHub-flavored Markdown used for Hermes-authored transcript text.
+/// Safe GitHub-flavored Markdown used for user and Hermes transcript text.
 class HermesRichText extends StatelessWidget {
   const HermesRichText(
     this.data, {

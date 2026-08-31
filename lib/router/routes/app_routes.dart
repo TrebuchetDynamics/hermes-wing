@@ -19,7 +19,7 @@ abstract final class AppRoutes {
   /// authenticated shell since no endpoint is configured yet.
   static const enroll = '/enroll';
 
-  /// Linux-only local Hermes detection, installation, and adoption flow.
+  /// Platform-specific local Hermes setup flow for Linux or Android/Termux.
   static const localSetup = '/setup/local';
 
   static bool isHermesLocation(String location) {

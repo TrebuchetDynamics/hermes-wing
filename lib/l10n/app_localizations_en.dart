@@ -124,6 +124,40 @@ class AppLocalizationsEn extends AppLocalizations {
       'Management only — this Hermes endpoint does not advertise profile chat context.';
 
   @override
+  String get profileBrowseFoldersAction => 'Browse folders';
+
+  @override
+  String get directoryBrowserTitle => 'Approved folders';
+
+  @override
+  String get directoryBrowserLoading => 'Loading approved folders';
+
+  @override
+  String get directoryBrowserEmptyTitle => 'No approved folders';
+
+  @override
+  String get directoryBrowserEmptyBody =>
+      'Approve a root on the host with: wing-link directories grant PATH';
+
+  @override
+  String get directoryBrowserError =>
+      'Approved folders are unavailable. Refresh the host grants and try again.';
+
+  @override
+  String get directoryBrowserUnavailable =>
+      'Folder browsing is unavailable for this Wing Link device. Update Wing Link or pair again with directory access.';
+
+  @override
+  String get directoryBrowserBackAction => 'Back';
+
+  @override
+  String get directoryBrowserLoadMoreAction => 'Load more';
+
+  @override
+  String get directoryBrowserProjectUnavailable =>
+      'Folder browsing is available, but Project creation remains unavailable until Hermes Agent advertises a compatible Project API.';
+
+  @override
   String chatWithNamedAgent(String name) {
     return 'Chat with $name';
   }
@@ -1062,6 +1096,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localCommandsTitle => 'Wing commands';
 
   @override
+  String get localCommandsKeyboardHint =>
+      '↑↓ navigate  •  Enter select  •  Tab complete';
+
+  @override
   String get localCommandsHelpTitle => 'Wing commands';
 
   @override
@@ -1154,15 +1192,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localCommandUsageDescription =>
-      'Show token usage for the latest reply.';
+      'Show server-reported usage for the latest Hermes run.';
 
   @override
   String get noRunTokenUsageMessage =>
-      'No server-reported token usage is available yet.';
+      'No server-reported Hermes run usage is available yet.';
 
   @override
   String runTokenUsage(int inputTokens, int outputTokens, int totalTokens) {
-    return '$inputTokens in · $outputTokens out · $totalTokens total tokens';
+    return 'Latest Hermes run · $inputTokens input · $outputTokens output · $totalTokens total';
   }
 
   @override
@@ -1171,7 +1209,7 @@ class AppLocalizationsEn extends AppLocalizations {
     int outputTokens,
     int totalTokens,
   ) {
-    return 'Usage: $inputTokens input · $outputTokens output · $totalTokens total tokens';
+    return 'Latest Hermes run usage: $inputTokens input · $outputTokens output · $totalTokens total tokens';
   }
 
   @override
@@ -1180,8 +1218,12 @@ class AppLocalizationsEn extends AppLocalizations {
     int outputTokens,
     int totalTokens,
   ) {
-    return 'Token usage: $inputTokens input, $outputTokens output, $totalTokens total';
+    return 'Latest Hermes run token usage: $inputTokens input, $outputTokens output, $totalTokens total. Input can include instructions, conversation context, and tool results; this is not a billing estimate.';
   }
+
+  @override
+  String get runTokenUsageTooltip =>
+      'Latest server-reported Hermes run. Input may include instructions, conversation context, and tool results. This is not a billing estimate.';
 
   @override
   String get auxiliaryTaskVision => 'Vision';
@@ -1360,6 +1402,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceSpeakRepliesSubtitle =>
       'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off';
+
+  @override
+  String get voiceCompletionSoundTitle => 'Response completion sound';
+
+  @override
+  String get voiceCompletionSoundSubtitle =>
+      'Play a device alert when a Hermes reply finishes';
 
   @override
   String get voiceAdvancedSection => 'Advanced';
@@ -1678,6 +1727,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayContactsConnectAction => 'Add gateway or profile';
 
   @override
+  String get chatGroupsNewAction => 'New group';
+
+  @override
+  String get chatGroupsNewTitle => 'New group';
+
+  @override
+  String get chatGroupsRenameTitle => 'Rename group';
+
+  @override
+  String get chatGroupsRenameAction => 'Rename';
+
+  @override
+  String get chatGroupsDeleteAction => 'Delete';
+
+  @override
+  String get chatGroupsNameLabel => 'Group name';
+
+  @override
+  String get chatGroupsUngrouped => 'Ungrouped';
+
+  @override
+  String get chatGroupsMoveAction => 'Move to group';
+
+  @override
   String chatQueuedCancelTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1694,14 +1767,73 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String chatQueuedSummary(int count, String preview) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Queued $count follow-ups after current reply: $preview',
+      one: 'Queued $count follow-up after current reply: $preview',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatQueuedWaitingForTransport =>
+      'Waiting for a supported Hermes chat transport.';
+
+  @override
+  String get chatQueuedWaitingForOriginalSession =>
+      'Waiting for the original session.';
+
+  @override
   String get chatQueuedRedactedNote =>
       'Queued text is redacted and bounded in this confirmation.';
+
+  @override
+  String chatQueuedAttachmentPreview(String name) {
+    return 'Attachment: $name';
+  }
 
   @override
   String get chatQueuedKeepAction => 'Keep';
 
   @override
   String get chatQueuedCancelAllAction => 'Cancel all';
+
+  @override
+  String get chatQueuedManageAction => 'Manage';
+
+  @override
+  String get chatQueuedMoreActions => 'More queued follow-up actions';
+
+  @override
+  String chatQueuedManageTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count queued follow-ups',
+      one: '$count queued follow-up',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatQueuedCancelOneAction => 'Cancel queued follow-up';
+
+  @override
+  String chatQueuedFullError(int count) {
+    return 'Queued follow-ups are full ($count). Wait for Hermes to finish before adding more.';
+  }
+
+  @override
+  String chatQueuedOpenSessionError(String message) {
+    return 'Could not open queued follow-up session: $message';
+  }
+
+  @override
+  String chatQueuedSendError(String message) {
+    return 'Could not send queued follow-up: $message';
+  }
 
   @override
   String get chatConnectionRenameProfileTitle => 'Rename Hermes profile';
@@ -1861,16 +1993,105 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatTranscriptCopyAction => 'Copy';
 
   @override
+  String get chatTranscriptReadAloudAction => 'Read aloud';
+
+  @override
+  String get chatTranscriptReadingAloudLabel => 'Reading aloud';
+
+  @override
+  String get chatTranscriptStopReadAloudAction => 'Stop reading aloud';
+
+  @override
   String get chatTranscriptMessageCopiedLabel => 'Message copied';
 
   @override
-  String get chatTranscriptToolStatusNeedsAttentionLabel => 'Needs attention';
+  String chatTranscriptFullTimestamp(String date, String time) {
+    return '$date, $time';
+  }
 
   @override
-  String get chatTranscriptToolStatusRunningLabel => 'Running';
+  String get chatTranscriptTimestampJustNow => 'Just now';
 
   @override
-  String get chatTranscriptToolStatusCompletedLabel => 'Completed';
+  String chatTranscriptTimestampMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatTranscriptTimestampHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chatTranscriptTimestampDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatTranscriptToolStatusNeedsAttentionLabel =>
+      'Host action needs attention';
+
+  @override
+  String get chatTranscriptToolStatusRunningLabel => 'Working on Hermes host';
+
+  @override
+  String get chatTranscriptToolStatusCompletedLabel =>
+      'Completed on Hermes host';
+
+  @override
+  String get chatTranscriptHostActivityTitle => 'Hermes host activity';
+
+  @override
+  String get chatTranscriptToolCategoryWeb => 'Web activity';
+
+  @override
+  String get chatTranscriptToolCategoryBrowser => 'Browser activity';
+
+  @override
+  String get chatTranscriptToolCategoryFiles => 'File activity';
+
+  @override
+  String get chatTranscriptToolCategoryCode => 'Code activity';
+
+  @override
+  String get chatTranscriptToolCategoryVoice => 'Voice activity';
+
+  @override
+  String get chatTranscriptToolCategoryMemory => 'Memory activity';
+
+  @override
+  String get chatTranscriptToolCategoryDelegation => 'Delegated activity';
+
+  @override
+  String get chatTranscriptToolCategorySchedule => 'Scheduled activity';
+
+  @override
+  String chatTranscriptHostActivityCountTitle(int count) {
+    return 'Hermes host activity · $count steps';
+  }
+
+  @override
+  String chatTranscriptHostStepTitle(int step) {
+    return 'Host step $step';
+  }
 
   @override
   String chatTranscriptToolActivitySingleTitle(String name) {
@@ -2112,6 +2333,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutModelFallbackLabel => 'Hermes model';
 
   @override
+  String get chatComposerModelPickerTooltip => 'Choose profile model';
+
+  @override
+  String get chatComposerModelsLoadFailed =>
+      'Models could not be loaded from Hermes.';
+
+  @override
   String get chatLayoutTransportUnavailableBody =>
       'Hermes did not advertise a supported chat transport for this endpoint.';
 
@@ -2146,6 +2374,101 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutVoiceReadyLabel => 'Voice ready';
 
   @override
+  String get chatVoiceCaptureTimedOut => 'Voice capture timed out.';
+
+  @override
+  String get chatVoiceMicrophonePermissionDenied =>
+      'Microphone permission denied. Grant microphone access in system settings, then return to Hermes Wing.';
+
+  @override
+  String get chatVoiceDeviceLanguageUnavailable =>
+      'Device speech recognition has no offline language for this device locale. Install that language\'s offline speech data in Android settings, then return to Hermes Wing.';
+
+  @override
+  String get chatVoiceDeviceSpeechUnavailable =>
+      'Device speech recognition is unavailable. Install or enable device speech recognition, then return to Hermes Wing.';
+
+  @override
+  String get chatVoiceNoSpeechDetected =>
+      'No speech was recognized. Tap Speak, wait for Listening, then speak clearly and close to the microphone.';
+
+  @override
+  String chatVoiceCaptureFailed(String detail) {
+    return 'Voice capture failed: $detail';
+  }
+
+  @override
+  String get chatVoiceCaptureFailedFallback => 'Voice capture failed.';
+
+  @override
+  String get chatVoiceCaptureSessionChanged =>
+      'Voice capture was discarded because the Hermes session changed.';
+
+  @override
+  String get chatVoiceInputUnavailable => 'Voice input is not available here.';
+
+  @override
+  String chatVoiceTurnSendFailed(String detail) {
+    return 'Voice turn could not be sent: $detail';
+  }
+
+  @override
+  String get chatVoiceTurnSendFailedFallback => 'Voice turn could not be sent.';
+
+  @override
+  String get chatVoiceShutdownTimedOut =>
+      'Voice shutdown timed out. Continuous voice paused.';
+
+  @override
+  String get chatVoiceShutdownFailed =>
+      'Voice shutdown failed. Continuous voice paused.';
+
+  @override
+  String get chatVoicePlaybackUnavailable =>
+      'Voice playback is unavailable for this connection. The reply is available as text. Voice input remains available from the microphone.';
+
+  @override
+  String get chatVoicePlaybackUnavailableContinuous =>
+      'Voice playback is unavailable for this connection. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.';
+
+  @override
+  String get chatVoicePlaybackFailed =>
+      'Voice playback failed. The reply is available as text. Voice input remains available from the microphone.';
+
+  @override
+  String get chatVoicePlaybackFailedContinuous =>
+      'Voice playback failed. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.';
+
+  @override
+  String get chatVoicePlaybackSessionChanged =>
+      'Hermes session changed before the spoken reply finished.';
+
+  @override
+  String get chatVoicePlaybackSessionChangedContinuous =>
+      'Hermes session changed before voice could re-arm. Continuous voice paused.';
+
+  @override
+  String get chatVoicePausedByLocalCommand =>
+      'Continuous voice paused by local command.';
+
+  @override
+  String get chatVoiceSessionChangedContinuous =>
+      'Hermes session changed. Continuous voice paused.';
+
+  @override
+  String get chatVoiceSessionChangedSpeaking =>
+      'Hermes session changed. Spoken reply stopped.';
+
+  @override
+  String get chatVoiceSessionChangedCapturing =>
+      'Hermes session changed. Voice capture stopped.';
+
+  @override
+  String chatVoiceContinuousPaused(String message) {
+    return '$message Continuous voice paused.';
+  }
+
+  @override
   String get chatLayoutComposerSpeakingHint => 'Speaking reply…';
 
   @override
@@ -2157,6 +2480,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatLayoutComposerTransportUnavailableHint =>
       'Chat transport unavailable';
+
+  @override
+  String get chatLayoutComposerRunRecoveryHint =>
+      'Reconnect to reconcile the active run…';
 
   @override
   String get chatLayoutChatMenuTooltip => 'Chat menu';
@@ -2203,13 +2530,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutAttachFileTooltip => 'Attach image or text file';
 
   @override
+  String get chatAttachmentRemoveCurrentError =>
+      'Remove the current attachment before adding another.';
+
+  @override
+  String get chatAttachmentInsertedImageReadError =>
+      'Could not read the inserted image.';
+
+  @override
+  String get chatAttachmentImageSizeError => 'Images must be 10 MB or smaller.';
+
+  @override
+  String get chatAttachmentPastedImageTypeError =>
+      'Hermes accepts pasted PNG, JPEG, GIF, and WebP images.';
+
+  @override
+  String get chatAttachmentTextSizeError =>
+      'Text files must be 256 KB or smaller.';
+
+  @override
+  String get chatAttachmentUnsupportedTypeError =>
+      'Hermes accepts PNG, JPEG, GIF, WebP, and UTF-8 text files; PDFs, binary files, and videos cannot be sent.';
+
+  @override
+  String get chatAttachmentInvalidUtf8Error =>
+      'Text attachments must contain valid UTF-8.';
+
+  @override
+  String chatAttachmentOpenError(String error) {
+    return 'Could not open attachment: $error';
+  }
+
+  @override
   String get chatLayoutStopSpeakingTooltip => 'Stop speaking';
 
   @override
-  String get chatLayoutSpeakAndSendTooltip => 'Speak and send';
+  String get chatLayoutSpeakAndSendTooltip => 'Start hands-free voice';
 
   @override
   String get chatLayoutSendTooltip => 'Send';
+
+  @override
+  String get chatLayoutVoiceOutputUnavailableTitle =>
+      'Voice output unavailable';
+
+  @override
+  String get chatLayoutVoiceOutputUnavailableBody =>
+      'The reply is available as text. Voice playback stopped, and hands-free listening is off. Voice input remains available from the microphone.';
+
+  @override
+  String get chatLayoutContinueInTextAction => 'Continue in text';
+
+  @override
+  String get chatLocalArtifactUndeliveredTitle =>
+      'Not delivered to this device';
+
+  @override
+  String get chatLocalAudioArtifactUndeliveredBody =>
+      'A tool created audio on the Hermes host, but Wing did not receive a playable audio attachment. Use the text reply instead.';
+
+  @override
+  String get chatLocalMediaArtifactUndeliveredBody =>
+      'Hermes referenced media on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.';
+
+  @override
+  String get chatLocalFileArtifactUndeliveredBody =>
+      'Hermes created a file on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.';
 
   @override
   String get chatShellVoicePausedBackgroundBody =>
@@ -2538,6 +2924,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRailSessionsTitle => 'Sessions';
 
   @override
+  String get chatRailPinnedGroupLabel => 'Pinned';
+
+  @override
+  String get chatRailPinSessionAction => 'Pin';
+
+  @override
+  String get chatRailUnpinSessionAction => 'Unpin';
+
+  @override
   String get chatRailHermesSessionsTitle => 'Hermes sessions';
 
   @override
@@ -2561,6 +2956,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatRailSearchSessionsLabel => 'Search sessions';
+
+  @override
+  String get chatRailSourceFilterLabel => 'Filter by source';
+
+  @override
+  String get chatRailAllSourcesLabel => 'All sources';
 
   @override
   String get chatRailClearSearchTooltip => 'Clear search';
@@ -2608,10 +3009,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRailActiveHermesSessionLabel => 'Active Hermes session';
 
   @override
+  String get chatRailCycleActiveSessionsTooltip =>
+      'Switch live chats · Ctrl+Tab or Ctrl/Command+1–9';
+
+  @override
   String get chatRailActiveLabel => 'Active';
 
   @override
   String get chatRailStatusStreamingLabel => 'Streaming';
+
+  @override
+  String get chatRailNewReplyLabel => 'New reply';
 
   @override
   String get chatRailStatusReadyLabel => 'Ready';
@@ -2730,27 +3138,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatRailDetailInputTokensLabel(int count) {
-    return 'Input tokens: $count';
+    return 'Session input tokens: $count';
   }
 
   @override
   String chatRailDetailOutputTokensLabel(int count) {
-    return 'Output tokens: $count';
+    return 'Session output tokens: $count';
   }
 
   @override
   String chatRailDetailCacheReadTokensLabel(int count) {
-    return 'Cache read tokens: $count';
+    return 'Session cache read tokens: $count';
   }
 
   @override
   String chatRailDetailCacheWriteTokensLabel(int count) {
-    return 'Cache write tokens: $count';
+    return 'Session cache write tokens: $count';
   }
 
   @override
   String chatRailDetailReasoningTokensLabel(int count) {
-    return 'Reasoning tokens: $count';
+    return 'Session reasoning tokens: $count';
   }
 
   @override
@@ -2839,6 +3247,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppearanceSection => 'Appearance';
 
   @override
+  String get settingsChatSection => 'Chat';
+
+  @override
+  String get chatSpellcheckTitle => 'Check spelling';
+
+  @override
+  String get chatSpellcheckSubtitle =>
+      'Use the platform spell checker while composing messages';
+
+  @override
   String get themeModeSystem => 'System';
 
   @override
@@ -2868,7 +3286,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipVoice =>
-      'Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.';
+      'Tap the microphone for hands-free voice. Long-press to dictate for review. Wing reports listening and playback separately.';
 
   @override
   String get tipApprovals =>
@@ -2955,4 +3373,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localSetupConsentAction => 'Run setup';
+
+  @override
+  String get termuxSetupTitle => 'Install Hermes Agent on this phone';
+
+  @override
+  String get termuxSetupBody =>
+      'Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.';
+
+  @override
+  String get termuxInstallAction => 'Install Termux';
+
+  @override
+  String get termuxCopyAction => 'Copy setup command';
+
+  @override
+  String get termuxCopiedMessage =>
+      'Setup command copied. Open Termux and run it without changes.';
+
+  @override
+  String get termuxCopyFailedMessage =>
+      'The setup command could not be copied. Select the command and copy it manually.';
+
+  @override
+  String get termuxMetadataUnavailable =>
+      'This build cannot install the matching Wing Link release.';
+
+  @override
+  String get termuxRunStep =>
+      'Open Termux and run the copied command. Keep Termux in the foreground while setup finishes.';
+
+  @override
+  String get termuxReturnStep =>
+      'Tap the local link shown by Termux, then return here to review the connection.';
+
+  @override
+  String get termuxTierTwoNotice =>
+      'Android / Termux is Tier 2. Android may stop background processes; rerun the same command to recover.';
+
+  @override
+  String get enrollInstallOnPhoneAction => 'Install Hermes Agent on this phone';
+
+  @override
+  String get enrollConnectedLocalBody =>
+      'Hermes Agent is connected on this phone. To configure the existing default profile, run hermes setup in Termux. To configure more in Wing, create a new profile with its provider and model, approve the request in Termux, retry the unchanged request, then pair once more to enroll that profile.';
+
+  @override
+  String profileApprovalRequired(String approvalId) {
+    return 'Approve this request locally on the Wing Link host, then retry the unchanged setup. Run wing-link approvals list, then wing-link approvals approve $approvalId.';
+  }
+
+  @override
+  String get profileRetryApprovedSetup => 'Retry approved setup';
+
+  @override
+  String get profileCancelSetup => 'Cancel setup';
+
+  @override
+  String get profileApprovalExpired =>
+      'The local approval expired. Enter the credential again to start a new request.';
 }

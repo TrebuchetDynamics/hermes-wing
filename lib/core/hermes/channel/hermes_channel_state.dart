@@ -118,12 +118,8 @@ class HermesChannelState {
         '/api/sessions/{session_id}/fork',
       );
 
-  bool get canReadDetailedHealth => _allowsEndpoint(
-    'health_detailed',
-    'GET',
-    '/health/detailed',
-    'gateway:read',
-  );
+  bool get canReadDetailedHealth =>
+      _authorizesEndpoint('health_detailed', 'GET', '/health/detailed');
 
   bool get canReadSkills => _authorizesEndpoint('skills', 'GET', '/v1/skills');
 

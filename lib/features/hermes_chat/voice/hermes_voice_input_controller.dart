@@ -6,17 +6,76 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_chat_turn.dart';
 import '../../../core/protocol/voice/models/wing_voice_run.dart';
 import '../../../shared/async/fire_and_forget.dart';
+import '../../../shared/security/wing_redaction.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_failures.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/voice/voice_settings.dart';
 import 'hermes_continuous_voice_reply_policy.dart';
+import 'hermes_spoken_text.dart';
 import 'hermes_voice_capture_flow.dart';
+import 'hermes_voice_failure.dart';
 
 typedef HermesChannelReader = HermesChannel Function();
 typedef VoiceCaptureServiceReader = VoiceCaptureService? Function();
 typedef TextToSpeechServiceReader = TextToSpeechService? Function();
 typedef VoiceSettingsReader = WingVoiceSettings Function();
+typedef HermesVoiceFailureMessage =
+    String Function(HermesVoiceFailure failure, String? detail);
+typedef HermesVoiceContinuousPausedMessage = String Function(String message);
+
+String _defaultVoiceFailureMessage(HermesVoiceFailure failure, String? detail) {
+  return switch (failure) {
+    HermesVoiceFailure.timedOut => 'Voice capture timed out.',
+    HermesVoiceFailure.microphonePermissionDenied =>
+      microphonePermissionDeniedVoiceCaptureMessage,
+    HermesVoiceFailure.deviceLanguageUnavailable =>
+      deviceSpeechLanguageUnavailableVoiceCaptureMessage,
+    HermesVoiceFailure.deviceSpeechUnavailable =>
+      deviceSpeechUnavailableVoiceCaptureMessage,
+    HermesVoiceFailure.noSpeech => noSpeechDetectedVoiceCaptureMessage,
+    HermesVoiceFailure.generic =>
+      detail == null || detail.isEmpty
+          ? 'Voice capture failed.'
+          : 'Voice capture failed: $detail',
+    HermesVoiceFailure.captureSessionChanged =>
+      'Voice capture was discarded because the Hermes session changed.',
+    HermesVoiceFailure.inputUnavailable => 'Voice input is not available here.',
+    HermesVoiceFailure.turnSendFailed =>
+      detail == null || detail.isEmpty
+          ? 'Voice turn could not be sent.'
+          : 'Voice turn could not be sent: $detail',
+    HermesVoiceFailure.shutdownTimedOut =>
+      'Voice shutdown timed out. Continuous voice paused.',
+    HermesVoiceFailure.shutdownFailed =>
+      'Voice shutdown failed. Continuous voice paused.',
+    HermesVoiceFailure.playbackUnavailable =>
+      'Voice playback is unavailable for this connection. The reply is available as text. Voice input remains available from the microphone.',
+    HermesVoiceFailure.playbackUnavailableContinuous =>
+      'Voice playback is unavailable for this connection. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.',
+    HermesVoiceFailure.playbackFailed =>
+      'Voice playback failed. The reply is available as text. Voice input remains available from the microphone.',
+    HermesVoiceFailure.playbackFailedContinuous =>
+      'Voice playback failed. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.',
+    HermesVoiceFailure.playbackSessionChanged =>
+      'Hermes session changed before the spoken reply finished.',
+    HermesVoiceFailure.playbackSessionChangedContinuous =>
+      'Hermes session changed before voice could re-arm. Continuous voice paused.',
+    HermesVoiceFailure.pausedByLocalCommand =>
+      'Continuous voice paused by local command.',
+  };
+}
+
+String _defaultVoiceContinuousPausedMessage(String message) =>
+    '$message Continuous voice paused.';
+
+String _safeVoiceFailureDetail(String detail) {
+  final normalized = detail.replaceFirst(
+    RegExp(r'^(?:Bad state|Exception):\s*'),
+    '',
+  );
+  return wingRedactSensitiveText(normalized);
+}
 
 /// Owns Hermes voice-input state and lifecycle while the chat widget only
 /// renders state and forwards operator intent.
@@ -27,6 +86,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     required TextToSpeechServiceReader textToSpeechService,
     required VoiceSettingsReader settings,
     required ValueChanged<String> onDraft,
+    HermesVoiceFailureMessage failureMessage = _defaultVoiceFailureMessage,
+    HermesVoiceContinuousPausedMessage continuousPausedMessage =
+        _defaultVoiceContinuousPausedMessage,
     Duration rearmDelay = const Duration(milliseconds: 750),
     Duration speechTimeout = const Duration(minutes: 3),
     Duration teardownTimeout = const Duration(seconds: 10),
@@ -36,6 +98,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     textToSpeechService,
     settings,
     onDraft,
+    failureMessage,
+    continuousPausedMessage,
     rearmDelay,
     speechTimeout,
     teardownTimeout,
@@ -47,6 +111,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     this._textToSpeechService,
     this._settings,
     this._onDraft,
+    this._failureMessage,
+    this._continuousPausedMessage,
     this._rearmDelay,
     this._speechTimeout,
     this._teardownTimeout,
@@ -57,6 +123,8 @@ class HermesVoiceInputController extends ChangeNotifier {
   final TextToSpeechServiceReader _textToSpeechService;
   final VoiceSettingsReader _settings;
   final ValueChanged<String> _onDraft;
+  final HermesVoiceFailureMessage _failureMessage;
+  final HermesVoiceContinuousPausedMessage _continuousPausedMessage;
   final Duration _rearmDelay;
   final Duration _speechTimeout;
   final Duration _teardownTimeout;
@@ -66,12 +134,14 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool _disposed = false;
   bool _speaking = false;
   bool _speakNextReply = false;
+  bool _playbackUnavailable = false;
   int _operationGeneration = 0;
   int _speechGeneration = 0;
   String? _error;
   String? _lastSpokenTurnId;
   String? _spokenReplyPrefix;
   String? _activeSpokenChunk;
+  String? _readAloudTurnId;
   int _spokenReplyCharacterCount = 0;
   String? _liveTranscript;
   double? _soundLevel;
@@ -88,13 +158,73 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool get continuousEnabled => _continuousEnabled;
   String? get error => _error;
   bool get speaking => _speaking;
+  String? get readAloudTurnId => _readAloudTurnId;
+  bool get playbackUnavailable => _playbackUnavailable;
 
   Future<void> captureDraft() => _capture(autoSend: false);
+
+  void dismissNotice() {
+    if (_error == null && !_playbackUnavailable) return;
+    _error = null;
+    _playbackUnavailable = false;
+    notifyListeners();
+  }
 
   void speakNextReply() {
     _baselineAssistantReplies();
     _speakNextReply = true;
   }
+
+  Future<void> readAloud(String text, {String? turnId}) async {
+    final phrase = hermesSpokenText(text);
+    if (phrase.isEmpty || _disposed || _capturing || _continuousEnabled) {
+      return;
+    }
+    if (_speaking) await _interruptActiveSpeech();
+    if (!await _awaitSpeechTeardown() ||
+        _disposed ||
+        _capturing ||
+        _continuousEnabled) {
+      return;
+    }
+    final tts = _textToSpeechService();
+    if (tts == null) {
+      _playbackUnavailable = true;
+      _error = _failureMessage(HermesVoiceFailure.playbackUnavailable, null);
+      notifyListeners();
+      return;
+    }
+    _speakNextReply = false;
+    _activeTextToSpeechService = tts;
+    _activeSpokenChunk = phrase;
+    _readAloudTurnId = turnId;
+    _playbackUnavailable = false;
+    _error = null;
+    final speechGeneration = ++_speechGeneration;
+    _speaking = true;
+    notifyListeners();
+    try {
+      await tts.speak(phrase).timeout(_speechTimeout);
+    } catch (_) {
+      if (_disposed || speechGeneration != _speechGeneration) return;
+      _activeTextToSpeechService = null;
+      _activeSpokenChunk = null;
+      _readAloudTurnId = null;
+      _speaking = false;
+      _playbackUnavailable = true;
+      _error = _failureMessage(HermesVoiceFailure.playbackFailed, null);
+      notifyListeners();
+      return;
+    }
+    if (_disposed || speechGeneration != _speechGeneration) return;
+    _activeTextToSpeechService = null;
+    _activeSpokenChunk = null;
+    _readAloudTurnId = null;
+    _speaking = false;
+    notifyListeners();
+  }
+
+  Future<void> stopSpeaking() => _interruptActiveSpeech();
 
   Future<void> captureAndSend() async {
     _baselineAssistantReplies();
@@ -106,6 +236,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     _baselineAssistantReplies();
     _speakNextReply = false;
     _continuousEnabled = true;
+    _playbackUnavailable = false;
     _error = null;
     notifyListeners();
     await _capture(autoSend: true, continuous: true);
@@ -131,6 +262,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (_capturing) return;
     final operationGeneration = ++_operationGeneration;
     _capturing = true;
+    _playbackUnavailable = false;
     _error = null;
     _liveTranscript = null;
     _soundLevel = null;
@@ -146,7 +278,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         _capturing = false;
         _continuousEnabled = false;
         _speakNextReply = false;
-        _error = 'Voice shutdown timed out. Continuous voice paused.';
+        _error = _failureMessage(HermesVoiceFailure.shutdownTimedOut, null);
         notifyListeners();
       }
       return;
@@ -155,7 +287,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         _capturing = false;
         _continuousEnabled = false;
         _speakNextReply = false;
-        _error = 'Voice shutdown failed. Continuous voice paused.';
+        _error = _failureMessage(HermesVoiceFailure.shutdownFailed, null);
         notifyListeners();
       }
       return;
@@ -218,7 +350,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         channel.state.activeSessionId != captureSessionId) {
       _capturing = false;
       _recordCaptureFailure(
-        'Voice capture was discarded because the Hermes session changed.',
+        _failureMessage(HermesVoiceFailure.captureSessionChanged, null),
         continuous: effectiveContinuous,
       );
       notifyListeners();
@@ -229,7 +361,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       case HermesVoiceCaptureStatus.unavailable:
         _capturing = false;
         _recordCaptureFailure(
-          'Voice input is not available here.',
+          _failureMessage(HermesVoiceFailure.inputUnavailable, null),
           continuous: effectiveContinuous,
         );
       case HermesVoiceCaptureStatus.failed:
@@ -244,7 +376,7 @@ class HermesVoiceInputController extends ChangeNotifier {
           return;
         }
         _recordCaptureFailure(
-          outcome.errorMessage ?? 'Voice capture failed.',
+          _failureMessage(outcome.failure!, outcome.errorDetail),
           continuous: effectiveContinuous,
         );
       case HermesVoiceCaptureStatus.captured:
@@ -264,7 +396,7 @@ class HermesVoiceInputController extends ChangeNotifier {
               channel.state.activeSessionId != captureSessionId) {
             _capturing = false;
             _recordCaptureFailure(
-              'Voice capture was discarded because the Hermes session changed.',
+              _failureMessage(HermesVoiceFailure.captureSessionChanged, null),
               continuous: effectiveContinuous,
             );
             notifyListeners();
@@ -312,8 +444,12 @@ class HermesVoiceInputController extends ChangeNotifier {
         channel.submitVoiceRun(voiceRunId);
         final run = channel.state.voiceRuns[voiceRunId];
         if (run?.status == WingVoiceRunStatus.failed) {
+          final reason = run?.reason?.trim();
+          final safeReason = reason == null || reason.isEmpty
+              ? null
+              : _safeVoiceFailureDetail(reason);
           _recordCaptureFailure(
-            run?.reason ?? 'Voice turn could not be sent.',
+            _failureMessage(HermesVoiceFailure.turnSendFailed, safeReason),
             continuous: _continuousEnabled,
           );
         } else if (_continuousEnabled) {
@@ -328,7 +464,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speakNextReply = false;
     if (continuous) {
       _continuousEnabled = false;
-      _error = '$message Continuous voice paused.';
+      _error = _continuousPausedMessage(message);
       return;
     }
     _error = message;
@@ -364,39 +500,57 @@ class HermesVoiceInputController extends ChangeNotifier {
     _lastSpokenTurnId = reply.turn.id;
     _spokenReplyCharacterCount = reply.spokenCharacterCount;
     _speakNextReply = reply.turn.status == HermesTurnStatus.streaming;
+    final spokenText = hermesSpokenText(reply.text);
+    if (spokenText.isEmpty) {
+      if (_continuousEnabled && !_capturing) {
+        unawaited(_rearmContinuousCapture());
+      }
+      return;
+    }
 
     final tts = _textToSpeechService();
     if (tts == null) {
       final continuous = _continuousEnabled;
       _continuousEnabled = false;
-      _error = continuous
-          ? 'Text-to-speech is not available here. Continuous voice paused.'
-          : 'Text-to-speech is not available here.';
+      _playbackUnavailable = true;
+      _error = _failureMessage(
+        continuous
+            ? HermesVoiceFailure.playbackUnavailableContinuous
+            : HermesVoiceFailure.playbackUnavailable,
+        null,
+      );
       notifyListeners();
       return;
     }
     _activeTextToSpeechService = tts;
+    _playbackUnavailable = false;
+    _error = null;
     final speechGeneration = ++_speechGeneration;
     _speaking = true;
     _spokenReplyPrefix = reply.turn.text.substring(
       0,
       reply.spokenCharacterCount,
     );
-    _activeSpokenChunk = reply.text;
+    _activeSpokenChunk = spokenText;
+    _readAloudTurnId = null;
     notifyListeners();
     if (_continuousEnabled && !_capturing) {
       unawaited(_capture(autoSend: true, continuous: true));
     }
     try {
-      await tts.speak(reply.text).timeout(_speechTimeout);
+      await tts.speak(spokenText).timeout(_speechTimeout);
       await Future<void>.delayed(_rearmDelay);
     } catch (_) {
       if (_disposed || speechGeneration != _speechGeneration) return;
       final continuous = _continuousEnabled;
       pause(
-        continuous
-            ? 'Could not speak Hermes reply. Continuous voice paused.'
-            : 'Could not speak Hermes reply.',
+        _failureMessage(
+          continuous
+              ? HermesVoiceFailure.playbackFailedContinuous
+              : HermesVoiceFailure.playbackFailed,
+          null,
+        ),
+        true,
       );
       return;
     }
@@ -408,9 +562,12 @@ class HermesVoiceInputController extends ChangeNotifier {
         channel.state.activeSessionId != reply.turn.sessionId) {
       final continuous = _continuousEnabled;
       _continuousEnabled = false;
-      _error = continuous
-          ? 'Hermes session changed before voice could re-arm. Continuous voice paused.'
-          : 'Hermes session changed before the spoken reply finished.';
+      _error = _failureMessage(
+        continuous
+            ? HermesVoiceFailure.playbackSessionChangedContinuous
+            : HermesVoiceFailure.playbackSessionChanged,
+        null,
+      );
       notifyListeners();
       return;
     }
@@ -460,6 +617,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speechGeneration += 1;
     final tts = _activeTextToSpeechService;
     _activeTextToSpeechService = null;
+    _readAloudTurnId = null;
     _speaking = false;
     if (!_disposed) notifyListeners();
     final stop = _stopSpeechForTeardown(tts, 'speech stop on interruption');
@@ -472,19 +630,15 @@ class HermesVoiceInputController extends ChangeNotifier {
       await _speechTeardown.timeout(_teardownTimeout);
       return true;
     } on TimeoutException {
-      _failClosedVoiceShutdown(
-        'Voice shutdown timed out. Continuous voice paused.',
-      );
+      _failClosedVoiceShutdown(HermesVoiceFailure.shutdownTimedOut);
       return false;
     } catch (_) {
-      _failClosedVoiceShutdown(
-        'Voice shutdown failed. Continuous voice paused.',
-      );
+      _failClosedVoiceShutdown(HermesVoiceFailure.shutdownFailed);
       return false;
     }
   }
 
-  void _failClosedVoiceShutdown(String error) {
+  void _failClosedVoiceShutdown(HermesVoiceFailure failure) {
     if (_disposed) return;
     _speechGeneration += 1;
     final capture = _activeCaptureService;
@@ -498,9 +652,10 @@ class HermesVoiceInputController extends ChangeNotifier {
     _soundLevel = null;
     _capturing = false;
     _speaking = false;
+    _readAloudTurnId = null;
     _continuousEnabled = false;
     _speakNextReply = false;
-    _error = error;
+    _error = _failureMessage(failure, null);
     if (capture != null) {
       final cancellation = _cancelCaptureForTeardown(
         capture,
@@ -542,7 +697,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       'mute',
       'cancel',
     }.contains(command)) {
-      pause('Continuous voice paused by local command.');
+      pause(_failureMessage(HermesVoiceFailure.pausedByLocalCommand, null));
       return true;
     }
     return false;
@@ -572,7 +727,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
   }
 
-  void pause([String? notice]) {
+  void pause([String? notice, bool playbackUnavailable = false]) {
     _operationGeneration += 1;
     _speechGeneration += 1;
     final service = _activeCaptureService;
@@ -599,8 +754,10 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speakNextReply = false;
     _spokenReplyPrefix = null;
     _activeSpokenChunk = null;
+    _readAloudTurnId = null;
     _capturing = false;
     _speaking = false;
+    _playbackUnavailable = playbackUnavailable;
     _error = notice;
     if (!_disposed) notifyListeners();
   }

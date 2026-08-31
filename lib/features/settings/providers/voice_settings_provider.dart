@@ -8,6 +8,7 @@ export '../../../shared/voice/voice_settings.dart';
 class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyVoiceEnabled = 'wing.voice.continuous_enabled';
   static const _keySpeakReplies = 'wing.voice.speak_replies_enabled';
+  static const _keyCompletionSound = 'wing.voice.completion_sound_enabled';
   static const _keyCommandWord = 'wing.voice.command_word';
   static const _keyLanguageMode = 'wing.voice.language_mode';
 
@@ -33,6 +34,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
       state = WingVoiceSettings(
         continuousVoiceEnabled: _prefs?.getBool(_keyVoiceEnabled) ?? true,
         speakRepliesEnabled: _prefs?.getBool(_keySpeakReplies) ?? false,
+        completionSoundEnabled: _prefs?.getBool(_keyCompletionSound) ?? false,
         commandWord: _prefs?.getString(_keyCommandWord) ?? 'navi',
         languageMode: VoiceLanguageMode.values.firstWhere(
           (candidate) => candidate.name == savedLanguageMode,
@@ -50,6 +52,7 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
     try {
       await prefs.setBool(_keyVoiceEnabled, state.continuousVoiceEnabled);
       await prefs.setBool(_keySpeakReplies, state.speakRepliesEnabled);
+      await prefs.setBool(_keyCompletionSound, state.completionSoundEnabled);
       await prefs.setString(_keyCommandWord, state.commandWord);
       await prefs.setString(_keyLanguageMode, state.languageMode.name);
     } catch (_) {
@@ -66,6 +69,12 @@ class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   void setSpeakRepliesEnabled(bool enabled) {
     _mutationGeneration += 1;
     state = state.copyWith(speakRepliesEnabled: enabled);
+    _save();
+  }
+
+  void setCompletionSoundEnabled(bool enabled) {
+    _mutationGeneration += 1;
+    state = state.copyWith(completionSoundEnabled: enabled);
     _save();
   }
 

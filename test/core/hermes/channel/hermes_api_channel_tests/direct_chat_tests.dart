@@ -341,6 +341,46 @@ void _hermesApiChannelDirectChatTests() {
   );
 
   test(
+    'sendText fails a completed direct stream with no assistant reply',
+    () async {
+      var messagesRequests = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => () {
+              messagesRequests += 1;
+              return _messagesFixture;
+            }(),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          postStream: (uri, headers, body) =>
+              Stream<String>.fromIterable(const [
+                'event: run.started\ndata: {}\n\n',
+                'event: message.started\ndata: {}\n\n',
+                'event: assistant.completed\ndata: {}\n\n',
+                'event: run.completed\ndata: {}\n\n',
+                'event: done\ndata: {}\n\n',
+              ]),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText('empty completed reply');
+
+      expect(messagesRequests, 2);
+      expect(
+        channel.state.errorMessage,
+        'Hermes finished without an assistant reply.',
+      );
+    },
+  );
+
+  test(
     'sendText fails a direct chat stream that closes before a terminal event',
     () async {
       var messagesRequests = 0;

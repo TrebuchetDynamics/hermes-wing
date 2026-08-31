@@ -43,6 +43,7 @@ class HermesApiChannel extends ChangeNotifier
     Uuid? uuid,
     HermesDetachedRunStore? detachedRunStore,
     this.streamIdleTimeout = const Duration(minutes: 5),
+    this.runStatusReconcileInterval = const Duration(seconds: 3),
   }) : _clientBuilder =
            clientBuilder ?? ((config) => HermesApiClient(config: config)),
        _uuid = uuid ?? const Uuid(),
@@ -59,6 +60,7 @@ class HermesApiChannel extends ChangeNotifier
   final Uuid _uuid;
   final HermesDetachedRunStore? _detachedRunStore;
   final Duration streamIdleTimeout;
+  final Duration runStatusReconcileInterval;
 
   static final _detachedRunOperationTails = <Object, Future<void>>{};
 
@@ -167,6 +169,10 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> disconnect() => _disconnect();
+
+  @override
+  void clearActiveSession() =>
+      _setState(_state.copyWith(clearActiveSessionId: true));
 
   @override
   Future<void> selectSession(String sessionId) => _selectSession(sessionId);

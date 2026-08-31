@@ -38,7 +38,10 @@ test("a user can stop a slow Hermes run and the client sends the stop request", 
     globalThis.wingE2EHermesSendText("slow lifecycle browser turn"),
   );
   await expect(
-    page.getByText("slow lifecycle browser turn").first(),
+    page.getByRole("group", {
+      name: "slow lifecycle browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   const stop = page.getByRole("checkbox", { name: "Stop" });
   await expect(stop).toBeVisible();

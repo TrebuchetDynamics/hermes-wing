@@ -373,34 +373,47 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (sheetContext) => _HermesSessionsPanel(
-        state: channel.state,
-        canCreate: _canCreateSession(channel.state),
-        onCreate: () {
-          Navigator.of(sheetContext).pop();
-          unawaited(_createSession(context, channel));
-        },
-        onSelect: (session) {
-          Navigator.of(sheetContext).pop();
-          unawaited(_selectSession(context, channel, session));
-        },
-        onRename: (session) {
-          Navigator.of(sheetContext).pop();
-          unawaited(_renameSession(context, channel, session));
-        },
-        onFork: (session) {
-          Navigator.of(sheetContext).pop();
-          unawaited(_forkSession(context, channel, session));
-        },
-        onDelete: (session) {
-          Navigator.of(sheetContext).pop();
-          unawaited(_deleteSession(context, channel, session));
-        },
-        onDeleteSelected: (sessions) {
-          Navigator.of(sheetContext).pop();
-          unawaited(_deleteSessions(context, channel, sessions));
-        },
-      ),
+      builder: (sheetContext) {
+        final pinContact = _sessionPinContact(channel.state);
+        return ListenableBuilder(
+          listenable: _sessionPins,
+          builder: (_, _) => _HermesSessionsPanel(
+            state: channel.state,
+            canCreate: _canCreateSession(channel.state),
+            pinnedSessionIds: {
+              for (final session in channel.state.sessions)
+                if (_sessionPins.isPinned(pinContact, session.id)) session.id,
+            },
+            unreadCompletedSessionIds: _unreadCompletedSessionIds,
+            onTogglePinned: (session) =>
+                unawaited(_sessionPins.toggle(pinContact, session.id)),
+            onCreate: () {
+              Navigator.of(sheetContext).pop();
+              unawaited(_createSession(context, channel));
+            },
+            onSelect: (session) {
+              Navigator.of(sheetContext).pop();
+              unawaited(_selectSession(context, channel, session));
+            },
+            onRename: (session) {
+              Navigator.of(sheetContext).pop();
+              unawaited(_renameSession(context, channel, session));
+            },
+            onFork: (session) {
+              Navigator.of(sheetContext).pop();
+              unawaited(_forkSession(context, channel, session));
+            },
+            onDelete: (session) {
+              Navigator.of(sheetContext).pop();
+              unawaited(_deleteSession(context, channel, session));
+            },
+            onDeleteSelected: (sessions) {
+              Navigator.of(sheetContext).pop();
+              unawaited(_deleteSessions(context, channel, sessions));
+            },
+          ),
+        );
+      },
     );
   }
 }

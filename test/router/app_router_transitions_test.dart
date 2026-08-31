@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
 
@@ -110,6 +112,24 @@ void main() {
       );
     },
   );
+
+  test('Android local setup route builds the Termux guide', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final router = container.read(routerProvider);
+    final matchList = router.configuration.findMatch(
+      Uri.parse(AppRoutes.localSetup),
+    );
+    final route = matchList.last.route;
+    final state = matchList.last.buildState(router.configuration, matchList);
+
+    expect(
+      _leafScreenWidget(route.builder!(_FakeContext(), state)),
+      isA<TermuxHermesSetupScreen>(),
+    );
+  });
 
   testWidgets('the shared page fades its child in', (tester) async {
     final page = wingFadeThroughPage(

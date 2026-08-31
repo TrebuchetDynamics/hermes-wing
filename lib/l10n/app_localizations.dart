@@ -292,6 +292,66 @@ abstract class AppLocalizations {
   /// **'Management only — this Hermes endpoint does not advertise profile chat context.'**
   String get profileChatUnavailable;
 
+  /// No description provided for @profileBrowseFoldersAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse folders'**
+  String get profileBrowseFoldersAction;
+
+  /// No description provided for @directoryBrowserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved folders'**
+  String get directoryBrowserTitle;
+
+  /// No description provided for @directoryBrowserLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading approved folders'**
+  String get directoryBrowserLoading;
+
+  /// No description provided for @directoryBrowserEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved folders'**
+  String get directoryBrowserEmptyTitle;
+
+  /// No description provided for @directoryBrowserEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve a root on the host with: wing-link directories grant PATH'**
+  String get directoryBrowserEmptyBody;
+
+  /// No description provided for @directoryBrowserError.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved folders are unavailable. Refresh the host grants and try again.'**
+  String get directoryBrowserError;
+
+  /// No description provided for @directoryBrowserUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder browsing is unavailable for this Wing Link device. Update Wing Link or pair again with directory access.'**
+  String get directoryBrowserUnavailable;
+
+  /// No description provided for @directoryBrowserBackAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get directoryBrowserBackAction;
+
+  /// No description provided for @directoryBrowserLoadMoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get directoryBrowserLoadMoreAction;
+
+  /// No description provided for @directoryBrowserProjectUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder browsing is available, but Project creation remains unavailable until Hermes Agent advertises a compatible Project API.'**
+  String get directoryBrowserProjectUnavailable;
+
   /// No description provided for @chatWithNamedAgent.
   ///
   /// In en, this message translates to:
@@ -1874,6 +1934,12 @@ abstract class AppLocalizations {
   /// **'Wing commands'**
   String get localCommandsTitle;
 
+  /// No description provided for @localCommandsKeyboardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'↑↓ navigate  •  Enter select  •  Tab complete'**
+  String get localCommandsKeyboardHint;
+
   /// No description provided for @localCommandsHelpTitle.
   ///
   /// In en, this message translates to:
@@ -2027,25 +2093,25 @@ abstract class AppLocalizations {
   /// No description provided for @localCommandUsageDescription.
   ///
   /// In en, this message translates to:
-  /// **'Show token usage for the latest reply.'**
+  /// **'Show server-reported usage for the latest Hermes run.'**
   String get localCommandUsageDescription;
 
   /// No description provided for @noRunTokenUsageMessage.
   ///
   /// In en, this message translates to:
-  /// **'No server-reported token usage is available yet.'**
+  /// **'No server-reported Hermes run usage is available yet.'**
   String get noRunTokenUsageMessage;
 
   /// No description provided for @runTokenUsage.
   ///
   /// In en, this message translates to:
-  /// **'{inputTokens} in · {outputTokens} out · {totalTokens} total tokens'**
+  /// **'Latest Hermes run · {inputTokens} input · {outputTokens} output · {totalTokens} total'**
   String runTokenUsage(int inputTokens, int outputTokens, int totalTokens);
 
   /// No description provided for @transcriptRunTokenUsage.
   ///
   /// In en, this message translates to:
-  /// **'Usage: {inputTokens} input · {outputTokens} output · {totalTokens} total tokens'**
+  /// **'Latest Hermes run usage: {inputTokens} input · {outputTokens} output · {totalTokens} total tokens'**
   String transcriptRunTokenUsage(
     int inputTokens,
     int outputTokens,
@@ -2055,12 +2121,18 @@ abstract class AppLocalizations {
   /// No description provided for @runTokenUsageSemantics.
   ///
   /// In en, this message translates to:
-  /// **'Token usage: {inputTokens} input, {outputTokens} output, {totalTokens} total'**
+  /// **'Latest Hermes run token usage: {inputTokens} input, {outputTokens} output, {totalTokens} total. Input can include instructions, conversation context, and tool results; this is not a billing estimate.'**
   String runTokenUsageSemantics(
     int inputTokens,
     int outputTokens,
     int totalTokens,
   );
+
+  /// No description provided for @runTokenUsageTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest server-reported Hermes run. Input may include instructions, conversation context, and tool results. This is not a billing estimate.'**
+  String get runTokenUsageTooltip;
 
   /// No description provided for @auxiliaryTaskVision.
   ///
@@ -2390,6 +2462,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off'**
   String get voiceSpeakRepliesSubtitle;
+
+  /// No description provided for @voiceCompletionSoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Response completion sound'**
+  String get voiceCompletionSoundTitle;
+
+  /// No description provided for @voiceCompletionSoundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a device alert when a Hermes reply finishes'**
+  String get voiceCompletionSoundSubtitle;
 
   /// No description provided for @voiceAdvancedSection.
   ///
@@ -2913,6 +2997,54 @@ abstract class AppLocalizations {
   /// **'Add gateway or profile'**
   String get gatewayContactsConnectAction;
 
+  /// No description provided for @chatGroupsNewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get chatGroupsNewAction;
+
+  /// No description provided for @chatGroupsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get chatGroupsNewTitle;
+
+  /// No description provided for @chatGroupsRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename group'**
+  String get chatGroupsRenameTitle;
+
+  /// No description provided for @chatGroupsRenameAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get chatGroupsRenameAction;
+
+  /// No description provided for @chatGroupsDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get chatGroupsDeleteAction;
+
+  /// No description provided for @chatGroupsNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get chatGroupsNameLabel;
+
+  /// No description provided for @chatGroupsUngrouped.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungrouped'**
+  String get chatGroupsUngrouped;
+
+  /// No description provided for @chatGroupsMoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to group'**
+  String get chatGroupsMoveAction;
+
   /// No description provided for @chatQueuedCancelTitle.
   ///
   /// In en, this message translates to:
@@ -2925,11 +3057,35 @@ abstract class AppLocalizations {
   /// **'+{count} more'**
   String chatQueuedMore(int count);
 
+  /// No description provided for @chatQueuedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Queued {count} follow-up after current reply: {preview}} other{Queued {count} follow-ups after current reply: {preview}}}'**
+  String chatQueuedSummary(int count, String preview);
+
+  /// No description provided for @chatQueuedWaitingForTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a supported Hermes chat transport.'**
+  String get chatQueuedWaitingForTransport;
+
+  /// No description provided for @chatQueuedWaitingForOriginalSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the original session.'**
+  String get chatQueuedWaitingForOriginalSession;
+
   /// No description provided for @chatQueuedRedactedNote.
   ///
   /// In en, this message translates to:
   /// **'Queued text is redacted and bounded in this confirmation.'**
   String get chatQueuedRedactedNote;
+
+  /// No description provided for @chatQueuedAttachmentPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment: {name}'**
+  String chatQueuedAttachmentPreview(String name);
 
   /// No description provided for @chatQueuedKeepAction.
   ///
@@ -2942,6 +3098,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel all'**
   String get chatQueuedCancelAllAction;
+
+  /// No description provided for @chatQueuedManageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get chatQueuedManageAction;
+
+  /// No description provided for @chatQueuedMoreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More queued follow-up actions'**
+  String get chatQueuedMoreActions;
+
+  /// No description provided for @chatQueuedManageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} queued follow-up} other{{count} queued follow-ups}}'**
+  String chatQueuedManageTitle(int count);
+
+  /// No description provided for @chatQueuedCancelOneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel queued follow-up'**
+  String get chatQueuedCancelOneAction;
+
+  /// No description provided for @chatQueuedFullError.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued follow-ups are full ({count}). Wait for Hermes to finish before adding more.'**
+  String chatQueuedFullError(int count);
+
+  /// No description provided for @chatQueuedOpenSessionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open queued follow-up session: {message}'**
+  String chatQueuedOpenSessionError(String message);
+
+  /// No description provided for @chatQueuedSendError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send queued follow-up: {message}'**
+  String chatQueuedSendError(String message);
 
   /// No description provided for @chatConnectionRenameProfileTitle.
   ///
@@ -3169,29 +3367,143 @@ abstract class AppLocalizations {
   /// **'Copy'**
   String get chatTranscriptCopyAction;
 
+  /// No description provided for @chatTranscriptReadAloudAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get chatTranscriptReadAloudAction;
+
+  /// No description provided for @chatTranscriptReadingAloudLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading aloud'**
+  String get chatTranscriptReadingAloudLabel;
+
+  /// No description provided for @chatTranscriptStopReadAloudAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop reading aloud'**
+  String get chatTranscriptStopReadAloudAction;
+
   /// No description provided for @chatTranscriptMessageCopiedLabel.
   ///
   /// In en, this message translates to:
   /// **'Message copied'**
   String get chatTranscriptMessageCopiedLabel;
 
+  /// No description provided for @chatTranscriptFullTimestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}, {time}'**
+  String chatTranscriptFullTimestamp(String date, String time);
+
+  /// No description provided for @chatTranscriptTimestampJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get chatTranscriptTimestampJustNow;
+
+  /// No description provided for @chatTranscriptTimestampMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute ago} other{{count} minutes ago}}'**
+  String chatTranscriptTimestampMinutesAgo(int count);
+
+  /// No description provided for @chatTranscriptTimestampHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour ago} other{{count} hours ago}}'**
+  String chatTranscriptTimestampHoursAgo(int count);
+
+  /// No description provided for @chatTranscriptTimestampDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
+  String chatTranscriptTimestampDaysAgo(int count);
+
   /// No description provided for @chatTranscriptToolStatusNeedsAttentionLabel.
   ///
   /// In en, this message translates to:
-  /// **'Needs attention'**
+  /// **'Host action needs attention'**
   String get chatTranscriptToolStatusNeedsAttentionLabel;
 
   /// No description provided for @chatTranscriptToolStatusRunningLabel.
   ///
   /// In en, this message translates to:
-  /// **'Running'**
+  /// **'Working on Hermes host'**
   String get chatTranscriptToolStatusRunningLabel;
 
   /// No description provided for @chatTranscriptToolStatusCompletedLabel.
   ///
   /// In en, this message translates to:
-  /// **'Completed'**
+  /// **'Completed on Hermes host'**
   String get chatTranscriptToolStatusCompletedLabel;
+
+  /// No description provided for @chatTranscriptHostActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes host activity'**
+  String get chatTranscriptHostActivityTitle;
+
+  /// No description provided for @chatTranscriptToolCategoryWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Web activity'**
+  String get chatTranscriptToolCategoryWeb;
+
+  /// No description provided for @chatTranscriptToolCategoryBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser activity'**
+  String get chatTranscriptToolCategoryBrowser;
+
+  /// No description provided for @chatTranscriptToolCategoryFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'File activity'**
+  String get chatTranscriptToolCategoryFiles;
+
+  /// No description provided for @chatTranscriptToolCategoryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code activity'**
+  String get chatTranscriptToolCategoryCode;
+
+  /// No description provided for @chatTranscriptToolCategoryVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice activity'**
+  String get chatTranscriptToolCategoryVoice;
+
+  /// No description provided for @chatTranscriptToolCategoryMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory activity'**
+  String get chatTranscriptToolCategoryMemory;
+
+  /// No description provided for @chatTranscriptToolCategoryDelegation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delegated activity'**
+  String get chatTranscriptToolCategoryDelegation;
+
+  /// No description provided for @chatTranscriptToolCategorySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled activity'**
+  String get chatTranscriptToolCategorySchedule;
+
+  /// No description provided for @chatTranscriptHostActivityCountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes host activity · {count} steps'**
+  String chatTranscriptHostActivityCountTitle(int count);
+
+  /// No description provided for @chatTranscriptHostStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Host step {step}'**
+  String chatTranscriptHostStepTitle(int step);
 
   /// No description provided for @chatTranscriptToolActivitySingleTitle.
   ///
@@ -3607,6 +3919,18 @@ abstract class AppLocalizations {
   /// **'Hermes model'**
   String get chatLayoutModelFallbackLabel;
 
+  /// No description provided for @chatComposerModelPickerTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose profile model'**
+  String get chatComposerModelPickerTooltip;
+
+  /// No description provided for @chatComposerModelsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Models could not be loaded from Hermes.'**
+  String get chatComposerModelsLoadFailed;
+
   /// No description provided for @chatLayoutTransportUnavailableBody.
   ///
   /// In en, this message translates to:
@@ -3667,6 +3991,150 @@ abstract class AppLocalizations {
   /// **'Voice ready'**
   String get chatLayoutVoiceReadyLabel;
 
+  /// No description provided for @chatVoiceCaptureTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice capture timed out.'**
+  String get chatVoiceCaptureTimedOut;
+
+  /// No description provided for @chatVoiceMicrophonePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission denied. Grant microphone access in system settings, then return to Hermes Wing.'**
+  String get chatVoiceMicrophonePermissionDenied;
+
+  /// No description provided for @chatVoiceDeviceLanguageUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Device speech recognition has no offline language for this device locale. Install that language\'s offline speech data in Android settings, then return to Hermes Wing.'**
+  String get chatVoiceDeviceLanguageUnavailable;
+
+  /// No description provided for @chatVoiceDeviceSpeechUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Device speech recognition is unavailable. Install or enable device speech recognition, then return to Hermes Wing.'**
+  String get chatVoiceDeviceSpeechUnavailable;
+
+  /// No description provided for @chatVoiceNoSpeechDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'No speech was recognized. Tap Speak, wait for Listening, then speak clearly and close to the microphone.'**
+  String get chatVoiceNoSpeechDetected;
+
+  /// No description provided for @chatVoiceCaptureFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice capture failed: {detail}'**
+  String chatVoiceCaptureFailed(String detail);
+
+  /// No description provided for @chatVoiceCaptureFailedFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice capture failed.'**
+  String get chatVoiceCaptureFailedFallback;
+
+  /// No description provided for @chatVoiceCaptureSessionChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice capture was discarded because the Hermes session changed.'**
+  String get chatVoiceCaptureSessionChanged;
+
+  /// No description provided for @chatVoiceInputUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input is not available here.'**
+  String get chatVoiceInputUnavailable;
+
+  /// No description provided for @chatVoiceTurnSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice turn could not be sent: {detail}'**
+  String chatVoiceTurnSendFailed(String detail);
+
+  /// No description provided for @chatVoiceTurnSendFailedFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice turn could not be sent.'**
+  String get chatVoiceTurnSendFailedFallback;
+
+  /// No description provided for @chatVoiceShutdownTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice shutdown timed out. Continuous voice paused.'**
+  String get chatVoiceShutdownTimedOut;
+
+  /// No description provided for @chatVoiceShutdownFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice shutdown failed. Continuous voice paused.'**
+  String get chatVoiceShutdownFailed;
+
+  /// No description provided for @chatVoicePlaybackUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice playback is unavailable for this connection. The reply is available as text. Voice input remains available from the microphone.'**
+  String get chatVoicePlaybackUnavailable;
+
+  /// No description provided for @chatVoicePlaybackUnavailableContinuous.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice playback is unavailable for this connection. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.'**
+  String get chatVoicePlaybackUnavailableContinuous;
+
+  /// No description provided for @chatVoicePlaybackFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice playback failed. The reply is available as text. Voice input remains available from the microphone.'**
+  String get chatVoicePlaybackFailed;
+
+  /// No description provided for @chatVoicePlaybackFailedContinuous.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice playback failed. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.'**
+  String get chatVoicePlaybackFailedContinuous;
+
+  /// No description provided for @chatVoicePlaybackSessionChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session changed before the spoken reply finished.'**
+  String get chatVoicePlaybackSessionChanged;
+
+  /// No description provided for @chatVoicePlaybackSessionChangedContinuous.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session changed before voice could re-arm. Continuous voice paused.'**
+  String get chatVoicePlaybackSessionChangedContinuous;
+
+  /// No description provided for @chatVoicePausedByLocalCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous voice paused by local command.'**
+  String get chatVoicePausedByLocalCommand;
+
+  /// No description provided for @chatVoiceSessionChangedContinuous.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session changed. Continuous voice paused.'**
+  String get chatVoiceSessionChangedContinuous;
+
+  /// No description provided for @chatVoiceSessionChangedSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session changed. Spoken reply stopped.'**
+  String get chatVoiceSessionChangedSpeaking;
+
+  /// No description provided for @chatVoiceSessionChangedCapturing.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes session changed. Voice capture stopped.'**
+  String get chatVoiceSessionChangedCapturing;
+
+  /// No description provided for @chatVoiceContinuousPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'{message} Continuous voice paused.'**
+  String chatVoiceContinuousPaused(String message);
+
   /// No description provided for @chatLayoutComposerSpeakingHint.
   ///
   /// In en, this message translates to:
@@ -3690,6 +4158,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chat transport unavailable'**
   String get chatLayoutComposerTransportUnavailableHint;
+
+  /// No description provided for @chatLayoutComposerRunRecoveryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect to reconcile the active run…'**
+  String get chatLayoutComposerRunRecoveryHint;
 
   /// No description provided for @chatLayoutChatMenuTooltip.
   ///
@@ -3769,6 +4243,54 @@ abstract class AppLocalizations {
   /// **'Attach image or text file'**
   String get chatLayoutAttachFileTooltip;
 
+  /// No description provided for @chatAttachmentRemoveCurrentError.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the current attachment before adding another.'**
+  String get chatAttachmentRemoveCurrentError;
+
+  /// No description provided for @chatAttachmentInsertedImageReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the inserted image.'**
+  String get chatAttachmentInsertedImageReadError;
+
+  /// No description provided for @chatAttachmentImageSizeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Images must be 10 MB or smaller.'**
+  String get chatAttachmentImageSizeError;
+
+  /// No description provided for @chatAttachmentPastedImageTypeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes accepts pasted PNG, JPEG, GIF, and WebP images.'**
+  String get chatAttachmentPastedImageTypeError;
+
+  /// No description provided for @chatAttachmentTextSizeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Text files must be 256 KB or smaller.'**
+  String get chatAttachmentTextSizeError;
+
+  /// No description provided for @chatAttachmentUnsupportedTypeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes accepts PNG, JPEG, GIF, WebP, and UTF-8 text files; PDFs, binary files, and videos cannot be sent.'**
+  String get chatAttachmentUnsupportedTypeError;
+
+  /// No description provided for @chatAttachmentInvalidUtf8Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Text attachments must contain valid UTF-8.'**
+  String get chatAttachmentInvalidUtf8Error;
+
+  /// No description provided for @chatAttachmentOpenError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open attachment: {error}'**
+  String chatAttachmentOpenError(String error);
+
   /// No description provided for @chatLayoutStopSpeakingTooltip.
   ///
   /// In en, this message translates to:
@@ -3778,7 +4300,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutSpeakAndSendTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Speak and send'**
+  /// **'Start hands-free voice'**
   String get chatLayoutSpeakAndSendTooltip;
 
   /// No description provided for @chatLayoutSendTooltip.
@@ -3786,6 +4308,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send'**
   String get chatLayoutSendTooltip;
+
+  /// No description provided for @chatLayoutVoiceOutputUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice output unavailable'**
+  String get chatLayoutVoiceOutputUnavailableTitle;
+
+  /// No description provided for @chatLayoutVoiceOutputUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The reply is available as text. Voice playback stopped, and hands-free listening is off. Voice input remains available from the microphone.'**
+  String get chatLayoutVoiceOutputUnavailableBody;
+
+  /// No description provided for @chatLayoutContinueInTextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue in text'**
+  String get chatLayoutContinueInTextAction;
+
+  /// No description provided for @chatLocalArtifactUndeliveredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not delivered to this device'**
+  String get chatLocalArtifactUndeliveredTitle;
+
+  /// No description provided for @chatLocalAudioArtifactUndeliveredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A tool created audio on the Hermes host, but Wing did not receive a playable audio attachment. Use the text reply instead.'**
+  String get chatLocalAudioArtifactUndeliveredBody;
+
+  /// No description provided for @chatLocalMediaArtifactUndeliveredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes referenced media on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.'**
+  String get chatLocalMediaArtifactUndeliveredBody;
+
+  /// No description provided for @chatLocalFileArtifactUndeliveredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes created a file on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.'**
+  String get chatLocalFileArtifactUndeliveredBody;
 
   /// No description provided for @chatShellVoicePausedBackgroundBody.
   ///
@@ -4297,6 +4861,24 @@ abstract class AppLocalizations {
   /// **'Sessions'**
   String get chatRailSessionsTitle;
 
+  /// No description provided for @chatRailPinnedGroupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get chatRailPinnedGroupLabel;
+
+  /// No description provided for @chatRailPinSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get chatRailPinSessionAction;
+
+  /// No description provided for @chatRailUnpinSessionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get chatRailUnpinSessionAction;
+
   /// No description provided for @chatRailHermesSessionsTitle.
   ///
   /// In en, this message translates to:
@@ -4338,6 +4920,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search sessions'**
   String get chatRailSearchSessionsLabel;
+
+  /// No description provided for @chatRailSourceFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by source'**
+  String get chatRailSourceFilterLabel;
+
+  /// No description provided for @chatRailAllSourcesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All sources'**
+  String get chatRailAllSourcesLabel;
 
   /// No description provided for @chatRailClearSearchTooltip.
   ///
@@ -4387,6 +4981,12 @@ abstract class AppLocalizations {
   /// **'Active Hermes session'**
   String get chatRailActiveHermesSessionLabel;
 
+  /// No description provided for @chatRailCycleActiveSessionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch live chats · Ctrl+Tab or Ctrl/Command+1–9'**
+  String get chatRailCycleActiveSessionsTooltip;
+
   /// No description provided for @chatRailActiveLabel.
   ///
   /// In en, this message translates to:
@@ -4398,6 +4998,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Streaming'**
   String get chatRailStatusStreamingLabel;
+
+  /// No description provided for @chatRailNewReplyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New reply'**
+  String get chatRailNewReplyLabel;
 
   /// No description provided for @chatRailStatusReadyLabel.
   ///
@@ -4570,31 +5176,31 @@ abstract class AppLocalizations {
   /// No description provided for @chatRailDetailInputTokensLabel.
   ///
   /// In en, this message translates to:
-  /// **'Input tokens: {count}'**
+  /// **'Session input tokens: {count}'**
   String chatRailDetailInputTokensLabel(int count);
 
   /// No description provided for @chatRailDetailOutputTokensLabel.
   ///
   /// In en, this message translates to:
-  /// **'Output tokens: {count}'**
+  /// **'Session output tokens: {count}'**
   String chatRailDetailOutputTokensLabel(int count);
 
   /// No description provided for @chatRailDetailCacheReadTokensLabel.
   ///
   /// In en, this message translates to:
-  /// **'Cache read tokens: {count}'**
+  /// **'Session cache read tokens: {count}'**
   String chatRailDetailCacheReadTokensLabel(int count);
 
   /// No description provided for @chatRailDetailCacheWriteTokensLabel.
   ///
   /// In en, this message translates to:
-  /// **'Cache write tokens: {count}'**
+  /// **'Session cache write tokens: {count}'**
   String chatRailDetailCacheWriteTokensLabel(int count);
 
   /// No description provided for @chatRailDetailReasoningTokensLabel.
   ///
   /// In en, this message translates to:
-  /// **'Reasoning tokens: {count}'**
+  /// **'Session reasoning tokens: {count}'**
   String chatRailDetailReasoningTokensLabel(int count);
 
   /// No description provided for @chatRailDetailActualCostLabel.
@@ -4711,6 +5317,24 @@ abstract class AppLocalizations {
   /// **'Appearance'**
   String get settingsAppearanceSection;
 
+  /// No description provided for @settingsChatSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get settingsChatSection;
+
+  /// No description provided for @chatSpellcheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check spelling'**
+  String get chatSpellcheckTitle;
+
+  /// No description provided for @chatSpellcheckSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the platform spell checker while composing messages'**
+  String get chatSpellcheckSubtitle;
+
   /// No description provided for @themeModeSystem.
   ///
   /// In en, this message translates to:
@@ -4768,7 +5392,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipVoice.
   ///
   /// In en, this message translates to:
-  /// **'Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.'**
+  /// **'Tap the microphone for hands-free voice. Long-press to dictate for review. Wing reports listening and playback separately.'**
   String get tipVoice;
 
   /// No description provided for @tipApprovals.
@@ -4926,6 +5550,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Run setup'**
   String get localSetupConsentAction;
+
+  /// No description provided for @termuxSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Hermes Agent on this phone'**
+  String get termuxSetupTitle;
+
+  /// No description provided for @termuxSetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.'**
+  String get termuxSetupBody;
+
+  /// No description provided for @termuxInstallAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Termux'**
+  String get termuxInstallAction;
+
+  /// No description provided for @termuxCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy setup command'**
+  String get termuxCopyAction;
+
+  /// No description provided for @termuxCopiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup command copied. Open Termux and run it without changes.'**
+  String get termuxCopiedMessage;
+
+  /// No description provided for @termuxCopyFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The setup command could not be copied. Select the command and copy it manually.'**
+  String get termuxCopyFailedMessage;
+
+  /// No description provided for @termuxMetadataUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This build cannot install the matching Wing Link release.'**
+  String get termuxMetadataUnavailable;
+
+  /// No description provided for @termuxRunStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Termux and run the copied command. Keep Termux in the foreground while setup finishes.'**
+  String get termuxRunStep;
+
+  /// No description provided for @termuxReturnStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the local link shown by Termux, then return here to review the connection.'**
+  String get termuxReturnStep;
+
+  /// No description provided for @termuxTierTwoNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Android / Termux is Tier 2. Android may stop background processes; rerun the same command to recover.'**
+  String get termuxTierTwoNotice;
+
+  /// No description provided for @enrollInstallOnPhoneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Hermes Agent on this phone'**
+  String get enrollInstallOnPhoneAction;
+
+  /// No description provided for @enrollConnectedLocalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent is connected on this phone. To configure the existing default profile, run hermes setup in Termux. To configure more in Wing, create a new profile with its provider and model, approve the request in Termux, retry the unchanged request, then pair once more to enroll that profile.'**
+  String get enrollConnectedLocalBody;
+
+  /// No description provided for @profileApprovalRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve this request locally on the Wing Link host, then retry the unchanged setup. Run wing-link approvals list, then wing-link approvals approve {approvalId}.'**
+  String profileApprovalRequired(String approvalId);
+
+  /// No description provided for @profileRetryApprovedSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry approved setup'**
+  String get profileRetryApprovedSetup;
+
+  /// No description provided for @profileCancelSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel setup'**
+  String get profileCancelSetup;
+
+  /// No description provided for @profileApprovalExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The local approval expired. Enter the credential again to start a new request.'**
+  String get profileApprovalExpired;
 }
 
 class _AppLocalizationsDelegate

@@ -10,6 +10,7 @@ void main() {
       'docs/security/threat-model.md',
     ).readAsStringSync();
     final roadmap = File('ROADMAP.md').readAsStringSync();
+    final routes = File('docs/product/routes.md').readAsStringSync();
     final readme = File('README.md').readAsStringSync();
     final compatibility = File(
       'docs/product/hermes-compatibility.md',
@@ -31,6 +32,11 @@ void main() {
     expect(context, contains('remote management API'));
     expect(threatModel, contains('opaque handles'));
     expect(roadmap, contains('Profiles, directories, and Projects'));
+    expect(routes, contains('opaque handles'));
+    expect(routes, contains('Project creation remains unavailable'));
+    expect(routes, isNot(contains('remote file browser')));
+    expect(roadmap, contains('child folders only'));
+    expect(roadmap, contains('Project-aware Chat remains gated'));
     expect(profileGuide, contains('Current profile path'));
     expect(profileGuide, contains('Repository and subfolder assignment'));
     expect(wingLinkGuide, contains('folder picker'));
@@ -68,6 +74,35 @@ void main() {
       supersededBridgeDesign,
       contains('Status: superseded; do not implement'),
     );
+  });
+
+  test('Android Termux local hosting remains bounded', () {
+    final runtimeDecision = File(
+      'docs/adr/runtime-and-delivery.md',
+    ).readAsStringSync();
+    final threatModel = File(
+      'docs/security/threat-model.md',
+    ).readAsStringSync();
+    final termuxRunbook = File(
+      'docs/runbooks/android-termux-local-agent.md',
+    ).readAsStringSync();
+
+    expect(runtimeDecision, contains('Android/Termux'));
+    expect(runtimeDecision, contains('best-effort background'));
+    expect(runtimeDecision, contains('explicit user-run bootstrap'));
+    expect(
+      runtimeDecision,
+      contains('does not request Termux external-command access'),
+    );
+    expect(
+      threatModel,
+      contains('Wing and Termux remain separate app sandboxes'),
+    );
+    expect(termuxRunbook, contains('127.0.0.1:8642'));
+    expect(termuxRunbook, contains('127.0.0.1:8654'));
+    expect(termuxRunbook, contains('pair again'));
+    expect(termuxRunbook, contains('Tier 2'));
+    expect(termuxRunbook, isNot(contains('RUN_COMMAND')));
   });
 
   test('Nostr research is archived outside the core control plane', () {

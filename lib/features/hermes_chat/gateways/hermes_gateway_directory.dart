@@ -173,6 +173,9 @@ class HermesGatewayDirectory extends ChangeNotifier
         profileId.isEmpty) {
       return null;
     }
+    final sourceFingerprint = source.wingLinkHostFingerprint?.trim() ?? '';
+    final requiresPinnedWingLink = sourceWingLink.scheme == 'https';
+    if (requiresPinnedWingLink && sourceFingerprint.isEmpty) return null;
     for (final entry in _configsById.entries) {
       final candidate = entry.value;
       final credential = candidate.apiKey?.trim() ?? '';
@@ -188,7 +191,10 @@ class HermesGatewayDirectory extends ChangeNotifier
           candidateWingLink.scheme != sourceWingLink.scheme ||
           candidateWingLink.host.toLowerCase() !=
               sourceWingLink.host.toLowerCase() ||
-          candidateWingLink.port != sourceWingLink.port) {
+          candidateWingLink.port != sourceWingLink.port ||
+          (requiresPinnedWingLink &&
+              (candidate.wingLinkHostFingerprint?.trim() ?? '') !=
+                  sourceFingerprint)) {
         continue;
       }
       final segments = candidateHermes.pathSegments
@@ -836,14 +842,29 @@ class HermesGatewayDirectory extends ChangeNotifier
       }
       if (generation != _activationGeneration) return;
 
-      final sessionId =
+      final resolvedPreferredSessionId =
           preferredSessionId != null &&
               _activeChannel.state.sessions.any(
                 (session) => session.id == preferredSessionId,
               )
           ? preferredSessionId
-          : contact.latestSession?.id;
-      if (sessionId != null &&
+          : null;
+      final sessionId = resolvedPreferredSessionId ?? contact.latestSession?.id;
+      final session = sessionId == null
+          ? null
+          : _activeChannel.state.sessions
+                .where((candidate) => candidate.id == sessionId)
+                .firstOrNull;
+      if (resolvedPreferredSessionId == null && session?.source == 'telegram') {
+        if (_activeChannel.state.canCreateSessions) {
+          await _activeChannel.createSession();
+          if (generation != _activationGeneration) return;
+        } else {
+          // Keep Telegram history discoverable without presenting its active
+          // conversation as the current Wing chat.
+          _activeChannel.clearActiveSession();
+        }
+      } else if (sessionId != null &&
           _activeChannel.state.sessions.any(
             (session) => session.id == sessionId,
           )) {

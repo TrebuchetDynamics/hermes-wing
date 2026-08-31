@@ -68,6 +68,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.approvalResponseGate,
     this.connectGate,
     this.sendTextGate,
+    this.selectProfileGate,
+    this.selectProfileFails = false,
     this.createProfileFails = false,
     this.renameProfileFails = false,
     this.deleteProfileFails = false,
@@ -166,11 +168,13 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final Future<void> Function()? approvalResponseGate;
   final Future<void> Function()? connectGate;
   final Future<void> Function()? sendTextGate;
+  final Future<void> Function(String profileId)? selectProfileGate;
 
   /// Profile-mutation failure injection. When set, the corresponding mutation
   /// records its call, refreshes nothing successfully, and throws a
   /// [StateError] carrying [profileMutationFailureMessage] (default contains
   /// `HTTP 412`, which the UI maps to a revision-conflict message).
+  final bool selectProfileFails;
   final bool createProfileFails;
   final bool renameProfileFails;
   final bool deleteProfileFails;
@@ -253,6 +257,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> disconnect() async {
     disconnectCalls++;
     _setState(const HermesChannelState());
+  }
+
+  @override
+  void clearActiveSession() {
+    _setState(_state.copyWith(clearActiveSessionId: true));
   }
 
   @override
@@ -358,6 +367,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }) async {
     selectProfileCalls.add(profileId);
     selectProfileAllowDiscoveredCalls.add(allowDiscovered);
+    final gate = selectProfileGate;
+    if (gate != null) await gate(profileId);
+    if (selectProfileFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
     _setState(_state.copyWith(selectedProfileId: profileId));
   }
 
@@ -628,8 +642,28 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       return;
     }
     beginStreamingTurn(text, attachment: attachment);
-    await gate();
-    completeStreamingTurn(text: 'Echo: $text');
+    try {
+      await gate();
+      completeStreamingTurn(text: 'Echo: $text');
+    } catch (error) {
+      final sessionId = _state.activeSessionId;
+      if (sessionId != null) {
+        final turns = List<HermesChatTurn>.from(_state.activeMessages);
+        final index = turns.lastIndexWhere(
+          (turn) => turn.status == HermesTurnStatus.streaming,
+        );
+        if (index >= 0) {
+          turns[index] = turns[index].copyWith(status: HermesTurnStatus.failed);
+          _setState(
+            _state.copyWith(
+              messages: {..._state.messages, sessionId: turns},
+              errorMessage: error.toString(),
+            ),
+          );
+        }
+      }
+      rethrow;
+    }
   }
 
   void emitApprovalRequest(HermesApprovalRequest request) {
@@ -642,11 +676,15 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
 
   /// Test-only helper: leaves an assistant turn `streaming` (as a real
   /// in-flight run would) so widget tests can exercise the stop control.
-  void beginStreamingTurn(String userText, {HermesTurnAttachment? attachment}) {
+  void beginStreamingTurn(
+    String userText, {
+    HermesTurnAttachment? attachment,
+    DateTime? createdAt,
+  }) {
     final sessionId = _state.activeSessionId;
     if (sessionId == null) return;
     final turns = List<HermesChatTurn>.from(_state.activeMessages);
-    final now = DateTime.now();
+    final now = createdAt ?? DateTime.now();
     turns.add(
       HermesChatTurn(
         id: 'user-${turns.length}',
@@ -751,6 +789,24 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         toolCall: toolCall,
       ),
     );
+    _setState(
+      _state.copyWith(messages: {..._state.messages, sessionId: turns}),
+    );
+  }
+
+  void addEmptyCompletedAssistantTurn() {
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) return;
+    final turns = List<HermesChatTurn>.from(_state.activeMessages)
+      ..add(
+        HermesChatTurn(
+          id: 'assistant-${_state.activeMessages.length}',
+          sessionId: sessionId,
+          author: HermesTurnAuthor.assistant,
+          createdAt: DateTime.now(),
+          status: HermesTurnStatus.completed,
+        ),
+      );
     _setState(
       _state.copyWith(messages: {..._state.messages, sessionId: turns}),
     );

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 
 typedef ProfileCreateCallback =
@@ -11,7 +14,14 @@ typedef ProfileCreateCallback =
       String? provider,
       String? model,
       String? providerApiKey,
+      String? idempotencyKey,
     });
+typedef _PendingProfileApproval = ({
+  String approvalId,
+  String idempotencyKey,
+  int expiresAt,
+});
+
 typedef ProfileRenameCallback =
     Future<void> Function({
       required String profileId,
@@ -65,8 +75,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   String? _error;
   bool _saving = false;
   bool _loadingPersona = false;
+  _PendingProfileApproval? _pendingApproval;
+  Timer? _approvalExpiryTimer;
 
   bool get _editing => widget.profile != null;
+  bool get _payloadFrozen => _saving || _pendingApproval != null;
 
   @override
   void initState() {
@@ -87,6 +100,8 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 
   @override
   void dispose() {
+    _approvalExpiryTimer?.cancel();
+    _credentialController.clear();
     _nameController.dispose();
     _personaController.dispose();
     _descriptionController.dispose();
@@ -155,7 +170,52 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     }
   }
 
+  bool _approvalExpired(_PendingProfileApproval approval) =>
+      DateTime.now().millisecondsSinceEpoch >= approval.expiresAt * 1000;
+
+  void _clearPendingApproval({bool clearCredential = true}) {
+    _approvalExpiryTimer?.cancel();
+    _approvalExpiryTimer = null;
+    _pendingApproval = null;
+    if (clearCredential) _credentialController.clear();
+  }
+
+  void _holdPendingApproval(WingLinkApprovalRequired approval) {
+    _approvalExpiryTimer?.cancel();
+    _pendingApproval = (
+      approvalId: approval.approvalId,
+      idempotencyKey: approval.idempotencyKey,
+      expiresAt: approval.expiresAt,
+    );
+    final delay = DateTime.fromMillisecondsSinceEpoch(
+      approval.expiresAt * 1000,
+    ).difference(DateTime.now());
+    _approvalExpiryTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+      if (!mounted ||
+          _pendingApproval?.idempotencyKey != approval.idempotencyKey) {
+        return;
+      }
+      setState(() {
+        _clearPendingApproval();
+        _error = AppLocalizations.of(context).profileApprovalExpired;
+      });
+    });
+  }
+
+  void _cancelEditor() {
+    setState(() => _clearPendingApproval());
+    Navigator.of(context).maybePop();
+  }
+
   Future<void> _save() async {
+    final pendingApproval = _pendingApproval;
+    if (pendingApproval != null && _approvalExpired(pendingApproval)) {
+      setState(() {
+        _clearPendingApproval();
+        _error = AppLocalizations.of(context).profileApprovalExpired;
+      });
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _saving = true;
@@ -178,6 +238,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             providerApiKey: _credentialController.text.isEmpty
                 ? null
                 : _credentialController.text,
+            idempotencyKey: pendingApproval?.idempotencyKey,
           );
         }
       } else {
@@ -219,17 +280,33 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           );
         }
       }
-      if (mounted) await Navigator.of(context).maybePop();
+      if (!mounted) return;
+      _clearPendingApproval();
+      await Navigator.of(context).maybePop();
+    } on WingLinkApprovalRequired catch (approval) {
+      if (!mounted) return;
+      if (pendingApproval != null &&
+          approval.idempotencyKey != pendingApproval.idempotencyKey) {
+        setState(() {
+          _clearPendingApproval();
+          _error = AppLocalizations.of(context).profileOperationFailed;
+        });
+      } else {
+        setState(() {
+          _holdPendingApproval(approval);
+          _error = null;
+        });
+      }
     } catch (error) {
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
       setState(() {
+        _clearPendingApproval();
         _error = error.toString().contains('412')
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
       });
     } finally {
-      _credentialController.clear();
       if (mounted) setState(() => _saving = false);
     }
   }
@@ -264,6 +341,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _nameController,
+                enabled: !_payloadFrozen,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: strings.agentDisplayName,
@@ -302,7 +380,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                         ),
                       ),
                   ],
-                  onChanged: _saving
+                  onChanged: _payloadFrozen
                       ? null
                       : (value) => setState(() => _cloneFrom = value),
                 ),
@@ -310,6 +388,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _descriptionController,
+                    enabled: !_payloadFrozen,
                     minLines: 2,
                     maxLines: 4,
                     decoration: InputDecoration(
@@ -320,6 +399,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _providerController,
+                    enabled: !_payloadFrozen,
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: strings.profileProviderLabel,
@@ -340,6 +420,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _modelController,
+                    enabled: !_payloadFrozen,
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: strings.profileModelLabel,
@@ -362,6 +443,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _credentialController,
+                    enabled: !_payloadFrozen,
                     obscureText: true,
                     autocorrect: false,
                     enableSuggestions: false,
@@ -378,6 +460,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _descriptionController,
+                  enabled: !_payloadFrozen,
                   minLines: 2,
                   maxLines: 4,
                   decoration: InputDecoration(
@@ -388,6 +471,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _providerController,
+                  enabled: !_payloadFrozen,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: strings.profileProviderLabel,
@@ -405,6 +489,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _modelController,
+                  enabled: !_payloadFrozen,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: strings.profileModelLabel,
@@ -424,6 +509,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _credentialController,
+                  enabled: !_payloadFrozen,
                   obscureText: true,
                   autocorrect: false,
                   enableSuggestions: false,
@@ -472,6 +558,17 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 Text(strings.defaultAgentCannotDelete),
               ],
+              if (_pendingApproval != null) ...[
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    strings.profileApprovalRequired(
+                      _pendingApproval!.approvalId,
+                    ),
+                  ),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Semantics(
@@ -491,10 +588,12 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 runSpacing: 8,
                 children: [
                   TextButton(
-                    onPressed: _saving
-                        ? null
-                        : () => Navigator.of(context).maybePop(),
-                    child: Text(strings.cancelAction),
+                    onPressed: _saving ? null : _cancelEditor,
+                    child: Text(
+                      _pendingApproval == null
+                          ? strings.cancelAction
+                          : strings.profileCancelSetup,
+                    ),
                   ),
                   FilledButton(
                     onPressed: _saving ? null : _save,
@@ -504,7 +603,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(
-                            profile == null
+                            _pendingApproval != null
+                                ? strings.profileRetryApprovedSetup
+                                : profile == null
                                 ? strings.createAction
                                 : strings.saveAction,
                           ),

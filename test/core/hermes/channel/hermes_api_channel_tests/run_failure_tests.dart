@@ -399,6 +399,88 @@ void _hermesApiChannelRunFailureTests() {
     },
   );
 
+  test('sendText reconciles a silent run stream from failed run status', () async {
+    final stream = _ManualStringStream();
+    var statusRequests = 0;
+    final channel = HermesApiChannel(
+      streamIdleTimeout: const Duration(minutes: 1),
+      runStatusReconcileInterval: const Duration(milliseconds: 10),
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' => () {
+            statusRequests += 1;
+            return '{"run_id":"run_1","session_id":"sess_1","status":"failed","error":"provider rejected api_key=secret-value"}';
+          }(),
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async =>
+            '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+        getStream: (uri, headers) => stream,
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await expectLater(
+      channel.sendText('silent failed run').timeout(const Duration(seconds: 1)),
+      completes,
+    );
+
+    expect(statusRequests, 1);
+    expect(
+      channel.state.errorMessage,
+      'Hermes run failed: provider rejected api_key=[redacted]',
+    );
+    expect(channel.state.errorMessage, isNot(contains('secret-value')));
+    expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
+  });
+
+  test(
+    'sendText fails an empty terminal run after status was still running',
+    () async {
+      final stream = _ManualStringStream();
+      final statusRead = Completer<void>();
+      final channel = HermesApiChannel(
+        streamIdleTimeout: const Duration(minutes: 1),
+        runStatusReconcileInterval: const Duration(milliseconds: 10),
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/v1/runs/run_1' => () {
+              if (!statusRead.isCompleted) statusRead.complete();
+              return '{"run_id":"run_1","session_id":"sess_1","status":"running"}';
+            }(),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async =>
+              '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+          getStream: (uri, headers) => stream,
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      final send = channel.sendText('empty terminal run');
+      await statusRead.future;
+      stream.emit('event: run.completed\ndata: {}\n\n');
+      await send;
+
+      expect(
+        channel.state.errorMessage,
+        'Hermes finished without an assistant reply.',
+      );
+    },
+  );
+
   test('sendText fails when a run stream emits an error event', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(

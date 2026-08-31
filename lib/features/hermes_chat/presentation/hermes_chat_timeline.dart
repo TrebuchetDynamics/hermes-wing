@@ -2,6 +2,30 @@ part of '../screens/hermes_chat_screen.dart';
 
 enum _TranscriptContextAction { copyText, copyMarkdown }
 
+final class _TranscriptTextScaler extends TextScaler {
+  const _TranscriptTextScaler(this.base, this.factor);
+
+  final TextScaler base;
+  final double factor;
+
+  @override
+  double scale(double fontSize) => base.scale(fontSize) * factor;
+
+  @override
+  // Required by TextScaler for legacy callers; scale() retains nonlinear behavior.
+  // ignore: deprecated_member_use
+  double get textScaleFactor => base.textScaleFactor * factor;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _TranscriptTextScaler &&
+      other.base == base &&
+      other.factor == factor;
+
+  @override
+  int get hashCode => Object.hash(base, factor);
+}
+
 RelativeRect _contextMenuPosition(BuildContext context, Offset globalPosition) {
   final overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
   final localPosition = overlay.globalToLocal(globalPosition);
@@ -16,6 +40,10 @@ RelativeRect _contextMenuPosition(BuildContext context, Offset globalPosition) {
 class _HermesTranscriptList extends StatelessWidget {
   const _HermesTranscriptList({
     required this.controller,
+    required this.textScale,
+    required this.onScaleStart,
+    required this.onScaleUpdate,
+    required this.onScaleEnd,
     required this.turns,
     required this.profileId,
     required this.profileColor,
@@ -26,6 +54,9 @@ class _HermesTranscriptList extends StatelessWidget {
     required this.onResolveApproval,
     required this.onDismissApproval,
     required this.onReplyTurn,
+    required this.onReadAloudTurn,
+    required this.readAloudTurnId,
+    required this.onStopReadAloud,
     required this.onCopyTranscriptText,
     required this.onCopyTranscriptMarkdown,
     required this.enableDesktopContextMenu,
@@ -37,6 +68,10 @@ class _HermesTranscriptList extends StatelessWidget {
   });
 
   final ScrollController controller;
+  final double textScale;
+  final GestureScaleStartCallback onScaleStart;
+  final GestureScaleUpdateCallback onScaleUpdate;
+  final GestureScaleEndCallback onScaleEnd;
   final List<HermesChatTurn> turns;
   final String profileId;
   final String? profileColor;
@@ -47,6 +82,9 @@ class _HermesTranscriptList extends StatelessWidget {
   final ValueChanged<HermesApprovalDecision> onResolveApproval;
   final VoidCallback onDismissApproval;
   final ValueChanged<HermesChatTurn> onReplyTurn;
+  final ValueChanged<HermesChatTurn>? onReadAloudTurn;
+  final String? readAloudTurnId;
+  final VoidCallback onStopReadAloud;
   final VoidCallback onCopyTranscriptText;
   final VoidCallback onCopyTranscriptMarkdown;
   final bool enableDesktopContextMenu;
@@ -58,36 +96,45 @@ class _HermesTranscriptList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final visibleTurns = turns
+        .where(
+          (turn) =>
+              turn.kind != HermesTurnKind.text ||
+              turn.status == HermesTurnStatus.streaming ||
+              turn.text.trim().isNotEmpty ||
+              turn.attachment != null,
+        )
+        .toList(growable: false);
     final rows = <Widget>[];
-    for (var index = 0; index < turns.length; index++) {
-      final turn = turns[index];
-      if (turn.kind == HermesTurnKind.text &&
-          turn.status != HermesTurnStatus.streaming &&
-          turn.text.trim().isEmpty &&
-          turn.attachment == null) {
-        continue;
-      }
+    for (var index = 0; index < visibleTurns.length; index++) {
+      final turn = visibleTurns[index];
+      final showAssistantAvatar =
+          turn.author != HermesTurnAuthor.user &&
+          (index == 0 ||
+              visibleTurns[index - 1].author == HermesTurnAuthor.user);
       if (turn.kind == HermesTurnKind.reasoning) {
         rows.add(
           _ReasoningCard(
             turn: turn,
             profileId: profileId,
             profileColor: profileColor,
+            showAvatar: showAssistantAvatar,
           ),
         );
       } else if (turn.kind == HermesTurnKind.toolCall &&
           turn.toolCall != null) {
         final group = <HermesChatTurn>[turn];
-        while (index + 1 < turns.length &&
-            turns[index + 1].kind == HermesTurnKind.toolCall &&
-            turns[index + 1].toolCall != null) {
-          group.add(turns[++index]);
+        while (index + 1 < visibleTurns.length &&
+            visibleTurns[index + 1].kind == HermesTurnKind.toolCall &&
+            visibleTurns[index + 1].toolCall != null) {
+          group.add(visibleTurns[++index]);
         }
         rows.add(
           _ToolActivityGroup(
             turns: group,
             profileId: profileId,
             profileColor: profileColor,
+            showAvatar: showAssistantAvatar,
           ),
         );
       } else {
@@ -96,7 +143,11 @@ class _HermesTranscriptList extends StatelessWidget {
             turn: turn,
             profileId: profileId,
             profileColor: profileColor,
+            showAvatar: showAssistantAvatar,
             onReply: onReplyTurn,
+            onReadAloud: onReadAloudTurn,
+            readAloudActive: readAloudTurnId == turn.id,
+            onStopReadAloud: onStopReadAloud,
             onCopyTranscriptText: onCopyTranscriptText,
             onCopyTranscriptMarkdown: onCopyTranscriptMarkdown,
             enableDesktopContextMenu: enableDesktopContextMenu,
@@ -134,32 +185,43 @@ class _HermesTranscriptList extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
+      onScaleStart: onScaleStart,
+      onScaleUpdate: onScaleUpdate,
+      onScaleEnd: onScaleEnd,
       onSecondaryTapDown: !enableDesktopContextMenu || turns.isEmpty
           ? null
           : (details) => unawaited(
               _showTranscriptContextMenu(context, details.globalPosition),
             ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.alphaBlend(
-                colors.primary.withValues(alpha: 0.025),
-                colors.surface,
-              ),
-              colors.surface,
-            ],
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: _TranscriptTextScaler(
+            MediaQuery.textScalerOf(context),
+            textScale,
           ),
         ),
-        child: ListView(
-          key: const ValueKey('hermes-transcript'),
-          controller: controller,
-          reverse: true,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
-          children: rows.reversed.toList(growable: false),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.alphaBlend(
+                  colors.primary.withValues(alpha: 0.025),
+                  colors.surface,
+                ),
+                colors.surface,
+              ],
+            ),
+          ),
+          child: ListView(
+            key: const ValueKey('hermes-transcript'),
+            controller: controller,
+            reverse: true,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+            children: rows.reversed.toList(growable: false),
+          ),
         ),
       ),
     );
@@ -202,11 +264,13 @@ class _AssistantTimelineItem extends StatelessWidget {
     required this.child,
     this.profileId = 'default',
     this.profileColor,
+    this.showAvatar = true,
   });
 
   final Widget child;
   final String profileId;
   final String? profileColor;
+  final bool showAvatar;
 
   @override
   Widget build(BuildContext context) {
@@ -222,23 +286,26 @@ class _AssistantTimelineItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: CircleAvatar(
-                  key: const ValueKey('hermes-assistant-avatar'),
-                  radius: 15,
-                  backgroundColor: identityColor,
-                  child: Text(
-                    profileId.trim().isEmpty
-                        ? 'H'
-                        : profileId.trim().characters.first.toUpperCase(),
-                    style: TextStyle(
-                      color: hermesProfileForeground(identityColor),
-                      fontWeight: FontWeight.w900,
+              if (showAvatar)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: CircleAvatar(
+                    key: const ValueKey('hermes-assistant-avatar'),
+                    radius: 15,
+                    backgroundColor: identityColor,
+                    child: Text(
+                      profileId.trim().isEmpty
+                          ? 'H'
+                          : profileId.trim().characters.first.toUpperCase(),
+                      style: TextStyle(
+                        color: hermesProfileForeground(identityColor),
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
-                ),
-              ),
+                )
+              else
+                const SizedBox(width: 30),
               const SizedBox(width: 10),
               Expanded(child: child),
             ],
@@ -253,18 +320,21 @@ class _ReasoningCard extends StatelessWidget {
   const _ReasoningCard({
     required this.turn,
     required this.profileId,
+    required this.showAvatar,
     this.profileColor,
   });
 
   final HermesChatTurn turn;
   final String profileId;
   final String? profileColor;
+  final bool showAvatar;
 
   @override
   Widget build(BuildContext context) {
     return _AssistantTimelineItem(
       profileId: profileId,
       profileColor: profileColor,
+      showAvatar: showAvatar,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -279,7 +349,10 @@ class _ReasoningCard extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: HermesRichText(turn.text, selectable: true),
+                  child: HermesRichText(
+                    _safeHermesUiText(turn.text),
+                    selectable: true,
+                  ),
                 ),
               ],
             ),
@@ -290,42 +363,137 @@ class _ReasoningCard extends StatelessWidget {
   }
 }
 
+enum _HostToolCategory {
+  web,
+  browser,
+  files,
+  code,
+  voice,
+  memory,
+  delegation,
+  schedule,
+  other,
+}
+
+_HostToolCategory _hostToolCategory(String name) {
+  return switch (name.trim().toLowerCase()) {
+    'web_search' || 'web_fetch' || 'fetch' => _HostToolCategory.web,
+    'browse' || 'browser' => _HostToolCategory.browser,
+    'read_file' ||
+    'write_file' ||
+    'edit_file' ||
+    'list_files' ||
+    'delete_file' ||
+    'search_files' ||
+    'read' ||
+    'write' ||
+    'edit' ||
+    'glob' ||
+    'grep' => _HostToolCategory.files,
+    'execute_code' ||
+    'run_code' ||
+    'python' ||
+    'terminal' ||
+    'bash' ||
+    'shell' ||
+    'run_command' ||
+    'run_shell' => _HostToolCategory.code,
+    'speak' || 'tts' => _HostToolCategory.voice,
+    'remember' || 'recall' => _HostToolCategory.memory,
+    'delegate' ||
+    'spawn_agent' ||
+    'subagent' ||
+    'subagent_fork' ||
+    'workflow' ||
+    'ralph' => _HostToolCategory.delegation,
+    'schedule' => _HostToolCategory.schedule,
+    _ => _HostToolCategory.other,
+  };
+}
+
+String? _hostToolCategoryLabel(
+  AppLocalizations strings,
+  _HostToolCategory category,
+) => switch (category) {
+  _HostToolCategory.web => strings.chatTranscriptToolCategoryWeb,
+  _HostToolCategory.browser => strings.chatTranscriptToolCategoryBrowser,
+  _HostToolCategory.files => strings.chatTranscriptToolCategoryFiles,
+  _HostToolCategory.code => strings.chatTranscriptToolCategoryCode,
+  _HostToolCategory.voice => strings.chatTranscriptToolCategoryVoice,
+  _HostToolCategory.memory => strings.chatTranscriptToolCategoryMemory,
+  _HostToolCategory.delegation => strings.chatTranscriptToolCategoryDelegation,
+  _HostToolCategory.schedule => strings.chatTranscriptToolCategorySchedule,
+  _HostToolCategory.other => null,
+};
+
+IconData? _hostToolCategoryIcon(_HostToolCategory category) =>
+    switch (category) {
+      _HostToolCategory.web => Icons.public,
+      _HostToolCategory.browser => Icons.language,
+      _HostToolCategory.files => Icons.folder_outlined,
+      _HostToolCategory.code => Icons.code,
+      _HostToolCategory.voice => Icons.record_voice_over_outlined,
+      _HostToolCategory.memory => Icons.memory_outlined,
+      _HostToolCategory.delegation => Icons.account_tree_outlined,
+      _HostToolCategory.schedule => Icons.schedule_outlined,
+      _HostToolCategory.other => null,
+    };
+
+IconData _hostToolStatusIcon(String status) => switch (status) {
+  'failed' => Icons.error_outline,
+  'running' => Icons.hourglass_top_outlined,
+  _ => Icons.check_circle_outline,
+};
+
+String _hostToolStatusLabel(AppLocalizations strings, String status) =>
+    switch (status) {
+      'failed' => strings.chatTranscriptToolStatusNeedsAttentionLabel,
+      'running' => strings.chatTranscriptToolStatusRunningLabel,
+      _ => strings.chatTranscriptToolStatusCompletedLabel,
+    };
+
 class _ToolActivityGroup extends StatelessWidget {
   const _ToolActivityGroup({
     required this.turns,
     required this.profileId,
+    required this.showAvatar,
     this.profileColor,
   });
 
   final List<HermesChatTurn> turns;
   final String profileId;
   final String? profileColor;
+  final bool showAvatar;
 
   @override
   Widget build(BuildContext context) {
     final tools = turns.map((turn) => turn.toolCall!).toList();
-    final running = tools.any((tool) => tool.status == 'running');
-    final failed = tools.any((tool) => tool.status == 'failed');
-    final icon = failed
-        ? Icons.error_outline
-        : running
-        ? Icons.hourglass_top_outlined
-        : Icons.check_circle_outline;
+    final aggregateStatus = tools.any((tool) => tool.status == 'failed')
+        ? 'failed'
+        : tools.any((tool) => tool.status == 'running')
+        ? 'running'
+        : 'completed';
     final strings = AppLocalizations.of(context);
-    final status = failed
-        ? strings.chatTranscriptToolStatusNeedsAttentionLabel
-        : running
-        ? strings.chatTranscriptToolStatusRunningLabel
-        : strings.chatTranscriptToolStatusCompletedLabel;
+    final categories = tools
+        .map((tool) => _hostToolCategory(tool.name))
+        .toList(growable: false);
+    final aggregateIcon = _hostToolStatusIcon(aggregateStatus);
+    final status = _hostToolStatusLabel(strings, aggregateStatus);
     final title = tools.length == 1
-        ? strings.chatTranscriptToolActivitySingleTitle(
-            _safeHermesUiPreview(tools.single.name, maxLength: 48),
-          )
-        : strings.chatTranscriptToolActivityCountTitle(tools.length);
+        ? _hostToolCategoryLabel(strings, categories.single) ??
+              strings.chatTranscriptHostActivityTitle
+        : strings.chatTranscriptHostActivityCountTitle(tools.length);
+    final statusText = Semantics(
+      key: ValueKey('hermes-tool-activity-status-${turns.first.id}'),
+      container: true,
+      liveRegion: aggregateStatus != 'completed',
+      child: Text(status),
+    );
 
     return _AssistantTimelineItem(
       profileId: profileId,
       profileColor: profileColor,
+      showAvatar: showAvatar,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -333,16 +501,52 @@ class _ToolActivityGroup extends StatelessWidget {
           child: Card(
             key: ValueKey('hermes-tool-activity-${turns.first.id}'),
             margin: const EdgeInsets.symmetric(vertical: 4),
-            child: ExpansionTile(
-              initiallyExpanded: running || failed,
-              leading: Icon(icon),
-              title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text(status),
-              children: [
-                for (final turn in turns)
-                  _ToolActivityRow(turnId: turn.id, toolCall: turn.toolCall!),
-              ],
-            ),
+            child: tools.length == 1
+                ? ListTile(
+                    leading: Icon(
+                      _hostToolCategoryIcon(categories.single) ?? aggregateIcon,
+                    ),
+                    title: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: statusText,
+                  )
+                : ExpansionTile(
+                    leading: Icon(aggregateIcon),
+                    title: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: statusText,
+                    childrenPadding: const EdgeInsets.only(bottom: 8),
+                    children: [
+                      for (final (index, tool) in tools.indexed)
+                        ListTile(
+                          key: ValueKey(
+                            'hermes-tool-activity-step-${index + 1}',
+                          ),
+                          dense: true,
+                          leading: Icon(
+                            _hostToolCategoryIcon(categories[index]) ??
+                                _hostToolStatusIcon(tool.status),
+                            size: 20,
+                          ),
+                          title: Text(
+                            _hostToolCategoryLabel(
+                                  strings,
+                                  categories[index],
+                                ) ??
+                                strings.chatTranscriptHostStepTitle(index + 1),
+                          ),
+                          subtitle: Text(
+                            _hostToolStatusLabel(strings, tool.status),
+                          ),
+                        ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -350,53 +554,22 @@ class _ToolActivityGroup extends StatelessWidget {
   }
 }
 
-class _ToolActivityRow extends StatelessWidget {
-  const _ToolActivityRow({required this.turnId, required this.toolCall});
-
-  final String turnId;
-  final HermesToolCall toolCall;
-
-  @override
-  Widget build(BuildContext context) {
-    final icon = switch (toolCall.status) {
-      'completed' => Icons.check_circle_outline,
-      'failed' => Icons.error_outline,
-      _ => Icons.hourglass_top_outlined,
-    };
-    final detail = toolCall.result ?? toolCall.preview;
-    return ListTile(
-      key: ValueKey('hermes-tool-turn-$turnId'),
-      dense: true,
-      leading: Icon(icon),
-      title: Text(
-        _safeHermesUiPreview(toolCall.name, maxLength: 80),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: detail != null
-          ? Text(
-              _safeHermesUiPreview(detail, maxLength: 160),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-    );
-  }
-}
-
 class _MessageContent extends StatelessWidget {
   const _MessageContent({
     required this.text,
-    required this.markdown,
     required this.attachment,
+    required this.undeliveredLocalArtifact,
+    required this.selectable,
   });
 
   final String text;
-  final bool markdown;
   final HermesTurnAttachment? attachment;
+  final _UndeliveredLocalArtifact? undeliveredLocalArtifact;
+  final bool selectable;
 
   @override
   Widget build(BuildContext context) {
+    final displayText = text;
     final safeAttachment = attachment == null
         ? null
         : _DisplayAttachment(
@@ -410,20 +583,99 @@ class _MessageContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (text.isNotEmpty)
-          markdown
-              ? HermesRichText(text, selectable: false)
-              : Text(
-                  text,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(height: 1.35),
-                ),
-        if (text.isNotEmpty && safeAttachment != null)
+        if (displayText.isNotEmpty)
+          HermesRichText(displayText, selectable: selectable),
+        if (displayText.isNotEmpty &&
+            (undeliveredLocalArtifact != null || safeAttachment != null))
+          const SizedBox(height: 8),
+        if (undeliveredLocalArtifact != null)
+          _UndeliveredLocalArtifactNotice(undeliveredLocalArtifact!),
+        if (undeliveredLocalArtifact != null && safeAttachment != null)
           const SizedBox(height: 8),
         if (safeAttachment != null)
           _MessageAttachmentCard(attachment: safeAttachment),
       ],
+    );
+  }
+}
+
+enum _UndeliveredLocalArtifact { audio, media, file }
+
+_UndeliveredLocalArtifact? _undeliveredLocalArtifact(String text) {
+  if (wingContainsHostAudioReference(text)) {
+    return _UndeliveredLocalArtifact.audio;
+  }
+  if (_mentionsExplicitMediaToken(text)) return _UndeliveredLocalArtifact.media;
+  if (wingContainsHostArtifactReference(text)) {
+    return _UndeliveredLocalArtifact.file;
+  }
+  return null;
+}
+
+bool _mentionsExplicitMediaToken(String text) =>
+    wingContainsMediaDeliveryToken(text);
+
+class _UndeliveredLocalArtifactNotice extends StatelessWidget {
+  const _UndeliveredLocalArtifactNotice(this.artifact);
+
+  final _UndeliveredLocalArtifact artifact;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final strings = AppLocalizations.of(context);
+    final body = switch (artifact) {
+      _UndeliveredLocalArtifact.audio =>
+        strings.chatLocalAudioArtifactUndeliveredBody,
+      _UndeliveredLocalArtifact.media =>
+        strings.chatLocalMediaArtifactUndeliveredBody,
+      _UndeliveredLocalArtifact.file =>
+        strings.chatLocalFileArtifactUndeliveredBody,
+    };
+    return Semantics(
+      container: true,
+      label: '${strings.chatLocalArtifactUndeliveredTitle}. $body',
+      child: Container(
+        key: const ValueKey('hermes-undelivered-local-artifact'),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: colors.tertiaryContainer.withValues(alpha: 0.45),
+          border: Border.all(color: colors.tertiary.withValues(alpha: 0.35)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 20,
+              color: colors.onTertiaryContainer,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.chatLocalArtifactUndeliveredTitle,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colors.onTertiaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    body,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onTertiaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -520,14 +772,48 @@ String _fileTypeLabel(AppLocalizations strings, String name) {
       : strings.chatFileAttachmentTypeLabel;
 }
 
-enum _TurnAction { copy, reply, copyTranscriptText, copyTranscriptMarkdown }
+enum _TurnAction {
+  copy,
+  reply,
+  readAloud,
+  copyTranscriptText,
+  copyTranscriptMarkdown,
+}
+
+String _visibleTurnTimestamp(
+  AppLocalizations strings,
+  DateTime createdAt, {
+  required DateTime now,
+  required String olderLabel,
+  required String futureLabel,
+}) {
+  final elapsed = now.difference(createdAt);
+  if (elapsed.isNegative) return futureLabel;
+  if (elapsed < const Duration(minutes: 1)) {
+    return strings.chatTranscriptTimestampJustNow;
+  }
+  if (elapsed < const Duration(hours: 1)) {
+    return strings.chatTranscriptTimestampMinutesAgo(elapsed.inMinutes);
+  }
+  if (elapsed < const Duration(days: 1)) {
+    return strings.chatTranscriptTimestampHoursAgo(elapsed.inHours);
+  }
+  if (elapsed < const Duration(days: 7)) {
+    return strings.chatTranscriptTimestampDaysAgo(elapsed.inDays);
+  }
+  return olderLabel;
+}
 
 class _TurnBubble extends StatelessWidget {
   const _TurnBubble({
     required this.turn,
     required this.profileId,
     required this.profileColor,
+    required this.showAvatar,
     required this.onReply,
+    required this.onReadAloud,
+    required this.readAloudActive,
+    required this.onStopReadAloud,
     required this.onCopyTranscriptText,
     required this.onCopyTranscriptMarkdown,
     required this.enableDesktopContextMenu,
@@ -536,19 +822,62 @@ class _TurnBubble extends StatelessWidget {
   final HermesChatTurn turn;
   final String profileId;
   final String? profileColor;
+  final bool showAvatar;
   final ValueChanged<HermesChatTurn> onReply;
+  final ValueChanged<HermesChatTurn>? onReadAloud;
+  final bool readAloudActive;
+  final VoidCallback onStopReadAloud;
   final VoidCallback onCopyTranscriptText;
   final VoidCallback onCopyTranscriptMarkdown;
   final bool enableDesktopContextMenu;
 
+  String get _safeText => turn.author == HermesTurnAuthor.user
+      ? turn.text
+      : _safeHermesUiText(turn.text);
+
+  HermesChatTurn get _safeTurn {
+    final text = _safeText;
+    return text == turn.text ? turn : turn.copyWith(text: text);
+  }
+
+  bool get _canReply =>
+      turn.author != HermesTurnAuthor.assistant ||
+      turn.status == HermesTurnStatus.completed;
+
+  bool get _canCopy =>
+      turn.status != HermesTurnStatus.streaming && _safeText.trim().isNotEmpty;
+
+  bool get _canReadAloud =>
+      onReadAloud != null &&
+      turn.author == HermesTurnAuthor.assistant &&
+      turn.status == HermesTurnStatus.completed &&
+      _safeText.trim().isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
     final isUser = turn.author == HermesTurnAuthor.user;
+    final safeText = _safeText;
     final streaming = turn.status == HermesTurnStatus.streaming;
     final usage = isUser ? null : turn.usage;
-    final structuredError = isUser
-        ? null
-        : _structuredAssistantError(turn.text);
+    final structuredError = isUser ? null : _structuredAssistantError(safeText);
+    final strings = AppLocalizations.of(context);
+    final materialStrings = MaterialLocalizations.of(context);
+    final localCreatedAt = turn.createdAt.toLocal();
+    final compactTimestamp = materialStrings.formatTimeOfDay(
+      TimeOfDay.fromDateTime(localCreatedAt),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );
+    final fullTimestamp = strings.chatTranscriptFullTimestamp(
+      materialStrings.formatFullDate(localCreatedAt),
+      compactTimestamp,
+    );
+    final visibleTimestamp = _visibleTurnTimestamp(
+      strings,
+      localCreatedAt,
+      now: DateTime.now(),
+      olderLabel: materialStrings.formatShortDate(localCreatedAt),
+      futureLabel: compactTimestamp,
+    );
     final colors = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final bubble = Align(
@@ -592,9 +921,13 @@ class _TurnBubble extends StatelessWidget {
                   child: structuredError != null
                       ? _StructuredAssistantError(structuredError)
                       : _MessageContent(
-                          text: turn.text,
-                          markdown: !isUser,
+                          text: safeText,
                           attachment: turn.attachment,
+                          undeliveredLocalArtifact:
+                              !isUser && turn.attachment == null
+                              ? _undeliveredLocalArtifact(turn.text)
+                              : null,
+                          selectable: enableDesktopContextMenu,
                         ),
                 ),
                 if (streaming) ...[
@@ -614,20 +947,83 @@ class _TurnBubble extends StatelessWidget {
                     ),
                 ],
                 const SizedBox(width: 8),
-                Text(
-                  MaterialLocalizations.of(context).formatTimeOfDay(
-                    TimeOfDay.fromDateTime(turn.createdAt.toLocal()),
-                    alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(
-                      context,
+                Semantics(
+                  key: ValueKey('hermes-turn-timestamp-${turn.id}'),
+                  container: true,
+                  label: fullTimestamp,
+                  child: ExcludeSemantics(
+                    child: Tooltip(
+                      message: fullTimestamp,
+                      child: Text(
+                        visibleTimestamp,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: 10,
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.72,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: 10,
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.72),
-                  ),
                 ),
+                if (enableDesktopContextMenu && _canCopy) ...[
+                  const SizedBox(width: 2),
+                  IconButton(
+                    key: ValueKey('hermes-copy-message-${turn.id}'),
+                    tooltip: strings.chatTranscriptCopyAction,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 28,
+                      height: 28,
+                    ),
+                    padding: EdgeInsets.zero,
+                    onPressed: () =>
+                        unawaited(_handleAction(context, _TurnAction.copy)),
+                    icon: const Icon(Icons.copy_outlined, size: 15),
+                  ),
+                ],
               ],
             ),
+            if (readAloudActive)
+              Semantics(
+                container: true,
+                liveRegion: true,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.graphic_eq, size: 16, color: colors.primary),
+                      const SizedBox(width: 6),
+                      Text(
+                        AppLocalizations.of(
+                          context,
+                        ).chatTranscriptReadingAloudLabel,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(width: 2),
+                      IconButton(
+                        key: ValueKey('hermes-stop-read-aloud-${turn.id}'),
+                        tooltip: AppLocalizations.of(
+                          context,
+                        ).chatTranscriptStopReadAloudAction,
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: onStopReadAloud,
+                        icon: const Icon(Icons.stop_circle_outlined, size: 19),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             if (usage != null)
               Semantics(
                 container: true,
@@ -639,14 +1035,19 @@ class _TurnBubble extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: ExcludeSemantics(
-                    child: Text(
-                      AppLocalizations.of(context).runTokenUsage(
-                        usage.inputTokens,
-                        usage.outputTokens,
-                        usage.totalTokens,
-                      ),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
+                    child: Tooltip(
+                      message: AppLocalizations.of(
+                        context,
+                      ).runTokenUsageTooltip,
+                      child: Text(
+                        AppLocalizations.of(context).runTokenUsage(
+                          usage.inputTokens,
+                          usage.outputTokens,
+                          usage.totalTokens,
+                        ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),
@@ -657,18 +1058,26 @@ class _TurnBubble extends StatelessWidget {
       ),
     );
     final interactiveBubble = GestureDetector(
-      onLongPress: () => _showActions(context),
-      onSecondaryTapDown: enableDesktopContextMenu
-          ? (details) =>
-                unawaited(_showDesktopActions(context, details.globalPosition))
+      onLongPress: _canReply || _canCopy || _canReadAloud
+          ? () => _showActions(context)
           : null,
       child: bubble,
     );
-    if (isUser) return interactiveBubble;
+    final desktopInteractiveBubble = enableDesktopContextMenu
+        ? Listener(
+            onPointerDown: (event) {
+              if (event.buttons & kSecondaryMouseButton == 0) return;
+              unawaited(_showDesktopActions(context, event.position));
+            },
+            child: interactiveBubble,
+          )
+        : interactiveBubble;
+    if (isUser) return desktopInteractiveBubble;
     return _AssistantTimelineItem(
       profileId: profileId,
       profileColor: profileColor,
-      child: interactiveBubble,
+      showAvatar: showAvatar,
+      child: desktopInteractiveBubble,
     );
   }
 
@@ -680,16 +1089,25 @@ class _TurnBubble extends StatelessWidget {
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
-            ListTile(
-              leading: const Icon(Icons.reply_outlined),
-              title: Text(strings.chatTranscriptReplyAction),
-              onTap: () => Navigator.pop(context, _TurnAction.reply),
-            ),
-            ListTile(
-              leading: const Icon(Icons.copy_outlined),
-              title: Text(strings.chatTranscriptCopyAction),
-              onTap: () => Navigator.pop(context, _TurnAction.copy),
-            ),
+            if (_canReply)
+              ListTile(
+                leading: const Icon(Icons.reply_outlined),
+                title: Text(strings.chatTranscriptReplyAction),
+                onTap: () => Navigator.pop(context, _TurnAction.reply),
+              ),
+            if (_canCopy)
+              ListTile(
+                leading: const Icon(Icons.copy_outlined),
+                title: Text(strings.chatTranscriptCopyAction),
+                onTap: () => Navigator.pop(context, _TurnAction.copy),
+              ),
+            if (_canReadAloud)
+              ListTile(
+                key: const ValueKey('hermes-read-aloud-message'),
+                leading: const Icon(Icons.volume_up_outlined),
+                title: Text(strings.chatTranscriptReadAloudAction),
+                onTap: () => Navigator.pop(context, _TurnAction.readAloud),
+              ),
           ],
         ),
       ),
@@ -707,16 +1125,24 @@ class _TurnBubble extends StatelessWidget {
       context: context,
       position: _contextMenuPosition(context, globalPosition),
       items: [
-        PopupMenuItem(
-          key: const ValueKey('hermes-context-reply-message'),
-          value: _TurnAction.reply,
-          child: Text(strings.chatTranscriptReplyAction),
-        ),
-        PopupMenuItem(
-          key: const ValueKey('hermes-context-copy-message'),
-          value: _TurnAction.copy,
-          child: Text(strings.chatTranscriptCopyAction),
-        ),
+        if (_canReply)
+          PopupMenuItem(
+            key: const ValueKey('hermes-context-reply-message'),
+            value: _TurnAction.reply,
+            child: Text(strings.chatTranscriptReplyAction),
+          ),
+        if (_canCopy)
+          PopupMenuItem(
+            key: const ValueKey('hermes-context-copy-message'),
+            value: _TurnAction.copy,
+            child: Text(strings.chatTranscriptCopyAction),
+          ),
+        if (_canReadAloud)
+          PopupMenuItem(
+            key: const ValueKey('hermes-context-read-aloud-message'),
+            value: _TurnAction.readAloud,
+            child: Text(strings.chatTranscriptReadAloudAction),
+          ),
         const PopupMenuDivider(),
         PopupMenuItem(
           key: const ValueKey('hermes-context-copy-chat-text'),
@@ -737,7 +1163,8 @@ class _TurnBubble extends StatelessWidget {
   Future<void> _handleAction(BuildContext context, _TurnAction action) async {
     switch (action) {
       case _TurnAction.copy:
-        await Clipboard.setData(ClipboardData(text: turn.text));
+        if (!_canCopy) return;
+        await Clipboard.setData(ClipboardData(text: _safeText));
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -748,7 +1175,9 @@ class _TurnBubble extends StatelessWidget {
           );
         }
       case _TurnAction.reply:
-        onReply(turn);
+        if (_canReply) onReply(_safeTurn);
+      case _TurnAction.readAloud:
+        onReadAloud?.call(_safeTurn);
       case _TurnAction.copyTranscriptText:
         onCopyTranscriptText();
       case _TurnAction.copyTranscriptMarkdown:

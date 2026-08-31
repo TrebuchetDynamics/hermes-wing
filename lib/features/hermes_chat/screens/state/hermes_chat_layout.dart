@@ -331,6 +331,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final pendingApproval = activeApprovals.firstOrNull;
     final pendingApprovalCount = activeApprovals.length;
     final hasActiveSession = state.activeSessionId != null;
+    final hasChatTransport = _hasChatTransport(state);
     final canSendTurns = _canSendTurns(state);
     final canRespondToApprovals = _canRespondToApprovals(state);
     final isTurnActive = _isTurnActive(state);
@@ -346,12 +347,18 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           pendingApprovalCount: pendingApprovalCount,
           canRespondToApprovals: canRespondToApprovals,
           hasActiveSession: hasActiveSession,
+          hasChatTransport: hasChatTransport,
           canSendTurns: canSendTurns,
           isTurnActive: isTurnActive,
         );
 
         if (!showSessionRail) return chatPane;
 
+        final pinContact = _sessionPinContact(state);
+        final pinnedSessionIds = <String>{
+          for (final session in state.sessions)
+            if (_sessionPins.isPinned(pinContact, session.id)) session.id,
+        };
         return Row(
           children: [
             _HermesSessionRail(
@@ -368,6 +375,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   unawaited(_deleteSession(context, channel, session)),
               onDeleteSelected: (sessions) =>
                   unawaited(_deleteSessions(context, channel, sessions)),
+              pinnedSessionIds: pinnedSessionIds,
+              unreadCompletedSessionIds: _unreadCompletedSessionIds,
+              onTogglePinned: (session) =>
+                  unawaited(_sessionPins.toggle(pinContact, session.id)),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: chatPane),
@@ -385,6 +396,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     required int pendingApprovalCount,
     required bool canRespondToApprovals,
     required bool hasActiveSession,
+    required bool hasChatTransport,
     required bool canSendTurns,
     required bool isTurnActive,
   }) {
@@ -402,6 +414,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         final activeSession = state.activeSession;
         final showActiveSessionBar =
             constraints.maxWidth >= 600 && activeSession != null;
+        final switchableSessions = _switchableHermesSessions(
+          state,
+          retainedSessionIds: _unreadCompletedSessionIds,
+        );
+        final streamingSessionIds = <String>{
+          for (final session in switchableSessions)
+            if (state.isSessionStreaming(session.id)) session.id,
+        };
         final sessionModelLabel =
             activeSession?.model?.trim().isNotEmpty == true
             ? activeSession!.model!.trim()
@@ -410,6 +430,69 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             : state.capabilities?.model.trim().isNotEmpty == true
             ? state.capabilities!.model.trim()
             : strings.chatLayoutModelFallbackLabel;
+        final useCompactFollowUpActions =
+            constraints.maxWidth < 600 ||
+            MediaQuery.textScalerOf(context).scale(14) > 20;
+
+        void copyQueuedFollowUps() {
+          unawaited(
+            Clipboard.setData(
+              ClipboardData(text: _queuedFollowUpDetailsSummary(state)),
+            ),
+          );
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(content: Text(strings.chatLayoutFollowUpsCopiedBody)),
+          );
+        }
+
+        Widget buildQueuedMoreActions() {
+          return Semantics(
+            key: const ValueKey('hermes-queued-follow-up-more-actions'),
+            button: true,
+            label: strings.chatQueuedMoreActions,
+            child: ExcludeSemantics(
+              child: PopupMenuButton<_QueuedFollowUpMenuAction>(
+                tooltip: strings.chatQueuedMoreActions,
+                onSelected: (action) {
+                  switch (action) {
+                    case _QueuedFollowUpMenuAction.openSession:
+                      unawaited(_openQueuedFollowUpSession(context, channel));
+                      return;
+                    case _QueuedFollowUpMenuAction.copy:
+                      copyQueuedFollowUps();
+                      return;
+                    case _QueuedFollowUpMenuAction.sendNow:
+                      _sendQueuedFollowUpIfIdle(channel);
+                      return;
+                    case _QueuedFollowUpMenuAction.cancelAll:
+                      unawaited(_confirmClearQueuedFollowUps(context));
+                      return;
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (_canOpenQueuedFollowUpSession(state))
+                    PopupMenuItem(
+                      value: _QueuedFollowUpMenuAction.openSession,
+                      child: Text(strings.chatLayoutOpenSessionAction),
+                    ),
+                  PopupMenuItem(
+                    value: _QueuedFollowUpMenuAction.copy,
+                    child: Text(strings.chatLayoutCopyAction),
+                  ),
+                  PopupMenuItem(
+                    value: _QueuedFollowUpMenuAction.sendNow,
+                    enabled: _canSendQueuedFollowUp(state),
+                    child: Text(strings.chatLayoutSendNowAction),
+                  ),
+                  PopupMenuItem(
+                    value: _QueuedFollowUpMenuAction.cancelAll,
+                    child: Text(strings.chatLayoutCancelAllAction),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Column(
           children: [
@@ -420,8 +503,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 modelLabel: sessionModelLabel,
                 isTurnActive: isTurnActive,
                 canSendTurns: canSendTurns,
+                hasUnreconciledRun: state.hasUnreconciledRun,
+                switchableSessions: switchableSessions,
+                streamingSessionIds: streamingSessionIds,
+                unreadCompletedSessionIds: _unreadCompletedSessionIds,
+                onSelectSession: (session) =>
+                    unawaited(_selectSession(context, channel, session)),
               ),
-            if (hasActiveSession && !canSendTurns)
+            if (hasActiveSession && !hasChatTransport)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -454,14 +543,151 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             if (_voiceInputController.error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _voiceInputController.playbackUnavailable
+                    ? Semantics(
+                        container: true,
+                        liveRegion: true,
+                        label:
+                            '${strings.chatLayoutVoiceOutputUnavailableTitle}. '
+                            '${strings.chatLayoutVoiceOutputUnavailableBody}',
+                        child: MaterialBanner(
+                          key: const ValueKey(
+                            'hermes-voice-playback-unavailable',
+                          ),
+                          leading: const Icon(Icons.volume_off_outlined),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                strings.chatLayoutVoiceOutputUnavailableTitle,
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                strings.chatLayoutVoiceOutputUnavailableBody,
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: _voiceInputController.dismissNotice,
+                              child: Text(
+                                strings.chatLayoutContinueInTextAction,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Semantics(
+                        key: const ValueKey('hermes-voice-error'),
+                        container: true,
+                        liveRegion: true,
+                        label: _voiceInputController.error!,
+                        child: ExcludeSemantics(
+                          child: Text(
+                            _voiceInputController.error!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+            if (_followUps.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: useCompactFollowUpActions
+                    ? Card(
+                        key: const ValueKey('hermes-queued-follow-up'),
+                        margin: EdgeInsets.zero,
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _queuedFollowUpSummary(state),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                key: const ValueKey(
+                                  'hermes-queued-follow-up-manage',
+                                ),
+                                tooltip: strings.chatQueuedManageAction,
+                                onPressed: () =>
+                                    unawaited(_manageQueuedFollowUps(context)),
+                                icon: const Icon(
+                                  Icons.playlist_remove_outlined,
+                                ),
+                              ),
+                              buildQueuedMoreActions(),
+                            ],
+                          ),
+                        ),
+                      )
+                    : MaterialBanner(
+                        key: const ValueKey('hermes-queued-follow-up'),
+                        content: Text(_queuedFollowUpSummary(state)),
+                        actions: [
+                          if (_canOpenQueuedFollowUpSession(state))
+                            TextButton(
+                              key: const ValueKey(
+                                'hermes-queued-follow-up-open-session',
+                              ),
+                              onPressed: () => unawaited(
+                                _openQueuedFollowUpSession(context, channel),
+                              ),
+                              child: Text(strings.chatLayoutOpenSessionAction),
+                            ),
+                          TextButton.icon(
+                            key: const ValueKey(
+                              'hermes-queued-follow-up-manage',
+                            ),
+                            onPressed: () =>
+                                unawaited(_manageQueuedFollowUps(context)),
+                            icon: const Icon(Icons.playlist_remove_outlined),
+                            label: Text(strings.chatQueuedManageAction),
+                          ),
+                          TextButton.icon(
+                            key: const ValueKey('hermes-queued-follow-up-copy'),
+                            onPressed: copyQueuedFollowUps,
+                            icon: const Icon(Icons.copy_outlined),
+                            label: Text(strings.chatLayoutCopyAction),
+                          ),
+                          TextButton(
+                            key: const ValueKey(
+                              'hermes-queued-follow-up-send-now',
+                            ),
+                            onPressed: _canSendQueuedFollowUp(state)
+                                ? () => _sendQueuedFollowUpIfIdle(channel)
+                                : null,
+                            child: Text(strings.chatLayoutSendNowAction),
+                          ),
+                          TextButton(
+                            key: const ValueKey(
+                              'hermes-queued-follow-up-cancel',
+                            ),
+                            onPressed: () => unawaited(
+                              _confirmClearQueuedFollowUps(context),
+                            ),
+                            child: Text(strings.chatLayoutCancelAllAction),
+                          ),
+                        ],
+                      ),
+              ),
+            if (_followUps.error != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Semantics(
-                  key: const ValueKey('hermes-voice-error'),
+                  key: const ValueKey('hermes-queued-follow-up-error'),
                   container: true,
                   liveRegion: true,
-                  label: _voiceInputController.error!,
+                  label: _followUps.error!,
                   child: ExcludeSemantics(
                     child: Text(
-                      _voiceInputController.error!,
+                      _followUps.error!,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),
@@ -469,67 +695,19 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   ),
                 ),
               ),
-            if (_followUps.isNotEmpty)
+            if (_attachmentError != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: MaterialBanner(
-                  key: const ValueKey('hermes-queued-follow-up'),
-                  content: Text(_queuedFollowUpSummary(state)),
-                  actions: [
-                    if (_canOpenQueuedFollowUpSession(state))
-                      TextButton(
-                        key: const ValueKey(
-                          'hermes-queued-follow-up-open-session',
-                        ),
-                        onPressed: () => unawaited(
-                          _openQueuedFollowUpSession(context, channel),
-                        ),
-                        child: Text(strings.chatLayoutOpenSessionAction),
-                      ),
-                    TextButton.icon(
-                      key: const ValueKey('hermes-queued-follow-up-copy'),
-                      onPressed: () {
-                        unawaited(
-                          Clipboard.setData(
-                            ClipboardData(
-                              text: _queuedFollowUpDetailsSummary(state),
-                            ),
-                          ),
-                        );
-                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              strings.chatLayoutFollowUpsCopiedBody,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.copy_outlined),
-                      label: Text(strings.chatLayoutCopyAction),
+                child: Semantics(
+                  key: const ValueKey('hermes-attachment-error'),
+                  container: true,
+                  liveRegion: true,
+                  child: Text(
+                    _attachmentError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
                     ),
-                    TextButton(
-                      key: const ValueKey('hermes-queued-follow-up-send-now'),
-                      onPressed: _canSendQueuedFollowUp(state)
-                          ? () => _sendQueuedFollowUpIfIdle(channel)
-                          : null,
-                      child: Text(strings.chatLayoutSendNowAction),
-                    ),
-                    TextButton(
-                      key: const ValueKey('hermes-queued-follow-up-cancel'),
-                      onPressed: () =>
-                          unawaited(_confirmClearQueuedFollowUps(context)),
-                      child: Text(strings.chatLayoutCancelAllAction),
-                    ),
-                  ],
-                ),
-              ),
-            if (_followUps.error != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  _followUps.error!,
-                  key: const ValueKey('hermes-queued-follow-up-error'),
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
                 ),
               ),
             if (canSendTurns)
@@ -587,6 +765,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
     return _HermesTranscriptList(
       controller: _transcriptScrollController,
+      textScale: ref.watch(
+        wingChatPreferencesProvider.select(
+          (preferences) => preferences.transcriptTextScale,
+        ),
+      ),
+      onScaleStart: _startTranscriptPinch,
+      onScaleUpdate: _updateTranscriptPinch,
+      onScaleEnd: _endTranscriptPinch,
       turns: state.activeMessages,
       profileId: state.selectedProfileId ?? 'default',
       profileColor: state.profiles
@@ -601,6 +787,18 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           unawaited(_resolveApproval(channel, decision, pendingApproval!)),
       onDismissApproval: () => _dismissApproval(pendingApproval!),
       onReplyTurn: _replyToTurn,
+      onReadAloudTurn:
+          (widget.textToSpeechServiceOverride ??
+                      ref.watch(hermesTextToSpeechServiceProvider)) !=
+                  null &&
+              !_voiceInputController.continuousEnabled &&
+              !_voiceInputController.capturing
+          ? (turn) => unawaited(
+              _voiceInputController.readAloud(turn.text, turnId: turn.id),
+            )
+          : null,
+      readAloudTurnId: _voiceInputController.readAloudTurnId,
+      onStopReadAloud: () => unawaited(_voiceInputController.stopSpeaking()),
       onCopyTranscriptText: () => unawaited(
         _copyTranscript(context, channel.state, _TranscriptCopyFormat.text),
       ),
@@ -630,6 +828,70 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
   }
 
+  SpellCheckConfiguration get _composerSpellCheckConfiguration {
+    final enabled = ref.watch(
+      wingChatPreferencesProvider.select(
+        (preferences) => preferences.spellcheckEnabled,
+      ),
+    );
+    return enabled &&
+            WidgetsBinding
+                .instance
+                .platformDispatcher
+                .nativeSpellCheckServiceDefined
+        ? const SpellCheckConfiguration()
+        : const SpellCheckConfiguration.disabled();
+  }
+
+  String _composerTextFieldHint(
+    AppLocalizations strings,
+    HermesChannelState state,
+    bool canSendTurns,
+  ) {
+    if (_voiceInputController.speaking) {
+      return strings.chatLayoutComposerSpeakingHint;
+    }
+    if (canSendTurns) return strings.chatLayoutComposerHint;
+    if (state.hasUnreconciledRun) {
+      return strings.chatLayoutComposerRunRecoveryHint;
+    }
+    if (!_hasChatTransport(state)) {
+      return strings.chatLayoutComposerTransportUnavailableHint;
+    }
+    return strings.chatLayoutComposerUnavailableHint;
+  }
+
+  Future<void> _openComposerModelPicker(HermesChannel channel) async {
+    if (!channel.state.canReadModels || !channel.state.canWriteModels) return;
+    try {
+      var inventory = channel.state.modelInventory;
+      if (inventory == null) {
+        await channel.loadModels();
+        inventory = channel.state.modelInventory;
+      }
+      if (!mounted || inventory == null) {
+        throw StateError('Model inventory unavailable');
+      }
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        builder: (context) =>
+            ModelPickerSheet(channel: channel, inventory: inventory!),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).chatComposerModelsLoadFailed,
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _buildComposer(
     BuildContext context,
     HermesChannel channel,
@@ -637,8 +899,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool canSendTurns,
     bool isTurnActive,
   ) {
+    _scheduleInitialDesktopComposerFocus(canSendTurns);
     final strings = AppLocalizations.of(context);
-    final modelLabel = state.models.isEmpty
+    final assignedModel = state.modelInventory?.assignment.activeModel.trim();
+    final modelLabel = assignedModel != null && assignedModel.isNotEmpty
+        ? assignedModel
+        : state.models.isEmpty
         ? state.capabilities?.model ?? strings.chatLayoutModelFallbackLabel
         : state.models.first;
     final voiceLabel = _voiceInputController.continuousEnabled
@@ -653,9 +919,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       voiceLabel: voiceLabel,
       isTurnActive: isTurnActive,
       canSendTurns: canSendTurns,
+      hasUnreconciledRun: state.hasUnreconciledRun,
       canRetry: canRetry,
       onStop: () => _stopActiveTurn(channel),
       onRetry: () => _retryLastFailedTurn(channel),
+      onSelectModel:
+          !isTurnActive && state.canReadModels && state.canWriteModels
+          ? () => unawaited(_openComposerModelPicker(channel))
+          : null,
     );
 
     return SafeArea(
@@ -690,15 +961,170 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     AppLocalizations strings,
     HermesChannelState state,
   ) {
+    if (_dismissedLocalSlashCommandDraft == _composerController.text) {
+      return const [];
+    }
     final draft = _composerController.text.trimLeft();
     if (!draft.startsWith('/') || draft.substring(1).contains(RegExp(r'\s'))) {
       return const [];
     }
     final query = draft.substring(1).toLowerCase();
-    return _localSlashCommands(
-      strings,
-      state,
-    ).where((item) => item.command.substring(1).startsWith(query)).toList();
+    final matches = _localSlashCommands(strings, state).where((item) {
+      final name = item.command.substring(1).toLowerCase();
+      return name.contains(query) ||
+          item.description.toLowerCase().contains(query);
+    }).toList();
+    matches.sort((a, b) {
+      final aName = a.command.substring(1).toLowerCase();
+      final bName = b.command.substring(1).toLowerCase();
+      final aStartsWithQuery = aName.startsWith(query);
+      final bStartsWithQuery = bName.startsWith(query);
+      if (aStartsWithQuery != bStartsWithQuery) {
+        return aStartsWithQuery ? -1 : 1;
+      }
+      return aName.compareTo(bName);
+    });
+    return matches;
+  }
+
+  void _insertComposerNewline() {
+    final value = _composerController.value;
+    final selection = value.selection;
+    final start = selection.isValid ? selection.start : value.text.length;
+    final end = selection.isValid ? selection.end : value.text.length;
+    _composerController.value = value.copyWith(
+      text: value.text.replaceRange(start, end, '\n'),
+      selection: TextSelection.collapsed(offset: start + 1),
+      composing: TextRange.empty,
+    );
+  }
+
+  GlobalKey _localSlashCommandKey(String id) => _localSlashCommandKeys
+      .putIfAbsent(id, () => GlobalKey(debugLabel: 'local-slash-command-$id'));
+
+  void _revealSelectedLocalSlashCommand(
+    List<_LocalSlashCommand> commands,
+    ScrollPositionAlignmentPolicy alignmentPolicy,
+  ) {
+    final index = _selectedLocalSlashCommandIndex % commands.length;
+    final key = _localSlashCommandKey(commands[index].id);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final itemContext = key.currentContext;
+      if (!mounted || itemContext == null) return;
+      unawaited(
+        Scrollable.ensureVisible(
+          itemContext,
+          duration: Duration.zero,
+          alignmentPolicy: alignmentPolicy,
+        ),
+      );
+    });
+  }
+
+  bool _handleGlobalSlashCommandKeyEvent(KeyEvent event) {
+    if (!_usesDesktopKeyboardShortcuts ||
+        event is! KeyDownEvent ||
+        event.logicalKey != LogicalKeyboardKey.escape ||
+        _composerFocusNode.hasFocus ||
+        !mounted ||
+        _localSlashSuggestionsKey.currentContext == null) {
+      return false;
+    }
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return false;
+    _dismissLocalSlashCommandSuggestions(refocusComposer: true);
+    return true;
+  }
+
+  void _dismissLocalSlashCommandSuggestions({bool refocusComposer = false}) {
+    _setState(() {
+      _dismissedLocalSlashCommandDraft = _composerController.text;
+    });
+    if (refocusComposer) _composerFocusNode.requestFocus();
+  }
+
+  KeyEventResult _handleLocalSlashCommandKeyEvent(
+    KeyEvent event,
+    HermesChannel channel,
+  ) {
+    if (!_usesDesktopKeyboardShortcuts ||
+        event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final composing = _composerController.value.composing;
+    if (composing.isValid && !composing.isCollapsed) {
+      return KeyEventResult.ignored;
+    }
+    final commands = _matchingLocalSlashCommands(
+      _hermesStrings(context),
+      channel.state,
+    );
+    if (commands.isNotEmpty) {
+      if (event.logicalKey == LogicalKeyboardKey.escape) {
+        _dismissLocalSlashCommandSuggestions();
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        _setState(() {
+          _selectedLocalSlashCommandIndex =
+              (_selectedLocalSlashCommandIndex + 1) % commands.length;
+        });
+        _revealSelectedLocalSlashCommand(
+          commands,
+          _selectedLocalSlashCommandIndex == 0
+              ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+              : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        );
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        _setState(() {
+          _selectedLocalSlashCommandIndex =
+              (_selectedLocalSlashCommandIndex - 1 + commands.length) %
+              commands.length;
+        });
+        _revealSelectedLocalSlashCommand(
+          commands,
+          _selectedLocalSlashCommandIndex == commands.length - 1
+              ? ScrollPositionAlignmentPolicy.keepVisibleAtEnd
+              : ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+        );
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+          event.logicalKey == LogicalKeyboardKey.tab) {
+        final index = _selectedLocalSlashCommandIndex % commands.length;
+        _runLocalSlashCommand(commands[index], channel);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    final isEnter =
+        event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter;
+    if (isEnter && event is KeyDownEvent) {
+      if (HardwareKeyboard.instance.isShiftPressed) {
+        _insertComposerNewline();
+      } else {
+        _sendComposerText(channel);
+      }
+      return KeyEventResult.handled;
+    }
+
+    if (_composerHistoryIndex == null &&
+        _composerController.text.contains('\n')) {
+      return KeyEventResult.ignored;
+    }
+    final recalled = switch (event.logicalKey) {
+      LogicalKeyboardKey.arrowUp => _recallPreviousComposerText(),
+      LogicalKeyboardKey.arrowDown => _recallNextComposerText(),
+      _ => null,
+    };
+    if (recalled == null) return KeyEventResult.ignored;
+    _applyComposerHistoryText(recalled);
+    return KeyEventResult.handled;
   }
 
   Widget? _buildLocalSlashCommandSuggestions(
@@ -711,40 +1137,70 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final strings = _hermesStrings(context);
     final commands = _matchingLocalSlashCommands(strings, channel.state);
     if (commands.isEmpty) return null;
-    return Card(
-      key: const ValueKey('hermes-local-command-suggestions'),
-      margin: const EdgeInsets.only(bottom: 6),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 232),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-              child: Text(
-                strings.localCommandsTitle,
-                style: Theme.of(context).textTheme.labelLarge,
+    return KeyedSubtree(
+      key: _localSlashSuggestionsKey,
+      child: Card(
+        key: const ValueKey('hermes-local-command-suggestions'),
+        margin: const EdgeInsets.only(bottom: 6),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 232),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                child: Text(
+                  strings.localCommandsTitle,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
               ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 6),
-                children: [
-                  for (final command in commands)
-                    ListTile(
-                      key: ValueKey('hermes-local-command-${command.id}'),
-                      dense: true,
-                      leading: Icon(command.icon),
-                      title: Text(command.command),
-                      subtitle: Text(command.description),
-                      onTap: () => _runLocalSlashCommand(command, channel),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Column(
+                    children: [
+                      for (final (index, command) in commands.indexed)
+                        KeyedSubtree(
+                          key: _localSlashCommandKey(command.id),
+                          child: ListTile(
+                            key: ValueKey('hermes-local-command-${command.id}'),
+                            dense: true,
+                            selected:
+                                _usesDesktopKeyboardShortcuts &&
+                                index == _selectedLocalSlashCommandIndex,
+                            leading: Icon(command.icon),
+                            title: Text(command.command),
+                            subtitle: Text(command.description),
+                            onTap: () =>
+                                _runLocalSlashCommand(command, channel),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_usesDesktopKeyboardShortcuts) ...[
+                const Divider(height: 1),
+                Padding(
+                  key: const ValueKey('hermes-local-command-keyboard-hints'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      strings.localCommandsKeyboardHint,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                ],
-              ),
-            ),
-          ],
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -810,7 +1266,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             content: Text(
               usage == null
                   ? strings.noRunTokenUsageMessage
-                  : strings.runTokenUsageSemantics(
+                  : strings.runTokenUsage(
                       usage.inputTokens,
                       usage.outputTokens,
                       usage.totalTokens,
@@ -1098,16 +1554,20 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 child: TextField(
                   key: const ValueKey('hermes-composer-field'),
                   controller: _composerController,
+                  focusNode: _composerFocusNode,
+                  spellCheckConfiguration: _composerSpellCheckConfiguration,
+                  contentInsertionConfiguration:
+                      _composerContentInsertionConfiguration,
                   enabled: canSendTurns,
                   minLines: 1,
                   maxLines: 4,
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                    labelText: _voiceInputController.speaking
-                        ? strings.chatLayoutComposerSpeakingHint
-                        : canSendTurns
-                        ? strings.chatLayoutComposerHint
-                        : strings.chatLayoutComposerUnavailableHint,
+                    labelText: _composerTextFieldHint(
+                      strings,
+                      state,
+                      canSendTurns,
+                    ),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -1121,7 +1581,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   onSubmitted: (_) => _sendComposerText(channel),
                 ),
               ),
-              _buildAttachmentButton(channel, canSendTurns),
+              _buildAttachmentButton(canSendTurns),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
                 switchInCurve: Curves.easeOut,
@@ -1253,15 +1713,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           TextField(
             key: const ValueKey('hermes-composer-field'),
             controller: _composerController,
+            focusNode: _composerFocusNode,
+            spellCheckConfiguration: _composerSpellCheckConfiguration,
+            contentInsertionConfiguration:
+                _composerContentInsertionConfiguration,
             enabled: canSendTurns,
             minLines: 1,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: _voiceInputController.speaking
-                  ? strings.chatLayoutComposerSpeakingHint
-                  : canSendTurns
-                  ? strings.chatLayoutComposerHint
-                  : strings.chatLayoutComposerTransportUnavailableHint,
+              hintText: _composerTextFieldHint(strings, state, canSendTurns),
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -1493,7 +1953,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               tooltip: strings.chatLayoutRemoveAttachmentTooltip,
               icon: const Icon(Icons.close_rounded, size: 20),
               visualDensity: VisualDensity.compact,
-              onPressed: () => _setState(() => _stagedAttachment = null),
+              onPressed: () => _setState(() {
+                _stagedAttachment = null;
+                _attachmentError = null;
+              }),
             ),
           ],
         ),
@@ -1501,14 +1964,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
   }
 
-  Widget _buildAttachmentButton(HermesChannel channel, bool canSendTurns) {
+  Widget _buildAttachmentButton(bool canSendTurns) {
     return IconButton(
       key: const ValueKey('hermes-attachment-button'),
       tooltip: AppLocalizations.of(context).chatLayoutAttachFileTooltip,
       icon: const Icon(Icons.attach_file),
-      onPressed: canSendTurns && !_isTurnActive(channel.state)
-          ? () => unawaited(_pickAttachment())
-          : null,
+      onPressed: canSendTurns ? () => unawaited(_pickAttachment()) : null,
     );
   }
 
@@ -1578,7 +2039,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
   List<Widget> _composerIconButtons(HermesChannel channel, bool canSendTurns) =>
       [
-        _buildAttachmentButton(channel, canSendTurns),
+        _buildAttachmentButton(canSendTurns),
         _buildMicButton(canSendTurns),
         _buildSendButton(channel, canSendTurns),
       ];

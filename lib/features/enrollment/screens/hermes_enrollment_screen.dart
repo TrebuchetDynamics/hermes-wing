@@ -507,13 +507,18 @@ class _HermesEnrollmentScreenState
             icon: const Icon(Icons.computer_outlined),
             label: Text(strings.localSetupAction),
           ),
-        if (recovery)
-          FilledButton.icon(
-            key: const ValueKey('hermes-enrollment-paste-another'),
-            onPressed: _scanning ? null : () => unawaited(_pastePairingLink()),
-            icon: const Icon(Icons.content_paste_outlined),
-            label: Text(strings.enrollPasteAnotherLink),
+        FilledButton.icon(
+          key: ValueKey(
+            recovery
+                ? 'hermes-enrollment-paste-another'
+                : 'hermes-enrollment-paste-link',
           ),
+          onPressed: _scanning ? null : () => unawaited(_pastePairingLink()),
+          icon: const Icon(Icons.content_paste_outlined),
+          label: Text(
+            recovery ? strings.enrollPasteAnotherLink : strings.enrollPasteLink,
+          ),
+        ),
         OutlinedButton.icon(
           key: const ValueKey('hermes-enrollment-manual-connect'),
           onPressed: _scanning ? null : _openManualConnection,

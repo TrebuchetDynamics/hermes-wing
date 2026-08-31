@@ -249,13 +249,13 @@ export WING_HERMES_URL="http://<trusted-vpn-ip>:8642"
 Never bind the Agent API to a public interface. Use `--local` only for same-host
 pairing; plaintext Wing Link pairing is loopback-only.
 
-For remote pairing, open Wing on Android, choose **Paste pairing link**, and
-paste the default command's five-minute, single-use output. Use
-`wing-link pair --qr` and **Scan QR code** when scanning from another screen is
-more convenient. The broker uses a self-signed identity that native Wing verifies
-with the reviewed SPKI pin; browsers cannot validate that pin. If a pairing link
-is already in a message, use Android **Share → Hermes Wing**. The ordinary
-`/open` helper is loopback-only for same-host clients.
+For remote pairing, open Wing on Android or Linux, choose **Connect to Hermes →
+Paste pairing link**, and paste the default command's five-minute, single-use
+output. On Android, use `wing-link pair --qr` and **Scan QR from another screen**
+when scanning is more convenient. The broker uses a self-signed identity that
+native Wing verifies with the reviewed SPKI pin; browsers cannot validate that
+pin. If a pairing link is already in a message, use Android **Share → Hermes
+Wing**. The ordinary `/open` helper is loopback-only for same-host clients.
 
 Review the host, access, and profile count in Hermes Wing, then confirm. The
 pairing code expires after five minutes and contains no bearer credential;

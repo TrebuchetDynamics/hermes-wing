@@ -1920,38 +1920,41 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('Linux chooser preserves local setup and manual actions', (
-      tester,
-    ) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-      final store = FakeHermesEndpointStore();
-      final source = _FakeConnectIntentSource();
-      addTearDown(source.dispose);
-      final controller = HermesEnrollmentController(
-        inspectEnrollment: ({required origin, required code}) async => _preview,
-        exchangeEnrollment: ({required origin, required code}) async => _issued,
-        endpointStore: store,
-      );
+    testWidgets(
+      'Linux chooser offers pairing, local setup, and manual actions',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
 
-      await tester.pumpWidget(
-        buildApp(controller: controller, source: source, store: store),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-        findsNothing,
-      );
-      debugDefaultTargetPlatformOverride = null;
-    });
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          findsOneWidget,
+        );
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
 
     testWidgets(
       'desktop clipboard failure preserves paste and manual recovery',

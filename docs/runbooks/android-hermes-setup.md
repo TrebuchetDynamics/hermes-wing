@@ -1,7 +1,8 @@
 # Android Hermes setup
 
-This runbook pairs Android with a Linux Hermes host that has a functioning
-systemd user session. Android/Termux Wing Link service hosting is not qualified.
+This runbook pairs Android with a remote Linux Hermes host that has a functioning
+systemd user session. For the same-phone Tier 2 candidate, use the separate
+[Android/Termux local Agent runbook](android-termux-local-agent.md).
 
 ## Before you start
 
@@ -28,36 +29,38 @@ cd hermes-wing
    hermes setup
    ```
 
-3. `wing-link setup` binds the Hermes Agent API to `127.0.0.1`. Wing Link's remote
-   listener does not forward the Agent API. Before pairing Android, bind the
-   Agent API to the host's trusted VPN address, restart it, and verify direct
-   reachability:
+3. `wing-link setup` initially binds the Hermes Agent API to `127.0.0.1`. Wing
+   Link's remote listener does not forward the Agent API. With Tailscale active,
+   bare pairing safely detects the local Tailscale address, binds Hermes to it,
+   restarts the gateway, and continues automatically:
 
    ```bash
-   hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
-   hermes gateway restart
-   curl --fail http://<trusted-vpn-ip>:8642/health
-   ```
-
-   Never bind the Agent API to a public interface. Prefer a Tailscale or other
-   encrypted VPN address; otherwise use a trusted HTTPS reverse proxy.
-
-4. Pair both direct Hermes and Wing Link. This installs, starts, and verifies
-   the persistent per-user service; no separate `serve` terminal is required:
-
-   ```bash
-   WING_HERMES_URL=http://<trusted-vpn-ip>:8642 \
-   WING_LINK_URL=https://<trusted-vpn-ip>:8654 \
    wing-link pair --label "My Android device"
    ```
 
-   On Android, choose **Connect to Hermes → Scan QR code** and scan the generated
-   QR from the host screen. Native Wing verifies the self-signed broker with the
-   reviewed SPKI pin; a browser cannot do so. If a pairing link is already in a
-   message, use Android **Share → Hermes Wing**. The ordinary `/open` helper is
-   loopback-only for same-host clients.
+   Automatic exposure is limited to a locally detected Tailscale address. Never
+   bind the Agent API to a public interface. For another encrypted VPN or trusted
+   HTTPS reverse proxy, bind Hermes explicitly and set `WING_HERMES_URL` and
+   `WING_LINK_URL` to its phone-reachable origins before pairing.
 
-   Do not publish the raw `wing://connect` URI. Review the host, access,
+4. The pairing command installs, starts, and verifies the persistent per-user
+   Wing Link service; no separate `serve` terminal is required.
+
+   The default command prints one pasteable handoff line. In Wing choose
+   **Paste pairing link** and paste it. To scan from another screen instead, run:
+
+   ```bash
+   wing-link pair --qr --label "My Android device"
+   ```
+
+   The default link and QR are both five-minute, single-use handoffs, not bearer
+   credentials; do not persist or publish them. Native Wing verifies the
+   self-signed broker with the reviewed SPKI
+   pin; a browser cannot do so. If a pairing link is already in a message, use
+   Android **Share → Hermes Wing**. The ordinary `/open` helper is loopback-only
+   for same-host clients.
+
+   Review the host, access,
    profile count, protocol generation, and SHA-256 host fingerprint in Wing, then
    confirm. A changed fingerprint requires a new explicit pairing review. The handoff
    contains only a short-lived code and no bearer credential. Exchange is

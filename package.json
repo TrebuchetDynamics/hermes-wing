@@ -17,7 +17,7 @@
     "android:durable-key-smoke": "./scripts/run_android_durable_key_smoke.sh",
     "android:live-mic-prep": "./scripts/prepare_android_live_mic_smoke.sh",
     "android:live-mic-receipt": "./scripts/record_android_live_mic_receipt.sh",
-    "android:maestro-regression": "maestro test -e WING_QA_GATEWAY_LABEL=\"${WING_QA_GATEWAY_LABEL:-$(hostname)}\" .maestro/real-gateway-regression.yaml scripts/maestro/session_branch_qa.yaml scripts/maestro/session_bulk_selection_qa.yaml scripts/maestro/session_metadata_qa.yaml scripts/maestro/tools_inventory_qa.yaml scripts/maestro/gateway_status_qa.yaml scripts/maestro/gateway_connection_settings_qa.yaml scripts/maestro/gateway_profiles_qa.yaml scripts/maestro/providers_models_unsupported_qa.yaml scripts/maestro/schedules_unsupported_qa.yaml scripts/maestro/office_workspace_qa.yaml",
+    "android:maestro-regression": "./scripts/run_android_maestro_regression.sh",
     "platform:workflow-smoke": "./scripts/run_hermes_platform_workflow.sh",
     "hermes:readiness-audit": "./scripts/audit_hermes_readiness.sh",
     "hermes:compatibility": "flutter test test/core/hermes/hermes_api_test.dart --plain-name \"released Hermes Agent capability fixtures remain compatible\"",

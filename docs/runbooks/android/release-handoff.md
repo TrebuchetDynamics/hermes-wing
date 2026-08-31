@@ -86,20 +86,18 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup separately. Configure Hermes Agent and Wing Link with an address
-  the phone can reach over a trusted VPN/Tailscale network or isolated trusted
-  LAN, then run non-loopback pairing:
+- Share setup separately. With Tailscale active on the host, `wing-link pair`
+  automatically binds Hermes Agent to the detected local Tailscale address and
+  starts non-loopback pairing. For another trusted VPN or isolated trusted LAN,
+  configure a phone-reachable Agent address explicitly and set `WING_HERMES_URL`
+  and `WING_LINK_URL` before running `wing-link pair`.
 
-  ```bash
-  WING_HERMES_URL=http://<phone-reachable-address>:8642 \
-  WING_LINK_URL=https://<phone-reachable-address>:8654 \
-  wing-link pair
-  ```
-
-  Remote pairing uses TLS 1.3. In Wing choose **Connect to Hermes → Scan QR
-  code** and scan from the host screen; native Wing verifies the self-signed
-  broker with the reviewed SPKI pin. Browsers cannot validate that pin. For a
-  pairing link already in a text message, use Android **Share → Hermes Wing**.
+  Remote pairing uses TLS 1.3. By default, use Wing's **Paste pairing link**
+  action with the five-minute, single-use output. Run `wing-link pair --qr` and
+  choose **Scan QR code** when scanning from another screen; native Wing verifies
+  the self-signed broker with the reviewed SPKI pin. Browsers cannot validate the
+  pin. For a pairing link already in a text message, use Android **Share → Hermes
+  Wing**.
   The ordinary `/open` helper is loopback-only for same-host clients. Entering a
   Hermes API URL and token manually is a one-profile fallback only and does not
   import Wing Link or other Hermes profiles.

@@ -9,17 +9,26 @@ name: schedules_unsupported_qa
     clearState: false
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*Message Hermes….*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
 - tapOn: "Open more destinations"
+- swipe:
+    direction: UP
+    duration: 500
+- scrollUntilVisible:
+    element:
+      text: "^Schedules$"
+    direction: DOWN
+    timeout: 30000
 - tapOn: "^Schedules$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
-- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*did not advertise scheduled-job inventory.*"
     timeout: 60000

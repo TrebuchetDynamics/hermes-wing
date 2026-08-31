@@ -1,6 +1,6 @@
 # Wing Link remote management implementation plan
 
-Status: approved design; implementation has not started
+Status: approved design; hardening, local grants, and remote directory browsing complete; Project mutation blocked on an Agent contract
 
 **Goal:** Extend Wing Link from setup and profile compatibility into a secure
 remote management API for typed setup, provider, profile, project, and directory
@@ -23,41 +23,43 @@ selection uses server-configured roots and opaque handles.
 **Done when:** unsupported clients fail closed and every new operation has an
 independent capability and authorization check.
 
-## Phase 1 — directory roots and folder selection
+## Phase 1 — directory roots and folder browsing
 
-1. Add a local configuration command for granting and revoking directory roots.
+Implemented: host-local `wing-link directories grant|list|revoke`, exact
+`directories:read` authorization, device-bound expiring handles, bounded root and
+child-folder routes, and the capability-gated Profiles browser. Handles and
+navigation state are ephemeral. Responses never contain paths, files, metadata,
+or contents.
+
+1. Add a local configuration command for granting and revoking directory roots. **Done.**
 2. Persist only canonical roots with owner-only permissions; never accept a root
-   from the remote browse API.
+   from the remote browse API. **Done.**
 3. Add typed root/list-directory responses using opaque handles and pagination.
-   Return child folders only; never return regular file names or metadata.
+   Return child folders only; never return regular file names or metadata. **Done.**
 4. Revalidate canonical containment on every request and reject symlink escape,
-   traversal, absolute client paths, and oversized directories.
-5. Add Flutter root picker and folder-selection states: loading, empty,
-   unsupported, revoked, and failed.
+   traversal, absolute client paths, and oversized directories. **Done.**
+5. Add Flutter browsing states for loading, empty, unsupported, revoked, and
+   failed handles. **Done.**
 
 **Tests:** temporary-directory integration tests for traversal, symlinks,
 revocation, pagination, regular-file omission, hidden folders, Unicode names, and
 path redaction.
 
-**Done when:** a paired remote Wing client can select a repository or subfolder
-without seeing its files or learning/submitting an unrestricted host path.
+**Done:** a paired remote Wing client can browse approved roots and subfolders
+without seeing files or learning/submitting an unrestricted host path. Selection
+is intentionally not persisted until authoritative Project creation exists.
 
-## Phase 2 — profile and Hermes Project workflow
+## Phase 2 — profile and Hermes Project workflow — blocked
 
-1. Extend the fixed profile adapter with `show` and `describe` only after exact
-   machine-readable output is proven.
-2. Add fixed per-profile Project operations: list, create, show, add/remove
-   folder, rename, set-primary, archive, and restore.
-3. Translate directory handles to server-side canonical paths only after
-   authorization and containment checks.
-4. Verify the direct Agent session API can accept an explicit Project or working
-   directory. If it cannot, ship Project assignment without **Start in Project**
-   and record the missing Agent contract.
-5. Build the Wing flow: create/select profile → browse approved directory →
-   create Project with primary folder → open Chat only when explicit context is
-   supported.
-6. Never call `profile use` or `project use`; carry explicit profile and project
-   identity through each request.
+Do not implement Project compatibility from current Desktop RPC or human-readable
+CLI output. Resume only when a released Hermes Agent contract provides explicit
+profile identity and bounded machine-readable Project input/output. Keep Project
+creation and Project-aware Chat unavailable in the meantime; never call
+`profile use` or `project use`.
+
+Any temporary reviewed compatibility adapter must have an ADR/security approval
+and a removal trigger: remove it when the minimum supported Hermes Agent release
+advertises equivalent explicit-profile Project operations.
 
 **Tests:** exact argv tests, changed-output fail-closed tests, duplicate and
 rename races, deleted/revoked directory behavior, and a fake-Hermes end-to-end

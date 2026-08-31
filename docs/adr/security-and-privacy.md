@@ -12,6 +12,11 @@ analyzed, included in diagnostics, or written to ordinary logs. Explicit paste i
 user-initiated fallback, not background clipboard monitoring; the app drops the
 raw text immediately after parsing.
 
+Wing and Termux remain separate app sandboxes and share only authenticated
+loopback sockets. Any local app can probe loopback, so Agent and Wing Link
+authentication remain mandatory. The explicit Android bootstrap command is
+non-secret; provider credentials and pairing codes never enter it.
+
 Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
 bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
 text, command arguments, and ordinary preferences. Credentials belong in

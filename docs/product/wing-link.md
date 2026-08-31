@@ -50,12 +50,15 @@ The current Linux implementation provides:
 - durable idempotent operation tracking and explicit cancellation;
 - current/previous protocol-generation negotiation; and
 - profile list, create/clone, rename, and delete through fixed Hermes CLI
-  argument vectors.
+  argument vectors; and
+- remote browsing of locally approved child folders through device-bound,
+  expiring opaque handles without returning paths or file names.
 
 Persistent service management is Linux/systemd-user only. New-profile setup can
 write an allowlisted provider, bounded model string, and provider credential
-through fixed Hermes CLI operations. Existing-profile provider editing, profile persona editing,
-workspace browsing, and project assignment are not shipped behavior.
+through fixed Hermes CLI operations. Existing-profile provider editing, profile
+persona editing, directory selection, Project creation, and Project assignment
+are not shipped behavior. Approved folder browsing is read-only and ephemeral.
 
 ## Target management surface
 
@@ -68,8 +71,9 @@ Wing Link will expose typed, capability-advertised operations in four areas:
 3. **Providers and models** — new-profile setup selects an allowlisted provider and
    bounded model string and may write a credential through `hermes auth add` stdin without ever
    returning the secret. General provider editing remains a target surface.
-4. **Projects and folders** — browse explicitly approved host directories and
-   create or update a Hermes Project inside a selected profile.
+4. **Projects and folders** — browsing explicitly approved host directories is
+   implemented; creating or updating a Hermes Project remains blocked on an
+   advertised Agent contract.
 
 Every response advertises what this Wing Link build and installed Agent release
 can actually perform. Unsupported operations are absent or return a stable
@@ -98,9 +102,12 @@ supported Agent can persist a Project but cannot start a remote session in that
 context, Wing shows the assignment and keeps **Start in Project** unavailable; it
 does not use `project use` or a hidden process-global working directory.
 
-The compatibility adapter may eventually delegate fixed commands equivalent to
-`hermes --profile <id> project create|list|show|add-folder|remove-folder|rename|set-primary|archive|restore`.
-It must never invoke `project use` as hidden global state.
+Current Desktop RPC and human-readable `hermes project` output are reference
+evidence, not remote compatibility contracts. Wing Link must not parse or invoke
+them for Project mutation. A separately reviewed adapter is considered only
+after bounded machine-readable input/output and explicit profile identity exist;
+it must never invoke `project use` as hidden global state and must be removed when
+the minimum supported Agent release advertises equivalent operations.
 
 For example, the picker may show `git → gormes → gancho`; selecting `gancho`
 returns a directory handle that can become the Project's primary folder. It does
@@ -112,7 +119,9 @@ Wing Link is a **folder picker**, not a file browser. It returns folders only. I
 does not enumerate file names or metadata and cannot read, upload, edit, delete,
 or download file contents.
 
-- A local operator configures the roots Wing Link may expose.
+- A local operator configures roots with `wing-link directories grant <local-root>`,
+  inspects them with `wing-link directories list`, and revokes them with
+  `wing-link directories revoke <directory-id>`. These commands are host-local.
 - The API returns opaque root and directory handles plus bounded display names.
 - Requests cannot contain absolute paths, `..`, drive prefixes, or shell text.
 - Every lookup resolves and revalidates containment; symlinks cannot escape a

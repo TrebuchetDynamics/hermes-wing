@@ -37,6 +37,11 @@ Wing Link speaks the current and immediately previous protocol generation. Typed
 compatibility adapters must record their authoritative Agent endpoint, supported
 release window, and removal trigger; no adapter is permanent.
 
+Android/Termux may host Wing Link and Hermes Agent only through an explicit user-run bootstrap
+pinned to reviewed release artifacts. Both listeners remain loopback-only and use
+best-effort background execution; this is not a managed-service qualification.
+Hermes Wing does not request Termux external-command access.
+
 Runtime and application artifacts must be versioned and signature/digest verified
 before activation. Wing Link updates stage under versioned owner-only paths,
 activate through a stable target, health-check locally, and restore the previous

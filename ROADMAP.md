@@ -17,7 +17,8 @@ product work; shipped changes belong in [CHANGELOG.md](CHANGELOG.md).
 - Saved gateways, profile switching, health, provider/model inventory, and jobs
   inventory where supported.
 - Wing Link install/adopt, pairing, lifecycle, diagnostics, Linux user service,
-  private/VPN listener, and fixed profile list/create/rename/delete.
+  private/VPN listener, fixed profile list/create/rename/delete, and remote
+  browsing of locally approved child folders only through opaque handles.
 - Android-first Flutter client with web and desktop alpha targets.
 
 ## Now
@@ -41,15 +42,17 @@ product work; shipped changes belong in [CHANGELOG.md](CHANGELOG.md).
 ### 3. Profiles, directories, and Projects
 
 - Add profile show/description only through fixed reviewed contracts.
-- Configure local directory roots; browse them remotely with opaque handles.
-- Create and manage per-profile Hermes Projects for repositories or subfolders.
+- Keep local directory grants and ephemeral remote browsing through opaque
+  handles fail-closed; never persist navigation handles in Wing.
+- Create and manage per-profile Hermes Projects for repositories or subfolders
+  only after Hermes Agent advertises an explicit machine-readable contract.
 - Carry explicit profile/project identity; never call global `profile use` or
   `project use`.
 
 **Done when:** from a paired phone, a user can create a profile, select an approved
 repository or subfolder, and create the authoritative Hermes Project without
 unrestricted host filesystem access. Starting Chat there remains gated on an
-explicit direct-Agent Project/working-directory contract.
+explicit direct-Agent Project/working-directory contract. Project-aware Chat remains gated.
 
 ### 4. Release and primary experience
 
@@ -87,20 +90,20 @@ items they surface; feature work above stays on the product tracks.
 
 ## Next
 
-| Area | Next safe slice |
-| --- | --- |
-| Folders | Select approved directories for Hermes Projects; never list files. |
-| Providers | Typed defaults, then secret-safe credential set/remove. |
-| Projects | Multi-folder management, archive/restore, and project-aware Chat. |
-| Skills/tools | Mutate only through advertised Agent APIs. |
-| Memory | Browse/search/delete with confirmation and Agent authority. |
-| Schedules | Add advertised CRUD/pause/resume/run with confirmation. |
-| Platforms | Add a native Wing Link service adapter with real runtime evidence. |
+| Area         | Next safe slice                                                                        |
+| ------------ | -------------------------------------------------------------------------------------- |
+| Folders      | Browsing is shipped; selection remains gated on authoritative Hermes Project creation. |
+| Providers    | Typed defaults, then secret-safe credential set/remove.                                |
+| Projects     | Multi-folder management, archive/restore, and project-aware Chat.                      |
+| Skills/tools | Mutate only through advertised Agent APIs.                                             |
+| Memory       | Browse/search/delete with confirmation and Agent authority.                            |
+| Schedules    | Add advertised CRUD/pause/resume/run with confirmation.                                |
+| Platforms    | Add a native Wing Link service adapter with real runtime evidence.                     |
 
 ## Later
 
-- project-aware folder selection without Wing Link file browsing;
-- per-device credential scopes, rotation, and revocation;
+- project-aware folder selection without exposing file names or contents;
+- per-device credential rotation and broader local grant administration;
 - opt-in notifications for detached runs;
 - richer accessible Office interactions; and
 - additional signed stores and packages.

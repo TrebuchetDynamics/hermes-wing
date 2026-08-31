@@ -9,22 +9,24 @@ name: providers_models_unsupported_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*Message Hermes….*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
 - tapOn: "Open more destinations"
 - tapOn: "^Providers$"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
-- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
-    visible: "(?s).*No providers available.*"
+    visible: "(?s).*Providers unavailable.*"
     timeout: 60000
 - assertVisible: "(?s).*Set provider credentials and choose models for this profile.*"
-- assertVisible: "^Create$"
+- assertVisible: "^Read-only access$"
+- assertNotVisible: "^Create$"
 - assertVisible: "(?s).*Runtime models.*"
 - assertVisible: "(?s).*Read-only models advertised by this gateway.*"
 - assertVisible: "(?s).*Primary runtime model.*"

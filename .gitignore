@@ -23,6 +23,10 @@ Thumbs.db
 .idea/
 *.iml
 
+# Local upstream reference checkouts
+/hermes-agent/
+/hermes-desktop/
+
 # Agent artifacts
 .pi/
 **/.pi/

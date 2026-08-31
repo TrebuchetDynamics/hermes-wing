@@ -199,35 +199,34 @@ caller-selected base URL. General provider management, all existing-profile
 provider or credential edits, and per-profile Hermes Project creation remain
 unshipped. After Hermes is ready, pair the phone.
 
-`wing-link setup` deliberately binds the Hermes Agent API to loopback. Exposing
-Wing Link does **not** expose the direct Agent data plane. Before remote Android
-pairing, make the Agent listener reachable on the same trusted VPN address, then
-restart and verify it:
+`wing-link setup` initially binds the Hermes Agent API to loopback. Exposing
+Wing Link does **not** proxy the direct Agent data plane. When Tailscale is active,
+the default pairing command detects its local address, binds Hermes to that
+address with a fixed configuration operation, restarts the gateway, and continues:
 
 ```bash
-hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
-hermes gateway restart
-curl --fail http://<trusted-vpn-ip>:8642/health
-```
-
-Do not bind the Agent API to a public interface. With both services reachable on
-the trusted VPN address:
-
-```bash
-WING_HERMES_URL=http://<trusted-host-ip>:8642 \
-WING_LINK_URL=https://<trusted-host-ip>:8654 \
 ~/.local/bin/wing-link pair
 ```
 
-Wing Link pairing defaults to the host's Tailscale address, then another trusted
-private address, and uses TLS 1.3 with the persistent host identity. Use `--local`
-only for same-host pairing; plaintext Wing Link pairing is loopback-only.
+Automatic exposure is limited to a locally detected Tailscale address. For another
+trusted VPN, bind Hermes explicitly and set `WING_HERMES_URL` as documented in the
+[Android setup runbook](docs/runbooks/android-hermes-setup.md):
 
-For remote pairing, open Wing on Android, choose **Connect to Hermes → Scan QR
-code**, and scan the displayed QR. The broker uses a self-signed identity that
-native Wing verifies with the reviewed SPKI pin; browsers cannot validate that
-pin. If a pairing link is already in a message, use Android **Share → Hermes
-Wing**. The ordinary `/open` helper is loopback-only for same-host clients.
+```bash
+hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
+export WING_HERMES_URL="http://<trusted-vpn-ip>:8642"
+```
+
+Never bind the Agent API to a public interface. Use `--local` only for same-host
+pairing; plaintext Wing Link pairing is loopback-only.
+
+For remote pairing, open Wing on Android, choose **Paste pairing link**, and
+paste the default command's five-minute, single-use output. Use
+`wing-link pair --qr` and **Scan QR code** when scanning from another screen is
+more convenient. The broker uses a self-signed identity that native Wing verifies
+with the reviewed SPKI pin; browsers cannot validate that pin. If a pairing link
+is already in a message, use Android **Share → Hermes Wing**. The ordinary
+`/open` helper is loopback-only for same-host clients.
 
 Review the host, access, and profile count in Hermes Wing, then confirm. The
 pairing code expires after five minutes and contains no bearer credential;
@@ -237,6 +236,20 @@ connection or the host's other Hermes profiles.
 
 See [Android Hermes setup](docs/runbooks/android-hermes-setup.md) for VPN routing,
 firewalls, service management, and recovery.
+
+### Same-phone Android/Termux candidate
+
+Android/Termux local hosting is a Tier 2 qualification candidate with
+best-effort background execution, not a managed Android service. Wing uses an
+explicit user-run, release-pinned bootstrap and does not request Termux
+external-command access. Hermes Agent and Wing Link remain separate authenticated
+loopback services; Wing never becomes a shell bridge or Agent backend.
+
+Follow the [Android/Termux local Agent runbook](docs/runbooks/android-termux-local-agent.md).
+Existing-profile provider/model setup still uses `hermes setup` or `hermes model`
+in Termux. Wing can transactionally configure a new profile through the bounded
+write-only credential path; after local approval, retry the unchanged request and
+pair again to enroll that profile.
 
 ## Troubleshooting first connection
 

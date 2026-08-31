@@ -1,7 +1,7 @@
 name: wing
 description: An independent cross-platform Flutter client for Hermes Agent sessions, streamed runs, approvals, profiles, and device speech.
 publish_to: "none"
-version: 0.1.0+1
+version: 0.1.1+2
 
 environment:
   sdk: ^3.12.0
@@ -37,3 +37,5 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - assets/config/termux_bootstrap.json

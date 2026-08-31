@@ -1,0 +1,110 @@
+# Physical-device proof against the LIVE Hermes gateway: manual connect over
+# adb reverse (phone loopback:8642 -> host Hermes API), then a real streaming
+# chat turn with the actual agent and a stopped long run.
+#
+# Prereqs on the host:
+#   adb reverse tcp:8642 tcp:8768
+#   maestro test -e WING_API_KEY="<link profile API_SERVER_KEY>" \
+#     .maestro/real-device-connect-chat.yaml
+#
+# Device quirk (validated on SM-S928B / Android 16): after text is entered into
+# the obscured "Access token" field, Maestro's semantics view of the fields
+# below it degrades, so the VPS-name field and Connect button are driven by
+# coordinates measured from the full-height form on this device (URL ~58%,
+# token ~63%, VPS ~75% of screen height; Connect sits below the fold and must
+# be scrolled into view first). The most reliable execution on this device is
+# the uiautomator-driven procedure documented in
+# .maestro/device-evidence/README.md — this file is the declarative form.
+appId: com.trebuchetdynamics.hermes.wing
+name: real_device_connect_chat
+env:
+  WING_API_KEY: ${WING_API_KEY}
+---
+- launchApp:
+    stopApp: true
+    clearState: true
+- setOrientation: PORTRAIT
+# Fresh install lands on the gateway directory empty state.
+- extendedWaitUntil:
+    visible: "(?s).*Add your first Hermes profile.*"
+    timeout: 30000
+- tapOn: "(?s).*Add gateway or profile.*"
+- extendedWaitUntil:
+    visible: "(?s).*Connect to Hermes.*"
+    timeout: 30000
+- tapOn: "(?s).*Enter gateway manually.*"
+- extendedWaitUntil:
+    visible: "(?s).*Hermes server URL.*"
+    timeout: 30000
+
+# Manual gateway entry: origin is the phone's own loopback (adb-reversed to
+# the host Hermes API), credential passed via env so it never sits in a file.
+- tapOn: "(?s).*Hermes server URL.*"
+- inputText: "http://127.0.0.1:8642"
+- hideKeyboard
+- tapOn: "(?s).*Access token.*"
+- inputText: "${WING_API_KEY}"
+- hideKeyboard
+# VPS name field, then the connect button, by position (see header note).
+- tapOn:
+    point: "50%,75%"
+- inputText: "link"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "(?s).*Connect to VPS.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*Connect to VPS.*"
+# Plain HTTP on a trusted USB reverse tunnel: confirm the cleartext dialog.
+- runFlow:
+    when:
+      visible: "(?s).*Send API key without TLS\\?.*"
+    commands:
+      - tapOn: "(?s).*Continue.*"
+- extendedWaitUntil:
+    visible: "(?s).*Endpoint contact.*"
+    timeout: 120000
+- takeScreenshot: real_device_connected
+
+# Real streaming turn through the production channel.
+- tapOn: "(?s).*How can Hermes help today\\?.*"
+- inputText: "Join these four uppercase words with hyphens and reply with only the result: REAL WING RUN OK"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RUN-OK.*"
+    timeout: 180000
+- assertNotVisible: "(?s).*HttpException.*"
+- takeScreenshot: real_device_chat_reply
+
+# A second turn proves session continuity on the device.
+- tapOn: "(?s).*Message Hermes.*"
+- inputText: "Without tools reply with only the hyphenated form: REAL WING CONTEXT OK"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-CONTEXT-OK.*"
+    timeout: 180000
+- assertNotVisible: "(?s).*HttpException.*"
+
+# Stop a server-owned long run, then verify the same session is still usable.
+- tapOn: "(?s).*Message Hermes.*"
+- inputText: "Write five hundred words about a brass telescope"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*Stop.*"
+    timeout: 60000
+- tapOn: "(?s).*Stop.*"
+- extendedWaitUntil:
+    notVisible: "(?s).*Stop.*"
+    timeout: 60000
+- tapOn: "(?s).*Message Hermes.*"
+- inputText: "Without tools reply with only the hyphenated form: REAL WING RECOVERED"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RECOVERED.*"
+    timeout: 180000
+- takeScreenshot: real_device_session_recovered

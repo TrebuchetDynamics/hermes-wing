@@ -19,6 +19,7 @@ import com.trebuchetdynamics.hermes.wing.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.hermes.wing.durablekeys.DurableKeyStoreChannel
 import com.trebuchetdynamics.hermes.wing.pairing.PairingHandoffIntentParser
 import com.trebuchetdynamics.hermes.wing.pairing.PairingQrImagePolicy
+import com.trebuchetdynamics.hermes.wing.pairing.PairingQrOperationGate
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -28,7 +29,7 @@ import java.io.File
 class MainActivity : FlutterActivity() {
     private var initialConnectIntent: Map<String, String>? = null
     private var connectIntentEvents: EventChannel.EventSink? = null
-    private var qrOperationPending = false
+    private val qrOperationGate = PairingQrOperationGate()
     private var qrImageResult: MethodChannel.Result? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,59 +103,69 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun scanQrCode(result: MethodChannel.Result) {
-        if (qrOperationPending) {
-            result.error("qr_scan_pending", "A QR scan is already open.", null)
-            return
-        }
-        qrOperationPending = true
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .enableAutoZoom()
-            .build()
-        GmsBarcodeScanning.getClient(this, options).startScan()
-            .addOnSuccessListener { barcode ->
-                qrOperationPending = false
-                val payload = barcode.rawValue?.trim()
-                if (payload.isNullOrEmpty()) {
-                    result.error("qr_scan_empty", "The QR code contained no text.", null)
-                } else {
-                    result.success(payload)
-                }
-            }
-            .addOnCanceledListener {
-                qrOperationPending = false
-                result.success(null)
-            }
-            .addOnFailureListener { error ->
-                qrOperationPending = false
+        val started = qrOperationGate.tryStart(
+            launch = {
+                val options = GmsBarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .enableAutoZoom()
+                    .build()
+                GmsBarcodeScanning.getClient(this, options).startScan()
+                    .addOnSuccessListener { barcode ->
+                        qrOperationGate.finish()
+                        val payload = barcode.rawValue?.trim()
+                        if (payload.isNullOrEmpty()) {
+                            result.error("qr_scan_empty", "The QR code contained no text.", null)
+                        } else {
+                            result.success(payload)
+                        }
+                    }
+                    .addOnCanceledListener {
+                        qrOperationGate.finish()
+                        result.success(null)
+                    }
+                    .addOnFailureListener { error ->
+                        qrOperationGate.finish()
+                        result.error(
+                            "qr_scan_failed",
+                            error.message ?: "Could not open the QR scanner.",
+                            null,
+                        )
+                    }
+            },
+            onLaunchFailure = { error ->
                 result.error(
                     "qr_scan_failed",
                     error.message ?: "Could not open the QR scanner.",
                     null,
                 )
-            }
+            },
+        )
+        if (!started) {
+            result.error("qr_scan_pending", "A QR scan is already open.", null)
+        }
     }
 
     private fun importQrImage(result: MethodChannel.Result) {
-        if (qrOperationPending) {
+        val started = qrOperationGate.tryStart(
+            launch = {
+                qrImageResult = result
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "image/*"
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, QR_IMAGE_REQUEST_CODE)
+            },
+            onLaunchFailure = { error ->
+                finishQrImageError(
+                    result,
+                    "qr_image_picker_failed",
+                    error.message ?: "Could not open the image picker.",
+                )
+            },
+        )
+        if (!started) {
             result.error("qr_scan_pending", "A QR operation is already open.", null)
-            return
-        }
-        qrOperationPending = true
-        qrImageResult = result
-        try {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "image/*"
-            }
-            @Suppress("DEPRECATION")
-            startActivityForResult(intent, QR_IMAGE_REQUEST_CODE)
-        } catch (error: Exception) {
-            finishQrImageError(
-                result,
-                "qr_image_picker_failed",
-                error.message ?: "Could not open the image picker.",
-            )
         }
     }
 
@@ -256,7 +267,7 @@ class MainActivity : FlutterActivity() {
     private fun finishQrImage(result: MethodChannel.Result, payload: String?) {
         if (qrImageResult !== result) return
         qrImageResult = null
-        qrOperationPending = false
+        qrOperationGate.finish()
         result.success(payload)
     }
 
@@ -267,7 +278,7 @@ class MainActivity : FlutterActivity() {
     ) {
         if (qrImageResult !== result) return
         qrImageResult = null
-        qrOperationPending = false
+        qrOperationGate.finish()
         result.error(code, message, null)
     }
 

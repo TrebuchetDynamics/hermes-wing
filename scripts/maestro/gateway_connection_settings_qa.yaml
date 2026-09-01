@@ -8,12 +8,19 @@ name: gateway_connection_settings_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*Message Hermes….*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
 - tapOn: "Open more destinations"
+- scrollUntilVisible:
+    element:
+      text: "^Settings$"
+    direction: DOWN
+    timeout: 30000
 - tapOn: "^Settings$"
 - assertVisible: "^Gateways$"
 - assertVisible: "(?s).*Credentials stay in secure storage; values hidden.*"

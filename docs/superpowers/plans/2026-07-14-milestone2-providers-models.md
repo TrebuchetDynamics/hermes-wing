@@ -1,5 +1,11 @@
 # Milestone 2 — Providers & Models Implementation Plan
 
+> **Status: superseded planning history (2026-08-14).** The proposed
+> `/api/providers` and `/api/models/*` administration contract was not added to
+> supported Hermes Agent releases. Hermes Agent 0.20 advertises read-only
+> `/api/model/options`, not an API-server model mutation route. Wing must adapt to
+> current advertised contracts instead of executing this cross-repository plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Scoped, profile-aware provider-credential and model-selection contracts + Flutter client, per `docs/superpowers/specs/2026-07-14-milestone2-providers-models-design.md`. The phone is a key-setter and model-switcher, never a key-reader.
@@ -22,10 +28,12 @@
 ### Task 1: Extend scope vocabulary with providers and models
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/api_operator_auth.py` (`VALID_SCOPE_DOMAINS`)
 - Modify: `hermes-agent/tests/gateway/test_api_operator_auth.py`
 
 **Interfaces:**
+
 - Produces: `providers:read`, `providers:write`, `models:read`, `models:write` accepted by `normalize_scopes`; `AuthPrincipal` unchanged.
 
 - [ ] **Step 1: Failing test** — add cases: `normalize_scopes(["providers:read","models:write"])` returns them sorted/deduped; `AuthPrincipal("x", ("providers:write",), False).allows("providers:read")` is False (exact match, per milestone 0); a token with `models:read` does not satisfy `models:write`. Run: FAIL.
@@ -38,10 +46,12 @@
 ### Task 2: Provider presence and write-only credential contract
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/platforms/api_server.py`
 - Create: `hermes-agent/tests/gateway/test_api_providers.py`
 
 **Interfaces:**
+
 - Consumes: `_authorize` (milestone 0); `hermes_cli.provider_catalog.provider_catalog()` → `list[ProviderDescriptor]` (has slug, label, `env_vars`, `auth_type`); the env-var config layer the Dashboard's `set_env_var`/`remove_env_var` handlers call — READ `hermes_cli/web_server.py` around the `set_env_var`/`remove_env_var`/`validate_provider_credential` handlers to find the underlying functions (`save_env_value(key, value)` under a `_profile_scope(profile)` context, the delete equivalent, and the validate/connectivity-probe helper) and reuse those directly. Do NOT proxy the Dashboard HTTP server. Do NOT mirror `reveal_env_var`.
 - Produces handlers + capability entries:
   - `GET /api/profiles`-style `GET /api/providers` (`providers:read`) → `{"data": [{"slug","label","auth_type","env_vars":[...names...],"configured": bool,"key_hint": "····last4" or null}]}`. `configured`/`key_hint` derived by checking whether each provider's env var is set in the profile scope — WITHOUT returning the value. `key_hint` shows only the last 4 chars of the stored value (the single sanctioned derived disclosure); null when unset.
@@ -58,10 +68,12 @@
 ### Task 3: Model catalog, active/aux assignment, cache-first discovery
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/platforms/api_server.py`
 - Create: `hermes-agent/tests/gateway/test_api_models.py`
 
 **Interfaces:**
+
 - Consumes: `_authorize`; `hermes_cli.model_catalog.get_catalog(force_refresh=False)` (cache-first; disk cache) and `get_catalog(force_refresh=True)` (live fetch); the model-assignment config writer + `get_auxiliary_models(profile)` — READ the Dashboard `set_model_assignment`/`get_auxiliary_models` handlers (web_server.py ~4282/4393) to find the underlying config functions and the current main-slot reader, and reuse those. `ModelAssignment` shape: `scope` ("main"|"auxiliary"), `task`, `provider`, `model`.
 - Produces:
   - `GET /api/models` (`models:read`) → `{"catalog": <cached get_catalog()>, "active": {"provider","model"}, "auxiliary": <get_auxiliary_models(profile)>, "revision": <opaque>}`. NO outbound fetch on this read.
@@ -76,11 +88,13 @@
 ### Task 4: Typed Flutter provider/model client + channel
 
 **Files:**
+
 - Create: `hermes-wing/lib/core/hermes/models/hermes_provider.dart`, `lib/core/hermes/models/hermes_model_assignment.dart`
 - Modify: `lib/core/hermes/client/hermes_api_client.dart`, `hermes_api_config.dart`, `hermes_api_transport*.dart` (if a new verb is needed — reuse PUT from milestone 1), `lib/core/hermes/channel/hermes_channel.dart`, `hermes_channel_state.dart`, `hermes_api_channel.dart`, add `lib/core/hermes/channel/api_channel/hermes_api_channel_providers.dart`
 - Modify tests: `test/core/hermes/hermes_api_test.dart`, `test/core/hermes/channel/hermes_api_channel_test.dart`, `test/features/hermes_chat/support/fake_hermes_channel.dart`
 
 **Interfaces:**
+
 - Consumes: the Task 2/3 server contract; milestone-1 capability scope-gating (`auth.allows`), `profileScopedUri`, PUT transport, connection-generation guard.
 - Produces: `HermesProvider {slug, label, authType, envVars, configured, keyHint}` (keyHint nullable, never a full key); `HermesModelAssignment {activeProvider, activeModel, auxiliary}`; client methods `listProviders`, `setProviderCredential({slug, envVar, value})`, `removeProviderCredential({slug, envVar})`, `validateProviderCredential({slug})`, `listModels`, `refreshModels`, `assignModel({scope, task?, provider, model, revision})`; channel methods mirroring them; `state.providers`, `state.models`. All profile-scoped; assignment sends `If-Match`; refresh is explicit. `HermesProvider.fromJson` discards blank-slug rows; NO field ever holds a full secret.
 
@@ -92,11 +106,13 @@
 ### Task 5: Providers screen, write-only credential sheet, model picker
 
 **Files:**
+
 - Create: `hermes-wing/lib/features/providers/screens/providers_screen.dart`, `lib/features/providers/widgets/provider_credential_sheet.dart`, `lib/features/providers/widgets/model_picker_sheet.dart`
 - Create tests: `test/features/providers/providers_screen_test.dart`, `test/features/providers/provider_credential_sheet_test.dart`
 - Modify: `lib/router/routes/app_routes.dart`, `lib/router/providers/app_router.dart`, `lib/shared/widgets/app_shell_presentation.dart`, `lib/l10n/app_en.arb` (+ regenerate), `test/shared/widgets/app_shell_test.dart`
 
 **Interfaces:**
+
 - Consumes: Task 4 channel seam, milestone-1 `/agents` screen pattern (capability-gated mutation visibility, More-overflow destination, l10n).
 - Produces: `/providers` route in the More sheet + desktop-direct; provider list with `configured` badges and key-hint; a write-only credential sheet (obscured input, set/remove/validate; NEVER renders an existing key — only the `configured`/hint); a model picker for main + auxiliary slots driving `assignModel`. New app-owned strings in ARB.
 
@@ -108,6 +124,7 @@
 ### Task 6: Milestone-2 receipt, ledger, and docs
 
 **Files:**
+
 - Create: `hermes-agent/tests/gateway/test_milestone2_receipt.py`
 - Modify (wing, LEAVE UNCOMMITTED for the user given the dirty-doc entanglement — apply and report, do not stage): `docs/product/hermes-desktop-parity.md`, `docs/product/hermes-compatibility.md`, `docs/product/routes.md`, `docs/security/threat-model.md`
 

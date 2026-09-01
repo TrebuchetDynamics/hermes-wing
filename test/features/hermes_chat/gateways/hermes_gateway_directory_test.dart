@@ -33,6 +33,56 @@ class _QueuedProfileChannel extends FakeHermesChannel {
   }
 }
 
+class _EmptySessionChannel extends FakeHermesChannel {
+  _EmptySessionChannel() : super(status: HermesConnectionStatus.disconnected);
+
+  @override
+  Future<void> connect({required String baseUrl, String? apiKey}) async {
+    await super.connect(baseUrl: baseUrl, apiKey: apiKey);
+    replaceSessions(const [], activeSessionId: null);
+  }
+}
+
+class _ProfileSessionChannel extends FakeHermesChannel {
+  _ProfileSessionChannel() : super(status: HermesConnectionStatus.disconnected);
+
+  @override
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
+    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    replaceSessions(const [
+      HermesSession(id: 'sess_1', source: 'test'),
+      HermesSession(id: 'sess_2', source: 'test'),
+    ], activeSessionId: 'sess_1');
+  }
+}
+
+class _TelegramSessionChannel extends FakeHermesChannel {
+  _TelegramSessionChannel()
+    : super(status: HermesConnectionStatus.disconnected);
+
+  List<HermesSession> _agentSessions = const [
+    HermesSession(id: 'telegram-session', source: 'telegram'),
+  ];
+
+  @override
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+  }) async {
+    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    replaceSessions(_agentSessions, activeSessionId: 'telegram-session');
+  }
+
+  @override
+  Future<void> createSession({String? title}) async {
+    await super.createSession(title: title);
+    _agentSessions = state.sessions;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
@@ -77,6 +127,74 @@ void main() {
     },
   );
 
+  test(
+    'bundle recovery acknowledges one credential once and clears every profile',
+    () async {
+      const configs = [
+        HermesEndpointConfig(
+          id: 'sidon',
+          baseUrl: 'https://home.example/p/sidon',
+          apiKey: 'sidon-token',
+          wingLinkOrigin: 'https://home.example:8654',
+          wingLinkToken: 'control-token',
+          wingLinkPendingCredentialId: 'bundle-credential',
+        ),
+        HermesEndpointConfig(
+          id: 'link',
+          baseUrl: 'https://home.example/p/link',
+          apiKey: 'link-token',
+          wingLinkOrigin: 'https://home.example:8654',
+          wingLinkToken: 'control-token',
+          wingLinkPendingCredentialId: 'bundle-credential',
+        ),
+      ];
+      final store = FakeHermesEndpointStore(profiles: configs);
+      var recoveryCalls = 0;
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'sidon': gatewaySummary(['sidon']),
+          'link': gatewaySummary(['link']),
+        }),
+        activeChannel: FakeHermesChannel.disconnected(),
+        pendingCredentialRecovery: (_) async {
+          recoveryCalls++;
+          if (recoveryCalls > 1) {
+            throw StateError('credential was already acknowledged');
+          }
+          return true;
+        },
+      );
+      addTearDown(directory.dispose);
+
+      await directory.refresh();
+
+      expect(recoveryCalls, 1);
+      final saved = await store.loadProfiles();
+      expect(
+        saved.every(
+          (config) => (config.wingLinkPendingCredentialId ?? '').isEmpty,
+        ),
+        isTrue,
+      );
+      expect(
+        directory
+            .configForGateway('sidon')
+            ?.wingLinkPendingCredentialId
+            ?.isEmpty,
+        isTrue,
+      );
+      expect(
+        directory
+            .configForGateway('link')
+            ?.wingLinkPendingCredentialId
+            ?.isEmpty,
+        isTrue,
+      );
+    },
+  );
+
   test('Wing Link credentials do not manufacture profile contacts', () async {
     const config = HermesEndpointConfig(
       id: 'home',
@@ -114,6 +232,272 @@ void main() {
       isFalse,
     );
   });
+
+  final enrollmentBoundaryCases =
+      <({String name, HermesEndpointConfig candidate})>[
+        (
+          name:
+              'managed profile enrollment rejects a different Hermes authority',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://other.example:8642/p/link',
+            apiKey: 'candidate-key',
+            wingLinkOrigin: 'https://control.example:8654',
+            wingLinkHostFingerprint: 'sha256/source-pin',
+          ),
+        ),
+        (
+          name:
+              'managed profile enrollment rejects a different Wing Link authority',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://hermes.example:8642/p/link',
+            apiKey: 'candidate-key',
+            wingLinkOrigin: 'https://other-control.example:8654',
+            wingLinkHostFingerprint: 'sha256/source-pin',
+          ),
+        ),
+        (
+          name: 'managed profile enrollment rejects a changed Wing Link pin',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://hermes.example:8642/p/link',
+            apiKey: 'candidate-key',
+            wingLinkOrigin: 'https://control.example:8654',
+            wingLinkHostFingerprint: 'sha256/other-pin',
+          ),
+        ),
+        (
+          name:
+              'managed profile enrollment rejects a blank endpoint credential',
+          candidate: const HermesEndpointConfig(
+            id: 'candidate',
+            baseUrl: 'https://hermes.example:8642/p/link',
+            apiKey: '   ',
+            wingLinkOrigin: 'https://control.example:8654',
+            wingLinkHostFingerprint: 'sha256/source-pin',
+          ),
+        ),
+      ];
+
+  for (final boundaryCase in enrollmentBoundaryCases) {
+    test(boundaryCase.name, () async {
+      const source = HermesEndpointConfig(
+        id: 'source',
+        baseUrl: 'https://hermes.example:8642/p/default',
+        apiKey: 'source-key',
+        wingLinkOrigin: 'https://control.example:8654',
+        wingLinkHostFingerprint: 'sha256/source-pin',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(
+          profiles: [source, boundaryCase.candidate],
+        ),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'source': gatewaySummary(['default']),
+          'candidate': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      await directory.refresh();
+
+      expect(
+        directory.enrolledGatewayIdForManagedProfile(
+          sourceGatewayId: 'source',
+          profileId: 'link',
+        ),
+        isNull,
+      );
+    });
+  }
+
+  test(
+    'managed HTTPS profile enrollment requires the reviewed Wing Link pin',
+    () async {
+      const source = HermesEndpointConfig(
+        id: 'source',
+        baseUrl: 'https://hermes.example:8642/p/default',
+        apiKey: 'source-key',
+        wingLinkOrigin: 'https://control.example:8654',
+        wingLinkHostFingerprint: 'sha256/reviewed-pin',
+      );
+      const candidate = HermesEndpointConfig(
+        id: 'candidate',
+        baseUrl: 'https://hermes.example:8642/p/link',
+        apiKey: 'candidate-key',
+        wingLinkOrigin: 'https://control.example:8654',
+        wingLinkHostFingerprint: 'sha256/reviewed-pin',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(profiles: const [source, candidate]),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'source': gatewaySummary(['default']),
+          'candidate': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      await directory.refresh();
+
+      expect(
+        directory.enrolledGatewayIdForManagedProfile(
+          sourceGatewayId: 'source',
+          profileId: 'link',
+        ),
+        'candidate',
+      );
+    },
+  );
+
+  test('profile-prefixed endpoints keep distinct contact identities', () async {
+    const config = HermesEndpointConfig(
+      id: 'sidon-endpoint',
+      label: 'BlueBlack · sidon',
+      baseUrl: 'https://home.example/p/sidon',
+    );
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: const [config]),
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'sidon-endpoint': const GatewaySummary(
+          profiles: [],
+          sessionsByProfile: {},
+          unscopedSessions: [],
+        ),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+
+    await directory.refresh();
+
+    expect(directory.contacts.single.id.profileId, 'sidon');
+    expect(directory.contacts.single.gatewayLabel, 'BlueBlack');
+    expect(directory.contacts.single.profileName, 'sidon');
+  });
+
+  test(
+    'profile-prefixed endpoint never projects another profile from broad inventory',
+    () async {
+      const config = HermesEndpointConfig(
+        id: 'sidon-endpoint',
+        label: 'BlueBlack · sidon',
+        baseUrl: 'https://home.example/p/sidon',
+        apiKey: 'sidon-secret',
+      );
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(profiles: const [config]),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'sidon-endpoint': GatewaySummary(
+            profileContextAvailable: true,
+            profiles: const [
+              HermesProfile(id: 'sidon', displayName: 'Sidon', revision: 's'),
+              HermesProfile(id: 'link', displayName: 'Link', revision: 'l'),
+            ],
+            sessionsByProfile: const {},
+          ),
+        }),
+        activeChannel: FakeHermesChannel.disconnected(),
+      );
+      addTearDown(directory.dispose);
+
+      await directory.refresh();
+
+      expect(directory.contacts, hasLength(1));
+      expect(
+        directory.contacts.single.id,
+        const GatewayContactId(gatewayId: 'sidon-endpoint', profileId: 'sidon'),
+      );
+    },
+  );
+
+  test(
+    'profile-prefixed endpoint chats without query-profile context',
+    () async {
+      const config = HermesEndpointConfig(
+        id: 'sidon-endpoint',
+        label: 'BlueBlack · sidon',
+        baseUrl: 'https://home.example/p/sidon',
+        apiKey: 'sidon-secret',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(profiles: const [config]),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'sidon-endpoint': GatewaySummary(
+            profileContextAvailable: false,
+            profiles: const [
+              HermesProfile(id: 'sidon', displayName: 'Sidon', revision: 's'),
+            ],
+            sessionsByProfile: const {},
+          ),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      addTearDown(channel.dispose);
+      await directory.refresh();
+
+      expect(directory.contacts.single.chatAvailable, isTrue);
+      await directory.activate(
+        const GatewayContactId(gatewayId: 'sidon-endpoint', profileId: 'sidon'),
+      );
+      expect(channel.selectProfileCalls, isEmpty);
+    },
+  );
+
+  test(
+    'unscoped default profile skips query selection without profile context',
+    () async {
+      const config = HermesEndpointConfig(
+        id: 'legacy-endpoint',
+        label: 'Legacy',
+        baseUrl: 'https://legacy.example',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(profiles: const [config]),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'legacy-endpoint': GatewaySummary(
+            profileContextAvailable: false,
+            profiles: const [
+              HermesProfile(
+                id: 'default',
+                displayName: 'Default profile',
+                revision: 'd',
+              ),
+            ],
+            sessionsByProfile: const {},
+          ),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      addTearDown(channel.dispose);
+      await directory.refresh();
+
+      await directory.activate(
+        const GatewayContactId(
+          gatewayId: 'legacy-endpoint',
+          profileId: 'default',
+        ),
+      );
+
+      expect(channel.selectProfileCalls, isEmpty);
+    },
+  );
 
   test(
     'API summary loader does not probe profiles without profiles read scope',
@@ -164,6 +548,53 @@ void main() {
       expect(summary.profiles, isEmpty);
       expect(summary.sessionsByProfile, isEmpty);
       expect(summary.profileContextAvailable, isTrue);
+    },
+  );
+
+  test(
+    'API summary loader does not probe profiles when a declared scope is missing',
+    () async {
+      final requestedPaths = <String>[];
+      final loader = HermesApiGatewaySummaryLoader(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            requestedPaths.add(uri.path);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' =>
+                '''
+{
+  "schema_version": 1,
+  "profile_context": {"type": "query", "name": "profile", "required": true, "default_profile_id": "default"},
+  "auth": {"type": "bearer", "required": true, "granted_scopes": ["profiles:read"]},
+  "endpoints": {
+    "profiles": {
+      "method": "GET",
+      "path": "/api/profiles",
+      "required_scopes": ["profiles:read", "profiles:admin"]
+    }
+  }
+}
+''',
+              '/api/sessions' => '{"object":"list","data":[]}',
+              '/api/profiles' => throw StateError('must not be requested'),
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+
+      final summary = await loader.load(
+        const HermesEndpointConfig(
+          id: 'missing-declared-scope',
+          baseUrl: 'https://missing-declared-scope.example',
+        ),
+      );
+
+      expect(requestedPaths, isNot(contains('/api/profiles')));
+      expect(summary.profiles, isEmpty);
+      expect(summary.unscopedSessions, isEmpty);
     },
   );
 
@@ -288,8 +719,41 @@ void main() {
     );
   });
 
-  test('activate connects the gateway, profile, and latest session', () async {
-    final channel = FakeHermesChannel.disconnected();
+  test('activate creates a session when the opened profile has none', () async {
+    final channel = _EmptySessionChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
+      ],
+      loader: FakeGatewaySummaryLoader(const {
+        'beta': GatewaySummary(
+          profileContextAvailable: true,
+          profiles: [
+            HermesProfile(
+              id: 'agent-2',
+              displayName: 'Agent 2',
+              revision: 'r2',
+            ),
+          ],
+          sessionsByProfile: {'agent-2': []},
+        ),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(channel.dispose);
+    addTearDown(directory.dispose);
+    await directory.refresh();
+
+    await directory.activate(
+      const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
+    );
+
+    expect(channel.createSessionCalls, [isNull]);
+    expect(channel.state.activeSessionId, 'sess_1');
+  });
+
+  test('activate isolates a Telegram session in a new Wing session', () async {
+    final channel = _TelegramSessionChannel();
     final directory = directoryFor(
       configs: const [
         HermesEndpointConfig(
@@ -309,7 +773,9 @@ void main() {
             ),
           ],
           sessionsByProfile: {
-            'agent-2': [HermesSession(id: 'sess_1', source: 'test')],
+            'agent-2': [
+              HermesSession(id: 'telegram-session', source: 'telegram'),
+            ],
           },
         ),
       }),
@@ -324,11 +790,131 @@ void main() {
     expect(channel.connectCalls.single.baseUrl, 'https://beta.example');
     expect(channel.connectCalls.single.apiKey, 'beta-secret');
     expect(channel.selectProfileCalls, ['agent-2']);
-    expect(channel.selectSessionCalls, ['sess_1']);
+    expect(channel.selectSessionCalls, isEmpty);
+    expect(channel.createSessionCalls, [isNull]);
+    expect(channel.state.activeSessionId, 'sess_2');
     expect(
       directory.activeContactId,
       const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
     );
+  });
+
+  test('stale preference still isolates the latest Telegram session', () async {
+    final channel = _TelegramSessionChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
+      ],
+      loader: FakeGatewaySummaryLoader(const {
+        'beta': GatewaySummary(
+          profileContextAvailable: true,
+          profiles: [
+            HermesProfile(
+              id: 'agent-2',
+              displayName: 'Agent 2',
+              revision: 'r2',
+            ),
+          ],
+          sessionsByProfile: {
+            'agent-2': [
+              HermesSession(id: 'telegram-session', source: 'telegram'),
+            ],
+          },
+        ),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+
+    await directory.activate(
+      const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
+      preferredSessionId: 'deleted-session',
+    );
+
+    expect(channel.selectSessionCalls, isEmpty);
+    expect(channel.createSessionCalls, [isNull]);
+  });
+
+  test('repeated activation reuses the Wing session it created', () async {
+    final channel = _TelegramSessionChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
+      ],
+      loader: FakeGatewaySummaryLoader(const {
+        'beta': GatewaySummary(
+          profileContextAvailable: true,
+          profiles: [
+            HermesProfile(
+              id: 'agent-2',
+              displayName: 'Agent 2',
+              revision: 'r2',
+            ),
+          ],
+          sessionsByProfile: {
+            'agent-2': [
+              HermesSession(id: 'telegram-session', source: 'telegram'),
+            ],
+          },
+        ),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    const contactId = GatewayContactId(gatewayId: 'beta', profileId: 'agent-2');
+
+    await directory.activate(contactId);
+    final wingSessionId = channel.state.activeSessionId;
+    await directory.activate(contactId, preferredSessionId: wingSessionId);
+
+    expect(channel.createSessionCalls, [isNull]);
+    expect(channel.state.activeSessionId, wingSessionId);
+  });
+
+  test('start restores the last active profile and session', () async {
+    final cache = FakeGatewayContactCache();
+    final firstChannel = _ProfileSessionChannel();
+    final firstDirectory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default', 'coder']),
+      }),
+      cache: cache,
+      activeChannel: firstChannel,
+    );
+    await firstDirectory.start();
+    await firstDirectory.activate(
+      const GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+    );
+    await firstChannel.selectSession('sess_2');
+    await Future<void>.delayed(Duration.zero);
+    firstDirectory.dispose();
+    firstChannel.dispose();
+
+    final restoredChannel = _ProfileSessionChannel();
+    final restoredDirectory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default', 'coder']),
+      }),
+      cache: cache,
+      activeChannel: restoredChannel,
+    );
+    addTearDown(restoredDirectory.dispose);
+    addTearDown(restoredChannel.dispose);
+
+    await restoredDirectory.start();
+
+    expect(
+      restoredDirectory.activeContactId,
+      const GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+    );
+    expect(restoredChannel.selectProfileCalls, ['coder']);
+    expect(restoredChannel.selectSessionCalls, ['sess_2']);
   });
 
   test('activateGateway connects the gateway default profile', () async {
@@ -526,6 +1112,45 @@ void main() {
     expect(loader.calls.where((id) => id == 'a'), hasLength(2));
     expect(loader.calls.where((id) => id == 'b'), hasLength(1));
   });
+
+  test(
+    'renaming one imported profile preserves Wing Link management',
+    () async {
+      final store = FakeHermesEndpointStore(
+        profiles: const [
+          HermesEndpointConfig(
+            id: 'sidon',
+            label: 'BlueBlack · sidon',
+            baseUrl: 'https://home.example/p/sidon',
+            apiKey: 'sidon-secret',
+            wingLinkOrigin: 'https://home.example:8654',
+            wingLinkToken: 'control-secret',
+            wingLinkPendingCredentialId: 'pending-id',
+          ),
+        ],
+      );
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'sidon': gatewaySummary(['sidon']),
+        }),
+        activeChannel: FakeHermesChannel.disconnected(),
+      );
+      await directory.refresh();
+
+      await directory.renameGateway('sidon', 'Home');
+
+      final saved = store.saveCalls.single;
+      expect(saved.wingLinkOrigin, 'https://home.example:8654');
+      expect(saved.wingLinkToken, 'control-secret');
+      expect(saved.wingLinkPendingCredentialId, 'pending-id');
+      expect(
+        directory.configForGateway('sidon')?.wingLinkToken,
+        'control-secret',
+      );
+    },
+  );
 
   test(
     'update connection sanitizes the origin and preserves a hidden credential',
@@ -1076,6 +1701,9 @@ class _ThrowingHermesEndpointStore implements HermesEndpointStore {
       throw StateError('secure storage unavailable');
 
   @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {}
+
+  @override
   Future<void> save({
     required String baseUrl,
     String? apiKey,
@@ -1084,6 +1712,8 @@ class _ThrowingHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   }) async {}
 
   @override

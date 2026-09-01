@@ -56,9 +56,12 @@ class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
     final supportsProfileContext =
         capabilities.supportsSchema &&
         capabilities.profileContext.isSupportedQueryContext;
+    final profileEndpoint = capabilities.endpoints['profiles'];
     final supportsProfiles =
         supportsProfileContext &&
+        profileEndpoint != null &&
         capabilities.auth.allows('profiles:read') &&
+        profileEndpoint.requiredScopes.every(capabilities.auth.allows) &&
         capabilities.advertisesScopedEndpoint(
           'profiles',
           'GET',
@@ -128,6 +131,8 @@ class HermesGatewayDirectory extends ChangeNotifier
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
   Future<void> _profileSelectionTail = Future.value();
+  Future<void> _selectionPersistenceTail = Future.value();
+  bool _observingActiveChannel = false;
   Timer? _foregroundTimer;
 
   List<GatewayContact> get contacts => List.unmodifiable(_contacts);
@@ -153,13 +158,90 @@ class HermesGatewayDirectory extends ChangeNotifier
   HermesEndpointConfig? configForGateway(String gatewayId) =>
       _configsById[gatewayId];
 
+  /// Resolves an independently enrolled endpoint for a profile managed by the
+  /// selected gateway's Wing Link inventory. Inventory membership alone is not
+  /// enrollment: the endpoint must have its own saved bearer credential and
+  /// exact `/p/<profile>` routing on the same reviewed authorities.
+  String? enrolledGatewayIdForManagedProfile({
+    required String sourceGatewayId,
+    required String profileId,
+  }) {
+    final source = _configsById[sourceGatewayId];
+    final sourceHermes = Uri.tryParse(source?.baseUrl ?? '');
+    final sourceWingLink = Uri.tryParse(source?.wingLinkOrigin ?? '');
+    if (source == null ||
+        sourceHermes == null ||
+        sourceWingLink == null ||
+        profileId.trim() != profileId ||
+        profileId.isEmpty) {
+      return null;
+    }
+    final sourceFingerprint = source.wingLinkHostFingerprint?.trim() ?? '';
+    final requiresPinnedWingLink = sourceWingLink.scheme == 'https';
+    if (requiresPinnedWingLink && sourceFingerprint.isEmpty) return null;
+    for (final entry in _configsById.entries) {
+      final candidate = entry.value;
+      final credential = candidate.apiKey?.trim() ?? '';
+      final candidateHermes = Uri.tryParse(candidate.baseUrl);
+      final candidateWingLink = Uri.tryParse(candidate.wingLinkOrigin ?? '');
+      if (credential.isEmpty ||
+          candidateHermes == null ||
+          candidateWingLink == null ||
+          candidateHermes.scheme != sourceHermes.scheme ||
+          candidateHermes.host.toLowerCase() !=
+              sourceHermes.host.toLowerCase() ||
+          candidateHermes.port != sourceHermes.port ||
+          candidateWingLink.scheme != sourceWingLink.scheme ||
+          candidateWingLink.host.toLowerCase() !=
+              sourceWingLink.host.toLowerCase() ||
+          candidateWingLink.port != sourceWingLink.port ||
+          (requiresPinnedWingLink &&
+              (candidate.wingLinkHostFingerprint?.trim() ?? '') !=
+                  sourceFingerprint)) {
+        continue;
+      }
+      final segments = candidateHermes.pathSegments
+          .where((segment) => segment.isNotEmpty)
+          .toList(growable: false);
+      if (segments.length == 2 &&
+          segments.first == 'p' &&
+          segments.last == profileId) {
+        return entry.key;
+      }
+      if (profileId == 'default' &&
+          entry.key == sourceGatewayId &&
+          segments.isEmpty) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
   Future<void> start() async {
     if (_started) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
+    _activeChannel.addListener(_onActiveChannelChanged);
+    _observingActiveChannel = true;
+    final rememberedSelection = await _cache.loadSelection();
     _contacts = await _cache.load();
     notifyListeners();
     await refresh();
+    if (rememberedSelection != null &&
+        _contacts.any(
+          (contact) =>
+              contact.id == rememberedSelection.contactId &&
+              contact.chatAvailable,
+        )) {
+      try {
+        await activate(
+          rememberedSelection.contactId,
+          preferredSessionId: rememberedSelection.sessionId,
+        );
+      } catch (_) {
+        // Keep the directory usable when a remembered endpoint is offline.
+      }
+    }
     if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
       _startForegroundRefresh();
     }
@@ -169,7 +251,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     final generation = ++_refreshGeneration;
     _refreshing = true;
     notifyListeners();
-    final List<HermesEndpointConfig> configs;
+    List<HermesEndpointConfig> configs;
     try {
       configs = await _store.loadProfiles();
     } catch (_) {
@@ -182,7 +264,7 @@ class HermesGatewayDirectory extends ChangeNotifier
       return;
     }
     if (generation != _refreshGeneration) return;
-    await Future.wait(configs.map(_recoverPendingWingLinkCredential));
+    configs = await _recoverPendingWingLinkCredentials(configs);
     if (generation != _refreshGeneration) return;
 
     _configsById
@@ -229,32 +311,56 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> _recoverPendingWingLinkCredential(
-    HermesEndpointConfig config,
+  Future<List<HermesEndpointConfig>> _recoverPendingWingLinkCredentials(
+    List<HermesEndpointConfig> configs,
   ) async {
-    final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
-    final controlToken = config.wingLinkToken ?? '';
-    final credentialId = config.wingLinkPendingCredentialId ?? '';
-    if (origin == null ||
-        origin.host.isEmpty ||
-        controlToken.isEmpty ||
-        credentialId.isEmpty) {
-      return;
+    final recovered = [...configs];
+    final groups = <(String, String, String), List<int>>{};
+    for (var index = 0; index < configs.length; index++) {
+      final config = configs[index];
+      final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
+      final controlToken = config.wingLinkToken ?? '';
+      final credentialId = config.wingLinkPendingCredentialId ?? '';
+      if (origin == null ||
+          origin.host.isEmpty ||
+          controlToken.isEmpty ||
+          credentialId.isEmpty) {
+        continue;
+      }
+      groups
+          .putIfAbsent((
+            origin.toString(),
+            controlToken,
+            credentialId,
+          ), () => <int>[])
+          .add(index);
     }
-    try {
-      if (!await _pendingCredentialRecovery(config)) return;
-      await _store.save(
-        baseUrl: config.baseUrl,
-        apiKey: config.apiKey,
-        label: config.label,
-        profileId: config.id,
-        wingLinkOrigin: origin.toString(),
-        wingLinkToken: controlToken,
-        wingLinkPendingCredentialId: '',
-      );
-    } catch (_) {
-      // Leave the securely stored pending transaction for the next refresh.
+
+    for (final entry in groups.entries) {
+      try {
+        if (!await _pendingCredentialRecovery(configs[entry.value.first])) {
+          continue;
+        }
+        for (final index in entry.value) {
+          final config = configs[index];
+          recovered[index] = HermesEndpointConfig(
+            id: config.id,
+            baseUrl: config.baseUrl,
+            apiKey: config.apiKey,
+            label: config.label,
+            wingLinkOrigin: config.wingLinkOrigin,
+            wingLinkToken: config.wingLinkToken,
+            wingLinkPendingCredentialId: '',
+            wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+            wingLinkDeviceId: config.wingLinkDeviceId,
+          );
+        }
+        await _store.saveAll(recovered);
+      } catch (_) {
+        // Leave every securely stored bundle member pending for a later refresh.
+      }
     }
+    return recovered;
   }
 
   static Future<bool> _verifyAndAcknowledgePendingCredential(
@@ -267,7 +373,11 @@ class HermesGatewayDirectory extends ChangeNotifier
         apiKey: config.apiKey,
       ),
     ).health();
-    final client = WingLinkClient(origin: origin, token: config.wingLinkToken!);
+    final client = WingLinkClient(
+      origin: origin,
+      token: config.wingLinkToken!,
+      hostFingerprint: config.wingLinkHostFingerprint,
+    );
     await client.verifyPendingCredential();
     await client.acknowledgeCredential(config.wingLinkPendingCredentialId!);
     return true;
@@ -321,16 +431,24 @@ class HermesGatewayDirectory extends ChangeNotifier
       final apiProfiles = {
         for (final profile in summary.profiles) profile.id: profile,
       };
-      final profileIds = apiProfiles.keys;
+      final endpointProfileId = _profileIdFromEndpoint(config.baseUrl);
+      final profileIds = endpointProfileId == null
+          ? apiProfiles.keys
+          : apiProfiles.containsKey(endpointProfileId)
+          ? [endpointProfileId]
+          : const <String>[];
       final projected = profileIds.isEmpty
           ? [
               GatewayContact(
                 id: GatewayContactId(
                   gatewayId: gatewayId,
-                  profileId: 'default',
+                  profileId: endpointProfileId ?? 'default',
                 ),
-                gatewayLabel: config.displayLabel,
-                profileName: 'Endpoint contact',
+                gatewayLabel: _gatewayLabelForProfile(
+                  config.displayLabel,
+                  endpointProfileId,
+                ),
+                profileName: endpointProfileId ?? 'Endpoint contact',
                 latestSession: _latestSession(summary.unscopedSessions),
                 sessionCount: summary.unscopedSessions.length,
                 availability: GatewayAvailability.online,
@@ -345,7 +463,10 @@ class HermesGatewayDirectory extends ChangeNotifier
                     gatewayId: gatewayId,
                     profileId: profileId,
                   ),
-                  gatewayLabel: config.displayLabel,
+                  gatewayLabel: _gatewayLabelForProfile(
+                    config.displayLabel,
+                    endpointProfileId,
+                  ),
                   profileName:
                       apiProfiles[profileId]?.displayName ??
                       (profileId == 'default' ? 'Default profile' : profileId),
@@ -363,10 +484,13 @@ class HermesGatewayDirectory extends ChangeNotifier
                   availability: GatewayAvailability.online,
                   lastRefreshedAt: refreshedAt,
                   isFallbackProfile:
-                      profileId == 'default' &&
-                      !apiProfiles.containsKey(profileId),
+                      endpointProfileId != null ||
+                      (profileId == 'default' &&
+                          !summary.profileContextAvailable),
                   chatAvailable:
-                      profileId == 'default' || summary.profileContextAvailable,
+                      endpointProfileId != null ||
+                      profileId == 'default' ||
+                      summary.profileContextAvailable,
                 ),
             ];
       _replaceGatewayContacts(gatewayId, projected);
@@ -452,6 +576,11 @@ class HermesGatewayDirectory extends ChangeNotifier
       apiKey: config.apiKey,
       label: normalizedLabel,
       profileId: gatewayId,
+      wingLinkOrigin: config.wingLinkOrigin,
+      wingLinkToken: config.wingLinkToken,
+      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     final displayLabel = normalizedLabel ?? config.baseUrl;
     _configsById[gatewayId] = HermesEndpointConfig(
@@ -459,6 +588,11 @@ class HermesGatewayDirectory extends ChangeNotifier
       label: normalizedLabel,
       baseUrl: config.baseUrl,
       apiKey: config.apiKey,
+      wingLinkOrigin: config.wingLinkOrigin,
+      wingLinkToken: config.wingLinkToken,
+      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     _contacts = sortGatewayContacts([
       for (final contact in _contacts)
@@ -628,6 +762,7 @@ class HermesGatewayDirectory extends ChangeNotifier
         _requireCurrentProfileSelection(generation, currentId, profileId);
       }
       _activeContactId = targetId;
+      await _rememberActiveSelection();
       notifyListeners();
     } finally {
       release.complete();
@@ -668,7 +803,10 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
   }
 
-  Future<void> activate(GatewayContactId id) async {
+  Future<void> activate(
+    GatewayContactId id, {
+    String? preferredSessionId,
+  }) async {
     final contact = _contacts.firstWhere((item) => item.id == id);
     if (!contact.chatAvailable) {
       throw StateError('This Hermes profile is not available for chat.');
@@ -707,17 +845,43 @@ class HermesGatewayDirectory extends ChangeNotifier
       }
       if (generation != _activationGeneration) return;
 
-      final latestId = contact.latestSession?.id;
-      if (latestId != null &&
-          _activeChannel.state.sessions.any(
-            (session) => session.id == latestId,
-          )) {
+      final resolvedPreferredSessionId =
+          preferredSessionId != null &&
+              _activeChannel.state.sessions.any(
+                (session) => session.id == preferredSessionId,
+              )
+          ? preferredSessionId
+          : null;
+      final sessionId = resolvedPreferredSessionId ?? contact.latestSession?.id;
+      final session = sessionId == null
+          ? null
+          : _activeChannel.state.sessions
+                .where((candidate) => candidate.id == sessionId)
+                .firstOrNull;
+      if (resolvedPreferredSessionId == null && session?.source == 'telegram') {
+        if (_activeChannel.state.canCreateSessions) {
+          await _activeChannel.createSession();
+          if (generation != _activationGeneration) return;
+        } else {
+          // Keep Telegram history discoverable without presenting its active
+          // conversation as the current Wing chat.
+          _activeChannel.clearActiveSession();
+        }
+      } else if (sessionId == null) {
+        // Opening a profile is an explicit chat action; give it a writable
+        // session when it has no prior session at all.
+        if (_activeChannel.state.canCreateSessions) {
+          await _activeChannel.createSession();
+          if (generation != _activationGeneration) return;
+        }
+      } else if (session != null) {
         try {
-          await _activeChannel.selectSession(latestId);
+          await _activeChannel.selectSession(session.id);
         } catch (_) {
           // A stale or slow session preview must not block a healthy gateway.
         }
       }
+      await _rememberActiveSelection();
     } catch (_) {
       clearFailedActivation();
       rethrow;
@@ -728,7 +892,47 @@ class HermesGatewayDirectory extends ChangeNotifier
     ++_activationGeneration;
     await _activeChannel.disconnect();
     _activeContactId = null;
+    await _clearRememberedSelection();
     notifyListeners();
+  }
+
+  Future<void> _rememberActiveSelection() async {
+    final contactId = _activeContactId;
+    if (contactId == null) return;
+    final selection = GatewayContactSelection(
+      contactId: contactId,
+      sessionId: _activeChannel.state.activeSession?.id,
+    );
+    final operation = _selectionPersistenceTail.then(
+      (_) => _cache.saveSelection(selection),
+    );
+    _selectionPersistenceTail = operation.catchError((Object _) {});
+    try {
+      await operation;
+    } catch (_) {
+      // A failed local preference write must not break a healthy chat.
+    }
+  }
+
+  Future<void> _clearRememberedSelection() async {
+    final operation = _selectionPersistenceTail.then(
+      (_) => _cache.clearSelection(),
+    );
+    _selectionPersistenceTail = operation.catchError((Object _) {});
+    try {
+      await operation;
+    } catch (_) {
+      // Selection persistence is a convenience, not a navigation dependency.
+    }
+  }
+
+  void _onActiveChannelChanged() {
+    if (_activeContactId == null ||
+        !_activeChannel.state.isConnected ||
+        _activeChannel.state.activeSession == null) {
+      return;
+    }
+    unawaited(_rememberActiveSelection());
   }
 
   @override
@@ -753,7 +957,28 @@ class HermesGatewayDirectory extends ChangeNotifier
   @override
   void dispose() {
     _foregroundTimer?.cancel();
+    if (_observingActiveChannel) {
+      _activeChannel.removeListener(_onActiveChannelChanged);
+    }
     if (_started) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+}
+
+String? _profileIdFromEndpoint(String baseUrl) {
+  final segments = Uri.tryParse(baseUrl)?.pathSegments ?? const <String>[];
+  return segments.length == 2 &&
+          segments.first == 'p' &&
+          segments.last.trim().isNotEmpty
+      ? segments.last.trim()
+      : null;
+}
+
+String _gatewayLabelForProfile(String label, String? profileId) {
+  final trimmed = label.trim();
+  if (profileId == null) return trimmed;
+  final suffix = ' · $profileId';
+  return trimmed.toLowerCase().endsWith(suffix.toLowerCase())
+      ? trimmed.substring(0, trimmed.length - suffix.length).trim()
+      : trimmed;
 }

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/features/hermes_chat/presentation/hermes_rich_text.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/shared/voice/text_to_speech_service.dart';
 
 import '../support/fake_hermes_channel.dart';
 
@@ -65,6 +69,99 @@ void main() {
       expect(find.text('Strong answer', findRichText: true), findsOneWidget);
     },
   );
+
+  testWidgets('two-finger pinch zoom changes transcript text size', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Zoom this conversation.');
+    channel.completeStreamingTurn(text: 'Readable answer');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final transcript = find.byKey(const ValueKey('hermes-transcript'));
+    final answer = find.text('Readable answer', findRichText: true);
+    final before = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
+    final center = tester.getCenter(transcript);
+    final first = await tester.startGesture(center - const Offset(20, 0));
+    final second = await tester.startGesture(center + const Offset(20, 0));
+    await first.moveTo(center - const Offset(70, 0));
+    await second.moveTo(center + const Offset(70, 0));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+
+    final after = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
+    expect(after, greaterThan(before));
+
+    final shrinkFirst = await tester.startGesture(center - const Offset(70, 0));
+    final shrinkSecond = await tester.startGesture(
+      center + const Offset(70, 0),
+    );
+    await shrinkFirst.moveTo(center - const Offset(2, 0));
+    await shrinkSecond.moveTo(center + const Offset(2, 0));
+    await tester.pump();
+    await shrinkFirst.up();
+    await shrinkSecond.up();
+    await tester.pumpAndSettle();
+
+    final smallest = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
+    expect(smallest, lessThan(before));
+    expect(smallest, moreOrLessEquals(8));
+  });
+
+  testWidgets('user Markdown renders richly and copies its original source', (
+    tester,
+  ) async {
+    const source = '**Review** `this()` from /tmp/example.md';
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn(source);
+    channel.completeStreamingTurn(text: 'Acknowledged.');
+    final userId = channel.state.activeMessages.first.id;
+    String? copiedText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copiedText =
+                (call.arguments as Map<Object?, Object?>)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining(source), findsNothing);
+    expect(find.textContaining('Review', findRichText: true), findsOneWidget);
+    expect(find.textContaining('this()', findRichText: true), findsOneWidget);
+    expect(
+      find.textContaining('/tmp/example.md', findRichText: true),
+      findsOneWidget,
+    );
+
+    await tester.longPress(find.byKey(ValueKey('hermes-turn-$userId')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy'));
+    await tester.pumpAndSettle();
+
+    expect(copiedText, source);
+  });
 
   testWidgets('assistant Markdown keeps rich blocks usable on a narrow phone', (
     tester,
@@ -189,6 +286,384 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.textContaining('[File: actual.txt]'), findsOneWidget);
   });
 
+  testWidgets(
+    'tool activity is contextualized without exposing commands or host results',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      channel.addToolCallTurn(
+        const HermesToolCall(
+          name: 'search_files',
+          status: 'completed',
+          preview: 'Search AGENTS.md before running piper',
+          result: 'Created /tmp/sidon_audio_reply.wav',
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('File activity'), findsOneWidget);
+      expect(find.text('Completed on Hermes host'), findsOneWidget);
+      expect(find.textContaining('search_files'), findsNothing);
+      expect(find.textContaining('AGENTS.md'), findsNothing);
+      expect(find.textContaining('/tmp/sidon_audio_reply.wav'), findsNothing);
+    },
+  );
+
+  testWidgets('leaked tool payload stays out of message and clipboard', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.completeStreamingTurn(
+      text:
+          'Safe intro.\n<some_tool>{"command":"raw-command-value"}'
+          '</some_tool>\nSafe outro.',
+    );
+    final assistantId = channel.state.activeMessages.last.id;
+    String? copiedText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copiedText =
+                (call.arguments as Map<Object?, Object?>)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Safe intro.'), findsOneWidget);
+    expect(find.textContaining('Safe outro.'), findsOneWidget);
+    expect(find.textContaining('raw-command-value'), findsNothing);
+    expect(find.textContaining('some_tool'), findsNothing);
+
+    await tester.longPress(find.byKey(ValueKey('hermes-turn-$assistantId')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy'));
+    await tester.pumpAndSettle();
+
+    expect(copiedText, 'Safe intro.\n[tool activity hidden]\nSafe outro.');
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-copy-transcript-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy as text'));
+    await tester.pumpAndSettle();
+
+    expect(
+      copiedText,
+      'You:\nQuestion\n\nHermes:\nSafe intro.\n'
+      '[tool activity hidden]\nSafe outro.',
+    );
+  });
+
+  testWidgets('running host activity is announced as live status', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel();
+    channel.addToolCallTurn(
+      const HermesToolCall(
+        name: 'run_shell',
+        status: 'running',
+        preview: 'cat /home/operator/private/secret.txt',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final status = tester.getSemantics(
+      find.byKey(const ValueKey('hermes-tool-activity-status-tool-0')),
+    );
+    expect(status.label, 'Working on Hermes host');
+    expect(status.flagsCollection.isLiveRegion, isTrue);
+    expect(find.textContaining('run_shell'), findsNothing);
+    expect(find.textContaining('secret.txt'), findsNothing);
+    semantics.dispose();
+  });
+
+  testWidgets('grouped host activity expands to safe per-step statuses', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.addToolCallTurn(
+      const HermesToolCall(
+        name: 'search_files',
+        status: 'completed',
+        preview: 'Search /home/operator/private',
+        result: 'Found secret.txt',
+      ),
+    );
+    channel.addToolCallTurn(
+      const HermesToolCall(
+        name: 'run_shell',
+        status: 'failed',
+        preview: 'cat /home/operator/private/secret.txt',
+        result: 'permission denied',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes host activity · 2 steps'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('hermes-tool-activity-step-1')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('hermes-tool-activity-tool-0')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('File activity'), findsOneWidget);
+    expect(find.text('Code activity'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('hermes-tool-activity-step-1')),
+        matching: find.text('Completed on Hermes host'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('hermes-tool-activity-step-2')),
+        matching: find.text('Host action needs attention'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('search_files'), findsNothing);
+    expect(find.textContaining('run_shell'), findsNothing);
+    expect(find.textContaining('secret.txt'), findsNothing);
+  });
+
+  testWidgets('tool cards expose only allowlisted activity categories', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel();
+    channel.addToolCallTurn(
+      const HermesToolCall(
+        name: 'web_search',
+        status: 'completed',
+        preview: 'Authorization: Bearer secret-sentinel',
+        result: '/home/alice/private-result.txt',
+      ),
+    );
+    channel.addToolCallTurn(
+      const HermesToolCall(
+        name: 'Bearer secret-sentinel /home/alice/private-tool',
+        status: 'failed',
+        preview: 'credential=secret-sentinel',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hermes-tool-activity-tool-0')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('hermes-tool-activity-step-1')),
+        matching: find.text('Web activity'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('hermes-tool-activity-step-2')),
+        matching: find.text('Host step 2'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('web_search'), findsNothing);
+    expect(find.textContaining('secret-sentinel'), findsNothing);
+    expect(find.textContaining('/home/alice'), findsNothing);
+    expect(
+      find.bySemanticsLabel(RegExp(r'web_search|secret-sentinel|/home/alice')),
+      findsNothing,
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('tool calls separated only by a hidden empty turn stay grouped', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.addToolCallTurn(
+      const HermesToolCall(name: 'search_files', status: 'completed'),
+    );
+    channel.addEmptyCompletedAssistantTurn();
+    channel.addToolCallTurn(
+      const HermesToolCall(name: 'run_shell', status: 'completed'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes host activity · 2 steps'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('hermes-tool-activity-tool-0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-tool-activity-tool-2')),
+      findsNothing,
+    );
+  });
+
+  testWidgets(
+    'host-local audio output is marked not delivered and its path is hidden',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      channel.beginStreamingTurn('Create an audio reply.');
+      channel.completeStreamingTurn(
+        text: 'Audio reply created at /tmp/sidon_audio_reply.wav.',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('/tmp/sidon_audio_reply.wav'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('hermes-undelivered-local-artifact')),
+        findsOneWidget,
+      );
+      expect(find.text('Not delivered to this device'), findsOneWidget);
+      expect(
+        find.textContaining('did not receive a playable audio attachment'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('windows host audio is marked as undelivered', (tester) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Create an audio reply.');
+    channel.completeStreamingTurn(
+      text: r'Audio created at C:\Users\operator\voice reply.wav.',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining(r'C:\Users\operator'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('hermes-undelivered-local-artifact')),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('did not receive a playable audio attachment'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('MEDIA tokens become a safe undelivered artifact notice', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Create a preview.');
+    channel.completeStreamingTurn(
+      text:
+          'Preview created.\nMEDIA:"/home/operator/My Preview.png"\n'
+          'Ask if you need anything else.',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('MEDIA:'), findsNothing);
+    expect(find.textContaining('/home/operator'), findsNothing);
+    expect(find.textContaining('[media not delivered]'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('hermes-undelivered-local-artifact')),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('did not receive an attachment'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('labelled host files show undelivered attachment guidance', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Create a report.');
+    channel.completeStreamingTurn(
+      text: 'Report ready.\nSaved to: `/tmp/final report.pdf`',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('/tmp/'), findsNothing);
+    expect(find.textContaining('final report.pdf'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('hermes-undelivered-local-artifact')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('created a file on its host'), findsOneWidget);
+  });
+
   testWidgets('reasoning is available in a collapsed readable card', (
     tester,
   ) async {
@@ -214,6 +689,35 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.text('Compare constraints before answering.'), findsOneWidget);
   });
 
+  testWidgets('wide assistant runs show one shared avatar', (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Reason and use a tool.');
+    channel.addReasoningTurn('Inspect the available evidence.');
+    channel.completeStreamingTurn(text: 'Evidence reviewed.');
+    channel.addToolCallTurn(
+      const HermesToolCall(name: 'search_files', status: 'completed'),
+    );
+    channel.beginStreamingTurn('Start a separate request.');
+    channel.completeStreamingTurn(text: 'Separate answer.');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-assistant-avatar')),
+      findsNWidgets(2),
+    );
+  });
+
   testWidgets('assistant replies show server-reported token usage', (
     tester,
   ) async {
@@ -237,9 +741,16 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('12 in · 7 out · 19 total tokens'), findsOneWidget);
     expect(
-      find.bySemanticsLabel('Token usage: 12 input, 7 output, 19 total'),
+      find.text('Latest Hermes run · 12 input · 7 output · 19 total'),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(
+        'Latest Hermes run token usage: 12 input, 7 output, 19 total. '
+        'Input can include instructions, conversation context, and tool results; '
+        'this is not a billing estimate.',
+      ),
       findsOneWidget,
     );
     semantics.dispose();
@@ -283,7 +794,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('1200 in · 700 out · 1900 total tokens'), findsOneWidget);
+    expect(
+      find.text('Latest Hermes run · 1200 input · 700 output · 1900 total'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('short conversations stay anchored above the composer', (
@@ -314,6 +828,62 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
         .dy;
     expect(composerTop - bubbleBottom, lessThan(48));
   });
+
+  testWidgets(
+    'streaming preserves manual history position until the user sends',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      for (var index = 0; index < 24; index++) {
+        await channel.sendText(
+          'History message $index with enough detail to fill the transcript.',
+        );
+      }
+      channel.beginStreamingTurn('Current request');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+
+      final transcript = find.byKey(const ValueKey('hermes-transcript'));
+      final scrollable = find.descendant(
+        of: transcript,
+        matching: find.byType(Scrollable),
+      );
+      final position = tester.state<ScrollableState>(scrollable).position;
+      await tester.drag(transcript, const Offset(0, 600));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(position.pixels, greaterThan(160));
+
+      channel.appendStreamingTurnText('Streaming update.');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(
+        position.pixels,
+        greaterThan(160),
+        reason: 'streaming must not pull readers away from older messages',
+      );
+
+      channel.completeStreamingTurn(text: 'Current answer');
+      await tester.pumpAndSettle();
+      final composer = find.byKey(const ValueKey('hermes-composer-field'));
+      await tester.enterText(composer, 'New question');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+      await tester.pumpAndSettle();
+
+      expect(
+        position.pixels,
+        closeTo(position.minScrollExtent, 1),
+        reason: 'a new user turn should re-engage transcript following',
+      );
+    },
+  );
 
   testWidgets('message bubbles keep Telegram-style bottom tails', (
     tester,
@@ -346,10 +916,319 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(assistantRadius.topLeft, const Radius.circular(16));
   });
 
+  testWidgets('message timestamps expose their full local date and time', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn(
+      'Question',
+      createdAt: DateTime(2024, 1, 2, 15, 4),
+    );
+    channel.completeStreamingTurn(text: 'Answer');
+    final assistantId = channel.state.activeMessages.last.id;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final timestamp = find.byKey(
+      ValueKey('hermes-turn-timestamp-$assistantId'),
+    );
+    expect(timestamp, findsOneWidget);
+    final semantics = tester.getSemantics(timestamp);
+    expect(semantics.label, contains('2024'));
+    expect(semantics.label, contains('3:04 PM'));
+    final tooltip = tester.widget<Tooltip>(
+      find.descendant(of: timestamp, matching: find.byType(Tooltip)),
+    );
+    expect(tooltip.message, semantics.label);
+  });
+
+  testWidgets('message timestamps show relative age with absolute details', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn(
+      'Question',
+      createdAt: DateTime.now().subtract(
+        const Duration(minutes: 2, seconds: 5),
+      ),
+    );
+    channel.completeStreamingTurn(text: 'Answer');
+    final assistantId = channel.state.activeMessages.last.id;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final timestamp = find.byKey(
+      ValueKey('hermes-turn-timestamp-$assistantId'),
+    );
+    expect(
+      find.descendant(of: timestamp, matching: find.text('2 minutes ago')),
+      findsOneWidget,
+    );
+    final semantics = tester.getSemantics(timestamp);
+    expect(semantics.label, contains(DateTime.now().year.toString()));
+    final tooltip = tester.widget<Tooltip>(
+      find.descendant(of: timestamp, matching: find.byType(Tooltip)),
+    );
+    expect(tooltip.message, semantics.label);
+  });
+
   testWidgets('long press offers copy and reply actions', (tester) async {
     final channel = FakeHermesChannel();
     channel.beginStreamingTurn('Question');
     channel.completeStreamingTurn(text: 'Answer to reuse');
+    final assistantId = channel.state.activeMessages.last.id;
+    String? copiedText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copiedText =
+                (call.arguments as Map<Object?, Object?>)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesTextToSpeechServiceProvider.overrideWithValue(null),
+        ],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
+    await tester.longPress(bubble);
+    await tester.pumpAndSettle();
+    expect(find.text('Copy'), findsOneWidget);
+    expect(find.text('Reply'), findsOneWidget);
+    expect(find.text('Read aloud'), findsNothing);
+
+    await tester.tap(find.text('Copy'));
+    await tester.pumpAndSettle();
+    expect(copiedText, 'Answer to reuse');
+
+    await tester.longPress(bubble);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Reply'));
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(composer.controller?.text, '> Answer to reuse\n\n');
+  });
+
+  testWidgets('reply waits until the assistant turn is complete', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.appendStreamingTurnText('Partial answer');
+    final assistantId = channel.state.activeMessages.last.id;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
+    await tester.longPress(bubble);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Copy'), findsNothing);
+    expect(find.text('Reply'), findsNothing);
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pump();
+
+    channel.completeStreamingTurn(text: 'Complete answer');
+    await tester.pumpAndSettle();
+    await tester.longPress(bubble);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reply'), findsOneWidget);
+  });
+
+  testWidgets('read aloud waits until the assistant reply is complete', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.appendStreamingTurnText('Partial answer');
+    final assistantId = channel.state.activeMessages.last.id;
+    final tts = FakeTextToSpeechService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesTextToSpeechServiceProvider.overrideWithValue(tts),
+        ],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
+    await tester.longPress(bubble);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Read aloud'), findsNothing);
+    expect(find.text('Copy'), findsNothing);
+
+    channel.completeStreamingTurn(text: 'Complete answer');
+    await tester.pumpAndSettle();
+    await tester.longPress(bubble);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Read aloud'), findsOneWidget);
+  });
+
+  testWidgets('assistant actions read a reply aloud when TTS is available', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.completeStreamingTurn(text: 'Answer to hear');
+    final assistantId = channel.state.activeMessages.last.id;
+    final tts = FakeTextToSpeechService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesTextToSpeechServiceProvider.overrideWithValue(tts),
+        ],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(ValueKey('hermes-turn-$assistantId')));
+    await tester.pumpAndSettle();
+    expect(find.text('Read aloud'), findsOneWidget);
+
+    await tester.tap(find.text('Read aloud'));
+    await tester.pumpAndSettle();
+
+    expect(tts.spoken, ['Answer to hear']);
+    expect(channel.state.voiceRuns, isEmpty);
+  });
+
+  testWidgets('read-aloud reply shows and operates its stop control', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.completeStreamingTurn(text: 'Answer in progress');
+    final assistantId = channel.state.activeMessages.last.id;
+    final tts = _BlockingTextToSpeechService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesTextToSpeechServiceProvider.overrideWithValue(tts),
+        ],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byKey(ValueKey('hermes-turn-$assistantId')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Read aloud'));
+    await tester.pump();
+
+    expect(find.text('Reading aloud'), findsOneWidget);
+    final stop = find.byKey(ValueKey('hermes-stop-read-aloud-$assistantId'));
+    expect(stop, findsOneWidget);
+    expect(find.byTooltip('Stop reading aloud'), findsOneWidget);
+
+    await tester.tap(stop);
+    await tester.pumpAndSettle();
+
+    expect(tts.stopCalls, 1);
+    expect(find.text('Reading aloud'), findsNothing);
+  });
+
+  testWidgets('desktop copy waits for a stable assistant reply', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.appendStreamingTurnText('Partial answer');
+    final userId = channel.state.activeMessages.first.id;
+    final assistantId = channel.state.activeMessages.last.id;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(ValueKey('hermes-copy-message-$userId')), findsOneWidget);
+    expect(
+      find.byKey(ValueKey('hermes-copy-message-$assistantId')),
+      findsNothing,
+    );
+    await tester.tapAt(
+      tester.getCenter(find.byKey(ValueKey('hermes-turn-$assistantId'))),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump(const Duration(seconds: 1));
+    expect(
+      find.byKey(const ValueKey('hermes-context-copy-message')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-context-copy-chat-text')),
+      findsOneWidget,
+    );
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pump(const Duration(seconds: 1));
+
+    channel.completeStreamingTurn(text: 'Complete answer');
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(ValueKey('hermes-copy-message-$assistantId')),
+      findsOneWidget,
+    );
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop message bubbles expose a direct copy action', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question');
+    channel.completeStreamingTurn(text: 'Answer with **Markdown**.');
     final assistantId = channel.state.activeMessages.last.id;
     String? copiedText;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -373,25 +1252,72 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
     await tester.pumpAndSettle();
 
-    final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
-    await tester.longPress(bubble);
+    final copy = find.byKey(ValueKey('hermes-copy-message-$assistantId'));
+    expect(copy, findsOneWidget);
+    expect(find.byTooltip('Copy'), findsNWidgets(2));
+
+    await tester.tap(copy);
+    await tester.pumpAndSettle();
+
+    expect(copiedText, 'Answer with **Markdown**.');
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('desktop transcript supports partial text selection', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Question to select');
+    channel.completeStreamingTurn(text: 'Answer excerpt to select');
+    final userId = channel.state.activeMessages.first.id;
+    final assistantId = channel.state.activeMessages.last.id;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('hermes-turn-$userId')),
+        matching: find.byType(SelectionArea),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('hermes-turn-$assistantId')),
+        matching: find.byType(SelectionArea),
+      ),
+      findsOneWidget,
+    );
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final mobileUserBubble = find.byKey(ValueKey('hermes-turn-$userId'));
+    expect(
+      find.descendant(
+        of: mobileUserBubble,
+        matching: find.byType(SelectionArea),
+      ),
+      findsNothing,
+    );
+    await tester.longPress(mobileUserBubble);
     await tester.pumpAndSettle();
     expect(find.text('Copy'), findsOneWidget);
-    expect(find.text('Reply'), findsOneWidget);
-
-    await tester.tap(find.text('Copy'));
-    await tester.pumpAndSettle();
-    expect(copiedText, 'Answer to reuse');
-
-    await tester.longPress(bubble);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Reply'));
-    await tester.pumpAndSettle();
-
-    final composer = tester.widget<TextField>(
-      find.byKey(const ValueKey('hermes-composer-field')),
-    );
-    expect(composer.controller?.text, '> Answer to reuse\n\n');
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('desktop context menus copy a message or the whole chat', (
@@ -509,6 +1435,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     expect(
       find.byKey(const ValueKey('hermes-context-copy-message')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(ValueKey('hermes-copy-message-$assistantId')),
       findsNothing,
     );
     expect(
@@ -694,11 +1624,11 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(copiedText, contains('Session: Export metadata'));
     expect(copiedText, contains('Session ID: sess_1'));
     expect(copiedText, contains('Tool calls: 4'));
-    expect(copiedText, contains('Input tokens: 1200'));
-    expect(copiedText, contains('Output tokens: 300'));
-    expect(copiedText, contains('Cache read tokens: 800'));
-    expect(copiedText, contains('Cache write tokens: 50'));
-    expect(copiedText, contains('Reasoning tokens: 25'));
+    expect(copiedText, contains('Session input tokens: 1200'));
+    expect(copiedText, contains('Session output tokens: 300'));
+    expect(copiedText, contains('Session cache read tokens: 800'));
+    expect(copiedText, contains('Session cache write tokens: 50'));
+    expect(copiedText, contains('Session reasoning tokens: 25'));
     expect(copiedText, contains('API calls: 3'));
     expect(copiedText, contains('Actual cost (USD): 0.01'));
     expect(copiedText, contains('Estimated cost (USD): 0.0125'));
@@ -712,7 +1642,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     final channel = FakeHermesChannel();
     channel.beginStreamingTurn('Question');
     channel.completeStreamingTurn(
-      text: 'Answer',
+      text: 'Answer from /tmp/sidon_audio_reply.wav',
       usage: const HermesRunUsage(
         inputTokens: 12,
         outputTokens: 7,
@@ -722,9 +1652,9 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     channel.addReasoningTurn('Checked constraints.');
     channel.addToolCallTurn(
       const HermesToolCall(
-        name: 'web_search',
+        name: 'piper',
         status: 'completed',
-        result: '2 results',
+        result: 'Created /tmp/sidon_audio_reply.wav',
       ),
     );
     String? copiedText;
@@ -758,8 +1688,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     expect(
       copiedText,
-      'You:\nQuestion\n\nHermes:\nAnswer\nUsage: 12 input · 7 output · 19 total tokens\n\nReasoning:\nChecked constraints.\n\nTool: web_search\nStatus: completed\n2 results',
+      'You:\nQuestion\n\nHermes:\nAnswer from [redacted-path]\nLatest Hermes run usage: 12 input · 7 output · 19 total tokens\n\nReasoning:\nChecked constraints.\n\nHermes host activity\nCompleted on Hermes host',
     );
+    expect(copiedText, isNot(contains('piper')));
+    expect(copiedText, isNot(contains('/tmp/sidon_audio_reply.wav')));
     expect(find.text('Transcript copied as text'), findsOneWidget);
   });
 
@@ -808,6 +1740,123 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     },
   );
 
+  testWidgets('failed direct image retry preserves the attachment payload', (
+    tester,
+  ) async {
+    var attempts = 0;
+    final channel = FakeHermesChannel(
+      sendTextGate: () async {
+        attempts += 1;
+        if (attempts == 1) throw StateError('temporary send failure');
+      },
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    composer.contentInsertionConfiguration!.onContentInserted(
+      KeyboardInsertedContent(
+        mimeType: 'image/png',
+        uri: 'content://keyboard/retry-image',
+        data: Uint8List.fromList([
+          0x89,
+          0x50,
+          0x4e,
+          0x47,
+          0x0d,
+          0x0a,
+          0x1a,
+          0x0a,
+          0x00,
+        ]),
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const ValueKey('hermes-composer-field')),
+      'Inspect this image',
+    );
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-chat-error-retry')),
+      findsOneWidget,
+    );
+    final originalPayload = channel.sentImageDataUrls.single;
+    expect(originalPayload, isNotNull);
+
+    await tester.tap(find.byKey(const ValueKey('hermes-chat-error-retry')));
+    await tester.pumpAndSettle();
+
+    expect(channel.sentImageDataUrls, hasLength(2));
+    expect(channel.sentImageDataUrls.last, originalPayload);
+    expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
+  });
+
+  testWidgets('failed direct attachment-only turn remains retryable', (
+    tester,
+  ) async {
+    var attempts = 0;
+    final channel = FakeHermesChannel(
+      sendTextGate: () async {
+        attempts += 1;
+        if (attempts == 1) throw StateError('temporary send failure');
+      },
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    composer.contentInsertionConfiguration!.onContentInserted(
+      KeyboardInsertedContent(
+        mimeType: 'image/png',
+        uri: 'content://keyboard/retry-image-only',
+        data: Uint8List.fromList([
+          0x89,
+          0x50,
+          0x4e,
+          0x47,
+          0x0d,
+          0x0a,
+          0x1a,
+          0x0a,
+          0x00,
+        ]),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('hermes-chat-error-retry')),
+      findsOneWidget,
+    );
+    final originalPayload = channel.sentImageDataUrls.single;
+    await tester.tap(find.byKey(const ValueKey('hermes-chat-error-retry')));
+    await tester.pumpAndSettle();
+
+    expect(channel.sentImageDataUrls, hasLength(2));
+    expect(channel.sentImageDataUrls.last, originalPayload);
+  });
+
   testWidgets('active run recovery never offers a duplicate retry', (
     tester,
   ) async {
@@ -832,6 +1881,43 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
     expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
     expect(find.textContaining('send again'), findsNothing);
+  });
+
+  testWidgets('active run recovery does not claim transport is unavailable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      hasUnreconciledRun: true,
+      errorMessage:
+          'Hermes run is still active after its event stream closed. Reconnect before retrying.',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Hermes did not advertise a supported chat transport for this endpoint.',
+      ),
+      findsNothing,
+    );
+    expect(find.text('Transport unavailable'), findsNothing);
+    final strings = AppLocalizations.of(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    expect(
+      find.text(strings.chatLayoutComposerRunRecoveryHint),
+      findsOneWidget,
+    );
   });
 
   testWidgets('process-recreated active run offers reconciliation, not retry', (
@@ -1073,6 +2159,147 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
   });
 
+  testWidgets('inline API transcript images render without network access', (
+    tester,
+  ) async {
+    const onePixelPng =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Generated screenshot](data:image/png;base64,$onePixelPng)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.textContaining('image not loaded'), findsNothing);
+  });
+
+  testWidgets('inline transcript images share a decoded-pixel budget', (
+    tester,
+  ) async {
+    const image =
+        '![pixel](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=)';
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '$image\n\n$image\n\n$image',
+            inlineImagePixelBudget: 2,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(Image), findsNWidgets(2));
+    expect(find.text('pixel (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images require matching image bytes', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Untrusted image](data:image/png;base64,SGVybWVzIFdpbmc=)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Untrusted image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject extreme dimensions', (
+    tester,
+  ) async {
+    final data = base64Encode(_pngHeader(width: 9000, height: 1));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Oversized image](data:image/png;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Oversized image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject excessive decoded pixels', (
+    tester,
+  ) async {
+    final data = base64Encode(_pngHeader(width: 5000, height: 5000));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Pixel-heavy image](data:image/png;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Pixel-heavy image (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images reject excessive animation frames', (
+    tester,
+  ) async {
+    final data = base64Encode(_animatedGif(frameCount: 61));
+
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(
+          body: HermesRichText(
+            '![Busy animation](data:image/gif;base64,$data)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(Image), findsNothing);
+    expect(find.text('Busy animation (image not loaded)'), findsOneWidget);
+  });
+
+  testWidgets('inline transcript images expose their alt text to semantics', (
+    tester,
+  ) async {
+    const onePixelPng =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      _localizedApp(
+        const Scaffold(
+          body: HermesRichText(
+            '![Generated screenshot](data:image/png;base64,$onePixelPng)',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.bySemanticsLabel('Generated screenshot'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('remote transcript images stay deferred', (tester) async {
     final channel = FakeHermesChannel();
     channel.beginStreamingTurn('Show the diagram.');
@@ -1093,6 +2320,28 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
       find.text('Architecture diagram (image not loaded)'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('assistant HTTPS paths containing host-root names stay intact', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Show the setup guide.');
+    channel.completeStreamingTurn(text: 'Docs: https://example.test/etc/setup');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('https://example.test/etc/setup', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.textContaining('[redacted-path]'), findsNothing);
   });
 
   testWidgets('safe transcript links use the external launcher', (
@@ -1142,4 +2391,40 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     expect(launchCount, 0);
   });
+}
+
+final class _BlockingTextToSpeechService implements TextToSpeechService {
+  final _completion = Completer<void>();
+  int stopCalls = 0;
+
+  @override
+  Future<void> speak(String text) => _completion.future;
+
+  @override
+  Future<void> stop() async {
+    stopCalls += 1;
+    if (!_completion.isCompleted) _completion.complete();
+  }
+
+  @override
+  Future<void> dispose() => stop();
+}
+
+Uint8List _pngHeader({required int width, required int height}) {
+  final bytes = Uint8List(24);
+  bytes.setAll(0, const [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  bytes.setAll(8, const [0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+  final data = ByteData.sublistView(bytes);
+  data.setUint32(16, width);
+  data.setUint32(20, height);
+  return bytes;
+}
+
+Uint8List _animatedGif({required int frameCount}) {
+  final bytes = <int>[...ascii.encode('GIF89a'), 1, 0, 1, 0, 0, 0, 0];
+  for (var index = 0; index < frameCount; index++) {
+    bytes.addAll(const [0x2c, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 1, 0, 0]);
+  }
+  bytes.add(0x3b);
+  return Uint8List.fromList(bytes);
 }

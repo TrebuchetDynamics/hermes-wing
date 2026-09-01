@@ -87,7 +87,7 @@ run_flutter_test_with_install_retry() {
     rm -f "$log"
     return 0
   fi
-  if [ "${WING_ANDROID_RETRY_ON_INSTALL_FLAKE:-1}" = "1" ] && grep -Eqi "Can't find service: package|Broken pipe|device offline|Unable to start the app on the device" "$log"; then
+  if [ "${WING_ANDROID_RETRY_ON_INSTALL_FLAKE:-1}" = "1" ] && grep -Eqi "Can't find service: package|Broken pipe|device offline|Unable to start the app on the device|WebSocketChannelException: HttpException: Connection closed before full header was received" "$log"; then
     echo "Android install/start flake detected; waiting for framework services and retrying once..." >&2
     wait_for_android_ready
     timeout "${WING_ANDROID_TEST_TIMEOUT_SECONDS:-900}" \

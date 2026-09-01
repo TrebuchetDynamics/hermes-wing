@@ -1,0 +1,24 @@
+# Observability helper: capture the real "All chats" contact labels after a
+# gateway is saved, so QA flows can assert against actual rendered text.
+appId: com.trebuchetdynamics.hermes.wing
+name: probe_contacts
+---
+- launchApp:
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "(?s).*(Message Hermes|All chats|Add your first Hermes profile).*"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "(?s).*Message Hermes.*"
+    commands:
+      - tapOn: "(?s).*All chats.*"
+- extendedWaitUntil:
+    visible: "(?s).*(All chats|Add your first Hermes profile).*"
+    timeout: 30000
+- takeScreenshot: probe_contacts_state
+- assertVisible: "(?s).*link.*"
+- assertVisible: "(?s).*default.*"
+- assertVisible: "(?s).*Default profile.*"
+- assertVisible: "(?s).*online.*"

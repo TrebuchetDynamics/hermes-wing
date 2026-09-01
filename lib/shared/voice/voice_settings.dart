@@ -1,24 +1,6 @@
-enum PocketSpeechModel {
-  kitten('Kitten', 'About 26 MB', 26453800, 'English · 1 voice'),
-  kokoro('Kokoro', 'About 331 MB', 331147356, 'English + Spanish · 2 voices');
-
-  const PocketSpeechModel(
-    this.label,
-    this.downloadSize,
-    this.downloadBytes,
-    this.voiceSummary,
-  );
-
-  final String label;
-  final String downloadSize;
-  final int downloadBytes;
-  final String voiceSummary;
-
-  String get downloadSummary => '$downloadSize · $voiceSummary';
-}
-
 enum VoiceLanguageMode {
-  autoEnglishSpanish('Auto · English + Español', null),
+  // Keep the legacy enum name because settings persist enum.name.
+  autoEnglishSpanish('Automatic · device recognizer', null),
   english('English', 'en-US'),
   spanish('Español', 'es-US');
 
@@ -28,30 +10,13 @@ enum VoiceLanguageMode {
   final String? localeId;
 }
 
-class PocketSpeechVoicePack {
-  const PocketSpeechVoicePack({
-    required this.model,
-    required this.modelPath,
-    required this.voicesPath,
-  }) : assert(modelPath != ''),
-       assert(voicesPath != '');
-
-  final PocketSpeechModel model;
-  final String modelPath;
-  final String voicesPath;
-}
-
 class WingVoiceSettings {
   const WingVoiceSettings({
     this.continuousVoiceEnabled = true,
     this.speakRepliesEnabled = false,
-    this.pocketSpeechTtsEnabled = false,
-    this.pocketSpeechModel = PocketSpeechModel.kitten,
-    this.pocketSpeechVoicePack,
+    this.completionSoundEnabled = false,
     this.languageMode = VoiceLanguageMode.autoEnglishSpanish,
     this.commandWord = 'navi',
-    this.speechRate = 1.0,
-    this.ttsVoiceName,
   });
 
   final bool continuousVoiceEnabled;
@@ -60,49 +25,28 @@ class WingVoiceSettings {
   /// spoken aloud and the next capture re-arms automatically. Off by default so
   /// the app never speaks or re-listens without explicit operator consent.
   final bool speakRepliesEnabled;
-  final bool pocketSpeechTtsEnabled;
-  final PocketSpeechModel pocketSpeechModel;
-  final PocketSpeechVoicePack? pocketSpeechVoicePack;
+
+  /// Opt-in alert after a reply finishes. Text and accessibility status remain
+  /// authoritative because sound is never the only completion signal.
+  final bool completionSoundEnabled;
   final VoiceLanguageMode languageMode;
-  bool get pocketSpeechVoicePackReady =>
-      pocketSpeechVoicePack?.model == pocketSpeechModel;
   final String commandWord;
-
-  /// Text-to-speech playback rate multiplier; 1.0 is normal speed.
-  final double speechRate;
-
-  /// Selected TTS voice name, or null to use the engine default.
-  final String? ttsVoiceName;
 
   WingVoiceSettings copyWith({
     bool? continuousVoiceEnabled,
     bool? speakRepliesEnabled,
-    bool? pocketSpeechTtsEnabled,
-    PocketSpeechModel? pocketSpeechModel,
-    PocketSpeechVoicePack? pocketSpeechVoicePack,
+    bool? completionSoundEnabled,
     VoiceLanguageMode? languageMode,
-    bool clearPocketSpeechVoicePack = false,
     String? commandWord,
-    double? speechRate,
-    String? ttsVoiceName,
-    bool clearTtsVoiceName = false,
   }) {
     return WingVoiceSettings(
       continuousVoiceEnabled:
           continuousVoiceEnabled ?? this.continuousVoiceEnabled,
       speakRepliesEnabled: speakRepliesEnabled ?? this.speakRepliesEnabled,
-      pocketSpeechTtsEnabled:
-          pocketSpeechTtsEnabled ?? this.pocketSpeechTtsEnabled,
-      pocketSpeechModel: pocketSpeechModel ?? this.pocketSpeechModel,
-      pocketSpeechVoicePack: clearPocketSpeechVoicePack
-          ? null
-          : pocketSpeechVoicePack ?? this.pocketSpeechVoicePack,
+      completionSoundEnabled:
+          completionSoundEnabled ?? this.completionSoundEnabled,
       languageMode: languageMode ?? this.languageMode,
       commandWord: commandWord ?? this.commandWord,
-      speechRate: speechRate ?? this.speechRate,
-      ttsVoiceName: clearTtsVoiceName
-          ? null
-          : ttsVoiceName ?? this.ttsVoiceName,
     );
   }
 }

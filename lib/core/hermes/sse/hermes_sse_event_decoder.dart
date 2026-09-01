@@ -22,17 +22,9 @@ class HermesStreamEvent {
   factory HermesStreamEvent.fromSse(HermesSseEvent event) {
     if (event.isDone) return HermesStreamEvent.done();
     try {
-      final decoded = jsonDecode(event.data);
-      if (decoded is! Map) {
-        throw const FormatException('Hermes SSE data must be a JSON object');
-      }
-      final payload = wingMapFromJson(decoded);
-      final embeddedName = event.event == 'message'
-          ? _embeddedEventName(payload)
-          : null;
-      return HermesStreamEvent(
-        name: embeddedName ?? event.event,
-        payload: payload,
+      return HermesStreamEvent.fromJson(
+        jsonDecode(event.data),
+        eventName: event.event,
       );
     } on FormatException {
       if (_isErrorEvent(event.event) && event.data.trim().isNotEmpty) {
@@ -43,6 +35,56 @@ class HermesStreamEvent {
       }
       rethrow;
     }
+  }
+
+  /// Normalizes one flat JSON event regardless of whether it came from SSE, a
+  /// future advertised Agent WebSocket, or another direct Agent stream.
+  /// Transport code should hand events here instead of teaching the channel
+  /// about wire-specific envelopes.
+  factory HermesStreamEvent.fromJson(Object? decoded, {String? eventName}) {
+    if (decoded is! Map) {
+      throw const FormatException('Hermes event data must be a JSON object');
+    }
+    final payload = wingMapFromJson(decoded);
+    final outerName = eventName?.trim();
+    final name =
+        outerName == null || outerName.isEmpty || outerName == 'message'
+        ? _embeddedEventName(payload) ?? 'message'
+        : outerName;
+    return HermesStreamEvent(name: name, payload: payload);
+  }
+
+  /// Normalizes an event frame from the Agent's JSON-RPC WebSocket shape.
+  ///
+  /// The envelope is deliberately accepted only here: JSON-RPC responses are
+  /// not stream events, and an eventual direct WebSocket transport must opt in
+  /// to this event contract rather than making the HTTP/SSE decoder guess.
+  factory HermesStreamEvent.fromJsonRpc(Object? decoded) {
+    if (decoded is! Map) {
+      throw const FormatException('Hermes event frame must be a JSON object');
+    }
+    final frame = wingMapFromJson(decoded);
+    if (frame.containsKey('jsonrpc') && frame['method'] != 'event') {
+      throw const FormatException('Hermes JSON-RPC frame is not an event');
+    }
+    if (frame['method'] != 'event') return HermesStreamEvent.fromJson(frame);
+    final params = frame['params'];
+    if (params is! Map) {
+      throw const FormatException('Hermes event frame is missing params');
+    }
+    final paramsMap = wingMapFromJson(params);
+    final eventName = wingOptionalStringFromJson(paramsMap['type']);
+    final nested = paramsMap['payload'];
+    if (nested is! Map) {
+      return HermesStreamEvent.fromJson(paramsMap, eventName: eventName);
+    }
+    final payload = wingMapFromJson(nested);
+    for (final key in const ['run_id', 'session_id', 'message_id']) {
+      if (!payload.containsKey(key) && paramsMap.containsKey(key)) {
+        payload[key] = paramsMap[key];
+      }
+    }
+    return HermesStreamEvent.fromJson(payload, eventName: eventName);
   }
 
   final String name;

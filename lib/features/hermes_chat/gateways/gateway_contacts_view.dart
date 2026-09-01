@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../groups/chat_group_controller.dart';
+import '../widgets/hermes_profile_identity.dart';
 import 'gateway_contact.dart';
 
 class GatewayContactsView extends StatelessWidget {
@@ -10,6 +12,7 @@ class GatewayContactsView extends StatelessWidget {
     required this.onRefresh,
     required this.onOpen,
     this.onConnect,
+    this.groupController,
     super.key,
   });
 
@@ -18,6 +21,7 @@ class GatewayContactsView extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final ValueChanged<GatewayContactId> onOpen;
   final VoidCallback? onConnect;
+  final ChatGroupController? groupController;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +96,20 @@ class GatewayContactsView extends StatelessWidget {
       );
     }
 
+    final controller = groupController;
+    if (controller != null) {
+      return AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) => _GroupedGatewayContacts(
+          contacts: contacts,
+          refreshing: refreshing,
+          onRefresh: onRefresh,
+          onOpen: onOpen,
+          controller: controller,
+        ),
+      );
+    }
+
     return Stack(
       children: [
         RefreshIndicator(
@@ -103,6 +121,7 @@ class GatewayContactsView extends StatelessWidget {
             itemBuilder: (context, index) {
               final contact = contacts[index];
               final contactTitle = _contactTitle(contact);
+              final profileTitle = _profileTitle(contact);
               final contactStatus = contact.chatAvailable
                   ? contact.availability.name
                   : AppLocalizations.of(context).profileChatUnavailable;
@@ -114,34 +133,39 @@ class GatewayContactsView extends StatelessWidget {
                 label: '$contactTitle, $contactStatus',
                 child: ListTile(
                   key: const ValueKey('gateway-contact-row'),
-                  leading: CircleAvatar(
-                    child: Text(
-                      contact.profileName.trim().isEmpty
-                          ? '?'
-                          : contact.profileName
-                                .trim()
-                                .characters
-                                .first
-                                .toUpperCase(),
-                    ),
-                  ),
+                  leading: _ContactAvatar(contact: contact),
                   title: Text(
-                    _contactTitle(contact),
+                    profileTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        contact.chatAvailable
-                            ? contact.availability.name
-                            : AppLocalizations.of(
-                                context,
-                              ).profileChatUnavailable,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      if (contact.gatewayLabel.trim().isNotEmpty &&
+                          contact.gatewayLabel.trim().toLowerCase() !=
+                              contact.profileName.trim().toLowerCase())
+                        Text(
+                          contact.gatewayLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      if (!contact.chatAvailable)
+                        Text(
+                          AppLocalizations.of(context).profileChatUnavailable,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       if (contact.latestSession?.preview case final preview?)
                         Text(
                           preview,
@@ -169,6 +193,327 @@ class GatewayContactsView extends StatelessWidget {
       ],
     );
   }
+}
+
+class _GroupedGatewayContacts extends StatelessWidget {
+  const _GroupedGatewayContacts({
+    required this.contacts,
+    required this.refreshing,
+    required this.onRefresh,
+    required this.onOpen,
+    required this.controller,
+  });
+
+  final List<GatewayContact> contacts;
+  final bool refreshing;
+  final Future<void> Function() onRefresh;
+  final ValueChanged<GatewayContactId> onOpen;
+  final ChatGroupController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final sections =
+        <({String? id, String name, List<GatewayContact> items})>[
+              for (final group in controller.groups)
+                (
+                  id: group.id,
+                  name: group.name,
+                  items: contacts
+                      .where(
+                        (contact) =>
+                            controller.groupIdFor(contact.id) == group.id,
+                      )
+                      .toList(),
+                ),
+              (
+                id: null,
+                name: strings.chatGroupsUngrouped,
+                items: contacts
+                    .where(
+                      (contact) => controller.groupIdFor(contact.id) == null,
+                    )
+                    .toList(),
+              ),
+            ]
+            .where((section) => section.id != null || section.items.isNotEmpty)
+            .toList();
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('chat-groups-new'),
+                    onPressed: () => _showGroupNameDialog(context),
+                    icon: const Icon(Icons.create_new_folder_outlined),
+                    label: Text(strings.chatGroupsNewAction),
+                  ),
+                ),
+              ),
+              for (final section in sections) ...[
+                ListTile(
+                  key: ValueKey('chat-group-${section.id ?? 'ungrouped'}'),
+                  dense: true,
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(
+                    section.name,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  trailing: section.id == null
+                      ? Text('${section.items.length}')
+                      : PopupMenuButton<_GroupAction>(
+                          onSelected: (action) {
+                            if (action == _GroupAction.rename) {
+                              _showGroupNameDialog(
+                                context,
+                                group: controller.groups.firstWhere(
+                                  (group) => group.id == section.id,
+                                ),
+                              );
+                            } else {
+                              controller.deleteGroup(section.id!);
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            PopupMenuItem(
+                              value: _GroupAction.rename,
+                              child: Text(strings.chatGroupsRenameAction),
+                            ),
+                            PopupMenuItem(
+                              value: _GroupAction.delete,
+                              child: Text(strings.chatGroupsDeleteAction),
+                            ),
+                          ],
+                        ),
+                ),
+                for (final contact in section.items)
+                  _GroupedContactTile(
+                    contact: contact,
+                    onOpen: onOpen,
+                    onMove: () => _showMoveSheet(context, contact.id),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        if (refreshing)
+          const Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: LinearProgressIndicator(minHeight: 2),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _showMoveSheet(
+    BuildContext context,
+    GatewayContactId contactId,
+  ) async {
+    final strings = AppLocalizations.of(context);
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(title: Text(strings.chatGroupsMoveAction)),
+            ListTile(
+              title: Text(strings.chatGroupsUngrouped),
+              onTap: () => Navigator.pop(context, ''),
+            ),
+            for (final group in controller.groups)
+              ListTile(
+                title: Text(group.name),
+                onTap: () => Navigator.pop(context, group.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null) return;
+    await controller.moveContact(contactId, chosen.isEmpty ? null : chosen);
+  }
+
+  Future<void> _showGroupNameDialog(
+    BuildContext context, {
+    ChatGroup? group,
+  }) async {
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          _GroupNameDialog(initialName: group?.name, isNew: group == null),
+    );
+    if (name == null || name.trim().isEmpty) return;
+    if (group == null) {
+      await controller.createGroup(name);
+    } else {
+      await controller.renameGroup(group.id, name);
+    }
+  }
+}
+
+class _GroupNameDialog extends StatefulWidget {
+  const _GroupNameDialog({this.initialName, required this.isNew});
+
+  final String? initialName;
+  final bool isNew;
+
+  @override
+  State<_GroupNameDialog> createState() => _GroupNameDialogState();
+}
+
+class _GroupNameDialogState extends State<_GroupNameDialog> {
+  late final TextEditingController _textController = TextEditingController(
+    text: widget.initialName,
+  );
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(
+        widget.isNew
+            ? strings.chatGroupsNewTitle
+            : strings.chatGroupsRenameTitle,
+      ),
+      content: TextField(
+        key: const ValueKey('chat-group-name-field'),
+        controller: _textController,
+        autofocus: true,
+        decoration: InputDecoration(labelText: strings.chatGroupsNameLabel),
+        onSubmitted: (value) => Navigator.pop(context, value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(strings.cancelAction),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _textController.text),
+          child: Text(strings.saveAction),
+        ),
+      ],
+    );
+  }
+}
+
+enum _GroupAction { rename, delete }
+
+class _ContactAvatar extends StatelessWidget {
+  const _ContactAvatar({required this.contact});
+
+  final GatewayContact contact;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = hermesProfileColor(
+      '${contact.id.gatewayId}:${contact.id.profileId}',
+    );
+    return CircleAvatar(
+      backgroundColor: color,
+      foregroundColor: hermesProfileForeground(color),
+      child: Text(
+        contact.profileName.trim().isEmpty
+            ? '?'
+            : contact.profileName.trim().characters.first.toUpperCase(),
+      ),
+    );
+  }
+}
+
+class _GroupedContactTile extends StatelessWidget {
+  const _GroupedContactTile({
+    required this.contact,
+    required this.onOpen,
+    required this.onMove,
+  });
+
+  final GatewayContact contact;
+  final ValueChanged<GatewayContactId> onOpen;
+  final VoidCallback onMove;
+
+  @override
+  Widget build(BuildContext context) {
+    final contactStatus = contact.chatAvailable
+        ? contact.availability.name
+        : AppLocalizations.of(context).profileChatUnavailable;
+    return Semantics(
+      key: ValueKey(
+        'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
+      ),
+      excludeSemantics: true,
+      label: '${_contactTitle(contact)}, $contactStatus',
+      child: ListTile(
+        key: const ValueKey('gateway-contact-row'),
+        leading: _ContactAvatar(contact: contact),
+        title: Text(
+          _profileTitle(contact),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (contact.gatewayLabel.trim().isNotEmpty &&
+                contact.gatewayLabel.trim().toLowerCase() !=
+                    contact.profileName.trim().toLowerCase())
+              Text(
+                contact.gatewayLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            if (!contact.chatAvailable)
+              Text(AppLocalizations.of(context).profileChatUnavailable),
+            if (contact.latestSession?.preview case final preview?)
+              Text(preview, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              key: ValueKey(
+                'gateway-contact-groups-${contact.id.gatewayId}-${contact.id.profileId}',
+              ),
+              tooltip: AppLocalizations.of(context).chatGroupsMoveAction,
+              onPressed: onMove,
+              icon: const Icon(Icons.drive_file_move_outline),
+            ),
+            _ContactStatus(contact: contact),
+          ],
+        ),
+        onTap: contact.chatAvailable ? () => onOpen(contact.id) : null,
+      ),
+    );
+  }
+}
+
+String _profileTitle(GatewayContact contact) {
+  final value = contact.profileName.trim();
+  if (value.isEmpty) return '?';
+  final first = value.characters.first;
+  return '${first.toUpperCase()}${value.substring(first.length)}';
 }
 
 String _contactTitle(GatewayContact contact) {
@@ -199,20 +544,12 @@ class _ContactStatus extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          !contact.chatAvailable
-              ? Icons.settings_outlined
-              : contact.availability == GatewayAvailability.online
-              ? Icons.circle
-              : Icons.cloud_off_outlined,
-          size:
-              contact.chatAvailable &&
-                  contact.availability == GatewayAvailability.online
-              ? 10
-              : 18,
-          color:
-              contact.chatAvailable &&
-                  contact.availability == GatewayAvailability.online
-              ? Colors.green
+          contact.chatAvailable ? Icons.circle : Icons.settings_outlined,
+          size: contact.chatAvailable ? 10 : 18,
+          color: contact.chatAvailable
+              ? contact.availability == GatewayAvailability.online
+                    ? Colors.green
+                    : Colors.red
               : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         if (activity != null)

@@ -35,4 +35,56 @@ void main() {
       expect(restored.single.availability, GatewayAvailability.offline);
     },
   );
+
+  test('cache round-trips the active contact and session selection', () async {
+    SharedPreferences.setMockInitialValues({});
+    final cache = GatewayContactCache();
+    const selection = GatewayContactSelection(
+      contactId: GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+      sessionId: 'session-2',
+    );
+
+    await cache.saveSelection(selection);
+    final restored = await cache.loadSelection();
+
+    expect(restored?.contactId, selection.contactId);
+    expect(restored?.sessionId, selection.sessionId);
+  });
+
+  test(
+    'removing the selected gateway clears its remembered selection',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final cache = GatewayContactCache();
+      await cache.saveSelection(
+        const GatewayContactSelection(
+          contactId: GatewayContactId(gatewayId: 'alpha', profileId: 'coder'),
+          sessionId: 'session-2',
+        ),
+      );
+
+      await cache.removeGateway('alpha');
+
+      expect(await cache.loadSelection(), isNull);
+    },
+  );
+
+  for (final malformed in <String>[
+    '{"gatewayId":"alpha","profileId":[]}',
+    '{"gatewayId":{},"profileId":"coder"}',
+    '{"gatewayId":7,"profileId":"coder"}',
+    '{"gatewayId":true,"profileId":"coder"}',
+    '{"gatewayId":" ","profileId":"coder"}',
+    '{"gatewayId":"alpha","profileId":" "}',
+    '{"gatewayId":"alpha","profileId":"coder","sessionId":[]}',
+    '{"gatewayId":"alpha","profileId":"coder","sessionId":false}',
+  ]) {
+    test('malformed remembered selection fails closed: $malformed', () async {
+      SharedPreferences.setMockInitialValues({
+        'wing.hermes.gateway_contact_selection.v1': malformed,
+      });
+
+      expect(await GatewayContactCache().loadSelection(), isNull);
+    });
+  }
 }

@@ -1,22 +1,51 @@
 # Runtime and delivery
 
-Status: current
+Status: current decision
 
 ## Decision
 
-Hermes Agent remains an external runtime. Hermes Wing packages may include Wing Link, but they do not embed Hermes Agent or create a second backend.
+Hermes Agent remains an external authoritative runtime. Hermes Wing packages may
+include Wing Link, but never embed Hermes Agent or create a second domain backend.
 
-Wing Link is an authenticated host supervisor for installation or adoption, pairing, lifecycle, secure bootstrap, health, and diagnostics. It must not expose arbitrary shell or CLI execution or keep shadow domain state.
+Wing Link is the authenticated remote management plane on the Hermes host. It
+owns installation/adoption, pairing, lifecycle, health, diagnostics, host
+integration, and explicitly approved directory grants. Wing talks directly to
+Hermes Agent for chat and all supported Agent APIs.
 
-Hermes profiles are the narrow compatibility exception. Supported Hermes Agent releases cannot be changed for Wing and lack the required profile enrollment contract, so Wing Link delegates to the installed Hermes CLI using only fixed `profile list`, `create`, `rename`, and `delete` argument vectors. During pairing it may resolve each validated profile's credential path through fixed `hermes --profile <id> config env-path`, enable `gateway.multiplex_profiles`, restart the active gateway, and issue a verified `/p/<id>` connection per profile. It bounds CLI output and execution time, invokes no shell, fails closed on unknown list output or unsafe credential paths, and retains no profile inventory or raw credential. It never invokes `profile use`, accepts a client-selected executable or subcommand, or extends this adapter to providers, general configuration, sessions, messages, tools, schedules, approvals, or messaging semantics.
+When a supported Agent lacks a required remote contract, Wing Link may delegate a
+reviewed **typed compatibility operation** to the installed Hermes CLI. Each
+operation must use a fixed executable and argument shape, bounded machine-readable
+output, no shell, explicit authorization, and no shadow state. The current
+exception covers profile list/create/rename/delete plus transactional new-profile
+description, allowlisted provider and bounded model string setup, stdin-only
+provider credential input, and a bounded readiness probe. Existing-profile configuration, Hermes
+Project, and general provider operations remain blocked; arbitrary commands,
+config keys, and paths remain prohibited.
 
-Keep listeners local or on an explicitly selected trusted private/VPN interface. Android/Termux integration uses fixed allowlisted commands rather than client-provided shell text.
+A profile's repository is represented as an Agent-owned per-profile Hermes
+Project. Wing Link may translate an approved opaque directory handle into a path
+for a fixed Project operation. It must not create a separate profile `workdir`
+store or invoke global `profile use`/`project use` state.
 
-Runtime and application installation should use authenticated, versioned artifacts, verify before activation, and preserve user data. Updates should have a practical recovery path when activation or health checks fail. Optional components and starter content require clear consent and must fail independently.
+Listeners stay on loopback plus at most one local private-LAN/Tailscale interface.
+Loopback may use HTTP; every non-loopback listener uses TLS 1.3 tied to the durable
+Wing Link host identity. Remote access requires a named, scoped, individually
+revocable Wing Link credential. Hermes API credentials are never accepted by the
+management listener.
 
-## Flexible guidance
+Wing Link speaks the current and immediately previous protocol generation. Typed
+compatibility adapters must record their authoritative Agent endpoint, supported
+release window, and removal trigger; no adapter is permanent.
 
-- Package formats, release channels, service managers, ports, and installer mechanics may follow supported platform conventions.
-- A compatible existing runtime may be adopted in place rather than normalized or reinstalled.
-- Background clients may detach while server-owned runs continue, then reconcile on return.
-- Distribution and platform support claims require evidence from the affected platform; one platform does not prove another.
+Android/Termux may host Wing Link and Hermes Agent only through an explicit user-run bootstrap
+pinned to reviewed release artifacts. Both listeners remain loopback-only and use
+best-effort background execution; this is not a managed-service qualification.
+Hermes Wing does not request Termux external-command access.
+
+Runtime and application artifacts must be versioned and signature/digest verified
+before activation. Wing Link updates stage under versioned owner-only paths,
+activate through a stable target, health-check locally, and restore the previous
+version on failure. An empty production release-key set makes updating unavailable;
+it never enables unsigned installation. Production service qualification is Linux
+systemd-user first and requires restart, state-permission, activation, health, and
+rollback evidence on Linux. A cross-compiled binary is not a qualified service.

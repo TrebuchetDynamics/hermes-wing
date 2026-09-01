@@ -2,8 +2,10 @@ import 'app_route_location_patterns.dart';
 
 abstract final class AppRoutes {
   static const hermes = '/hermes';
+  static const addHermes = '/hermes/add';
   static const office = '/office';
   static const profiles = '/profiles';
+  static const soul = '/soul';
   static const agents = profiles;
   static const legacyAgents = '/agents';
   static const providers = '/providers';
@@ -19,7 +21,7 @@ abstract final class AppRoutes {
   /// authenticated shell since no endpoint is configured yet.
   static const enroll = '/enroll';
 
-  /// Linux-only local Hermes detection, installation, and adoption flow.
+  /// Platform-specific local Hermes setup flow for Linux or Android/Termux.
   static const localSetup = '/setup/local';
 
   static bool isHermesLocation(String location) {

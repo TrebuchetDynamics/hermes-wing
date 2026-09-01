@@ -16,6 +16,7 @@ class FakeGatewayContactCache extends GatewayContactCache {
     : stored = [...initial];
 
   List<GatewayContact> stored;
+  GatewayContactSelection? selection;
 
   @override
   Future<List<GatewayContact>> load() async => [...stored];
@@ -28,7 +29,19 @@ class FakeGatewayContactCache extends GatewayContactCache {
   @override
   Future<void> removeGateway(String gatewayId) async {
     stored.removeWhere((contact) => contact.id.gatewayId == gatewayId);
+    if (selection?.contactId.gatewayId == gatewayId) selection = null;
   }
+
+  @override
+  Future<GatewayContactSelection?> loadSelection() async => selection;
+
+  @override
+  Future<void> saveSelection(GatewayContactSelection selection) async {
+    this.selection = selection;
+  }
+
+  @override
+  Future<void> clearSelection() async => selection = null;
 }
 
 class FakeGatewaySummaryLoader implements GatewaySummaryLoader {

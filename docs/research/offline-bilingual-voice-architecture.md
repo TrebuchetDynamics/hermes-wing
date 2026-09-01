@@ -1,8 +1,14 @@
 # Offline bilingual mobile voice architecture (Android/Flutter)
 
-Status: research recommendation
-Scope: offline STT/TTS, full-duplex barge-in, Android first, Flutter UI
-Boundary: **Wing owns audio; Hermes Agent receives completed text only**
+Status: archived, not adopted
+Scope: historical offline STT/TTS and full-duplex research
+
+> Hermes Wing no longer ships or loads app-owned voice models. Current voice
+> input uses device speech recognition, and speech output is available only
+> through Agent synthesis when advertised. The design below is retained only as
+> historical research.
+
+Boundary considered by this research: **Wing owns audio; Hermes Agent receives completed text only**
 
 ## Recommendation in one page
 
@@ -25,11 +31,11 @@ No reviewed upstream source demonstrates genuine intra-utterance English↔Spani
 
 Use multilingual Whisper through `whisper.cpp` as the first owned offline recognizer:
 
-| Tier | Model | Approximate model file | Role |
-|---|---:|---:|---|
-| Compact | Whisper Tiny Q5_1 multilingual | 32.2 MB | Low-memory fallback |
-| Recommended | Whisper Base Q5_1 multilingual | 59.7 MB | First shipping/benchmark target |
-| Quality | Whisper Small Q5_1 multilingual | 190.1 MB | Optional higher-accuracy pack |
+| Tier        |                           Model | Approximate model file | Role                            |
+| ----------- | ------------------------------: | ---------------------: | ------------------------------- |
+| Compact     |  Whisper Tiny Q5_1 multilingual |                32.2 MB | Low-memory fallback             |
+| Recommended |  Whisper Base Q5_1 multilingual |                59.7 MB | First shipping/benchmark target |
+| Quality     | Whisper Small Q5_1 multilingual |               190.1 MB | Optional higher-accuracy pack   |
 
 The published quantized model files establish these approximate download sizes.[35][52] Keep one multilingual model loaded with automatic language selection; never route a live utterance between `.en` and Spanish-only models. Whisper partials are rolling re-decodes rather than true cached streaming, so use VAD, a short rolling window, stable-prefix commitment, and a final endpoint decode. Trigger barge-in from post-AEC VAD before waiting for transcript text. `sherpa-onnx` remains the preferred integration/runtime framework if its Whisper path meets the same benchmarks, and the preferred long-term home for a true EN/ES streaming transducer. Its published catalog does not currently provide a stock joint Spanish-English Zipformer.[5][20][21]
 
@@ -37,13 +43,13 @@ Vosk is suitable only for explicit monolingual/profile mode: its small English a
 
 ### TTS packs
 
-| Tier | Model | Approximate assets | Role |
-|---|---:|---:|---|
-| Quality bilingual | Supertonic 3 via sherpa-onnx callbacks | 398 MB | Same voice style across EN/ES; optional large pack |
-| Compact bilingual | Quantized Kokoro | 80–92 MB plus selected voices | Preferred storage/quality compromise |
-| Compact English | Kitten micro/nano FP32 | 41/56 MB | English-only pack |
-| Experimental minimum | Kitten Nano INT8 | 25 MB | English-only; upstream reports reliability issues |
-| Compatibility | Platform TTS | Device-dependent | Zero-download fallback |
+| Tier                 |                                  Model |            Approximate assets | Role                                               |
+| -------------------- | -------------------------------------: | ----------------------------: | -------------------------------------------------- |
+| Quality bilingual    | Supertonic 3 via sherpa-onnx callbacks |                        398 MB | Same voice style across EN/ES; optional large pack |
+| Compact bilingual    |                       Quantized Kokoro | 80–92 MB plus selected voices | Preferred storage/quality compromise               |
+| Compact English      |                 Kitten micro/nano FP32 |                      41/56 MB | English-only pack                                  |
+| Experimental minimum |                       Kitten Nano INT8 |                         25 MB | English-only; upstream reports reliability issues  |
+| Compatibility        |                           Platform TTS |              Device-dependent | Zero-download fallback                             |
 
 Supertonic 3 is the best natural bilingual experiment, not an automatic default: its weights are OpenRAIL-M, its public ONNX graph set is about 398 MB, Android RAM and time-to-first-audio are not published, and official open-source support is ending.[37][38][48] Use sherpa-onnx's incremental PCM callback and cancellation interface rather than whole-WAV synthesis.[47] Quantized Kokoro is the more plausible default download if Pocket Speech validates its graph contract and Spanish frontend; its Spanish quality and same-conversation voice consistency still require listening tests.[36][42][43] Piper remains a low-end option only if GPL-3.0 product policy and per-voice licenses are acceptable.[40][44]
 
@@ -76,7 +82,10 @@ Hermes reply text
 - The Android/native engine owns the microphone and speaker streams, audio session IDs, DSP state, model instances, PCM rings, and native worker threads.
 - Dart owns conversation/session generations, consent, visible states, transcript review, Hermes requests, and cancellation policy.
 - Every native callback carries immutable `voiceSessionId`, `captureGeneration`, and (for playback) `speechGeneration`. Dart rejects stale events exactly as it does today.
-- Hermes receives `{session, localePair, text, timing metadata}` only. It never receives PCM unless a future, separately consented feature introduces an explicit audio-upload boundary.
+- The offline path sends text only. A separate capability-gated Hermes audio path
+  may upload bounded WAV audio only when the connected Agent advertises the exact
+  audio endpoint; supported Agent 0.20 currently advertises `audio_api: false`,
+  so this is implemented client plumbing rather than qualified runtime evidence.
 - The real-time audio callback only timestamps/copies bounded PCM into lock-free/single-producer rings. Resampling, ONNX inference, JSON, allocation, logging, disk, and Dart method-channel work happen off that callback.
 
 ## Capture and audio processing
@@ -240,10 +249,10 @@ Ship a tiny/no-model app plus an optional minimal language-pair pack, depending 
   "kind": "asr|vad|tts|lid",
   "languages": ["<BCP-47>", "<BCP-47>"],
   "codeSwitch": "trained|unsupported|unknown",
-  "files": [{"path": "model.onnx", "bytes": 0, "sha256": "..."}],
+  "files": [{ "path": "model.onnx", "bytes": 0, "sha256": "..." }],
   "modelRevision": "immutable upstream revision",
   "quantization": "int8|fp16|fp32",
-  "license": {"spdx": "...", "noticePath": "NOTICE"},
+  "license": { "spdx": "...", "noticePath": "NOTICE" },
   "minimumRamMb": 0,
   "recommendedTier": "low|mid|high"
 }
@@ -265,17 +274,17 @@ For Play-distributed builds, Play Asset Delivery offers install-time, fast-follo
 
 ## Fallback matrix
 
-| Failure | Default action | Optional user choice |
-|---|---|---|
-| Joint bilingual pack absent | Offer download; keep text input | Explicit platform on-device recognizer if verified available |
-| Pack corrupt/incompatible | Roll back to last-known-good; disable owned engine | Re-download over approved network |
-| Accelerator fails/slower | Retry same pack on CPU | None needed |
-| Hardware AEC unavailable/poor while platform TTS speaks | Use push-to-talk or half-duplex; do not claim barge-in | Download owned TTS + enable benchmarked software AEC |
-| WebRTC APM initialization/route rebuild fails | Stop capture/playback and pause fail closed | Retry after route change |
-| Bilingual confidence ambiguous | Show partial as uncertain; finalize with joint model policy | User edits text before send |
-| Local TTS voice unavailable | Silent text reply | Explicit platform TTS fallback, labeled device-dependent |
-| Offline STT cannot meet real-time/thermal gate | Push-to-talk with bounded offline batch decode | Explicit network STT opt-in, never silent fallback |
-| Hermes unreachable | Keep final transcript in composer, not an auto-replay queue | User sends after reconnect |
+| Failure                                                 | Default action                                              | Optional user choice                                         |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| Joint bilingual pack absent                             | Offer download; keep text input                             | Explicit platform on-device recognizer if verified available |
+| Pack corrupt/incompatible                               | Roll back to last-known-good; disable owned engine          | Re-download over approved network                            |
+| Accelerator fails/slower                                | Retry same pack on CPU                                      | None needed                                                  |
+| Hardware AEC unavailable/poor while platform TTS speaks | Use push-to-talk or half-duplex; do not claim barge-in      | Download owned TTS + enable benchmarked software AEC         |
+| WebRTC APM initialization/route rebuild fails           | Stop capture/playback and pause fail closed                 | Retry after route change                                     |
+| Bilingual confidence ambiguous                          | Show partial as uncertain; finalize with joint model policy | User edits text before send                                  |
+| Local TTS voice unavailable                             | Silent text reply                                           | Explicit platform TTS fallback, labeled device-dependent     |
+| Offline STT cannot meet real-time/thermal gate          | Push-to-talk with bounded offline batch decode              | Explicit network STT opt-in, never silent fallback           |
+| Hermes unreachable                                      | Keep final transcript in composer, not an auto-replay queue | User sends after reconnect                                   |
 
 A network recognizer is never an implicit fallback. If ever added, it needs a separate consent setting, obvious active-state disclosure, retention/provider documentation, and a no-audio-to-Hermes distinction.
 
@@ -318,7 +327,7 @@ Tune these after baseline data; they are proposed product gates, not sourced ind
 - p95 changed-partial latency < 250 ms;
 - p95 endpoint latency < 800 ms with < 1% premature endpoints on the product set;
 - p95 playback stop < 200 ms from confirmed interruption;
-- >95% true barge-in recall and <1 false stop per 10 minutes of TTS-only playback in the defined acoustic matrix;
+- > 95% true barge-in recall and <1 false stop per 10 minutes of TTS-only playback in the defined acoustic matrix;
 - zero audio overruns and no unbounded memory growth in a 30-minute run;
 - offline packet capture shows zero inference/audio network requests;
 - accelerator selected only if it improves p95 latency or energy materially without a quality regression;

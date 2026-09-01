@@ -1,7 +1,10 @@
 # Milestone 2 — Providers & Models — Design
 
 **Date:** 2026-07-14
-**Status:** Approved
+**Status:** Superseded planning history (2026-08-14)
+**Current direction:** Adapt Wing to Hermes Agent's advertised read-only
+`/api/model/options` contract. Keep model/provider mutation unavailable until an
+exact API route is advertised; do not execute this historical proposal.
 **Depends on:** milestone 1 (Profiles/Agents); reuses the milestone-0 scoped-token,
 `If-Match`, capability-advertisement, and profile-scoping patterns.
 **Roadmap row:** hermes-desktop-parity.md milestone 2 — "Provider presence/set/remove,
@@ -17,12 +20,12 @@ key-reader**.
 
 ## Decisions
 
-| Decision | Choice |
-|---|---|
-| Secret model | Write-only + presence: set/remove/validate a provider key and see `configured` + a masked last-4 hint; the raw key is never returned by any endpoint. The Dashboard's `reveal_env_var` is NOT mirrored to the API server. |
-| Scopes | Two new domains: `providers:read|write`, `models:read|write` (least privilege — model-switching grantable without credential management). |
-| Discovery | Cache-first: `GET /api/models` serves the server's cached catalog with no outbound call; a distinct `POST /api/models/refresh` (models:write) triggers the one live manifest fetch. |
-| Profile scoping | Provider credentials and model assignments are profile-scoped in the domain layer, so all these operations carry the mandatory `?profile=` query, per milestone 0. |
+| Decision        | Choice                                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Secret model    | Write-only + presence: set/remove/validate a provider key and see `configured` + a masked last-4 hint; the raw key is never returned by any endpoint. The Dashboard's `reveal_env_var` is NOT mirrored to the API server. |
+| Scopes          | Two new domains: `providers:read                                                                                                                                                                                          | write`, `models:read | write` (least privilege — model-switching grantable without credential management). |
+| Discovery       | Cache-first: `GET /api/models` serves the server's cached catalog with no outbound call; a distinct `POST /api/models/refresh` (models:write) triggers the one live manifest fetch.                                       |
+| Profile scoping | Provider credentials and model assignments are profile-scoped in the domain layer, so all these operations carry the mandatory `?profile=` query, per milestone 0.                                                        |
 
 ## Server contract (hermes-agent)
 
@@ -58,6 +61,7 @@ a raw key. Extends the milestone-0 diagnostic redaction list to cover provider k
 ## Client (wing)
 
 New `/providers` route in the More sheet (milestone-1 `/agents` pattern):
+
 - provider list with `configured` badges;
 - a write-only credential entry sheet — obscured field, set/remove/validate actions,
   never renders an existing key;

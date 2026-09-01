@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/hermes/models/hermes_health.dart';
+import '../../../core/wing_link/models/wing_link_device.dart';
+import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
@@ -13,11 +16,16 @@ import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 
+typedef GatewayWingLinkClientBuilder =
+    WingLinkClient Function(HermesEndpointConfig config);
+
 /// Gateway-selected, bounded, read-only health. Lifecycle, logs, and messaging
 /// platform administration are deliberately absent until dedicated scoped
 /// contracts are advertised.
 class GatewayScreen extends ConsumerStatefulWidget {
-  const GatewayScreen({super.key});
+  const GatewayScreen({super.key, this.wingLinkClientBuilder});
+
+  final GatewayWingLinkClientBuilder? wingLinkClientBuilder;
 
   @override
   ConsumerState<GatewayScreen> createState() => _GatewayScreenState();
@@ -30,6 +38,11 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _refreshFailed = false;
   bool _disconnecting = false;
   bool _renaming = false;
+  bool _revokingDevice = false;
+  bool _deviceRevoked = false;
+  bool _approvalPending = false;
+  String? _trustGatewayId;
+  Future<_WingLinkTrustState>? _trustFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +59,14 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
             : directory.gateways
                   .where((gateway) => gateway.id == activeGatewayId)
                   .firstOrNull;
+        final activeConfig = directory.activeGatewayConfig;
+        final trustFuture =
+            activeGatewayId == null ||
+                activeConfig == null ||
+                (activeConfig.wingLinkOrigin?.isEmpty ?? true) ||
+                (activeConfig.wingLinkToken?.isEmpty ?? true)
+            ? null
+            : _trustFor(activeGatewayId, activeConfig);
         return Scaffold(
           appBar: AppBar(
             title: Text(strings.gatewayStatusTitle),
@@ -144,6 +165,18 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   state: channel.state,
                   strings: strings,
                   refreshFailed: _refreshFailed,
+                  trust: trustFuture == null || activeConfig == null
+                      ? null
+                      : _WingLinkTrustCard(
+                          future: trustFuture,
+                          strings: strings,
+                          revoked: _deviceRevoked,
+                          approvalPending: _approvalPending,
+                          revoking: _revokingDevice,
+                          onRevoke: () => unawaited(
+                            _confirmSelfRevoke(activeConfig, strings),
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -151,6 +184,108 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
         );
       },
     );
+  }
+
+  WingLinkClient _wingLinkClient(HermesEndpointConfig config) {
+    final builder = widget.wingLinkClientBuilder;
+    if (builder != null) return builder(config);
+    return WingLinkClient(
+      origin: Uri.parse(config.wingLinkOrigin!),
+      token: config.wingLinkToken!,
+      hostFingerprint: config.wingLinkHostFingerprint,
+    );
+  }
+
+  Future<_WingLinkTrustState> _trustFor(
+    String gatewayId,
+    HermesEndpointConfig config,
+  ) {
+    if (config.wingLinkOrigin == null || config.wingLinkToken == null) {
+      return Future.error(
+        const WingLinkException('Wing Link is not configured'),
+      );
+    }
+    if (_trustGatewayId != gatewayId || _trustFuture == null) {
+      _trustGatewayId = gatewayId;
+      _deviceRevoked = false;
+      _approvalPending = false;
+      _trustFuture = _loadTrust(_wingLinkClient(config), config);
+    }
+    return _trustFuture!;
+  }
+
+  Future<_WingLinkTrustState> _loadTrust(
+    WingLinkClient client,
+    HermesEndpointConfig config,
+  ) async {
+    try {
+      final values = await Future.wait<Object>([
+        client.getMetadata(),
+        client.getCurrentDevice(),
+      ]);
+      final metadata = values[0] as WingLinkMetadata;
+      final savedFingerprint = config.wingLinkHostFingerprint;
+      if (savedFingerprint != null &&
+          metadata.hostFingerprint != savedFingerprint) {
+        throw const _WingLinkTrustLoadException(
+          _WingLinkTrustFailure.changedIdentity,
+        );
+      }
+      return _WingLinkTrustState(
+        metadata: metadata,
+        device: values[1] as WingLinkDevice,
+      );
+    } on WingLinkUpgradeRequired {
+      throw const _WingLinkTrustLoadException(
+        _WingLinkTrustFailure.upgradeRequired,
+      );
+    } catch (error) {
+      if (error is _WingLinkTrustLoadException) rethrow;
+      if (error.toString().contains('HTTP 401')) {
+        throw const _WingLinkTrustLoadException(
+          _WingLinkTrustFailure.credentialExpired,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _confirmSelfRevoke(
+    HermesEndpointConfig config,
+    AppLocalizations strings,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(strings.gatewayTrustRevokeTitle),
+        content: Text(strings.gatewayTrustRevokeBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(strings.cancelAction),
+          ),
+          FilledButton(
+            key: const ValueKey('gateway-trust-revoke-confirm'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(strings.gatewayTrustRevokeAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _revokingDevice = true);
+    try {
+      await _wingLinkClient(config).revokeCurrentDevice();
+      if (mounted) setState(() => _deviceRevoked = true);
+    } on WingLinkApprovalRequired {
+      if (mounted) setState(() => _approvalPending = true);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _actionError = strings.gatewayTrustUnavailable);
+      }
+    } finally {
+      if (mounted) setState(() => _revokingDevice = false);
+    }
   }
 
   Future<void> _selectGateway(
@@ -282,11 +417,13 @@ class _GatewayBody extends StatelessWidget {
     required this.state,
     required this.strings,
     required this.refreshFailed,
+    required this.trust,
   });
 
   final HermesChannelState state;
   final AppLocalizations strings;
   final bool refreshFailed;
+  final Widget? trust;
 
   @override
   Widget build(BuildContext context) {
@@ -336,6 +473,7 @@ class _GatewayBody extends StatelessWidget {
         : null;
 
     return ListView(
+      key: const ValueKey('gateway-body-list'),
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
         Text(
@@ -367,7 +505,7 @@ class _GatewayBody extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        if (trust case final trust?) ...[trust, const SizedBox(height: 16)],
         _HealthCard(
           health: health,
           strings: strings,
@@ -385,6 +523,154 @@ class _GatewayBody extends StatelessWidget {
       ],
     );
   }
+}
+
+enum _WingLinkTrustFailure {
+  changedIdentity,
+  upgradeRequired,
+  credentialExpired,
+}
+
+class _WingLinkTrustLoadException implements Exception {
+  const _WingLinkTrustLoadException(this.failure);
+
+  final _WingLinkTrustFailure failure;
+}
+
+class _WingLinkTrustState {
+  const _WingLinkTrustState({required this.metadata, required this.device});
+
+  final WingLinkMetadata metadata;
+  final WingLinkDevice device;
+}
+
+class _WingLinkTrustCard extends StatelessWidget {
+  const _WingLinkTrustCard({
+    required this.future,
+    required this.strings,
+    required this.revoked,
+    required this.approvalPending,
+    required this.revoking,
+    required this.onRevoke,
+  });
+
+  final Future<_WingLinkTrustState> future;
+  final AppLocalizations strings;
+  final bool revoked;
+  final bool approvalPending;
+  final bool revoking;
+  final VoidCallback onRevoke;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    key: const ValueKey('gateway-trust-card'),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: FutureBuilder<_WingLinkTrustState>(
+        future: future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return Semantics(
+              liveRegion: true,
+              child: Text(strings.gatewayTrustLoading),
+            );
+          }
+          final trust = snapshot.data;
+          if (trust == null) {
+            final error = snapshot.error;
+            final message = switch (error) {
+              _WingLinkTrustLoadException(
+                failure: _WingLinkTrustFailure.changedIdentity,
+              ) =>
+                strings.gatewayTrustChangedIdentity,
+              _WingLinkTrustLoadException(
+                failure: _WingLinkTrustFailure.upgradeRequired,
+              ) =>
+                strings.gatewayTrustUpgradeRequired,
+              _WingLinkTrustLoadException(
+                failure: _WingLinkTrustFailure.credentialExpired,
+              ) =>
+                strings.gatewayTrustCredentialExpired,
+              _ => strings.gatewayTrustUnavailable,
+            };
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  strings.gatewayTrustTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(message, key: const ValueKey('gateway-trust-error')),
+                const SizedBox(height: 8),
+                Text(strings.gatewayTrustHostInstructions),
+              ],
+            );
+          }
+          final metadata = trust.metadata;
+          final device = trust.device;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                strings.gatewayTrustTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 12),
+              _StatusRow(
+                label: strings.gatewayTrustFingerprint,
+                value: metadata.hostFingerprint,
+              ),
+              const SizedBox(height: 10),
+              _StatusRow(
+                label: strings.gatewayTrustProtocol,
+                value:
+                    'v${metadata.protocolGeneration} · ${metadata.supportedProtocolGenerations.join(', ')}',
+              ),
+              const SizedBox(height: 10),
+              _StatusRow(
+                label: strings.gatewayTrustDevice,
+                value: '${device.name} · ${device.id}',
+              ),
+              const SizedBox(height: 10),
+              _StatusRow(
+                label: strings.gatewayTrustScopes,
+                value: device.scopes.join(', '),
+              ),
+              const SizedBox(height: 12),
+              Text(strings.gatewayTrustHostInstructions),
+              const SizedBox(height: 12),
+              if (approvalPending)
+                Text(
+                  strings.gatewayTrustApprovalPending,
+                  key: const ValueKey('gateway-trust-approval-pending'),
+                )
+              else if (revoked)
+                Text(
+                  strings.gatewayTrustRevoked,
+                  key: const ValueKey('gateway-trust-revoked'),
+                )
+              else
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('gateway-trust-revoke'),
+                    onPressed: revoking ? null : onRevoke,
+                    icon: revoking
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.phonelink_erase_outlined),
+                    label: Text(strings.gatewayTrustRevokeAction),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ),
+  );
 }
 
 class _HealthCard extends StatelessWidget {

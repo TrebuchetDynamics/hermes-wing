@@ -1,0 +1,111 @@
+# Deterministic create/clone/edit/chat/delete coverage against the fixture.
+# This proves production UI behavior, not live provider authentication.
+appId: com.trebuchetdynamics.hermes.wing
+---
+- scrollUntilVisible:
+    element:
+      text: "^New Profile$"
+    direction: UP
+    timeout: 30000
+- tapOn: "^New Profile$"
+- extendedWaitUntil:
+    visible: "^Create$"
+    timeout: 30000
+- tapOn: "Profile name"
+- inputText: "lifecycle-qa"
+# Dismiss the name-field IME while it is definitely open. Doing this after
+# selecting the clone source can dismiss the whole sheet instead.
+- hideKeyboard
+- tapOn: "(?s)Clone from.*default"
+- tapOn: "mineru"
+- tapOn: "^Create$"
+- extendedWaitUntil:
+    notVisible: "^Create$"
+    timeout: 30000
+
+# Wake the list after insertion, then locate the appended profile card.
+- swipe:
+    start: 50%, 75%
+    end: 50%, 35%
+    duration: 500
+- scrollUntilVisible:
+    element:
+      text: "(?s).*ID: lifecycle-qa.*"
+    direction: DOWN
+    timeout: 60000
+    speed: 20
+    visibilityPercentage: 20
+- swipe:
+    start: 50%, 75%
+    end: 50%, 45%
+    duration: 400
+- tapOn: "Edit lifecycle-qa"
+- tapOn: "Profile name"
+- eraseText: 80
+- inputText: "lifecycle-qualified"
+- tapOn: "Persona"
+- eraseText: 200
+- inputText: "persona-lifecycle-qualified"
+- hideKeyboard
+- tapOn: "^Save$"
+- extendedWaitUntil:
+    notVisible: "^Save$"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Edit lifecycle-qualified"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit lifecycle-qualified"
+- assertVisible: "(?s).*persona-lifecycle-qualified.*"
+- pressKey: back
+
+- scrollUntilVisible:
+    element:
+      text: "Chat with lifecycle-qualified"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Chat with lifecycle-qualified"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
+    timeout: 30000
+- tapOn: "(?s).*Message Hermes….*"
+- inputText: "nonce-create-delete"
+- hideKeyboard
+- tapOn: "^Send$"
+- extendedWaitUntil:
+    visible: "(?s).*PROFILE_RECEIPT::lifecycle-qa::session-lifecycle-qa::nonce-create-delete::assistant.*"
+    timeout: 30000
+- pressKey: back
+- extendedWaitUntil:
+    visible: "(?s).*Profiles.*"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Edit lifecycle-qualified"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "Edit lifecycle-qualified"
+- tapOn: "Delete profile"
+- extendedWaitUntil:
+    visible: "^Delete lifecycle-qualified\\?$"
+    timeout: 30000
+- tapOn: "Profile name"
+- inputText: "lifecycle-qualified"
+- hideKeyboard
+- tapOn: "^Delete profile$"
+- extendedWaitUntil:
+    notVisible: "(?s).*ID: lifecycle-qa.*"
+    timeout: 30000
+- assertNotVisible: "Edit lifecycle-qualified"
+- scrollUntilVisible:
+    element:
+      text: "Chat with default"
+    direction: UP
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "^Selected$"
+    direction: UP
+    timeout: 30000
+- takeScreenshot: strict_profile_create_edit_chat_delete_status_complete

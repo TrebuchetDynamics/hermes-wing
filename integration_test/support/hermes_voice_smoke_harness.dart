@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
@@ -59,14 +60,34 @@ class QueueVoiceCaptureService extends ChangeNotifier
   }
 }
 
+final _voiceSmokeCapabilities = HermesCapabilityDocument.fromJson({
+  'schema_version': 1,
+  'object': 'hermes.api_server.capabilities',
+  'platform': 'hermes-agent',
+  'model': 'android-voice-smoke-fixture',
+  'auth': {'type': 'none', 'required': false},
+  'features': {'audio_api': true, 'session_chat_streaming': true},
+  'endpoints': {
+    'session_chat_stream': {
+      'method': 'POST',
+      'path': '/api/sessions/{session_id}/chat/stream',
+    },
+    'audio_speak': {'method': 'POST', 'path': '/api/audio/speak'},
+    'audio_transcribe': {'method': 'POST', 'path': '/api/audio/transcribe'},
+  },
+});
+
 class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
-    implements HermesChannel {
+    implements HermesChannel, HermesAudioChannel {
   AndroidHermesVoiceSmokeChannel({this.streamFirstReply = false})
-    : _state = const HermesChannelState(
+    : _state = HermesChannelState(
         status: HermesConnectionStatus.connected,
-        sessions: [HermesSession(id: _sessionId, source: 'android-smoke')],
+        capabilities: _voiceSmokeCapabilities,
+        sessions: const [
+          HermesSession(id: _sessionId, source: 'android-smoke'),
+        ],
         activeSessionId: _sessionId,
-        messages: {_sessionId: <HermesChatTurn>[]},
+        messages: const {_sessionId: <HermesChatTurn>[]},
       );
 
   static const _sessionId = 'android-smoke-session';
@@ -79,6 +100,9 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
 
   @override
   HermesChannelState get state => _state;
+
+  @override
+  bool get canSteerActiveTurn => false;
 
   @override
   Stream<HermesApprovalRequest> get approvalRequests => _approvals.stream;
@@ -114,6 +138,16 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     );
     _setMessages(messages);
   }
+
+  @override
+  Future<void> loadModelOptions({bool refresh = false}) async {}
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) async {}
 
   @override
   Future<void> sendText(
@@ -214,10 +248,20 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   }
 
   @override
+  Future<String> transcribePcm16(Uint8List pcm16) async =>
+      String.fromCharCodes(pcm16);
+
+  @override
+  Future<Uint8List> synthesizeSpeech(String text) async => _silentWaveAudio();
+
+  @override
   Future<void> connect({required String baseUrl, String? apiKey}) async {}
 
   @override
   Future<void> disconnect() async {}
+
+  @override
+  void clearActiveSession() {}
 
   @override
   Future<void> selectSession(String sessionId) async {}
@@ -316,12 +360,16 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   void cancelActiveTurn() {}
 
   @override
+  Future<void> steerActiveTurn(String text) async {}
+
+  @override
   void stopActiveTurn() {}
 
   @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {}
 
   @override
@@ -329,4 +377,32 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
 
   @override
   void failVoiceRun(String voiceRunId, {required String reason}) {}
+}
+
+Uint8List _silentWaveAudio() {
+  const sampleRate = 16000;
+  const sampleCount = 1600;
+  const bytesPerSample = 2;
+  const dataLength = sampleCount * bytesPerSample;
+  final audio = Uint8List(44 + dataLength);
+  final header = ByteData.sublistView(audio);
+
+  void ascii(int offset, String value) {
+    audio.setRange(offset, offset + value.length, value.codeUnits);
+  }
+
+  ascii(0, 'RIFF');
+  header.setUint32(4, 36 + dataLength, Endian.little);
+  ascii(8, 'WAVE');
+  ascii(12, 'fmt ');
+  header.setUint32(16, 16, Endian.little);
+  header.setUint16(20, 1, Endian.little);
+  header.setUint16(22, 1, Endian.little);
+  header.setUint32(24, sampleRate, Endian.little);
+  header.setUint32(28, sampleRate * bytesPerSample, Endian.little);
+  header.setUint16(32, bytesPerSample, Endian.little);
+  header.setUint16(34, 16, Endian.little);
+  ascii(36, 'data');
+  header.setUint32(40, dataLength, Endian.little);
+  return audio;
 }

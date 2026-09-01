@@ -1,9 +1,64 @@
-# Hermes Wing PRD
+# Hermes Wing product requirements
 
-Hermes Wing is an independent cross-platform Flutter client for Hermes Agent, inspired by Hermes Desktop and adapted for mobile, web, and desktop. It pursues capability parity by preserving user outcomes through Flutter, Hermes Agent APIs, and platform-native host integrations rather than translating Electron code directly. Hermes WebUI is a separate outcome and interaction reference, frozen independently in [the WebUI feature study](hermes-webui-feature-study.md); it does not move the Desktop retirement baseline and is not an authority, backend, transport, or local-state template for Wing.
+Status: current product direction
 
-The shared journey is: enroll or connect to a trusted Hermes endpoint, choose or create a session, send text or local voice transcripts, review tool progress, answer approvals, and stop active runs. Android presents guided local Hermes installation through Wing Link and Termux as its primary first-run path while retaining one-time pairing to a trusted remote endpoint. Supported desktop targets use Wing Link directly; iOS and web expose remote-safe outcomes and hide local host controls.
+## Product
 
-Hermes Agent remains authoritative for domain state. Flutter uses advertised service contracts rather than parsing Hermes files, databases, or CLI output; Wing Link and platform host adapters are limited to verified bootstrap, process lifecycle, local health, repair, and machine integration. Remote clients use one canonical Hermes API origin and bearer credential for chat and capability-gated administration. Desktop migration adopts an existing managed runtime and offers only a previewable, confirmed import of allowlisted non-secret client preferences; credentials require fresh authorization and legacy data remains untouched.
+Hermes Wing is an independent Flutter client for Hermes Agent on mobile, web,
+and desktop. It lets a user continue sessions, follow long-running work, review
+tool activity, answer approvals, and administer a trusted Hermes host away from
+the desk.
 
-The frozen baseline, status vocabulary, and capability inventory live in [the parity ledger](hermes-desktop-parity.md). The adaptive Android/desktop topology lives in [Routes](routes.md). Existing Hermes capabilities must stay capability-gated, and API keys retain the secure-storage and transport controls documented by the project. Capability parity includes WCAG 2.2 AA and platform accessibility conventions; no user outcome may depend only on a spatial, pointer, speech, motion, sound, or color interaction. Official distribution requires platform-signed artifacts and authenticated updates; unsigned development builds never self-update. Product analytics is disabled by default and limited to explicitly consented, allowlisted coarse events. New app-owned strings are externalized immediately, and Electron retirement requires the frozen Desktop locale set with complete Arabic and Hebrew RTL behavior. Backup and restore use server-owned versioned jobs and opaque handles; portable exports exclude secrets, while local disaster recovery requires passphrase encryption and rollback-safe restore. Desktop SSH is a host-adapter tunnel with explicit host-fingerprint trust and never an alternate domain-state interface. Wing Link runtime installation and updates use signed, version-pinned Hermes Agent artifacts, per-user defaults, native elevation when unavoidable, health-gated activation, and verified rollback. Its management API is authenticated and loopback-only; it is not a Hermes domain proxy or remote installer. Official distribution is limited to signed AAB/APK, APT/RPM, MSIX, and notarized DMG packages; packages may include the matching Wing Link executable but never bundle Hermes Agent, Python, Node, or OmniRoute, and ordinary uninstall preserves external runtime data. Android backgrounding stops local voice and detaches presentation without stopping server-owned runs, replaying actions, or cancelling a Wing Link installation; resume reconciles authoritative state, with optional redacted notifications only when explicitly supported and enabled. Desktop filesystem access starts from a native picker and becomes a least-privilege expiring Hermes grant; remote clients use uploads or opaque server workspaces rather than paths. Legacy local wallets exit through a final Electron-only, one-wallet-at-a-time manual or encrypted recovery export; Hermes Wing never receives their phrases. Native Hermes One sign-in uses hardened system-browser device authorization and one client-global secure credential, while web account support waits for an advertised PKCE and browser-storage contract. The pinned Donna starter profile is recommended and selected by default during local setup, but remains disclosed and deselectable because it contains third-party persona, skills, plugins, and defaults. Wing Link installs it only through Hermes’s profile-distribution interface, never overwrites an existing `donna` profile, and leaves Hermes usable if profile installation fails. OmniRoute is an explicit optional quick start for fresh local installs: its independent provider terms, variable quotas, and prompt-routing privacy boundary are disclosed before a pinned verified install, and its failure never invalidates Hermes.
+Hermes Agent remains authoritative for profiles, projects, providers, models,
+sessions, tools, schedules, memory, and gateway state.
+
+## Architecture
+
+Hermes Wing uses two authenticated connections:
+
+- the **Hermes Agent data plane** for chat, sessions, runs, tools, approvals, and
+  every supported Agent API; and
+- the **Wing Link management plane** for remote setup, pairing, runtime lifecycle,
+  diagnostics, and reviewed compatibility operations that require host access.
+
+Wing Link runs beside Hermes Agent. It is remote-capable on an explicitly
+configured private/VPN interface, but it is not a chat proxy, arbitrary shell,
+general file manager, or second Agent backend.
+
+## Core journeys
+
+1. Install or connect to a trusted Hermes host and pair without placing bearer
+   credentials in a QR code.
+2. Choose a profile and session, send text or voice transcripts, follow events,
+   answer approvals, and stop or resume work.
+3. Inspect health and perform explicit lifecycle or recovery actions.
+4. Create, clone, rename, describe, and delete profiles through Agent-owned or
+   fixed Wing Link contracts.
+5. Browse approved host folders—without listing files—and create a per-profile
+   Hermes Project for a repository or subfolder.
+6. Configure providers and models remotely through typed write-only contracts;
+   provider secrets are never returned.
+
+## Product rules
+
+- Advertise only operations supported by the connected Agent and Wing Link.
+- Keep remote mutations explicit; never queue or replay them after reconnect.
+- Use stable resource IDs and opaque directory handles, not client-supplied host
+  paths. Wing Link returns child folders only, never file entries.
+- Keep secrets in platform secure storage. Prefer trusted HTTPS or an encrypted
+  VPN remotely; future provider-secret operations must reject plaintext.
+- Require confirmation for destructive, secret, filesystem-grant, and lifecycle
+  actions.
+- Preserve an accessible non-spatial path for every outcome.
+- Make platform and release claims only from runtime evidence.
+
+## Current status
+
+The alpha supports direct Agent chat/runs/sessions, approvals, health, pairing,
+Linux Wing Link lifecycle, and bounded profile lifecycle. Provider mutation,
+profile persona editing, directory navigation, Hermes Project assignment, signed
+packages, and non-Linux Wing Link services remain planned or unqualified.
+
+See [Wing Link](wing-link.md), [Routes](routes.md), the
+[compatibility contract](hermes-compatibility.md), and the
+[roadmap](../../ROADMAP.md).

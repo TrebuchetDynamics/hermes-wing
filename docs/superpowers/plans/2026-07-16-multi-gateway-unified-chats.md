@@ -1,5 +1,10 @@
 # Multi-Gateway Unified Chats Implementation Plan
 
+> **Status: foundation implemented; preserved execution history.** The current
+> gateway directory and secure endpoint store implement the one-active-channel
+> contact model. Current profile discovery may also come from Wing Link's fixed
+> compatibility adapter; this plan's unchecked boxes are not a current backlog.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Present the Hermes profiles from every saved Hermes Agent endpoint as one Telegram-style contact list while keeping only the open contact on a full streaming channel.
@@ -41,10 +46,12 @@
 ### Task 1: Stop Implicit Session Creation on Connect
 
 **Files:**
+
 - Modify: `lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart`
 - Modify: `test/core/hermes/channel/hermes_api_channel_tests/connection_tests.dart`
 
 **Interfaces:**
+
 - Consumes: existing `HermesApiChannel.connect({required String baseUrl, String? apiKey})`.
 - Produces: a connected `HermesChannelState` with `sessions == []` and `activeSessionId == null` when the server has no sessions, even when `session_create` is advertised.
 
@@ -125,12 +132,14 @@ git commit -m "fix(chat): keep empty gateways sessionless"
 ### Task 2: Add Non-Secret Gateway Contact Models and Cache
 
 **Files:**
+
 - Create: `lib/features/hermes_chat/gateways/gateway_contact.dart`
 - Create: `lib/features/hermes_chat/gateways/gateway_contact_cache.dart`
 - Create: `test/features/hermes_chat/gateways/gateway_contact_test.dart`
 - Create: `test/features/hermes_chat/gateways/gateway_contact_cache_test.dart`
 
 **Interfaces:**
+
 - Produces: `GatewayContactId`, `GatewayAvailability`, `GatewayOverview`, `GatewayContact`, `sortGatewayContacts`, `GatewayContactCache.load/save/removeGateway`.
 - Security: none of these types has an `apiKey`, `token`, `authorization`, or credential field.
 
@@ -453,11 +462,13 @@ git commit -m "feat(chat): model and cache gateway contacts"
 ### Task 3: Build Bounded Lightweight Gateway Refresh
 
 **Files:**
+
 - Create: `lib/features/hermes_chat/gateways/hermes_gateway_directory.dart`
 - Create: `test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart`
 - Create: `test/features/hermes_chat/support/fake_hermes_gateway_directory.dart`
 
 **Interfaces:**
+
 - Consumes: `HermesEndpointStore.loadProfiles()`, `HermesApiClient.health/capabilities/listProfiles/listSessions`, `GatewayContactCache`.
 - Produces: `GatewaySummaryLoader`, `HermesApiGatewaySummaryLoader`, `HermesGatewayDirectory.start/refresh/contacts/gateways` and app-lifecycle-owned foreground refresh.
 - Private invariant: endpoint configs, including `apiKey`, stay in `_configsById` and are not exposed through public state.
@@ -823,12 +834,14 @@ git commit -m "feat(chat): refresh multiple gateway summaries"
 ### Task 4: Activate Exactly One Gateway Contact
 
 **Files:**
+
 - Modify: `lib/features/hermes_chat/gateways/hermes_gateway_directory.dart`
 - Modify: `lib/features/hermes_chat/providers/hermes_channel_provider.dart`
 - Modify: `test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart`
 - Modify: `test/features/hermes_chat/providers/hermes_channel_provider_test.dart`
 
 **Interfaces:**
+
 - Produces: `GatewayContactId? get activeContactId`, `GatewayContact? get activeContact`, `Future<void> activate(GatewayContactId id)`, `Future<void> showDirectory()`.
 - Keeps: `hermesChannelProvider` as the only full channel.
 - Removes: `hermesAutoConnect`; launch starts at the unified directory instead of connecting the first endpoint.
@@ -967,12 +980,14 @@ git commit -m "feat(chat): activate one gateway contact at a time"
 ### Task 5: Render the Unified Telegram-Style Contact List
 
 **Files:**
+
 - Create: `lib/features/hermes_chat/gateways/gateway_contacts_view.dart`
 - Create: `test/features/hermes_chat/gateways/gateway_contacts_view_test.dart`
 - Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_layout.dart`
 
 **Interfaces:**
+
 - Produces: `GatewayContactsView({required contacts, required refreshing, required onRefresh, required onOpen, onConnect})`.
 - Consumes: `hermesGatewayDirectoryProvider`, `GatewayContactId`, `HermesGatewayDirectory.activate()`.
 
@@ -1077,12 +1092,14 @@ git commit -m "feat(chat): show unified gateway contacts"
 ### Task 6: Add Gateway-Aware Chat Header, Session History, and Safe Switching
 
 **Files:**
+
 - Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_lifecycle.dart`
 - Modify: `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart`
 - Create: `test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart`
 
 **Interfaces:**
+
 - Produces: `_openGatewayContact(GatewayContactId)`, `_confirmGatewaySwitch()`, gateway-aware app-bar title/leading action.
 - Consumes: existing `_isTurnActive`, `_pendingApprovals`, `_answeringApprovalId`, `_showSessionsPanel`.
 
@@ -1263,6 +1280,7 @@ git commit -m "feat(chat): switch gateway contacts safely"
 ### Task 7: Integrate Enrollment, Refresh Lifecycle, and Gateway Removal
 
 **Files:**
+
 - Modify: `lib/features/enrollment/providers/hermes_enrollment_provider.dart`
 - Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_connection.dart`
@@ -1273,6 +1291,7 @@ git commit -m "feat(chat): switch gateway contacts safely"
 - Modify: `test/features/settings/settings_screen_test.dart`
 
 **Interfaces:**
+
 - Produces: `HermesGatewayDirectory.reload({GatewayContactId? activate})`, `renameGateway(String gatewayId, String? label)`, `reconnectGateway(String gatewayId)`, `removeGateway(String gatewayId)`.
 - Enrollment success calls directory reload after secure save; it does not call removed `hermesAutoConnect`.
 
@@ -1475,12 +1494,14 @@ git commit -m "feat(chat): integrate multi-gateway lifecycle"
 ### Task 8: Full Validation, Documentation, and Android Receipt
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
 - Modify: `docs/runbooks/hermes-readiness-audit.md`
 - Test: all files changed in Tasks 1–7
 
 **Interfaces:**
+
 - Produces: user-facing documentation and reproducible validation receipts.
 - Does not change runtime behavior.
 

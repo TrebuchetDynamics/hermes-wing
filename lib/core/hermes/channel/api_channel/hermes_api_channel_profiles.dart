@@ -28,152 +28,184 @@ extension _ProfilesExtension on HermesApiChannel {
         'list profiles',
       );
     }
-    _requireProfileContext('select a profile');
+    if (client.config.pathProfileId != id) {
+      _requireProfileContext('select a profile');
+    }
 
     final generation = _connectionGeneration;
     final capabilities = _state.capabilities;
+    final selectionGeneration = _beginProfileSelection(id);
 
-    final profiles = allowDiscovered
-        ? [
-            ..._state.profiles.where((profile) => profile.id != id),
-            HermesProfile(id: id, displayName: id, revision: ''),
-          ]
-        : await client.listProfiles();
-    if (!_isCurrentConnection(generation, client)) return;
-    if (!allowDiscovered && !profiles.any((profile) => profile.id == id)) {
-      throw StateError('Hermes profile "$id" is not available.');
-    }
+    try {
+      final profiles = allowDiscovered
+          ? [
+              ..._state.profiles.where((profile) => profile.id != id),
+              HermesProfile(id: id, displayName: id, revision: ''),
+            ]
+          : await client.listProfiles();
+      if (!_isCurrentProfileSelection(
+        selectionGeneration,
+        generation,
+        client,
+      )) {
+        return;
+      }
+      if (!allowDiscovered && !profiles.any((profile) => profile.id == id)) {
+        throw StateError('Hermes profile "$id" is not available.');
+      }
 
-    final sessions = await client.listSessions(profile: id);
-    if (!_isCurrentConnection(generation, client)) return;
+      final sessions = await client.listSessions(profile: id);
+      if (!_isCurrentProfileSelection(
+        selectionGeneration,
+        generation,
+        client,
+      )) {
+        return;
+      }
 
-    final errors = <HermesOptionalResource, String>{};
-    final runtimeModels =
-        await _loadOptional<List<HermesRuntimeModel>>(
-          advertised:
-              capabilities != null &&
-              _capabilityEndpointAuthorized(
-                capabilities,
-                'models',
-                'GET',
-                '/v1/models',
-              ),
-          resource: HermesOptionalResource.models,
-          load: () => client.listRuntimeModels(profile: id),
-          errors: errors,
-        ) ??
-        const <HermesRuntimeModel>[];
-    final models = runtimeModels
-        .map((model) => model.id)
-        .toList(growable: false);
-    final skillDetails =
-        await _loadOptional<List<HermesSkill>>(
-          advertised:
-              capabilities != null &&
-              _capabilityEndpointAuthorized(
-                capabilities,
-                'skills',
-                'GET',
-                '/v1/skills',
-              ),
-          resource: HermesOptionalResource.skills,
-          load: () => client.listSkillDetails(profile: id),
-          errors: errors,
-        ) ??
-        const <HermesSkill>[];
-    final skills = skillDetails
-        .map((skill) => skill.name)
-        .toList(growable: false);
-    final toolsets =
-        await _loadOptional<List<HermesToolset>>(
-          advertised:
-              capabilities != null &&
-              _capabilityEndpointAuthorized(
-                capabilities,
-                'toolsets',
-                'GET',
-                '/v1/toolsets',
-              ),
-          resource: HermesOptionalResource.toolsets,
-          load: () => client.listToolsets(profile: id),
-          errors: errors,
-        ) ??
-        const <HermesToolset>[];
-    final enabledToolsets = toolsets
-        .where((toolset) => toolset.enabled)
-        .map((toolset) => toolset.name)
-        .toList(growable: false);
-    final jobs =
-        await _loadOptional<List<HermesJob>>(
-          advertised:
-              capabilities?.supportsSchema == true &&
-              capabilities!.auth.allows('tasks:read') &&
-              capabilities.advertisesScopedEndpoint(
-                'jobs',
-                'GET',
-                '/api/jobs',
-                'tasks:read',
-              ),
-          resource: HermesOptionalResource.jobs,
-          load: () => client.listJobs(profile: id),
-          errors: errors,
-        ) ??
-        const <HermesJob>[];
-    if (!_isCurrentConnection(generation, client)) return;
+      final errors = <HermesOptionalResource, String>{};
+      final runtimeModelsFuture = _loadOptional<List<HermesRuntimeModel>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'models',
+              'GET',
+              '/v1/models',
+            ),
+        resource: HermesOptionalResource.models,
+        load: () => client.listRuntimeModels(profile: id),
+        errors: errors,
+      );
+      final skillDetailsFuture = _loadOptional<List<HermesSkill>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'skills',
+              'GET',
+              '/v1/skills',
+            ),
+        resource: HermesOptionalResource.skills,
+        load: () => client.listSkillDetails(profile: id),
+        errors: errors,
+      );
+      final toolsetsFuture = _loadOptional<List<HermesToolset>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'toolsets',
+              'GET',
+              '/v1/toolsets',
+            ),
+        resource: HermesOptionalResource.toolsets,
+        load: () => client.listToolsets(profile: id),
+        errors: errors,
+      );
+      final jobsFuture = _loadOptional<List<HermesJob>>(
+        advertised:
+            capabilities?.supportsSchema == true &&
+            capabilities!.auth.allows('tasks:read') &&
+            capabilities.advertisesScopedEndpoint(
+              'jobs',
+              'GET',
+              '/api/jobs',
+              'tasks:read',
+            ),
+        resource: HermesOptionalResource.jobs,
+        load: () => client.listJobs(profile: id),
+        errors: errors,
+      );
+      final runtimeModels =
+          await runtimeModelsFuture ?? const <HermesRuntimeModel>[];
+      final models = runtimeModels
+          .map((model) => model.id)
+          .toList(growable: false);
+      final skillDetails = await skillDetailsFuture ?? const <HermesSkill>[];
+      final skills = skillDetails
+          .map((skill) => skill.name)
+          .toList(growable: false);
+      final toolsets = await toolsetsFuture ?? const <HermesToolset>[];
+      final enabledToolsets = toolsets
+          .where((toolset) => toolset.enabled)
+          .map((toolset) => toolset.name)
+          .toList(growable: false);
+      final jobs = await jobsFuture ?? const <HermesJob>[];
+      if (!_isCurrentProfileSelection(
+        selectionGeneration,
+        generation,
+        client,
+      )) {
+        return;
+      }
 
-    final detachedActiveId = capabilities == null
-        ? null
-        : await _recoverActiveDetachedSession(
-            client: client,
-            capabilities: capabilities,
-            baseUrl: _state.connectedBaseUrl ?? '',
-            profileId: id,
-            sessionIds: sessions.map((session) => session.id),
-          );
-    final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
-    final detachedRunStillActive = detachedActiveId != null;
-    var messages = const <String, List<HermesChatTurn>>{};
-    if (activeId != null) {
-      final turns = await _fetchTurns(client, activeId, profileId: id);
-      if (!_isCurrentConnection(generation, client)) return;
-      messages = {activeId: turns};
-    }
+      final detachedActiveId = capabilities == null
+          ? null
+          : await _recoverActiveDetachedSession(
+              client: client,
+              capabilities: capabilities,
+              baseUrl: _state.connectedBaseUrl ?? '',
+              profileId: id,
+              sessionIds: sessions.map((session) => session.id),
+            );
+      final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
+      final detachedRunStillActive = detachedActiveId != null;
+      var messages = const <String, List<HermesChatTurn>>{};
+      if (activeId != null) {
+        final turns = await _fetchTurns(client, activeId, profileId: id);
+        if (!_isCurrentProfileSelection(
+          selectionGeneration,
+          generation,
+          client,
+        )) {
+          return;
+        }
+        messages = {activeId: turns};
+      }
 
-    _finishAllTurnsLocally();
-    _setState(
-      _state.copyWith(
-        profiles: profiles,
-        selectedProfileId: id,
-        sessions: sessions,
-        activeSessionId: activeId,
-        clearActiveSessionId: activeId == null,
-        hasUnreconciledRun: detachedRunStillActive,
-        models: models,
-        runtimeModels: runtimeModels,
-        skills: skills,
-        skillDetails: skillDetails,
-        toolsets: toolsets,
-        enabledToolsets: enabledToolsets,
-        jobs: jobs,
-        optionalResourceErrors: errors,
-        errorMessage: detachedRunStillActive
-            ? 'Hermes run is still active. Reconnect later before retrying.'
-            : null,
-        clearErrorMessage: !detachedRunStillActive,
-        messages: messages,
-        voiceRuns: const {},
-        clearActiveVoiceRunId: true,
-      ),
-    );
-    if (detachedRunStillActive && activeId != null) {
-      unawaited(
-        _reattachDetachedRun(
-          client: client,
-          baseUrl: _state.connectedBaseUrl ?? '',
-          profileId: id,
-          sessionId: activeId,
+      _finishAllTurnsLocally();
+      _setState(
+        _state.copyWith(
+          profiles: profiles,
+          selectedProfileId: id,
+          sessions: sessions,
+          activeSessionId: activeId,
+          clearActiveSessionId: activeId == null,
+          hasUnreconciledRun: detachedRunStillActive,
+          models: models,
+          runtimeModels: runtimeModels,
+          skills: skills,
+          skillDetails: skillDetails,
+          toolsets: toolsets,
+          enabledToolsets: enabledToolsets,
+          jobs: jobs,
+          providers: const [],
+          clearModelInventory: true,
+          clearModelOptions: true,
+          sessionModelLocks: const {},
+          optionalResourceErrors: errors,
+          errorMessage: detachedRunStillActive
+              ? 'Hermes run is still active. Reconnect later before retrying.'
+              : null,
+          clearErrorMessage: !detachedRunStillActive,
+          messages: messages,
+          voiceRuns: const {},
+          clearActiveVoiceRunId: true,
         ),
       );
+      if (detachedRunStillActive && activeId != null) {
+        unawaited(
+          _reattachDetachedRun(
+            client: client,
+            baseUrl: _state.connectedBaseUrl ?? '',
+            profileId: id,
+            sessionId: activeId,
+          ),
+        );
+      }
+    } finally {
+      _finishProfileSelection(selectionGeneration);
     }
   }
 
@@ -237,9 +269,48 @@ extension _ProfilesExtension on HermesApiChannel {
       'delete profiles',
     );
     _requireRevision(revision);
+    final id = profileId.trim();
+    final generation = _connectionGeneration;
+    final selectionGeneration = _profileSelectionGeneration;
+    final pendingSelectionAtStart = _pendingProfileSelectionId;
     await _runProfileMutation(
       client,
-      () => client.deleteProfile(profileId: profileId, revision: revision),
+      () => client.deleteProfile(profileId: id, revision: revision),
+    );
+    if (!_isCurrentConnection(generation, client)) return;
+    if (_profileSelectionGeneration != selectionGeneration ||
+        pendingSelectionAtStart != null) {
+      final requestedSelection =
+          _pendingProfileSelectionId ??
+          (_profileSelectionGeneration != selectionGeneration
+              ? _state.selectedProfileId
+              : pendingSelectionAtStart);
+      _invalidateProfileSelection();
+      if (requestedSelection != null &&
+          _state.profiles.any((profile) => profile.id == requestedSelection)) {
+        await _selectProfile(requestedSelection);
+        return;
+      }
+    }
+    if (_state.selectedProfileId != id) return;
+    final survivor = _state.profiles.firstOrNull;
+    if (survivor != null) {
+      await _selectProfile(survivor.id);
+      return;
+    }
+    // Deleting the final profile clears every profile-owned snapshot: there
+    // is no survivor to reselect, so nothing else may keep pointing at it.
+    _setState(
+      _state.copyWith(
+        clearSelectedProfileId: true,
+        sessions: const [],
+        clearActiveSessionId: true,
+        messages: const {},
+        providers: const [],
+        clearModelInventory: true,
+        clearModelOptions: true,
+        sessionModelLocks: const {},
+      ),
     );
   }
 
@@ -325,12 +396,15 @@ extension _ProfilesExtension on HermesApiChannel {
     String action,
   ) {
     final capabilities = _state.capabilities;
+    final endpoint = capabilities?.endpoints[name];
     if (capabilities == null ||
         !capabilities.supportsSchema ||
+        endpoint == null ||
         !capabilities.advertisesScopedEndpoint(name, method, path, scope)) {
       throw StateError('Hermes did not advertise support to $action.');
     }
-    if (!capabilities.auth.allows(scope)) {
+    if (!capabilities.auth.allows(scope) ||
+        !endpoint.requiredScopes.every(capabilities.auth.allows)) {
       throw StateError('This device is not authorized to $action.');
     }
   }

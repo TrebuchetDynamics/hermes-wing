@@ -21,8 +21,16 @@ extension _ProvidersExtension on HermesApiChannel {
     );
     final profile = _requireSelectedProfile('list providers');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final providers = await client.listProviders(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _setState(_state.copyWith(providers: providers));
   }
 
@@ -106,9 +114,97 @@ extension _ProvidersExtension on HermesApiChannel {
     );
     final profile = _requireSelectedProfile('list models');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final inventory = await client.getModelInventory(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _setState(_state.copyWith(modelInventory: inventory));
+  }
+
+  Future<void> _loadModelOptions({bool refresh = false}) async {
+    final client = _requireConnectedClient();
+    if (!_state.canReadModelOptions) {
+      throw StateError(
+        'Hermes did not advertise support to list model options.',
+      );
+    }
+    final endpoint = _state.capabilities?.endpoints['model_options'];
+    final profile = endpoint?.profileScoped == true
+        ? _requireSelectedProfile('list model options')
+        : null;
+    final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
+    final options = await client.getModelOptions(
+      profile: profile,
+      refresh: refresh,
+    );
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
+    _setState(_state.copyWith(modelOptions: options));
+  }
+
+  Future<void> _lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) async {
+    final client = _requireConnectedClient();
+    if (!_state.canLockSessionModel) {
+      throw StateError(
+        'Hermes did not advertise support to lock a session model.',
+      );
+    }
+    final endpoint = _state.capabilities?.endpoints['session_model_lock'];
+    final profile = endpoint?.profileScoped == true
+        ? _requireSelectedProfile('lock a session model')
+        : null;
+    final profileGeneration = _profileSelectionGeneration;
+    _requireNonBlank(sessionId, 'sessionId');
+    _requireNonBlank(provider, 'provider');
+    _requireNonBlank(model, 'model');
+    if (!_state.sessions.any((session) => session.id == sessionId.trim())) {
+      throw StateError(
+        'Hermes session is not available in the selected profile.',
+      );
+    }
+    final generation = _connectionGeneration;
+    final lock = await client.lockSessionModel(
+      sessionId: sessionId,
+      provider: provider,
+      model: model,
+      profile: profile,
+    );
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
+    if (!lock.accepted || lock.sessionId != sessionId.trim()) {
+      throw StateError('Hermes did not confirm the session model lock.');
+    }
+    _setState(
+      _state.copyWith(
+        sessionModelLocks: {
+          ..._state.sessionModelLocks,
+          sessionId.trim(): lock,
+        },
+      ),
+    );
   }
 
   Future<void> _refreshModels() async {
@@ -197,8 +293,19 @@ extension _ProvidersExtension on HermesApiChannel {
     );
   }
 
+  bool _isCurrentProviderModelRequest(
+    int connectionGeneration,
+    int profileGeneration,
+    HermesApiClient client,
+    String? profile,
+  ) =>
+      _isCurrentConnection(connectionGeneration, client) &&
+      _profileSelectionGeneration == profileGeneration &&
+      (profile == null || _state.selectedProfileId == profile);
+
   /// Requires the endpoint to be advertised AND the connected token to hold
-  /// [scope], failing before any network I/O when either is missing.
+  /// every scope declared by it, failing before any network I/O when either is
+  /// missing.
   void _requireProviderModelCapability(
     String name,
     String method,
@@ -207,12 +314,15 @@ extension _ProvidersExtension on HermesApiChannel {
     String action,
   ) {
     final capabilities = _state.capabilities;
+    final endpoint = capabilities?.endpoints[name];
     if (capabilities == null ||
         !capabilities.supportsSchema ||
+        endpoint == null ||
         !capabilities.advertisesScopedEndpoint(name, method, path, scope)) {
       throw StateError('Hermes did not advertise support to $action.');
     }
-    if (!capabilities.auth.allows(scope)) {
+    if (!capabilities.auth.allows(scope) ||
+        !endpoint.requiredScopes.every(capabilities.auth.allows)) {
       throw StateError('This device is not authorized to $action.');
     }
   }

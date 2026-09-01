@@ -48,23 +48,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: wing_link/go.mod
           cache-dependency-path: wing_link/go.sum
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
       - name: Install Linux desktop dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libsecret-1-dev ninja-build pkg-config
+          sudo apt-get install -y clang cmake libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libsecret-1-dev ninja-build pkg-config xvfb
       - name: Install dependencies
         run: |
           flutter pub get
@@ -80,7 +80,7 @@ jobs:
           test "$coverage_percent" -ge 50
           npm audit --audit-level=high
       - name: Upload coverage report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-lcov
           path: coverage/lcov.info
@@ -103,15 +103,17 @@ jobs:
       - name: Build Android debug APK
         run: flutter build apk --debug
       - name: Upload Android debug APK
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-android-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+      - name: Linux native E2E
+        run: npm run linux:e2e
       - name: Build Linux release app
         run: flutter build linux --release
       - name: Upload Linux release bundle
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-linux-release-bundle
           path: build/linux/x64/release/bundle/**
@@ -122,11 +124,23 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v4
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-1.0, AGPL-3.0
+          # Dart package metadata is not normalized to SPDX by dependency review;
+          # these exact versions are verified BSD-3-Clause packages.
+          allow-dependencies-licenses: >-
+            pkg:pub/cupertino_ui@1.0.1,
+            pkg:pub/flutter_secure_storage@11.0.0,
+            pkg:pub/go_router@17.5.0,
+            pkg:pub/go_router@18.0.0,
+            pkg:pub/material_ui@1.1.0,
+            pkg:pub/matcher@0.12.20,
+            pkg:pub/test@1.31.1,
+            pkg:pub/test_api@0.7.12,
+            pkg:pub/test_core@0.6.18
 
   android-emulator-smoke:
     name: Android emulator voice and durable-key smoke
@@ -134,19 +148,19 @@ jobs:
     timeout-minutes: 60
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_android_emulator_smoke }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: 17
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
       - name: Install dependencies
         run: flutter pub get
       - name: Run Android integration smokes
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 34
           target: google_apis
@@ -166,12 +180,12 @@ jobs:
     timeout-minutes: 30
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_provider_smoke && inputs.provider_url != '' }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -186,13 +200,45 @@ jobs:
           WING_PROVIDER_HERMES_API_KEY: ${{ secrets.WING_PROVIDER_HERMES_API_KEY }}
         run: npm run hermes:provider-smoke
 
+  wing-link-directory-host:
+    name: Wing Link directory host tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
+      - name: Run directory host tests
+        working-directory: wing_link
+        run: go test ./internal/workspaces ./internal/app -run 'Directory|Browser|OpenRoot' -count=1
+
+  wing-link-directory-android-build:
+    name: Wing Link Android/Termux directory host compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: wing_link/go.mod
+          cache-dependency-path: wing_link/go.sum
+      - name: Compile Android/Termux Wing Link host
+        working-directory: wing_link
+        run: GOOS=android GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o /tmp/wing-link-android-arm64 .
+
   windows-build:
     name: Windows desktop build
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -201,7 +247,7 @@ jobs:
           flutter pub get
           flutter build windows --debug
       - name: Upload Windows debug bundle
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-windows-debug-bundle
           path: build/windows/x64/runner/Debug/**
@@ -212,8 +258,8 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -222,7 +268,7 @@ jobs:
           flutter pub get
           flutter build ios --simulator --debug
       - name: Upload iOS simulator app
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-ios-simulator-app
           path: build/ios/iphonesimulator/Runner.app/**
@@ -233,8 +279,8 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
           cache: true
@@ -243,7 +289,7 @@ jobs:
           flutter pub get
           flutter build macos --debug
       - name: Upload macOS debug app
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-macos-debug-app
           path: build/macos/Build/Products/Debug/wing.app/**

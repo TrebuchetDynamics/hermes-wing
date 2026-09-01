@@ -4,6 +4,7 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   FakeHermesEndpointStore({
     HermesEndpointConfig? initial,
     List<HermesEndpointConfig>? profiles,
+    this.onSaveAll,
   }) : _config = initial,
        _profiles = profiles == null ? [] : [...profiles] {
     if (initial != null && _profiles.isEmpty) _profiles.add(initial);
@@ -12,6 +13,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   HermesEndpointConfig? _config;
   final List<HermesEndpointConfig> _profiles;
   final List<HermesEndpointConfig> saveCalls = [];
+  final List<List<HermesEndpointConfig>> saveAllCalls = [];
+  final void Function()? onSaveAll;
   final List<String> deleteProfileCalls = [];
   int clearCalls = 0;
 
@@ -22,6 +25,17 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   Future<List<HermesEndpointConfig>> loadProfiles() async => [..._profiles];
 
   @override
+  Future<void> saveAll(List<HermesEndpointConfig> profiles) async {
+    _profiles
+      ..clear()
+      ..addAll(profiles);
+    _config = profiles.isEmpty ? null : profiles.first;
+    saveAllCalls.add([...profiles]);
+    saveCalls.addAll(profiles);
+    onSaveAll?.call();
+  }
+
+  @override
   Future<void> save({
     required String baseUrl,
     String? apiKey,
@@ -30,6 +44,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
     String? wingLinkOrigin,
     String? wingLinkToken,
     String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
   }) async {
     final publicBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     _config = HermesEndpointConfig(
@@ -40,6 +56,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
       wingLinkOrigin: wingLinkOrigin,
       wingLinkToken: wingLinkToken,
       wingLinkPendingCredentialId: wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: wingLinkHostFingerprint,
+      wingLinkDeviceId: wingLinkDeviceId,
     );
     _profiles.removeWhere(
       (profile) =>

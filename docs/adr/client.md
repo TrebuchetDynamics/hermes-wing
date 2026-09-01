@@ -8,7 +8,15 @@ Keep the Flutter client modular around small replaceable seams. Existing Riverpo
 
 Share domain behavior across platforms while allowing native or adaptive presentation. Accessibility is part of the primary interaction, including an equivalent path when speech, sound, motion, pointer input, canvas, or 3D is unavailable.
 
-Use platform-native features where practical. Voice input and speech output should prefer local processing and must clearly expose platform limitations.
+Use platform-native features where practical. Voice may use exact advertised
+Agent audio routes with platform processing as fallback; availability and
+physical/acoustic evidence must remain explicit.
+
+Agent chat and run traffic stays on direct authenticated Hermes Agent
+transports. Remote VPS connections may use an advertised HTTPS/WebSocket
+transport, but Wing Link never proxies Agent data-plane traffic. ACP is an
+optional local desktop stdio transport only; Wing reuses its session, event,
+and approval semantics without exposing its terminal/file toolset remotely.
 
 ## Flexible guidance
 

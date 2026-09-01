@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -24,6 +21,7 @@ import '../../../shared/security/wing_redaction.dart';
 import '../setup/hermes_endpoint_store.dart';
 import '../shared/hermes_api_http.dart';
 import '../sse/hermes_sse_event_decoder.dart';
+import 'approvals/hermes_approval_responder.dart';
 import 'hermes_channel.dart';
 import 'hermes_detached_run_store.dart';
 
@@ -32,19 +30,20 @@ part 'api_channel/hermes_api_channel_sessions.dart';
 part 'api_channel/hermes_api_channel_profiles.dart';
 part 'api_channel/hermes_api_channel_providers.dart';
 part 'api_channel/hermes_api_channel_messaging.dart';
-part 'api_channel/hermes_api_channel_approvals.dart';
 part 'api_channel/hermes_api_channel_voice.dart';
 part 'api_channel/hermes_api_channel_errors.dart';
 
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
 /// API server. See docs/adr/client.md.
-class HermesApiChannel extends ChangeNotifier implements HermesChannel {
+class HermesApiChannel extends ChangeNotifier
+    implements HermesChannel, HermesAudioChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,
     String Function()? sessionIdFactory,
     Uuid? uuid,
     HermesDetachedRunStore? detachedRunStore,
     this.streamIdleTimeout = const Duration(minutes: 5),
+    this.runStatusReconcileInterval = const Duration(seconds: 3),
   }) : _clientBuilder =
            clientBuilder ?? ((config) => HermesApiClient(config: config)),
        _uuid = uuid ?? const Uuid(),
@@ -61,6 +60,7 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final Uuid _uuid;
   final HermesDetachedRunStore? _detachedRunStore;
   final Duration streamIdleTimeout;
+  final Duration runStatusReconcileInterval;
 
   static final _detachedRunOperationTails = <Object, Future<void>>{};
 
@@ -69,7 +69,7 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};
   final _activeRunIds = <String, String>{};
-  final _approvalRunIds = <String, String>{};
+  final HermesApprovalResponder _approvalResponder = HermesApprovalResponder();
   final _sessionStreamGenerations = <String, int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
   final _confirmedDetachedRunKeys = <String>{};
@@ -78,6 +78,9 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
+  int _sessionSelectionGeneration = 0;
+  int _profileSelectionGeneration = 0;
+  String? _pendingProfileSelectionId;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
   final _deletingSessionOperations = <String, Object>{};
@@ -94,6 +97,8 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   void dispose() {
     _client = null;
     _connectionGeneration += 1;
+    _sessionSelectionGeneration += 1;
+    _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();
@@ -107,14 +112,52 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     String sessionId, {
     String? profileId,
   }) {
-    final credential = sha256.convert(utf8.encode(client.config.apiKey ?? ''));
+    // _recentTurns is never cleared on connect(), so the discriminator must
+    // change across connections, not across credentials: a new connection
+    // (even reusing the same credential) must never reconcile against the
+    // previous connection's cached turns. _connectionGeneration increments on
+    // every connect()/disconnect() and is stable within a connection.
     final profile = profileId ?? _state.selectedProfileId ?? 'default';
-    return '${client.config.baseUri}|$credential|$profile|$sessionId';
+    return '${client.config.baseUri}|$_connectionGeneration|$profile|$sessionId';
   }
 
   void _setState(HermesChannelState next) {
     _state = next;
     notifyListeners();
+  }
+
+  String? _requestProfileForEndpoint(String endpointName) {
+    final endpoint = _state.capabilities?.endpoints[endpointName];
+    if (endpoint?.profileScoped != true) return null;
+    if (_state.capabilities?.profileContext.isSupportedQueryContext == true) {
+      return _requireSelectedProfile('send a profile-scoped request');
+    }
+    return null;
+  }
+
+  int _beginProfileSelection(String profileId) {
+    _profileSelectionGeneration += 1;
+    _pendingProfileSelectionId = profileId;
+    return _profileSelectionGeneration;
+  }
+
+  bool _isCurrentProfileSelection(
+    int selectionGeneration,
+    int connectionGeneration,
+    HermesApiClient client,
+  ) =>
+      selectionGeneration == _profileSelectionGeneration &&
+      _isCurrentConnection(connectionGeneration, client);
+
+  void _finishProfileSelection(int selectionGeneration) {
+    if (selectionGeneration == _profileSelectionGeneration) {
+      _pendingProfileSelectionId = null;
+    }
+  }
+
+  void _invalidateProfileSelection() {
+    _profileSelectionGeneration += 1;
+    _pendingProfileSelectionId = null;
   }
 
   void _clearActiveRunTracking() {
@@ -127,7 +170,7 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
     _activeStreams.clear();
     _activeStreamCompleters.clear();
     _activeRunIds.clear();
-    _approvalRunIds.clear();
+    _approvalResponder.clear();
     _sessionStreamGenerations.clear();
   }
 
@@ -137,6 +180,10 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
 
   @override
   Future<void> disconnect() => _disconnect();
+
+  @override
+  void clearActiveSession() =>
+      _setState(_state.copyWith(clearActiveSessionId: true));
 
   @override
   Future<void> selectSession(String sessionId) => _selectSession(sessionId);
@@ -222,6 +269,18 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   Future<void> loadModels() => _loadModels();
 
   @override
+  Future<void> loadModelOptions({bool refresh = false}) =>
+      _loadModelOptions(refresh: refresh);
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) =>
+      _lockSessionModel(sessionId: sessionId, provider: provider, model: model);
+
+  @override
   Future<void> refreshModels() => _refreshModels();
 
   @override
@@ -240,6 +299,41 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   );
 
   @override
+  Future<String> transcribePcm16(Uint8List pcm16) {
+    _requireAudioEndpoint('audio_transcribe', 'POST', '/api/audio/transcribe');
+    return _requireConnectedClient().transcribePcm16(
+      pcm16,
+      profile: _state.selectedProfileId,
+    );
+  }
+
+  @override
+  Future<Uint8List> synthesizeSpeech(String text) {
+    _requireAudioEndpoint('audio_speak', 'POST', '/api/audio/speak');
+    return _requireConnectedClient().synthesizeSpeech(
+      text,
+      profile: _state.selectedProfileId,
+    );
+  }
+
+  void _requireAudioEndpoint(String name, String method, String path) {
+    final capabilities = _state.capabilities;
+    final policy = capabilities == null
+        ? null
+        : HermesTransportPolicy(capabilities);
+    final authorized = switch ((name, method, path)) {
+      ('audio_speak', 'POST', '/api/audio/speak') =>
+        policy?.supportsSpeechSynthesis ?? false,
+      ('audio_transcribe', 'POST', '/api/audio/transcribe') =>
+        policy?.supportsSpeechTranscription ?? false,
+      _ => false,
+    };
+    if (!authorized) {
+      throw StateError('Hermes did not advertise its audio API.');
+    }
+  }
+
+  @override
   Future<void> sendText(
     String text, {
     String? imageDataUrl,
@@ -253,16 +347,77 @@ class HermesApiChannel extends ChangeNotifier implements HermesChannel {
   );
 
   @override
+  bool get canSteerActiveTurn {
+    final sessionId = _state.activeSessionId;
+    return sessionId != null &&
+        _state.canSteerRuns &&
+        _activeRunIds.containsKey(sessionId);
+  }
+
+  @override
   void cancelActiveTurn() => _cancelActiveTurn();
 
   @override
   void stopActiveTurn() => _stopActiveTurn();
 
   @override
+  Future<void> steerActiveTurn(String text) async {
+    final client = _requireConnectedClient();
+    if (!_state.canSteerRuns) {
+      throw StateError('Hermes did not advertise run steering.');
+    }
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) {
+      throw StateError('Hermes has no active session to steer.');
+    }
+    final runId = _activeRunIds[sessionId];
+    if (runId == null) {
+      throw StateError('The active Hermes turn cannot accept steer input.');
+    }
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(text, 'text', 'Steer input cannot be blank.');
+    }
+    await client.steerRun(
+      runId,
+      text: trimmed,
+      profile: _requestProfileForEndpoint('run_steer'),
+    );
+  }
+
+  @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
-  }) => _respondToApproval(approvalId: approvalId, decision: decision);
+    String? runId,
+  }) => _respondToApproval(
+    approvalId: approvalId,
+    decision: decision,
+    runId: runId,
+  );
+
+  Future<void> _respondToApproval({
+    required String approvalId,
+    required HermesApprovalDecision decision,
+    String? runId,
+  }) async {
+    final client = _client;
+    if (client == null) {
+      throw StateError('Hermes channel is not connected.');
+    }
+    await _approvalResponder.respond(
+      client: client,
+      state: _state,
+      approvalId: approvalId,
+      decision: decision,
+      activeRunIds: _activeRunIds.values,
+      runId: runId,
+      selectedProfileId: _state.selectedProfileId,
+      safeError: _safeHermesError,
+      reportError: (message) =>
+          _setState(_state.copyWith(errorMessage: message)),
+    );
+  }
 
   @override
   String startVoiceRun() => _startVoiceRun();

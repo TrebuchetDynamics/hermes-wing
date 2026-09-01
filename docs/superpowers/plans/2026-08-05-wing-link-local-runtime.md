@@ -1,9 +1,14 @@
 # Wing Link Local Runtime Bootstrap Implementation Plan
 
+> **Status: historical implementation plan; current boundaries live in the ADRs.**
+> The supervisor foundation is implemented, but this plan's older loopback-only,
+> provider bootstrap, and broad profile-topology language is superseded by
+> `docs/adr/runtime-and-delivery.md`. Do not use unchecked tasks as the roadmap.
+
 > **2026-08-07 amendment:** the accepted multi-agent design extends this plan
 > with an independent acknowledged control credential, a persistent per-user
 > service, loopback plus one selected private/VPN listener, and an API-first
-> profile-topology bridge. Chat/session/run traffic remains direct to Hermes;
+> profile-topology bridge. This amendment is historical; chat/session/run traffic remains direct to Hermes;
 > see `../specs/2026-08-06-wing-link-multi-agent-management-design.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

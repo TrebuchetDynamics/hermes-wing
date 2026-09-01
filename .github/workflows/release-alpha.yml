@@ -21,7 +21,7 @@ jobs:
         with:
           flutter-version: 3.44.2
           cache: true
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -42,10 +42,45 @@ jobs:
             echo "Tag must match app version: v${app_version}-alpha.N" >&2
             exit 1
           fi
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release already exists: $TAG" >&2
-            exit 1
-          fi
+          api_http_status() {
+            local output status
+            output=$(mktemp)
+            if gh api --include "$1" >"$output" 2>/dev/null; then :; fi
+            status=$(awk '/^HTTP\// {value=$2} END {print value}' "$output")
+            rm -f "$output"
+            printf '%s' "$status"
+          }
+          set +e
+          tag_result=$(git ls-remote --exit-code --refs --tags origin "refs/tags/$TAG" 2>/dev/null)
+          tag_lookup_status=$?
+          set -e
+          case "$tag_lookup_status" in
+            0)
+              tag_count=$(printf '%s\n' "$tag_result" | awk 'NF == 2 {count++} END {print count+0}')
+              tag_revision=$(printf '%s\n' "$tag_result" | awk 'NF == 2 {print $1}')
+              if [[ "$tag_count" -ne 1 || "$tag_revision" != "$GITHUB_SHA" ]]; then
+                echo "Git tag exists at another revision: $TAG" >&2
+                exit 1
+              fi
+              ;;
+            2) ;;
+            *)
+              echo "Could not verify whether Git tag exists: $TAG" >&2
+              exit 1
+              ;;
+          esac
+          release_status=$(api_http_status "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
+          case "$release_status" in
+            404) ;;
+            200)
+              echo "Release already exists: $TAG" >&2
+              exit 1
+              ;;
+            *)
+              echo "Could not verify whether GitHub release exists: $TAG" >&2
+              exit 1
+              ;;
+          esac
       - name: Format, analyze, test, and audit
         run: |
           dart format --output=none --set-exit-if-changed lib test integration_test
@@ -57,7 +92,7 @@ jobs:
 
   android:
     name: Signed Android APK and AAB
-    needs: validation
+    needs: [validation, wing-link]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -69,6 +104,58 @@ jobs:
         with:
           flutter-version: 3.44.2
           cache: true
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: wing-link-release
+          path: wing-link-dist
+      - name: Bind Termux bootstrap to exact Wing Link artifact
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          root = Path.cwd()
+          dist = root / "wing-link-dist"
+          asset = dist / "wing-link-android-arm64"
+          manifest = dist / "wing-link-checksums.sha256"
+          if not asset.is_file() or not manifest.is_file():
+              raise SystemExit("missing Android Wing Link release metadata")
+          matches = []
+          for line in manifest.read_text().splitlines():
+              match = re.fullmatch(r"([0-9a-f]{64}) [ *]([^/\\]+)", line)
+              if match and match.group(2) == asset.name:
+                  matches.append(match.group(1))
+          if len(matches) != 1:
+              raise SystemExit("expected exactly one Android Wing Link checksum")
+          asset_bytes = asset.read_bytes()
+          asset_size = len(asset_bytes)
+          if not 1 <= asset_size <= 50 * 1024 * 1024:
+              raise SystemExit("Android Wing Link asset exceeds 50 MiB")
+          asset_sha = hashlib.sha256(asset_bytes).hexdigest()
+          if asset_sha != matches[0]:
+              raise SystemExit("Android Wing Link checksum mismatch")
+          installer = root / "install-wing-link.sh"
+          installer_bytes = installer.read_bytes()
+          if not 1 <= len(installer_bytes) <= 1024 * 1024:
+              raise SystemExit("Wing Link installer exceeds 1 MiB")
+          metadata = {
+              "available": True,
+              "tag": os.environ["TAG"],
+              "installer_commit": os.environ["GITHUB_SHA"],
+              "installer_sha256": hashlib.sha256(installer_bytes).hexdigest(),
+              "asset_sha256": asset_sha,
+              "asset_size": asset_size,
+          }
+          target = root / "assets/config/termux_bootstrap.json"
+          temporary = target.with_suffix(".tmp")
+          temporary.write_text(json.dumps(metadata, separators=(",", ":")) + "\n")
+          temporary.replace(target)
+          PY
       - name: Require release signing secrets
         env:
           KEYSTORE: ${{ secrets.WING_RELEASE_KEYSTORE_BASE64 }}
@@ -91,6 +178,7 @@ jobs:
           WING_RELEASE_KEY_PASSWORD: ${{ secrets.WING_RELEASE_KEY_PASSWORD }}
         run: |
           flutter pub get
+          flutter test test/features/local_setup/termux_bootstrap_command_test.dart test/features/local_setup/termux_hermes_setup_test.dart
           flutter build apk --release
           flutter build appbundle --release
           cp build/app/outputs/flutter-apk/app-release.apk hermes-wing-android.apk
@@ -214,8 +302,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -384,9 +472,56 @@ jobs:
           TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          api_http_status() {
+            local output status
+            output=$(mktemp)
+            if gh api --include "$1" >"$output" 2>/dev/null; then :; fi
+            status=$(awk '/^HTTP\// {value=$2} END {print value}' "$output")
+            rm -f "$output"
+            printf '%s' "$status"
+          }
+          created_tag=false
+          cleanup_publish_ref() {
+            status=$?
+            if [[ "$status" -ne 0 && "$created_tag" == true ]]; then
+              set +e
+              current_revision=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null)
+              release_status=$(api_http_status "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
+              if [[ "$current_revision" == "$GITHUB_SHA" && "$release_status" == 404 ]]; then
+                gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" >/dev/null 2>&1
+              fi
+              set -e
+            fi
+            exit "$status"
+          }
+          trap cleanup_publish_ref EXIT
+
+          release_status=$(api_http_status "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
+          case "$release_status" in
+            404) ;;
+            200) echo "Release already exists: $TAG" >&2; exit 1 ;;
+            *) echo "Could not verify whether GitHub release exists: $TAG" >&2; exit 1 ;;
+          esac
+          ref_status=$(api_http_status "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG")
+          case "$ref_status" in
+            404)
+              gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                -f ref="refs/tags/$TAG" \
+                -f sha="$GITHUB_SHA" >/dev/null
+              created_tag=true
+              ;;
+            200) ;;
+            *) echo "Could not verify whether Git tag exists: $TAG" >&2; exit 1 ;;
+          esac
+          tag_revision=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')
+          if [[ "$tag_revision" != "$GITHUB_SHA" ]]; then
+            echo "Git tag exists at another revision: $TAG" >&2
+            exit 1
+          fi
           gh release create "$TAG" dist/* \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --verify-tag \
             --title "Hermes Wing $TAG" \
             --notes "Verified alpha release with a signed Android APK/AAB, Linux x64 bundle, static web archive, Wing Link binaries, checksums, and a pre-publication verification receipt. See README.md for support limits." \
             --prerelease
+          trap - EXIT

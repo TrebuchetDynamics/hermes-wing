@@ -8,15 +8,21 @@ name: session_branch_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*All chats.*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
-- tapOn: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
 - extendedWaitUntil:
-    visible: "(?s).*online.*"
+    visible: "Open more destinations"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
     timeout: 60000
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
@@ -40,6 +46,14 @@ name: session_branch_qa
 - tapOn: "^Sessions$"
 - tapOn: "(?s).*Search sessions.*"
 - inputText: "forked"
-- assertVisible: "(?s).*Showing [1-9][0-9]* of [1-9][0-9]* sessions.*"
+- assertVisible: "(?s).*Showing [0-9]+ of [1-9][0-9]* sessions.*"
+- tapOn: "Clear search"
+- hideKeyboard
+- assertVisible: "(?s).*[1-9][0-9]* sessions.*"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*Forked from.*"
+    direction: DOWN
+    timeout: 30000
 - assertVisible: "(?s).*Forked from.*"
 # No screenshots: session identifiers and titles stay out of QA artifacts.

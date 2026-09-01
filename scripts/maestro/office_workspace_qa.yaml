@@ -7,12 +7,13 @@ name: office_workspace_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*Message Hermes….*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
 - tapOn: "Open more destinations"
 - tapOn: "^Office$"
 - assertVisible: "(?s).*accessible 2D workspace.*"
@@ -22,7 +23,7 @@ name: office_workspace_qa
 - inputText: "qa_no_office_profile_match_98765"
 - assertVisible: "(?s).*No profiles match this search.*"
 - eraseText: 100
-- hideKeyboard
+- tapOn: "(?s).*accessible 2D workspace.*"
 - assertVisible: "^Open chat$"
 - tapOn: "^Open chat$"
 - extendedWaitUntil:

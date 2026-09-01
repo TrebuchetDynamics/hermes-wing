@@ -10,6 +10,12 @@ watch="${WING_WATCH_WORKFLOW:-true}"
 receipt_path="${WING_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"
 existing_run_id="${WING_PLATFORM_WORKFLOW_RUN_ID:-}"
 
+# Invalidate an older pass before any new attempt so dispatch or watch failures
+# cannot leave readiness reporting stale platform evidence.
+if [ -f "$receipt_path" ]; then
+  rm -f "$receipt_path"
+fi
+
 if ! command -v gh >/dev/null 2>&1; then
   echo "gh is required to dispatch the Hermes platform workflow." >&2
   exit 1

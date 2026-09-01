@@ -48,7 +48,10 @@ void main() {
     final result = await Process.run(
       'bash',
       ['scripts/verify_release_artifacts.sh', temp.path, 'v0.1.0-alpha.1'],
-      environment: {'WING_RELEASE_CERT_SHA256': '00'},
+      environment: {
+        'WING_RELEASE_CERT_SHA256': '00',
+        'GITHUB_SHA': List.filled(40, 'a').join(),
+      },
     );
 
     expect(result.exitCode, 1);
@@ -174,14 +177,26 @@ void main() {
     expect(workflow, contains(r'"$tag_suffix" =~ ^[0-9]+$'));
   });
 
-  test('existing alpha release fails before platform builds', () {
+  test('existing release fails while an exact orphan tag can recover', () {
     final workflow = File(
       '.github/workflows/release-alpha.yml',
     ).readAsStringSync();
 
-    final duplicateCheck = workflow.indexOf('gh release view');
-    expect(duplicateCheck, greaterThan(0));
-    expect(duplicateCheck, lessThan(workflow.indexOf('  android:\n')));
-    expect(workflow.lastIndexOf('gh release view'), duplicateCheck);
+    final validation = workflow.substring(
+      workflow.indexOf('Validate tag against app version'),
+      workflow.indexOf('  android:\n'),
+    );
+    expect(validation, contains('releases/tags/\$TAG'));
+    expect(validation, contains('Release already exists: \$TAG'));
+    expect(validation, contains(r'tag_revision" != "$GITHUB_SHA'));
+    expect(
+      validation,
+      contains('Could not verify whether GitHub release exists'),
+    );
+    expect(validation, isNot(contains('Git tag already exists')));
+    expect(workflow, contains('trap cleanup_publish_ref EXIT'));
+    expect(workflow, contains(r'"$created_tag" == true'));
+    expect(workflow, contains(r'"$current_revision" == "$GITHUB_SHA'));
+    expect(workflow, contains(r'"$release_status" == 404'));
   });
 }

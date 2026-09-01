@@ -1,12 +1,33 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 
 typedef ProfileCreateCallback =
-    Future<void> Function(String name, String? cloneFrom);
+    Future<void> Function({
+      required String name,
+      String? cloneFrom,
+      String? description,
+      String? provider,
+      String? model,
+      String? providerApiKey,
+      String? idempotencyKey,
+    });
+typedef _PendingProfileApproval = ({
+  String approvalId,
+  String idempotencyKey,
+  int expiresAt,
+});
+
 typedef ProfileRenameCallback =
-    Future<void> Function(String profileId, String name, String revision);
+    Future<void> Function({
+      required String profileId,
+      required String name,
+      required String revision,
+    });
 typedef ProfileDeleteCallback =
     Future<void> Function(String profileId, String revision);
 
@@ -18,6 +39,8 @@ class ProfileEditorSheet extends StatefulWidget {
     this.canEditSoul = false,
     this.canDelete = false,
     this.stableNames = false,
+    this.canConfigure = false,
+    this.soulOnly = false,
     this.onCreate,
     this.onRename,
     this.onDelete,
@@ -30,6 +53,8 @@ class ProfileEditorSheet extends StatefulWidget {
   final bool canEditSoul;
   final bool canDelete;
   final bool stableNames;
+  final bool canConfigure;
+  final bool soulOnly;
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
@@ -42,14 +67,21 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   final _personaController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _providerController = TextEditingController();
+  final _modelController = TextEditingController();
+  final _credentialController = TextEditingController();
   String? _cloneFrom;
   String? _personaRevision;
   String _originalPersona = '';
   String? _error;
   bool _saving = false;
   bool _loadingPersona = false;
+  _PendingProfileApproval? _pendingApproval;
+  Timer? _approvalExpiryTimer;
 
   bool get _editing => widget.profile != null;
+  bool get _payloadFrozen => _saving || _pendingApproval != null;
 
   @override
   void initState() {
@@ -70,8 +102,14 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 
   @override
   void dispose() {
+    _approvalExpiryTimer?.cancel();
+    _credentialController.clear();
     _nameController.dispose();
     _personaController.dispose();
+    _descriptionController.dispose();
+    _providerController.dispose();
+    _modelController.dispose();
+    _credentialController.dispose();
     super.dispose();
   }
 
@@ -134,7 +172,52 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     }
   }
 
+  bool _approvalExpired(_PendingProfileApproval approval) =>
+      DateTime.now().millisecondsSinceEpoch >= approval.expiresAt * 1000;
+
+  void _clearPendingApproval({bool clearCredential = true}) {
+    _approvalExpiryTimer?.cancel();
+    _approvalExpiryTimer = null;
+    _pendingApproval = null;
+    if (clearCredential) _credentialController.clear();
+  }
+
+  void _holdPendingApproval(WingLinkApprovalRequired approval) {
+    _approvalExpiryTimer?.cancel();
+    _pendingApproval = (
+      approvalId: approval.approvalId,
+      idempotencyKey: approval.idempotencyKey,
+      expiresAt: approval.expiresAt,
+    );
+    final delay = DateTime.fromMillisecondsSinceEpoch(
+      approval.expiresAt * 1000,
+    ).difference(DateTime.now());
+    _approvalExpiryTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+      if (!mounted ||
+          _pendingApproval?.idempotencyKey != approval.idempotencyKey) {
+        return;
+      }
+      setState(() {
+        _clearPendingApproval();
+        _error = AppLocalizations.of(context).profileApprovalExpired;
+      });
+    });
+  }
+
+  void _cancelEditor() {
+    setState(() => _clearPendingApproval());
+    Navigator.of(context).maybePop();
+  }
+
   Future<void> _save() async {
+    final pendingApproval = _pendingApproval;
+    if (pendingApproval != null && _approvalExpired(pendingApproval)) {
+      setState(() {
+        _clearPendingApproval();
+        _error = AppLocalizations.of(context).profileApprovalExpired;
+      });
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _saving = true;
@@ -148,13 +231,29 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         if (onCreate == null) {
           await widget.channel.createProfile(name: name, cloneFrom: _cloneFrom);
         } else {
-          await onCreate(name, _cloneFrom);
+          await onCreate(
+            name: name,
+            cloneFrom: _cloneFrom,
+            description: _descriptionController.text.trim(),
+            provider: _providerController.text.trim(),
+            model: _modelController.text.trim(),
+            providerApiKey: _credentialController.text.isEmpty
+                ? null
+                : _credentialController.text,
+            idempotencyKey: pendingApproval?.idempotencyKey,
+          );
         }
       } else {
         final currentName = widget.stableNames
             ? profile.id
             : profile.displayName;
-        if (name != currentName) {
+        final hasConfigurationChange =
+            widget.canConfigure &&
+            (_descriptionController.text.trim().isNotEmpty ||
+                _providerController.text.trim().isNotEmpty ||
+                _modelController.text.trim().isNotEmpty ||
+                _credentialController.text.isNotEmpty);
+        if (name != currentName || hasConfigurationChange) {
           final onRename = widget.onRename;
           if (onRename == null) {
             await widget.channel.renameProfile(
@@ -163,7 +262,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
               revision: profile.revision,
             );
           } else {
-            await onRename(profile.id, name, profile.revision);
+            await onRename(
+              profileId: profile.id,
+              name: name,
+              revision: profile.revision,
+            );
           }
         }
         final personaRevision = _personaRevision;
@@ -179,12 +282,35 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           );
         }
       }
-      if (mounted) await Navigator.of(context).maybePop();
+      if (!mounted) return;
+      _clearPendingApproval();
+      await Navigator.of(context).maybePop();
+    } on WingLinkApprovalRequired catch (approval) {
+      if (!mounted) return;
+      if (pendingApproval != null &&
+          approval.idempotencyKey != pendingApproval.idempotencyKey) {
+        setState(() {
+          _clearPendingApproval();
+          _error = AppLocalizations.of(context).profileOperationFailed;
+        });
+      } else {
+        setState(() {
+          _holdPendingApproval(approval);
+          _error = null;
+        });
+      }
     } catch (error) {
+      final conflict = error.toString().contains('412');
+      if (conflict && widget.canEditSoul && mounted) {
+        // A rejected SOUL write means the server has newer content. Reconcile
+        // before showing the conflict so a retry cannot overwrite stale text.
+        await _loadPersona();
+      }
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
       setState(() {
-        _error = error.toString().contains('412')
+        _clearPendingApproval();
+        _error = conflict
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
       });
@@ -213,31 +339,38 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                profile == null ? strings.createAgentTitle : strings.editAgent,
+                profile == null
+                    ? strings.createAgentTitle
+                    : widget.soulOnly
+                    ? strings.profilePersonaTitle(profile.displayName)
+                    : strings.editAgent,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (profile != null) ...[
                 const SizedBox(height: 6),
                 Text(strings.agentStableId(profile.id)),
               ],
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _nameController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: strings.agentDisplayName,
-                  border: const OutlineInputBorder(),
+              if (!widget.soulOnly) ...[
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _nameController,
+                  enabled: !_payloadFrozen,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.agentDisplayName,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final name = value?.trim() ?? '';
+                    if (name.isEmpty) return strings.agentNameRequired;
+                    if (widget.stableNames &&
+                        !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
+                      return strings.profileStableNameHint;
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  final name = value?.trim() ?? '';
-                  if (name.isEmpty) return strings.agentNameRequired;
-                  if (widget.stableNames &&
-                      !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
-                    return strings.profileStableNameHint;
-                  }
-                  return null;
-                },
-              ),
+              ],
               if (profile == null) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String?>(
@@ -261,9 +394,145 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                         ),
                       ),
                   ],
-                  onChanged: _saving
+                  onChanged: _payloadFrozen
                       ? null
                       : (value) => setState(() => _cloneFrom = value),
+                ),
+                if (widget.canConfigure) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    enabled: !_payloadFrozen,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: strings.profileDescriptionLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _providerController,
+                    enabled: !_payloadFrozen,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: strings.profileProviderLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final provider = value?.trim() ?? '';
+                      final needsExplicitConfiguration =
+                          _cloneFrom == null ||
+                          _modelController.text.trim().isNotEmpty ||
+                          _credentialController.text.isNotEmpty;
+                      if (provider.isEmpty && needsExplicitConfiguration) {
+                        return strings.profileProviderRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _modelController,
+                    enabled: !_payloadFrozen,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: strings.profileModelLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final model = value?.trim() ?? '';
+                      final needsExplicitConfiguration =
+                          _cloneFrom == null ||
+                          _providerController.text.trim().isNotEmpty ||
+                          _credentialController.text.isNotEmpty;
+                      if (model.isEmpty && needsExplicitConfiguration) {
+                        return strings.profileModelRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.profileReadinessNotice),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _credentialController,
+                    enabled: !_payloadFrozen,
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const <String>[],
+                    decoration: InputDecoration(
+                      labelText: strings.profileCredentialLabel,
+                      helperText: strings.profileCredentialHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ],
+              if (profile != null && widget.canConfigure) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  enabled: !_payloadFrozen,
+                  minLines: 2,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: strings.profileDescriptionLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _providerController,
+                  enabled: !_payloadFrozen,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.profileProviderLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final provider = value?.trim() ?? '';
+                    if (provider.isEmpty &&
+                        _modelController.text.trim().isNotEmpty) {
+                      return strings.profileProviderRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _modelController,
+                  enabled: !_payloadFrozen,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: strings.profileModelLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    final model = value?.trim() ?? '';
+                    if (model.isEmpty &&
+                        _providerController.text.trim().isNotEmpty) {
+                      return strings.profileModelRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Text(strings.profileReadinessNotice),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _credentialController,
+                  enabled: !_payloadFrozen,
+                  obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  autofillHints: const <String>[],
+                  decoration: InputDecoration(
+                    labelText: strings.profileCredentialLabel,
+                    helperText: strings.profileCredentialHint,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
               ],
               if (profile != null && widget.canEditSoul) ...[
@@ -303,6 +572,17 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 const SizedBox(height: 16),
                 Text(strings.defaultAgentCannotDelete),
               ],
+              if (_pendingApproval != null) ...[
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    strings.profileApprovalRequired(
+                      _pendingApproval!.approvalId,
+                    ),
+                  ),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Semantics(
@@ -322,10 +602,12 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 runSpacing: 8,
                 children: [
                   TextButton(
-                    onPressed: _saving
-                        ? null
-                        : () => Navigator.of(context).maybePop(),
-                    child: Text(strings.cancelAction),
+                    onPressed: _saving ? null : _cancelEditor,
+                    child: Text(
+                      _pendingApproval == null
+                          ? strings.cancelAction
+                          : strings.profileCancelSetup,
+                    ),
                   ),
                   FilledButton(
                     onPressed: _saving ? null : _save,
@@ -335,7 +617,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(
-                            profile == null
+                            _pendingApproval != null
+                                ? strings.profileRetryApprovedSetup
+                                : profile == null
                                 ? strings.createAction
                                 : strings.saveAction,
                           ),

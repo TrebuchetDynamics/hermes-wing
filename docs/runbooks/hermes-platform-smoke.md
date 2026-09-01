@@ -48,20 +48,20 @@ Current local receipts (refreshed through 2026-07-03):
      pointing at `<prefix>/usr/include`. The helper script
      `scripts/run_linux_release_build.sh` automates this fallback and is exposed
      as `npm run linux:release-build`.
-  The resulting binary links the real system `libsecret-1.so.0` at runtime
-  (confirmed via `ldd`) — the local prefix is a build-time-only stand-in for
-  the missing dev headers/symlink, not something the shipped binary depends
-  on. The helper accepts a relative or absolute `WING_LINUX_BUILD_DEPS_DIR`
-  and resolves it before rewriting `.pc` files so nested CMake builds can still
-  find the extracted headers/libs. This recipe is only needed in root-less
-  containers; CI/normal dev machines should just `apt-get install
-  libsecret-1-dev`.
+     The resulting binary links the real system `libsecret-1.so.0` at runtime
+     (confirmed via `ldd`) — the local prefix is a build-time-only stand-in for
+     the missing dev headers/symlink, not something the shipped binary depends
+     on. The helper accepts a relative or absolute `WING_LINUX_BUILD_DEPS_DIR`
+     and resolves it before rewriting `.pc` files so nested CMake builds can still
+     find the extracted headers/libs. This recipe is only needed in root-less
+     containers; CI/normal dev machines should just `apt-get install
+libsecret-1-dev`.
 - `flutter build windows --debug` — blocked here because Flutter only supports
   this command on Windows hosts (`"build windows" only supported on Windows
-  hosts.`; latest local reprobe exited 1 on 2026-07-03).
+hosts.`; latest local reprobe exited 1 on 2026-07-03).
 - `flutter build ios` — blocked here because this Linux Flutter toolchain does
   not expose usable iOS simulator build options (`flutter build ios --simulator
-  --debug` exits 64 with `Could not find an option named "--simulator".`);
+--debug` exits 64 with `Could not find an option named "--simulator".`);
   validate on macOS/Xcode.
 - `flutter build macos` — blocked here because this Linux Flutter toolchain does
   not expose a macOS build subcommand (`flutter build macos` exits 64 with
@@ -91,6 +91,35 @@ instead of hanging:
   deterministic Hermes continuous-voice loop, and durable-key integration tests
   on a GitHub-hosted Android emulator through the same hardened `scripts/run_android_*`
   wrappers used locally.
+
+## Wing Link directory host qualification
+
+Run the focused host checks locally from the repo root:
+
+```bash
+(cd wing_link && go test ./internal/workspaces ./internal/app -run 'Directory|Browser|OpenRoot' -count=1)
+```
+
+The `wing-link-directory-host` CI matrix runs that same command on
+`ubuntu-latest`, `windows-latest`, and `macos-latest`, using the Go version in
+`wing_link/go.mod`. Its success is a filesystem/HTTP regression receipt only:
+it covers opaque browse, rooted traversal, revocation, symlink cases where the
+runner permits them, and bounded responses. It is not a claim that Hermes Wing
+has been manually qualified on each desktop OS.
+
+Android/Termux has a separate compile-only `wing-link-directory-android-build`
+workflow job. The exact cross-build check is:
+
+```bash
+(cd wing_link && GOOS=android GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o /tmp/wing-link-android-arm64 .)
+```
+
+A successful cross-build does not qualify a physical Android/Termux host,
+background behavior, permissions, symlink behavior, or service lifecycle.
+Those require a connected Android/Termux run and a retained command/output
+receipt. The Flutter directory browser's widget tests cover keyboard operation,
+200% text scale, and live semantics; TalkBack, VoiceOver, and desktop assistive
+technology remain unverified until exercised on their named physical targets.
 
 The workflow file must be visible to GitHub before this counts as a receipt.
 A local YAML file is not enough, and dispatch-only output is not enough. The

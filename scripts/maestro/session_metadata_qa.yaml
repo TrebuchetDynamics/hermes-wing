@@ -7,15 +7,21 @@ name: session_metadata_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*All chats.*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
-- tapOn: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
 - extendedWaitUntil:
-    visible: "(?s).*online.*"
+    visible: "Open more destinations"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+- extendedWaitUntil:
+    visible: "(?s).*Message Hermes….*"
     timeout: 60000
 - tapOn: "(?s).*More actions.*"
 - tapOn: "^Sessions$"
@@ -26,8 +32,8 @@ name: session_metadata_qa
 - tapOn: "(?s).*Session actions.*"
 - tapOn: "^View details$"
 - assertVisible: "(?s).*Session details.*"
-- assertVisible: "(?s).*Input tokens: [0-9]+.*"
-- assertVisible: "(?s).*Output tokens: [0-9]+.*"
+- assertVisible: "(?s).*Session input tokens: [0-9]+.*"
+- assertVisible: "(?s).*Session output tokens: [0-9]+.*"
 - assertVisible: "(?s).*API calls: [0-9]+.*"
 - assertVisible: "(?s).*Started: 20[0-9]{2}-.*"
 - assertNotVisible: "(?s).*Started: [0-9]{10}[.].*"

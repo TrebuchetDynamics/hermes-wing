@@ -86,20 +86,44 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup values separately with `wing-cli info` and paste tokens into Hermes Wing only.
+- Share setup separately. With Tailscale active on the host, `wing-link pair`
+  automatically binds Hermes Agent to the detected local Tailscale address and
+  starts non-loopback pairing. For another trusted VPN or isolated trusted LAN,
+  configure a phone-reachable Agent address explicitly and set `WING_HERMES_URL`
+  and `WING_LINK_URL` before running `wing-link pair`.
+
+  Remote pairing uses TLS 1.3. By default, use Wing's **Paste pairing link**
+  action with the five-minute, single-use output. Run `wing-link pair --qr` and
+  choose **Scan QR code** when scanning from another screen; native Wing verifies
+  the self-signed broker with the reviewed SPKI pin. Browsers cannot validate the
+  pin. For a pairing link already in a text message, use Android **Share → Hermes
+  Wing**.
+  The ordinary `/open` helper is loopback-only for same-host clients. Entering a
+  Hermes API URL and token manually is a one-profile fallback only and does not
+  import Wing Link or other Hermes profiles.
+
 - Treat release signing keys as external secrets; do not add them to this repository or to issue reports.
 
 ## Quick smoke after install
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Paste a reachable Hermes base URL and token from `wing-cli info`.
+3. Run the default pairing command with a phone-reachable trusted VPN/Tailscale
+   or isolated-LAN address. Use `--local` only for same-host pairing. Verify the QR
+   flow from the host screen and Android **Share → Hermes Wing** for an existing
+   pairing message. Use loopback `/open` only when Wing runs on that same host,
+   and manual URL/token
+   entry only as a one-profile fallback.
 4. Send one short text turn to confirm the installed app can reach the trusted gateway.
 
 ## Continuous voice smoke after install
 
 Use a responsive Android target only. If ADB lists the target but `adb shell true` hangs or times out, the target is not valid for this smoke.
-For the active Hermes companion goal, follow `docs/runbooks/android/live-mic-smoke.md` after install: connect to a configured Hermes Agent API with real provider/model credentials, tap Speak, verify the spoken phrase becomes a Hermes text turn with a provider-backed reply, then verify continuous voice capture → Hermes reply → TTS → re-arm. Installing the APK is not a physical-audio receipt.
+For the active Hermes Wing goal, follow `docs/runbooks/android/live-mic-smoke.md`
+after install: connect to a configured Hermes Agent API with real provider/model
+credentials, tap Speak, verify the spoken phrase becomes a Hermes text turn with
+a provider-backed reply, then verify continuous voice capture → Hermes reply →
+TTS → re-arm. Installing the APK is not a physical-audio receipt.
 
 Check for an Android speech recognizer before judging Hermes Wing voice behavior:
 

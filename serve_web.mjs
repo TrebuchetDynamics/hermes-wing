@@ -38,6 +38,9 @@ const hermesState = {
   decisions: [],
   runs: new Map(),
   presentationMode: false,
+  audioAdvertised: false,
+  audioFailure: false,
+  spokenTexts: [],
 };
 
 function resetHermesState() {
@@ -64,6 +67,26 @@ function resetHermesState() {
   hermesState.decisions = [];
   hermesState.runs.clear();
   hermesState.presentationMode = false;
+  hermesState.audioAdvertised = false;
+  hermesState.audioFailure = false;
+  hermesState.spokenTexts = [];
+}
+
+function silentWavDataUrl() {
+  const bytes = Buffer.alloc(46);
+  bytes.write("RIFF", 0);
+  bytes.writeUInt32LE(38, 4);
+  bytes.write("WAVEfmt ", 8);
+  bytes.writeUInt32LE(16, 16);
+  bytes.writeUInt16LE(1, 20);
+  bytes.writeUInt16LE(1, 22);
+  bytes.writeUInt32LE(8000, 24);
+  bytes.writeUInt32LE(16000, 28);
+  bytes.writeUInt16LE(2, 32);
+  bytes.writeUInt16LE(16, 34);
+  bytes.write("data", 36);
+  bytes.writeUInt32LE(2, 40);
+  return `data:audio/wav;base64,${bytes.toString("base64")}`;
 }
 
 resetHermesState();
@@ -96,6 +119,18 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "POST" && url === "/e2e/hermes/reset") {
     resetHermesState();
     return json(res, 200, { reset: true });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/audio") {
+    const body = await readJsonBody(req);
+    hermesState.audioAdvertised = body.enabled === true;
+    hermesState.audioFailure = body.fail === true;
+    return json(res, 200, {
+      enabled: hermesState.audioAdvertised,
+      fail: hermesState.audioFailure,
+    });
+  }
+  if (req.method === "GET" && url === "/e2e/hermes/audio") {
+    return json(res, 200, { spokenTexts: hermesState.spokenTexts });
   }
   if (req.method === "POST" && url === "/e2e/hermes/presentation") {
     resetHermesState();
@@ -144,6 +179,7 @@ async function handleHermesApi(req, res, url) {
         run_stop: true,
         run_approval_response: true,
         tool_progress_events: true,
+        audio_api: hermesState.audioAdvertised,
         realtime_voice: false,
       },
       endpoints: {
@@ -184,8 +220,27 @@ async function handleHermesApi(req, res, url) {
         run_events: { method: "GET", path: "/v1/runs/{run_id}/events" },
         run_approval: { method: "POST", path: "/v1/runs/{run_id}/approval" },
         run_stop: { method: "POST", path: "/v1/runs/{run_id}/stop" },
+        ...(hermesState.audioAdvertised
+          ? {
+              audio_speak: {
+                method: "POST",
+                path: "/api/audio/speak",
+              },
+            }
+          : {}),
       },
     });
+  }
+  if (req.method === "POST" && url === "/api/audio/speak") {
+    if (!hermesState.audioAdvertised) {
+      return json(res, 404, { error: "audio unavailable" });
+    }
+    const body = await readJsonBody(req);
+    hermesState.spokenTexts.push(String(body.text ?? ""));
+    if (hermesState.audioFailure) {
+      return json(res, 500, { error: "synthetic audio failure" });
+    }
+    return json(res, 200, { data_url: silentWavDataUrl() });
   }
   if (req.method === "GET" && url === "/v1/models") {
     return json(res, 200, {
@@ -432,12 +487,39 @@ async function handleHermesApi(req, res, url) {
     if (action === "stop") {
       hermesState.stopCount += 1;
     } else {
-      hermesState.decisions.push(body.decision);
+      const decision = body.choice ?? body.decision;
+      hermesState.decisions.push(decision);
+      run?.release?.(decision);
+      return json(res, 200, {});
     }
-    run?.release?.(action === "stop" ? "stop" : body.decision);
+    run?.release?.("stop");
     return json(res, 200, {});
   }
   return false;
+}
+
+function safeStaticFilePath(requestPath) {
+  let decoded;
+  try {
+    decoded = decodeURIComponent(requestPath);
+  } catch {
+    return null;
+  }
+  if (decoded.includes("\0")) return null;
+
+  const relativeRequestPath = decoded.replace(/^[/\\]+/, "");
+  if (relativeRequestPath.split(/[\\/]/).includes("..")) return null;
+
+  const filePath = path.normalize(`${root}/${relativeRequestPath}`);
+  const relativePath = path.relative(root, filePath);
+  if (
+    relativePath === ".." ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath)
+  ) {
+    return null;
+  }
+  return filePath;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -447,11 +529,13 @@ const server = http.createServer(async (req, res) => {
     if (handled !== false) return;
     if (url === "/") url = "/index.html";
 
-    const filePath = path.join(root, url);
-    const relativePath = path.relative(root, filePath);
+    const filePath = safeStaticFilePath(url);
+    const relativePath =
+      filePath === null ? ".." : path.relative(root, filePath);
 
-    // Security: prevent directory traversal and sibling-prefix escapes.
+    // Security: reject malformed or out-of-root paths before filesystem access.
     if (
+      filePath === null ||
       relativePath === ".." ||
       relativePath.startsWith(`..${path.sep}`) ||
       path.isAbsolute(relativePath)

@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pocket_speech/pocket_speech.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
@@ -20,9 +16,7 @@ import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
-import '../../voice/services/tts/text_to_speech_service.dart';
-import '../../voice/services/models/offline_voice_model_manifests.dart';
-import '../providers/offline_stt_pack_provider.dart';
+import '../providers/chat_preferences_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/voice_settings_provider.dart';
 
@@ -36,6 +30,10 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final controller = ref.read(wingVoiceSettingsProvider.notifier);
+    final chatPreferences = ref.watch(wingChatPreferencesProvider);
+    final chatPreferencesController = ref.read(
+      wingChatPreferencesProvider.notifier,
+    );
     final channel = ref.watch(hermesChannelProvider);
     final gatewayDirectory = ref.watch(hermesGatewayDirectoryProvider);
 
@@ -139,6 +137,23 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (WidgetsBinding
+                  .instance
+                  .platformDispatcher
+                  .nativeSpellCheckServiceDefined)
+                _SettingsSectionCard(
+                  title: strings.settingsChatSection,
+                  icon: Icons.chat_bubble_outline,
+                  children: [
+                    SwitchListTile(
+                      key: const ValueKey('chat-spellcheck-enabled'),
+                      title: Text(strings.chatSpellcheckTitle),
+                      subtitle: Text(strings.chatSpellcheckSubtitle),
+                      value: chatPreferences.spellcheckEnabled,
+                      onChanged: chatPreferencesController.setSpellcheckEnabled,
+                    ),
+                  ],
+                ),
               _SettingsSectionCard(
                 title: strings.settingsVoiceSection,
                 icon: Icons.keyboard_voice_outlined,
@@ -157,18 +172,18 @@ class SettingsScreen extends ConsumerWidget {
                     value: settings.speakRepliesEnabled,
                     onChanged: controller.setSpeakRepliesEnabled,
                   ),
+                  SwitchListTile(
+                    key: const ValueKey('voice-completion-sound-enabled'),
+                    title: Text(strings.voiceCompletionSoundTitle),
+                    subtitle: Text(strings.voiceCompletionSoundSubtitle),
+                    value: settings.completionSoundEnabled,
+                    onChanged: controller.setCompletionSoundEnabled,
+                  ),
                   ListTile(
                     key: const ValueKey('settings-voice-link'),
                     leading: const Icon(Icons.graphic_eq),
                     title: Text(strings.voiceSettingsTitle),
-                    subtitle: Text(
-                      strings.settingsVoiceLinkSummary(
-                        settings.pocketSpeechModel.label,
-                        settings.pocketSpeechVoicePackReady
-                            ? strings.settingsVoiceInstalled
-                            : strings.settingsVoiceNotInstalled,
-                      ),
-                    ),
+                    subtitle: Text(strings.voiceSpeakRepliesSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.settingsVoice),
                   ),

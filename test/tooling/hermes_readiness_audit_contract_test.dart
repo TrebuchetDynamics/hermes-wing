@@ -454,4 +454,49 @@ void main() {
     expect(auditText, isNot(contains('real Gormes')));
     expect(auditText, isNot(contains('Gormes durable reconnect')));
   });
+
+  test('Android voice-loop smoke invalidates stale passes before retrying', () {
+    final scriptText = File(
+      'scripts/run_android_hermes_voice_loop_smoke.sh',
+    ).readAsStringSync();
+    final receipt = scriptText.indexOf(
+      r'receipt_path="${WING_ANDROID_VOICE_PATH_RECEIPT:-build/receipts/android-hermes-voice-loop-smoke.json}"',
+    );
+    final invalidation = scriptText.indexOf(r'rm -f "$receipt_path"');
+    final testRun = scriptText.indexOf('run_flutter_test_with_install_retry');
+
+    expect(receipt, greaterThanOrEqualTo(0));
+    expect(invalidation, greaterThan(receipt));
+    expect(testRun, greaterThan(invalidation));
+  });
+
+  test('provider smoke invalidates stale passes before health checks', () {
+    final scriptText = File(
+      'scripts/run_provider_hermes_smoke.sh',
+    ).readAsStringSync();
+    final receipt = scriptText.indexOf(
+      r'receipt_path="${WING_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"',
+    );
+    final invalidation = scriptText.indexOf(r'rm -f "$receipt_path"');
+    final healthCheck = scriptText.indexOf('curl -fsS');
+
+    expect(receipt, greaterThanOrEqualTo(0));
+    expect(invalidation, greaterThan(receipt));
+    expect(healthCheck, greaterThan(invalidation));
+  });
+
+  test('platform workflow invalidates stale passes before dispatch', () {
+    final scriptText = File(
+      'scripts/run_hermes_platform_workflow.sh',
+    ).readAsStringSync();
+    final receipt = scriptText.indexOf(
+      r'receipt_path="${WING_PLATFORM_WORKFLOW_RECEIPT:-build/receipts/hermes-platform-workflow.json}"',
+    );
+    final invalidation = scriptText.indexOf(r'rm -f "$receipt_path"');
+    final ghCheck = scriptText.indexOf('if ! command -v gh');
+
+    expect(receipt, greaterThanOrEqualTo(0));
+    expect(invalidation, greaterThan(receipt));
+    expect(ghCheck, greaterThan(invalidation));
+  });
 }

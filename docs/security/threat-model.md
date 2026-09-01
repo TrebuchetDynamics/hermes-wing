@@ -1,148 +1,129 @@
 # Hermes Wing threat model
 
-Status: alpha baseline, not an independent security assessment.
+Status: alpha baseline; not an independent security assessment
 
 ## Assets
 
-- Hermes API keys, scoped operator tokens, endpoint identities, and Hermes One OAuth credentials
-- Legacy local-wallet recovery phrases during guarded export
-- Backup archives, recovery passphrases, archive handles, and restore checkpoints
-- SSH host trust, private-key paths, and forwarded Hermes traffic
-- Hermes Agent release manifests, installer artifacts, runtime selection, and elevation boundary
-- Wing Link control tokens, one-time bootstrap codes, component state, and local process authority
-- Starter-profile provenance, reviewed persona and skill content, plugin code, and existing local profile customizations
-- Hermes Wing package identity, repository metadata, signing lineage, maintainer scripts, and upgrade state
-- Session transcripts, prompts, tool activity, approval decisions, attachments, context resources, and filesystem grants
-- Microphone input and completed speech transcripts
-- Local voice models and downloaded model metadata
-- Device-backed signing keys used by Android pairing flows
-- Optional endpoint-bound push-registration tokens and notification metadata
+- Hermes Agent and Wing Link credentials
+- provider keys and setup secrets
+- profiles, projects, sessions, approvals, and transcripts
+- approved host folder names and opaque directory handles
+- runtime installers, service control, and release identity
+- microphone input and speech transcripts
 
 ## Trust boundaries
 
-1. **Hermes Wing process and local storage.** The app controls UI state and splits
-   non-secret endpoint metadata from API keys stored through the platform
-   secure-storage plugin.
-2. **Operating-system services.** Speech recognition, keychain/keystore,
-   backups, accessibility services, clipboard, and logs follow platform policy.
-   Hardware backing is not guaranteed uniformly.
-3. **Network path.** HTTPS authenticates and encrypts the remote path when
-   certificates are valid. Loopback is local. Plain HTTP over LAN is observable
-   and modifiable unless an external encrypted tunnel protects it.
-4. **Hermes Agent server.** Hermes receives transcripts, messages, approvals,
-   and API credentials and is trusted to enforce authorization, profile isolation,
-   and tool policy through one machine-scoped service.
-5. **Hermes One account service.** Optional account identity, cloud-agent sync,
-   and backend-managed wallet operations cross a separate HTTPS boundary with
-   an independent OAuth credential. Hermes chat does not depend on this service.
-6. **Downloaded speech assets.** Pocket Speech assets are fetched only from
-   HTTPS URLs and checked against configured SHA-256 digests.
-7. **Wing Link host supervisor.** The persistent service can install and control
-   local processes. It binds authenticated management to `127.0.0.1:8654` and,
-   after explicit setup, one current private/VPN interface. Only bounded
-   bootstrap, pairing, service lifecycle, health, repair, diagnostics, and the
-   fixed profile compatibility operations cross this API. Provider, message,
-   session, run, tool, schedule, approval, and messaging-platform requests never
-   transit through it. Android
-   reaches the fixed executable through the user-approved Termux `RUN_COMMAND`
-   boundary.
+1. **Hermes Wing device** — UI state and platform secure storage.
+2. **Network** — two authenticated connections: direct Agent data and Wing Link
+   management. Private address space is not an authorization boundary.
+3. **Hermes Agent** — authoritative agent and project state.
+4. **Wing Link host process** — privileged management and approved filesystem
+   access on the Agent host.
+5. **Operating system** — keychain/keystore, speech, files, services, and logs.
+6. **Android/Termux boundary** — Wing and Termux remain separate app sandboxes
+   sharing only authenticated loopback sockets. Any local app may probe loopback,
+   so network location never replaces Agent or Wing Link authentication.
 
 ## Current controls
 
-- API keys, scoped operator tokens, and Hermes One OAuth credentials are not stored in shared preferences.
-- Pairing payloads carry only short-lived, single-use codes; bearer tokens are excluded from URLs, QR payloads, shared text, logs, and clipboard flows.
-- Native Hermes One sign-in uses an allowed-origin system-browser RFC 8628 flow with generic device labels, server-paced polling, no code clipboard/logging, and a client-global credential in platform secure storage.
-- Hermes One OAuth credentials never transit through Hermes Agent, and backend-managed wallet secrets never reach Hermes Wing.
-- Hermes Wing does not create, import, persist, or automatically transfer wallet recovery phrases.
-- Legacy recovery export remains local to final Hermes Desktop, verifies one wallet at a time, offers only timed manual reveal or authenticated passphrase-encrypted output, and prohibits clipboard, QR, bulk, remote, and cloud transfer.
-- Electron client-state import is explicit and allowlisted, excludes credentials and private paths, never mutates the legacy source, and requires fresh authorization.
-- Credentials and recognized words are excluded from diagnostics.
-- Hermes Agent enforces domain-level read/write scopes for remote administration.
-- Secret administration reports presence and accepts set/remove operations but never returns raw secret values.
-- Provider API keys are write-only: no endpoint, log, error body, or capability field ever returns a stored provider key; presence is reported only as a `configured` boolean plus a masked last-4-character hint.
-- Remote plaintext HTTP with an API key requires explicit confirmation.
-- Diagnostic exports bound and redact credentials, authorization headers,
-  common token formats, user paths, and URL user information.
-- Voice-loop results are discarded after session changes, disconnects, or app
-  backgrounding.
-- Android backgrounding performs no implicit stop or mutation, invalidates local approval/queue state, uses no run-keeping foreground service, and reconciles authoritative server state on resume.
-- Capability checks prevent unsupported server operations from appearing ready.
-- Offline or disconnected state never authorizes durable mutation queuing or automatic replay; reconnect refreshes scopes, profiles, revisions, and resources first.
-- Profile-owned operations require explicit validated profile context; missing or conflicting context fails closed, and resource IDs cannot cross profile boundaries.
-- Attachments and context folders use opaque profile-bound handles; same-host filesystem grants originate in native pickers, are least-privilege and expiring, revalidate anchored containment, and never return paths.
-- Official artifacts use platform release signing; direct updates require authenticated metadata and artifact verification, fail closed, and cannot run from unsigned development builds.
-- Product analytics is off until explicit local opt-in, creates no pre-consent identifier, accepts only enumerated coarse fields, and deletes its identifier on opt-out.
-- Localized templates keep dynamic values separate and bidirectionally isolated; translations cannot construct routes, URLs, commands, or authorization decisions.
-- Backup/restore is server-owned and handle-based; portable archives exclude secrets and private paths, recovery archives require authenticated passphrase encryption, and restore validates fully before all-or-rollback apply.
-- Desktop SSH requires explicit first-use fingerprint confirmation, app-owned strict host-key state, hard failure on key changes, argument-vector execution, and loopback-only forwarding.
-- Wing Link runtime installation verifies signed version-pinned metadata and complete artifacts, defaults to per-user installation, delegates elevation to the OS, activates only healthy runtimes, and retains a verified rollback target.
-- Wing Link management accepts only loopback or one exact current RFC 1918, CGNAT/Tailscale, or IPv6 ULA listener and requires an independently generated control token. Flutter securely stores the pending token, verifies direct Hermes plus Wing Link reads, then acknowledges it before mutations are authorized.
-- Pairing prefers scoped Hermes enrollment. If it is unavailable, the compatibility review explicitly says **Full Hermes access** before the existing API key is transferred once; the management listener never accepts that key.
-- Wing Link exposes no Hermes reverse proxy or shadow Hermes domain state. Its fixed profile adapter delegates bounded operations to the authoritative Hermes CLI; broader profile and provider prototypes remain deprecated and quarantined.
-- Wing Link accepts fixed operation names and argument vectors only, never a client-provided executable, shell command, installer URL, or mutable release reference.
-- Android calls only the fixed Wing Link executable through Termux `RUN_COMMAND`; initial Termux installation, external-app access, and permission approval remain visible user actions.
-- The recommended Donna starter profile is disclosed and deselectable, pinned by commit and signed-manifest archive digest, and installed only through Hermes’s distribution interface; existing profiles are never overwritten or silently updated.
-- Optional OmniRoute installation is pinned, verified, loopback-only, separately consented, and independently recoverable; its failure does not roll back Hermes.
-- Canonical platform packages are signed, preserve stable application and secure-storage identity, contain no Hermes runtime, perform no network install scripts, and preserve Hermes data on ordinary uninstall.
+- A pairing handoff may carry a random single-use pairing code in a QR code,
+  `wing://connect` intent, explicit Android share, or the ephemeral local handoff
+  page, which must use `Cache-Control: no-store`. The code expires after
+  five minutes, never contains a bearer credential, and must not be persisted,
+  analyzed, included in diagnostics, or written to ordinary logs.
+- Explicit paste is a user-initiated fallback, not background clipboard
+  monitoring; the app drops the raw text immediately after parsing.
+- The release-pinned Android bootstrap command is non-secret. Provider
+  credentials and pairing codes never enter the command, argv, or installer logs.
+- Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
+  bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
+  text, command arguments, and ordinary preferences. Wing Link and Agent
+  credentials remain separate.
+- Wing Link uses fixed operations and argument vectors, no shell, bounded input
+  and output, and pending-token acknowledgment before mutation.
+- Profile compatibility delegates list/create/rename/delete to Hermes CLI without
+  retaining a shadow profile inventory.
+- HTTP is loopback-only. Non-loopback Wing Link uses TLS 1.3 and native clients
+  pin the durable host identity's SHA-256 SPKI fingerprint; browsers require a
+  normally trusted certificate.
+- Named device credentials have exact scopes and independent revocation. A remote
+  device can inspect and revoke only itself; the host console administers trust.
+- Sensitive operations consume a short-lived local approval bound to requester,
+  route, idempotency key, and payload digest. Changed payload replay is rejected.
+- Diagnostics and bounded local audit events redact credentials, authorization
+  headers, pairing codes, transcripts, and paths and never retain request bodies.
+- Reconnect refreshes authoritative state. Wing does not queue mutations offline;
+  explicit retries replay the same durable operation instead of executing twice.
+- Current/previous protocol negotiation keeps stale or future operations hidden or
+  explicitly unavailable.
 
-## Assumptions
+## Required controls for remote management
 
-- The device OS, installed speech recognizer, and Hermes server are trusted.
-- A user who confirms plaintext HTTP understands the external network boundary.
-- A compromised device, accessibility service, keyboard, clipboard observer,
-  root user, or Hermes server can access sensitive content; Hermes Wing does not
-  defend against those actors.
-- Platform backups and secure-storage migration behavior depend on OS and
-  plugin configuration.
+### Directories and Projects
+
+- Directory roots are granted locally, stored owner-only, and revocable.
+- Remote APIs use opaque handles; clients cannot submit absolute paths or `..`.
+- Every lookup revalidates canonical containment and blocks symlink escape.
+- Listings contain child folders only—never regular file names, metadata, or
+  contents—and are bounded, paginated, and path-redacted.
+- Browsing state and handles are ephemeral and are not persisted by Wing.
+- Project creation remains unavailable until Hermes Agent advertises an explicit,
+  machine-readable operation. Wing Link stores no duplicate profile-to-path mapping.
+
+### Providers and configuration
+
+- Provider/config fields are allowlisted and typed; arbitrary keys are rejected.
+- Provider credentials are write-only and never returned or logged.
+- Secret mutation must not place values in process arguments or edit `.env`
+  directly; it remains blocked until Hermes provides a safe contract.
+- Reload/restart is separately confirmed and health-verified.
+
+### Authorization
+
+- Separate scopes cover reads, mutations, secret writes, lifecycle, root grants,
+  and directory browsing.
+- Destructive actions require fresh confirmation and stable resource identity.
+- Revocation takes effect without deleting Agent profiles, Projects, or host data.
+- No route accepts arbitrary commands, executables, URLs, config keys, or paths.
+
+### Adversarial cases
+
+- **Stolen device:** revoke that named credential locally without rotating peers;
+  its self-revoke route cannot affect other devices.
+- **LAN impersonation:** TLS and the reviewed SPKI pin fail before response parsing;
+  network locality grants no authority.
+- **Host-key loss or rotation:** stored pins fail closed and users must perform a
+  new explicit pairing review. Identity is never silently replaced.
+- **Stale or future client:** protocol negotiation permits only N/N-1 and returns a
+  typed upgrade requirement before mutation.
+- **Approval replay:** approval and operation records bind device, route, revision,
+  idempotency key, and payload digest and are one-use or terminal.
+- **Audit injection:** events use allowlisted enums and bounded sanitized strings;
+  callers cannot append generic request data.
+- **Update compromise:** catalogs require an approved Ed25519 key and artifacts
+  require exact size and SHA-256. Failed restart/health restores `previous`; an
+  empty trusted-key set disables updates before network access.
 
 ## Known gaps
 
 - No independent penetration test or formal privacy review.
-- Scoped-token issuance, one-time Android enrollment, and scoped profile
-  administration are implemented on the server and Flutter client (milestone 0
-  and Profiles/Agents); the on-device enrollment/administration receipt and
-  TalkBack/200%-scale accessibility receipt are still pending, so those parity
-  rows remain `implementing`, not `validated`. Known residual notes: the API
-  server's `/api/cron/fire` route is authorized by a purpose-built NAS-minted
-  JWT rather than the operator-scope check (stronger, but an audited exception);
-  operator enrollment uses a store-global failed-attempt lockout matching the
-  messaging-pairing model (a denial-of-enrollment lever acceptable for a
-  single-owner install), a completed/expired code retry counts toward that
-  lockout, and expired/consumed enrollment rows are not yet pruned.
-- Attachment upload, resource-handle retention, server-workspace contracts, and picker-originated filesystem grant enforcement remain to be implemented.
-- Hermes One device authorization, refresh/revocation, account sync, and backend-managed wallet contracts have not yet been ported to Hermes Wing; web PKCE and browser token storage lack implementation receipts.
-- Hermes Desktop does not yet provide the guarded export path in `docs/adr/security-and-privacy.md` for encrypted legacy local-wallet recovery phrases; Electron retirement is blocked on the cross-platform data-exit receipts.
-- The allowlisted Electron client-state importer and cross-platform migration receipts remain to be implemented.
-- Android release signing has an alpha workflow, but public signed releases, authenticated update metadata, desktop signing/notarization, protected key-custody procedures, and cross-platform update receipts remain incomplete.
-- The consent-gated analytics client, closed event schema, and privacy receipts remain to be implemented.
-- Server-advertised, endpoint-opt-in, content-redacted run notifications and their token lifecycle remain to be designed and implemented; no notification is required for detached-run correctness.
-- Current Hermes backup/import creates and overlays unencrypted path-based full-home ZIP files; the versioned handle-based archive contract, encryption, inspection, and rollback-safe restore remain to be implemented.
-- The Flutter desktop SSH host adapter and cross-platform trust, rotation, injection, and forwarding receipts remain to be implemented; Hermes Desktop currently uses automatic `accept-new` first trust.
-- Hermes Agent signed release metadata and Wing Link’s verified cross-platform runtime installer/updater remain to be implemented; Hermes Desktop currently downloads mutable `main` installer scripts, pipes the Unix script into a shell, and brokers `sudo` passwords itself.
-- Wing Link's Linux user-service hosting, independent token lifecycle, private/VPN listener, no-proxy boundary, and bounded profile adapter have local automated evidence. Broader historical profile/provider bridge tests remain prototype evidence only; the provider adapter stays quarantined. Clean-host restart/login evidence, non-Linux service adapters, Termux bootstrap/permission receipts, rollback evidence, and optional OmniRoute isolation remain pending.
-- Donna commit `63845c197483d7bb24638a593436e5000891a134` lacks Hermes’s required `distribution.yaml`; starter-profile installation remains fail-closed until a newly reviewed pinned commit satisfies that contract.
-- Canonical AAB/APK, APT/RPM, MSIX, and notarized DMG pipelines and their migration, upgrade, uninstall, identity, and package-script receipts remain incomplete.
-- No ordinary-CI physical microphone test.
-- On-device speech is requested but offline execution depends on platform and
-  recognizer support.
-- Plaintext remote HTTP remains available for trusted VPN and isolated-LAN use.
-- Clipboard contents and screenshots are controlled by the operating system.
-
-## Diagnostic policy
-
-Never log these secrets. Diagnostic exports must not contain raw API keys,
-authorization headers, Wing Link control tokens or bootstrap codes, wallet recovery phrases,
-wallet-export passphrases, backup passphrases, archive handles, SSH hosts, usernames, fingerprints, push-registration tokens,
-notification routing identifiers, recognized words, transcripts, approval
-payloads, pairing or device-authorization codes, or private filesystem paths.
-Operational diagnostics may include bounded status names, counts, timings,
-confidence values, finality flags, capability names, and redacted errors.
-Analytics is a separate consent boundary and cannot upload diagnostic bundles or
-free-form diagnostic fields.
+- Approved folder browsing is shipped, but Project creation, Project-aware Chat,
+  and existing-profile configuration remain unavailable. A new-profile
+  description, allowlisted provider, bounded model string, and
+  credential may be supplied only through the transactional bounded Wing Link setup operation;
+  credential bytes reach Hermes only through stdin.
+- Qualified persistent Wing Link service management is Linux/systemd-user only.
+  Android/Termux foreground and detached processes are Tier 2 best-effort and may
+  be suspended or killed by Android.
+- Public signed packages, desktop signing/notarization, and authenticated updates
+  are incomplete.
+- Current Hermes Agent 0.20 does not advertise Wing's proposed scoped enrollment,
+  profile HTTP administration, or HTTP audio routes.
+- Physical microphone, echo cancellation, and barge-in require device evidence.
 
 ## Incident response
 
-Rotate affected Hermes credentials, disconnect the endpoint, preserve only
-redacted evidence, identify the exposed trust boundary, and report privately as
-described in `SECURITY.md`. Release response remains best-effort while the
-project has no supported public version.
+Rotate affected credentials, revoke Wing Link directory grants, stop remote
+exposure if needed, preserve only redacted evidence, and report privately through
+[SECURITY.md](../../SECURITY.md). Never include credentials, transcripts, provider
+keys, pairing codes, or private paths in a report.

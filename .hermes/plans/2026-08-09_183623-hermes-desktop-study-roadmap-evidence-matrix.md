@@ -50,23 +50,23 @@ Primary source: `/home/xel/git/gormes/hermes-desktop/src/renderer/src/screens/La
 
 ## 2. Adapt, defer, or exclude
 
-| Desktop outcome | Wing decision | Why / required contract |
-| --- | --- | --- |
-| Streamed text reconciled with authoritative final | **Adapt early** | Prevents visibly corrupted/duplicated answers; preserve tool/reasoning boundaries and exact session ownership. |
-| Agent avatar, normalized timestamp, bubble copy | **Adapt early** | High-value mobile chat clarity; mostly presentation-local. |
-| Compact live status summary | **Adapt early** | Existing Wing gateway/model/tool inventory can feed a gateway-scoped, bounded sheet. No secret/path fields. |
-| Configured-providers-first + per-provider models | **Adapt after contract** | Requires scoped provider presence, write-only credentials, model discovery/library, revision-safe assignment. Never parse `.env`. |
-| Unified Discover/Tools/MCP/Skills hierarchy | **Adapt after contract** | Existing Wing read-only inventory is a base; mutations need explicit profile-scoped contracts. |
-| Kanban boards, lanes, task details, valid transitions | **Adapt after task contracts** | Requires authoritative boards/tasks/events/revisions/SSE and opaque workspace handles. Never call CLI or expose remote paths. |
-| Office working state from running task | **Adapt after task contracts** | Useful in Wing’s accessible 2D Office; derive from authoritative task/run events, not polling local CLI state. |
-| Office mission/world animation | **Defer/presentation** | Android first needs accessible action cards and 2D status. Optional desktop animation cannot replace semantic controls. |
-| One Chat per agent | **Adapt selectively** | Map to existing profile/session ownership; avoid Desktop-specific `office-{profile}` assumptions unless server returns handles. |
-| Local/remote/SSH startup race prevention and soft repair warning | **Adapt pattern** | Exact-generation stale-result rejection and recoverable warnings apply to enrollment/Wing Link. |
-| SSH Docker inspection/provisioning | **Desktop host-only** | Explicitly trusted host adapter only. Do not add remote Agent installs to Android. |
-| Desktop direct CLI, `.env`, YAML, SQLite, PID, SSH-file access | **Never copy** | Violates Hermes Agent domain authority and remote-safe architecture. |
-| Desktop Dashboard WebSocket transport | **Never copy** | Wing uses canonical Hermes HTTP/SSE contracts. |
-| Hermes One inference key provisioning | **Account-service/contract gated** | Needs device authorization, one-time secret handoff, write-only provider sink, revocation, and no raw-key return path. |
-| 3D Office/GPU recovery | **Desktop-only later** | Keep complete keyboard/screen-reader 2D equivalent; Android does not need Three.js parity. |
+| Desktop outcome                                                  | Wing decision                      | Why / required contract                                                                                                           |
+| ---------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Streamed text reconciled with authoritative final                | **Adapt early**                    | Prevents visibly corrupted/duplicated answers; preserve tool/reasoning boundaries and exact session ownership.                    |
+| Agent avatar, normalized timestamp, bubble copy                  | **Adapt early**                    | High-value mobile chat clarity; mostly presentation-local.                                                                        |
+| Compact live status summary                                      | **Adapt early**                    | Existing Wing gateway/model/tool inventory can feed a gateway-scoped, bounded sheet. No secret/path fields.                       |
+| Configured-providers-first + per-provider models                 | **Adapt after contract**           | Requires scoped provider presence, write-only credentials, model discovery/library, revision-safe assignment. Never parse `.env`. |
+| Unified Discover/Tools/MCP/Skills hierarchy                      | **Adapt after contract**           | Existing Wing read-only inventory is a base; mutations need explicit profile-scoped contracts.                                    |
+| Kanban boards, lanes, task details, valid transitions            | **Adapt after task contracts**     | Requires authoritative boards/tasks/events/revisions/SSE and opaque workspace handles. Never call CLI or expose remote paths.     |
+| Office working state from running task                           | **Adapt after task contracts**     | Useful in Wing’s accessible 2D Office; derive from authoritative task/run events, not polling local CLI state.                    |
+| Office mission/world animation                                   | **Defer/presentation**             | Android first needs accessible action cards and 2D status. Optional desktop animation cannot replace semantic controls.           |
+| One Chat per agent                                               | **Adapt selectively**              | Map to existing profile/session ownership; avoid Desktop-specific `office-{profile}` assumptions unless server returns handles.   |
+| Local/remote/SSH startup race prevention and soft repair warning | **Adapt pattern**                  | Exact-generation stale-result rejection and recoverable warnings apply to enrollment/Wing Link.                                   |
+| SSH Docker inspection/provisioning                               | **Desktop host-only**              | Explicitly trusted host adapter only. Do not add remote Agent installs to Android.                                                |
+| Desktop direct CLI, `.env`, YAML, SQLite, PID, SSH-file access   | **Never copy**                     | Violates Hermes Agent domain authority and remote-safe architecture.                                                              |
+| Desktop Dashboard WebSocket transport                            | **Never copy**                     | Wing uses canonical Hermes HTTP/SSE contracts.                                                                                    |
+| Hermes One inference key provisioning                            | **Account-service/contract gated** | Needs device authorization, one-time secret handoff, write-only provider sink, revocation, and no raw-key return path.            |
+| 3D Office/GPU recovery                                           | **Desktop-only later**             | Keep complete keyboard/screen-reader 2D equivalent; Android does not need Three.js parity.                                        |
 
 ## 3. Evidence vocabulary
 
@@ -86,31 +86,31 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 
 **Important conclusion:** no Wing domain should currently be labeled broadly “battle-tested.” Several paths are strongly deterministic or device-qualified, but there is not yet repeated production evidence across representative Android/desktop environments.
 
-| Capability | Implementation state | Best current evidence | Classification | Missing evidence |
-| --- | --- | --- | --- | --- |
-| Release APK | Universal release APK builds, installs, cold launches | Current release build; ZIP integrity; Waydroid and Samsung install/launch before/after voice changes | **Build/package tested** | Signed release channel, upgrade/rollback, split/AAB delivery, representative-device matrix |
-| Core Hermes API/channel | Typed HTTP/SSE, sessions, runs, stop, approvals, reconnect | `hermes_api_channel_test.dart`, `hermes_api_test.dart`, Playwright live/fake API runbooks | **Qualified for deterministic web/API paths** | Broader live gateways, flaky-network soak, production usage |
-| Real gateway chat continuity | Real provider turn, second turn, stop/recovery, restore flow exists in Maestro | `.maestro/real-gateway-regression.yaml`; historical physical receipts in parity ledger | **Qualified where receipt matches source** | Re-run against current uncommitted source/artifact; multi-provider matrix |
-| Multi-run/detached run ownership | Concurrent streams, secure opaque handles, duplicate prevention/reconciliation | Controller/store/widget tests; parity ledger device receipts | **Qualified but source-sensitive** | Current-head process-death/background soak on multiple Android versions |
-| Rich transcript, tool/reasoning/usage, approvals | Implemented with bounded parsing/redaction | rich transcript, approval, message-action, diagnostics tests | **Deterministically tested; selected flows qualified** | Canonical-final reconciliation equivalent to Desktop’s lossy stream handling; more real tool/clarify scenarios |
-| Sessions/search/export | History, grouping, metadata, export, selected mutations | session/client tests and parity-ledger physical receipts | **Qualified for covered scenarios** | Branch/pin/resource projects and current-head full device rerun |
-| Profiles/Agents | UI and capability-gated administration paths exist | agents/profile tests; earlier physical flows | **Prototype/partial** | Compatible merged Agent contracts and current physical mutation receipt |
-| Providers/models | Read-only runtime inventory, credential sheet/model presets/diagnostics | provider/model widget/store tests; selected historical physical inventory receipt | **Deterministically tested / partial** | Authoritative write-only administration contract, secret non-reveal E2E, current device receipt |
-| Tools/skills | Read-only searchable bounded inventories | `tools_screen_test.dart`; historical device inventory receipt | **Qualified read-only; mutations absent** | Discover, install/remove, toolset mutation, MCP contracts and receipts |
-| Schedules | Read-only gateway/profile jobs inventory | `schedules_screen_test.dart`; fail-closed device evidence | **Deterministically tested / partial** | Live compatible inventory; create/pause/run/delete/edit contracts |
-| Gateway | Read-only bounded detailed health | `gateway_screen_test.dart`; unsupported-state physical receipt | **Qualified fail-closed/read-only** | Lifecycle, logs, platform configuration, drain/reload/restart mutation contracts |
-| Office | Accessible responsive 2D directory and Chat activation | `office_screen_test.dart`, route tests, historical physical navigation receipt | **Qualified basic 2D flow / partial** | Task-derived activity, representative actions, One Chat semantics, accounts/wallets |
-| Wing Link bootstrap | Verified install/adoption logic, Go tests/vet, secret-safe output | `wing_link/bootstrap_test.go`, Wing Link client/docs tests | **Deterministically tested / partial** | Signed artifact and complete physical Termux clean/adopt/repair/rollback receipts |
-| Continuous voice lifecycle | Persistent re-arm, exact generation ownership, barge-in/cancel paths | 1,040-test suite checkpoint, Waydroid Maestro lifecycle, lifecycle tests | **Qualified deterministic lifecycle** | Real spoken physical two-turn loop, acoustic barge-in, long-run soak |
-| Android microphone capture | Native `AudioRecord`, VOICE_COMMUNICATION, PCM16 frames, native effects | Kotlin/source contracts, deterministic engine tests | **Build/device-runtime tested** | Controlled real microphone routing and recorded physical receipt |
-| Offline Whisper + Silero | Worker-isolate Whisper and Silero VAD, cancellation/exit ownership | unit/source-contract tests; fixture decode/init on Waydroid and physical Samsung | **Qualified deterministic runtime** | English/Spanish WER/CER, code-switch corpus, live mic, latency/RSS/thermal |
-| Offline Kokoro/Pocket Speech | Bilingual synthesis, post-synthesis WAV chunking, native PCM, fallback | unit tests; Waydroid bilingual synthesis/native playback smoke | **Prototype/partial; qualified deterministic runtime seam** | The engine receives a complete WAV before chunking, so synthesis itself is not incremental; physical listening quality, first-audio latency, segment seams, sustained memory/thermal remain open |
-| Offline model installer | Immutable manifests, exact bytes/hash, staging, rollback/recovery, deletion barriers | `voice_model_pack_installer_test.dart`, Pocket Speech installer tests | **Deterministically tested** | Real interrupted network/storage/device recovery and low-space behavior |
-| Native PCM playback | Generation-owned writes/release serialized on one executor | Dart/Kotlin contracts; Waydroid and physical deterministic playback smoke | **Qualified deterministic runtime** | Route changes, Bluetooth/headset matrix, physical cancellation latency |
-| Echo cancellation | Platform AEC capability path; gated acoustic probe harness | `android_acoustic_echo_probe_test.dart` compiles disabled | **Prototype/unverified acoustically** | Explicit probe run, exact render-reference evidence, leakage thresholds, route matrix |
-| Bilingual/code-switch speech quality | Multilingual Auto/English/Spanish modes | language-flow/segmenter tests | **Deterministically tested configuration only** | Genuine intra-utterance EN↔ES corpus and token error rate; never claim code-switch quality yet |
-| Accessibility | Many widget tests include 200% scale and semantics | screen-specific tests and parity ledger | **Deterministically tested / partial** | TalkBack, keyboard-only, screen-reader and contrast receipts on current builds |
-| Linux/web/Windows/macOS/iOS | Platform sources and historical CI/build receipts exist | platform smoke runbook and workflows | **Build-tested unevenly** | Current-source signed packages, host-specific end-to-end behavior and upgrade receipts |
+| Capability                                       | Implementation state                                                                 | Best current evidence                                                                                | Classification                                              | Missing evidence                                                                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Release APK                                      | Universal release APK builds, installs, cold launches                                | Current release build; ZIP integrity; Waydroid and Samsung install/launch before/after voice changes | **Build/package tested**                                    | Signed release channel, upgrade/rollback, split/AAB delivery, representative-device matrix                                                                                                       |
+| Core Hermes API/channel                          | Typed HTTP/SSE, sessions, runs, stop, approvals, reconnect                           | `hermes_api_channel_test.dart`, `hermes_api_test.dart`, Playwright live/fake API runbooks            | **Qualified for deterministic web/API paths**               | Broader live gateways, flaky-network soak, production usage                                                                                                                                      |
+| Real gateway chat continuity                     | Real provider turn, second turn, stop/recovery, restore flow exists in Maestro       | `.maestro/real-gateway-regression.yaml`; historical physical receipts in parity ledger               | **Qualified where receipt matches source**                  | Re-run against current uncommitted source/artifact; multi-provider matrix                                                                                                                        |
+| Multi-run/detached run ownership                 | Concurrent streams, secure opaque handles, duplicate prevention/reconciliation       | Controller/store/widget tests; parity ledger device receipts                                         | **Qualified but source-sensitive**                          | Current-head process-death/background soak on multiple Android versions                                                                                                                          |
+| Rich transcript, tool/reasoning/usage, approvals | Implemented with bounded parsing/redaction                                           | rich transcript, approval, message-action, diagnostics tests                                         | **Deterministically tested; selected flows qualified**      | Canonical-final reconciliation equivalent to Desktop’s lossy stream handling; more real tool/clarify scenarios                                                                                   |
+| Sessions/search/export                           | History, grouping, metadata, export, selected mutations                              | session/client tests and parity-ledger physical receipts                                             | **Qualified for covered scenarios**                         | Branch/pin/resource projects and current-head full device rerun                                                                                                                                  |
+| Profiles/Agents                                  | UI and capability-gated administration paths exist                                   | agents/profile tests; earlier physical flows                                                         | **Prototype/partial**                                       | Compatible merged Agent contracts and current physical mutation receipt                                                                                                                          |
+| Providers/models                                 | Read-only runtime inventory, credential sheet/model presets/diagnostics              | provider/model widget/store tests; selected historical physical inventory receipt                    | **Deterministically tested / partial**                      | Authoritative write-only administration contract, secret non-reveal E2E, current device receipt                                                                                                  |
+| Tools/skills                                     | Read-only searchable bounded inventories                                             | `tools_screen_test.dart`; historical device inventory receipt                                        | **Qualified read-only; mutations absent**                   | Discover, install/remove, toolset mutation, MCP contracts and receipts                                                                                                                           |
+| Schedules                                        | Read-only gateway/profile jobs inventory                                             | `schedules_screen_test.dart`; fail-closed device evidence                                            | **Deterministically tested / partial**                      | Live compatible inventory; create/pause/run/delete/edit contracts                                                                                                                                |
+| Gateway                                          | Read-only bounded detailed health                                                    | `gateway_screen_test.dart`; unsupported-state physical receipt                                       | **Qualified fail-closed/read-only**                         | Lifecycle, logs, platform configuration, drain/reload/restart mutation contracts                                                                                                                 |
+| Office                                           | Accessible responsive 2D directory and Chat activation                               | `office_screen_test.dart`, route tests, historical physical navigation receipt                       | **Qualified basic 2D flow / partial**                       | Task-derived activity, representative actions, One Chat semantics, accounts/wallets                                                                                                              |
+| Wing Link bootstrap                              | Verified install/adoption logic, Go tests/vet, secret-safe output                    | `wing_link/bootstrap_test.go`, Wing Link client/docs tests                                           | **Deterministically tested / partial**                      | Signed artifact and complete physical Termux clean/adopt/repair/rollback receipts                                                                                                                |
+| Continuous voice lifecycle                       | Persistent re-arm, exact generation ownership, barge-in/cancel paths                 | 1,040-test suite checkpoint, Waydroid Maestro lifecycle, lifecycle tests                             | **Qualified deterministic lifecycle**                       | Real spoken physical two-turn loop, acoustic barge-in, long-run soak                                                                                                                             |
+| Android microphone capture                       | Native `AudioRecord`, VOICE_COMMUNICATION, PCM16 frames, native effects              | Kotlin/source contracts, deterministic engine tests                                                  | **Build/device-runtime tested**                             | Controlled real microphone routing and recorded physical receipt                                                                                                                                 |
+| Offline Whisper + Silero                         | Worker-isolate Whisper and Silero VAD, cancellation/exit ownership                   | unit/source-contract tests; fixture decode/init on Waydroid and physical Samsung                     | **Qualified deterministic runtime**                         | English/Spanish WER/CER, code-switch corpus, live mic, latency/RSS/thermal                                                                                                                       |
+| Offline Kokoro/Pocket Speech                     | Bilingual synthesis, post-synthesis WAV chunking, native PCM, fallback               | unit tests; Waydroid bilingual synthesis/native playback smoke                                       | **Prototype/partial; qualified deterministic runtime seam** | The engine receives a complete WAV before chunking, so synthesis itself is not incremental; physical listening quality, first-audio latency, segment seams, sustained memory/thermal remain open |
+| Offline model installer                          | Immutable manifests, exact bytes/hash, staging, rollback/recovery, deletion barriers | `voice_model_pack_installer_test.dart`, Pocket Speech installer tests                                | **Deterministically tested**                                | Real interrupted network/storage/device recovery and low-space behavior                                                                                                                          |
+| Native PCM playback                              | Generation-owned writes/release serialized on one executor                           | Dart/Kotlin contracts; Waydroid and physical deterministic playback smoke                            | **Qualified deterministic runtime**                         | Route changes, Bluetooth/headset matrix, physical cancellation latency                                                                                                                           |
+| Echo cancellation                                | Platform AEC capability path; gated acoustic probe harness                           | `android_acoustic_echo_probe_test.dart` compiles disabled                                            | **Prototype/unverified acoustically**                       | Explicit probe run, exact render-reference evidence, leakage thresholds, route matrix                                                                                                            |
+| Bilingual/code-switch speech quality             | Multilingual Auto/English/Spanish modes                                              | language-flow/segmenter tests                                                                        | **Deterministically tested configuration only**             | Genuine intra-utterance EN↔ES corpus and token error rate; never claim code-switch quality yet                                                                                                   |
+| Accessibility                                    | Many widget tests include 200% scale and semantics                                   | screen-specific tests and parity ledger                                                              | **Deterministically tested / partial**                      | TalkBack, keyboard-only, screen-reader and contrast receipts on current builds                                                                                                                   |
+| Linux/web/Windows/macOS/iOS                      | Platform sources and historical CI/build receipts exist                              | platform smoke runbook and workflows                                                                 | **Build-tested unevenly**                                   | Current-source signed packages, host-specific end-to-end behavior and upgrade receipts                                                                                                           |
 
 ## 5. Prioritized roadmap
 
@@ -181,11 +181,13 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 1: Versioned evidence ledger
 
 **Files:**
+
 - Create: `docs/quality/evidence-matrix.md`
 - Create: `scripts/check_evidence_matrix.dart`
 - Test: `test/tooling/evidence_matrix_contract_test.dart`
 
 **Steps:**
+
 1. Write a failing source-contract test requiring evidence class, source identity, artifact identity, platform, date, and limitations.
 2. Implement schema/checker with stale receipt rejection.
 3. Seed it from the matrix in this plan, preserving “unverified” states.
@@ -195,12 +197,14 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 2: Authoritative-final chat reconciliation
 
 **Likely files:**
+
 - Modify: `lib/core/hermes/channel/hermes_api_channel.dart`
 - Modify: relevant run-event/message reconciliation under `lib/features/hermes_chat/`
 - Test: `test/core/hermes/channel/hermes_api_channel_test.dart`
 - Test: `test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart`
 
 **Steps:**
+
 1. Add RED cases for dropped middle deltas, distinct pre-tool text, distinct reasoning, Unicode, and stale generation finals.
 2. Define one canonical-final reconciliation function with explicit turn/event identity.
 3. Replace only demonstrably lossy streamed text; never erase distinct segments via loose subsequence matching.
@@ -209,12 +213,14 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 3: Adaptive status summary
 
 **Likely files:**
+
 - Modify: `lib/shared/widgets/app_shell.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_layout.dart`
 - Create: `lib/features/status/widgets/hermes_status_summary.dart`
 - Test: `test/shared/widgets/app_shell_test.dart`
 
 **Steps:**
+
 1. Write RED widget tests for gateway/profile/model state, unknown omission, stale state, offline state, 200% scale, and semantics.
 2. Build a compact mobile sheet and desktop-only bar from existing providers; no new backend state.
 3. Ensure secret/path/unknown fields cannot render.
@@ -223,12 +229,14 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 4: Configured-first Providers IA
 
 **Likely files:**
+
 - Modify: `lib/features/providers/screens/providers_screen.dart`
 - Modify: provider models/stores under `lib/features/providers/`
 - Test: `test/features/providers/providers_screen_test.dart`
 - Test: `test/features/providers/provider_credential_sheet_test.dart`
 
 **Steps:**
+
 1. Add RED tests for configured-first list, Add Provider, per-provider models, custom endpoint validation, secret non-reveal, and stale revisions.
 2. Gate every mutation behind exact advertised scope/contract.
 3. Keep client presets visibly separate from server assignments.
@@ -237,11 +245,13 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 5: Task activity feeding Office
 
 **Likely files:**
+
 - Create/modify task domain under `lib/features/tasks/`
 - Modify: `lib/features/office/screens/office_screen.dart`
 - Test: `test/features/office/office_screen_test.dart`
 
 **Steps:**
+
 1. Add RED tests for running-task activity, shared request single-flight, profile switch during in-flight request, stale event rejection, and unavailable task contracts.
 2. Implement Agent-authoritative task activity with SSE/GET reconciliation.
 3. Keep Office fully useful when tasks are unsupported.
@@ -250,11 +260,13 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 ### Task 6: Physical voice/acoustic qualification (blocked until device access)
 
 **Files:**
+
 - Use: `integration_test/android_acoustic_echo_probe_test.dart`
 - Use/update: `docs/runbooks/android/live-mic-smoke.md`
 - Add bounded aggregate receipt tooling only; do not retain raw microphone PCM.
 
 **Required evidence:**
+
 - Real English/Spanish WER/CER and mixed-language token error rate.
 - First partial, endpoint-to-final, TTS first-audio, and cancellation p50/p95.
 - Acoustic echo correlation/leakage, false interruption, and barge-in latency by route.

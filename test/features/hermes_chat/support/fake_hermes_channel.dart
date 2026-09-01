@@ -48,6 +48,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     String? selectedProfileId,
     List<HermesProvider> providers = const [],
     this.modelInventory,
+    this.modelOptions,
     this.validateProviderResult = const HermesCredentialProbe(
       ok: true,
       detail: 'Credential accepted.',
@@ -68,6 +69,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.approvalResponseGate,
     this.connectGate,
     this.sendTextGate,
+    this.selectProfileGate,
+    this.selectProfileFails = false,
     this.createProfileFails = false,
     this.renameProfileFails = false,
     this.deleteProfileFails = false,
@@ -99,6 +102,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                selectedProfileId: selectedProfileId,
                providers: providers,
                modelInventory: modelInventory,
+               modelOptions: modelOptions,
                activeSessionId:
                    activeSessionId ??
                    ((sessions != null && sessions.isEmpty) ? null : sessionId),
@@ -155,7 +159,9 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   int loadModelsCalls = 0;
   int refreshModelsCalls = 0;
   final List<Map<String, String?>> assignModelCalls = [];
+  final List<Map<String, String>> lockSessionModelCalls = [];
   final HermesModelInventory? modelInventory;
+  final HermesModelOptions? modelOptions;
   final HermesCredentialProbe validateProviderResult;
   final List<Map<String, Object?>> respondToApprovalCalls = [];
   final bool createSessionFails;
@@ -166,17 +172,20 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final Future<void> Function()? approvalResponseGate;
   final Future<void> Function()? connectGate;
   final Future<void> Function()? sendTextGate;
+  final Future<void> Function(String profileId)? selectProfileGate;
 
   /// Profile-mutation failure injection. When set, the corresponding mutation
   /// records its call, refreshes nothing successfully, and throws a
   /// [StateError] carrying [profileMutationFailureMessage] (default contains
   /// `HTTP 412`, which the UI maps to a revision-conflict message).
+  final bool selectProfileFails;
   final bool createProfileFails;
   final bool renameProfileFails;
   final bool deleteProfileFails;
   final bool writeProfileSoulFails;
   final String profileMutationFailureMessage;
   int stopActiveTurnCalls = 0;
+  final List<String> steerActiveTurnCalls = [];
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
 
@@ -186,8 +195,27 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   HermesChannelState get state => _state;
 
   @override
+  bool get canSteerActiveTurn =>
+      _state.canSteerRuns && _state.activeSessionId != null && _isStreaming;
+
+  bool get _isStreaming =>
+      _state.activeMessages.lastOrNull?.status == HermesTurnStatus.streaming;
+
+  @override
   Stream<HermesApprovalRequest> get approvalRequests =>
       _approvalController.stream;
+
+  VoidCallback? _staleListener;
+  int _listenerCount = 0;
+
+  @override
+  void addListener(VoidCallback listener) {
+    // The chat screen is the second listener in this fixture; the first is
+    // the gateway directory listener, and later listeners are Riverpod state
+    // projections that cannot be invoked after their scope is disposed.
+    if (++_listenerCount == 2) _staleListener = listener;
+    super.addListener(listener);
+  }
 
   @override
   void dispose() {
@@ -195,9 +223,25 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     super.dispose();
   }
 
+  void emitStaleActiveSessionChange() {
+    _state = _state.copyWith(
+      sessions: [const HermesSession(id: 'sess_2', source: 'fake')],
+      activeSessionId: 'sess_2',
+      messages: const {},
+    );
+    _staleListener?.call();
+  }
+
   void _setState(HermesChannelState next) {
     _state = next;
     notifyListeners();
+  }
+
+  void replaceCapabilitiesAndProfiles(
+    HermesCapabilityDocument capabilities,
+    List<HermesProfile> profiles,
+  ) {
+    _setState(_state.copyWith(capabilities: capabilities, profiles: profiles));
   }
 
   void replaceSessions(
@@ -246,6 +290,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> disconnect() async {
     disconnectCalls++;
     _setState(const HermesChannelState());
+  }
+
+  @override
+  void clearActiveSession() {
+    _setState(_state.copyWith(clearActiveSessionId: true));
   }
 
   @override
@@ -351,6 +400,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }) async {
     selectProfileCalls.add(profileId);
     selectProfileAllowDiscoveredCalls.add(allowDiscovered);
+    final gate = selectProfileGate;
+    if (gate != null) await gate(profileId);
+    if (selectProfileFails) {
+      throw StateError(profileMutationFailureMessage);
+    }
     _setState(_state.copyWith(selectedProfileId: profileId));
   }
 
@@ -555,6 +609,37 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
+  Future<void> loadModelOptions({bool refresh = false}) async {
+    _setState(_state.copyWith(modelOptions: modelOptions));
+  }
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) async {
+    lockSessionModelCalls.add({
+      'sessionId': sessionId,
+      'provider': provider,
+      'model': model,
+    });
+    _setState(
+      _state.copyWith(
+        sessionModelLocks: {
+          ..._state.sessionModelLocks,
+          sessionId: HermesSessionModelLock(
+            sessionId: sessionId,
+            provider: provider,
+            model: model,
+            accepted: true,
+          ),
+        },
+      ),
+    );
+  }
+
+  @override
   Future<void> refreshModels() async {
     refreshModelsCalls += 1;
   }
@@ -621,8 +706,28 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       return;
     }
     beginStreamingTurn(text, attachment: attachment);
-    await gate();
-    completeStreamingTurn(text: 'Echo: $text');
+    try {
+      await gate();
+      completeStreamingTurn(text: 'Echo: $text');
+    } catch (error) {
+      final sessionId = _state.activeSessionId;
+      if (sessionId != null) {
+        final turns = List<HermesChatTurn>.from(_state.activeMessages);
+        final index = turns.lastIndexWhere(
+          (turn) => turn.status == HermesTurnStatus.streaming,
+        );
+        if (index >= 0) {
+          turns[index] = turns[index].copyWith(status: HermesTurnStatus.failed);
+          _setState(
+            _state.copyWith(
+              messages: {..._state.messages, sessionId: turns},
+              errorMessage: error.toString(),
+            ),
+          );
+        }
+      }
+      rethrow;
+    }
   }
 
   void emitApprovalRequest(HermesApprovalRequest request) {
@@ -635,11 +740,15 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
 
   /// Test-only helper: leaves an assistant turn `streaming` (as a real
   /// in-flight run would) so widget tests can exercise the stop control.
-  void beginStreamingTurn(String userText, {HermesTurnAttachment? attachment}) {
+  void beginStreamingTurn(
+    String userText, {
+    HermesTurnAttachment? attachment,
+    DateTime? createdAt,
+  }) {
     final sessionId = _state.activeSessionId;
     if (sessionId == null) return;
     final turns = List<HermesChatTurn>.from(_state.activeMessages);
-    final now = DateTime.now();
+    final now = createdAt ?? DateTime.now();
     turns.add(
       HermesChatTurn(
         id: 'user-${turns.length}',
@@ -749,6 +858,24 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     );
   }
 
+  void addEmptyCompletedAssistantTurn() {
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) return;
+    final turns = List<HermesChatTurn>.from(_state.activeMessages)
+      ..add(
+        HermesChatTurn(
+          id: 'assistant-${_state.activeMessages.length}',
+          sessionId: sessionId,
+          author: HermesTurnAuthor.assistant,
+          createdAt: DateTime.now(),
+          status: HermesTurnStatus.completed,
+        ),
+      );
+    _setState(
+      _state.copyWith(messages: {..._state.messages, sessionId: turns}),
+    );
+  }
+
   void addFailedExchange(
     String text, {
     String errorMessage = 'SocketException: stream dropped',
@@ -819,6 +946,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   void cancelActiveTurn() {}
 
   @override
+  Future<void> steerActiveTurn(String text) async {
+    steerActiveTurnCalls.add(text);
+  }
+
+  @override
   void stopActiveTurn() {
     stopActiveTurnCalls += 1;
     final sessionId = _state.activeSessionId;
@@ -842,10 +974,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {
     respondToApprovalCalls.add({
       'approvalId': approvalId,
       'decision': decision,
+      'runId': runId,
     });
     await approvalResponseGate?.call();
     if (!approvalResponsesFail) return;

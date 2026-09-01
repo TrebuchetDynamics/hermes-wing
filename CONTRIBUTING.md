@@ -1,11 +1,12 @@
 # Contributing
 
 Hermes Wing is a Hermes-only Flutter alpha. Keep product language and routes within
-the Hermes session/run model described in `CONTEXT.md` and `docs/adr/`.
+the Hermes session/run model described in [CONTEXT.md](CONTEXT.md) and the
+[runtime and delivery decision](docs/adr/runtime-and-delivery.md).
 
 ## Setup
 
-Use Flutter 3.44.2 and Node.js 22.
+Use Flutter 3.44.2 and Node.js 22. Wing Link changes also require Go 1.26.
 
 ```bash
 flutter pub get
@@ -19,13 +20,16 @@ npm ci
 - `wing_link/` contains the Go setup and pairing helper. Keep it limited to host
   installation, pairing, lifecycle, health, diagnostics, and the bounded profile
   compatibility adapter in the runtime decision. Supported Hermes Agent releases
-  cannot be changed for Wing, so the adapter may invoke fixed `hermes profile
-list|create|rename|delete` commands, resolve each listed credential through
-  fixed `hermes --profile <id> config env-path`, enable profile multiplexing, and
-  restart the active gateway before pairing verified `/p/<id>` connections.
-  Hermes remains authoritative: never invoke `profile use`, persist shadow profile
-  state, expose arbitrary CLI execution, or extend this exception to providers,
-  general configuration, sessions, messages, tools, or schedules.
+  cannot be changed for Wing, so the adapter may invoke fixed profile
+  list/create/rename/delete operations. The same create request may transactionally
+  apply a description, allowlisted provider, bounded model string, and stdin-only
+  provider credential before a bounded readiness check; failure removes that new
+  profile. The adapter may also resolve each listed credential through fixed
+  `hermes --profile <id> config env-path`, enable profile multiplexing, and restart
+  the active gateway before pairing verified `/p/<id>` connections. Hermes remains
+  authoritative: never invoke `profile use`, persist shadow profile state, expose
+  arbitrary CLI execution, or extend this exception to existing-profile provider
+  configuration, general configuration, sessions, messages, tools, or schedules.
 - `test/` contains Dart unit, widget, and source-contract tests.
 - `integration_test/` and `playwright/` cover device and browser flows.
 - `docs/` contains setup runbooks, security material, product contracts, and
@@ -42,9 +46,11 @@ still need appropriate hardware or an emulator.
 dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test --concurrency=1
+(cd wing_link && go test ./...)
 flutter build web --release -t lib/main_e2e.dart
 npm run web:e2e
 npm audit
+git diff --check
 ```
 
 Regenerate the shared README and landing-page visuals after relevant UI changes:

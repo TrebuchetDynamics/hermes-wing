@@ -4,11 +4,20 @@
 /// configured base URL so copied setup URLs cannot leak stale API keys or route
 /// state into every request.
 Uri hermesApiEndpointUri(Uri baseUri, String path) {
+  final baseSegments = baseUri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList(growable: false);
+  final prefix = baseSegments.length == 2 && baseSegments.first == 'p'
+      ? baseSegments
+      : const <String>[];
+  final endpoint = Uri.parse(
+    path,
+  ).pathSegments.where((segment) => segment.isNotEmpty);
   return Uri(
     scheme: baseUri.scheme,
     host: baseUri.host,
     port: baseUri.hasPort ? baseUri.port : null,
-    path: path,
+    pathSegments: [...prefix, ...endpoint],
   );
 }
 

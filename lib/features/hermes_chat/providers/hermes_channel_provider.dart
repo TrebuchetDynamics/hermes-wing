@@ -27,6 +27,15 @@ final hermesChannelProvider = Provider<HermesChannel>((ref) {
   return channel;
 });
 
+/// Reactive projection of the immutable state owned by [hermesChannelProvider].
+final hermesChannelStateProvider = Provider<HermesChannelState>((ref) {
+  final channel = ref.watch(hermesChannelProvider);
+  void onChanged() => ref.invalidateSelf();
+  channel.addListener(onChanged);
+  ref.onDispose(() => channel.removeListener(onChanged));
+  return channel.state;
+});
+
 final hermesGatewaySummaryLoaderProvider = Provider<GatewaySummaryLoader>(
   (ref) => const HermesApiGatewaySummaryLoader(),
 );

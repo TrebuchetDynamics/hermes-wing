@@ -1,7 +1,12 @@
 # Multi-Gateway Unified Chats — Design
 
 **Date:** 2026-07-16
-**Status:** Approved
+**Status:** Implemented foundation; historical design
+
+Current routing keeps the endpoint-scoped gateway identity plus Agent-local
+profile name. Supported releases may populate profiles through Wing Link's fixed
+compatibility adapter and verified `/p/<profile>` connections rather than the
+proposed direct profile API.
 
 ## Goal
 
@@ -9,16 +14,16 @@ Hermes Wing presents a Telegram-style contact list spanning every saved Hermes A
 
 ## Product decisions
 
-| Decision | Choice |
-|---|---|
-| Contact identity | Stable `(gatewayId, agentProfileId)` pair. Equal profile names on different gateways remain distinct. |
-| Gateways without profiles | Show one fallback contact for the gateway's default agent. |
-| Contact ordering | Latest session activity across all gateways. |
-| Session behavior | Open the latest session by default; expose older sessions from the chat header. |
-| Inactive gateways | Refresh health, profiles, and session summaries without maintaining SSE streams. |
-| Offline behavior | Keep cached contacts visible with offline state and last refresh time. |
-| Active streaming | Exactly one full `HermesChannel`: the currently open contact. |
-| Enrollment | QR enrollment appends or updates one gateway; it never replaces unrelated saved gateways. |
+| Decision                  | Choice                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Contact identity          | Stable `(gatewayId, agentProfileId)` pair. Equal profile names on different gateways remain distinct. |
+| Gateways without profiles | Show one fallback contact for the gateway's default agent.                                            |
+| Contact ordering          | Latest session activity across all gateways.                                                          |
+| Session behavior          | Open the latest session by default; expose older sessions from the chat header.                       |
+| Inactive gateways         | Refresh health, profiles, and session summaries without maintaining SSE streams.                      |
+| Offline behavior          | Keep cached contacts visible with offline state and last refresh time.                                |
+| Active streaming          | Exactly one full `HermesChannel`: the currently open contact.                                         |
+| Enrollment                | QR enrollment appends or updates one gateway; it never replaces unrelated saved gateways.             |
 
 ## Architecture
 

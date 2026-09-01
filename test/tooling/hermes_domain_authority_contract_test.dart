@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Hermes Agent exclusively owns profile and provider domains', () {
+  test('Wing Link exposes only the bounded profile compatibility domain', () {
     final authority = File('lib/core/hermes/hermes_domain_authority.dart');
-    final agents = File(
+    final profiles = File(
       'lib/features/profiles/screens/profiles_screen.dart',
     ).readAsStringSync();
     final providers = File(
@@ -17,16 +17,16 @@ void main() {
     final gatewayDirectory = File(
       'lib/features/hermes_chat/gateways/hermes_gateway_directory.dart',
     ).readAsStringSync();
-    final server = File('wing_link/serve.go').readAsStringSync();
+    final server = File('wing_link/internal/app/serve.go').readAsStringSync();
 
     expect(authority.existsSync(), isTrue);
     final authorityText = authority.readAsStringSync();
     expect(
       authorityText,
-      contains('const wingLinkDomainFallbacksEnabled = false;'),
+      contains('const wingLinkProfileCompatibilityEnabled = true;'),
     );
-    expect(agents, contains('wingLinkDomainFallbacksEnabled'));
-    expect(providers, contains('wingLinkDomainFallbacksEnabled'));
+    expect(profiles, contains('wingLinkProfileCompatibilityEnabled'));
+    expect(providers, isNot(contains('WingLinkProvider')));
     expect(
       wingLinkClient,
       contains(
@@ -37,16 +37,16 @@ void main() {
     );
     expect(gatewayDirectory, isNot(contains('WingLinkProfileLoader')));
     expect(gatewayDirectory, isNot(contains('_loadWingLinkProfiles')));
-    expect(server, contains('const wingLinkDomainFallbacksEnabled = false'));
+    expect(
+      server,
+      contains('const wingLinkProfileCompatibilityEnabled = true'),
+    );
     expect(
       server,
       contains(
-        'if wingLinkDomainFallbacksEnabled && request.URL.Path == "/v1/profiles"',
+        'if wingLinkProfileCompatibilityEnabled && request.URL.Path == "/v1/profiles"',
       ),
     );
-    expect(
-      server,
-      contains('if wingLinkDomainFallbacksEnabled && server.providers != nil'),
-    );
+    expect(server, isNot(contains('providerBackend')));
   });
 }

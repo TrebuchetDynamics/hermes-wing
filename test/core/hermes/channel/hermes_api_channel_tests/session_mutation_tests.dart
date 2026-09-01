@@ -263,6 +263,82 @@ void _hermesApiChannelSessionMutationTests() {
   );
 
   test(
+    'latest session selection wins when an older history load finishes later',
+    () async {
+      final staleHistory = Completer<String>();
+      var sessionOneHistoryRequests = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _capabilitiesFixture,
+              '/api/sessions' => _twoSessionsFixture,
+              '/api/sessions/sess_1/messages' =>
+                sessionOneHistoryRequests++ == 0
+                    ? _messagesFixture
+                    : staleHistory.future,
+              '/api/sessions/sess_2/messages' =>
+                '{"object":"list","session_id":"sess_2","data":[{"id":"msg_9","session_id":"sess_2","role":"assistant","content":"Latest"}]}',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      final olderSelection = channel.selectSession('sess_1');
+      await channel.selectSession('sess_2');
+      expect(channel.state.activeSessionId, 'sess_2');
+
+      staleHistory.complete(_messagesFixture);
+      await olderSelection;
+      expect(channel.state.activeSessionId, 'sess_2');
+      expect(channel.state.activeMessages.single.text, 'Latest');
+    },
+  );
+
+  test(
+    'stale session history failures do not escape after a newer selection',
+    () async {
+      final staleFailure = Completer<String>();
+      unawaited(staleFailure.future.catchError((_) => ''));
+      var sessionOneHistoryRequests = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _capabilitiesFixture,
+              '/api/sessions' => _twoSessionsFixture,
+              '/api/sessions/sess_1/messages' =>
+                sessionOneHistoryRequests++ == 0
+                    ? _messagesFixture
+                    : staleFailure.future,
+              '/api/sessions/sess_2/messages' =>
+                '{"object":"list","session_id":"sess_2","data":[{"id":"msg_9","session_id":"sess_2","role":"assistant","content":"Latest"}]}',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      final olderSelection = channel.selectSession('sess_1');
+      await channel.selectSession('sess_2');
+      staleFailure.completeError(StateError('stale history failed'));
+
+      await expectLater(olderSelection, completes);
+      expect(channel.state.activeSessionId, 'sess_2');
+      expect(channel.state.activeMessages.single.text, 'Latest');
+    },
+  );
+
+  test(
     'renameSession patches the server and replaces the local session row',
     () async {
       final patches = <String, Map<String, Object?>>{};

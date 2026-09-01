@@ -11,6 +11,8 @@ class HermesEnrollmentPayload {
     required this.code,
     this.brokerOrigin,
     this.wingLinkOrigin,
+    this.wingLinkHostFingerprint,
+    this.protocolGeneration = 1,
   });
 
   /// Normalized Hermes API origin: scheme + host + optional port only. No
@@ -25,13 +27,50 @@ class HermesEnrollmentPayload {
   /// token is returned only by the reviewed one-time exchange.
   final Uri? wingLinkOrigin;
 
+  /// SHA-256 fingerprint of the persistent Wing Link Ed25519 host key.
+  final String? wingLinkHostFingerprint;
+
+  /// Wing Link protocol generation declared by the pairing broker.
+  final int protocolGeneration;
+
   /// The one-time pairing code exchanged for a bearer token after operator
   /// review. This is never a bearer token itself.
   final String code;
 
   static const _maxCodeLength = 128;
+  static const _maxExplicitHandoffLength = 4096;
   static const _connectScheme = 'wing';
   static const _connectHost = 'connect';
+  static const _connectPrefix = 'wing://connect?';
+  static final _hostFingerprintPattern = RegExp(r'^sha256/[A-Za-z0-9_-]{43}$');
+  static final _handoffEdgeCharacters = RegExp(
+    r'''^[<>()\[\]'\"]+|[<>()\[\]'\"]+$''',
+  );
+
+  /// Extracts one standalone connect URI from an explicit share or paste, then
+  /// applies the same strict validation as [parse].
+  factory HermesEnrollmentPayload.parseExplicitHandoff(
+    String value, {
+    bool cleartextOriginConfirmed = false,
+  }) {
+    if (value.length > _maxExplicitHandoffLength) {
+      throw const FormatException('connect handoff is too long');
+    }
+    final candidates = value
+        .split(RegExp(r'\s+'))
+        .map((token) => token.replaceAll(_handoffEdgeCharacters, ''))
+        .where((token) => token.startsWith(_connectPrefix))
+        .toList(growable: false);
+    if (candidates.length != 1) {
+      throw const FormatException(
+        'connect handoff must contain exactly one pairing link',
+      );
+    }
+    return HermesEnrollmentPayload.parse(
+      candidates.single,
+      cleartextOriginConfirmed: cleartextOriginConfirmed,
+    );
+  }
 
   /// Hosts exempt from the plaintext-origin confirmation requirement below,
   /// matching the loopback/emulator hosts already trusted by the manual
@@ -84,6 +123,29 @@ class HermesEnrollmentPayload {
       hermesOrigin: origin,
       cleartextOriginConfirmed: cleartextOriginConfirmed,
     );
+    final rawGeneration = uri.queryParameters['protocol_generation'];
+    final protocolGeneration = rawGeneration == null
+        ? 1
+        : int.tryParse(rawGeneration);
+    if (protocolGeneration != 1 && protocolGeneration != 2) {
+      throw const FormatException('connect payload protocol is unsupported');
+    }
+    final fingerprint = (uri.queryParameters['host_fingerprint'] ?? '').trim();
+    if (fingerprint.isNotEmpty &&
+        !_hostFingerprintPattern.hasMatch(fingerprint)) {
+      throw const FormatException(
+        'connect payload host fingerprint is invalid',
+      );
+    }
+    if (protocolGeneration == 2 &&
+        wingLinkOrigin != null &&
+        wingLinkOrigin.scheme == 'https' &&
+        !_cleartextExemptHosts.contains(wingLinkOrigin.host.toLowerCase()) &&
+        fingerprint.isEmpty) {
+      throw const FormatException(
+        'connect payload is missing a host fingerprint',
+      );
+    }
 
     final code = (uri.queryParameters['code'] ?? '').trim();
     if (code.isEmpty) {
@@ -98,6 +160,8 @@ class HermesEnrollmentPayload {
       code: code,
       brokerOrigin: brokerOrigin,
       wingLinkOrigin: wingLinkOrigin,
+      wingLinkHostFingerprint: fingerprint.isEmpty ? null : fingerprint,
+      protocolGeneration: protocolGeneration!,
     );
   }
 

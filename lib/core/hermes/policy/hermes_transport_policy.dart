@@ -28,6 +28,10 @@ class HermesTransportPolicy {
       capabilities.supportsFeature('run_status') &&
       _endpointReady('run_status', 'GET', '/v1/runs/{run_id}');
 
+  bool get supportsRunSteer =>
+      capabilities.supportsFeature('run_steer') &&
+      _endpointReady('run_steer', 'POST', '/v1/runs/{run_id}/steer');
+
   bool get supportsRunStop =>
       capabilities.supportsFeature('run_stop') &&
       _endpointReady('run_stop', 'POST', '/v1/runs/{run_id}/stop');
@@ -48,6 +52,15 @@ class HermesTransportPolicy {
       capabilities.supportsFeature('memory_write_api');
   bool get supportsAudioApi =>
       capabilities.supportsSchema && capabilities.supportsFeature('audio_api');
+  bool get supportsSpeechSynthesis =>
+      supportsAudioApi &&
+      _endpointReady('audio_speak', 'POST', '/api/audio/speak');
+  bool get supportsSpeechTranscription =>
+      supportsAudioApi &&
+      _endpointReady('audio_transcribe', 'POST', '/api/audio/transcribe');
+  bool get supportsSpeechStreaming =>
+      supportsAudioApi &&
+      _endpointReady('audio_speak_stream', 'GET', '/api/audio/speak-stream');
   bool get supportsRealtimeVoice =>
       capabilities.supportsSchema &&
       capabilities.supportsFeature('realtime_voice');

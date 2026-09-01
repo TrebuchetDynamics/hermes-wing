@@ -1,4 +1,86 @@
-# speech_to_text
+# speech_to_text (Wing fork)
+
+This directory is a **vendored fork** of the upstream Flutter plugin
+[`speech_to_text`](https://github.com/csdcorp/speech_to_text), resolved as a
+path dependency by the Wing app (`pubspec.yaml` → `speech_to_text: path:
+third_party/speech_to_text`). The upstream README is copied verbatim below
+(labeled "Upstream README") so consumers still get the original usage and
+permissions documentation; the fork-specific information lives in this section.
+
+## Fork summary
+
+- **Upstream repository:** <https://github.com/csdcorp/speech_to_text>
+- **Pinned upstream baseline:** release **7.4.0**, commit
+  `22367e5ac5e9c4427ff7179ad0b4d0336168a302` ("doc: 7.4.0", 2026-05-19).
+  Evidence: `pubspec.yaml` declares `version: 7.4.0`; the CHANGELOG top entry
+  matches the upstream 7.4.0-beta state; `SpeechToTextVoiceCaptureService`
+  reports its adapter as `speech_to_text 7.4.0`. Upstream has no 7.4.0 release
+  tag (latest tag is `v7.3.0`); the exact baseline was identified by diffing the
+  vendored tree against upstream history. Current upstream `main` is
+  7.5.0-beta.1 (`e753bb6e...`, 2026-07-02) and does **not** contain these
+  patches.
+- **Why the fork exists:** Wing drives the Android `SpeechRecognizer` through
+  `SpeechToTextVoiceCaptureService`, which treats Android as generation-bound: a
+  capture can be cancelled and immediately replaced while the previous
+  recognizer's async callbacks are still in flight. Upstream 7.4.0 publishes
+  native callbacks with no session identity, destroys recognizers on a fixed
+  delay, and lets stale stop/cancel results and unprompted terminals reach a
+  successor capture. The fork adds per-session generation guards and
+  recognizer-lifecycle fixes so stale native callbacks cannot fail, complete, or
+  leak into a successor capture. The Dart layer depends on this: see
+  `SpeechToTextGenerationBoundEngine.hasGenerationBoundCallbacks` (true only on
+  Android) and the ambiguous-terminal handling in
+  `lib/features/voice/services/speech/speech_to_text_voice_capture_service.dart`.
+
+## Verified patch inventory
+
+Patches below were verified by diffing `third_party/speech_to_text` against the
+pinned baseline commit. Files not listed are byte-identical or differ only in
+trailing whitespace, or are upstream-only files dropped when vendoring
+(`example/`, `test/`, `.github/`, `pubspec.lock`, `.metadata`, editor metadata).
+
+| File                                                                                                                                       | Patch                                                                                                                                                                                                                                                                                                                                                                                                                       | Why                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `android/src/main/kotlin/com/csdcorp/speech_to_text/SpeechToTextPlugin.kt`                                                                 | Session-generation guards: a `recognitionSession` counter is checked before every async dispatch (`startListening`, `createRecognizer`, `setupRecognizerIntent`, `sendError`, `onRmsChanged`) and a new `SessionRecognitionListener(session)` wrapper is bound to every created recognizer (intent-lookup, on-device, and default paths), dropping callbacks from superseded sessions.                                      | Stale native callbacks must never reach the current capture. `test/tooling/package_scripts_contract_test.dart` asserts `sendError`/`onRmsChanged` re-check `session != recognitionSession`.                                                                                     |
+| same file                                                                                                                                  | Recognizer lifecycle: `createRecognizer` always increments the session, cancels the pending timer, destroys the previous recognizer, and rebuilds; `stop`/`cancel` capture `recognizerToStop`/`recognizerToCancel` and only destroy + `notifyListening(isRecording = false)` when the captured recognizer is still current; `destroyRecognizer()` is immediate and identity-checked instead of `handler.postDelayed(50ms)`. | A quick stop/cancel must not destroy a successor's recognizer or fabricate terminal status. `test/tooling/native_speech_terminal_contract_test.dart` asserts stop/cancel acknowledge without inventing terminal status and that only `updateResults` publishes terminal status. |
+| same file                                                                                                                                  | `updateResults` publishes `notifyListening(isRecording = false)` after a final result while still listening.                                                                                                                                                                                                                                                                                                                | Final result and recognizer teardown are separate Android events; replacement capture is blocked until the recognizer reports its terminal status.                                                                                                                              |
+| `lib/speech_to_text.dart`                                                                                                                  | Listen handoff guards: `_listenHandoffGeneration`/`_pendingListenHandoff`; `listen()` throws `ListenFailedException('listen already active')` while a native handoff is pending; predecessor status/error/sound-level callbacks are dropped for a successor listen and `listening` status is re-published only after the handoff completes.                                                                                 | The native Android method publishes `listening` before completing its method result; without the guard a predecessor's callbacks reach successor listeners. `test/tooling/vendored_speech_to_text_handoff_test.dart` asserts both behaviors.                                    |
+| `lib/speech_to_text_provider.dart`                                                                                                         | `bool debugLogging = false` explicit type annotation (one line).                                                                                                                                                                                                                                                                                                                                                            | Keeps the provider constructor analyzable under the app's lint set.                                                                                                                                                                                                             |
+| `pubspec.yaml`                                                                                                                             | Stabilizes constraints: `speech_to_text_platform_interface: ^2.4.0` and `speech_to_text_windows: ^1.0.1` instead of the upstream `-beta` pins.                                                                                                                                                                                                                                                                              | The app resolves the stable platform interface; no behavior change.                                                                                                                                                                                                             |
+| `android/build.gradle`, `darwin/speech_to_text/Sources/speech_to_text/SpeechToTextPlugin.swift`, `CHANGELOG.md`, upstream `README.md` body | Trailing-whitespace normalization only; no functional change.                                                                                                                                                                                                                                                                                                                                                               | —                                                                                                                                                                                                                                                                               |
+
+## Why the patch is not upstreamed
+
+No upstream PR or issue for these changes could be found. Upstream `main`
+(7.5.0-beta.1, `e753bb6e...`) still lacks the generation guards and lifecycle
+changes, and 7.5.0-beta.1 rewrote the Android build ("migrates to built-in
+Kotlin"), which will force a re-diff regardless. Until upstream adopts
+equivalent session identity the patches are wing-local and load-bearing: the
+three contract tests and `hasGenerationBoundCallbacks` depend on them.
+
+## Upgrade path
+
+- **Rebase onto a new upstream release:** checkout the new upstream tag into a
+  temp directory, copy the tree over `third_party/speech_to_text`, then re-apply
+  the patch areas above (generation guards and lifecycle changes live in
+  `SpeechToTextPlugin.kt`; handoff guards in `lib/speech_to_text.dart`). Re-diff
+  the whole tree against the new baseline before committing the bump, update the
+  pinned baseline in this section and in `CHANGELOG.md`, and re-run
+  `flutter analyze`, `flutter test --concurrency=1 test/tooling`, and the voice
+  tests under `test/features/voice/` and `test/features/hermes_chat/voice/`.
+- **Drop the fork when:** upstream merges equivalent session-generation guards
+  and recognizer-lifecycle handling, or another maintained device-recognition
+  implementation fully replaces the platform `SpeechRecognizer` in Wing. Until
+  then, `test/tooling/fork_drift_contract_test.dart` and the
+  other vendored-plugin contract tests must keep passing.
+
+---
+
+# Upstream README
+
+> Copied verbatim from the pinned baseline commit
+> `22367e5ac5e9c4427ff7179ad0b4d0336168a302` (speech_to_text 7.4.0); only
+> trailing whitespace was normalized.
 
 [![pub package](https://img.shields.io/badge/pub-v7.3.0-blue)](https://pub.dartlang.org/packages/speech_to_text) [![build status](https://github.com/csdcorp/speech_to_text/workflows/Test/badge.svg)](https://github.com/csdcorp/speech_to_text/actions?query=workflow%3ATest) [![codecov](https://codecov.io/gh/csdcorp/speech_to_text/branch/main/graph/badge.svg?token=4LV3HESMS4)](undefined)
 
@@ -13,8 +95,8 @@ conversion or always on listening.
 
 | Support | Android | iOS | MacOS | Web\* | Linux | Windows |
 | :-----: | :-----: | :-: | :---: | :---: | :---: | :-----: |
-|  build  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |    ✅    |
-| speech  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |    ✅    |
+|  build  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |   ✅    |
+| speech  |   ✅    | ✅  |  ✅   |  ✅   |   ✘   |   ✅    |
 
 _build: means you can build and run with the plugin on that platform_
 
@@ -25,15 +107,17 @@ _speech: means most speech recognition features work. Platforms with build but n
 ## Recent Updates
 
 7.3.0
-* Now supports speech recognition on Windows with many thanks to @asherchok
-for the PR! Note that Windows support is currently in beta, if anyone can try
-it out please provide feedback, there are known issues and this is not yet
-ready for production use.
-* iOS and Mac speech recognition does more work in the background avoiding UI pauses
+
+- Now supports speech recognition on Windows with many thanks to @asherchok
+  for the PR! Note that Windows support is currently in beta, if anyone can try
+  it out please provide feedback, there are known issues and this is not yet
+  ready for production use.
+- iOS and Mac speech recognition does more work in the background avoiding UI pauses
 
 7.0.0
-* Now supports speech recognition on MacOS with many thanks to @alexrabin-sentracam for the PR!
-* Now supports WASM compliation for web with many thanks to yeikel16 for the PR!
+
+- Now supports speech recognition on MacOS with many thanks to @alexrabin-sentracam for the PR!
+- Now supports WASM compliation for web with many thanks to yeikel16 for the PR!
 
 6.6.0 `listen` now uses 'SpeechListenOptions' to specify the options for the current listen session, including new
 options for controlling haptics and punctuation during recognition on iOS.
@@ -233,6 +317,7 @@ You can only request permissions if you run the app directly from Xcode.
 
 If you are upgrading an existing MacOS app to use the new plugin don't forget to update your dependencies
 and the pods by opening the project directory in your terminal and:
+
 ```
 flutter clean
 flutter pub get

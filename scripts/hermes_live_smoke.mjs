@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import process from 'process';
+import process from "process";
 
-const DEFAULT_BASE_URL = 'http://127.0.0.1:8642';
-const DEFAULT_MESSAGE = 'Hermes Wing live smoke: reply with a short acknowledgement.';
+const DEFAULT_BASE_URL = "http://127.0.0.1:8642";
+const DEFAULT_MESSAGE =
+  "Hermes Wing live smoke: reply with a short acknowledgement.";
 
 function usage() {
   console.log(`Hermes Agent live smoke
@@ -23,7 +24,7 @@ Options:
 function readArgs(argv) {
   const options = {
     baseUrl: process.env.HERMES_BASE_URL || DEFAULT_BASE_URL,
-    apiKey: process.env.HERMES_API_KEY || '',
+    apiKey: process.env.HERMES_API_KEY || "",
     message: DEFAULT_MESSAGE,
     timeoutMs: 30000,
     stopSmoke: false,
@@ -31,15 +32,15 @@ function readArgs(argv) {
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--help' || arg === '-h') {
+    if (arg === "--help" || arg === "-h") {
       usage();
       process.exit(0);
     }
-    if (arg === '--stop-smoke') {
+    if (arg === "--stop-smoke") {
       options.stopSmoke = true;
       continue;
     }
-    if (arg === '--json') {
+    if (arg === "--json") {
       options.jsonOnly = true;
       continue;
     }
@@ -48,31 +49,49 @@ function readArgs(argv) {
       if (!value) throw new Error(`Missing value for ${arg}`);
       return value;
     };
-    if (arg === '--base-url') options.baseUrl = next();
-    else if (arg === '--api-key') options.apiKey = next();
-    else if (arg === '--message') options.message = next();
-    else if (arg === '--timeout-ms') options.timeoutMs = Number(next());
+    if (arg === "--base-url") options.baseUrl = next();
+    else if (arg === "--api-key") options.apiKey = next();
+    else if (arg === "--message") options.message = next();
+    else if (arg === "--timeout-ms") options.timeoutMs = Number(next());
     else throw new Error(`Unknown option: ${arg}`);
   }
   if (!Number.isFinite(options.timeoutMs) || options.timeoutMs <= 0) {
-    throw new Error('--timeout-ms must be a positive number');
+    throw new Error("--timeout-ms must be a positive number");
   }
   return options;
 }
 
+function normalizeBaseUrl(raw) {
+  let base;
+  try {
+    base = new URL(raw);
+  } catch {
+    throw new Error("Hermes base URL must be a valid HTTP(S) origin");
+  }
+  if (
+    !["http:", "https:"].includes(base.protocol) ||
+    base.username ||
+    base.password ||
+    (base.pathname !== "/" && base.pathname !== "") ||
+    base.search ||
+    base.hash
+  ) {
+    throw new Error(
+      "Hermes base URL must be an HTTP(S) origin without credentials or route state",
+    );
+  }
+  return base.origin;
+}
+
 function endpoint(baseUrl, path) {
-  const base = new URL(baseUrl);
-  const prefix = base.pathname.replace(/\/+$/, '');
-  base.pathname = `${prefix}${path}`;
-  base.search = '';
-  base.hash = '';
-  return base;
+  return new URL(path, baseUrl);
 }
 
 function headers(options, json = false) {
   const result = {};
-  if (options.apiKey.trim()) result.Authorization = `Bearer ${options.apiKey.trim()}`;
-  if (json) result['Content-Type'] = 'application/json';
+  if (options.apiKey.trim())
+    result.Authorization = `Bearer ${options.apiKey.trim()}`;
+  if (json) result["Content-Type"] = "application/json";
   return result;
 }
 
@@ -84,7 +103,9 @@ async function requestJson(options, method, path, body) {
   });
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(`${method} ${path} failed: HTTP ${response.status} ${text.slice(0, 300)}`);
+    throw new Error(
+      `${method} ${path} failed: HTTP ${response.status} ${text.slice(0, 300)}`,
+    );
   }
   return text ? JSON.parse(text) : {};
 }
@@ -93,59 +114,63 @@ function supportsRuns(capabilities) {
   const features = capabilities?.features || {};
   return Boolean(
     features.run_submission &&
-      features.run_events_sse &&
-      features.run_stop &&
-      features.run_approval_response,
+    features.run_events_sse &&
+    features.run_stop &&
+    features.run_approval_response,
   );
 }
 
 async function readSse(response, timeoutMs) {
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`SSE request failed: HTTP ${response.status} ${text.slice(0, 300)}`);
+    throw new Error(
+      `SSE request failed: HTTP ${response.status} ${text.slice(0, 300)}`,
+    );
   }
-  if (!response.body) throw new Error('SSE response did not include a body');
+  if (!response.body) throw new Error("SSE response did not include a body");
 
   const events = [];
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
-  let currentEvent = 'message';
+  let buffer = "";
+  let currentEvent = "message";
   let currentData = [];
   let doneSeen = false;
   const deadline = Date.now() + timeoutMs;
 
   const flush = () => {
     if (currentData.length === 0) {
-      currentEvent = 'message';
+      currentEvent = "message";
       return;
     }
-    const data = currentData.join('\n');
+    const data = currentData.join("\n");
     events.push({ event: currentEvent, data });
-    if (data.trim() === '[DONE]' || currentEvent === 'done') doneSeen = true;
-    currentEvent = 'message';
+    if (data.trim() === "[DONE]" || currentEvent === "done") doneSeen = true;
+    currentEvent = "message";
     currentData = [];
   };
 
   while (!doneSeen && Date.now() < deadline) {
     const remaining = deadline - Date.now();
     const read = reader.read();
-    const timeout = new Promise((resolve) => setTimeout(() => resolve('timeout'), remaining));
+    const timeout = new Promise((resolve) =>
+      setTimeout(() => resolve("timeout"), remaining),
+    );
     const result = await Promise.race([read, timeout]);
-    if (result === 'timeout') break;
+    if (result === "timeout") break;
     if (result.done) break;
     buffer += decoder.decode(result.value, { stream: true });
 
-    while (buffer.includes('\n')) {
-      const index = buffer.indexOf('\n');
+    while (buffer.includes("\n")) {
+      const index = buffer.indexOf("\n");
       const raw = buffer.slice(0, index);
       buffer = buffer.slice(index + 1);
-      const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
+      const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
       if (!line) {
         flush();
-      } else if (line.startsWith('event:')) {
-        currentEvent = line.slice(6).trim() || 'message';
-      } else if (line.startsWith('data:')) {
+      } else if (line.startsWith("event:")) {
+        currentEvent = line.slice(6).trim() || "message";
+      } else if (line.startsWith("data:")) {
         currentData.push(line.slice(5).trimStart());
       }
     }
@@ -157,13 +182,14 @@ async function readSse(response, timeoutMs) {
 }
 
 async function run(options) {
+  options.baseUrl = normalizeBaseUrl(options.baseUrl);
   const summary = {
     baseUrl: options.baseUrl,
     health: false,
     capabilities: false,
     sessionsListed: false,
     sessionCreated: false,
-    transport: 'unknown',
+    transport: "unknown",
     runStarted: false,
     eventsSeen: [],
     approvalResponded: false,
@@ -171,74 +197,96 @@ async function run(options) {
     messagesReloaded: false,
   };
 
-  const health = await requestJson(options, 'GET', '/health');
+  const health = await requestJson(options, "GET", "/health");
   summary.health = true;
 
-  const capabilities = await requestJson(options, 'GET', '/v1/capabilities');
+  const capabilities = await requestJson(options, "GET", "/v1/capabilities");
   summary.capabilities = true;
 
-  await requestJson(options, 'GET', '/api/sessions');
+  await requestJson(options, "GET", "/api/sessions");
   summary.sessionsListed = true;
 
   const sessionId = `navi-smoke-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const created = await requestJson(options, 'POST', '/api/sessions', {
+  const created = await requestJson(options, "POST", "/api/sessions", {
     id: sessionId,
-    title: 'Hermes Wing live smoke',
+    title: "Hermes Wing live smoke",
   });
   const effectiveSessionId = created?.session?.id || sessionId;
   summary.sessionCreated = true;
   summary.sessionId = effectiveSessionId;
 
   if (supportsRuns(capabilities)) {
-    summary.transport = 'runs';
-    const run = await requestJson(options, 'POST', '/v1/runs', {
+    summary.transport = "runs";
+    const run = await requestJson(options, "POST", "/v1/runs", {
       session_id: effectiveSessionId,
       message: options.message,
     });
     const runId = run?.run?.id || run?.id;
-    if (!runId) throw new Error('POST /v1/runs did not return run.id');
+    if (!runId) throw new Error("POST /v1/runs did not return run.id");
     summary.runStarted = true;
     summary.runId = runId;
 
     if (options.stopSmoke) {
-      await requestJson(options, 'POST', `/v1/runs/${encodeURIComponent(runId)}/stop`, {});
+      await requestJson(
+        options,
+        "POST",
+        `/v1/runs/${encodeURIComponent(runId)}/stop`,
+        {},
+      );
       summary.stopAccepted = true;
     }
 
-    const response = await fetch(endpoint(options.baseUrl, `/v1/runs/${encodeURIComponent(runId)}/events`), {
-      headers: headers(options),
-    });
+    const response = await fetch(
+      endpoint(options.baseUrl, `/v1/runs/${encodeURIComponent(runId)}/events`),
+      {
+        headers: headers(options),
+      },
+    );
     const events = await readSse(response, options.timeoutMs);
     summary.eventsSeen = events.map((entry) => entry.event);
-    const approval = events.find((entry) => entry.event === 'approval.request');
+    const approval = events.find((entry) => entry.event === "approval.request");
     if (approval) {
       const data = JSON.parse(approval.data);
-      await requestJson(options, 'POST', `/v1/runs/${encodeURIComponent(runId)}/approval`, {
-        approval_id: data.approval_id,
-        decision: 'deny',
-      });
+      await requestJson(
+        options,
+        "POST",
+        `/v1/runs/${encodeURIComponent(runId)}/approval`,
+        {
+          approval_id: data.approval_id,
+          decision: "deny",
+        },
+      );
       summary.approvalResponded = true;
     }
-    if (events.length === 0) throw new Error('Run event stream produced no events before timeout');
+    if (events.length === 0)
+      throw new Error("Run event stream produced no events before timeout");
   } else {
-    summary.transport = 'session_chat_stream';
+    summary.transport = "session_chat_stream";
     const response = await fetch(
-      endpoint(options.baseUrl, `/api/sessions/${encodeURIComponent(effectiveSessionId)}/chat/stream`),
+      endpoint(
+        options.baseUrl,
+        `/api/sessions/${encodeURIComponent(effectiveSessionId)}/chat/stream`,
+      ),
       {
-        method: 'POST',
+        method: "POST",
         headers: headers(options, true),
         body: JSON.stringify({ message: options.message }),
       },
     );
     const events = await readSse(response, options.timeoutMs);
     summary.eventsSeen = events.map((entry) => entry.event);
-    if (events.length === 0) throw new Error('Session chat stream produced no events before timeout');
+    if (events.length === 0)
+      throw new Error("Session chat stream produced no events before timeout");
   }
 
-  const messages = await requestJson(options, 'GET', `/api/sessions/${encodeURIComponent(effectiveSessionId)}/messages`);
+  const messages = await requestJson(
+    options,
+    "GET",
+    `/api/sessions/${encodeURIComponent(effectiveSessionId)}/messages`,
+  );
   summary.messagesReloaded = Array.isArray(messages?.data);
-  summary.healthStatus = health?.status || 'unknown';
-  summary.model = capabilities?.model || capabilities?.platform || 'unknown';
+  summary.healthStatus = health?.status || "unknown";
+  summary.model = capabilities?.model || capabilities?.platform || "unknown";
   return summary;
 }
 
@@ -249,7 +297,7 @@ try {
     console.log(JSON.stringify(summary));
   } else {
     console.log(JSON.stringify(summary, null, 2));
-    console.log('Hermes live smoke passed');
+    console.log("Hermes live smoke passed");
   }
 } catch (error) {
   console.error(`Hermes live smoke failed: ${error.message}`);

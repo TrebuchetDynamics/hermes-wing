@@ -50,6 +50,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('Set up Hermes on this Linux computer'), findsOneWidget);
     expect(find.text('Hermes Agent is not installed'), findsOneWidget);
     expect(calls, [
       ['inspect', '--json'],

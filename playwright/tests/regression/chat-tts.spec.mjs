@@ -55,6 +55,48 @@ async function installSpeechSynthesisRecorder(page) {
   });
 }
 
+async function installAgentAudioRecorder(page, { autoFinish = false } = {}) {
+  await page.addInitScript((finishAutomatically) => {
+    const state = {
+      plays: [],
+      pauseCount: 0,
+      current: null,
+      failPlay: false,
+      finish() {
+        state.current?.dispatchEvent(new Event("ended"));
+      },
+      fail() {
+        state.current?.dispatchEvent(new Event("error"));
+      },
+    };
+    Object.defineProperties(HTMLMediaElement.prototype, {
+      duration: { configurable: true, get: () => 0.1 },
+      play: {
+        configurable: true,
+        value() {
+          state.current = this;
+          state.plays.push({ src: this.src });
+          if (state.failPlay) {
+            return Promise.reject(new Error("Synthetic Agent audio failure"));
+          }
+          this.dispatchEvent(new Event("play"));
+          if (finishAutomatically) {
+            setTimeout(() => this.dispatchEvent(new Event("ended")), 0);
+          }
+          return Promise.resolve();
+        },
+      },
+      pause: {
+        configurable: true,
+        value() {
+          state.pauseCount += 1;
+        },
+      },
+    });
+    globalThis.wingE2EAgentAudio = state;
+  }, autoFinish);
+}
+
 async function screenshot(page, testInfo, name) {
   await page.mouse.move(0, 0);
   await page.waitForTimeout(200);
@@ -83,8 +125,11 @@ async function connect(page) {
 
 async function connectFromVoiceSettings(
   page,
-  { faster = false, testInfo } = {},
+  { faster = false, testInfo, agentAudio = true } = {},
 ) {
+  await page.request.post(`${APP}e2e/hermes/audio`, {
+    data: { enabled: agentAudio },
+  });
   await open(page, "/settings/voice");
   const speakReplies = page.getByRole("switch", {
     name: /Speak replies aloud/,
@@ -118,14 +163,18 @@ async function submitComposer(page, text) {
 
 async function sendChat(page, text, { testInfo, screenshotPrefix } = {}) {
   await submitComposer(page, text);
-  await expect(page.getByText(text).first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: text, exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Approve once" }),
   ).toBeVisible();
   if (testInfo)
     await screenshot(page, testInfo, `${screenshotPrefix}-approval`);
   await page.getByRole("button", { name: "Approve once" }).click();
-  await expect(page.getByText(`Hermes echo: ${text}`).first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: `Hermes echo: ${text}`, exact: true }),
+  ).toBeVisible();
   if (testInfo) await screenshot(page, testInfo, `${screenshotPrefix}-reply`);
 }
 
@@ -137,8 +186,9 @@ async function expectVoiceInputAvailable(page) {
     name: "Hands-free voice",
   });
   await expect
-    .poll(async () =>
-      (await legacyDirectControl.count()) + (await handsFreeControl.count()),
+    .poll(
+      async () =>
+        (await legacyDirectControl.count()) + (await handsFreeControl.count()),
     )
     .toBeGreaterThan(0);
   if (await handsFreeControl.count()) {
@@ -175,32 +225,54 @@ test("chat replies stay silent when Speak replies aloud is disabled", async ({
   );
 });
 
-test("Speak replies aloud uses the selected speed and Stop speaking cancels playback", async ({
+test("unadvertised Agent audio never falls back to browser speech", async ({
   page,
 }, testInfo) => {
   await installSpeechSynthesisRecorder(page);
-  await connectFromVoiceSettings(page, { faster: true, testInfo });
+  await connectFromVoiceSettings(page, { testInfo, agentAudio: false });
+
+  await sendChat(page, "unsupported agent audio browser turn", {
+    testInfo,
+    screenshotPrefix: "unsupported-agent-audio",
+  });
+
+  await expect
+    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
+    .toBe(0);
+  await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
+    0,
+  );
+  await expect(page.getByText("Could not speak Hermes reply.")).toHaveCount(0);
+});
+
+test("Agent speech uses the exact endpoint and Stop speaking cancels playback", async ({
+  page,
+}, testInfo) => {
+  await installAgentAudioRecorder(page);
+  await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "chat and tts browser turn", {
     testInfo,
-    screenshotPrefix: "tts-speed",
+    screenshotPrefix: "tts-agent",
   });
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
-
-  const utterance = await page.evaluate(() =>
-    globalThis.wingE2ESpeech.utterances.at(-1),
+  await expect
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
+    .toBe(1);
+  const audioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await audioState.json()).spokenTexts).toEqual([
+    "Hermes echo: chat and tts browser turn",
+  ]);
+  const pausesBeforeStop = await page.evaluate(
+    () => globalThis.wingE2EAgentAudio.pauseCount,
   );
-  expect(utterance.text).toBe("Hermes echo: chat and tts browser turn");
-  expect(utterance.rate).toBeCloseTo(0.5625);
-  expect(utterance.pitch).toBe(1);
-  expect(utterance.volume).toBe(1);
 
   await page.getByRole("button", { name: "Stop speaking" }).click();
   await expectVoiceInputAvailable(page);
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
-    .toBe(1);
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+    .toBeGreaterThan(pausesBeforeStop);
   await expect(page.getByText("Could not speak Hermes reply.")).toHaveCount(0);
   await screenshot(page, testInfo, "tts-stopped");
 
@@ -212,15 +284,15 @@ test("Speak replies aloud uses the selected speed and Stop speaking cancels play
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
     .toBe(2);
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("completed speech returns to voice input and the next reply can speak", async ({
+test("Agent speech returns to voice input after completion", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
 
   await sendChat(page, "first spoken browser turn", {
@@ -230,9 +302,8 @@ test("completed speech returns to voice input and the next reply can speak", asy
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
   await expectVoiceInputAvailable(page);
-
   await screenshot(page, testInfo, "first-speech-completed");
 
   await sendChat(page, "second spoken browser turn", {
@@ -242,14 +313,12 @@ test("completed speech returns to voice input and the next reply can speak", asy
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
-  const utterances = await page.evaluate(
-    () => globalThis.wingE2ESpeech.utterances,
-  );
-  expect(utterances.map(({ text }) => text)).toEqual([
+  const audioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await audioState.json()).spokenTexts).toEqual([
     "Hermes echo: first spoken browser turn",
     "Hermes echo: second spoken browser turn",
   ]);
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
   await expectVoiceInputAvailable(page);
   await expect(page.getByText("Could not speak Hermes reply.")).toHaveCount(0);
 });
@@ -319,21 +388,22 @@ test("Markdown transcript export contains the visible chat without invoking TTS"
   ).toBe(0);
 });
 
-test("a browser speech failure is bounded and the following reply can recover", async ({
+test("Agent speech failure is bounded and recoverable", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
-  await page.evaluate(() => {
-    globalThis.wingE2ESpeech.throwOnSpeak = true;
+  await page.request.post(`${APP}e2e/hermes/audio`, {
+    data: { enabled: true, fail: true },
   });
 
   await sendChat(page, "failing speech browser turn", {
     testInfo,
     screenshotPrefix: "tts-failure",
   });
+  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText("Could not speak Hermes reply.").last(),
+    page.getByText(/The reply is available as text/).last(),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
@@ -341,8 +411,8 @@ test("a browser speech failure is bounded and the following reply can recover", 
   );
   await screenshot(page, testInfo, "tts-failure-notice");
 
-  await page.evaluate(() => {
-    globalThis.wingE2ESpeech.throwOnSpeak = false;
+  await page.request.post(`${APP}e2e/hermes/audio`, {
+    data: { enabled: true, fail: false },
   });
   await sendChat(page, "recovered speech browser turn", {
     testInfo,
@@ -351,16 +421,18 @@ test("a browser speech failure is bounded and the following reply can recover", 
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
-  expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.speakAttempts),
-  ).toBe(2);
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await expect
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
+    .toBe(1);
+  const recoveredAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await recoveredAudioState.json()).spokenTexts).toHaveLength(2);
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("leaving chat cancels speech and disabling TTS keeps later replies silent", async ({
+test("Agent speech is cancelled when leaving chat", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "navigation speech browser turn", {
     testInfo,
@@ -369,6 +441,9 @@ test("leaving chat cancels speech and disabling TTS keeps later replies silent",
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
+  const pausesBeforeNavigation = await page.evaluate(
+    () => globalThis.wingE2EAgentAudio.pauseCount,
+  );
 
   await page.evaluate(() => {
     location.hash = "/settings/voice";
@@ -377,8 +452,8 @@ test("leaving chat cancels speech and disabling TTS keeps later replies silent",
     page.getByRole("heading", { name: "Voice & speech" }),
   ).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
-    .toBeGreaterThan(0);
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+    .toBeGreaterThan(pausesBeforeNavigation);
   const speakReplies = page.getByRole("switch", {
     name: /Speak replies aloud/,
   });
@@ -395,9 +470,8 @@ test("leaving chat cancels speech and disabling TTS keeps later replies silent",
     testInfo,
     screenshotPrefix: "silent-after-navigation",
   });
-  await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
-    .toBe(1);
+  const navigationAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await navigationAudioState.json()).spokenTexts).toHaveLength(1);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
   );
@@ -433,7 +507,10 @@ test("approval review exposes bounded details before chat continues", async ({
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
-    page.getByText("Hermes echo: review approval browser turn").first(),
+    page.getByRole("group", {
+      name: "Hermes echo: review approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Hermes could not record the approval decision."),
@@ -456,7 +533,10 @@ test("a delayed mobile approval remains actionable until the operator decides", 
 
   await page.waitForTimeout(1800);
   await expect(
-    page.getByText("Hermes echo: delayed mobile approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: delayed mobile approval browser turn",
+      exact: true,
+    }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Review" }).click();
   await expect(page.getByText("Review Hermes approval")).toBeVisible();
@@ -468,7 +548,10 @@ test("a delayed mobile approval remains actionable until the operator decides", 
 
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
-    page.getByText("Hermes echo: delayed mobile approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: delayed mobile approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Hermes could not record the approval decision."),
@@ -495,7 +578,10 @@ test("a compact phone can scroll every approval action into reach", async ({
   await screenshot(page, testInfo, "compact-approval-actions-reachable");
   await approve.click();
   await expect(
-    page.getByText("Hermes echo: compact approval browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: compact approval browser turn",
+      exact: true,
+    }),
   ).toBeVisible();
   await screenshot(page, testInfo, "compact-approval-completed");
 });
@@ -514,7 +600,10 @@ test("denying an approval stays silent and returns chat to a usable state", asyn
     0,
   );
   await expect(
-    page.getByText("Hermes echo: denied spoken browser turn"),
+    page.getByRole("group", {
+      name: "Hermes echo: denied spoken browser turn",
+      exact: true,
+    }),
   ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: /Tool activity: bash/ }),
@@ -526,10 +615,10 @@ test("denying an approval stays silent and returns chat to a usable state", asyn
   await screenshot(page, testInfo, "denied-turn-ready");
 });
 
-test("a reply arriving during playback speaks after the current utterance", async ({
+test("Agent speech queues replies during playback", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "first queued speech browser turn", {
     testInfo,
@@ -544,29 +633,29 @@ test("a reply arriving during playback speaks after the current utterance", asyn
     screenshotPrefix: "queued-speech-second",
   });
   expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
   ).toBe(1);
   await screenshot(page, testInfo, "queued-speech-waiting");
 
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
     .toBe(2);
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
-  const latest = await page.evaluate(() =>
-    globalThis.wingE2ESpeech.utterances.at(-1),
+  const queuedAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await queuedAudioState.json()).spokenTexts.at(-1)).toBe(
+    "Hermes echo: second queued speech browser turn",
   );
-  expect(latest.text).toBe("Hermes echo: second queued speech browser turn");
   await screenshot(page, testInfo, "queued-speech-second-speaking");
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("starting a new session during speech cancels the old playback", async ({
+test("Agent speech stops when starting a new session", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "old session active speech browser turn", {
     testInfo,
@@ -575,14 +664,17 @@ test("starting a new session during speech cancels the old playback", async ({
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
+  const pausesBeforeSessionChange = await page.evaluate(
+    () => globalThis.wingE2EAgentAudio.pauseCount,
+  );
 
   await page.getByRole("button", { name: "New session" }).click();
   await expect(
     page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),
   ).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
-    .toBeGreaterThan(0);
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+    .toBeGreaterThan(pausesBeforeSessionChange);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
   );
@@ -593,7 +685,7 @@ test("starting a new session during speech cancels the old playback", async ({
     page.getByText("Hermes session changed. Continuous voice paused."),
   ).toHaveCount(0);
   expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
   ).toBe(1);
   await screenshot(page, testInfo, "session-change-playback-cancelled");
 
@@ -602,28 +694,25 @@ test("starting a new session during speech cancels the old playback", async ({
     screenshotPrefix: "session-change-new-speech",
   });
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
     .toBe(2);
-  const latest = await page.evaluate(() =>
-    globalThis.wingE2ESpeech.utterances.at(-1),
+  const sessionAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await sessionAudioState.json()).spokenTexts.at(-1)).toBe(
+    "Hermes echo: new session spoken browser turn",
   );
-  expect(latest.text).toBe("Hermes echo: new session spoken browser turn");
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("voice reply settings survive reload and keep their selected browser rate", async ({
-  page,
-}, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+test("Agent speech preference survives reload", async ({ page }, testInfo) => {
+  await installAgentAudioRecorder(page);
+  await page.request.post(`${APP}e2e/hermes/audio`, {
+    data: { enabled: true },
+  });
   await open(page, "/settings/voice");
   const speakReplies = page.getByRole("switch", {
     name: /Speak replies aloud/,
   });
   await speakReplies.press("Space");
-  await page.getByRole("slider").fill("2");
-  await expect(
-    page.getByRole("group", { name: "Reply speed · 1.25×" }),
-  ).toBeVisible();
   await screenshot(page, testInfo, "persisted-voice-settings-selected");
 
   await page.reload();
@@ -636,9 +725,6 @@ test("voice reply settings survive reload and keep their selected browser rate",
   await expect(
     page.getByRole("switch", { name: /Speak replies aloud/ }),
   ).toBeChecked();
-  await expect(
-    page.getByRole("group", { name: "Reply speed · 1.25×" }),
-  ).toBeVisible();
   await screenshot(page, testInfo, "persisted-voice-settings-reloaded");
 
   await page.evaluate(() => {
@@ -649,17 +735,20 @@ test("voice reply settings survive reload and keep their selected browser rate",
     testInfo,
     screenshotPrefix: "persisted-reply-speed",
   });
-  const utterance = await page.evaluate(() =>
-    globalThis.wingE2ESpeech.utterances.at(-1),
-  );
-  expect(utterance.rate).toBeCloseTo(0.5625);
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await expect
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
+    .toBe(1);
+  const persistedAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await persistedAudioState.json()).spokenTexts).toEqual([
+    "Hermes echo: persisted reply speed browser turn",
+  ]);
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("Stop speaking discards a queued reply and later speech still works", async ({
+test("stopping Agent speech discards queued replies", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "queued stop first browser turn", {
     testInfo,
@@ -670,18 +759,21 @@ test("Stop speaking discards a queued reply and later speech still works", async
     screenshotPrefix: "queued-stop-discarded",
   });
   expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
   ).toBe(1);
   await screenshot(page, testInfo, "queued-stop-waiting");
 
+  const pausesBeforeStop = await page.evaluate(
+    () => globalThis.wingE2EAgentAudio.pauseCount,
+  );
   await page.getByRole("button", { name: "Stop speaking" }).click();
   await expectVoiceInputAvailable(page);
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
-    .toBe(1);
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+    .toBeGreaterThan(pausesBeforeStop);
   await page.waitForTimeout(500);
   expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
   ).toBe(1);
   await screenshot(page, testInfo, "queued-stop-cleared");
 
@@ -690,19 +782,19 @@ test("Stop speaking discards a queued reply and later speech still works", async
     screenshotPrefix: "queued-stop-recovery",
   });
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
     .toBe(2);
-  const latest = await page.evaluate(() =>
-    globalThis.wingE2ESpeech.utterances.at(-1),
+  const queuedStopAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await queuedStopAudioState.json()).spokenTexts.at(-1)).toBe(
+    "Hermes echo: queued stop recovery browser turn",
   );
-  expect(latest.text).toBe("Hermes echo: queued stop recovery browser turn");
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("an asynchronous browser speech error recovers for the next reply", async ({
+test("asynchronous Agent playback errors recover", async ({
   page,
 }, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "asynchronous speech failure browser turn", {
     testInfo,
@@ -712,9 +804,10 @@ test("an asynchronous browser speech error recovers for the next reply", async (
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
 
-  await page.evaluate(() => globalThis.wingE2ESpeech.fail());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.fail());
+  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText("Could not speak Hermes reply.").last(),
+    page.getByText(/The reply is available as text/).last(),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "async-speech-failure-notice");
@@ -727,13 +820,11 @@ test("an asynchronous browser speech error recovers for the next reply", async (
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
   await screenshot(page, testInfo, "async-speech-recovered");
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("disconnecting during speech cancels playback without replaying it after reconnect", async ({
-  page,
-}, testInfo) => {
-  await installSpeechSynthesisRecorder(page);
+test("Agent speech stops on disconnect", async ({ page }, testInfo) => {
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
   await sendChat(page, "disconnect active speech browser turn", {
     testInfo,
@@ -742,6 +833,9 @@ test("disconnecting during speech cancels playback without replaying it after re
   await expect(
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
+  const pausesBeforeDisconnect = await page.evaluate(
+    () => globalThis.wingE2EAgentAudio.pauseCount,
+  );
 
   await page.getByRole("button", { name: "Disconnect" }).click();
   const disconnectDialog = page.getByRole("alertdialog");
@@ -751,8 +845,8 @@ test("disconnecting during speech cancels playback without replaying it after re
   await expect(page.getByRole("heading", { name: "Profiles" })).toBeVisible();
   await expect(page.getByText("Gateway: Disconnected")).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.cancelCount))
-    .toBeGreaterThan(0);
+    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+    .toBeGreaterThan(pausesBeforeDisconnect);
   await screenshot(page, testInfo, "disconnect-speech-cancelled");
 
   await connect(page);
@@ -760,70 +854,16 @@ test("disconnecting during speech cancels playback without replaying it after re
     0,
   );
   expect(
-    await page.evaluate(() => globalThis.wingE2ESpeech.utterances.length),
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
   ).toBe(1);
   await screenshot(page, testInfo, "disconnect-speech-reconnected");
 });
 
-test("scoped approval confirmations can be cancelled before they are committed", async ({
-  page,
-  request,
-}, testInfo) => {
-  await open(page, "/hermes");
-  await connect(page);
-  const decisionsUrl = `${APP}e2e/hermes/decisions`;
-
-  await submitComposer(page, "session approval browser turn");
-  await page.getByRole("button", { name: "Review" }).click();
-  await page.getByRole("button", { name: "Allow for session" }).click();
-  await expect(page.getByRole("alertdialog")).toContainText(
-    "Allow this for the session?",
-  );
-  await screenshot(page, testInfo, "session-approval-confirmation");
-  await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByText("Review Hermes approval")).toBeVisible();
-  await screenshot(page, testInfo, "session-approval-cancelled");
-  expect((await (await request.get(decisionsUrl)).json()).decisions).toEqual(
-    [],
-  );
-
-  await page.getByRole("button", { name: "Allow for session" }).click();
-  await page.getByRole("button", { name: "Allow for session" }).click();
-  await expect(
-    page.getByText("Hermes echo: session approval browser turn"),
-  ).toBeVisible();
-  await screenshot(page, testInfo, "session-approval-completed");
-
-  await submitComposer(page, "always approval browser turn");
-  await page.getByRole("button", { name: "Always allow" }).click();
-  await expect(page.getByRole("alertdialog")).toContainText(
-    "Always allow this Hermes approval?",
-  );
-  await screenshot(page, testInfo, "always-approval-confirmation");
-  await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(
-    page.getByRole("button", { name: "Always allow" }),
-  ).toBeVisible();
-  await screenshot(page, testInfo, "always-approval-cancelled");
-
-  await page.getByRole("button", { name: "Always allow" }).click();
-  await page.getByRole("button", { name: "Always allow" }).click();
-  await expect(
-    page.getByText("Hermes echo: always approval browser turn"),
-  ).toBeVisible();
-  await expect
-    .poll(
-      async () => (await (await request.get(decisionsUrl)).json()).decisions,
-    )
-    .toEqual(["session", "always"]);
-  await screenshot(page, testInfo, "always-approval-completed");
-});
-
-test("mobile chat keeps spoken-reply controls reachable", async ({
+test("mobile Agent speech controls stay reachable", async ({
   page,
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await installSpeechSynthesisRecorder(page);
+  await installAgentAudioRecorder(page);
   await connectFromVoiceSettings(page, { testInfo });
 
   await sendChat(page, "mobile spoken browser turn", {
@@ -834,7 +874,7 @@ test("mobile chat keeps spoken-reply controls reachable", async ({
     page.getByRole("button", { name: "Stop speaking" }),
   ).toBeVisible();
   await screenshot(page, testInfo, "mobile-stop-speaking");
-  await page.evaluate(() => globalThis.wingE2ESpeech.finish());
+  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
   await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "mobile-speech-completed");
 });

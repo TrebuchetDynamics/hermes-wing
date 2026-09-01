@@ -30,7 +30,7 @@ test("Hermes empty state opens secure web enrollment", async ({ page }) => {
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Enter gateway manually" }),
+    page.getByRole("button", { name: "Connect one profile manually" }),
   ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(
     0,
@@ -71,6 +71,15 @@ test("Profiles fail closed when profile administration is not advertised", async
     ),
   ).toBeVisible();
   await expect(page.getByText("New Agent")).toHaveCount(0);
+});
+
+test("Standalone persona route stays explicit without a selected profile", async ({
+  page,
+}) => {
+  await openConnected(page, "/soul");
+
+  await expect(page.getByText("No profiles available")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Persona" })).toHaveCount(0);
 });
 
 test("Providers exposes runtime models without unsupported mutation controls", async ({

@@ -1,6 +1,8 @@
 import '../../../core/protocol/voice_unavailable_reason.dart';
+import '../../../shared/security/wing_redaction.dart';
 import '../../../shared/voice/voice_capture_failures.dart';
 import '../../../shared/voice/voice_capture_service.dart';
+import 'hermes_voice_failure.dart';
 
 enum HermesVoiceCaptureStatus { unavailable, captured, failed }
 
@@ -9,7 +11,8 @@ class HermesVoiceCaptureOutcome {
     required this.status,
     this.capture,
     this.error,
-    this.errorMessage,
+    this.failure,
+    this.errorDetail,
   });
 
   const HermesVoiceCaptureOutcome.unavailable()
@@ -20,17 +23,20 @@ class HermesVoiceCaptureOutcome {
 
   const HermesVoiceCaptureOutcome.failed({
     required Object error,
-    required String errorMessage,
+    required HermesVoiceFailure failure,
+    String? errorDetail,
   }) : this._(
          status: HermesVoiceCaptureStatus.failed,
          error: error,
-         errorMessage: errorMessage,
+         failure: failure,
+         errorDetail: errorDetail,
        );
 
   final HermesVoiceCaptureStatus status;
   final VoiceCapture? capture;
   final Object? error;
-  final String? errorMessage;
+  final HermesVoiceFailure? failure;
+  final String? errorDetail;
 }
 
 class HermesVoiceCaptureFlow {
@@ -50,35 +56,47 @@ class HermesVoiceCaptureFlow {
     } on VoiceCaptureTimeout catch (error) {
       return HermesVoiceCaptureOutcome.failed(
         error: error,
-        errorMessage: 'Voice capture timed out.',
+        failure: HermesVoiceFailure.timedOut,
       );
     } on DeviceSpeechUnavailable catch (error) {
       return HermesVoiceCaptureOutcome.failed(
         error: error,
-        errorMessage: _deviceSpeechUnavailableMessage(error.message),
+        failure: _deviceSpeechUnavailableFailure(error.message),
       );
     } on SpeechToTextCaptureFailure catch (error) {
       return HermesVoiceCaptureOutcome.failed(
         error: error,
-        errorMessage: error.isNoTranscript
-            ? noSpeechDetectedVoiceCaptureMessage
-            : 'Voice capture failed: $error',
+        failure: error.isNoTranscript
+            ? HermesVoiceFailure.noSpeech
+            : HermesVoiceFailure.generic,
+        errorDetail: error.isNoTranscript
+            ? null
+            : _safeVoiceCaptureErrorDetail(error),
       );
     } catch (error) {
       return HermesVoiceCaptureOutcome.failed(
         error: error,
-        errorMessage: 'Voice capture failed: $error',
+        failure: HermesVoiceFailure.generic,
+        errorDetail: _safeVoiceCaptureErrorDetail(error),
       );
     }
   }
 }
 
-String _deviceSpeechUnavailableMessage(String reason) {
+String _safeVoiceCaptureErrorDetail(Object error) {
+  final detail = error.toString().replaceFirst(
+    RegExp(r'^(?:Bad state|Exception):\s*'),
+    '',
+  );
+  return wingRedactSensitiveText(detail);
+}
+
+HermesVoiceFailure _deviceSpeechUnavailableFailure(String reason) {
   return switch (canonicalVoiceUnavailableReason(reason)) {
     microphonePermissionDeniedReason =>
-      microphonePermissionDeniedVoiceCaptureMessage,
+      HermesVoiceFailure.microphonePermissionDenied,
     deviceSttLanguageUnavailableReason =>
-      deviceSpeechLanguageUnavailableVoiceCaptureMessage,
-    _ => deviceSpeechUnavailableVoiceCaptureMessage,
+      HermesVoiceFailure.deviceLanguageUnavailable,
+    _ => HermesVoiceFailure.deviceSpeechUnavailable,
   };
 }

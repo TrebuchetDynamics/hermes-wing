@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
-import '../../hermes_chat/screens/hermes_chat_screen.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../providers/hermes_enrollment_provider.dart';
+
+enum _EnrollmentInputError { invalid, clipboardEmpty }
 
 /// Reviews a one-time Hermes Wing connect pairing request before exchanging it.
 /// Reached only via an Android connect intent, so it lives outside the
@@ -28,10 +30,10 @@ class HermesEnrollmentScreen extends ConsumerStatefulWidget {
 class _HermesEnrollmentScreenState
     extends ConsumerState<HermesEnrollmentScreen> {
   StreamSubscription<String>? _subscription;
-  String? _payloadError;
-  bool _redirected = false;
+  _EnrollmentInputError? _payloadError;
   bool _bootstrapped = false;
   bool _scanning = false;
+  bool _importingImage = false;
 
   @override
   void didChangeDependencies() {
@@ -39,46 +41,116 @@ class _HermesEnrollmentScreenState
     if (_bootstrapped) return;
     _bootstrapped = true;
     final source = ref.read(hermesConnectIntentSourceProvider);
-    _subscription = source.payloadEvents().listen(_handlePayload);
+    _subscription = source.payloadEvents().listen(_handleExplicitHandoff);
     unawaited(
       source.initialPayload().then((payload) {
         if (!mounted || payload == null) return;
-        _handlePayload(payload);
+        _handleExplicitHandoff(payload);
       }),
     );
   }
 
-  void _handlePayload(String raw, {bool cleartextOriginConfirmed = false}) {
+  void _handleExplicitHandoff(
+    String raw, {
+    bool cleartextOriginConfirmed = false,
+  }) {
     if (!mounted) return;
     try {
-      final payload = HermesEnrollmentPayload.parse(
+      final payload = HermesEnrollmentPayload.parseExplicitHandoff(
         raw,
         cleartextOriginConfirmed: cleartextOriginConfirmed,
       );
       setState(() => _payloadError = null);
       unawaited(ref.read(hermesEnrollmentControllerProvider).inspect(payload));
     } on HermesEnrollmentCleartextOriginRequired catch (error) {
-      unawaited(_confirmCleartextOrigin(raw, error.origin));
-    } on FormatException catch (error) {
-      setState(() => _payloadError = error.message);
+      // Parse the exact candidate synchronously into the smallest structured
+      // enrollment value before showing UI. The raw shared prose/link must not
+      // remain captured across the dialog await.
+      try {
+        final payload = HermesEnrollmentPayload.parseExplicitHandoff(
+          raw,
+          cleartextOriginConfirmed: true,
+        );
+        unawaited(_confirmCleartextOrigin(payload, error.origin));
+      } on FormatException {
+        setState(() => _payloadError = _EnrollmentInputError.invalid);
+      }
+    } on FormatException {
+      setState(() => _payloadError = _EnrollmentInputError.invalid);
     }
+  }
+
+  Future<void> _pastePairingLink() async {
+    setState(() => _payloadError = null);
+    final ClipboardData? data;
+    try {
+      data = await Clipboard.getData(Clipboard.kTextPlain);
+    } on PlatformException {
+      if (mounted) {
+        setState(() => _payloadError = _EnrollmentInputError.invalid);
+      }
+      return;
+    }
+    if (!mounted) return;
+    final raw = data?.text;
+    if (raw == null || raw.trim().isEmpty) {
+      setState(() => _payloadError = _EnrollmentInputError.clipboardEmpty);
+      return;
+    }
+    _handleExplicitHandoff(raw);
   }
 
   Future<void> _scanQrCode() async {
     if (_scanning) return;
     setState(() {
       _scanning = true;
+      _importingImage = false;
       _payloadError = null;
     });
-    final payload = await ref
-        .read(hermesConnectIntentSourceProvider)
-        .scanQrCode();
-    if (!mounted) return;
-    setState(() => _scanning = false);
-    if (payload != null) _handlePayload(payload);
+    String? payload;
+    try {
+      payload = await ref.read(hermesConnectIntentSourceProvider).scanQrCode();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _payloadError = _EnrollmentInputError.invalid);
+      }
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
+    if (mounted && payload != null) _handleExplicitHandoff(payload);
   }
 
-  Future<void> _confirmCleartextOrigin(String raw, Uri origin) async {
+  Future<void> _importQrImage() async {
+    if (_scanning) return;
+    setState(() {
+      _scanning = true;
+      _importingImage = true;
+      _payloadError = null;
+    });
+    String? payload;
+    try {
+      payload = await ref
+          .read(hermesConnectIntentSourceProvider)
+          .importQrImage();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _payloadError = _EnrollmentInputError.invalid);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _scanning = false;
+          _importingImage = false;
+        });
+      }
+    }
+    if (mounted && payload != null) _handleExplicitHandoff(payload);
+  }
+
+  Future<void> _confirmCleartextOrigin(
+    HermesEnrollmentPayload payload,
+    Uri origin,
+  ) async {
     final strings = AppLocalizations.of(context);
     final confirmed =
         await showDialog<bool>(
@@ -102,7 +174,8 @@ class _HermesEnrollmentScreenState
         ) ??
         false;
     if (!mounted || !confirmed) return;
-    _handlePayload(raw, cleartextOriginConfirmed: true);
+    setState(() => _payloadError = null);
+    unawaited(ref.read(hermesEnrollmentControllerProvider).inspect(payload));
   }
 
   @override
@@ -123,29 +196,16 @@ class _HermesEnrollmentScreenState
 
   void _openManualConnection() {
     ref.read(hermesEnrollmentControllerProvider).cancel();
-    unawaited(
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) =>
-              const HermesChatScreen(initiallyEditingConnection: true),
-        ),
-      ),
-    );
+    context.push(AppRoutes.addHermes);
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(hermesEnrollmentControllerProvider);
-    if (controller.status == HermesEnrollmentStatus.confirmed && !_redirected) {
-      _redirected = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go(AppRoutes.hermes);
-      });
-    }
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).enrollTitle)),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: _buildBody(controller),
         ),
@@ -172,17 +232,14 @@ class _HermesEnrollmentScreenState
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              Text(strings.enrollInvalidLinkBody, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
               Text(
-                strings.enrollInvalidLinkDetail(_payloadError!),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                _payloadError == _EnrollmentInputError.clipboardEmpty
+                    ? strings.enrollClipboardEmpty
+                    : strings.enrollInvalidLinkBody,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              _entryActions(),
+              _entryActions(recovery: true),
             ],
           ),
         ),
@@ -218,43 +275,223 @@ class _HermesEnrollmentScreenState
       case HermesEnrollmentStatus.confirming:
         return _buildPreview(controller);
       case HermesEnrollmentStatus.confirmed:
-        return Center(
-          child: Text(
-            strings.enrollConnected,
-            key: const ValueKey('hermes-enrollment-confirmed'),
-          ),
-        );
-      case HermesEnrollmentStatus.failed:
+        final count = controller.connectedProfileCount;
+        if (count == null) return const SizedBox.shrink();
         return Center(
           child: Column(
+            key: const ValueKey('hermes-enrollment-confirmed'),
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(Icons.check_circle_outline, size: 48),
+              const SizedBox(height: 12),
               Text(
-                controller.errorMessage ?? strings.enrollFailed,
-                key: const ValueKey('hermes-enrollment-error'),
+                strings.enrollConnectedProfiles(count),
+                style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
-              FilledButton(
-                key: const ValueKey('hermes-enrollment-dismiss'),
-                onPressed: _cancel,
-                child: Text(strings.enrollCloseAction),
+              const SizedBox(height: 8),
+              Text(
+                controller.confirmedLoopback &&
+                        !kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.android
+                    ? strings.enrollConnectedLocalBody
+                    : strings.enrollConnectedBody,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  FilledButton(
+                    key: const ValueKey('hermes-enrollment-view-profiles'),
+                    onPressed: () =>
+                        _leaveConfirmed(controller, AppRoutes.profiles),
+                    child: Text(strings.enrollViewProfilesAction),
+                  ),
+                  FilledButton.tonal(
+                    key: const ValueKey('hermes-enrollment-open-chat'),
+                    onPressed: () =>
+                        _leaveConfirmed(controller, AppRoutes.hermes),
+                    child: Text(strings.enrollOpenChatAction),
+                  ),
+                ],
               ),
             ],
           ),
         );
+      case HermesEnrollmentStatus.expired:
+        return _buildExpired();
+      case HermesEnrollmentStatus.inspectionFailed:
+        return _buildFailure(exchangeFailed: false);
+      case HermesEnrollmentStatus.exchangeFailed:
+        return _buildFailure(exchangeFailed: true);
     }
   }
 
-  Widget _entryActions() {
+  Widget _buildFailure({required bool exchangeFailed}) {
     final strings = AppLocalizations.of(context);
+    final buttonStyle = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
+    );
+    return Center(
+      child: Semantics(
+        liveRegion: true,
+        child: Column(
+          key: const ValueKey('hermes-enrollment-error'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Icon(Icons.link_off, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              exchangeFailed
+                  ? strings.enrollExchangeFailedTitle
+                  : strings.enrollInspectionFailedTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              exchangeFailed
+                  ? strings.enrollExchangeFailedBody
+                  : strings.enrollInspectionFailedBody,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            _recoveryActions(buttonStyle),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpired() {
+    final strings = AppLocalizations.of(context);
+    final buttonStyle = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
+    );
+    return Center(
+      child: Semantics(
+        liveRegion: true,
+        child: Column(
+          key: const ValueKey('hermes-enrollment-expired'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Icon(Icons.timer_off_outlined, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              strings.enrollExpiredTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(strings.enrollExpiredBody, textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            _recoveryActions(buttonStyle),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _leaveConfirmed(HermesEnrollmentController controller, String route) {
+    controller.clearConfirmed();
+    context.go(route);
+  }
+
+  Widget _recoveryActions(ButtonStyle buttonStyle) {
+    final strings = AppLocalizations.of(context);
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FilledButton.icon(
+          key: const ValueKey('hermes-enrollment-paste-another'),
+          style: buttonStyle,
+          onPressed: _scanning ? null : () => unawaited(_pastePairingLink()),
+          icon: const Icon(Icons.content_paste_outlined),
+          label: Text(strings.enrollPasteAnotherLink),
+        ),
+        if (isAndroid) ...[
+          const SizedBox(height: 12),
+          FilledButton.tonalIcon(
+            key: const ValueKey('hermes-enrollment-scan-another'),
+            style: buttonStyle,
+            onPressed: _scanning ? null : () => unawaited(_scanQrCode()),
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(strings.enrollScanAnotherQr),
+          ),
+          const SizedBox(height: 12),
+          _importQrImageButton(style: buttonStyle),
+        ] else ...[
+          const SizedBox(height: 12),
+          _entryActions(),
+        ],
+      ],
+    );
+  }
+
+  Widget _entryActions({bool recovery = false}) {
+    final strings = AppLocalizations.of(context);
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    if (isAndroid) {
+      final buttonStyle = ButtonStyle(
+        minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
+      );
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilledButton.tonalIcon(
+            key: const ValueKey('hermes-enrollment-local-setup'),
+            style: buttonStyle,
+            onPressed: _scanning
+                ? null
+                : () => context.push(AppRoutes.localSetup),
+            icon: const Icon(Icons.phone_android_outlined),
+            label: Text(strings.enrollInstallOnPhoneAction),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            key: const ValueKey('hermes-enrollment-paste-link'),
+            style: buttonStyle,
+            onPressed: _scanning ? null : () => unawaited(_pastePairingLink()),
+            icon: const Icon(Icons.content_paste_outlined),
+            label: Text(strings.enrollPasteLink),
+          ),
+          const SizedBox(height: 12),
+          _scanButton(style: buttonStyle),
+          const SizedBox(height: 12),
+          _importQrImageButton(style: buttonStyle),
+          const SizedBox(height: 12),
+          Text(strings.enrollSameDeviceHelper, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            key: const ValueKey('hermes-enrollment-manual-connect'),
+            style: buttonStyle,
+            onPressed: _scanning ? null : _openManualConnection,
+            icon: const Icon(Icons.link_outlined),
+            label: Text(strings.enrollManualConnectAction),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            strings.enrollManualConnectWarning,
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      );
+    }
+
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 12,
       runSpacing: 12,
       children: [
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-          _scanButton(),
         if (!kIsWeb && defaultTargetPlatform == TargetPlatform.linux)
           FilledButton.tonalIcon(
             key: const ValueKey('hermes-enrollment-local-setup'),
@@ -262,6 +499,18 @@ class _HermesEnrollmentScreenState
             icon: const Icon(Icons.computer_outlined),
             label: Text(strings.localSetupAction),
           ),
+        FilledButton.icon(
+          key: ValueKey(
+            recovery
+                ? 'hermes-enrollment-paste-another'
+                : 'hermes-enrollment-paste-link',
+          ),
+          onPressed: _scanning ? null : () => unawaited(_pastePairingLink()),
+          icon: const Icon(Icons.content_paste_outlined),
+          label: Text(
+            recovery ? strings.enrollPasteAnotherLink : strings.enrollPasteLink,
+          ),
+        ),
         OutlinedButton.icon(
           key: const ValueKey('hermes-enrollment-manual-connect'),
           onPressed: _scanning ? null : _openManualConnection,
@@ -272,10 +521,11 @@ class _HermesEnrollmentScreenState
     );
   }
 
-  Widget _scanButton() {
+  Widget _scanButton({ButtonStyle? style}) {
     final strings = AppLocalizations.of(context);
-    return FilledButton.icon(
+    return FilledButton.tonalIcon(
       key: const ValueKey('hermes-enrollment-scan-qr'),
+      style: style,
       onPressed: _scanning ? null : () => unawaited(_scanQrCode()),
       icon: _scanning
           ? const SizedBox(
@@ -287,6 +537,23 @@ class _HermesEnrollmentScreenState
       label: Text(
         _scanning ? strings.enrollOpeningScanner : strings.enrollScanQr,
       ),
+    );
+  }
+
+  Widget _importQrImageButton({ButtonStyle? style}) {
+    final strings = AppLocalizations.of(context);
+    return OutlinedButton.icon(
+      key: const ValueKey('hermes-enrollment-import-qr-image'),
+      style: style,
+      onPressed: _scanning ? null : () => unawaited(_importQrImage()),
+      icon: _importingImage
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.image_outlined),
+      label: Text(strings.enrollImportQrImage),
     );
   }
 
@@ -306,6 +573,10 @@ class _HermesEnrollmentScreenState
               ? '${originUri.host}:${originUri.port}'
               : originUri.host)
         : (originUri?.toString() ?? preview.origin);
+    final wingLinkHost = _displayAuthority(controller.wingLinkOrigin);
+    final reviewedLabel = preview.label.isEmpty
+        ? strings.enrollUnlabeled
+        : preview.label;
     final cleartext = originUri?.scheme == 'http';
     final previewUri = Uri.tryParse(preview.origin);
     final originMismatch =
@@ -317,22 +588,21 @@ class _HermesEnrollmentScreenState
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          strings.enrollGrantQuestion,
+          strings.enrollGrantQuestion(preview.connectionCount, reviewedLabel),
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
         _PreviewRow(
-          label: strings.enrollEndpointLabel,
+          label: strings.enrollHermesAgentLabel,
           value: host,
           valueKey: 'hermes-enrollment-host',
         ),
-        _PreviewRow(
-          label: strings.enrollDeviceLabel,
-          value: preview.label.isEmpty
-              ? strings.enrollUnlabeled
-              : preview.label,
-          valueKey: 'hermes-enrollment-label',
-        ),
+        if (wingLinkHost != null)
+          _PreviewRow(
+            label: strings.enrollWingLinkLabel,
+            value: wingLinkHost,
+            valueKey: 'hermes-enrollment-wing-link-host',
+          ),
         _PreviewRow(
           label: strings.enrollRequestedAccess,
           value: preview.scopes.isEmpty
@@ -341,8 +611,13 @@ class _HermesEnrollmentScreenState
           valueKey: 'hermes-enrollment-scopes',
         ),
         _PreviewRow(
+          label: strings.enrollProfilesLabel,
+          value: preview.connectionCount.toString(),
+          valueKey: 'hermes-enrollment-profile-count',
+        ),
+        _PreviewRow(
           label: strings.enrollExpiresLabel,
-          value: _formatExpiry(strings, preview.expiresAt),
+          value: _formatRemainingTime(strings, controller.remainingTime),
           valueKey: 'hermes-enrollment-expiry',
         ),
         if (cleartext) ...[
@@ -361,14 +636,15 @@ class _HermesEnrollmentScreenState
           ),
         ],
         const SizedBox(height: 24),
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
             OutlinedButton(
               key: const ValueKey('hermes-enrollment-cancel'),
               onPressed: confirming ? null : _cancel,
               child: Text(strings.cancelAction),
             ),
-            const SizedBox(width: 12),
             FilledButton(
               key: const ValueKey('hermes-enrollment-confirm'),
               onPressed: confirming
@@ -380,12 +656,21 @@ class _HermesEnrollmentScreenState
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(strings.enrollConnectAction),
+                  : Text(
+                      strings.enrollConnectProfilesAction(
+                        preview.connectionCount,
+                      ),
+                    ),
             ),
           ],
         ),
       ],
     );
+  }
+
+  String? _displayAuthority(Uri? uri) {
+    if (uri == null || uri.host.isEmpty) return null;
+    return uri.hasPort ? '${uri.host}:${uri.port}' : uri.host;
   }
 
   /// Scheme+host+port only, lowercased — the identity that matters for
@@ -395,12 +680,12 @@ class _HermesEnrollmentScreenState
     return '${uri.scheme.toLowerCase()}://${uri.host.toLowerCase()}$port';
   }
 
-  String _formatExpiry(AppLocalizations strings, DateTime? expiresAt) {
-    if (expiresAt == null) return strings.enrollExpiryUnknown;
-    final local = expiresAt.toLocal();
-    String two(int value) => value.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
+  String _formatRemainingTime(AppLocalizations strings, Duration? remaining) {
+    if (remaining == null) return strings.enrollExpiryUnknown;
+    final seconds = remaining.inSeconds;
+    final minutes = seconds ~/ Duration.secondsPerMinute;
+    final remainder = seconds % Duration.secondsPerMinute;
+    return '$minutes:${remainder.toString().padLeft(2, '0')}';
   }
 }
 

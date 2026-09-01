@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../protocol/wing_json.dart';
 import '../models/hermes_capabilities.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
 import '../models/hermes_model_assignment.dart';
+import '../models/hermes_model_options.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_provider.dart';
 import '../models/hermes_run.dart';
@@ -121,8 +123,31 @@ class HermesApiClient {
         .toList(growable: false);
   }
 
+  Future<HermesModelOptions> getModelOptions({
+    String? profile,
+    bool refresh = false,
+  }) async {
+    final uri = _scoped(config.modelOptionsUri, profile);
+    final requestUri = refresh
+        ? uri.replace(
+            queryParameters: {...uri.queryParameters, 'refresh': 'true'},
+          )
+        : uri;
+    return HermesModelOptions.fromJson(await _getJson(requestUri));
+  }
+
   Future<List<HermesJob>> listJobs({String? profile}) async {
-    final body = await _getJson(_scoped(config.jobsUri, profile));
+    // Hermes Agent omits disabled jobs unless the caller opts in. Include them
+    // so a paused schedule remains visible and can be resumed from Wing once
+    // the corresponding mutation contract is advertised.
+    final scopedUri = _scoped(config.jobsUri, profile);
+    final uri = scopedUri.replace(
+      queryParameters: {
+        ...scopedUri.queryParameters,
+        'include_disabled': 'true',
+      },
+    );
+    final body = await _getJson(uri);
     final rawJobs = body['jobs'] ?? body['data'];
     return wingMapListFromJson(rawJobs)
         .map(HermesJob.fromJson)
@@ -224,6 +249,38 @@ class HermesApiClient {
     return const HermesSseEventDecoder().decodeJsonEventStream(chunks);
   }
 
+  Future<String> transcribePcm16(Uint8List pcm16, {String? profile}) async {
+    final wav = _pcm16MonoWav(pcm16, sampleRate: 16000);
+    final response = await _postJson(
+      _scoped(config.audioTranscribeUri, profile),
+      {'data_url': 'data:audio/wav;base64,${base64Encode(wav)}'},
+    );
+    final transcript = wingStringFromJson(
+      response['transcript'],
+      fallback: '',
+    ).trim();
+    if (transcript.isEmpty) {
+      throw const FormatException('Hermes returned an empty transcript.');
+    }
+    return transcript;
+  }
+
+  Future<Uint8List> synthesizeSpeech(String text, {String? profile}) async {
+    final response = await _postJson(_scoped(config.audioSpeakUri, profile), {
+      'text': text.trim(),
+    });
+    final dataUrl = wingStringFromJson(response['data_url'], fallback: '');
+    final data = UriData.parse(dataUrl);
+    if (!data.isBase64 || !data.mimeType.startsWith('audio/')) {
+      throw const FormatException('Hermes returned invalid speech audio.');
+    }
+    final bytes = data.contentAsBytes();
+    if (bytes.isEmpty) {
+      throw const FormatException('Hermes returned empty speech audio.');
+    }
+    return bytes;
+  }
+
   Future<HermesRun> startRun({
     required String sessionId,
     required Object message,
@@ -282,14 +339,40 @@ class HermesApiClient {
     required String decision,
     String? profile,
   }) async {
-    await _postJson(_scoped(config.runApprovalUri(runId), profile), {
-      'approval_id': approvalId,
-      'decision': decision,
-    });
+    final body = <String, Object?>{'choice': decision};
+    if (approvalId.trim().isNotEmpty) body['approval_id'] = approvalId.trim();
+    await _postJson(_scoped(config.runApprovalUri(runId), profile), body);
   }
 
   Future<void> stopRun(String runId, {String? profile}) async {
     await _postJson(_scoped(config.runStopUri(runId), profile), const {});
+  }
+
+  Future<void> steerRun(
+    String runId, {
+    required String text,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.runSteerUri(runId), profile),
+      {'input': text.trim()},
+    );
+    if (!wingBoolFromJson(response['accepted'])) {
+      throw StateError('Hermes did not accept the steer input.');
+    }
+  }
+
+  Future<HermesSessionModelLock> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.sessionModelLockUri(sessionId), profile),
+      {'provider': provider.trim(), 'model': model.trim()},
+    );
+    return HermesSessionModelLock.fromJson(response);
   }
 
   /// Inspects a one-time pairing code against the operator-supplied
@@ -613,22 +696,46 @@ class HermesEnrollmentPreview {
     required this.label,
     required this.origin,
     required this.scopes,
+    this.connectionCount = 1,
     this.expiresAt,
+    this.hostFingerprint = '',
+    this.protocolGeneration = 1,
   });
 
   factory HermesEnrollmentPreview.fromJson(Map<String, Object?> json) {
+    final connectionCount = json.containsKey('connection_count')
+        ? json['connection_count']
+        : 1;
+    if (connectionCount is! int ||
+        connectionCount < 1 ||
+        connectionCount > 100) {
+      throw const FormatException(
+        'Hermes enrollment connection count is invalid.',
+      );
+    }
     return HermesEnrollmentPreview(
       label: wingStringFromJson(json['label'], fallback: ''),
       origin: wingStringFromJson(json['origin'], fallback: ''),
       scopes: wingStringListFromJson(json['scopes']),
+      connectionCount: connectionCount,
       expiresAt: _epochSecondsToUtcDateTime(json['expires_at']),
+      hostFingerprint: wingStringFromJson(
+        json['host_fingerprint'],
+        fallback: '',
+      ),
+      protocolGeneration: json['protocol_generation'] is int
+          ? json['protocol_generation']! as int
+          : 1,
     );
   }
 
   final String label;
   final String origin;
   final List<String> scopes;
+  final int connectionCount;
   final DateTime? expiresAt;
+  final String hostFingerprint;
+  final int protocolGeneration;
 }
 
 /// Result of a successful one-time enrollment exchange. [token] is the raw
@@ -642,9 +749,36 @@ class HermesIssuedOperatorToken {
     this.wingLinkOrigin = '',
     this.wingLinkToken = '',
     this.wingLinkCredentialId = '',
+    this.hostFingerprint = '',
+    this.deviceId = '',
+    this.deviceScopes = const [],
+    this.protocolGeneration = 1,
+    this.connections = const [],
   });
 
   factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
+    final rawConnections = json['connections'];
+    final connections = <HermesIssuedConnection>[];
+    if (json.containsKey('connections')) {
+      if (rawConnections is! List || rawConnections.isEmpty) {
+        throw const FormatException('Hermes connection bundle is invalid.');
+      }
+      for (final row in rawConnections) {
+        if (row is! Map) {
+          throw const FormatException('Hermes connection bundle is invalid.');
+        }
+        final connection = HermesIssuedConnection.fromJson(
+          Map<String, Object?>.from(row),
+        );
+        if (connection.origin.isEmpty ||
+            connection.token.isEmpty ||
+            connection.profileId.isEmpty ||
+            connection.credentialId.isEmpty) {
+          throw const FormatException('Hermes connection bundle is invalid.');
+        }
+        connections.add(connection);
+      }
+    }
     return HermesIssuedOperatorToken(
       token: wingStringFromJson(json['token'], fallback: ''),
       label: wingStringFromJson(json['label'], fallback: ''),
@@ -658,6 +792,16 @@ class HermesIssuedOperatorToken {
         json['wing_link_credential_id'],
         fallback: '',
       ),
+      hostFingerprint: wingStringFromJson(
+        json['host_fingerprint'],
+        fallback: '',
+      ),
+      deviceId: wingStringFromJson(json['device_id'], fallback: ''),
+      deviceScopes: wingStringListFromJson(json['device_scopes']),
+      protocolGeneration: json['protocol_generation'] is int
+          ? json['protocol_generation']! as int
+          : 1,
+      connections: List.unmodifiable(connections),
     );
   }
 
@@ -667,6 +811,65 @@ class HermesIssuedOperatorToken {
   final String wingLinkOrigin;
   final String wingLinkToken;
   final String wingLinkCredentialId;
+  final String hostFingerprint;
+  final String deviceId;
+  final List<String> deviceScopes;
+  final int protocolGeneration;
+  final List<HermesIssuedConnection> connections;
+}
+
+/// One Hermes-owned endpoint included in a reviewed Wing Link pairing bundle.
+/// The token is write-only pairing material and must never reach presentation.
+class HermesIssuedConnection {
+  const HermesIssuedConnection({
+    required this.origin,
+    required this.token,
+    required this.label,
+    required this.profileId,
+    this.credentialId = '',
+  });
+
+  factory HermesIssuedConnection.fromJson(Map<String, Object?> json) =>
+      HermesIssuedConnection(
+        origin: wingStringFromJson(json['origin'], fallback: ''),
+        token: wingStringFromJson(json['token'], fallback: ''),
+        label: wingStringFromJson(json['label'], fallback: ''),
+        profileId: wingStringFromJson(json['profile_id'], fallback: ''),
+        credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
+      );
+
+  final String origin;
+  final String token;
+  final String label;
+  final String profileId;
+  final String credentialId;
+}
+
+Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
+  if (pcm16.isEmpty || pcm16.length.isOdd) {
+    throw const FormatException('PCM16 audio must contain complete samples.');
+  }
+  final wav = ByteData(44 + pcm16.length);
+  void ascii(int offset, String value) {
+    for (var i = 0; i < value.length; i++) {
+      wav.setUint8(offset + i, value.codeUnitAt(i));
+    }
+  }
+
+  ascii(0, 'RIFF');
+  wav.setUint32(4, 36 + pcm16.length, Endian.little);
+  ascii(8, 'WAVEfmt ');
+  wav.setUint32(16, 16, Endian.little);
+  wav.setUint16(20, 1, Endian.little);
+  wav.setUint16(22, 1, Endian.little);
+  wav.setUint32(24, sampleRate, Endian.little);
+  wav.setUint32(28, sampleRate * 2, Endian.little);
+  wav.setUint16(32, 2, Endian.little);
+  wav.setUint16(34, 16, Endian.little);
+  ascii(36, 'data');
+  wav.setUint32(40, pcm16.length, Endian.little);
+  wav.buffer.asUint8List(44).setAll(0, pcm16);
+  return wav.buffer.asUint8List();
 }
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {

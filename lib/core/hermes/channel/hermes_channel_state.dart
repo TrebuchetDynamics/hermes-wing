@@ -4,6 +4,7 @@ import '../models/hermes_chat_turn.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
 import '../models/hermes_model_assignment.dart';
+import '../models/hermes_model_options.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_provider.dart';
 import '../models/hermes_runtime_model.dart';
@@ -36,6 +37,8 @@ class HermesChannelState {
     this.selectedProfileId,
     this.providers = const [],
     this.modelInventory,
+    this.modelOptions,
+    this.sessionModelLocks = const {},
     this.connectedBaseUrl,
     this.connectedWithApiKey = false,
     this.hasUnreconciledRun = false,
@@ -83,6 +86,13 @@ class HermesChannelState {
   /// loaded on demand. Null until the model surface loads it.
   final HermesModelInventory? modelInventory;
 
+  /// The Agent picker inventory for session-scoped model selection.
+  final HermesModelOptions? modelOptions;
+
+  /// Only contains locks confirmed by this connection; a reconnect never
+  /// pretends a cached client mutation is still authoritative.
+  final Map<String, HermesSessionModelLock> sessionModelLocks;
+
   final String? connectedBaseUrl;
   final bool connectedWithApiKey;
   final bool hasUnreconciledRun;
@@ -118,12 +128,8 @@ class HermesChannelState {
         '/api/sessions/{session_id}/fork',
       );
 
-  bool get canReadDetailedHealth => _allowsEndpoint(
-    'health_detailed',
-    'GET',
-    '/health/detailed',
-    'gateway:read',
-  );
+  bool get canReadDetailedHealth =>
+      _authorizesEndpoint('health_detailed', 'GET', '/health/detailed');
 
   bool get canReadSkills => _authorizesEndpoint('skills', 'GET', '/v1/skills');
 
@@ -163,6 +169,19 @@ class HermesChannelState {
     'models:write',
   );
 
+  bool get canReadModelOptions =>
+      _authorizesEndpoint('model_options', 'GET', '/api/model/options');
+
+  bool get canLockSessionModel => _authorizesEndpoint(
+    'session_model_lock',
+    'POST',
+    '/api/sessions/{session_id}/model',
+  );
+
+  bool get canSteerRuns =>
+      capabilities?.supportsFeature('run_steer') == true &&
+      _authorizesEndpoint('run_steer', 'POST', '/v1/runs/{run_id}/steer');
+
   bool _authorizesEndpoint(String name, String method, String path) {
     final document = capabilities;
     if (document == null ||
@@ -172,6 +191,8 @@ class HermesChannelState {
     }
     final endpoint = document.endpoints[name];
     return endpoint != null &&
+        (!endpoint.profileScoped ||
+            document.profileContext.isSupportedQueryContext) &&
         endpoint.requiredScopes.every(document.auth.allows);
   }
 
@@ -180,7 +201,8 @@ class HermesChannelState {
     return document != null &&
         document.supportsSchema &&
         document.auth.allows(scope) &&
-        document.advertisesScopedEndpoint(name, method, path, scope);
+        document.advertisesScopedEndpoint(name, method, path, scope) &&
+        _authorizesEndpoint(name, method, path);
   }
 
   HermesProfile? get selectedProfile {
@@ -273,6 +295,10 @@ class HermesChannelState {
     bool clearSelectedProfileId = false,
     List<HermesProvider>? providers,
     HermesModelInventory? modelInventory,
+    bool clearModelInventory = false,
+    HermesModelOptions? modelOptions,
+    bool clearModelOptions = false,
+    Map<String, HermesSessionModelLock>? sessionModelLocks,
     String? connectedBaseUrl,
     bool clearConnectedBaseUrl = false,
     bool? connectedWithApiKey,
@@ -297,6 +323,14 @@ class HermesChannelState {
     assert(
       !clearSelectedProfileId || selectedProfileId == null,
       'copyWith cannot set and clear selectedProfileId at the same time.',
+    );
+    assert(
+      !clearModelInventory || modelInventory == null,
+      'copyWith cannot set and clear modelInventory at the same time.',
+    );
+    assert(
+      !clearModelOptions || modelOptions == null,
+      'copyWith cannot set and clear modelOptions at the same time.',
     );
     return HermesChannelState(
       status: status ?? this.status,
@@ -326,7 +360,13 @@ class HermesChannelState {
           ? null
           : selectedProfileId ?? this.selectedProfileId,
       providers: providers ?? this.providers,
-      modelInventory: modelInventory ?? this.modelInventory,
+      modelInventory: clearModelInventory
+          ? null
+          : modelInventory ?? this.modelInventory,
+      modelOptions: clearModelOptions
+          ? null
+          : modelOptions ?? this.modelOptions,
+      sessionModelLocks: sessionModelLocks ?? this.sessionModelLocks,
       connectedBaseUrl: clearConnectedBaseUrl
           ? null
           : connectedBaseUrl ?? this.connectedBaseUrl,

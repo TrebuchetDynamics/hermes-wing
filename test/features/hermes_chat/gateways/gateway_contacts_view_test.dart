@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contacts_view.dart';
+import 'package:wing/features/hermes_chat/groups/chat_group_controller.dart';
 
 void main() {
   testWidgets('renders contacts ordered across gateways and opens one', (
@@ -34,14 +36,163 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
-    expect(find.text('Alpha · Agent A1'), findsOneWidget);
-    expect(find.text('Beta · Agent B2'), findsOneWidget);
-    expect(find.text('online'), findsNWidgets(5));
-    await tester.tap(find.text('Beta · Agent B2'));
+    final avatarColors = find
+        .byType(CircleAvatar)
+        .evaluate()
+        .map((element) => (element.widget as CircleAvatar).backgroundColor)
+        .whereType<Color>()
+        .toSet();
+    expect(avatarColors.length, greaterThan(1));
+    expect(find.text('Agent A1'), findsOneWidget);
+    expect(find.text('Agent B2'), findsOneWidget);
+    expect(find.text('Alpha'), findsNWidgets(3));
+    expect(find.text('Beta'), findsNWidgets(2));
+    expect(find.text('online'), findsNothing);
+    await tester.tap(find.text('Agent B2'));
     expect(opened, const GatewayContactId(gatewayId: 'b', profileId: 'b2'));
   });
 
-  testWidgets('prefixes duplicate profile names with their gateway', (
+  testWidgets('groups contacts and manually moves an ungrouped profile', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = ChatGroupController(idFactory: () => 'wing');
+    addTearDown(controller.dispose);
+    await controller.load();
+    await controller.createGroup('Hermes Wing');
+    const architect = GatewayContactId(
+      gatewayId: 'host',
+      profileId: 'architect',
+    );
+    await controller.moveContact(architect, 'wing');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'host',
+                'architect',
+                'Coding Architect',
+                'Wing host',
+                '2026-07-16T05:00:00Z',
+              ),
+              _contact(
+                'host',
+                'designer',
+                'Designer',
+                'Wing host',
+                '2026-07-16T04:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            groupController: controller,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Hermes Wing'), findsOneWidget);
+    expect(find.text('Ungrouped'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('gateway-contact-groups-host-designer')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hermes Wing').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.groupIdFor(
+        const GatewayContactId(gatewayId: 'host', profileId: 'designer'),
+      ),
+      'wing',
+    );
+    expect(find.text('Ungrouped'), findsNothing);
+  });
+
+  testWidgets('new group remains visible before any profile is assigned', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = ChatGroupController(idFactory: () => 'wing');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'host',
+                'architect',
+                'Coding Architect',
+                'Wing host',
+                '2026-07-16T05:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            groupController: controller,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('chat-groups-new')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('chat-group-name-field')),
+      'Hermes Wing',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes Wing'), findsOneWidget);
+  });
+
+  testWidgets('makes the profile primary and uses a dot for availability', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'mineru',
+                'mineru',
+                'mineru',
+                'BlueBlack',
+                '2026-07-16T05:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Mineru'), findsOneWidget);
+    expect(find.text('BlueBlack'), findsOneWidget);
+    expect(find.text('BlueBlack · mineru'), findsNothing);
+    expect(find.text('online'), findsNothing);
+    final dot = tester.widget<Icon>(find.byIcon(Icons.circle));
+    expect(dot.color, Colors.green);
+  });
+
+  testWidgets('uses gateway subtitles to distinguish duplicate profiles', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -74,8 +225,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Home · Default profile'), findsOneWidget);
-    expect(find.text('Cloud · Default profile'), findsOneWidget);
+    expect(find.text('Default profile'), findsNWidgets(2));
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Cloud'), findsOneWidget);
   });
 
   testWidgets('does not duplicate an unscoped gateway identity', (
@@ -229,8 +381,9 @@ void main() {
 
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text('Alpha · Agent A1'), findsOneWidget);
-    expect(find.text('refreshing'), findsOneWidget);
+    expect(find.text('Agent A1'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
+    expect(find.text('refreshing'), findsNothing);
   });
 
   testWidgets('avatar uses the first trimmed grapheme or question fallback', (
@@ -261,7 +414,8 @@ void main() {
     );
 
     expect(find.text('👩🏽‍💻'), findsOneWidget);
-    expect(find.text('?'), findsOneWidget);
+    expect(find.text('👩🏽‍💻 Agent'), findsOneWidget);
+    expect(find.text('?'), findsNWidgets(2));
   });
 
   testWidgets('long session preview is limited to one ellipsized line', (
@@ -368,7 +522,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    await tester.tap(find.text('Alpha · Local profile'));
+    await tester.tap(find.text('Local profile'));
     expect(opened, isFalse);
   });
 
@@ -399,7 +553,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Alpha · Agent A1'), findsOneWidget);
+    expect(find.text('Agent A1'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget);
     expect(
       tester
           .getSemantics(find.byKey(const ValueKey('gateway-contact-a-a1')))

@@ -10,14 +10,20 @@ tags:
     stopApp: true
 - setOrientation: PORTRAIT
 
-# Start from the gateway directory without assuming the prior app route.
-- runFlow:
-    when:
-      visible: "All chats"
-    commands:
-      - tapOn: "All chats"
-- assertVisible: "(?s).*Default profile.*online.*"
-- tapOn: "(?s).*Default profile.*online.*"
+# Two bounded app-bar back taps normalize nested routes to the gateway directory.
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
 - extendedWaitUntil:
     visible: "Message Hermes…"
     timeout: 60000
@@ -35,7 +41,7 @@ tags:
 - extendedWaitUntil:
     visible: "(?s).*REAL-WING-RUN-OK.*"
     timeout: 120000
-- assertVisible: "(?s).*Token usage:.*total.*"
+- assertVisible: "(?s).*Latest Hermes run.*total.*"
 - assertNotVisible: "(?s).*HttpException.*"
 
 # A second real turn verifies session continuity rather than only first-turn chat.
@@ -72,11 +78,6 @@ tags:
 # Kill and relaunch the real APK, then verify authoritative transcript recovery.
 - stopApp
 - launchApp
-- runFlow:
-    when:
-      visible: "(?s).*Default profile.*online.*"
-    commands:
-      - tapOn: "(?s).*Default profile.*online.*"
 - extendedWaitUntil:
     visible: "(?s).*REAL-WING-RECOVERED.*"
     timeout: 60000
@@ -94,8 +95,87 @@ tags:
 
 # Leave and reopen the contact to cover directory-to-session restoration.
 - tapOn: "All chats"
-- assertVisible: "(?s).*Default profile.*online.*"
-- tapOn: "(?s).*Default profile.*online.*"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
 - extendedWaitUntil:
     visible: "(?s).*REAL-WING-RECOVERED.*"
     timeout: 60000
+
+# Exercise the unsupported-playback trust boundary in the full regression.
+# Restore reply speech to disabled before leaving the flow.
+- tapOn: "All chats"
+- tapOn: "Open more destinations"
+- scrollUntilVisible:
+    element:
+      text: "^Settings$"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "^Settings$"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*Speak replies aloud.*"
+    direction: DOWN
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        text: "(?s).*Speak replies aloud.*"
+        checked: false
+    commands:
+      - tapOn: "(?s).*Speak replies aloud.*"
+- tapOn: "Open more destinations"
+- scrollUntilVisible:
+    element:
+      text: "^Hermes$"
+    direction: UP
+    timeout: 30000
+- tapOn: "^Hermes$"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+- tapOn:
+    point: "50%,90%"
+- inputText: "Reply exactly VOICE-E2E-OK"
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "(?s).*VOICE-E2E-OK.*"
+    timeout: 120000
+- extendedWaitUntil:
+    visible: "(?s).*Voice output unavailable.*"
+    timeout: 30000
+- assertVisible: "(?s).*The reply is available as text.*"
+- assertVisible: "(?s).*Voice input remains available from the microphone.*"
+- takeScreenshot: voice_output_fallback
+- tapOn: "Continue in text"
+- assertNotVisible: "(?s).*Voice output unavailable.*"
+- hideKeyboard
+- tapOn: "All chats"
+- tapOn: "Open more destinations"
+- scrollUntilVisible:
+    element:
+      text: "^Settings$"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "^Settings$"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*Speak replies aloud.*"
+    direction: DOWN
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        text: "(?s).*Speak replies aloud.*"
+        checked: true
+    commands:
+      - tapOn: "(?s).*Speak replies aloud.*"

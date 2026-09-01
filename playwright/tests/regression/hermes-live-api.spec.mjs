@@ -38,7 +38,7 @@ test("Hermes route connects to a live installed Hermes Agent API server", async 
   ).toBeVisible();
   await expect(
     page
-      .getByRole("button", { name: "Speak and send" })
+      .getByRole("button", { name: "Hands-free voice" })
       .and(page.locator('flt-semantics:not([aria-disabled="true"])')),
   ).toBeVisible();
   await page.getByRole("button", { name: "Sessions" }).click();

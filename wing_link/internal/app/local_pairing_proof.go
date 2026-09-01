@@ -70,7 +70,7 @@ func ensureLocalPairingProof(statePath string) (string, error) {
 	}
 	temporaryPath := temporary.Name()
 	defer func() { _ = os.Remove(temporaryPath) }()
-	if err := temporary.Chmod(0o600); err != nil {
+	if err := secureStatePath(temporaryPath, false); err != nil {
 		_ = temporary.Close()
 		return "", errors.New("could not secure local pairing authority")
 	}

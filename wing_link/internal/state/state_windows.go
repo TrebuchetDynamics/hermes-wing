@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -40,7 +39,7 @@ func secureStatePath(path string, directory bool) error {
 	)
 }
 
-func statePathOwnerOnly(path string, _ bool) (bool, error) {
+func statePathOwnerOnly(path string, directory bool) (bool, error) {
 	user, err := windows.GetCurrentProcessToken().GetTokenUser()
 	if err != nil {
 		return false, err
@@ -60,8 +59,26 @@ func statePathOwnerOnly(path string, _ bool) (bool, error) {
 	if control&windows.SE_DACL_PROTECTED == 0 {
 		return false, nil
 	}
-	sddl := descriptor.String()
-	return strings.Contains(sddl, ";FA;;;"+user.User.Sid.String()+")") && strings.Count(sddl, "(") == 1, nil
+	dacl, _, err := descriptor.DACL()
+	if err != nil {
+		return false, err
+	}
+	if dacl == nil || dacl.AceCount != 1 {
+		return false, nil
+	}
+	var ace *windows.ACCESS_ALLOWED_ACE
+	if err := windows.GetAce(dacl, 0, &ace); err != nil {
+		return false, err
+	}
+	expectedFlags := byte(0)
+	if directory {
+		expectedFlags = windows.OBJECT_INHERIT_ACE | windows.CONTAINER_INHERIT_ACE
+	}
+	const fileAllAccess windows.ACCESS_MASK = windows.STANDARD_RIGHTS_REQUIRED | windows.SYNCHRONIZE | 0x1ff
+	aceSID := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+	return ace.Header.AceType == windows.ACCESS_ALLOWED_ACE_TYPE &&
+		ace.Header.AceFlags == expectedFlags && ace.Mask == fileAllAccess &&
+		windows.EqualSid(aceSID, user.User.Sid), nil
 }
 
 func acquireStateLock(path string) (func() error, error) {

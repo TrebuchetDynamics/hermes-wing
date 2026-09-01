@@ -1,6 +1,6 @@
 module github.com/TrebuchetDynamics/hermes-wing/wing-link
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/mdp/qrterminal/v3 v3.2.1

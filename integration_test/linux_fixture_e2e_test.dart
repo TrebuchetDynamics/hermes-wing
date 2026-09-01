@@ -44,6 +44,7 @@ void main() {
       find.byKey(const ValueKey('hermes-composer-field')),
       message,
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 

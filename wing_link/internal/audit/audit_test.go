@@ -1,6 +1,7 @@
 package audit
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
@@ -125,6 +126,31 @@ func TestAuditRollsOldestEventsAndRequiresConfirmedClear(t *testing.T) {
 	events, err = log.List()
 	if err != nil || len(events) != 0 {
 		t.Fatalf("cleared events=%#v err=%v", events, err)
+	}
+}
+
+func TestAuditReloadsSameSizeReplacementBeforeReturningCachedEvents(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "audit.jsonl")
+	log, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := log.Append(validInput()); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tampered := bytes.Replace(data, []byte(`"success"`), []byte(`"bogus!!"`), 1)
+	if len(tampered) != len(data) {
+		t.Fatal("test tamper changed the file size")
+	}
+	if err := os.WriteFile(path, tampered, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := log.List(); !errors.Is(err, ErrInvalidLog) {
+		t.Fatalf("same-size replacement error=%v, want ErrInvalidLog", err)
 	}
 }
 

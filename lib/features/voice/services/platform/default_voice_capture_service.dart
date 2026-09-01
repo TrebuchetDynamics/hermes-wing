@@ -32,7 +32,7 @@ VoiceCaptureService? createDefaultVoiceCaptureService({
             final reason = (await checkDefaultVoiceCaptureReadiness(
               platform: effectivePlatform,
             )).unavailableReason;
-            // Let speech_to_text request runtime microphone permission on the
+            // Let the platform speech recognizer request microphone permission on the
             // first capture; only recognizer capability blocks initialization.
             return reason == microphonePermissionDeniedReason ? null : reason;
           }

@@ -105,7 +105,7 @@ class WingLinkProfile {
       description: json['description']?.toString() ?? '',
       model: json['model']?.toString() ?? '',
       skillsCount: json['skills_count'] is int
-          ? json['skills_count']! as int
+          ? (json['skills_count']! as int).clamp(0, 9007199254740991)
           : 0,
       apiRevision: json['api_revision']?.toString() ?? '',
       renameRevision: rename is Map ? rename['revision']?.toString() : null,

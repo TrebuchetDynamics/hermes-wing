@@ -37,7 +37,7 @@ func TestPairingAdvertiseHostUsesLoopbackForExplicitLocalMode(t *testing.T) {
 	}
 }
 
-func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
+func TestPairOptionsDefaultToRemoteAndQRWithExplicitLinkOverride(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch request.URL.Path {
 		case "/v1/capabilities":
@@ -64,12 +64,13 @@ func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
 		args       []string
 		wantRemote bool
 		wantLink   bool
+		wantQR     bool
 	}{
-		{wantRemote: true, wantLink: true},
-		{args: []string{"--local"}, wantRemote: false, wantLink: true},
-		{args: []string{"--link"}, wantRemote: true, wantLink: true},
-		{args: []string{"--qr"}, wantRemote: true, wantLink: false},
-		{args: []string{"--same-device"}, wantRemote: false, wantLink: true},
+		{wantRemote: true, wantLink: true, wantQR: true},
+		{args: []string{"--local"}, wantRemote: false, wantLink: true, wantQR: true},
+		{args: []string{"--link"}, wantRemote: true, wantLink: true, wantQR: false},
+		{args: []string{"--qr"}, wantRemote: true, wantLink: false, wantQR: true},
+		{args: []string{"--same-device"}, wantRemote: false, wantLink: true, wantQR: true},
 	} {
 		observedRemote := false
 		options, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (string, error) {
@@ -84,6 +85,9 @@ func TestPairOptionsDefaultToRemoteWithExplicitLocalOverride(t *testing.T) {
 		}
 		if options.PrintLink != test.wantLink {
 			t.Fatalf("args %v print link = %t, want %t", test.args, options.PrintLink, test.wantLink)
+		}
+		if options.PrintQR != test.wantQR {
+			t.Fatalf("args %v print QR = %t, want %t", test.args, options.PrintQR, test.wantQR)
 		}
 	}
 }
@@ -124,7 +128,7 @@ func TestSameDeviceOutputContainsOnlyOpenURL(t *testing.T) {
 	}
 }
 
-func TestPairHumanOutputPrintsOneTimeLinkByDefault(t *testing.T) {
+func TestPairHumanOutputPrintsOneTimeLinkAndQRByDefault(t *testing.T) {
 	pairingURI, err := url.Parse("wing://connect?broker=https%3A%2F%2F100.64.0.8%3A43001&code=one-time")
 	if err != nil {
 		t.Fatal(err)
@@ -132,15 +136,17 @@ func TestPairHumanOutputPrintsOneTimeLinkByDefault(t *testing.T) {
 	broker := &pairingBroker{PairingURI: pairingURI}
 	options := testPairOptions(t, "superuser-secret")
 	options.PrintLink = true
+	options.PrintQR = true
 	var stdout, stderr bytes.Buffer
 
 	writePairHumanOutput(&stdout, &stderr, broker, options)
 
-	if stdout.String() != pairingURI.String()+"\n" {
-		t.Fatalf("stdout = %q", stdout.String())
+	if !strings.Contains(stdout.String(), pairingURI.String()+"\n") {
+		t.Fatalf("stdout missing pairing link = %q", stdout.String())
 	}
 	if !strings.Contains(stderr.String(), "Paste pairing link") ||
-		!strings.Contains(stderr.String(), "single-use") {
+		!strings.Contains(stderr.String(), "single-use") ||
+		!strings.Contains(stderr.String(), "Scan this QR in Hermes Wing:") {
 		t.Fatalf("missing manual-link guidance: %q", stderr.String())
 	}
 	if strings.Contains(stderr.String(), pairingURI.String()) {
@@ -159,6 +165,7 @@ func TestPairHumanOutputLeadsWithAndroidSafeURL(t *testing.T) {
 	}
 	broker := &pairingBroker{PairingURI: pairingURI, OpenURL: openURL}
 	options := testPairOptions(t, "superuser-secret")
+	options.PrintQR = true
 	var stdout, stderr bytes.Buffer
 
 	writePairHumanOutput(&stdout, &stderr, broker, options)

@@ -43,7 +43,7 @@ class _HermesEnrollmentScreenState
     final source = ref.read(hermesConnectIntentSourceProvider);
     _subscription = source.payloadEvents().listen(_handleExplicitHandoff);
     unawaited(
-      source.initialPayload().then((payload) {
+      source.consumeInitialPayload().then((payload) {
         if (!mounted || payload == null) return;
         _handleExplicitHandoff(payload);
       }),

@@ -44,6 +44,6 @@ void main() {
 
     expect(find.text('Office'), findsWidgets);
     expect(find.text('No Hermes profiles available'), findsOneWidget);
-    expect(find.text('HERMES ONE'), findsOneWidget);
+    expect(find.text('HERMES WING'), findsOneWidget);
   });
 }

@@ -12,7 +12,7 @@ Current Hermes Wing evidence:
 
 ## Design target
 
-Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capability parity and preserve Hermes One structure, hierarchy, status language, and product identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
+Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capability parity and preserve Hermes Desktop structure, hierarchy, status language, and Hermes Wing identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
 
 ## What is now close after the first scaffold slice
 
@@ -29,17 +29,17 @@ Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capabi
 
 ### 1. Visual identity and dark product shell
 
-**Desktop:** dark, high-contrast shell; strong Hermes One logo; selected nav rows on dark cards; muted borders; polished black/blue surfaces.
+**Desktop:** dark, high-contrast shell; strong Hermes Wing logo; selected nav rows on dark cards; muted borders; polished black/blue surfaces.
 
-**Hermes Wing:** desktop/tablet now use Hermes Dark with near-black surfaces, blue selected states, dark cards/chips, and a stronger `HERMES ONE` treatment. Mobile keeps the simpler Telegram-like flow.
+**Hermes Wing:** desktop/tablet now use Hermes Dark with near-black surfaces, blue selected states, dark cards/chips, and a stronger `HERMES WING` treatment. Mobile keeps the simpler Telegram-like flow.
 
 **Remaining gap:** fine-grain Desktop polish: tighter hover/pressed states, more deliberate dividers, and richer desktop density tuning. The major dark-shell mismatch is now closed.
 
 ### 2. Desktop shell/sidebar branding
 
-**Desktop:** left shell has large `HERMES ONE` branding, pinned navigation, recent sessions, footer profile, collapse control.
+**Desktop:** left shell has large `HERMES WING` branding, pinned navigation, recent sessions, footer profile, collapse control.
 
-**Hermes Wing:** desktop/tablet now have a branded `HERMES ONE` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
+**Hermes Wing:** desktop/tablet now have a branded `HERMES WING` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
 
 **Remaining gap:** footer/profile/collapse affordances and the approved parity navigation. On phones, adapt Office, Kanban, and Discover to task-focused navigation rather than copying the desktop rail.
 
@@ -88,7 +88,7 @@ Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capabi
 Evidence:
 
 - `lib/theme/wing_theme.dart` now defines `wingHermesDarkTheme` with near-black Hermes surfaces, blue accents, dark cards/chips, and rounded dark inputs.
-- `lib/shared/widgets/app_shell.dart` applies Hermes Dark to desktop/tablet shell widths and adds a `HERMES ONE` branded rail header.
+- `lib/shared/widgets/app_shell.dart` applies Hermes Dark to desktop/tablet shell widths and adds a `HERMES WING` branded rail header.
 - `playwright/screenshots/hermes-dark-desktop-scaffold.png` shows dark shell, dark session rail, dark chat pane, dark empty state chips, and dark composer.
 - `playwright/screenshots/hermes-dark-mobile-scaffold.png` shows mobile staying Telegram-like: single pane, bottom nav, bottom composer, and large touch targets.
 

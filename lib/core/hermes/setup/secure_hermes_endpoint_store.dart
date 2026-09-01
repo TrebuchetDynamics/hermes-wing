@@ -307,7 +307,9 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           baseUrl: baseUrl,
           label: item['label']?.toString(),
           apiKey: item['apiKey']?.toString(),
-          wingLinkOrigin: item['wingLinkOrigin']?.toString(),
+          wingLinkOrigin: item['wingLinkOrigin'] == null
+              ? null
+              : hermesPublicEndpointBaseUrl(item['wingLinkOrigin']!.toString()),
           wingLinkToken: item['wingLinkToken']?.toString(),
           wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
               ?.toString(),

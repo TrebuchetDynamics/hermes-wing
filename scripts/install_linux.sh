@@ -6,6 +6,25 @@ install_dir="${WING_LINUX_INSTALL_DIR:-$HOME/.local/opt/hermes-wing}"
 bin_dir="${WING_LINUX_BIN_DIR:-$HOME/.local/bin}"
 bundle="$repo_root/build/linux/x64/release/bundle"
 
+usage() {
+  cat <<'EOF'
+Usage: scripts/install_linux.sh
+
+Build and install the Hermes Wing Linux bundle and launcher.
+Set WING_LINUX_INSTALL_DIR to override the install directory.
+EOF
+}
+
+if [[ $# -gt 0 ]]; then
+  if [[ $# -eq 1 && ( "$1" == "-h" || "$1" == "--help" ) ]]; then
+    usage
+    exit 0
+  fi
+  echo "Unknown argument: $*" >&2
+  usage >&2
+  exit 2
+fi
+
 if [[ "$(uname -s)" != Linux ]]; then
   echo "Linux installation must run on Linux." >&2
   exit 2

@@ -124,6 +124,11 @@ class HermesSseEventDecoder {
       buffer.write(chunk);
       _drainEvents(buffer, events);
     }
+    final remaining = buffer.toString();
+    if (remaining.isNotEmpty) {
+      final event = _parseFrame(remaining);
+      if (event != null) events.add(event);
+    }
     return events;
   }
 

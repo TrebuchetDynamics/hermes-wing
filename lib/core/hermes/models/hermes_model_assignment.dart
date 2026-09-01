@@ -14,7 +14,7 @@ class HermesAuxiliaryModel {
   factory HermesAuxiliaryModel.fromJson(Map<String, Object?> json) {
     return HermesAuxiliaryModel(
       task: wingStringFromJson(json['task'], fallback: ''),
-      provider: wingStringFromJson(json['provider'], fallback: ''),
+      provider: wingStringFromJson(json['provider'], fallback: 'auto'),
       model: wingStringFromJson(json['model'], fallback: ''),
       baseUrl: wingStringFromJson(json['base_url'], fallback: ''),
     );

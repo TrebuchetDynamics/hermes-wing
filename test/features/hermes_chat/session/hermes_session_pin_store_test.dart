@@ -4,6 +4,18 @@ import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/session/hermes_session_pin_store.dart';
 
 void main() {
+  test('a pin toggle during initial load is not lost', () async {
+    SharedPreferences.setMockInitialValues({});
+    const contact = GatewayContactId(gatewayId: 'alpha', profileId: 'default');
+    final store = HermesSessionPinStore();
+
+    final loading = store.load();
+    await store.toggle(contact, 'session-1');
+    await loading;
+
+    expect(store.isPinned(contact, 'session-1'), isTrue);
+  });
+
   test('pins persist for only their gateway profile', () async {
     SharedPreferences.setMockInitialValues({});
     const alpha = GatewayContactId(gatewayId: 'alpha', profileId: 'default');

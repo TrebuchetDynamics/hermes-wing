@@ -42,6 +42,7 @@ type pairOptions struct {
 	CredentialMode       string
 	Connections          []issuedHermesConnection
 	PrintLink            bool
+	PrintQR              bool
 	SameDevice           bool
 }
 
@@ -138,7 +139,8 @@ func writePairHumanOutput(stdout, stderr io.Writer, broker *pairingBroker, optio
 	if options.PrintLink {
 		_, _ = fmt.Fprintln(stderr, "pair: In Hermes Wing, choose Paste pairing link and paste this single-use link:")
 		_, _ = fmt.Fprintln(stdout, broker.PairingURI.String())
-	} else {
+	}
+	if options.PrintQR {
 		_, _ = fmt.Fprintln(stderr, "pair: Scan this QR in Hermes Wing:")
 		qrterminal.GenerateHalfBlock(broker.PairingURI.String(), qr.M, stdout)
 	}
@@ -432,6 +434,7 @@ func parsePairOptionsWithAdvertiseHost(
 	originValue := strings.TrimSpace(os.Getenv("WING_HERMES_URL"))
 	remote := true
 	printLink := true
+	printQR := true
 	sameDevice := false
 	remoteExplicit := false
 	qrExplicit := false
@@ -448,8 +451,10 @@ func parsePairOptionsWithAdvertiseHost(
 			remote = false
 		case "--link":
 			printLink = true
+			printQR = false
 		case "--qr":
 			printLink = false
+			printQR = true
 			qrExplicit = true
 		case "--origin":
 			originExplicit = true
@@ -568,7 +573,7 @@ func parsePairOptionsWithAdvertiseHost(
 		HostIdentity: hostIdentity,
 		Label:        label, Token: token,
 		ScopedEnrollmentCode: scopedCode, CredentialMode: credentialMode,
-		Connections: connections, PrintLink: printLink, SameDevice: sameDevice,
+		Connections: connections, PrintLink: printLink, PrintQR: printQR, SameDevice: sameDevice,
 	}, nil
 }
 

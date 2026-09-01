@@ -18,6 +18,55 @@ test.beforeEach(async ({ request }) => {
   expect(response.ok()).toBeTruthy();
 });
 
+test("Hermes fixture rejects events for an unknown run", async ({
+  request,
+}) => {
+  const response = await request.get(`${APP}v1/runs/missing/events`);
+  expect(response.status()).toBe(404);
+});
+
+test("Hermes fixture rejects messages for an unknown session", async ({
+  request,
+}) => {
+  const response = await request.get(`${APP}api/sessions/missing/messages`);
+  expect(response.status()).toBe(404);
+});
+
+test("Hermes fixture rejects approval for an unknown run", async ({
+  request,
+}) => {
+  const response = await request.post(`${APP}v1/runs/missing/approval`, {
+    data: { choice: "once" },
+  });
+  expect(response.status()).toBe(404);
+});
+
+test("Hermes fixture rejects invalid approval choices", async ({ request }) => {
+  const runResponse = await request.post(`${APP}v1/runs`, {
+    data: { session_id: "e2e-hermes-session", message: "approval test" },
+  });
+  expect(runResponse.ok()).toBeTruthy();
+  const { run } = await runResponse.json();
+  const response = await request.post(`${APP}v1/runs/${run.id}/approval`, {
+    data: { choice: "bogus" },
+  });
+  expect(response.status()).toBe(400);
+});
+
+test("Hermes fixture rejects approval when no approval stream is active", async ({
+  request,
+}) => {
+  const runResponse = await request.post(`${APP}v1/runs`, {
+    data: { session_id: "e2e-hermes-session", message: "inactive approval" },
+  });
+  expect(runResponse.ok()).toBeTruthy();
+  const { run } = await runResponse.json();
+  const response = await request.post(`${APP}v1/runs/${run.id}/approval`, {
+    data: { choice: "once" },
+  });
+  expect(response.status()).toBe(409);
+});
+
 test("Hermes route opens manual enrollment from the agent empty state", async ({
   page,
 }) => {

@@ -874,9 +874,17 @@ Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {
   final seconds = wingDoubleFromJson(value);
-  if (seconds == null) return null;
-  return DateTime.fromMillisecondsSinceEpoch(
-    (seconds * 1000).round(),
-    isUtc: true,
-  );
+  if (seconds == null || !seconds.isFinite || seconds < 0) return null;
+  final milliseconds = seconds * Duration.millisecondsPerSecond;
+  if (!milliseconds.isFinite || milliseconds > 8640000000000000) {
+    return null;
+  }
+  try {
+    return DateTime.fromMillisecondsSinceEpoch(
+      milliseconds.round(),
+      isUtc: true,
+    );
+  } on RangeError {
+    return null;
+  }
 }

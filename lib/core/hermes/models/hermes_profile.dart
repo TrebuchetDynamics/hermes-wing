@@ -30,7 +30,9 @@ class HermesProfile {
       revision: wingStringFromJson(json['revision'], fallback: ''),
       description: wingStringFromJson(json['description'], fallback: ''),
       model: wingStringFromJson(json['model'], fallback: ''),
-      skillsCount: wingIntFromJson(json['skills_count']),
+      skillsCount: wingIntFromJson(
+        json['skills_count'],
+      ).clamp(0, 9007199254740991),
       gatewayRunning: wingBoolFromJson(json['gateway_running']),
       avatar: wingOptionalStringFromJson(json['avatar']),
       color: wingOptionalStringFromJson(json['color']),

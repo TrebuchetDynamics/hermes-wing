@@ -18,7 +18,12 @@ func ensureExternalWingLinkService(controlOrigin *url.URL) error {
 }
 
 func verifyWingLinkHealth(origin *url.URL) error {
-	client := &http.Client{Timeout: 2 * time.Second}
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	endpoint := origin.ResolveReference(&url.URL{Path: "/healthz"})
 	for attempt := 0; attempt < 20; attempt++ {
 		request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, endpoint.String(), nil)

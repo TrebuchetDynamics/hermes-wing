@@ -34,7 +34,7 @@ class HermesSession {
       source: wingStringFromJson(json['source'], fallback: 'api_server'),
       model: wingOptionalStringFromJson(json['model']),
       title: wingOptionalStringFromJson(json['title']),
-      messageCount: wingIntFromJson(json['message_count']),
+      messageCount: _optionalNonNegativeInt(json['message_count']) ?? 0,
       toolCallCount: _optionalNonNegativeInt(json['tool_call_count']),
       inputTokens: _optionalNonNegativeInt(json['input_tokens']),
       outputTokens: _optionalNonNegativeInt(json['output_tokens']),

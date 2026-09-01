@@ -31,6 +31,7 @@ void main() {
     expect(verifier, contains('MAX_EXPANDED_BYTES'));
     expect(verifier, contains('unsafe archive entry type'));
     expect(verifier, contains('hard links are not allowed'));
+    expect(verifier, contains('required.is_symlink()'));
     expect(verifier, contains('duplicate archive path'));
     expect(
       verifier,

@@ -18,6 +18,34 @@ void main() {
     expect(stopwatch.elapsed, lessThan(const Duration(seconds: 3)));
   });
 
+  test('setup output is bounded before line buffering', () async {
+    if (!Platform.isLinux) return;
+    final directory = await Directory.systemTemp.createTemp(
+      'wing-link-output-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final executable = File('${directory.path}/wing-link')
+      ..writeAsStringSync(
+        '#!/usr/bin/python3\n'
+        'import sys\n'
+        'import time\n'
+        "sys.stdout.write('x' * 262145)\n"
+        'sys.stdout.flush()\n'
+        'time.sleep(60)\n',
+      );
+    final chmod = await Process.run('chmod', ['0755', executable.path]);
+    expect(chmod.exitCode, 0);
+
+    final operation = await io.startLocalWingLinkSetup(
+      executable.path,
+      (_) {},
+      timeout: const Duration(seconds: 3),
+    );
+    final result = await operation.result;
+
+    expect(result.exitCode, 125);
+  });
+
   test('setup operation times out and confirms child exit', () async {
     final executable = await _sleepingExecutable();
     final stopwatch = Stopwatch()..start();

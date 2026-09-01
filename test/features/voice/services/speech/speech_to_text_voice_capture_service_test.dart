@@ -59,6 +59,10 @@ void main() {
     expect(engine.stopCalls, 0);
   });
 
+  test('hosted speech_to_text has no generation-bound callbacks', () {
+    expect(PluginSpeechToTextEngine().hasGenerationBoundCallbacks, isFalse);
+  });
+
   test(
     'generation-bound terminal does not trigger ambiguous cancellation',
     () async {

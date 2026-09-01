@@ -30,11 +30,28 @@ func statePathOwnerOnly(path string, directory bool) (bool, error) {
 }
 
 func acquireStateLock(path string) (func() error, error) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	pathInfo, statErr := os.Lstat(path)
+	if statErr == nil && pathInfo.Mode()&os.ModeSymlink != 0 {
+		return nil, errors.New("state lock must not be a symlink")
+	}
+	if statErr != nil && !os.IsNotExist(statErr) {
+		return nil, statErr
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|syscall.O_NOFOLLOW, 0o600)
 	if err != nil {
 		return nil, err
 	}
-	if err := secureStatePath(path, false); err != nil {
+	if pathInfo != nil {
+		fileInfo, err := file.Stat()
+		if err != nil || !os.SameFile(pathInfo, fileInfo) {
+			_ = file.Close()
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("state lock changed while opening")
+		}
+	}
+	if err := file.Chmod(0o600); err != nil {
 		_ = file.Close()
 		return nil, err
 	}

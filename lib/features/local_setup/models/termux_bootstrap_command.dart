@@ -59,7 +59,7 @@ class TermuxBootstrapCommand {
   String get command =>
       'pkg install -y curl coreutils && i="\$(mktemp)" && '
       'curl --proto \'=https\' --tlsv1.2 --fail --location '
-      '--connect-timeout 15 --max-time 300 --max-filesize 1048576 '
+      '--connect-timeout 15 --max-time 300 --max-filesize $assetSize '
       '--output "\$i" '
       '"https://raw.githubusercontent.com/TrebuchetDynamics/hermes-wing/'
       '$installerCommit/install-wing-link.sh" && '

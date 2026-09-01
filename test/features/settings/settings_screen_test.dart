@@ -399,4 +399,45 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(ListView), findsOneWidget);
   });
+
+  testWidgets('settings uses a two-column layout on desktop widths', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final store = FakeHermesEndpointStore(profiles: const []);
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader(const {}),
+      activeChannel: channel,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+          hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const SettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const ValueKey('settings-two-column-layout')),
+      findsOneWidget,
+    );
+  });
 }

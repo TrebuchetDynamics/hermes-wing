@@ -59,29 +59,6 @@ void main() {
     );
   });
 
-  test('vendored Android speech callbacks recheck native generation', () {
-    final plugin = File(
-      'third_party/speech_to_text/android/src/main/kotlin/'
-      'com/csdcorp/speech_to_text/SpeechToTextPlugin.kt',
-    ).readAsStringSync();
-
-    expect(
-      RegExp(
-        r'private fun sendError[\s\S]*?handler\.post \{[\s\S]*?'
-        r'session != recognitionSession',
-      ).hasMatch(plugin),
-      isTrue,
-    );
-    expect(
-      RegExp(
-        r'override fun onRmsChanged[\s\S]*?handler\.post \{[\s\S]*?'
-        r'session != recognitionSession',
-      ).hasMatch(plugin),
-      isTrue,
-    );
-    expect(plugin, contains('recognizerToDestroy?.destroy()'));
-  });
-
   test('Waydroid voice runner scopes role qualification bypass', () {
     final runner = File(
       'scripts/run_waydroid_hermes_voice_maestro.sh',

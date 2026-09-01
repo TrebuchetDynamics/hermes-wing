@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -165,6 +167,23 @@ void main() {
         expect(preferences, isNot(contains('sidon-secret')));
       },
     );
+
+    test('normalizes Wing Link origin when loading secure bundle', () async {
+      FlutterSecureStorage.setMockInitialValues({
+        'wing.hermes.endpoint_bundle.v1': jsonEncode([
+          {
+            'id': 'default',
+            'baseUrl': 'https://hermes.example',
+            'wingLinkOrigin':
+                'https://hermes.example:8654/?token=secret#fragment',
+          },
+        ]),
+      });
+
+      final loaded = await store.loadProfiles();
+
+      expect(loaded.single.wingLinkOrigin, 'https://hermes.example:8654');
+    });
 
     test('saved profiles round-trip with their metadata', () async {
       await store.save(

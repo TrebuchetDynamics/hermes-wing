@@ -15,7 +15,8 @@ git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
 cd hermes-wing
 ```
 
-1. Install Wing Link and prepare Hermes on the Linux host:
+1. Install Wing Link and prepare Hermes on the Linux host. Setup starts the
+   gateway only if needed and leaves an already-running gateway undisturbed:
 
    ```bash
    ./install-wing-link.sh
@@ -50,7 +51,7 @@ cd hermes-wing
 4. The pairing command installs, starts, and verifies the persistent per-user
    Wing Link service; no separate `serve` terminal is required.
 
-   The default command prints one pasteable handoff line. In Wing choose
+   The default command prints both a pasteable handoff line and a QR. In Wing choose
    **Paste pairing link** and paste it. To scan from another screen instead, run:
 
    ```bash

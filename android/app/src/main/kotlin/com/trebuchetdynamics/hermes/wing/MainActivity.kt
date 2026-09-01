@@ -44,8 +44,9 @@ class MainActivity : FlutterActivity() {
             CONNECT_INTENTS_METHOD_CHANNEL,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "initialConnectIntent" -> result.success(
-                    initialConnectIntent ?: connectPayloadFrom(intent),
+                "initialConnectIntent" -> result.success(initialConnectIntent)
+                "consumeInitialConnectIntent" -> result.success(
+                    initialConnectIntent.also { initialConnectIntent = null },
                 )
                 "scanQrCode" -> scanQrCode(result)
                 "importQrImage" -> importQrImage(result)
@@ -84,8 +85,9 @@ class MainActivity : FlutterActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val payload = connectPayloadFrom(intent) ?: return
+        val payload = connectPayloadFrom(intent)
         initialConnectIntent = payload
+        if (payload == null) return
         connectIntentEvents?.success(payload)
     }
 

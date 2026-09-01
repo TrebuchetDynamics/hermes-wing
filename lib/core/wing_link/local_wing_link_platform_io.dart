@@ -107,6 +107,7 @@ class _IOSetupOperation implements LocalWingLinkSetupOperation {
     try {
       await for (final line
           in _process.stdout
+              .transform(_boundedOutput())
               .transform(utf8.decoder)
               .transform(const LineSplitter())) {
         bytes += utf8.encode(line).length + 1;
@@ -178,6 +179,20 @@ Future<void> _terminateProcess(Process process) async {
     process.kill(ProcessSignal.sigkill);
   }
   await process.exitCode;
+}
+
+StreamTransformer<List<int>, List<int>> _boundedOutput() {
+  var total = 0;
+  return StreamTransformer.fromHandlers(
+    handleData: (chunk, sink) {
+      total += chunk.length;
+      if (total > _maximumOutputBytes) {
+        sink.addError(StateError('Wing Link output exceeded the local bound'));
+        return;
+      }
+      sink.add(chunk);
+    },
+  );
 }
 
 Future<List<int>> _collectBounded(Stream<List<int>> stream) async {

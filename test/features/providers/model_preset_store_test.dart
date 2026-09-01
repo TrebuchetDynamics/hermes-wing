@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/providers/models/model_preset.dart';
@@ -107,6 +109,26 @@ void main() {
         model: 'gpt-5',
       ),
     ]);
+  });
+
+  test('loading stored presets enforces the cap', () async {
+    SharedPreferences.setMockInitialValues({
+      'wing.hermes.model_presets.v1': jsonEncode([
+        for (var i = 0; i <= ModelPresetStore.maxPresets; i++)
+          {
+            'name': 'Preset $i',
+            'slot': 'main',
+            'provider': 'openai',
+            'model': 'gpt-5',
+          },
+      ]),
+    });
+
+    final presets = await ModelPresetStore().load();
+
+    expect(presets, hasLength(ModelPresetStore.maxPresets));
+    expect(presets.first.name, 'Preset 1');
+    expect(presets.last.name, 'Preset 32');
   });
 
   test('saving past the cap drops the oldest preset', () async {

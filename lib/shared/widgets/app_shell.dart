@@ -357,12 +357,16 @@ class _DesktopShell extends StatelessWidget {
                 Expanded(
                   child: Container(
                     color: theme.colorScheme.surfaceContainerLowest,
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
-                        child: child,
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth < 1180
+                            ? constraints.maxWidth
+                            : 1180.0;
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(width: width, child: child),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -466,7 +470,7 @@ class _HermesDesktopBrand extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'HERMES ONE',
+                    'HERMES WING',
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colorScheme.onSurface,
@@ -476,7 +480,7 @@ class _HermesDesktopBrand extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Hermes Wing',
+                    'Hermes Agent client',
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,

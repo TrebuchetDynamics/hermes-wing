@@ -115,6 +115,23 @@ void main() {
     },
   );
 
+  test('root query redirects to Hermes instead of the router error page', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final router = container.read(routerProvider);
+    addTearDown(router.dispose);
+    final state = GoRouterState(
+      router.configuration,
+      uri: Uri.parse('/?foo=bar'),
+      matchedLocation: '',
+      fullPath: null,
+      pathParameters: const {},
+      pageKey: const ValueKey('/'),
+    );
+
+    expect(router.configuration.topRedirect(_FakeContext(), state), '/hermes');
+  });
+
   test('Android local setup route builds the Termux guide', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     addTearDown(() => debugDefaultTargetPlatformOverride = null);

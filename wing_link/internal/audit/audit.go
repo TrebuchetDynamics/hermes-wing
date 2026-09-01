@@ -173,7 +173,6 @@ type Log struct {
 	size     int64
 	exists   bool
 	tornTail bool
-	fresh    bool
 }
 
 // Open validates any existing audit log at path and returns a Log handle.
@@ -363,16 +362,9 @@ func validResult(result Result) bool {
 }
 
 // currentLocked returns the retained events, on-disk size, and torn-tail
-// flag, reusing the validated cache unless another process changed the file.
+// flag after re-reading the file. Audit integrity must not depend on metadata
+// such as size or modification time, which can remain unchanged after tampering.
 func (l *Log) currentLocked() ([]Record, int64, bool, error) {
-	info, statErr := os.Lstat(l.path)
-	if statErr != nil && !errors.Is(statErr, os.ErrNotExist) {
-		return nil, 0, false, fmt.Errorf("inspect audit log: %w", statErr)
-	}
-	exists := statErr == nil
-	if l.fresh && exists == l.exists && (!exists || info.Size() == l.size) {
-		return l.events, l.size, l.tornTail, nil
-	}
 	if _, err := l.reloadLocked(); err != nil {
 		return nil, 0, false, err
 	}
@@ -383,10 +375,9 @@ func (l *Log) currentLocked() ([]Record, int64, bool, error) {
 func (l *Log) reloadLocked() ([]Record, error) {
 	events, size, exists, torn, err := l.readFileLocked()
 	if err != nil {
-		l.fresh = false
 		return nil, err
 	}
-	l.events, l.size, l.exists, l.tornTail, l.fresh = events, size, exists, torn, true
+	l.events, l.size, l.exists, l.tornTail = events, size, exists, torn
 	return append([]Record(nil), events...), nil
 }
 
@@ -491,7 +482,6 @@ func (l *Log) appendLineLocked(line []byte, event Record) error {
 	l.size += int64(len(line))
 	l.exists = true
 	l.tornTail = false
-	l.fresh = true
 	return nil
 }
 
@@ -547,7 +537,6 @@ func (l *Log) rewriteLocked(events []Record) error {
 	l.size = int64(payload.Len())
 	l.exists = true
 	l.tornTail = false
-	l.fresh = true
 	return nil
 }
 

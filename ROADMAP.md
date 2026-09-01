@@ -71,9 +71,8 @@ items they surface; feature work above stays on the product tracks.
 - [ ] **Baseline (Milestone 0).** Land the in-flight pocket_speech removal while
       preserving an unrelated dirty worktree; rerun the complete validation gate
       and record results in the evidence matrix.
-- [ ] **Vendored forks (Milestone 0).** Document fork purpose/patches and an
-      upgrade or upstream plan for `third_party/speech_to_text` and
-      `third_party/malsami`.
+- [x] **Vendored forks (Milestone 0).** Removed the obsolete vendored speech
+      recognition fork and use the hosted `speech_to_text` 7.4.0 package.
 - [ ] **Cache-key hygiene (Milestone 1).** Replace `sha256(apiKey)` in the
       in-memory `_recentTurnKey` with a non-secret discriminator.
 - [ ] **Taxonomy tests (Milestone 1).** Retire the 7 tautological taxonomy tests

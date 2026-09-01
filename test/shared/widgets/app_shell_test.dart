@@ -314,6 +314,30 @@ void main() {
     expect(find.text('profile-model'), findsOneWidget);
   });
 
+  testWidgets('desktop shell expands its content to the available width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _testApp(
+        const AppShell(
+          location: AppRoutes.hermes,
+          child: SizedBox(key: ValueKey('desktop-expanded-content')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final content = tester.renderObject<RenderBox>(
+      find.byKey(const ValueKey('desktop-expanded-content')),
+    );
+    expect(content.size.width, greaterThan(700));
+  });
+
   testWidgets('failed inventory never exposes stale tool or skill counts', (
     tester,
   ) async {
@@ -403,7 +427,7 @@ void main() {
       ),
     );
 
-    expect(find.text('HERMES ONE'), findsOneWidget);
+    expect(find.text('HERMES WING'), findsOneWidget);
     expect(find.text('Hermes'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });

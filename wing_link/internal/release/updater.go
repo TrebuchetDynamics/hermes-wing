@@ -496,10 +496,49 @@ func (u *Updater) existingTarget(name string) (string, error) {
 }
 
 func ensureOwnerOnlyDirectory(path string) error {
+	if err := rejectSymlinkedAncestors(path); err != nil {
+		return err
+	}
+	if info, err := os.Lstat(path); err == nil {
+		if !info.IsDir() {
+			return fmt.Errorf("%w: staging path is not a directory", ErrUpdateState)
+		}
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
 	if err := os.MkdirAll(path, 0o700); err != nil {
 		return err
 	}
+	if err := rejectSymlinkedAncestors(path); err != nil {
+		return err
+	}
+	info, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("%w: staging path is not a directory", ErrUpdateState)
+	}
 	return os.Chmod(path, 0o700)
+}
+
+func rejectSymlinkedAncestors(path string) error {
+	current := filepath.Clean(path)
+	for {
+		info, err := os.Lstat(current)
+		if err == nil {
+			if info.Mode()&os.ModeSymlink != 0 {
+				return fmt.Errorf("%w: staging path contains a symlink", ErrUpdateState)
+			}
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return nil
+		}
+		current = parent
+	}
 }
 
 // replaceSymlink atomically points name at target by renaming a fresh

@@ -47,10 +47,11 @@ func TestHelpExplainsTheNormalServiceWorkflow(t *testing.T) {
 		"wing-link pair --local",
 		"--remote                Pair through Tailscale or a trusted VPN (default)",
 		"Tailscale API binding is configured automatically",
-		"Prints a single-use paste link by default",
+		"Prints a scannable QR and single-use paste link by default",
 		"--local                 Pair on this device only",
 		"--same-device           Print only the code-free local /open URL",
-		"--qr                    Print a scannable QR instead of the link",
+		"--link                  Print the single-use link without the QR",
+		"--qr                    Print a scannable QR without the link",
 		"WING_HERMES_URL to name it",
 		`Most users should not run "serve" directly`,
 	} {

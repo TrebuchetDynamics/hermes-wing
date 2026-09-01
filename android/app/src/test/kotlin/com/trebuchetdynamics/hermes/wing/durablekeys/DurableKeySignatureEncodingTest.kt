@@ -87,6 +87,23 @@ class DurableKeySignatureEncodingTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
+    fun rejectsNonMinimalDerLengths() {
+        DurableKeySignatureEncoding.derToJose(
+            byteArrayOf(
+                0x30,
+                0x81.toByte(),
+                0x06,
+                0x02,
+                0x01,
+                0x01,
+                0x02,
+                0x01,
+                0x01,
+            ),
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
     fun rejectsMalformedDer() {
         DurableKeySignatureEncoding.derToJose(byteArrayOf(0x01, 0x02, 0x03))
     }

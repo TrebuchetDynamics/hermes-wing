@@ -41,8 +41,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.hermes,
     redirect: (context, state) {
-      final location = state.uri.toString();
-      if (location == '/' || location.isEmpty) return AppRoutes.hermes;
+      final path = state.uri.path;
+      if (path == '/' || path.isEmpty) return AppRoutes.hermes;
       return null;
     },
     routes: [

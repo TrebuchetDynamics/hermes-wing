@@ -101,6 +101,15 @@ void main() {
     expect(preview.connectionCount, 1);
   });
 
+  test('enrollment preview ignores unsafe expiry timestamps', () {
+    final preview = HermesEnrollmentPreview.fromJson({'expires_at': 1e100});
+    expect(preview.expiresAt, isNull);
+    expect(
+      HermesEnrollmentPreview.fromJson({'expires_at': -1}).expiresAt,
+      isNull,
+    );
+  });
+
   test('enrollment preview accepts only bounded explicit integer counts', () {
     expect(
       HermesEnrollmentPreview.fromJson({'connection_count': 9}).connectionCount,
@@ -1668,6 +1677,7 @@ void main() {
     final session = HermesSession.fromJson({
       'id': 'session-bounds',
       'source': 'api_server',
+      'message_count': -1,
       'tool_call_count': 0,
       'input_tokens': -1,
       'output_tokens': 'not-a-number',
@@ -1683,6 +1693,7 @@ void main() {
       'last_active': '1784336000.2563922',
     });
 
+    expect(session.messageCount, 0);
     expect(session.toolCallCount, 0);
     expect(session.inputTokens, isNull);
     expect(session.outputTokens, isNull);
@@ -2056,17 +2067,17 @@ void main() {
     expect(events.last.isDone, isTrue);
   });
 
-  test(
-    'keeps incomplete final SSE frame buffered until a separator arrives',
-    () {
-      final decoder = HermesSseEventDecoder();
+  test('flushes an incomplete final SSE frame when input closes', () {
+    final decoder = HermesSseEventDecoder();
 
-      expect(
-        decoder.decode(['event: assistant.delta\ndata: {"delta":"partial"}']),
-        isEmpty,
-      );
-    },
-  );
+    final events = decoder.decode([
+      'event: assistant.delta\ndata: {"delta":"partial"}',
+    ]);
+
+    expect(events, hasLength(1));
+    expect(events.single.event, 'assistant.delta');
+    expect(events.single.data, '{"delta":"partial"}');
+  });
 
   test('ignores empty chunks and no-data CR-only control frames', () {
     final decoder = HermesSseEventDecoder();
@@ -2190,6 +2201,20 @@ void main() {
     expect(profiles.single.displayName, 'Coding Agent');
     expect(profiles.single.revision, 'rev-1');
     expect(profiles.single.skillsCount, 4);
+  });
+
+  test('profile metadata clamps a negative skill count', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (_, _) async => jsonEncode({
+        'data': [
+          {'id': 'negative', 'name': 'Negative', 'skills_count': -1},
+        ],
+      }),
+    );
+
+    final profiles = await client.listProfiles();
+    expect(profiles.single.skillsCount, 0);
   });
 
   test('listProfiles discards rows with a blank id', () async {
@@ -2537,7 +2562,7 @@ void main() {
           },
           'active': {'provider': 'openai', 'model': 'gpt-5'},
           'auxiliary': [
-            {'task': 'title', 'provider': 'auto', 'model': ''},
+            {'task': 'title', 'model': ''},
           ],
           'revision': 'mrev-1',
         });
@@ -2552,6 +2577,7 @@ void main() {
     expect(inventory.assignment.activeModel, 'gpt-5');
     expect(inventory.assignment.revision, 'mrev-1');
     expect(inventory.assignment.auxiliary.single.task, 'title');
+    expect(inventory.assignment.auxiliary.single.provider, 'auto');
     expect(inventory.catalog.providers.single.provider, 'openai');
     expect(inventory.catalog.providers.single.models.single.id, 'gpt-5');
   });

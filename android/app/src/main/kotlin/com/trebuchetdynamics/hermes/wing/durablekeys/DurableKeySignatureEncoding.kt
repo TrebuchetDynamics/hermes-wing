@@ -47,13 +47,16 @@ object DurableKeySignatureEncoding {
         val first = der[offset].toInt() and 0xff
         if (first and 0x80 == 0) return LengthResult(first, 1)
         val byteCount = first and 0x7f
-        if (byteCount == 0 || byteCount > 2 || offset + byteCount >= der.size) {
+        if (byteCount == 0 || byteCount > 2 || offset + byteCount >= der.size ||
+            (byteCount > 1 && der[offset + 1].toInt() == 0)
+        ) {
             throw IllegalArgumentException("Invalid DER length")
         }
         var length = 0
         repeat(byteCount) { index ->
             length = (length shl 8) or (der[offset + 1 + index].toInt() and 0xff)
         }
+        if (length < 128) throw IllegalArgumentException("Invalid DER length")
         return LengthResult(length, 1 + byteCount)
     }
 

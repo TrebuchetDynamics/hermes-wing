@@ -28,187 +28,270 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(wingVoiceSettingsProvider);
-    final controller = ref.read(wingVoiceSettingsProvider.notifier);
-    final chatPreferences = ref.watch(wingChatPreferencesProvider);
-    final chatPreferencesController = ref.read(
-      wingChatPreferencesProvider.notifier,
-    );
-    final channel = ref.watch(hermesChannelProvider);
-    final gatewayDirectory = ref.watch(hermesGatewayDirectoryProvider);
-
     final strings = AppLocalizations.of(context);
+    final gatewayDirectory = ref.watch(hermesGatewayDirectoryProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
         actions: const [AppShellMenuButton()],
       ),
-      body: AnimatedBuilder(
-        animation: channel,
-        builder: (context, _) {
-          final state = channel.state;
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 820;
+          final horizontalPadding = wide ? 32.0 : 16.0;
+          final hasSpellcheck = WidgetsBinding
+              .instance
+              .platformDispatcher
+              .nativeSpellCheckServiceDefined;
+          final appearance = const _AppearanceSettingsSection();
+          final voice = const _VoiceSettingsSection();
+
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              wide ? 28 : 16,
+              horizontalPadding,
+              32,
+            ),
             children: [
-              _SettingsSectionCard(
-                title: strings.settingsGatewaysSection,
-                icon: Icons.cable_outlined,
-                children: [
-                  if (gatewayDirectory.gateways.isEmpty)
-                    _StatusTile(
-                      icon: Icons.link_off,
-                      title: strings.settingsGatewaysSection,
-                      value: strings.settingsNoSavedGateways,
-                    )
-                  else
-                    for (final gateway in gatewayDirectory.gateways)
-                      _GatewaySettingsTile(
-                        gateway: gateway,
-                        directory: gatewayDirectory,
-                      ),
-                  ListTile(
-                    key: const ValueKey('settings-connect-another-gateway'),
-                    leading: const Icon(Icons.add_link),
-                    title: Text(strings.settingsConnectAnotherGateway),
-                    subtitle: Text(strings.settingsScanPairingQr),
-                    onTap: () => context.push(AppRoutes.enroll),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: Text(strings.settingsCredentialsNote),
-                  ),
-                ],
-              ),
-              _SettingsSectionCard(
-                title: strings.settingsAppearanceSection,
-                icon: Icons.palette_outlined,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                    child: SegmentedButton<ThemeMode>(
-                      key: const ValueKey('settings-theme-mode'),
-                      segments: [
-                        ButtonSegment(
-                          value: ThemeMode.system,
-                          label: Text(strings.themeModeSystem),
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.light,
-                          label: Text(strings.themeModeLight),
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.dark,
-                          label: Text(strings.themeModeDark),
-                        ),
-                      ],
-                      selected: {ref.watch(wingThemeSettingsProvider).mode},
-                      onSelectionChanged: (selection) => unawaited(
-                        ref
-                            .read(wingThemeSettingsProvider.notifier)
-                            .setMode(selection.single),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        for (final palette in WingThemePalette.values)
-                          ChoiceChip(
-                            key: ValueKey('settings-palette-${palette.name}'),
-                            avatar: CircleAvatar(
-                              backgroundColor: palette.seed,
-                              radius: 8,
-                            ),
-                            label: Text(_paletteLabel(strings, palette)),
-                            selected:
-                                ref.watch(wingThemeSettingsProvider).palette ==
-                                palette,
-                            onSelected: (_) => unawaited(
-                              ref
-                                  .read(wingThemeSettingsProvider.notifier)
-                                  .setPalette(palette),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (WidgetsBinding
-                  .instance
-                  .platformDispatcher
-                  .nativeSpellCheckServiceDefined)
-                _SettingsSectionCard(
-                  title: strings.settingsChatSection,
-                  icon: Icons.chat_bubble_outline,
-                  children: [
-                    SwitchListTile(
-                      key: const ValueKey('chat-spellcheck-enabled'),
-                      title: Text(strings.chatSpellcheckTitle),
-                      subtitle: Text(strings.chatSpellcheckSubtitle),
-                      value: chatPreferences.spellcheckEnabled,
-                      onChanged: chatPreferencesController.setSpellcheckEnabled,
-                    ),
-                  ],
-                ),
-              _SettingsSectionCard(
-                title: strings.settingsVoiceSection,
-                icon: Icons.keyboard_voice_outlined,
-                children: [
-                  SwitchListTile(
-                    key: const ValueKey('voice-continuous-enabled'),
-                    title: Text(strings.voiceContinuousTitle),
-                    subtitle: Text(strings.voiceContinuousSubtitle),
-                    value: settings.continuousVoiceEnabled,
-                    onChanged: controller.setContinuousVoiceEnabled,
-                  ),
-                  SwitchListTile(
-                    key: const ValueKey('voice-speak-replies-enabled'),
-                    title: Text(strings.voiceSpeakRepliesTitle),
-                    subtitle: Text(strings.voiceSpeakRepliesSubtitle),
-                    value: settings.speakRepliesEnabled,
-                    onChanged: controller.setSpeakRepliesEnabled,
-                  ),
-                  SwitchListTile(
-                    key: const ValueKey('voice-completion-sound-enabled'),
-                    title: Text(strings.voiceCompletionSoundTitle),
-                    subtitle: Text(strings.voiceCompletionSoundSubtitle),
-                    value: settings.completionSoundEnabled,
-                    onChanged: controller.setCompletionSoundEnabled,
-                  ),
-                  ListTile(
-                    key: const ValueKey('settings-voice-link'),
-                    leading: const Icon(Icons.graphic_eq),
-                    title: Text(strings.voiceSettingsTitle),
-                    subtitle: Text(strings.voiceSpeakRepliesSubtitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(AppRoutes.settingsVoice),
-                  ),
-                ],
-              ),
-              _SettingsSectionCard(
-                title: strings.diagnosticsTitle,
-                icon: Icons.monitor_heart_outlined,
-                children: [
-                  ListTile(
-                    key: const ValueKey('settings-diagnostics-link'),
-                    leading: const Icon(Icons.monitor_heart_outlined),
-                    title: Text(strings.chatConnectionDiagnosticsTitle),
-                    subtitle: Text(
-                      _connectionStatusLabel(strings, state.status),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(AppRoutes.settingsDiagnostics),
-                  ),
-                ],
-              ),
+              _GatewaySettingsSection(directory: gatewayDirectory),
+              if (hasSpellcheck) const _ChatSettingsSection(),
+              if (wide)
+                _SettingsColumns(
+                  key: const ValueKey('settings-two-column-layout'),
+                  children: [appearance, voice],
+                )
+              else ...[
+                appearance,
+                voice,
+              ],
+              const _DiagnosticsSettingsLink(),
             ],
           );
         },
       ),
+    );
+  }
+}
+
+class _SettingsColumns extends StatelessWidget {
+  const _SettingsColumns({super.key, required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var index = 0; index < children.length; index++) ...[
+          if (index > 0) const SizedBox(width: 20),
+          Expanded(child: children[index]),
+        ],
+      ],
+    );
+  }
+}
+
+class _GatewaySettingsSection extends StatelessWidget {
+  const _GatewaySettingsSection({required this.directory});
+
+  final HermesGatewayDirectory directory;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return _SettingsSectionCard(
+      title: strings.settingsGatewaysSection,
+      icon: Icons.cable_outlined,
+      children: [
+        if (directory.gateways.isEmpty)
+          _StatusTile(
+            icon: Icons.link_off,
+            title: strings.settingsGatewaysSection,
+            value: strings.settingsNoSavedGateways,
+          )
+        else
+          for (final gateway in directory.gateways)
+            _GatewaySettingsTile(gateway: gateway, directory: directory),
+        ListTile(
+          key: const ValueKey('settings-connect-another-gateway'),
+          leading: const Icon(Icons.add_link),
+          title: Text(strings.settingsConnectAnotherGateway),
+          subtitle: Text(strings.settingsScanPairingQr),
+          onTap: () => context.push(AppRoutes.enroll),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          child: Text(
+            strings.settingsCredentialsNote,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AppearanceSettingsSection extends ConsumerWidget {
+  const _AppearanceSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final appearance = ref.watch(wingThemeSettingsProvider);
+    final controller = ref.read(wingThemeSettingsProvider.notifier);
+    return _SettingsSectionCard(
+      title: strings.settingsAppearanceSection,
+      icon: Icons.palette_outlined,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+          child: SegmentedButton<ThemeMode>(
+            key: const ValueKey('settings-theme-mode'),
+            segments: [
+              ButtonSegment(
+                value: ThemeMode.system,
+                label: Text(strings.themeModeSystem),
+              ),
+              ButtonSegment(
+                value: ThemeMode.light,
+                label: Text(strings.themeModeLight),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                label: Text(strings.themeModeDark),
+              ),
+            ],
+            selected: {appearance.mode},
+            onSelectionChanged: (selection) =>
+                unawaited(controller.setMode(selection.single)),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final palette in WingThemePalette.values)
+                ChoiceChip(
+                  key: ValueKey('settings-palette-${palette.name}'),
+                  avatar: CircleAvatar(
+                    backgroundColor: palette.seed,
+                    radius: 8,
+                  ),
+                  label: Text(_paletteLabel(strings, palette)),
+                  selected: appearance.palette == palette,
+                  onSelected: (_) => unawaited(controller.setPalette(palette)),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChatSettingsSection extends ConsumerWidget {
+  const _ChatSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final preferences = ref.watch(wingChatPreferencesProvider);
+    final controller = ref.read(wingChatPreferencesProvider.notifier);
+    return _SettingsSectionCard(
+      title: strings.settingsChatSection,
+      icon: Icons.chat_bubble_outline,
+      children: [
+        SwitchListTile(
+          key: const ValueKey('chat-spellcheck-enabled'),
+          title: Text(strings.chatSpellcheckTitle),
+          subtitle: Text(strings.chatSpellcheckSubtitle),
+          value: preferences.spellcheckEnabled,
+          onChanged: controller.setSpellcheckEnabled,
+        ),
+      ],
+    );
+  }
+}
+
+class _VoiceSettingsSection extends ConsumerWidget {
+  const _VoiceSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final settings = ref.watch(wingVoiceSettingsProvider);
+    final controller = ref.read(wingVoiceSettingsProvider.notifier);
+    return _SettingsSectionCard(
+      title: strings.settingsVoiceSection,
+      icon: Icons.keyboard_voice_outlined,
+      children: [
+        SwitchListTile(
+          key: const ValueKey('voice-continuous-enabled'),
+          title: Text(strings.voiceContinuousTitle),
+          subtitle: Text(strings.voiceContinuousSubtitle),
+          value: settings.continuousVoiceEnabled,
+          onChanged: controller.setContinuousVoiceEnabled,
+        ),
+        SwitchListTile(
+          key: const ValueKey('voice-speak-replies-enabled'),
+          title: Text(strings.voiceSpeakRepliesTitle),
+          subtitle: Text(strings.voiceSpeakRepliesSubtitle),
+          value: settings.speakRepliesEnabled,
+          onChanged: controller.setSpeakRepliesEnabled,
+        ),
+        SwitchListTile(
+          key: const ValueKey('voice-completion-sound-enabled'),
+          title: Text(strings.voiceCompletionSoundTitle),
+          subtitle: Text(strings.voiceCompletionSoundSubtitle),
+          value: settings.completionSoundEnabled,
+          onChanged: controller.setCompletionSoundEnabled,
+        ),
+        ListTile(
+          key: const ValueKey('settings-voice-link'),
+          leading: const Icon(Icons.graphic_eq),
+          title: Text(strings.voiceSettingsTitle),
+          subtitle: Text(strings.voiceSpeakRepliesSubtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.settingsVoice),
+        ),
+      ],
+    );
+  }
+}
+
+class _DiagnosticsSettingsLink extends ConsumerWidget {
+  const _DiagnosticsSettingsLink();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final channel = ref.watch(hermesChannelProvider);
+    return AnimatedBuilder(
+      animation: channel,
+      builder: (context, _) {
+        final strings = AppLocalizations.of(context);
+        return _SettingsSectionCard(
+          title: strings.diagnosticsTitle,
+          icon: Icons.monitor_heart_outlined,
+          children: [
+            ListTile(
+              key: const ValueKey('settings-diagnostics-link'),
+              leading: const Icon(Icons.monitor_heart_outlined),
+              title: Text(strings.chatConnectionDiagnosticsTitle),
+              subtitle: Text(
+                _connectionStatusLabel(strings, channel.state.status),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.settingsDiagnostics),
+            ),
+          ],
+        );
+      },
     );
   }
 }

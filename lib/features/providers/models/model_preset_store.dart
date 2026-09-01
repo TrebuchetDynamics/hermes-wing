@@ -20,7 +20,7 @@ class ModelPresetStore {
       if (raw == null || raw.isEmpty) return const [];
       final decoded = jsonDecode(raw);
       if (decoded is! List) return const [];
-      return [
+      final presets = [
         for (final item in decoded)
           if (item is Map)
             if (ModelPreset.fromJson(item.cast<String, Object?>())
@@ -28,6 +28,9 @@ class ModelPresetStore {
                 when preset.name.isNotEmpty && preset.model.isNotEmpty)
               preset,
       ];
+      return presets.length <= maxPresets
+          ? presets
+          : presets.sublist(presets.length - maxPresets);
     } catch (_) {
       return const [];
     }

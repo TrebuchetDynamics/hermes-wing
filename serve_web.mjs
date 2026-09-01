@@ -366,6 +366,8 @@ async function handleHermesApi(req, res, url) {
   const messagesMatch = url.match(/^\/api\/sessions\/([^/]+)\/messages$/);
   if (req.method === "GET" && messagesMatch) {
     const session = findHermesSession(decodeURIComponent(messagesMatch[1]));
+    if (!session)
+      return json(res, 404, { error: { message: "session not found" } });
     return json(res, 200, {
       object: "list",
       session_id: session?.id ?? "",
@@ -421,6 +423,7 @@ async function handleHermesApi(req, res, url) {
   const runEventsMatch = url.match(/^\/v1\/runs\/([^/]+)\/events$/);
   if (req.method === "GET" && runEventsMatch) {
     const run = hermesState.runs.get(decodeURIComponent(runEventsMatch[1]));
+    if (!run) return json(res, 404, { error: { message: "run not found" } });
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Access-Control-Allow-Origin": "*",
@@ -483,13 +486,22 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "POST" && runActionMatch) {
     const body = await readJsonBody(req);
     const run = hermesState.runs.get(decodeURIComponent(runActionMatch[1]));
+    if (!run) return json(res, 404, { error: { message: "run not found" } });
     const action = runActionMatch[2];
     if (action === "stop") {
       hermesState.stopCount += 1;
     } else {
       const decision = body.choice ?? body.decision;
+      if (!["once", "session", "always", "deny"].includes(decision)) {
+        return json(res, 400, {
+          error: { message: "invalid approval choice" },
+        });
+      }
+      if (!run.release) {
+        return json(res, 409, { error: { message: "approval not active" } });
+      }
       hermesState.decisions.push(decision);
-      run?.release?.(decision);
+      run.release(decision);
       return json(res, 200, {});
     }
     run?.release?.("stop");

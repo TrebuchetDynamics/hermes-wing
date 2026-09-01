@@ -294,8 +294,8 @@ web.mkdir()
 safe_extract(dist / "hermes-wing-linux-x64.tar.gz", linux)
 safe_extract(dist / "hermes-wing-web.tar.gz", web)
 for required in (linux / "bundle/wing", linux / "bundle/wing-link", web / "index.html", web / "main.dart.js", web / "flutter_bootstrap.js"):
-    if not required.is_file():
-        raise SystemExit(f"release archive is missing {required.relative_to(out)}")
+    if not required.is_file() or required.is_symlink():
+        raise SystemExit(f"release archive is missing a regular file at {required.relative_to(out)}")
 PY
 
 file "$dist/wing-link-linux-amd64" | grep -Eq 'ELF 64-bit.*x86-64'

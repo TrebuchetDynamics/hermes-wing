@@ -34,6 +34,41 @@ void main() {
     },
   );
 
+  test('does not follow redirects with credentials', () async {
+    final target = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final authorizationHeaders = <String?>[];
+    target.listen((request) {
+      authorizationHeaders.add(
+        request.headers.value(HttpHeaders.authorizationHeader),
+      );
+      request.response.write('ok');
+      request.response.close();
+    });
+    final redirect = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    redirect.listen((request) {
+      request.response.headers.set(
+        HttpHeaders.locationHeader,
+        'http://127.0.0.1:${target.port}/target',
+      );
+      request.response.statusCode = HttpStatus.temporaryRedirect;
+      request.response.close();
+    });
+    addTearDown(() async {
+      await redirect.close(force: true);
+      await target.close(force: true);
+    });
+
+    final transport = WingLinkTransport();
+    await expectLater(
+      transport.get(
+        Uri.parse('http://127.0.0.1:${redirect.port}/redirect'),
+        const {'Authorization': 'Bearer redirect-secret'},
+      ),
+      throwsA(isA<HttpException>()),
+    );
+    expect(authorizationHeaders, isEmpty);
+  });
+
   test(
     'accepts one pinned TLS identity and rejects a changed identity',
     () async {

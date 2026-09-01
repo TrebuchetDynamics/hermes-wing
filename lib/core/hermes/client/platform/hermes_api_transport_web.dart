@@ -51,10 +51,20 @@ Stream<String> _requestStream({
     },
   );
   var delivered = 0;
+  var settled = false;
 
   request.open(method, uri.toString(), true);
   headers.forEach((name, value) => request.setRequestHeader(name, value));
   request.onProgress.listen((_) {
+    if (settled) return;
+    if (request.responseURL.isNotEmpty &&
+        !_matchesRequestUrl(request.responseURL, uri)) {
+      settled = true;
+      request.abort();
+      controller.addError(StateError('Hermes API redirects are not supported'));
+      controller.close();
+      return;
+    }
     final text = request.responseText;
     if (text.length > delivered) {
       controller.add(text.substring(delivered));
@@ -62,7 +72,11 @@ Stream<String> _requestStream({
     }
   });
   request.onLoad.listen((_) {
-    if (!hermesApiIsSuccessStatus(request.status)) {
+    if (settled) return;
+    settled = true;
+    if (!_matchesRequestUrl(request.responseURL, uri)) {
+      controller.addError(StateError('Hermes API redirects are not supported'));
+    } else if (!hermesApiIsSuccessStatus(request.status)) {
       controller.addError(
         StateError(hermesApiHttpStatusMessage(request.status)),
       );
@@ -73,6 +87,8 @@ Stream<String> _requestStream({
     controller.close();
   });
   request.onError.listen((_) {
+    if (settled) return;
+    settled = true;
     controller.addError(StateError(hermesApiHttpStatusMessage(request.status)));
     controller.close();
   });
@@ -98,6 +114,12 @@ Future<String> _request({
   request.open(method, uri.toString(), true);
   headers.forEach((name, value) => request.setRequestHeader(name, value));
   request.onLoad.listen((_) {
+    if (!_matchesRequestUrl(request.responseURL, uri)) {
+      completer.completeError(
+        StateError('Hermes API redirects are not supported'),
+      );
+      return;
+    }
     final status = request.status;
     if (hermesApiIsSuccessStatus(status)) {
       completer.complete(request.responseText);
@@ -118,4 +140,16 @@ Future<String> _request({
     request.send(payload.toJS);
   }
   return completer.future;
+}
+
+bool _matchesRequestUrl(String responseUrl, Uri requestUri) {
+  final responseUri = Uri.tryParse(responseUrl);
+  if (responseUri == null) return false;
+  final expected = requestUri.replace(fragment: null);
+  return responseUri.scheme == expected.scheme &&
+      responseUri.userInfo == expected.userInfo &&
+      responseUri.host == expected.host &&
+      responseUri.port == expected.port &&
+      responseUri.path == expected.path &&
+      responseUri.query == expected.query;
 }

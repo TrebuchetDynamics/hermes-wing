@@ -43,6 +43,14 @@ class HermesEnrollmentPayload {
   static const _connectHost = 'connect';
   static const _connectPrefix = 'wing://connect?';
   static final _hostFingerprintPattern = RegExp(r'^sha256/[A-Za-z0-9_-]{43}$');
+  static const _singleValueFields = [
+    'origin',
+    'broker',
+    'control',
+    'protocol_generation',
+    'host_fingerprint',
+    'code',
+  ];
   static final _handoffEdgeCharacters = RegExp(
     r'''^[<>()\[\]'\"]+|[<>()\[\]'\"]+$''',
   );
@@ -106,6 +114,11 @@ class HermesEnrollmentPayload {
       throw const FormatException(
         'connect payload must not include a token parameter',
       );
+    }
+    for (final field in _singleValueFields) {
+      if ((uri.queryParametersAll[field]?.length ?? 0) > 1) {
+        throw FormatException('connect payload $field must appear once');
+      }
     }
 
     final origin = _parseOrigin(

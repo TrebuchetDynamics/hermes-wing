@@ -49,18 +49,25 @@ class HermesApprovalResponder {
   /// run ids, consulted again on failure so a run that ended while the
   /// response was in flight swallows the error; [reportError] is called with
   /// the user-facing message before rethrowing.
+  ///
+  /// Current Hermes run events identify the approval by its run, not a
+  /// separate approval id. [runId] carries that explicit identity for those
+  /// events; older events continue to use [approvalId].
   Future<void> respond({
     required HermesApiClient client,
     required HermesChannelState state,
     required String approvalId,
     required HermesApprovalDecision decision,
     required Iterable<String> activeRunIds,
+    String? runId,
     String? selectedProfileId,
     String Function(Object error)? safeError,
     void Function(String message)? reportError,
   }) async {
     final trimmedApprovalId = approvalId.trim();
-    if (trimmedApprovalId.isEmpty) {
+    final trimmedRunId = runId?.trim();
+    if (trimmedApprovalId.isEmpty &&
+        (trimmedRunId == null || trimmedRunId.isEmpty)) {
       const message = 'Could not answer approval: approval id is missing.';
       reportError?.call(message);
       throw StateError(message);
@@ -74,8 +81,10 @@ class HermesApprovalResponder {
       reportError?.call(message);
       throw StateError(message);
     }
-    final runId = resolveRunId(trimmedApprovalId, activeRunIds);
-    if (runId == null) {
+    final resolvedRunId = trimmedRunId?.isNotEmpty == true
+        ? trimmedRunId
+        : resolveRunId(trimmedApprovalId, activeRunIds);
+    if (resolvedRunId == null) {
       const message =
           'Could not answer approval: active run is no longer available.';
       reportError?.call(message);
@@ -83,15 +92,19 @@ class HermesApprovalResponder {
     }
     try {
       await client.respondApproval(
-        runId: runId,
+        runId: resolvedRunId,
         approvalId: trimmedApprovalId,
         decision: decision.name,
         profile: selectedProfileId,
       );
-      _approvalRunIds.remove(trimmedApprovalId);
+      if (trimmedApprovalId.isNotEmpty) {
+        _approvalRunIds.remove(trimmedApprovalId);
+      }
     } catch (error) {
-      final runStillActive = activeRunIds.contains(runId);
-      final approvalStillMapped = _approvalRunIds[trimmedApprovalId] == runId;
+      final runStillActive = activeRunIds.contains(resolvedRunId);
+      final approvalStillMapped =
+          trimmedApprovalId.isNotEmpty &&
+          _approvalRunIds[trimmedApprovalId] == resolvedRunId;
       if (!runStillActive && !approvalStillMapped) {
         return;
       }

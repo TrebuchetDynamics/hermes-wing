@@ -107,9 +107,7 @@ async function captureProductFrames(browser) {
   );
   await desktop.page.getByRole("button", { name: "Approve once" }).click();
   await desktop.page
-    .getByText(
-      "Gateway is healthy. Profiles, skills, and toolsets are ready.",
-    )
+    .getByText("Gateway is healthy. Profiles, skills, and toolsets are ready.")
     .first()
     .waitFor();
   await desktop.page.evaluate(() => globalThis.wingE2EReduceMotion());
@@ -159,7 +157,9 @@ async function composeShowcase(browser, desktopPath, mobilePath) {
     fs.readFile(desktopPath),
     fs.readFile(mobilePath),
   ]);
-  const page = await browser.newPage({ viewport: { width: 1200, height: 760 } });
+  const page = await browser.newPage({
+    viewport: { width: 1200, height: 760 },
+  });
   await page.setContent(`<!doctype html>
 <html><head><style>
 *{box-sizing:border-box}html,body{margin:0;width:1200px;height:760px;overflow:hidden}

@@ -41,10 +41,12 @@
 ### Task 1: Define the Hermes authorization vocabulary
 
 **Files:**
+
 - Create: `hermes-agent/gateway/api_operator_auth.py`
 - Create: `hermes-agent/tests/gateway/test_api_operator_auth.py`
 
 **Interfaces:**
+
 - Produces: `VALID_SCOPE_DOMAINS`, `normalize_scopes()`, `AuthPrincipal`, `IssuedCredential`, `CredentialSummary`.
 - Consumed by: Tasks 2–4 and API-server capability serialization.
 
@@ -144,10 +146,12 @@ Check that scope parsing is deny-by-default, deterministic, and contains no path
 ### Task 2: Persist hashed, revocable operator credentials
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/api_operator_auth.py`
 - Modify: `hermes-agent/tests/gateway/test_api_operator_auth.py`
 
 **Interfaces:**
+
 - Produces: `OperatorCredentialStore.issue()`, `.authenticate()`, `.list_credentials()`, `.revoke()`.
 - Storage schema: versioned JSON at `<HERMES_HOME>/operator_credentials.json`; token hashes only.
 
@@ -220,11 +224,13 @@ Inspect the persisted fixture and captured logs; neither may contain the raw tok
 ### Task 3: Authenticate and authorize API-server requests
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/platforms/api_server.py`
 - Modify: `hermes-agent/tests/gateway/test_api_server.py`
 - Modify: `hermes-agent/tests/gateway/test_session_api.py`
 
 **Interfaces:**
+
 - Produces: `APIServerAdapter._authorize(request, required_scope)` and caller-specific capability scopes.
 - Preserves: `_check_auth(request)` compatibility for existing route tests.
 
@@ -356,12 +362,14 @@ Verify every mutating route calls `_authorize` with a `:write` scope and no hand
 ### Task 4: Add one-time enrollment and token lifecycle contracts
 
 **Files:**
+
 - Create: `hermes-agent/gateway/api_operator_enrollment.py`
 - Create: `hermes-agent/tests/gateway/test_api_operator_enrollment.py`
 - Modify: `hermes-agent/gateway/platforms/api_server.py`
 - Modify: `hermes-agent/tests/gateway/test_api_server.py`
 
 **Interfaces:**
+
 - Produces: `OperatorEnrollmentStore.create()`, `.inspect()`, `.exchange()`.
 - API endpoints:
   - `POST /v1/operator/enrollments` — `settings:write` or superuser.
@@ -484,12 +492,14 @@ Confirm inspect/exchange request bodies are not logged, origin equality is exact
 ### Task 5: Parse scopes and endpoint requirements in Flutter
 
 **Files:**
+
 - Modify: `hermes-wing/lib/core/hermes/models/hermes_capabilities.dart`
 - Modify: `hermes-wing/lib/core/hermes/policy/hermes_transport_policy.dart`
 - Modify: `hermes-wing/test/core/hermes/hermes_api_test.dart`
 - Modify: `hermes-wing/test/core/hermes/channel/hermes_api_channel_test.dart`
 
 **Interfaces:**
+
 - Produces: `HermesCapabilityDocument.schemaVersion`, `.supportsSchema`, `.profileContext`, `HermesProfileContextCapability`, `HermesAuthCapability.grantedScopes`, `.allows()`, and `HermesEndpointCapability.requiredScopes`/`.profileScoped`.
 
 - [ ] **Step 1: Add failing model tests**
@@ -579,6 +589,7 @@ Check older capability fixtures still parse and unsupported operations remain hi
 ### Task 6: Complete Android enrollment from existing intent ingress
 
 **Files:**
+
 - Create: `hermes-wing/lib/features/enrollment/models/hermes_enrollment_payload.dart`
 - Create: `hermes-wing/lib/features/enrollment/services/hermes_connect_intent_source.dart`
 - Create: `hermes-wing/lib/features/enrollment/providers/hermes_enrollment_provider.dart`
@@ -592,6 +603,7 @@ Check older capability fixtures still parse and unsupported operations remain hi
 - Modify: `hermes-wing/lib/features/hermes_chat/providers/hermes_channel_provider.dart`
 
 **Interfaces:**
+
 - Produces: `HermesEnrollmentPayload.parse()`, `HermesEnrollmentPreview`, `HermesEnrollmentController.inspect()` and `.confirm()`.
 - Consumes: existing Android method/event channels and `SecureHermesEndpointStore`.
 
@@ -682,10 +694,12 @@ Generate a real pairing URI on a disposable local Hermes instance, open it throu
 ### Task 7: Expose scoped profile contracts from the canonical API server
 
 **Files:**
+
 - Modify: `hermes-agent/gateway/platforms/api_server.py`
 - Create: `hermes-agent/tests/gateway/test_api_profiles.py`
 
 **Interfaces:**
+
 - Produces capability entries and handlers for profile list, create/clone, rename, delete, and soul read/write.
 - Reuses: `hermes_cli.profiles` domain functions; no Dashboard HTTP proxy and no active-profile mutation endpoint.
 
@@ -745,12 +759,36 @@ Advertise these exact endpoints:
 
 ```json
 {
-  "profiles": {"method": "GET", "path": "/api/profiles", "required_scopes": ["profiles:read"]},
-  "profile_create": {"method": "POST", "path": "/api/profiles", "required_scopes": ["profiles:write"]},
-  "profile_update": {"method": "PATCH", "path": "/api/profiles/{name}", "required_scopes": ["profiles:write"]},
-  "profile_delete": {"method": "DELETE", "path": "/api/profiles/{name}", "required_scopes": ["profiles:write"]},
-  "profile_soul": {"method": "GET", "path": "/api/profiles/{name}/soul", "required_scopes": ["profiles:read"]},
-  "profile_soul_update": {"method": "PUT", "path": "/api/profiles/{name}/soul", "required_scopes": ["profiles:write"]}
+  "profiles": {
+    "method": "GET",
+    "path": "/api/profiles",
+    "required_scopes": ["profiles:read"]
+  },
+  "profile_create": {
+    "method": "POST",
+    "path": "/api/profiles",
+    "required_scopes": ["profiles:write"]
+  },
+  "profile_update": {
+    "method": "PATCH",
+    "path": "/api/profiles/{name}",
+    "required_scopes": ["profiles:write"]
+  },
+  "profile_delete": {
+    "method": "DELETE",
+    "path": "/api/profiles/{name}",
+    "required_scopes": ["profiles:write"]
+  },
+  "profile_soul": {
+    "method": "GET",
+    "path": "/api/profiles/{name}/soul",
+    "required_scopes": ["profiles:read"]
+  },
+  "profile_soul_update": {
+    "method": "PUT",
+    "path": "/api/profiles/{name}/soul",
+    "required_scopes": ["profiles:write"]
+  }
 }
 ```
 
@@ -778,6 +816,7 @@ Compare API-server behavior with Dashboard profile fixtures and confirm both cal
 ### Task 8: Add typed Flutter profile behavior
 
 **Files:**
+
 - Create: `hermes-wing/lib/core/hermes/models/hermes_profile.dart`
 - Modify: `hermes-wing/lib/core/hermes/client/hermes_api_transport.dart`
 - Modify: `hermes-wing/lib/core/hermes/client/platform/hermes_api_transport_io.dart`
@@ -794,6 +833,7 @@ Compare API-server behavior with Dashboard profile fixtures and confirm both cal
 - Modify: `hermes-wing/test/features/hermes_chat/support/fake_hermes_channel.dart`
 
 **Interfaces:**
+
 - Produces: `HermesProfile`, profile client methods, channel methods, `state.profiles`, `state.selectedProfileId`.
 
 - [ ] **Step 1: Write failing model/client tests**
@@ -888,6 +928,7 @@ Confirm fake channels implement the same public seam and no UI imports `HermesAp
 ### Task 9: Ship `/agents`, More navigation, and Chat profile switching
 
 **Files:**
+
 - Create: `hermes-wing/lib/features/agents/screens/agents_screen.dart`
 - Create: `hermes-wing/lib/features/agents/widgets/profile_editor_sheet.dart`
 - Create: `hermes-wing/lib/features/agents/providers/profile_selection_provider.dart`
@@ -905,6 +946,7 @@ Confirm fake channels implement the same public seam and no UI imports `HermesAp
 - Add a focused Chat profile-switch test beside existing Hermes chat screen tests.
 
 **Interfaces:**
+
 - Produces: working `/agents` route, More-sheet destination, global selected profile, Chat switcher.
 
 - [ ] **Step 1: Write failing shell and screen tests**
@@ -971,6 +1013,7 @@ On the connected Android device: enroll with `profiles:read`, confirm mutations 
 ### Task 10: Close milestone evidence and update the parity ledger
 
 **Files:**
+
 - Modify: `hermes-wing/docs/product/hermes-desktop-parity.md`
 - Modify: `hermes-wing/docs/product/hermes-compatibility.md`
 - Modify: `hermes-wing/docs/product/routes.md`
@@ -978,6 +1021,7 @@ On the connected Android device: enroll with `profiles:read`, confirm mutations 
 - Modify: relevant Hermes Agent API documentation for new routes/scopes.
 
 **Interfaces:**
+
 - Produces: auditable milestone receipt and unblocks milestone 2.
 
 - [ ] **Step 1: Run complete focused validation**

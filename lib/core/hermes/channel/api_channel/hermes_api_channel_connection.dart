@@ -4,6 +4,7 @@ extension _ConnectionExtension on HermesApiChannel {
   Future<void> _connect({required String baseUrl, String? apiKey}) async {
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
+    _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
@@ -29,14 +30,12 @@ extension _ConnectionExtension on HermesApiChannel {
           : null;
       final optionalResourceErrors = <HermesOptionalResource, String>{};
       final detailedHealthFuture = _loadOptional<HermesHealthStatus>(
-        advertised:
-            capabilities.auth.allows('gateway:read') &&
-            capabilities.advertisesScopedEndpoint(
-              'health_detailed',
-              'GET',
-              '/health/detailed',
-              'gateway:read',
-            ),
+        advertised: _capabilityEndpointAuthorized(
+          capabilities,
+          'health_detailed',
+          'GET',
+          '/health/detailed',
+        ),
         resource: HermesOptionalResource.detailedHealth,
         load: client.healthDetailed,
         errors: optionalResourceErrors,
@@ -292,8 +291,10 @@ extension _ConnectionExtension on HermesApiChannel {
           _recentTurns[cacheKey] ??
           const [],
     );
+    // Tool results are model context, not user-visible transcript text.
+    final visibleHistory = history.where((message) => message.role != 'tool');
     final turns = [
-      for (final message in history)
+      for (final message in visibleHistory)
         (() {
           final author = switch (message.role) {
             'user' => HermesTurnAuthor.user,

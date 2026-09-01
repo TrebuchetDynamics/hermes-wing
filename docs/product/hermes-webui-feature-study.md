@@ -233,17 +233,17 @@ index and require each future parity slice to name:
 
 ## Capabilities Wing must not copy
 
-| WebUI mechanism/outcome | Wing disposition | Reason |
-| --- | --- | --- |
-| Direct imports from the Agent checkout | Never copy | Breaks client/server authority and mobile distribution. WebUI itself plans to remove this dependency.[9] |
-| Reads/writes of Agent SessionDB, config, profiles, skills, memory, cron, credential pools, or runtime provider internals | Never copy | Creates a second privileged backend and bypasses scoped contracts. |
-| Workspace filesystem browser/editor and embedded terminal over arbitrary server paths | Never copy directly | Remote clients require picker-originated opaque resource handles and explicit server policy. |
-| WebUI-owned session JSON as canonical Hermes history | Never copy | Hermes sessions are authoritative; Wing may persist only bounded client state and accepted handles. |
-| Password/passkey/OIDC user database in Wing | Never copy | Authentication belongs to Hermes enrollment or an optional account service. |
-| Python bootstrap/source mounts/Docker topology | Never copy | Wing Link installs/adopts and supervises a pinned Hermes runtime; Flutter packages contain no Agent runtime. |
-| WebUI extension JavaScript/sidecars with full session authority | Defer/likely exclude | Incompatible with mobile sandboxing and Wing's small trusted client surface; Hermes plugins remain server-owned. |
-| Public share snapshots generated from local WebUI state | Contract-gated | Requires server-owned redaction, revocation, expiry, attachment policy, and profile authorization. |
-| Local config/provider/profile mutation used as API fallback | Never copy | Unsupported operations must remain explicitly unavailable. |
+| WebUI mechanism/outcome                                                                                                  | Wing disposition     | Reason                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Direct imports from the Agent checkout                                                                                   | Never copy           | Breaks client/server authority and mobile distribution. WebUI itself plans to remove this dependency.[9]         |
+| Reads/writes of Agent SessionDB, config, profiles, skills, memory, cron, credential pools, or runtime provider internals | Never copy           | Creates a second privileged backend and bypasses scoped contracts.                                               |
+| Workspace filesystem browser/editor and embedded terminal over arbitrary server paths                                    | Never copy directly  | Remote clients require picker-originated opaque resource handles and explicit server policy.                     |
+| WebUI-owned session JSON as canonical Hermes history                                                                     | Never copy           | Hermes sessions are authoritative; Wing may persist only bounded client state and accepted handles.              |
+| Password/passkey/OIDC user database in Wing                                                                              | Never copy           | Authentication belongs to Hermes enrollment or an optional account service.                                      |
+| Python bootstrap/source mounts/Docker topology                                                                           | Never copy           | Wing Link installs/adopts and supervises a pinned Hermes runtime; Flutter packages contain no Agent runtime.     |
+| WebUI extension JavaScript/sidecars with full session authority                                                          | Defer/likely exclude | Incompatible with mobile sandboxing and Wing's small trusted client surface; Hermes plugins remain server-owned. |
+| Public share snapshots generated from local WebUI state                                                                  | Contract-gated       | Requires server-owned redaction, revocation, expiry, attachment policy, and profile authorization.               |
+| Local config/provider/profile mutation used as API fallback                                                              | Never copy           | Unsupported operations must remain explicitly unavailable.                                                       |
 
 ## Roadmap changes from this study
 

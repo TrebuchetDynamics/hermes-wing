@@ -12,6 +12,7 @@ class AppShellPresentation {
     _hermesDestination,
     _officeDestination,
     _agentsDestination,
+    _soulDestination,
     _providersDestination,
     _toolsDestination,
     _schedulesDestination,
@@ -39,6 +40,12 @@ class AppShellPresentation {
     path: AppRoutes.profiles,
     icon: Icons.support_agent_outlined,
     label: localizations.agentsDestination,
+  );
+
+  AppShellDestination get _soulDestination => AppShellDestination(
+    path: AppRoutes.soul,
+    icon: Icons.psychology_outlined,
+    label: localizations.personaLabel,
   );
 
   AppShellDestination get _providersDestination => AppShellDestination(

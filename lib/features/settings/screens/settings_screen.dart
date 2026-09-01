@@ -16,6 +16,7 @@ import '../../hermes_chat/gateways/gateway_contact.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
+import '../providers/chat_preferences_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/voice_settings_provider.dart';
 
@@ -29,6 +30,10 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(wingVoiceSettingsProvider);
     final controller = ref.read(wingVoiceSettingsProvider.notifier);
+    final chatPreferences = ref.watch(wingChatPreferencesProvider);
+    final chatPreferencesController = ref.read(
+      wingChatPreferencesProvider.notifier,
+    );
     final channel = ref.watch(hermesChannelProvider);
     final gatewayDirectory = ref.watch(hermesGatewayDirectoryProvider);
 
@@ -132,6 +137,23 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (WidgetsBinding
+                  .instance
+                  .platformDispatcher
+                  .nativeSpellCheckServiceDefined)
+                _SettingsSectionCard(
+                  title: strings.settingsChatSection,
+                  icon: Icons.chat_bubble_outline,
+                  children: [
+                    SwitchListTile(
+                      key: const ValueKey('chat-spellcheck-enabled'),
+                      title: Text(strings.chatSpellcheckTitle),
+                      subtitle: Text(strings.chatSpellcheckSubtitle),
+                      value: chatPreferences.spellcheckEnabled,
+                      onChanged: chatPreferencesController.setSpellcheckEnabled,
+                    ),
+                  ],
+                ),
               _SettingsSectionCard(
                 title: strings.settingsVoiceSection,
                 icon: Icons.keyboard_voice_outlined,
@@ -149,6 +171,13 @@ class SettingsScreen extends ConsumerWidget {
                     subtitle: Text(strings.voiceSpeakRepliesSubtitle),
                     value: settings.speakRepliesEnabled,
                     onChanged: controller.setSpeakRepliesEnabled,
+                  ),
+                  SwitchListTile(
+                    key: const ValueKey('voice-completion-sound-enabled'),
+                    title: Text(strings.voiceCompletionSoundTitle),
+                    subtitle: Text(strings.voiceCompletionSoundSubtitle),
+                    value: settings.completionSoundEnabled,
+                    onChanged: controller.setCompletionSoundEnabled,
                   ),
                   ListTile(
                     key: const ValueKey('settings-voice-link'),

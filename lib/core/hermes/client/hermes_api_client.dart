@@ -7,6 +7,7 @@ import '../models/hermes_capabilities.dart';
 import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
 import '../models/hermes_model_assignment.dart';
+import '../models/hermes_model_options.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_provider.dart';
 import '../models/hermes_run.dart';
@@ -122,8 +123,31 @@ class HermesApiClient {
         .toList(growable: false);
   }
 
+  Future<HermesModelOptions> getModelOptions({
+    String? profile,
+    bool refresh = false,
+  }) async {
+    final uri = _scoped(config.modelOptionsUri, profile);
+    final requestUri = refresh
+        ? uri.replace(
+            queryParameters: {...uri.queryParameters, 'refresh': 'true'},
+          )
+        : uri;
+    return HermesModelOptions.fromJson(await _getJson(requestUri));
+  }
+
   Future<List<HermesJob>> listJobs({String? profile}) async {
-    final body = await _getJson(_scoped(config.jobsUri, profile));
+    // Hermes Agent omits disabled jobs unless the caller opts in. Include them
+    // so a paused schedule remains visible and can be resumed from Wing once
+    // the corresponding mutation contract is advertised.
+    final scopedUri = _scoped(config.jobsUri, profile);
+    final uri = scopedUri.replace(
+      queryParameters: {
+        ...scopedUri.queryParameters,
+        'include_disabled': 'true',
+      },
+    );
+    final body = await _getJson(uri);
     final rawJobs = body['jobs'] ?? body['data'];
     return wingMapListFromJson(rawJobs)
         .map(HermesJob.fromJson)
@@ -315,14 +339,40 @@ class HermesApiClient {
     required String decision,
     String? profile,
   }) async {
-    await _postJson(_scoped(config.runApprovalUri(runId), profile), {
-      'approval_id': approvalId,
-      'decision': decision,
-    });
+    final body = <String, Object?>{'choice': decision};
+    if (approvalId.trim().isNotEmpty) body['approval_id'] = approvalId.trim();
+    await _postJson(_scoped(config.runApprovalUri(runId), profile), body);
   }
 
   Future<void> stopRun(String runId, {String? profile}) async {
     await _postJson(_scoped(config.runStopUri(runId), profile), const {});
+  }
+
+  Future<void> steerRun(
+    String runId, {
+    required String text,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.runSteerUri(runId), profile),
+      {'input': text.trim()},
+    );
+    if (!wingBoolFromJson(response['accepted'])) {
+      throw StateError('Hermes did not accept the steer input.');
+    }
+  }
+
+  Future<HermesSessionModelLock> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+    String? profile,
+  }) async {
+    final response = await _postJson(
+      _scoped(config.sessionModelLockUri(sessionId), profile),
+      {'provider': provider.trim(), 'model': model.trim()},
+    );
+    return HermesSessionModelLock.fromJson(response);
   }
 
   /// Inspects a one-time pairing code against the operator-supplied

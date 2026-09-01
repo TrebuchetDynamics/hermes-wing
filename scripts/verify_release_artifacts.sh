@@ -10,6 +10,7 @@ dist=$(realpath "$1")
 tag=$2
 version=${tag#v}
 expected_cert=${WING_RELEASE_CERT_SHA256:-}
+source_revision=${GITHUB_SHA:-}
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 temp_dir=$(mktemp -d)
 server_pid=
@@ -29,6 +30,10 @@ trap cleanup EXIT
 }
 [[ -n "$expected_cert" ]] || {
   echo "WING_RELEASE_CERT_SHA256 is required" >&2
+  exit 1
+}
+[[ "$source_revision" =~ ^[0-9a-f]{40}$ ]] || {
+  echo "GITHUB_SHA must identify the immutable source revision" >&2
   exit 1
 }
 
@@ -126,6 +131,93 @@ fi
 
 unzip -tq "$dist/hermes-wing-android.apk" >/dev/null
 unzip -tq "$dist/hermes-wing-android.aab" >/dev/null
+python3 - "$dist" "$repo_root" "$tag" "$source_revision" <<'PY'
+import hashlib
+import json
+import re
+import sys
+import zipfile
+from pathlib import Path
+
+
+dist = Path(sys.argv[1])
+repo = Path(sys.argv[2])
+tag = sys.argv[3]
+source_revision = sys.argv[4]
+asset_path = "assets/flutter_assets/assets/config/termux_bootstrap.json"
+aab_suffix = "/assets/flutter_assets/assets/config/termux_bootstrap.json"
+
+
+def read_unique(archive: Path, predicate) -> bytes:
+    with zipfile.ZipFile(archive) as bundle:
+        matches = [name for name in bundle.namelist() if predicate(name)]
+        if len(matches) != 1:
+            raise SystemExit(
+                f"{archive.name} must contain exactly one Termux bootstrap metadata asset"
+            )
+        return bundle.read(matches[0])
+
+
+apk_metadata = read_unique(
+    dist / "hermes-wing-android.apk", lambda name: name == asset_path
+)
+aab_metadata = read_unique(
+    dist / "hermes-wing-android.aab",
+    lambda name: name == asset_path or name.endswith(aab_suffix),
+)
+if apk_metadata != aab_metadata:
+    raise SystemExit("APK and AAB Termux bootstrap metadata differ")
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate metadata key: {key}")
+        result[key] = value
+    return result
+
+
+try:
+    metadata = json.loads(apk_metadata, object_pairs_hook=unique_object)
+except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+    raise SystemExit("invalid packaged Termux bootstrap metadata") from error
+expected_keys = {
+    "available",
+    "tag",
+    "installer_commit",
+    "installer_sha256",
+    "asset_sha256",
+    "asset_size",
+}
+if set(metadata) != expected_keys or metadata.get("available") is not True:
+    raise SystemExit("packaged Termux bootstrap metadata is unavailable or malformed")
+if metadata.get("tag") != tag or metadata.get("installer_commit") != source_revision:
+    raise SystemExit("packaged Termux bootstrap tag or source revision mismatch")
+for key in ("installer_sha256", "asset_sha256"):
+    if not isinstance(metadata.get(key), str) or not re.fullmatch(
+        r"[0-9a-f]{64}", metadata[key]
+    ):
+        raise SystemExit(f"invalid packaged {key}")
+asset_size = metadata.get("asset_size")
+if not isinstance(asset_size, int) or isinstance(asset_size, bool) or not 1 <= asset_size <= 50 * 1024 * 1024:
+    raise SystemExit("invalid packaged Wing Link asset size")
+wing_link = dist / "wing-link-android-arm64"
+actual_asset = wing_link.read_bytes()
+if len(actual_asset) != asset_size or hashlib.sha256(actual_asset).hexdigest() != metadata["asset_sha256"]:
+    raise SystemExit("packaged Wing Link metadata does not match the released asset")
+installer = repo / "install-wing-link.sh"
+installer_bytes = installer.read_bytes()
+if not 1 <= len(installer_bytes) <= 1024 * 1024:
+    raise SystemExit("installer source exceeds the 1 MiB command limit")
+if hashlib.sha256(installer_bytes).hexdigest() != metadata["installer_sha256"]:
+    raise SystemExit("packaged installer digest does not match the source revision")
+manifest_matches = []
+for line in (dist / "wing-link-checksums.sha256").read_text().splitlines():
+    match = re.fullmatch(r"([0-9a-fA-F]{64}) [ *]([^/\\]+)", line)
+    if match and match.group(2) == wing_link.name:
+        manifest_matches.append(match.group(1).lower())
+if manifest_matches != [metadata["asset_sha256"]]:
+    raise SystemExit("packaged Wing Link digest does not match the release manifest")
+PY
 apk_report=$($apksigner verify --verbose --print-certs "$dist/hermes-wing-android.apk")
 mapfile -t apk_certs < <(printf '%s\n' "$apk_report" | awk -F': ' '/Signer #[0-9]+ certificate SHA-256 digest:/{print $2}')
 mapfile -t aab_certs < <(keytool -printcert -jarfile "$dist/hermes-wing-android.aab" | awk -F': ' '/SHA256:/{print $2}')

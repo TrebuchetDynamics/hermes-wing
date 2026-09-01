@@ -28,7 +28,9 @@ extension _ProfilesExtension on HermesApiChannel {
         'list profiles',
       );
     }
-    _requireProfileContext('select a profile');
+    if (client.config.pathProfileId != id) {
+      _requireProfileContext('select a profile');
+    }
 
     final generation = _connectionGeneration;
     final capabilities = _state.capabilities;
@@ -62,77 +64,74 @@ extension _ProfilesExtension on HermesApiChannel {
       }
 
       final errors = <HermesOptionalResource, String>{};
+      final runtimeModelsFuture = _loadOptional<List<HermesRuntimeModel>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'models',
+              'GET',
+              '/v1/models',
+            ),
+        resource: HermesOptionalResource.models,
+        load: () => client.listRuntimeModels(profile: id),
+        errors: errors,
+      );
+      final skillDetailsFuture = _loadOptional<List<HermesSkill>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'skills',
+              'GET',
+              '/v1/skills',
+            ),
+        resource: HermesOptionalResource.skills,
+        load: () => client.listSkillDetails(profile: id),
+        errors: errors,
+      );
+      final toolsetsFuture = _loadOptional<List<HermesToolset>>(
+        advertised:
+            capabilities != null &&
+            _capabilityEndpointAuthorized(
+              capabilities,
+              'toolsets',
+              'GET',
+              '/v1/toolsets',
+            ),
+        resource: HermesOptionalResource.toolsets,
+        load: () => client.listToolsets(profile: id),
+        errors: errors,
+      );
+      final jobsFuture = _loadOptional<List<HermesJob>>(
+        advertised:
+            capabilities?.supportsSchema == true &&
+            capabilities!.auth.allows('tasks:read') &&
+            capabilities.advertisesScopedEndpoint(
+              'jobs',
+              'GET',
+              '/api/jobs',
+              'tasks:read',
+            ),
+        resource: HermesOptionalResource.jobs,
+        load: () => client.listJobs(profile: id),
+        errors: errors,
+      );
       final runtimeModels =
-          await _loadOptional<List<HermesRuntimeModel>>(
-            advertised:
-                capabilities != null &&
-                _capabilityEndpointAuthorized(
-                  capabilities,
-                  'models',
-                  'GET',
-                  '/v1/models',
-                ),
-            resource: HermesOptionalResource.models,
-            load: () => client.listRuntimeModels(profile: id),
-            errors: errors,
-          ) ??
-          const <HermesRuntimeModel>[];
+          await runtimeModelsFuture ?? const <HermesRuntimeModel>[];
       final models = runtimeModels
           .map((model) => model.id)
           .toList(growable: false);
-      final skillDetails =
-          await _loadOptional<List<HermesSkill>>(
-            advertised:
-                capabilities != null &&
-                _capabilityEndpointAuthorized(
-                  capabilities,
-                  'skills',
-                  'GET',
-                  '/v1/skills',
-                ),
-            resource: HermesOptionalResource.skills,
-            load: () => client.listSkillDetails(profile: id),
-            errors: errors,
-          ) ??
-          const <HermesSkill>[];
+      final skillDetails = await skillDetailsFuture ?? const <HermesSkill>[];
       final skills = skillDetails
           .map((skill) => skill.name)
           .toList(growable: false);
-      final toolsets =
-          await _loadOptional<List<HermesToolset>>(
-            advertised:
-                capabilities != null &&
-                _capabilityEndpointAuthorized(
-                  capabilities,
-                  'toolsets',
-                  'GET',
-                  '/v1/toolsets',
-                ),
-            resource: HermesOptionalResource.toolsets,
-            load: () => client.listToolsets(profile: id),
-            errors: errors,
-          ) ??
-          const <HermesToolset>[];
+      final toolsets = await toolsetsFuture ?? const <HermesToolset>[];
       final enabledToolsets = toolsets
           .where((toolset) => toolset.enabled)
           .map((toolset) => toolset.name)
           .toList(growable: false);
-      final jobs =
-          await _loadOptional<List<HermesJob>>(
-            advertised:
-                capabilities?.supportsSchema == true &&
-                capabilities!.auth.allows('tasks:read') &&
-                capabilities.advertisesScopedEndpoint(
-                  'jobs',
-                  'GET',
-                  '/api/jobs',
-                  'tasks:read',
-                ),
-            resource: HermesOptionalResource.jobs,
-            load: () => client.listJobs(profile: id),
-            errors: errors,
-          ) ??
-          const <HermesJob>[];
+      final jobs = await jobsFuture ?? const <HermesJob>[];
       if (!_isCurrentProfileSelection(
         selectionGeneration,
         generation,
@@ -183,6 +182,8 @@ extension _ProfilesExtension on HermesApiChannel {
           jobs: jobs,
           providers: const [],
           clearModelInventory: true,
+          clearModelOptions: true,
+          sessionModelLocks: const {},
           optionalResourceErrors: errors,
           errorMessage: detachedRunStillActive
               ? 'Hermes run is still active. Reconnect later before retrying.'
@@ -307,6 +308,8 @@ extension _ProfilesExtension on HermesApiChannel {
         messages: const {},
         providers: const [],
         clearModelInventory: true,
+        clearModelOptions: true,
+        sessionModelLocks: const {},
       ),
     );
   }
@@ -393,12 +396,15 @@ extension _ProfilesExtension on HermesApiChannel {
     String action,
   ) {
     final capabilities = _state.capabilities;
+    final endpoint = capabilities?.endpoints[name];
     if (capabilities == null ||
         !capabilities.supportsSchema ||
+        endpoint == null ||
         !capabilities.advertisesScopedEndpoint(name, method, path, scope)) {
       throw StateError('Hermes did not advertise support to $action.');
     }
-    if (!capabilities.auth.allows(scope)) {
+    if (!capabilities.auth.allows(scope) ||
+        !endpoint.requiredScopes.every(capabilities.auth.allows)) {
       throw StateError('This device is not authorized to $action.');
     }
   }

@@ -11,8 +11,10 @@ if ! node -e "const { existsSync } = require('node:fs'); const { chromium } = re
 fi
 
 # Never kill an existing listener; it may belong to another local workflow.
-if lsof -ti:8767 >/dev/null 2>&1; then
-  echo "ERROR: Port 8767 is already in use; stop its owner before running E2E tests." >&2
+export PORT="${PORT:-8767}"
+export WING_APP_URL="${WING_APP_URL:-http://127.0.0.1:$PORT/}"
+if lsof -ti:"$PORT" >/dev/null 2>&1; then
+  echo "ERROR: Port $PORT is already in use; stop its owner before running E2E tests." >&2
   exit 1
 fi
 
@@ -35,11 +37,11 @@ SERVER_PID=$!
 sleep 2
 
 # Check server health
-if ! curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8767/ | grep -q 200; then
+if ! curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$PORT/" | grep -q 200; then
   echo "ERROR: Test server failed to start"
   exit 1
 fi
-echo "Test server running on http://127.0.0.1:8767"
+echo "Test server running on http://127.0.0.1:$PORT"
 echo ""
 
 # Run each default suite in a fresh Playwright process. Flutter web and system

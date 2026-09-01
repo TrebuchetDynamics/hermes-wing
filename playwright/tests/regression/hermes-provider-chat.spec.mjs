@@ -40,7 +40,7 @@ test("Hermes provider-backed text and transcript voice turns produce assistant r
   });
   await expect(
     page
-      .getByRole("button", { name: "Speak and send" })
+      .getByRole("button", { name: "Hands-free voice" })
       .and(page.locator('flt-semantics:not([aria-disabled="true"])')),
   ).toBeVisible({ timeout: 30000 });
 

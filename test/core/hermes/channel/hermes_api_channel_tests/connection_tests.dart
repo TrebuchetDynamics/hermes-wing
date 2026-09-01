@@ -349,6 +349,51 @@ void _hermesApiChannelConnectionTests() {
     expect(channel.state.jobs.single.displayName, 'Morning check');
   });
 
+  test('connect loads unscoped detailed health advertised by Agent', () async {
+    const capabilities = '''
+{
+  "object": "hermes.api_server.capabilities",
+  "platform": "hermes-agent",
+  "model": "hermes-agent",
+  "schema_version": 1,
+  "auth": {"type": "bearer", "required": true, "granted_scopes": []},
+  "features": {},
+  "endpoints": {
+    "health_detailed": {"method": "GET", "path": "/health/detailed"}
+  }
+}
+''';
+    final requestedHeaders = <String, String>{};
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          if (uri.path == '/health/detailed') {
+            requestedHeaders.addAll(headers);
+          }
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => capabilities,
+            '/health/detailed' =>
+              '{"status":"ok","platform":"hermes-agent","version":"0.20.6","gateway_state":"running","active_agents":0}',
+            '/api/sessions' => '{"object":"list","data":[]}',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(
+      baseUrl: 'http://127.0.0.1:8642',
+      apiKey: 'agent-key',
+    );
+
+    expect(channel.state.canReadDetailedHealth, isTrue);
+    expect(channel.state.detailedHealth?.version, '0.20.6');
+    expect(requestedHeaders['Authorization'], 'Bearer agent-key');
+  });
+
   test('connect loads detailed Hermes health when advertised', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(

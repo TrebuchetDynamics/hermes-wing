@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
-import '../../../core/hermes/hermes_domain_authority.dart';
 import '../../../core/hermes/models/hermes_runtime_model.dart';
-import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
@@ -20,28 +18,9 @@ import '../widgets/provider_credential_sheet.dart';
 
 /// Provider-credential and model-selection surface for the selected profile.
 ///
-/// Mirrors the milestone-1 `/agents` screen: capability-gated mutation
-/// visibility, loading/error/empty states, 200%-scale friendly. It reloads the
-/// provider list and model inventory on mount and whenever the client-selected
-/// profile changes (the deferred profile-switch reload), always write-only —
-/// no raw key ever enters this tree.
-typedef ProvidersWingLinkClientBuilder =
-    WingLinkClient Function({
-      required Uri origin,
-      required String token,
-      required String? hostFingerprint,
-    });
-
-final providersWingLinkClientBuilderProvider =
-    Provider<ProvidersWingLinkClientBuilder>(
-      (ref) =>
-          ({required origin, required token, required hostFingerprint}) =>
-              WingLinkClient(
-                origin: origin,
-                token: token,
-                hostFingerprint: hostFingerprint,
-              ),
-    );
+/// It reloads the provider list and model inventory on mount and whenever the
+/// client-selected profile changes, always write-only — no raw key ever enters
+/// this tree.
 
 class ProvidersScreen extends ConsumerStatefulWidget {
   const ProvidersScreen({super.key});
@@ -57,9 +36,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
   int _loadGeneration = 0;
   bool _loading = false;
   bool _loadFailed = false;
-  WingLinkClient? _wingLinkClient;
-  List<WingLinkProvider>? _wingLinkProviders;
-  String _wingLinkProfileId = 'default';
 
   @override
   Widget build(BuildContext context) {
@@ -133,45 +109,15 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     String contextKey,
   ) async {
     final generation = ++_loadGeneration;
-    final gatewayId = directory.activeContactId?.gatewayId;
-    final config = gatewayId == null
-        ? null
-        : directory.configForGateway(gatewayId);
-    final origin = Uri.tryParse(config?.wingLinkOrigin?.trim() ?? '');
-    final token = config?.wingLinkToken?.trim() ?? '';
-    final wingLinkProfileId = profileId ?? 'default';
-    final wingLinkClient =
-        wingLinkProviderFallbacksEnabled &&
-            !channel.state.canReadProviders &&
-            origin != null &&
-            origin.host.isNotEmpty &&
-            token.isNotEmpty
-        ? ref.read(providersWingLinkClientBuilderProvider)(
-            origin: origin,
-            token: token,
-            hostFingerprint: config?.wingLinkHostFingerprint,
-          )
-        : null;
     setState(() {
       _loading = true;
       _loadFailed = false;
-      _wingLinkClient = wingLinkClient;
-      _wingLinkProfileId = wingLinkProfileId;
-      _wingLinkProviders = wingLinkClient == null ? const [] : null;
     });
     try {
-      final wingLinkProviders = wingLinkClient == null
-          ? const <WingLinkProvider>[]
-          : await wingLinkClient.listProviders(profile: wingLinkProfileId);
       await Future.wait([
         if (channel.state.canReadProviders) channel.loadProviders(),
         if (channel.state.canReadModels) channel.loadModels(),
       ]);
-      if (mounted &&
-          generation == _loadGeneration &&
-          _loadedContextKey == contextKey) {
-        setState(() => _wingLinkProviders = wingLinkProviders);
-      }
     } catch (_) {
       if (mounted &&
           generation == _loadGeneration &&
@@ -212,9 +158,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     final state = channel.state;
 
     if (state.status == HermesConnectionStatus.connecting ||
-        (_loading &&
-            state.providers.isEmpty &&
-            (_wingLinkProviders?.isEmpty ?? true))) {
+        (_loading && state.providers.isEmpty)) {
       return WingSkeletonList(semanticLabel: strings.providersLoading);
     }
     if (state.status == HermesConnectionStatus.error) {
@@ -231,7 +175,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         body: strings.providersConnectionRequiredBody,
       );
     }
-    if (!state.canReadProviders && _wingLinkClient == null) {
+    if (!state.canReadProviders) {
       if (!state.canReadRuntimeModels) {
         return WingEmptyState(
           icon: Icons.lock_outline,
@@ -281,7 +225,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       ...state.providers.where((provider) => provider.configured),
       ...state.providers.where((provider) => !provider.configured),
     ];
-    final wingLinkProviders = _wingLinkProviders ?? const <WingLinkProvider>[];
     final canWriteProviders = state.canWriteProviders;
 
     return ListView(
@@ -289,18 +232,11 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       children: [
         _ProvidersHeader(
           subtitle: strings.providersSubtitle,
-          readOnly: !canWriteProviders && _wingLinkClient == null,
+          readOnly: !canWriteProviders,
           readOnlyLabel: strings.readOnlyAccess,
-          action: _wingLinkClient == null
-              ? null
-              : FilledButton.tonalIcon(
-                  onPressed: () => _openCustomProviderEditor(),
-                  icon: const Icon(Icons.add),
-                  label: Text(strings.createAction),
-                ),
         ),
         const SizedBox(height: 20),
-        if (providers.isEmpty && wingLinkProviders.isEmpty)
+        if (providers.isEmpty)
           WingEmptyState(
             icon: Icons.key_off_outlined,
             title: strings.providersEmptyTitle,
@@ -328,15 +264,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
               onManage: () => _openCredentialSheet(channel, providers[index]),
             ),
           ],
-          for (final provider in wingLinkProviders) ...[
-            if (providers.isNotEmpty || provider != wingLinkProviders.first)
-              const SizedBox(height: 12),
-            _WingLinkProviderCard(
-              provider: provider,
-              strings: strings,
-              onEdit: () => _openCustomProviderEditor(provider),
-            ),
-          ],
         ],
         const SizedBox(height: 28),
         _ModelSection(
@@ -346,179 +273,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         ),
       ],
     );
-  }
-
-  Future<void> _openCustomProviderEditor([WingLinkProvider? provider]) async {
-    final strings = AppLocalizations.of(context);
-    final client = _wingLinkClient;
-    final profileId = _wingLinkProfileId;
-    if (client == null) return;
-    var id = provider?.id ?? '';
-    var baseUrl = provider?.baseUrl ?? '';
-    var model = provider?.model ?? '';
-    final formKey = GlobalKey<FormState>();
-    final action = await showDialog<_CustomProviderDraft>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(strings.providersTitle),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  key: const ValueKey('wing-link-provider-id'),
-                  initialValue: id,
-                  enabled: provider == null,
-                  onChanged: (value) => id = value,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: strings.modelProviderLabel,
-                    helperText: strings.profileStableNameHint,
-                  ),
-                  validator: (value) => _validProviderId(value)
-                      ? null
-                      : strings.profileStableNameHint,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  key: const ValueKey('wing-link-provider-endpoint'),
-                  initialValue: baseUrl,
-                  onChanged: (value) => baseUrl = value,
-                  autocorrect: false,
-                  keyboardType: TextInputType.url,
-                  decoration: InputDecoration(
-                    labelText: strings.enrollEndpointLabel,
-                  ),
-                  validator: (value) => _validProviderBaseUrl(value)
-                      ? null
-                      : strings.settingsGatewayOriginError,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  key: const ValueKey('wing-link-provider-model'),
-                  initialValue: model,
-                  onChanged: (value) => model = value,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: strings.modelNameLabel,
-                  ),
-                  validator: (value) => (value?.trim().isEmpty ?? true)
-                      ? strings.providerOperationFailed
-                      : null,
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          if (provider != null)
-            TextButton(
-              key: const ValueKey('wing-link-provider-delete'),
-              onPressed: () => Navigator.pop(
-                dialogContext,
-                _CustomProviderDraft(
-                  id: provider.id,
-                  baseUrl: provider.baseUrl,
-                  model: provider.model,
-                  delete: true,
-                ),
-              ),
-              child: Text(strings.voiceRemoveAction),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(strings.cancelAction),
-          ),
-          FilledButton(
-            key: const ValueKey('wing-link-provider-save'),
-            onPressed: () {
-              if (formKey.currentState?.validate() != true) return;
-              Navigator.pop(
-                dialogContext,
-                _CustomProviderDraft(
-                  id: id.trim(),
-                  baseUrl: baseUrl.trim(),
-                  model: model.trim(),
-                ),
-              );
-            },
-            child: Text(
-              provider == null ? strings.createAction : strings.saveAction,
-            ),
-          ),
-        ],
-      ),
-    );
-    if (action == null || !mounted) return;
-    if (action.delete) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(strings.deleteAgentTitle(action.id)),
-          content: Text(strings.chatSessionActionDeleteBody(action.id)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(strings.cancelAction),
-            ),
-            FilledButton(
-              key: const ValueKey('wing-link-provider-delete-confirm'),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(strings.voiceRemoveAction),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true || !mounted) return;
-    }
-    if (!identical(client, _wingLinkClient) ||
-        profileId != _wingLinkProfileId) {
-      return;
-    }
-    try {
-      WingLinkProvider? changed;
-      if (action.delete) {
-        await client.deleteProvider(
-          profile: profileId,
-          id: action.id,
-          revision: provider!.revision,
-        );
-      } else if (provider == null) {
-        changed = await client.createProvider(
-          profile: profileId,
-          id: action.id,
-          baseUrl: action.baseUrl,
-          model: action.model,
-        );
-      } else {
-        changed = await client.updateProvider(
-          profile: profileId,
-          id: provider.id,
-          baseUrl: action.baseUrl,
-          model: action.model,
-          revision: provider.revision,
-        );
-      }
-      if (mounted &&
-          identical(client, _wingLinkClient) &&
-          profileId == _wingLinkProfileId) {
-        final providers = [
-          for (final item in _wingLinkProviders ?? const <WingLinkProvider>[])
-            if (item.id != action.id) item,
-          ?changed,
-        ]..sort((a, b) => a.id.compareTo(b.id));
-        setState(() {
-          _wingLinkProviders = providers;
-          _actionError = null;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _actionError = strings.providerOperationFailed);
-      }
-    }
   }
 
   Future<void> _openCredentialSheet(
@@ -556,13 +310,11 @@ class _ProvidersHeader extends StatelessWidget {
     required this.subtitle,
     required this.readOnly,
     required this.readOnlyLabel,
-    this.action,
   });
 
   final String subtitle;
   final bool readOnly;
   final String readOnlyLabel;
-  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -580,7 +332,6 @@ class _ProvidersHeader extends StatelessWidget {
               label: Text(readOnlyLabel),
             ),
           ],
-          if (action != null) ...[const SizedBox(height: 12), action!],
         ],
       ),
     );
@@ -680,69 +431,6 @@ class _ProviderCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _WingLinkProviderCard extends StatelessWidget {
-  const _WingLinkProviderCard({
-    required this.provider,
-    required this.strings,
-    required this.onEdit,
-  });
-
-  final WingLinkProvider provider;
-  final AppLocalizations strings;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(provider.id, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Text(provider.baseUrl),
-          const SizedBox(height: 4),
-          Text('${strings.modelNameLabel}: ${provider.model}'),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            key: ValueKey('wing-link-provider-edit-${provider.id}'),
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined),
-            label: Text(strings.editAgent),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _CustomProviderDraft {
-  const _CustomProviderDraft({
-    required this.id,
-    required this.baseUrl,
-    required this.model,
-    this.delete = false,
-  });
-
-  final String id;
-  final String baseUrl;
-  final String model;
-  final bool delete;
-}
-
-bool _validProviderId(String? value) =>
-    RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(value?.trim() ?? '');
-
-bool _validProviderBaseUrl(String? value) {
-  final uri = Uri.tryParse(value?.trim() ?? '');
-  return uri != null &&
-      (uri.scheme == 'http' || uri.scheme == 'https') &&
-      uri.host.isNotEmpty &&
-      uri.userInfo.isEmpty &&
-      !uri.hasQuery &&
-      !uri.hasFragment;
 }
 
 class _ModelSection extends StatelessWidget {

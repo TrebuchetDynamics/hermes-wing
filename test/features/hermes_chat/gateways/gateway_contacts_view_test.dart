@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contacts_view.dart';
+import 'package:wing/features/hermes_chat/groups/chat_group_controller.dart';
 
 void main() {
   testWidgets('renders contacts ordered across gateways and opens one', (
@@ -34,6 +36,13 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
+    final avatarColors = find
+        .byType(CircleAvatar)
+        .evaluate()
+        .map((element) => (element.widget as CircleAvatar).backgroundColor)
+        .whereType<Color>()
+        .toSet();
+    expect(avatarColors.length, greaterThan(1));
     expect(find.text('Agent A1'), findsOneWidget);
     expect(find.text('Agent B2'), findsOneWidget);
     expect(find.text('Alpha'), findsNWidgets(3));
@@ -41,6 +50,112 @@ void main() {
     expect(find.text('online'), findsNothing);
     await tester.tap(find.text('Agent B2'));
     expect(opened, const GatewayContactId(gatewayId: 'b', profileId: 'b2'));
+  });
+
+  testWidgets('groups contacts and manually moves an ungrouped profile', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = ChatGroupController(idFactory: () => 'wing');
+    addTearDown(controller.dispose);
+    await controller.load();
+    await controller.createGroup('Hermes Wing');
+    const architect = GatewayContactId(
+      gatewayId: 'host',
+      profileId: 'architect',
+    );
+    await controller.moveContact(architect, 'wing');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'host',
+                'architect',
+                'Coding Architect',
+                'Wing host',
+                '2026-07-16T05:00:00Z',
+              ),
+              _contact(
+                'host',
+                'designer',
+                'Designer',
+                'Wing host',
+                '2026-07-16T04:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            groupController: controller,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Hermes Wing'), findsOneWidget);
+    expect(find.text('Ungrouped'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('gateway-contact-groups-host-designer')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hermes Wing').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      controller.groupIdFor(
+        const GatewayContactId(gatewayId: 'host', profileId: 'designer'),
+      ),
+      'wing',
+    );
+    expect(find.text('Ungrouped'), findsNothing);
+  });
+
+  testWidgets('new group remains visible before any profile is assigned', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = ChatGroupController(idFactory: () => 'wing');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: GatewayContactsView(
+            contacts: [
+              _contact(
+                'host',
+                'architect',
+                'Coding Architect',
+                'Wing host',
+                '2026-07-16T05:00:00Z',
+              ),
+            ],
+            refreshing: false,
+            onRefresh: () async {},
+            onOpen: (_) {},
+            groupController: controller,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('chat-groups-new')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('chat-group-name-field')),
+      'Hermes Wing',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes Wing'), findsOneWidget);
   });
 
   testWidgets('makes the profile primary and uses a dot for availability', (

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
+import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -108,6 +111,7 @@ void main() {
                   provider,
                   model,
                   providerApiKey,
+                  idempotencyKey,
                 }) async {
                   submitted = {
                     'name': name,
@@ -116,6 +120,7 @@ void main() {
                     'provider': provider,
                     'model': model,
                     'providerApiKey': providerApiKey,
+                    'idempotencyKey': idempotencyKey,
                   };
                 },
           ),
@@ -179,10 +184,313 @@ void main() {
         'provider': 'openrouter',
         'model': 'openai/gpt-5.2',
         'providerApiKey': 'write-only-secret',
+        'idempotencyKey': null,
       });
       expect(find.text('write-only-secret'), findsNothing);
     },
   );
+
+  testWidgets(
+    'approval retry preserves the exact frozen request and idempotency key',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final calls = <Map<String, String?>>[];
+      final expiresAt =
+          DateTime.now()
+              .add(const Duration(minutes: 1))
+              .millisecondsSinceEpoch ~/
+          1000;
+
+      await tester.pumpWidget(
+        _editorTestApp(
+          ProfileEditorSheet(
+            channel: channel,
+            profiles: const [],
+            stableNames: true,
+            canConfigure: true,
+            onCreate:
+                ({
+                  required name,
+                  cloneFrom,
+                  description,
+                  provider,
+                  model,
+                  providerApiKey,
+                  idempotencyKey,
+                }) async {
+                  calls.add({
+                    'name': name,
+                    'cloneFrom': cloneFrom,
+                    'description': description,
+                    'provider': provider,
+                    'model': model,
+                    'providerApiKey': providerApiKey,
+                    'idempotencyKey': idempotencyKey,
+                  });
+                  if (calls.length == 1) {
+                    throw WingLinkApprovalRequired(
+                      approvalId: 'apr_local_test',
+                      operationId: 'op_local_test',
+                      idempotencyKey: 'profile-mutation-approved-key',
+                      expiresAt: expiresAt,
+                    );
+                  }
+                },
+          ),
+        ),
+      );
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Profile name'),
+        'readyqa',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Provider'),
+        'openrouter',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Model'),
+        'openai/gpt-5.2',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'New provider credential'),
+        'write-only-fixture',
+      );
+      final create = find.widgetWithText(FilledButton, 'Create');
+      await tester.ensureVisible(create);
+      await tester.tap(create);
+      await tester.pump();
+
+      expect(find.textContaining('Wing Link host'), findsOneWidget);
+      expect(find.textContaining('wing-link approvals list'), findsOneWidget);
+      expect(
+        find.textContaining('wing-link approvals approve apr_local_test'),
+        findsOneWidget,
+      );
+      expect(find.text('Retry approved setup'), findsOneWidget);
+      expect(find.text('Cancel setup'), findsOneWidget);
+      expect(find.widgetWithText(Text, 'write-only-fixture'), findsNothing);
+      for (final field in tester.widgetList<TextFormField>(
+        find.byType(TextFormField),
+      )) {
+        expect(field.enabled, isFalse);
+      }
+
+      final retry = find.text('Retry approved setup');
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+
+      expect(calls, hasLength(2));
+      expect(calls.first['idempotencyKey'], isNull);
+      expect(
+        calls.last,
+        equals({
+          ...calls.first,
+          'idempotencyKey': 'profile-mutation-approved-key',
+        }),
+      );
+      expect(calls.last['providerApiKey'], 'write-only-fixture');
+      expect(find.text('write-only-fixture'), findsNothing);
+      final credential = tester.widget<EditableText>(
+        find.descendant(
+          of: find.widgetWithText(TextFormField, 'New provider credential'),
+          matching: find.byType(EditableText),
+        ),
+      );
+      expect(credential.controller.text, isEmpty);
+    },
+  );
+
+  testWidgets('expired approval clears the retained credential', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          stableNames: true,
+          canConfigure: true,
+          onCreate:
+              ({
+                required name,
+                cloneFrom,
+                description,
+                provider,
+                model,
+                providerApiKey,
+                idempotencyKey,
+              }) async => throw WingLinkApprovalRequired(
+                approvalId: 'apr_expired',
+                operationId: 'op_expired',
+                idempotencyKey: 'profile-mutation-expired-key',
+                expiresAt:
+                    DateTime.now()
+                        .add(const Duration(seconds: 2))
+                        .millisecondsSinceEpoch ~/
+                    1000,
+              ),
+        ),
+      ),
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Profile name'),
+      'readyqa',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Provider'),
+      'openrouter',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Model'),
+      'openai/gpt-5.2',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'New provider credential'),
+      'write-only-fixture',
+    );
+    final create = find.widgetWithText(FilledButton, 'Create');
+    await tester.ensureVisible(create);
+    await tester.tap(create);
+    await tester.pump();
+
+    final credential = tester.widget<EditableText>(
+      find.descendant(
+        of: find.widgetWithText(TextFormField, 'New provider credential'),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(credential.controller.text, 'write-only-fixture');
+    expect(find.text('Retry approved setup'), findsOneWidget);
+    for (final field in tester.widgetList<TextFormField>(
+      find.byType(TextFormField),
+    )) {
+      expect(field.enabled, isFalse);
+    }
+
+    await tester.pump(const Duration(seconds: 3));
+
+    expect(find.textContaining('approval expired'), findsOneWidget);
+    expect(credential.controller.text, isEmpty);
+    expect(find.text('Retry approved setup'), findsNothing);
+  });
+
+  testWidgets('cancel and dispose clear an in-memory credential', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    Future<void> approvalRequired({
+      required String name,
+      String? cloneFrom,
+      String? description,
+      String? provider,
+      String? model,
+      String? providerApiKey,
+      String? idempotencyKey,
+    }) async => throw WingLinkApprovalRequired(
+      approvalId: 'appr_cancel',
+      operationId: 'op_cancel',
+      idempotencyKey: 'profile-mutation-cancel-key',
+      expiresAt:
+          DateTime.now()
+              .add(const Duration(minutes: 1))
+              .millisecondsSinceEpoch ~/
+          1000,
+    );
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          stableNames: true,
+          canConfigure: true,
+          onCreate: approvalRequired,
+        ),
+      ),
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Profile name'),
+      'readyqa',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Provider'),
+      'openrouter',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Model'),
+      'openai/gpt-5.2',
+    );
+    final credentialField = find.widgetWithText(
+      TextFormField,
+      'New provider credential',
+    );
+    await tester.enterText(credentialField, 'write-only-fixture');
+    final credentialController = tester
+        .widget<EditableText>(
+          find.descendant(
+            of: credentialField,
+            matching: find.byType(EditableText),
+          ),
+        )
+        .controller;
+    final create = find.widgetWithText(FilledButton, 'Create');
+    await tester.ensureVisible(create);
+    await tester.tap(create);
+    await tester.pump();
+    final cancel = find.text('Cancel setup');
+    await tester.ensureVisible(cancel);
+    await tester.tap(cancel);
+    await tester.pump();
+    expect(credentialController.text, isEmpty);
+
+    await tester.enterText(credentialField, 'discard-on-dispose');
+    await tester.pumpWidget(const SizedBox());
+    expect(credentialController.text, isEmpty);
+  });
+
+  testWidgets('completed save does not touch controllers after disposal', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    final save = Completer<void>();
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          onCreate:
+              ({
+                required name,
+                cloneFrom,
+                description,
+                provider,
+                model,
+                providerApiKey,
+                idempotencyKey,
+              }) => save.future,
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextFormField).first, 'readyqa');
+    await tester.tap(find.text('Create'));
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox());
+    save.complete();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('configured clone can inherit provider and model', (
     tester,
@@ -212,6 +520,7 @@ void main() {
                 provider,
                 model,
                 providerApiKey,
+                idempotencyKey,
               }) async {
                 submitted = {
                   'name': name,
@@ -220,6 +529,7 @@ void main() {
                   'provider': provider,
                   'model': model,
                   'providerApiKey': providerApiKey,
+                  'idempotencyKey': idempotencyKey,
                 };
               },
         ),
@@ -242,6 +552,7 @@ void main() {
       'provider': '',
       'model': '',
       'providerApiKey': null,
+      'idempotencyKey': null,
     });
   });
 
@@ -352,6 +663,46 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
 
+    expect(
+      find.textContaining('This profile changed elsewhere'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a SOUL revision conflict reloads server content before retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      writeProfileSoulFails: true,
+      profileSoul: const HermesProfileSoul(
+        soul: 'Server version',
+        revision: 'server-rev',
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          profile: const HermesProfile(
+            id: 'coder',
+            displayName: 'Coding Agent',
+            revision: 'rev-1',
+          ),
+          canEditSoul: true,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).last, 'Local version');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(channel.readProfileSoulCalls, ['coder', 'coder']);
+    expect(find.text('Server version'), findsOneWidget);
     expect(
       find.textContaining('This profile changed elsewhere'),
       findsOneWidget,

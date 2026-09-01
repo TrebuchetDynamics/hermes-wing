@@ -20,6 +20,9 @@ Status: alpha baseline; not an independent security assessment
 4. **Wing Link host process** — privileged management and approved filesystem
    access on the Agent host.
 5. **Operating system** — keychain/keystore, speech, files, services, and logs.
+6. **Android/Termux boundary** — Wing and Termux remain separate app sandboxes
+   sharing only authenticated loopback sockets. Any local app may probe loopback,
+   so network location never replaces Agent or Wing Link authentication.
 
 ## Current controls
 
@@ -30,6 +33,8 @@ Status: alpha baseline; not an independent security assessment
   analyzed, included in diagnostics, or written to ordinary logs.
 - Explicit paste is a user-initiated fallback, not background clipboard
   monitoring; the app drops the raw text immediately after parsing.
+- The release-pinned Android bootstrap command is non-secret. Provider
+  credentials and pairing codes never enter the command, argv, or installer logs.
 - Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
   bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
   text, command arguments, and ordinary preferences. Wing Link and Agent
@@ -52,7 +57,7 @@ Status: alpha baseline; not an independent security assessment
 - Current/previous protocol negotiation keeps stale or future operations hidden or
   explicitly unavailable.
 
-## Required controls for planned remote management
+## Required controls for remote management
 
 ### Directories and Projects
 
@@ -61,8 +66,9 @@ Status: alpha baseline; not an independent security assessment
 - Every lookup revalidates canonical containment and blocks symlink escape.
 - Listings contain child folders only—never regular file names, metadata, or
   contents—and are bounded, paginated, and path-redacted.
-- A selected directory becomes an Agent-owned per-profile Hermes Project; Wing
-  Link stores no duplicate profile-to-path mapping.
+- Browsing state and handles are ephemeral and are not persisted by Wing.
+- Project creation remains unavailable until Hermes Agent advertises an explicit,
+  machine-readable operation. Wing Link stores no duplicate profile-to-path mapping.
 
 ### Providers and configuration
 
@@ -101,11 +107,14 @@ Status: alpha baseline; not an independent security assessment
 ## Known gaps
 
 - No independent penetration test or formal privacy review.
-- No shipped directory/project or existing-profile configuration API. A
-  new-profile description, allowlisted provider, bounded model string, and
+- Approved folder browsing is shipped, but Project creation, Project-aware Chat,
+  and existing-profile configuration remain unavailable. A new-profile
+  description, allowlisted provider, bounded model string, and
   credential may be supplied only through the transactional bounded Wing Link setup operation;
   credential bytes reach Hermes only through stdin.
-- Current persistent Wing Link service management is Linux/systemd-user only.
+- Qualified persistent Wing Link service management is Linux/systemd-user only.
+  Android/Termux foreground and detached processes are Tier 2 best-effort and may
+  be suspended or killed by Android.
 - Public signed packages, desktop signing/notarization, and authenticated updates
   are incomplete.
 - Current Hermes Agent 0.20 does not advertise Wing's proposed scoped enrollment,

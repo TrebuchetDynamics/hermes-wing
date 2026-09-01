@@ -40,6 +40,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return serveCommand(stdout, stderr, args[1:])
 	case "devices":
 		return devicesCommand(stdout, stderr, args[1:])
+	case "directories":
+		return directoriesCommand(stdout, stderr, args[1:])
 	case "approvals":
 		return approvalsCommand(stdout, stderr, args[1:])
 	case "audit":
@@ -75,9 +77,12 @@ Get started:
              --json                  Print one JSON result
              --json-lines            Stream progress as JSON lines
   pair       Create a secure pairing handoff for Hermes Wing.
-             Prints a QR; local same-host pairing also prints a loopback URL.
+             Prints a single-use paste link by default.
              --remote                Pair through Tailscale or a trusted VPN (default)
+                                     Tailscale API binding is configured automatically.
              --local                 Pair on this device only
+             --same-device           Print only the code-free local /open URL
+             --qr                    Print a scannable QR instead of the link
              --origin URL            Use a specific Hermes Agent API origin
              --label NAME            Name this Hermes Wing installation
 
@@ -85,6 +90,9 @@ Host trust:
   devices list                 List paired device IDs, names, and grants.
   devices revoke DEVICE_ID     Revoke one paired device.
   devices revoke-all           Revoke every paired device.
+  directories list             List locally approved directory roots.
+  directories grant PATH       Approve one local directory root.
+  directories revoke ID        Revoke one directory grant.
   approvals list               List bounded pending host approvals.
   approvals approve ID         Approve one host operation.
   approvals reject ID          Reject one host operation.
@@ -105,10 +113,13 @@ Other:
   version    Print the build version.
   help       Show this help.
 
-Typical first run:
+Typical first run with Tailscale:
   wing-link inspect
   wing-link setup
   wing-link pair
+
+Use "wing-link pair --local" for same-host pairing. Other VPNs require the
+Hermes Agent API to be bound to that VPN address and WING_HERMES_URL to name it.
 
 Most users should not run "serve" directly. Pair installs and starts the
 managed service; use status, start, stop, or restart afterward.`)

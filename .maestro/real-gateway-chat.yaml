@@ -1,0 +1,82 @@
+# Live-gateway chat proof on the physical device. Requires the "link" gateway
+# already saved on the device (see real-device-connect-chat.yaml / the adb
+# connect procedure in the runbook). Runs real streaming turns against the
+# production Hermes agent; the replies contain deterministic hyphenated tokens
+# that only the live agent can produce.
+appId: com.trebuchetdynamics.hermes.wing
+name: real_gateway_chat
+---
+- launchApp:
+    stopApp: false
+# Entry is state-independent: land in the gateway directory, then open the
+# live "link" endpoint conversation.
+- runFlow:
+    when:
+      visible: "(?s).*All chats.*"
+    commands:
+      - tapOn: "(?s).*All chats.*"
+- extendedWaitUntil:
+    visible: "(?s).*Endpoint contact.*"
+    timeout: 30000
+- takeScreenshot: chat_gateway_directory
+
+# Open the live conversation.
+- tapOn: "(?s).*Endpoint contact.*"
+- extendedWaitUntil:
+    visible: "(?s).*(How can Hermes help today|Message Hermes|All chats|Endpoint contact).*"
+    timeout: 60000
+# Dismiss any one-time speak tip so it never covers the composer.
+- runFlow:
+    when:
+      visible: "(?s).*Dismiss tip.*"
+    commands:
+      - tapOn: "(?s).*Dismiss tip.*"
+- takeScreenshot: chat_open
+
+# Turn 1: deterministic reply from the live agent. The composer sits at the
+# bottom of the layout; it is not exposed as a text node, so drive it by yield.
+- tapOn:
+    point: "50%,90%"
+- inputText: "Join these four uppercase words with hyphens and reply with only the result: REAL WING RUN OK"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RUN-OK.*"
+    timeout: 180000
+- assertNotVisible: "(?s).*(HttpException|Could not connect|disconnected).*"
+- takeScreenshot: chat_turn1_reply
+
+# Turn 2: session continuity.
+- tapOn:
+    point: "50%,90%"
+- inputText: "Without tools reply with only the hyphenated form: REAL WING CONTEXT OK"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-CONTEXT-OK.*"
+    timeout: 180000
+- assertNotVisible: "(?s).*(HttpException|Could not connect|disconnected).*"
+
+# Stop a server-owned long run, then confirm the session still answers.
+- tapOn:
+    point: "50%,90%"
+- inputText: "Write five hundred words about a brass telescope"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*(Stop|Stopping).*"
+    timeout: 120000
+- takeScreenshot: chat_long_run
+- tapOn: "(?s).*Stop.*"
+- extendedWaitUntil:
+    notVisible: "(?s).*(Stop|Stopping).*"
+    timeout: 60000
+- tapOn:
+    point: "50%,90%"
+- inputText: "Without tools reply with only the hyphenated form: REAL WING RECOVERED"
+- hideKeyboard
+- tapOn: "(?s).*Send.*"
+- extendedWaitUntil:
+    visible: "(?s).*REAL-WING-RECOVERED.*"
+    timeout: 180000
+- takeScreenshot: chat_session_recovered

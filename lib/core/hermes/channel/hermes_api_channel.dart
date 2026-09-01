@@ -43,6 +43,7 @@ class HermesApiChannel extends ChangeNotifier
     Uuid? uuid,
     HermesDetachedRunStore? detachedRunStore,
     this.streamIdleTimeout = const Duration(minutes: 5),
+    this.runStatusReconcileInterval = const Duration(seconds: 3),
   }) : _clientBuilder =
            clientBuilder ?? ((config) => HermesApiClient(config: config)),
        _uuid = uuid ?? const Uuid(),
@@ -59,6 +60,7 @@ class HermesApiChannel extends ChangeNotifier
   final Uuid _uuid;
   final HermesDetachedRunStore? _detachedRunStore;
   final Duration streamIdleTimeout;
+  final Duration runStatusReconcileInterval;
 
   static final _detachedRunOperationTails = <Object, Future<void>>{};
 
@@ -76,6 +78,7 @@ class HermesApiChannel extends ChangeNotifier
   bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
+  int _sessionSelectionGeneration = 0;
   int _profileSelectionGeneration = 0;
   String? _pendingProfileSelectionId;
   final _approvalController =
@@ -94,6 +97,7 @@ class HermesApiChannel extends ChangeNotifier
   void dispose() {
     _client = null;
     _connectionGeneration += 1;
+    _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
@@ -120,6 +124,15 @@ class HermesApiChannel extends ChangeNotifier
   void _setState(HermesChannelState next) {
     _state = next;
     notifyListeners();
+  }
+
+  String? _requestProfileForEndpoint(String endpointName) {
+    final endpoint = _state.capabilities?.endpoints[endpointName];
+    if (endpoint?.profileScoped != true) return null;
+    if (_state.capabilities?.profileContext.isSupportedQueryContext == true) {
+      return _requireSelectedProfile('send a profile-scoped request');
+    }
+    return null;
   }
 
   int _beginProfileSelection(String profileId) {
@@ -167,6 +180,10 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> disconnect() => _disconnect();
+
+  @override
+  void clearActiveSession() =>
+      _setState(_state.copyWith(clearActiveSessionId: true));
 
   @override
   Future<void> selectSession(String sessionId) => _selectSession(sessionId);
@@ -252,6 +269,18 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> loadModels() => _loadModels();
 
   @override
+  Future<void> loadModelOptions({bool refresh = false}) =>
+      _loadModelOptions(refresh: refresh);
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) =>
+      _lockSessionModel(sessionId: sessionId, provider: provider, model: model);
+
+  @override
   Future<void> refreshModels() => _refreshModels();
 
   @override
@@ -318,20 +347,59 @@ class HermesApiChannel extends ChangeNotifier
   );
 
   @override
+  bool get canSteerActiveTurn {
+    final sessionId = _state.activeSessionId;
+    return sessionId != null &&
+        _state.canSteerRuns &&
+        _activeRunIds.containsKey(sessionId);
+  }
+
+  @override
   void cancelActiveTurn() => _cancelActiveTurn();
 
   @override
   void stopActiveTurn() => _stopActiveTurn();
 
   @override
+  Future<void> steerActiveTurn(String text) async {
+    final client = _requireConnectedClient();
+    if (!_state.canSteerRuns) {
+      throw StateError('Hermes did not advertise run steering.');
+    }
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) {
+      throw StateError('Hermes has no active session to steer.');
+    }
+    final runId = _activeRunIds[sessionId];
+    if (runId == null) {
+      throw StateError('The active Hermes turn cannot accept steer input.');
+    }
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(text, 'text', 'Steer input cannot be blank.');
+    }
+    await client.steerRun(
+      runId,
+      text: trimmed,
+      profile: _requestProfileForEndpoint('run_steer'),
+    );
+  }
+
+  @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
-  }) => _respondToApproval(approvalId: approvalId, decision: decision);
+    String? runId,
+  }) => _respondToApproval(
+    approvalId: approvalId,
+    decision: decision,
+    runId: runId,
+  );
 
   Future<void> _respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {
     final client = _client;
     if (client == null) {
@@ -343,6 +411,7 @@ class HermesApiChannel extends ChangeNotifier
       approvalId: approvalId,
       decision: decision,
       activeRunIds: _activeRunIds.values,
+      runId: runId,
       selectedProfileId: _state.selectedProfileId,
       safeError: _safeHermesError,
       reportError: (message) =>

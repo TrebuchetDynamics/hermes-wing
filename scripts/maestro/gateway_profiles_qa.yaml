@@ -2,33 +2,44 @@
 # Physical local-profile topology receipt through independent Wing Link control.
 # Pass the saved paired gateway label with
 # `-e WING_QA_GATEWAY_LABEL="<saved gateway label>"`.
-# The temporary `maestroqa2` Hermes profile is deleted before this flow exits.
+# The full-suite runner approves deletion of `${WING_QA_PROFILE_FIXTURE}2`
+# immediately after this flow exercises the host-approval boundary.
 appId: com.trebuchetdynamics.hermes.wing
 name: gateway_profiles_qa
 ---
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*Message Hermes….*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
 - tapOn: "Open more destinations"
-- tapOn: "^Profiles$"
+# The gateway directory title is also "Profiles"; use the drawer row position
+# so the obscured page heading cannot win the semantics match.
+- tapOn:
+    point: "20%,80%"
 - assertVisible: "(?s).*Select gateway.*"
 - tapOn: "(?s).*Select gateway.*"
-- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*New Profile.*"
     timeout: 60000
-- assertVisible: "(?s).*default.*"
-- assertVisible: "(?s).*link.*"
 - scrollUntilVisible:
     element:
-      text: "(?s).*mineru.*"
+      text: "(?s).*default.*"
     direction: DOWN
     timeout: 30000
+- assertVisible: "(?s).*default.*"
+- scrollUntilVisible:
+    element:
+      text: "(?s).*link.*"
+    direction: DOWN
+    timeout: 30000
+- assertVisible: "(?s).*link.*"
 - swipe:
     direction: UP
     duration: 400
@@ -43,7 +54,7 @@ name: gateway_profiles_qa
 - tapOn: "New Profile"
 - assertVisible: "Create profile"
 - tapOn: "Profile name"
-- inputText: "maestroqa"
+- inputText: "${WING_QA_PROFILE_FIXTURE}"
 - hideKeyboard
 - tapOn: "^Create$"
 - extendedWaitUntil:
@@ -51,51 +62,37 @@ name: gateway_profiles_qa
     timeout: 90000
 - scrollUntilVisible:
     element:
-      text: "(?s).*maestroqa.*"
+      text: "Edit ${WING_QA_PROFILE_FIXTURE}"
     direction: DOWN
     timeout: 30000
-- swipe:
-    direction: UP
-    duration: 600
 # Chat/SOUL remain unavailable for local-only rows on legacy Hermes endpoints that do
 # not advertise profile context. Widget/channel tests cover use when advertised.
 # Rename the real stable profile ID. SOUL remains gated by Agent capabilities.
-- tapOn: "Edit maestroqa"
+- tapOn: "Edit ${WING_QA_PROFILE_FIXTURE}"
 - assertVisible: "^Edit$"
 - tapOn: "Profile name"
-- eraseText: 20
-- inputText: "maestroqa2"
+- eraseText: 100
+- inputText: "${WING_QA_PROFILE_FIXTURE}2"
 - hideKeyboard
 - tapOn: "^Save$"
 - extendedWaitUntil:
     notVisible: "^Save$"
     timeout: 60000
+# Deleting a Wing Link-managed profile is sensitive. Exercise typed
+# confirmation and leave the resulting pending request for the host runner.
 - scrollUntilVisible:
     element:
-      text: "(?s).*maestroqa2.*"
+      text: "Edit ${WING_QA_PROFILE_FIXTURE}2"
     direction: DOWN
     timeout: 30000
-- swipe:
-    direction: UP
-    duration: 600
-
-# Local-only profiles are manageable but are not routed through Wing Link chat.
-# Delete the temporary profile with typed confirmation.
-- tapOn: "Delete maestroqa2"
+- tapOn: "Edit ${WING_QA_PROFILE_FIXTURE}2"
+- assertVisible: "^Edit$"
 - tapOn: "^Delete profile$"
-- assertVisible: "(?s).*Delete maestroqa2.*"
-- inputText: "maestroqa2"
+- assertVisible: "^Delete ${WING_QA_PROFILE_FIXTURE}2[?]$"
+- inputText: "${WING_QA_PROFILE_FIXTURE}2"
 - hideKeyboard
 - tapOn: "^Delete profile$"
 - extendedWaitUntil:
-    notVisible: "(?s).*maestroqa2.*"
-    timeout: 90000
-- scrollUntilVisible:
-    element:
-      text: "(?s).*mineru.*"
-    direction: DOWN
+    visible: "(?s).*Hermes could not complete that profile change.*"
     timeout: 30000
-- swipe:
-    direction: UP
-    duration: 400
-- takeScreenshot: gateway_profile_status_deleted
+- takeScreenshot: gateway_profiles_inventory_delete_approval_required

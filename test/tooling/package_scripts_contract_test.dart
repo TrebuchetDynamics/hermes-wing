@@ -5,6 +5,26 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'live smoke rejects credentialed URLs without echoing credentials',
+    () async {
+      final result = await Process.run('node', [
+        'scripts/hermes_live_smoke.mjs',
+        '--base-url',
+        'http://user:super-secret@example.com/path?q=x',
+        '--json',
+      ]);
+      final output = '${result.stdout}\n${result.stderr}';
+
+      expect(result.exitCode, isNot(0));
+      expect(output, isNot(contains('super-secret')));
+      expect(
+        output,
+        contains('HTTP(S) origin without credentials or route state'),
+      );
+    },
+  );
+
   test('Waydroid speech fixture ends speech before its final result', () {
     final fixture = File(
       'android/headless_voice_fixture/src/main/kotlin/'
@@ -134,6 +154,21 @@ void main() {
 
   test('package scripts expose Hermes and platform closeout helpers', () {
     final serveWeb = File('serve_web.mjs').readAsStringSync();
+    final playwrightRunner = File(
+      'playwright/scripts/run_tests.sh',
+    ).readAsStringSync();
+    expect(
+      playwrightRunner,
+      contains(r'export PORT="${PORT:-8767}"'),
+      reason: 'Playwright passes its configurable port to the test server',
+    );
+    expect(
+      playwrightRunner,
+      contains(
+        r'export WING_APP_URL="${WING_APP_URL:-http://127.0.0.1:$PORT/}"',
+      ),
+      reason: 'Playwright follows its configurable test-server port',
+    );
     expect(
       serveWeb,
       contains('const relativePath = path.relative(root, filePath)'),
@@ -171,6 +206,7 @@ void main() {
       'platform:workflow-smoke': './scripts/run_hermes_platform_workflow.sh',
       'release:verify-artifacts': './scripts/verify_release_artifacts.sh',
       'linux:release-build': './scripts/run_linux_release_build.sh',
+      'linux:e2e': './scripts/run_linux_e2e.sh',
     };
 
     for (final entry in expectedScripts.entries) {
@@ -220,6 +256,19 @@ void main() {
       expect(
         helperText,
         contains('WING_FAIL_ON_BLOCKERS=1 npm run hermes:readiness-audit'),
+      );
+    }
+    for (final helperText in [
+      androidVoiceSmoke,
+      androidLoopSmoke,
+      androidDurableKeySmoke,
+    ]) {
+      expect(
+        helperText,
+        contains(
+          'WebSocketChannelException: HttpException: Connection closed before full header was received',
+        ),
+        reason: 'Android smoke retries Flutter VM service startup disconnects',
       );
     }
     expect(androidVoiceSmoke, contains('Manual continuous-voice closeout'));

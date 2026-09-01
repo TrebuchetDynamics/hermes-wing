@@ -183,7 +183,11 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.blocked
           : HermesSurfaceStatus.deferred,
       detail: advertisedServerAudio
-          ? 'Hermes server audio/realtime voice is advertised, but Hermes Wing has not wired server audio; device STT -> Hermes text remains the voice path.'
+          ? policy.supportsSpeechStreaming
+                ? 'Agent speech is available with capability-gated streaming playback; device STT -> Hermes text remains the voice input path.'
+                : policy.supportsSpeechSynthesis
+                ? 'Agent speech is available with buffered playback; streaming TTS is not advertised.'
+                : 'Hermes server audio/realtime voice is advertised, but no supported Wing audio route is available; device STT -> Hermes text remains the voice path.'
           : 'Hermes realtime/server audio is not advertised; device STT -> Hermes text remains the voice path.',
     ),
     HermesSurfaceReadiness(
@@ -239,7 +243,7 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
           ? HermesSurfaceStatus.readOnly
           : HermesSurfaceStatus.deferred,
       detail: supportsPersonaRead && supportsPersonaWrite
-          ? 'Persona/SOUL is available through the gateway-scoped profile editor.'
+          ? 'Persona/SOUL is available through the gateway-scoped profile editor and standalone editor.'
           : supportsPersonaRead
           ? 'Persona/SOUL is readable, but this device cannot write it.'
           : 'Persona/SOUL remains hidden until the gateway advertises the exact scoped profile soul contract.',

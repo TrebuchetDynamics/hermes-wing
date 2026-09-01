@@ -4,6 +4,9 @@ import 'dart:convert';
 
 import '../hermes/client/hermes_api_transport.dart';
 import 'models/wing_link_device.dart';
+import 'models/wing_link_directory.dart';
+
+export 'models/wing_link_directory.dart';
 import 'wing_link_transport.dart';
 
 class WingLinkMetadata {
@@ -124,28 +127,6 @@ class WingLinkProfile {
 
   bool get canRename => renameRevision?.isNotEmpty ?? false;
   bool get canDelete => deleteRevision?.isNotEmpty ?? false;
-}
-
-class WingLinkProvider {
-  const WingLinkProvider({
-    required this.id,
-    required this.baseUrl,
-    required this.model,
-    required this.revision,
-  });
-
-  factory WingLinkProvider.fromJson(Map<String, Object?> json) =>
-      WingLinkProvider(
-        id: json['id']?.toString() ?? '',
-        baseUrl: json['base_url']?.toString() ?? '',
-        model: json['model']?.toString() ?? '',
-        revision: json['revision']?.toString() ?? '',
-      );
-
-  final String id;
-  final String baseUrl;
-  final String model;
-  final String revision;
 }
 
 class WingLinkOperation {
@@ -277,6 +258,54 @@ class WingLinkClient {
     _decode(await _get(_uri('/v1/status'), _headers));
   }
 
+  Future<List<WingLinkDirectory>> listDirectoryRoots() async {
+    final json = _decode(await _get(_uri('/v2/directories'), _headers));
+    try {
+      return WingLinkDirectoryPage.fromJson(
+        json,
+        maximumDirectories: 32,
+        allowNextOffset: false,
+      ).directories;
+    } on FormatException {
+      throw const WingLinkException(
+        'Wing Link returned invalid directory data',
+      );
+    }
+  }
+
+  Future<WingLinkDirectoryPage> listChildDirectories({
+    required String handle,
+    int offset = 0,
+    int limit = 50,
+  }) async {
+    if (!WingLinkDirectory.isValidHandle(handle) ||
+        offset < 0 ||
+        offset > 1000 ||
+        limit < 1 ||
+        limit > 100) {
+      throw const WingLinkException('Wing Link directory request is invalid');
+    }
+    final uri = _uri('/v2/directories/${Uri.encodeComponent(handle)}/children')
+        .replace(
+          queryParameters: {
+            'offset': offset.toString(),
+            'limit': limit.toString(),
+          },
+        );
+    final json = _decode(await _get(uri, _headers));
+    try {
+      return WingLinkDirectoryPage.fromJson(
+        json,
+        maximumDirectories: 100,
+        allowNextOffset: true,
+      );
+    } on FormatException {
+      throw const WingLinkException(
+        'Wing Link returned invalid directory data',
+      );
+    }
+  }
+
   Future<WingLinkDevice> getCurrentDevice() async {
     final json = _decode(await _get(_uri('/v2/devices/self'), _headers));
     try {
@@ -317,7 +346,9 @@ class WingLinkClient {
     if (error is Map && error['code'] == 'approval_required') {
       final approvalId = json['approval_id']?.toString() ?? '';
       final expiresAt = json['expires_at'];
-      if (!_approvalIdPattern.hasMatch(approvalId) || expiresAt is! int) {
+      if (!_approvalIdPattern.hasMatch(approvalId) ||
+          expiresAt is! int ||
+          !_validApprovalExpiry(expiresAt)) {
         throw const WingLinkException(
           'Wing Link returned invalid approval data',
         );
@@ -360,59 +391,6 @@ class WingLinkClient {
     ];
   }
 
-  Future<List<WingLinkProvider>> listProviders({
-    required String profile,
-  }) async {
-    final json = _decode(
-      await _get(_profileUri('/v1/providers', profile), _headers),
-    );
-    final providers = json['providers'];
-    if (providers is! List) {
-      throw const WingLinkException('Wing Link returned invalid data');
-    }
-    return [
-      for (final provider in providers)
-        if (provider is Map)
-          WingLinkProvider.fromJson(provider.cast<String, Object?>()),
-    ];
-  }
-
-  Future<WingLinkProvider> createProvider({
-    required String profile,
-    required String id,
-    required String baseUrl,
-    required String model,
-  }) => _mutateProvider(
-    'POST',
-    '/v1/providers',
-    profile: profile,
-    body: {'id': id, 'base_url': baseUrl, 'model': model},
-  );
-
-  Future<WingLinkProvider> updateProvider({
-    required String profile,
-    required String id,
-    required String baseUrl,
-    required String model,
-    required String revision,
-  }) => _mutateProvider(
-    'PATCH',
-    '/v1/providers/${Uri.encodeComponent(id)}',
-    profile: profile,
-    body: {'base_url': baseUrl, 'model': model, 'revision': revision},
-  );
-
-  Future<void> deleteProvider({
-    required String profile,
-    required String id,
-    required String revision,
-  }) async {
-    await _delete(
-      _profileUri('/v1/providers/${Uri.encodeComponent(id)}', profile),
-      {..._headers, 'If-Match': revision},
-    );
-  }
-
   Future<WingLinkProfile> createProfile({
     required String name,
     String? cloneFrom,
@@ -436,6 +414,7 @@ class WingLinkClient {
         'provider_api_key': providerApiKey,
     },
     idempotencyKey: idempotencyKey,
+    expectedCreatedProfileId: name,
   );
 
   Future<WingLinkProfile> renameProfile({
@@ -463,8 +442,11 @@ class WingLinkClient {
         'Idempotency-Key': key,
       }),
     );
-    if (response.trim().isNotEmpty) {
-      _throwIfApprovalRequired(_decode(response), key);
+    if (response.trim().isEmpty) return;
+    final json = _decode(response);
+    _throwIfApprovalRequired(json, key);
+    if (json['replayed'] == true && !_isSuccessfulTerminalReplay(json)) {
+      throw const WingLinkException('Wing Link profile deletion failed');
     }
   }
 
@@ -484,6 +466,7 @@ class WingLinkClient {
     String path, {
     required Map<String, Object?> body,
     String? idempotencyKey,
+    String? expectedCreatedProfileId,
   }) async {
     final payload = jsonEncode(body);
     final key = idempotencyKey ?? _newIdempotencyKey('profile-mutation');
@@ -496,29 +479,26 @@ class WingLinkClient {
     final json = _decode(response);
     _throwIfApprovalRequired(json, key);
     final profile = json['profile'];
-    if (profile is! Map) {
+    if (profile is Map) {
+      return WingLinkProfile.fromJson(profile.cast<String, Object?>());
+    }
+    final normalizedExpectedProfileId = expectedCreatedProfileId
+        ?.trim()
+        .toLowerCase();
+    if (normalizedExpectedProfileId == null ||
+        !_profileIdPattern.hasMatch(normalizedExpectedProfileId) ||
+        !_isSuccessfulTerminalReplay(json)) {
       throw const WingLinkException('Wing Link returned invalid data');
     }
-    return WingLinkProfile.fromJson(profile.cast<String, Object?>());
-  }
-
-  Future<WingLinkProvider> _mutateProvider(
-    String method,
-    String path, {
-    required String profile,
-    required Map<String, Object?> body,
-  }) async {
-    final payload = jsonEncode(body);
-    final response = switch (method) {
-      'POST' => await _post(_profileUri(path, profile), _headers, payload),
-      'PATCH' => await _patch(_profileUri(path, profile), _headers, payload),
-      _ => throw const WingLinkException('Unsupported Wing Link request'),
-    };
-    final provider = _decode(response)['provider'];
-    if (provider is! Map) {
-      throw const WingLinkException('Wing Link returned invalid data');
+    final matches = (await listProfiles())
+        .where((profile) => profile.id == normalizedExpectedProfileId)
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw const WingLinkException(
+        'Wing Link could not reconcile the created profile',
+      );
     }
-    return WingLinkProvider.fromJson(provider.cast<String, Object?>());
+    return matches.single;
   }
 
   void _throwIfApprovalRequired(
@@ -534,7 +514,8 @@ class WingLinkClient {
     final expiresAt = json['expires_at'];
     if (!_approvalIdPattern.hasMatch(approvalId) ||
         !_operationIdPattern.hasMatch(operationId) ||
-        expiresAt is! int) {
+        expiresAt is! int ||
+        !_validApprovalExpiry(expiresAt)) {
       throw const WingLinkException('Wing Link returned invalid approval data');
     }
     throw WingLinkApprovalRequired(
@@ -543,6 +524,29 @@ class WingLinkClient {
       idempotencyKey: idempotencyKey,
       expiresAt: expiresAt,
     );
+  }
+
+  bool _isSuccessfulTerminalReplay(Map<String, Object?> json) {
+    if (json['replayed'] != true) return false;
+    final operationId = json['operation_id']?.toString() ?? '';
+    final operationJson = json['operation'];
+    if (!_operationIdPattern.hasMatch(operationId) || operationJson is! Map) {
+      return false;
+    }
+    final operation = operationJson.cast<String, Object?>();
+    final percent = operation['percent'];
+    final errorCode = operation['error_code'];
+    return operation['operation_id'] == operationId &&
+        operation['terminal'] == true &&
+        operation['phase'] == 'committed' &&
+        percent is int &&
+        percent == 100 &&
+        (errorCode == null || errorCode == '');
+  }
+
+  bool _validApprovalExpiry(int expiresAt) {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return expiresAt > now && expiresAt <= now + 5 * 60 + 5;
   }
 
   String _newIdempotencyKey(String prefix) =>
@@ -560,6 +564,7 @@ class WingLinkClient {
     r'^appr_[A-Za-z0-9_-]{1,91}$',
   );
   static final RegExp _idempotencyKeyPattern = RegExp(r'^[!-~]{1,128}$');
+  static final RegExp _profileIdPattern = RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$');
 
   void _requireOperationId(String value) {
     if (!_operationIdPattern.hasMatch(value)) {
@@ -569,9 +574,6 @@ class WingLinkClient {
 
   Uri _uri(String path) =>
       _origin.replace(path: path, query: null, fragment: null);
-
-  Uri _profileUri(String path, String profile) =>
-      _uri(path).replace(queryParameters: {'profile': profile});
 
   Map<String, Object?> _decode(String body) {
     final Object? decoded;

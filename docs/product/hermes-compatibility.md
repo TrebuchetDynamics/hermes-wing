@@ -25,16 +25,26 @@ Hermes Agent 0.20 documents these API-server surfaces relevant to Wing:
 - `GET /health` and authenticated `GET /health/detailed`;
 - `GET /v1/capabilities`;
 - OpenAI-compatible `POST /v1/chat/completions` and `POST /v1/responses`;
-- `POST /v1/runs`, run status, SSE events, approval, and stop;
+- `POST /v1/runs`, run status, SSE events, approval, stop, and advertised
+  plain-text steering for an active run;
 - session list/create/read/update/delete/fork and session chat under
   `/api/sessions`;
 - jobs list/create/read/update/delete/pause/resume/run under `/api/jobs`;
 - read-only `GET /v1/models`, `GET /v1/skills`, and `GET /v1/toolsets`;
-- richer read-only model/provider options through `GET /api/model/options`.
+- richer read-only model/provider options through `GET /api/model/options`,
+  plus the backend-confirmed session model lock at
+  `POST /api/sessions/{session_id}/model` when both are advertised.
 
 The API server uses `Authorization: Bearer <API_SERVER_KEY>`. The key grants full
 access to the API server, including tools. Keep browser CORS origins narrow and do
 not expose the server to an untrusted network.
+
+Hermes Agent 0.20 does not advertise a network WebSocket or ACP transport for
+these surfaces. Hermes Desktop's authenticated dashboard WebSocket is a separate
+Desktop transport, not an Agent compatibility contract. Wing may add a direct
+Agent WebSocket only after an exact advertised endpoint, authentication method,
+scope model, and close/event contract are available. It must not be tunneled
+through Wing Link.
 
 ## Wing capability policy
 
@@ -58,7 +68,8 @@ A usable connection must provide:
 ## Sessions, runs, and jobs
 
 Wing supports the advertised session and runs APIs for chat, streaming replies,
-tool progress, approvals, stop controls, reconnect, and session history. It does
+tool progress, approvals, stop and plain-text steer controls, reconnect, and
+session history. It does
 not infer a mutation from a read route. Rename, delete, fork, approval, stop, and
 run-status requests each require their exact advertised endpoint.
 
@@ -75,9 +86,12 @@ this is a client gap, not a missing upstream jobs contract.
 ## Models, providers, skills, and tools
 
 `GET /v1/models` is the small OpenAI-compatible model list. Wing may show its
-bounded IDs read-only. `GET /api/model/options` provides richer Hermes-aware
-model/provider options. Hermes Agent 0.20 does not advertise an API-server model
-mutation route, so persistent model/provider changes remain contract-gated.
+bounded IDs read-only. `GET /api/model/options` provides richer Hermes-aware model/provider options.
+Wing uses it only for the session picker; selecting a model calls the exact
+backend-confirmed `POST /api/sessions/{session_id}/model` contract and does not
+change profile-wide configuration. Hermes Agent 0.20 does not advertise an
+API-server persistent model mutation route, so profile-wide model/provider
+changes remain contract-gated.
 
 The older Wing proposal for `/api/providers`, provider credential routes,
 `/api/models/refresh`, and `/api/models/assignment` is not part of the documented
@@ -110,12 +124,12 @@ surface invokes only fixed Hermes CLI argument vectors for:
 
 ### Compatibility-adapter registry
 
-| Adapter | Authoritative Agent endpoint | Supported release window | Removal trigger |
-| --- | --- | --- | --- |
-| Profile inventory | Advertised profile-list HTTP route | Agent 0.20 plus the next audited release | Remove after every supported release advertises an equivalent bounded inventory route. |
-| Profile create/clone | Advertised profile-create HTTP route | Agent 0.20 plus the next audited release | Remove after every supported release advertises create/clone with stable typed errors. |
-| Profile rename/delete | Advertised profile mutation routes | Agent 0.20 plus the next audited release | Remove after every supported release advertises revision-aware rename and delete. |
-| New-profile setup | Advertised typed profile configuration and secret-write routes | Agent 0.20 plus the next audited release | Remove after every supported release provides allowlisted configuration and stdin-equivalent write-only credentials. |
+| Adapter               | Authoritative Agent endpoint                                   | Supported release window                 | Removal trigger                                                                                                      |
+| --------------------- | -------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Profile inventory     | Advertised profile-list HTTP route                             | Agent 0.20 plus the next audited release | Remove after every supported release advertises an equivalent bounded inventory route.                               |
+| Profile create/clone  | Advertised profile-create HTTP route                           | Agent 0.20 plus the next audited release | Remove after every supported release advertises create/clone with stable typed errors.                               |
+| Profile rename/delete | Advertised profile mutation routes                             | Agent 0.20 plus the next audited release | Remove after every supported release advertises revision-aware rename and delete.                                    |
+| New-profile setup     | Advertised typed profile configuration and secret-write routes | Agent 0.20 plus the next audited release | Remove after every supported release provides allowlisted configuration and stdin-equivalent write-only credentials. |
 
 The Agent API remains authoritative in every row. Adapters retain no shadow domain
 state, and the release compatibility audit must update this registry before the
@@ -144,10 +158,12 @@ closed.
 
 ## Audio and voice
 
-Wing's current working tree contains capability-gated adapters for
-`POST /api/audio/transcribe` and `POST /api/audio/speak`. Audio is not sent unless
-`audio_api` and the exact route are advertised. Local/device transcription and
-platform speech remain compatibility fallbacks.
+Wing contains capability-gated adapters for
+`POST /api/audio/transcribe` and buffered `POST /api/audio/speak`. Audio is not
+sent unless `audio_api` and the exact route are advertised. Local/device
+transcription and platform speech remain compatibility fallbacks. Streaming TTS
+is recognized only when Hermes advertises the exact `GET /api/audio/speak-stream`
+WebSocket contract; the Flutter stream transport is not yet enabled.
 
 Hermes Agent 0.20 advertises `audio_api: false` and `realtime_voice: false`, and
 the official API-server documentation does not list those two `/api/audio`

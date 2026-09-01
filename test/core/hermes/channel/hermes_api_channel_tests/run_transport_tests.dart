@@ -688,7 +688,7 @@ void _hermesApiChannelRunTransportTests() {
   });
 
   test(
-    'sendText keeps the owned run attached after a malformed approval request',
+    'sendText keeps the owned run attached when approval omits its id',
     () async {
       final approvals = <HermesApprovalRequest>[];
       final stream = _ManualStringStream();
@@ -726,11 +726,10 @@ void _hermesApiChannelRunTransportTests() {
       await pumpEventQueue();
 
       expect(sendDone.isCompleted, isFalse);
-      expect(approvals, isEmpty);
-      expect(
-        channel.state.errorMessage,
-        'Hermes approval request was missing an approval id. The run is still active.',
-      );
+      expect(approvals, hasLength(1));
+      expect(approvals.single.id, isEmpty);
+      expect(approvals.single.runId, 'run_1');
+      expect(channel.state.errorMessage, isNull);
       expect(
         channel.state.activeMessages.last.status,
         HermesTurnStatus.streaming,

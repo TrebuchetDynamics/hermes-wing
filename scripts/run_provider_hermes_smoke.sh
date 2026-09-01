@@ -13,6 +13,13 @@ EOF
   exit 2
 fi
 
+receipt_path="${WING_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
+# Invalidate an older pass before any new attempt so a failed run cannot leave
+# readiness reporting stale provider evidence.
+if [ -f "$receipt_path" ]; then
+  rm -f "$receipt_path"
+fi
+
 # Never run browser assertions against a listener owned by another workflow.
 if lsof -ti:8767 >/dev/null 2>&1; then
   echo "Port 8767 is already in use; stop its owner before running the provider smoke." >&2
@@ -77,7 +84,6 @@ fi
 
 npx playwright test --config=playwright.config.mjs playwright/tests/regression/hermes-provider-chat.spec.mjs --reporter=list --retries=0
 
-receipt_path="${WING_PROVIDER_SMOKE_RECEIPT:-build/receipts/hermes-provider-smoke.json}"
 head_sha="$(git rev-parse HEAD 2>/dev/null || true)"
 mkdir -p "$(dirname "$receipt_path")"
 cat >"$receipt_path" <<EOF

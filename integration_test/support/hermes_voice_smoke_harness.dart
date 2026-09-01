@@ -102,6 +102,9 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   HermesChannelState get state => _state;
 
   @override
+  bool get canSteerActiveTurn => false;
+
+  @override
   Stream<HermesApprovalRequest> get approvalRequests => _approvals.stream;
 
   @override
@@ -135,6 +138,16 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     );
     _setMessages(messages);
   }
+
+  @override
+  Future<void> loadModelOptions({bool refresh = false}) async {}
+
+  @override
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  }) async {}
 
   @override
   Future<void> sendText(
@@ -248,6 +261,9 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> disconnect() async {}
 
   @override
+  void clearActiveSession() {}
+
+  @override
   Future<void> selectSession(String sessionId) async {}
 
   @override
@@ -344,12 +360,16 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   void cancelActiveTurn() {}
 
   @override
+  Future<void> steerActiveTurn(String text) async {}
+
+  @override
   void stopActiveTurn() {}
 
   @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   }) async {}
 
   @override

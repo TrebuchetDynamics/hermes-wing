@@ -223,7 +223,7 @@ func TestAuthenticatedBootstrapRouteRunsSetupAndReportsOperation(t *testing.T) {
 		},
 	}
 	server := httptest.NewServer(newWingLinkServerWithBootstrap(
-		&profileBackend{}, store, nil, manager,
+		&profileBackend{}, store, manager,
 	))
 	defer server.Close()
 
@@ -332,7 +332,7 @@ func TestBootstrapRouteReplaysIdempotencyKeyWithoutDuplicateWork(t *testing.T) {
 		},
 	}
 	server := httptest.NewServer(newWingLinkServerWithOperations(
-		&profileBackend{}, store, nil, bootstrap, operations,
+		&profileBackend{}, store, bootstrap, operations,
 	))
 	defer server.Close()
 
@@ -342,14 +342,14 @@ func TestBootstrapRouteReplaysIdempotencyKeyWithoutDuplicateWork(t *testing.T) {
 		Operation   OperationEvent `json:"operation"`
 		Replayed    bool           `json:"replayed"`
 	}
-	post := func() setupResponse {
+	post := func(key string) setupResponse {
 		request, err := http.NewRequest(http.MethodPost, server.URL+"/v1/setup", strings.NewReader(`{}`))
 		if err != nil {
 			t.Fatal(err)
 		}
 		request.Header.Set("Authorization", "Bearer "+token)
 		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Idempotency-Key", "setup-retry-1")
+		request.Header.Set("Idempotency-Key", key)
 		response, err := http.DefaultClient.Do(request)
 		if err != nil {
 			t.Fatal(err)
@@ -364,22 +364,30 @@ func TestBootstrapRouteReplaysIdempotencyKeyWithoutDuplicateWork(t *testing.T) {
 		}
 		return body
 	}
-	pending := post()
+	pending := post("setup-retry-1")
 	approvalStore, err := openApprovalStore(store.Path())
 	if err != nil {
 		t.Fatal(err)
 	}
+	approvals, err := approvalStore.List()
+	if err != nil || len(approvals) != 1 || approvals[0].Request.IdempotencyKey != "setup-retry-1" {
+		t.Fatalf("approval idempotency binding = %#v, %v", approvals, err)
+	}
 	if _, err := approvalStore.Decide(pending.ApprovalID, true); err != nil {
 		t.Fatal(err)
 	}
-	first := post()
+	changedKey := post("setup-retry-2")
+	if changedKey.ApprovalID == "" || changedKey.ApprovalID == pending.ApprovalID || calls != 0 {
+		t.Fatalf("changed key reused approval: %#v calls=%d", changedKey, calls)
+	}
+	first := post("setup-retry-1")
 	for attempt := 0; attempt < 100; attempt++ {
 		if event, ok := operations.Snapshot(first.OperationID); ok && event.Terminal {
 			break
 		}
 		time.Sleep(time.Millisecond)
 	}
-	second := post()
+	second := post("setup-retry-1")
 	if first.OperationID == "" || second.OperationID != first.OperationID ||
 		!second.Replayed || second.Operation.Phase != "committed" || !second.Operation.Terminal || calls != 1 {
 		t.Fatalf("first=%#v second=%#v calls=%d", first, second, calls)
@@ -402,7 +410,7 @@ func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
 			return HermesInspection{}, nil
 		},
 	}
-	server := httptest.NewServer(newWingLinkServerWithBootstrap(nil, store, nil, manager))
+	server := httptest.NewServer(newWingLinkServerWithBootstrap(nil, store, manager))
 	defer server.Close()
 
 	request, err := http.NewRequest(
@@ -422,6 +430,152 @@ func TestAuthenticatedBootstrapRouteRejectsRuntimeDomainFields(t *testing.T) {
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status = %d; want %d", response.StatusCode, http.StatusBadRequest)
+	}
+}
+
+func TestInstallerShellUsesTermuxPrefix(t *testing.T) {
+	t.Setenv("PREFIX", termuxPrefix)
+	if got := resolveInstallerShell("android"); got != termuxPrefix+"/bin/bash" {
+		t.Fatalf("got %q", got)
+	}
+	if got := resolveInstallerShell("linux"); got != "/bin/bash" {
+		t.Fatalf("linux shell = %q", got)
+	}
+}
+
+func TestTermuxGatewaySpecUsesFixedPaths(t *testing.T) {
+	t.Setenv("PREFIX", termuxPrefix)
+	t.Setenv("HOME", termuxHome)
+	spec, err := termuxHermesGatewaySpec(
+		termuxPrefix+"/bin/hermes",
+		termuxHome+"/.hermes",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if spec.Path != termuxPrefix+"/bin/hermes" ||
+		!reflect.DeepEqual(spec.Args, []string{"gateway"}) ||
+		spec.Home != "/data/data/com.termux/files/home/.hermes" ||
+		spec.LogPath != "/data/data/com.termux/files/home/.hermes/logs/gateway.log" {
+		t.Fatalf("spec = %#v", spec)
+	}
+}
+
+func TestAndroidHermesExecutableRejectsAlternatePaths(t *testing.T) {
+	t.Setenv("PREFIX", termuxPrefix)
+	t.Setenv("HOME", termuxHome)
+	fakeDir := t.TempDir()
+	fakeHermes := filepath.Join(fakeDir, "hermes")
+	if err := os.WriteFile(fakeHermes, []byte("#!/bin/sh\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", fakeDir)
+
+	canonical := filepath.Join(termuxPrefix, "bin", "hermes")
+	home := filepath.Join(termuxHome, ".hermes")
+	candidates, err := hermesExecutableCandidates("android", home, "")
+	if err != nil || !reflect.DeepEqual(candidates, []string{canonical}) {
+		t.Fatalf("candidates = %q, err = %v", candidates, err)
+	}
+	if _, err := hermesExecutableCandidates("android", home, fakeHermes); err == nil {
+		t.Fatal("alternate absolute Hermes hint was accepted")
+	}
+	if _, err := resolveHermesExecutableForPlatform("android", home, ""); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("PATH Hermes should be ignored; err = %v", err)
+	}
+
+	t.Setenv("PREFIX", fakeDir)
+	if _, err := hermesExecutableCandidates("android", home, ""); err == nil {
+		t.Fatal("noncanonical Termux prefix was accepted")
+	}
+	t.Setenv("PREFIX", termuxPrefix)
+	t.Setenv("HOME", fakeDir)
+	if _, err := hermesExecutableCandidates("android", home, ""); err == nil {
+		t.Fatal("noncanonical Termux home was accepted")
+	}
+	if err := validateTermuxHermesGatewayShape(canonical, filepath.Join(fakeDir, ".hermes")); err == nil {
+		t.Fatal("noncanonical Hermes home was accepted")
+	}
+}
+
+func TestDetachedHermesGatewayPreparationIsOwnerOnly(t *testing.T) {
+	home := t.TempDir()
+	spec := detachedHermesGatewaySpec{
+		Path: "/fixed/hermes", Args: []string{"gateway"}, Home: home,
+		LogPath: filepath.Join(home, "logs", "gateway.log"),
+	}
+	logFile, err := prepareDetachedHermesGateway(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := logFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+	logDirInfo, err := os.Stat(filepath.Dir(spec.LogPath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	logInfo, err := os.Stat(spec.LogPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := logDirInfo.Mode().Perm(); got != 0o700 {
+		t.Fatalf("log directory mode = %o", got)
+	}
+	if got := logInfo.Mode().Perm(); got != 0o600 {
+		t.Fatalf("log file mode = %o", got)
+	}
+
+	environment := environmentWithHermesHome(
+		[]string{"PATH=/bin", "HERMES_HOME=/stale", "NOT_HERMES_HOME=kept"},
+		home,
+	)
+	wantEnvironment := []string{"PATH=/bin", "NOT_HERMES_HOME=kept", "HERMES_HOME=" + home}
+	if !reflect.DeepEqual(environment, wantEnvironment) {
+		t.Fatalf("environment = %q, want %q", environment, wantEnvironment)
+	}
+}
+
+func TestDetachedHermesGatewayPreparationRejectsSymlinks(t *testing.T) {
+	t.Run("directory", func(t *testing.T) {
+		home := t.TempDir()
+		target := t.TempDir()
+		if err := os.Symlink(target, filepath.Join(home, "logs")); err != nil {
+			t.Fatal(err)
+		}
+		spec := detachedHermesGatewaySpec{LogPath: filepath.Join(home, "logs", "gateway.log")}
+		if _, err := prepareDetachedHermesGateway(spec); err == nil {
+			t.Fatal("symlinked log directory was accepted")
+		}
+	})
+	t.Run("file", func(t *testing.T) {
+		home := t.TempDir()
+		logDir := filepath.Join(home, "logs")
+		if err := os.Mkdir(logDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		target := filepath.Join(t.TempDir(), "outside.log")
+		if err := os.WriteFile(target, nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(target, filepath.Join(logDir, "gateway.log")); err != nil {
+			t.Fatal(err)
+		}
+		spec := detachedHermesGatewaySpec{LogPath: filepath.Join(logDir, "gateway.log")}
+		if _, err := prepareDetachedHermesGateway(spec); err == nil {
+			t.Fatal("symlinked log file was accepted")
+		}
+	})
+}
+
+func TestPinnedHermesInstallerIsOfficialAndImmutable(t *testing.T) {
+	if !strings.Contains(pinnedHermesPOSIXURL, "raw.githubusercontent.com/NousResearch/hermes-agent/"+pinnedHermesCommit+"/scripts/install.sh") {
+		t.Fatalf("installer URL is not pinned to the official source: %q", pinnedHermesPOSIXURL)
+	}
+	for _, forbidden := range []string{"hermes-agent.nousresearch.com/install.sh", "adybag14-cyber", "setup_apt_repo"} {
+		if strings.Contains(pinnedHermesPOSIXURL, forbidden) {
+			t.Fatalf("installer URL contains %q", forbidden)
+		}
 	}
 }
 
@@ -449,6 +603,26 @@ func TestHermesAPIEnvironmentOverridesStaleRemoteEndpoint(t *testing.T) {
 	text := string(updated)
 	if strings.Count(text, "API_SERVER_HOST=") != 1 || !strings.Contains(text, "API_SERVER_HOST=127.0.0.1\n") ||
 		strings.Count(text, "API_SERVER_PORT=") != 1 || !strings.Contains(text, "API_SERVER_PORT=9864\n") ||
+		!strings.Contains(text, "API_SERVER_KEY=secret\n") {
+		t.Fatalf("environment = %q", text)
+	}
+}
+
+func TestHermesAPIEnvironmentCanBindDetectedTailscaleHost(t *testing.T) {
+	path := filepath.Join(t.TempDir(), ".env")
+	if err := os.WriteFile(path, []byte("API_SERVER_KEY=secret\nAPI_SERVER_HOST=127.0.0.1\nAPI_SERVER_PORT=8642\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := ensureHermesAPIEnvironmentHost(path, "100.90.80.70", 8642); err != nil {
+		t.Fatal(err)
+	}
+	updated, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(updated)
+	if strings.Count(text, "API_SERVER_HOST=") != 1 ||
+		!strings.Contains(text, "API_SERVER_HOST=100.90.80.70\n") ||
 		!strings.Contains(text, "API_SERVER_KEY=secret\n") {
 		t.Fatalf("environment = %q", text)
 	}

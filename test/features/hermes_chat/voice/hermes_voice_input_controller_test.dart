@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/features/hermes_chat/voice/hermes_voice_failure.dart';
 import 'package:wing/features/hermes_chat/voice/hermes_voice_input_controller.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 import 'package:wing/shared/voice/voice_capture_failures.dart';
@@ -42,6 +43,79 @@ void main() {
   );
 
   test(
+    'read aloud speaks a selected reply without starting voice mode',
+    () async {
+      final channel = FakeHermesChannel();
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => null,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(),
+        onDraft: (_) {},
+      );
+      addTearDown(controller.dispose);
+
+      await controller.readAloud(
+        '## Selected **reply** with [documentation](https://example.com).',
+      );
+
+      expect(tts.spoken, ['Selected reply with documentation.']);
+      expect(controller.speaking, isFalse);
+      expect(controller.continuousEnabled, isFalse);
+      expect(channel.state.voiceRuns, isEmpty);
+    },
+  );
+
+  test('read aloud starts each natural sentence independently', () async {
+    final channel = FakeHermesChannel();
+    final tts = FakeTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    await controller.readAloud(
+      'The first sentence is ready. The second sentence follows later.',
+    );
+
+    expect(tts.spoken, [
+      'The first sentence is ready.',
+      'The second sentence follows later.',
+    ]);
+  });
+
+  test('read aloud tracks and stops its source message', () async {
+    final channel = FakeHermesChannel();
+    final tts = _ControlledTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    final playback = controller.readAloud('Selected reply.', turnId: 'turn-7');
+    await pumpEventQueue();
+
+    expect(controller.speaking, isTrue);
+    expect(controller.readAloudTurnId, 'turn-7');
+
+    await controller.stopSpeaking();
+    await playback;
+
+    expect(tts.stopCalls, 1);
+    expect(controller.speaking, isFalse);
+    expect(controller.readAloudTurnId, isNull);
+  });
+
+  test(
     'captured audio is transcribed by Hermes Agent before sending',
     () async {
       final channel = _AudioFakeHermesChannel();
@@ -66,6 +140,35 @@ void main() {
     },
   );
 
+  test('voice-send failures are localized without sensitive details', () async {
+    final channel = _FailingVoiceRunChannel();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => FakeVoiceCaptureService(
+        audio: Uint8List(0),
+        transcript: 'send this now',
+        duration: const Duration(seconds: 1),
+        confidence: 0.9,
+      ),
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+      failureMessage: (failure, detail) {
+        expect(failure, HermesVoiceFailure.turnSendFailed);
+        return 'Localized send failure: $detail';
+      },
+    );
+    addTearDown(controller.dispose);
+
+    await controller.captureAndSend();
+
+    expect(controller.error, contains('Localized send failure:'));
+    expect(controller.error, contains('[redacted]'));
+    expect(controller.error, isNot(contains('secret-sentinel')));
+    expect(controller.error, isNot(contains('/home/alice')));
+    expect(controller.error, isNot(contains('Bad state:')));
+  });
+
   test('session switch during audio upload discards the voice turn', () async {
     final channel = _AudioFakeHermesChannel(blockTranscription: true);
     final controller = HermesVoiceInputController(
@@ -79,6 +182,11 @@ void main() {
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(),
       onDraft: (_) {},
+      failureMessage: (failure, detail) {
+        expect(failure, HermesVoiceFailure.captureSessionChanged);
+        expect(detail, isNull);
+        return 'Localized session changed.';
+      },
     );
     addTearDown(controller.dispose);
 
@@ -89,7 +197,7 @@ void main() {
     await sending;
 
     expect(channel.sentVoiceTranscripts, isEmpty);
-    expect(controller.error, contains('session changed'));
+    expect(controller.error, 'Localized session changed.');
   });
 
   test(
@@ -101,7 +209,7 @@ void main() {
         channel: () => channel,
         captureService: () => FakeVoiceCaptureService(
           audio: Uint8List(0),
-          transcript: 'send this now',
+          transcript: 'send **this** now',
           duration: const Duration(seconds: 1),
           confidence: 0.9,
         ),
@@ -120,7 +228,7 @@ void main() {
       await controller.captureAndSend();
       await pumpEventQueue();
 
-      expect(channel.sentVoiceTranscripts, ['send this now']);
+      expect(channel.sentVoiceTranscripts, ['send **this** now']);
       expect(tts.spoken, ['echo: send this now']);
       expect(controller.continuousEnabled, isFalse);
       expect(controller.capturing, isFalse);
@@ -196,6 +304,11 @@ void main() {
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(continuousVoiceEnabled: true),
       onDraft: (_) {},
+      failureMessage: (failure, detail) {
+        expect(failure, HermesVoiceFailure.shutdownTimedOut);
+        expect(detail, isNull);
+        return 'Localized voice shutdown timeout.';
+      },
       rearmDelay: Duration.zero,
       teardownTimeout: const Duration(milliseconds: 20),
     );
@@ -209,7 +322,7 @@ void main() {
     expect(capture.captureCalls, 1);
     expect(controller.capturing, isFalse);
     expect(controller.continuousEnabled, isFalse);
-    expect(controller.error, contains('shutdown timed out'));
+    expect(controller.error, 'Localized voice shutdown timeout.');
   });
 
   test('failed recognizer teardown pauses rapid re-enable safely', () async {
@@ -491,6 +604,37 @@ void main() {
     expect(channel.sentVoiceTranscripts, ['send this continuously']);
   });
 
+  test(
+    'unavailable playback keeps the reply as text and distinguishes voice input',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _FirstCaptureThenBlockService('hello Hermes');
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => null,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        failureMessage: (failure, detail) {
+          expect(failure, HermesVoiceFailure.playbackUnavailableContinuous);
+          expect(detail, isNull);
+          return 'Localized playback unavailable.';
+        },
+      );
+      addTearDown(controller.dispose);
+
+      await controller.enableContinuous();
+      await controller.maybeContinue();
+
+      expect(controller.continuousEnabled, isFalse);
+      expect(controller.playbackUnavailable, isTrue);
+      expect(controller.error, 'Localized playback unavailable.');
+    },
+  );
+
   test('continuous voice speaks one reply and re-arms capture', () async {
     final channel = FakeHermesChannel();
     final capture = _FirstCaptureThenBlockService('hello Hermes');
@@ -766,7 +910,8 @@ void main() {
       expect(controller.speaking, isFalse);
       expect(controller.capturing, isFalse);
       expect(controller.continuousEnabled, isFalse);
-      expect(controller.error, contains('Could not speak Hermes reply'));
+      expect(controller.error, contains('Voice playback failed'));
+      expect(controller.error, contains('reply is available as text'));
     },
   );
 
@@ -1150,6 +1295,32 @@ void main() {
 
     expect(controller.continuousEnabled, isFalse);
     expect(controller.error, contains('Continuous voice paused.'));
+    expect(controller.error, contains('[redacted]'));
+    expect(controller.error, isNot(contains('secret-sentinel')));
+    expect(controller.error, isNot(contains('/home/alice')));
+    expect(controller.error, isNot(contains('Bad state:')));
+  });
+
+  test('capture failure messages can be localized by the UI', () async {
+    final channel = FakeHermesChannel();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => const _FailingVoiceCaptureService(),
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+      failureMessage: (failure, detail) {
+        expect(failure, HermesVoiceFailure.generic);
+        expect(detail, contains('[redacted]'));
+        return 'Localized capture failure.';
+      },
+      continuousPausedMessage: (message) => '$message Localized pause.',
+    );
+    addTearDown(controller.dispose);
+
+    await controller.enableContinuous();
+
+    expect(controller.error, 'Localized capture failure. Localized pause.');
   });
 
   test('continuous voice re-arms after its capture window expires', () async {
@@ -1211,12 +1382,18 @@ void main() {
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(commandWord: 'hey navi'),
       onDraft: (_) {},
+      failureMessage: (failure, detail) {
+        expect(failure, HermesVoiceFailure.pausedByLocalCommand);
+        expect(detail, isNull);
+        return 'Localized command pause.';
+      },
     );
     addTearDown(controller.dispose);
 
     await controller.enableContinuous();
 
     expect(controller.continuousEnabled, isFalse);
+    expect(controller.error, 'Localized command pause.');
   });
 
   test(
@@ -1605,6 +1782,17 @@ class _SynchronouslyThrowingStoppingTextToSpeechService
   Future<void> dispose() => stop();
 }
 
+class _FailingVoiceRunChannel extends FakeHermesChannel {
+  @override
+  void submitVoiceRun(String voiceRunId) {
+    failVoiceRun(
+      voiceRunId,
+      reason:
+          'Bad state: Authorization: Bearer secret-sentinel at /home/alice/private.wav',
+    );
+  }
+}
+
 class _AudioFakeHermesChannel extends FakeHermesChannel
     implements HermesAudioChannel {
   _AudioFakeHermesChannel({bool blockTranscription = false})
@@ -1769,7 +1957,9 @@ class _FailingVoiceCaptureService implements VoiceCaptureService {
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
-    throw StateError('recognizer failed');
+    throw StateError(
+      'Authorization: Bearer secret-sentinel at /home/alice/private.wav',
+    );
   }
 
   @override

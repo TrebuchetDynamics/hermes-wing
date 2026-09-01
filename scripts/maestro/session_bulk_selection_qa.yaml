@@ -7,13 +7,19 @@ name: session_bulk_selection_qa
 - launchApp:
     stopApp: true
 - setOrientation: PORTRAIT
-- runFlow:
-    when:
-      visible: "(?s).*All chats.*"
-    commands:
-      - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
-- tapOn: "(?s).*Default profile.*"
+- tapOn:
+    point: "7%,8%"
+- tapOn:
+    point: "7%,8%"
+- extendedWaitUntil:
+    visible: "Open more destinations"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*online.*"
 - assertVisible: "(?s).*Message Hermes….*"
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s)^Sessions.*"

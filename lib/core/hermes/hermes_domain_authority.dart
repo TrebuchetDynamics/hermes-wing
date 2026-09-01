@@ -5,4 +5,3 @@
 /// Wing Link may delegate only the fixed profile compatibility operations.
 /// Provider and general configuration fallbacks remain quarantined.
 const wingLinkProfileCompatibilityEnabled = true;
-const wingLinkProviderFallbacksEnabled = false;

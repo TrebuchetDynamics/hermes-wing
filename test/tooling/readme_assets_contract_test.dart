@@ -72,10 +72,8 @@ void main() {
     expect(readme, contains('Use `--release`'));
     expect(readme, contains('Go 1.26 or newer'));
     expect(readme, contains('authenticated remote management API'));
-    expect(
-      readme,
-      contains("Today, Wing Link's Agent-domain compatibility surface"),
-    );
+    expect(readme, contains("Today, Wing Link's"));
+    expect(readme, contains('Agent-domain compatibility surface'));
     expect(readme, isNot(contains('--provider')));
     expect(readme, isNot(contains('--profile')));
     expect(readme, isNot(contains('--model')));

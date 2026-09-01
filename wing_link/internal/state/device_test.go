@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -75,6 +76,9 @@ func TestDeviceCredentialAcknowledgmentAuthorizesExactScopes(t *testing.T) {
 	if _, ok := store.AuthorizeDevice(token, ScopeDiagnosticsRead); ok {
 		t.Fatal("device received an ungranted scope")
 	}
+	if _, ok := store.AuthorizeDevice(token, ScopeDirectoriesRead); ok {
+		t.Fatal("existing exact scopes silently gained directory access")
+	}
 }
 
 func TestDeviceCredentialCanBeRevokedIndividually(t *testing.T) {
@@ -102,6 +106,85 @@ func TestDeviceCredentialCanBeRevokedIndividually(t *testing.T) {
 	}
 	if !store.Authorize(secondToken) {
 		t.Fatal("individual revocation removed another device")
+	}
+}
+
+func TestStageDeviceCredentialRejectsCapacityBeforeIssuingPendingToken(t *testing.T) {
+	store := newTestStateStore(t, time.Now)
+	for index := 0; index < maxControlTokens; index++ {
+		id, token, err := store.StageBearerDeviceCredential("Existing phone", []string{ScopeHealthRead})
+		if err != nil {
+			t.Fatalf("stage credential %d: %v", index, err)
+		}
+		if err := store.AcknowledgeControlToken(id, token); err != nil {
+			t.Fatalf("acknowledge credential %d: %v", index, err)
+		}
+	}
+
+	if _, _, err := store.StageBearerDeviceCredential("One too many", []string{ScopeHealthRead}); err == nil {
+		t.Fatal("credential was staged even though acknowledgment could never succeed")
+	}
+}
+
+func TestDirectoryReadScopeRemainsExact(t *testing.T) {
+	store := newTestStateStore(t, time.Now)
+	id, token, err := store.StageBearerDeviceCredential(
+		"Folder browser",
+		[]string{ScopeDirectoriesRead},
+	)
+	if err != nil || id == "" || token == "" {
+		t.Fatalf("stage: id=%q token=%q err=%v", id, token, err)
+	}
+	if _, ok := store.AuthorizeDevice(token, ScopeDirectoriesRead); ok {
+		t.Fatal("pending credential authorized before acknowledgment")
+	}
+	if err := store.AcknowledgeControlToken(id, token); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := store.AuthorizeDevice(token, ScopeDirectoriesRead); !ok {
+		t.Fatal("acknowledged directory credential was not authorized")
+	}
+
+	for _, scope := range []string{
+		"filesystem:*",
+		"projects:*",
+		"projects:read",
+		"projects:write",
+		"admin",
+	} {
+		if _, _, err := store.StageBearerDeviceCredential("Unsafe scope", []string{scope}); err == nil {
+			t.Fatalf("unsafe or premature scope %q was accepted", scope)
+		}
+	}
+
+	legacyID, legacyToken, err := store.StageControlToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.AcknowledgeControlToken(legacyID, legacyToken); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := store.AuthorizeDevice(legacyToken, ScopeHealthRead); !ok {
+		t.Fatal("legacy credential lost its existing health scope")
+	}
+	if _, ok := store.AuthorizeDevice(legacyToken, ScopeDirectoriesRead); ok {
+		t.Fatal("legacy credential silently gained directory access")
+	}
+	oldToken, err := store.IssueControlToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := store.AuthorizeDevice(oldToken, ScopeDirectoriesRead); ok {
+		t.Fatal("pre-device legacy token silently gained directory access")
+	}
+	devices, err := store.ListDevices()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, device := range devices {
+		if device.Legacy && slices.Contains(device.Scopes, ScopeDirectoriesRead) {
+			t.Fatal("legacy device inventory silently advertised directory access")
+		}
 	}
 }
 

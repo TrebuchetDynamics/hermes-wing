@@ -33,6 +33,9 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
 
+      channel.emitStaleActiveSessionChange();
+      await tester.pump();
+
       expect(tester.takeException(), isNull);
     },
   );

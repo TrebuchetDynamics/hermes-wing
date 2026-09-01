@@ -1,6 +1,36 @@
 part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelDirectChatTests() {
+  test('historical tool results stay out of the visible transcript', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              '''
+{"object":"list","data":[
+  {"id":"tool-1","session_id":"sess_1","role":"tool","content":"{\\"content\\":\\"1|internal\\",\\"total_lines\\":1}"},
+  {"id":"assistant-1","session_id":"sess_1","role":"assistant","content":"Visible answer"}
+]}
+''',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.activeMessages.map((turn) => turn.text), [
+      'Visible answer',
+    ]);
+  });
+
   test('sendText fails an SSE stream that stays open but idle', () async {
     final stream = StreamController<String>();
     addTearDown(stream.close);
@@ -337,6 +367,46 @@ void _hermesApiChannelDirectChatTests() {
         'Hello',
         'Hi there',
       ]);
+    },
+  );
+
+  test(
+    'sendText fails a completed direct stream with no assistant reply',
+    () async {
+      var messagesRequests = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => () {
+              messagesRequests += 1;
+              return _messagesFixture;
+            }(),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          postStream: (uri, headers, body) =>
+              Stream<String>.fromIterable(const [
+                'event: run.started\ndata: {}\n\n',
+                'event: message.started\ndata: {}\n\n',
+                'event: assistant.completed\ndata: {}\n\n',
+                'event: run.completed\ndata: {}\n\n',
+                'event: done\ndata: {}\n\n',
+              ]),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText('empty completed reply');
+
+      expect(messagesRequests, 2);
+      expect(
+        channel.state.errorMessage,
+        'Hermes finished without an assistant reply.',
+      );
     },
   );
 

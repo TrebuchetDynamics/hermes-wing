@@ -39,6 +39,15 @@ class VoiceSettingsScreen extends ConsumerWidget {
                   onChanged: controller.setSpeakRepliesEnabled,
                 ),
               ),
+              _ConstrainedSettingsTile(
+                child: SwitchListTile(
+                  key: const ValueKey('voice-completion-sound-enabled'),
+                  title: Text(strings.voiceCompletionSoundTitle),
+                  subtitle: Text(strings.voiceCompletionSoundSubtitle),
+                  value: settings.completionSoundEnabled,
+                  onChanged: controller.setCompletionSoundEnabled,
+                ),
+              ),
             ],
           ),
           Card(

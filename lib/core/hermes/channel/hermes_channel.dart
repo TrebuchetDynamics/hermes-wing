@@ -9,6 +9,7 @@ import 'hermes_channel_state.dart';
 export 'hermes_approval_request.dart';
 export '../models/hermes_approval_decision.dart';
 export '../models/hermes_model_assignment.dart';
+export '../models/hermes_model_options.dart';
 export '../models/hermes_profile.dart';
 export '../models/hermes_provider.dart';
 export 'hermes_channel_state.dart';
@@ -27,6 +28,9 @@ abstract interface class HermesChannel implements Listenable {
   Future<void> connect({required String baseUrl, String? apiKey});
   Future<void> disconnect();
 
+  /// Clears the client-side session selection without deleting or mutating
+  /// any Agent-owned session.
+  void clearActiveSession();
   Future<void> selectSession(String sessionId);
   Future<void> createSession({String? title});
   Future<void> renameSession({
@@ -59,8 +63,8 @@ abstract interface class HermesChannel implements Listenable {
   });
 
   /// Refreshes bounded gateway health only when exact `GET /health/detailed`
-  /// and declared/granted `gateway:read` are present. This is status only and
-  /// never changes gateway lifecycle.
+  /// is advertised and every scope declared by that endpoint is granted. This
+  /// is status only and never changes gateway lifecycle.
   Future<void> loadDetailedHealth();
 
   /// Refreshes the read-only scheduled-job inventory for the selected profile
@@ -97,6 +101,17 @@ abstract interface class HermesChannel implements Listenable {
   /// `state.modelInventory` while preserving the current assignment.
   Future<void> refreshModels();
 
+  /// Loads Hermes Agent's provider/model picker inventory for session locks.
+  Future<void> loadModelOptions({bool refresh = false});
+
+  /// Asks Hermes Agent to confirm a model for one session. This never changes
+  /// the profile-wide model assignment.
+  Future<void> lockSessionModel({
+    required String sessionId,
+    required String provider,
+    required String model,
+  });
+
   /// Assigns a model to a slot with an `If-Match` precondition on [revision].
   Future<void> assignModel({
     required String scope,
@@ -122,6 +137,14 @@ abstract interface class HermesChannel implements Listenable {
   /// transport is active, and always cancels the local stream subscription.
   void stopActiveTurn();
 
+  /// Whether the active turn has a backend run ID and an advertised steer
+  /// contract. False means a follow-up should use the normal queue.
+  bool get canSteerActiveTurn;
+
+  /// Sends plain-text guidance to the currently active Agent run. This is
+  /// available only for an advertised `run_steer` contract.
+  Future<void> steerActiveTurn(String text);
+
   /// Emits approval requests raised by an active run
   /// (`/v1/runs/{run_id}/events` `approval.request`). Empty when run
   /// transport isn't in use.
@@ -130,6 +153,7 @@ abstract interface class HermesChannel implements Listenable {
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
+    String? runId,
   });
 
   String startVoiceRun();

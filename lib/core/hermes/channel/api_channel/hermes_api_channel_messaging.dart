@@ -139,6 +139,7 @@ extension _MessagingExtension on HermesApiChannel {
     );
     turns.add(assistantTurn);
     var assistantIndex = turns.length - 1;
+    var serverAssistantReplyObserved = false;
     _setTurns(sessionId, turns, clearErrorMessage: true);
 
     final useRunTransport =
@@ -326,7 +327,14 @@ extension _MessagingExtension on HermesApiChannel {
     var terminalRunEventReceived = false;
     var terminalRunLifecycleReceived = false;
     HermesRunUsage? runUsage;
+    HermesRun? recoveredRun;
+    final canReadRunStatus =
+        runId != null &&
+        capabilities != null &&
+        HermesTransportPolicy(capabilities).supportsRunStatus;
     Timer? idleTimer;
+    Timer? runStatusTimer;
+    var runStatusProbeActive = false;
     void armIdleTimer() {
       idleTimer?.cancel();
       idleTimer = Timer(streamIdleTimeout, () {
@@ -346,6 +354,88 @@ extension _MessagingExtension on HermesApiChannel {
         completer.complete();
         final stream = _activeStreams[sessionId];
         if (stream != null) unawaited(stream.cancel());
+      });
+    }
+
+    void armRunStatusTimer() {
+      runStatusTimer?.cancel();
+      if (!canReadRunStatus ||
+          completer.isCompleted ||
+          runStatusReconcileInterval <= Duration.zero) {
+        return;
+      }
+      runStatusTimer = Timer(runStatusReconcileInterval, () async {
+        if (!isCurrentStream() ||
+            completer.isCompleted ||
+            runStatusProbeActive) {
+          return;
+        }
+        runStatusProbeActive = true;
+        try {
+          final status = await client.getRunStatus(runId!, profile: profileId);
+          if (!isCurrentStream() || completer.isCompleted) return;
+          if (status.id != runId || status.sessionId != sessionId) return;
+          recoveredRun = status;
+          runUsage ??= status.usage;
+          switch (status.status) {
+            case HermesRunLifecycle.completed:
+              final output = status.output?.trim();
+              if (output?.isNotEmpty == true) {
+                assistantTurn = assistantTurn.copyWith(
+                  text: reconcileAssistantText(
+                    streamed: assistantTurn.text,
+                    canonical: output!,
+                  ),
+                  usage: runUsage,
+                );
+                turns[assistantIndex] = assistantTurn;
+              }
+              terminalRunEventReceived = true;
+              terminalRunLifecycleReceived = true;
+              _setTurns(sessionId, List.of(turns), clearErrorMessage: true);
+              completer.complete();
+            case HermesRunLifecycle.failed:
+              streamFailed = true;
+              terminalRunEventReceived = true;
+              terminalRunLifecycleReceived = true;
+              assistantTurn = assistantTurn.copyWith(
+                status: HermesTurnStatus.failed,
+              );
+              turns[assistantIndex] = assistantTurn;
+              final detail = status.error?.trim();
+              _setTurns(
+                sessionId,
+                List.of(turns),
+                errorMessage: detail?.isNotEmpty == true
+                    ? 'Hermes run failed: ${_safeHermesError(detail!)}'
+                    : 'Hermes run failed.',
+              );
+              completer.complete();
+            case HermesRunLifecycle.cancelled:
+              streamFailed = true;
+              terminalRunEventReceived = true;
+              terminalRunLifecycleReceived = true;
+              assistantTurn = assistantTurn.copyWith(
+                status: HermesTurnStatus.failed,
+              );
+              turns[assistantIndex] = assistantTurn;
+              _setTurns(
+                sessionId,
+                List.of(turns),
+                errorMessage: 'Hermes run was cancelled.',
+              );
+              completer.complete();
+            case HermesRunLifecycle.queued:
+            case HermesRunLifecycle.running:
+            case HermesRunLifecycle.unknown:
+              break;
+          }
+        } catch (_) {
+          // The event stream remains authoritative when status probing fails.
+        } finally {
+          runStatusProbeActive = false;
+          if (!completer.isCompleted) armRunStatusTimer();
+        }
       });
     }
 
@@ -427,16 +517,7 @@ extension _MessagingExtension on HermesApiChannel {
               runId: runId,
               sessionId: sessionId,
             );
-            if (request.id.isEmpty) {
-              _setTurns(
-                sessionId,
-                List.of(turns),
-                errorMessage:
-                    'Hermes approval request was missing an approval id. The run is still active.',
-              );
-              return;
-            }
-            if (runId != null) {
+            if (runId != null && request.id.isNotEmpty) {
               _approvalResponder.registerApproval(request.id, runId);
             }
             _approvalController.add(request);
@@ -557,8 +638,10 @@ extension _MessagingExtension on HermesApiChannel {
     }
     _activeStreams[sessionId] = subscription;
     armIdleTimer();
+    armRunStatusTimer();
     await completer.future;
     idleTimer?.cancel();
+    runStatusTimer?.cancel();
     if (!isCurrentStream()) {
       return;
     }
@@ -586,12 +669,9 @@ extension _MessagingExtension on HermesApiChannel {
       }
     }
     if (!isCurrentStream()) return;
-    final canReadRunStatus =
-        runId != null &&
-        capabilities != null &&
-        HermesTransportPolicy(capabilities).supportsRunStatus;
-    HermesRun? recoveredRun;
-    if (canReadRunStatus && (streamFailed || runUsage == null)) {
+    if (canReadRunStatus &&
+        recoveredRun == null &&
+        (streamFailed || runUsage == null)) {
       try {
         final status = await client.getRunStatus(runId, profile: profileId);
         if (!isCurrentStream()) return;
@@ -601,14 +681,14 @@ extension _MessagingExtension on HermesApiChannel {
           );
         } else {
           recoveredRun = status;
-          runUsage ??= recoveredRun.usage;
-          final recoveredError = recoveredRun.error?.trim();
+          runUsage ??= status.usage;
+          final recoveredError = status.error?.trim();
           final currentError = _state.errorMessage ?? '';
           final alreadyHasServerDetail =
               currentError.startsWith('Hermes run failed:') ||
               currentError.startsWith('Hermes stream reported an error:');
           if (streamFailed &&
-              recoveredRun.status == HermesRunLifecycle.failed &&
+              status.status == HermesRunLifecycle.failed &&
               !alreadyHasServerDetail &&
               recoveredError?.isNotEmpty == true) {
             _setTurns(
@@ -618,9 +698,9 @@ extension _MessagingExtension on HermesApiChannel {
                   'Hermes run failed: ${_safeHermesError(recoveredError!)}',
             );
           }
-          if (recoveredRun.status == HermesRunLifecycle.completed ||
-              recoveredRun.status == HermesRunLifecycle.failed ||
-              recoveredRun.status == HermesRunLifecycle.cancelled) {
+          if (status.status == HermesRunLifecycle.completed ||
+              status.status == HermesRunLifecycle.failed ||
+              status.status == HermesRunLifecycle.cancelled) {
             await _releaseDetachedRunBestEffort(
               runId: runId,
               sessionId: sessionId,
@@ -725,6 +805,12 @@ extension _MessagingExtension on HermesApiChannel {
             !isCurrentStream()) {
           return;
         }
+        serverAssistantReplyObserved =
+            _serverHistoryHasAssistantReplyForCurrentTurn(
+              serverTurns,
+              message,
+              preSendTurnCount,
+            );
         if (!_serverHistoryDropsStreamedAssistant(
           serverTurns,
           assistantTurn,
@@ -751,6 +837,20 @@ extension _MessagingExtension on HermesApiChannel {
       } catch (_) {
         // Keep the locally streamed transcript; reconciliation is best-effort.
       }
+    }
+    final terminalRunFollowedActiveStatus =
+        recoveredRun?.status == HermesRunLifecycle.queued ||
+        recoveredRun?.status == HermesRunLifecycle.running;
+    if ((!useRunTransport || terminalRunFollowedActiveStatus) &&
+        !streamFailed &&
+        terminalRunEventReceived &&
+        assistantTurn.text.trim().isEmpty &&
+        !serverAssistantReplyObserved) {
+      _setTurns(
+        sessionId,
+        List.of(_recentTurns[_recentTurnKey(client, sessionId)] ?? turns),
+        errorMessage: 'Hermes finished without an assistant reply.',
+      );
     }
   }
 
@@ -1434,6 +1534,7 @@ extension _MessagingExtension on HermesApiChannel {
       assistantIndex = turns.length - 1;
     }
     var assistantTurn = turns[assistantIndex];
+    final toolTurnIndexByCallId = <String, int>{};
     _activeRunIds[sessionId] = runId;
     _setTurns(sessionId, List.of(turns), clearErrorMessage: true);
 
@@ -1441,6 +1542,63 @@ extension _MessagingExtension on HermesApiChannel {
     _activeStreamCompleters[sessionId] = completer;
     var terminal = false;
     var successful = false;
+    Timer? idleTimer;
+    Timer? runStatusTimer;
+    var runStatusProbeActive = false;
+
+    void armIdleTimer() {
+      idleTimer?.cancel();
+      idleTimer = Timer(streamIdleTimeout, () {
+        if (!isCurrentStream() || completer.isCompleted) return;
+        _setTurns(
+          sessionId,
+          List.of(turns),
+          errorMessage: 'Hermes run event stream timed out while reconnecting.',
+        );
+        completer.complete();
+      });
+    }
+
+    void armRunStatusTimer() {
+      runStatusTimer?.cancel();
+      if (completer.isCompleted ||
+          runStatusReconcileInterval <= Duration.zero) {
+        return;
+      }
+      runStatusTimer = Timer(runStatusReconcileInterval, () async {
+        if (!isCurrentStream() ||
+            completer.isCompleted ||
+            runStatusProbeActive) {
+          return;
+        }
+        runStatusProbeActive = true;
+        try {
+          final status = await client.getRunStatus(runId, profile: profileId);
+          if (!isCurrentStream() || completer.isCompleted) return;
+          if (status.id != runId || status.sessionId != sessionId) return;
+          switch (status.status) {
+            case HermesRunLifecycle.completed:
+              terminal = true;
+              successful = true;
+              if (!completer.isCompleted) completer.complete();
+            case HermesRunLifecycle.failed:
+            case HermesRunLifecycle.cancelled:
+              terminal = true;
+              if (!completer.isCompleted) completer.complete();
+            case HermesRunLifecycle.queued:
+            case HermesRunLifecycle.running:
+            case HermesRunLifecycle.unknown:
+              break;
+          }
+        } catch (_) {
+          // Reattachment remains conservative when status probing fails.
+        } finally {
+          runStatusProbeActive = false;
+          if (!completer.isCompleted) armRunStatusTimer();
+        }
+      });
+    }
+
     late final StreamSubscription<HermesStreamEvent> subscription;
     try {
       subscription = client
@@ -1455,11 +1613,56 @@ extension _MessagingExtension on HermesApiChannel {
               )) {
                 return;
               }
+              armIdleTimer();
               if (event.isDone) return;
               final delta = _streamDelta(event);
               if (delta != null && delta.isNotEmpty) {
                 assistantTurn = assistantTurn.appendDelta(delta);
                 turns[assistantIndex] = assistantTurn;
+                _setTurns(sessionId, List.of(turns));
+                return;
+              }
+              if (event.name == 'reasoning.available') {
+                if (_applyReasoningEvent(
+                  sessionId: sessionId,
+                  runId: runId,
+                  event: event,
+                  turns: turns,
+                  insertBefore: assistantIndex,
+                )) {
+                  assistantIndex = turns.length - 1;
+                  _setTurns(sessionId, List.of(turns));
+                }
+                return;
+              }
+              if (_isToolEvent(event.name)) {
+                final closesAssistantSegment = assistantTurn.text
+                    .trim()
+                    .isNotEmpty;
+                _applyToolEvent(
+                  sessionId: sessionId,
+                  runId: runId,
+                  event: event,
+                  turns: turns,
+                  toolTurnIndexByCallId: toolTurnIndexByCallId,
+                  insertBefore: closesAssistantSegment
+                      ? assistantIndex + 1
+                      : assistantIndex,
+                );
+                if (closesAssistantSegment) {
+                  turns[assistantIndex] = assistantTurn.copyWith(
+                    status: HermesTurnStatus.completed,
+                  );
+                  assistantTurn = HermesChatTurn(
+                    id: '${assistantTurn.id}-segment-${toolTurnIndexByCallId.length}',
+                    sessionId: sessionId,
+                    author: HermesTurnAuthor.assistant,
+                    createdAt: DateTime.now(),
+                    status: HermesTurnStatus.streaming,
+                  );
+                  turns.add(assistantTurn);
+                }
+                assistantIndex = turns.length - 1;
                 _setTurns(sessionId, List.of(turns));
                 return;
               }
@@ -1469,17 +1672,10 @@ extension _MessagingExtension on HermesApiChannel {
                   runId: runId,
                   sessionId: sessionId,
                 );
-                if (request.id.isEmpty) {
-                  _setTurns(
-                    sessionId,
-                    List.of(turns),
-                    errorMessage:
-                        'Hermes approval request was missing an approval id. The run is still active.',
-                  );
-                } else {
+                if (request.id.isNotEmpty) {
                   _approvalResponder.registerApproval(request.id, runId);
-                  _approvalController.add(request);
                 }
+                _approvalController.add(request);
                 return;
               }
               if (_isSuccessfulTerminalRunEvent(event.name)) {
@@ -1510,7 +1706,7 @@ extension _MessagingExtension on HermesApiChannel {
                 errorMessage:
                     'Hermes run event stream failed while reconnecting: ${_safeHermesError(error)}',
               );
-              if (!completer.isCompleted) completer.complete();
+              armIdleTimer();
             },
             onDone: () {
               if (!isCurrentStream() || terminal) return;
@@ -1518,9 +1714,9 @@ extension _MessagingExtension on HermesApiChannel {
                 sessionId,
                 List.of(turns),
                 errorMessage:
-                    'Hermes run is still active after its event stream closed. Reconnect before retrying.',
+                    'Hermes run event stream closed; checking Hermes for its current status.',
               );
-              if (!completer.isCompleted) completer.complete();
+              armIdleTimer();
             },
             cancelOnError: true,
           );
@@ -1539,7 +1735,11 @@ extension _MessagingExtension on HermesApiChannel {
       return;
     }
     _activeStreams[sessionId] = subscription;
+    armIdleTimer();
+    armRunStatusTimer();
     await completer.future;
+    idleTimer?.cancel();
+    runStatusTimer?.cancel();
     if (!isCurrentStream()) return;
     if (terminal) unawaited(subscription.cancel());
     if (identical(_activeStreams[sessionId], subscription)) {

@@ -1,6 +1,7 @@
 package approval
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -40,7 +41,7 @@ func TestApprovalIsDigestBoundOneUseAndPersistent(t *testing.T) {
 	request := Request{
 		DeviceID: "cred_phone", DeviceName: "Pixel", Operation: OpProfileDelete,
 		Route: "/v1/profiles/qa", PayloadDigest: strings.Repeat("a", 64),
-		Summary: "Delete profile qa",
+		IdempotencyKey: "delete-qa-1", Summary: "Delete profile qa",
 	}
 	approval, err := store.Request(request, TierSensitive, 5*time.Minute)
 	if err != nil {
@@ -54,14 +55,14 @@ func TestApprovalIsDigestBoundOneUseAndPersistent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	consumed, err := reopened.Consume(request.DeviceID, request.Route, request.PayloadDigest)
+	consumed, err := reopened.Consume(request.DeviceID, request.Route, request.PayloadDigest, request.IdempotencyKey)
 	if err != nil || consumed.State != StateConsumed {
 		t.Fatalf("consume = %#v, %v", consumed, err)
 	}
-	if _, err := reopened.Consume(request.DeviceID, request.Route, request.PayloadDigest); !errors.Is(err, ErrApprovalRequired) {
+	if _, err := reopened.Consume(request.DeviceID, request.Route, request.PayloadDigest, request.IdempotencyKey); !errors.Is(err, ErrApprovalRequired) {
 		t.Fatalf("second consume error = %v", err)
 	}
-	if _, err := reopened.Consume(request.DeviceID, request.Route, strings.Repeat("b", 64)); !errors.Is(err, ErrApprovalRequired) {
+	if _, err := reopened.Consume(request.DeviceID, request.Route, strings.Repeat("b", 64), request.IdempotencyKey); !errors.Is(err, ErrApprovalRequired) {
 		t.Fatalf("changed digest error = %v", err)
 	}
 	info, err := os.Stat(path)
@@ -77,7 +78,8 @@ func TestRejectedApprovalCanBeReplacedByAOneUseHostDecision(t *testing.T) {
 	}
 	request := Request{
 		DeviceID: "cred_phone", DeviceName: "Pixel", Operation: OpProfileDelete,
-		Route: "DELETE /v1/profiles/qa", PayloadDigest: strings.Repeat("e", 64), Summary: "Delete profile qa",
+		Route: "DELETE /v1/profiles/qa", PayloadDigest: strings.Repeat("e", 64),
+		IdempotencyKey: "delete-qa-2", Summary: "Delete profile qa",
 	}
 	first, err := store.Request(request, TierSensitive, time.Minute)
 	if err != nil {
@@ -93,8 +95,66 @@ func TestRejectedApprovalCanBeReplacedByAOneUseHostDecision(t *testing.T) {
 	if _, err := store.Decide(second.ID, true); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := store.Consume(request.DeviceID, request.Route, request.PayloadDigest); err != nil {
+	if _, err := store.Consume(request.DeviceID, request.Route, request.PayloadDigest, request.IdempotencyKey); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestApprovalBindsDeduplicationAndConsumptionToIdempotencyKey(t *testing.T) {
+	store, err := Open(filepath.Join(t.TempDir(), "approvals.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := Request{
+		DeviceID: "cred_phone", DeviceName: "Pixel", Operation: OpProfileDelete,
+		Route: "DELETE /v1/profiles/qa", PayloadDigest: strings.Repeat("f", 64),
+		IdempotencyKey: "delete-exact-1", Summary: "Delete profile qa",
+	}
+	first, err := store.Request(request, TierSensitive, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := request
+	changed.IdempotencyKey = "delete-exact-2"
+	second, err := store.Request(changed, TierSensitive, time.Minute)
+	if err != nil || second.ID == first.ID {
+		t.Fatalf("changed-key approval=%#v err=%v", second, err)
+	}
+	if _, err := store.Decide(first.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Consume(request.DeviceID, request.Route, request.PayloadDigest, changed.IdempotencyKey); !errors.Is(err, ErrApprovalRequired) {
+		t.Fatalf("changed key consumed approval: %v", err)
+	}
+	if _, err := store.Consume(request.DeviceID, request.Route, request.PayloadDigest, request.IdempotencyKey); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLegacyApprovalLoadsButCannotAuthorizeKeyedMutation(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "approvals.json")
+	now := time.Now().UTC()
+	payload, err := json.Marshal(persistedWire{Schema: approvalSchema, Approvals: []Approval{{
+		ID: "appr_legacy", Tier: TierSensitive, State: StateApproved,
+		CreatedAt: now.Unix(), ExpiresAt: now.Add(time.Minute).Unix(),
+		Request: Request{
+			DeviceID: "cred_phone", DeviceName: "Pixel", Operation: OpProfileDelete,
+			Route: "DELETE /v1/profiles/qa", PayloadDigest: strings.Repeat("a", 64),
+			Summary: "Legacy delete",
+		},
+	}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, payload, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store, err := Open(path)
+	if err != nil {
+		t.Fatalf("legacy load failed: %v", err)
+	}
+	if _, err := store.Consume("cred_phone", "DELETE /v1/profiles/qa", strings.Repeat("a", 64), "delete-new-1"); !errors.Is(err, ErrApprovalRequired) {
+		t.Fatalf("legacy approval authorized keyed request: %v", err)
 	}
 }
 
@@ -109,8 +169,9 @@ func TestApprovalExpiresAndStoredMetadataIsBoundedAndRedacted(t *testing.T) {
 	approval, err := store.Request(Request{
 		DeviceID: "cred_phone", DeviceName: strings.Repeat("P", 200),
 		Operation: OpSetupInstall, Route: "/v1/setup",
-		PayloadDigest: strings.Repeat("c", 64),
-		Summary:       "token=wlc_secret " + strings.Repeat("x", 500),
+		PayloadDigest:  strings.Repeat("c", 64),
+		IdempotencyKey: "setup-install-1",
+		Summary:        "token=wlc_secret " + strings.Repeat("x", 500),
 	}, TierTrust, time.Minute)
 	if err != nil {
 		t.Fatal(err)

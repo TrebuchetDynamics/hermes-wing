@@ -21,7 +21,8 @@ Usage:
   ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--setup] [--prefix DIR]
 
 By default, builds and installs the local Go wing_link package, then installs or
-adopts Hermes Agent and starts its gateway. Release mode downloads an alpha Wing
+adopts Hermes Agent and starts its gateway. Provider/model configuration remains
+a separate interactive `hermes setup` step. Release mode downloads an alpha Wing
 Link binary and verifies it against its published checksum. Supplying immutable
 release metadata verifies both the expected SHA-256 and exact byte size
 out-of-band. The binary is always validated and atomically installed.
@@ -67,16 +68,28 @@ if [[ "$release" == true && ( -n "$tag" || -n "$expected_sha256" || -n "$expecte
 fi
 
 termux=false
-if [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]]; then
+if [[ -n "${TERMUX_VERSION:-}" || "${PREFIX:-}" == /data/data/com.termux/* ]]; then
+  [[ -n "${TERMUX_VERSION:-}" && -n "${PREFIX:-}" ]] || {
+    echo "Termux setup requires TERMUX_VERSION and PREFIX." >&2
+    exit 2
+  }
   termux=true
   [[ -n "$install_dir" ]] || install_dir="${PREFIX}/bin"
 else
   [[ -n "$install_dir" ]] || install_dir="${WING_LINK_INSTALL_DIR:-$HOME/.local/bin}"
 fi
 
-if [[ "$quick_setup" == true && ( "$termux" == true || "$(uname -s)" != Linux ) ]]; then
-  echo "--setup currently requires a Linux host with a systemd user session." >&2
-  echo "Wing Link binary installation is available here; guided Termux hosting is not yet qualified." >&2
+if [[ "$termux" == true ]]; then
+  [[ "${PREFIX}" == "/data/data/com.termux/files/usr" ]] || {
+    echo "--setup requires the canonical Termux prefix." >&2
+    exit 2
+  }
+  [[ "$install_dir" == "${PREFIX}/bin" ]] || {
+    echo "Wing Link installs only to the Termux prefix." >&2
+    exit 2
+  }
+elif [[ "$quick_setup" == true && "$(uname -s)" != Linux ]]; then
+  echo "--setup currently requires Linux or Android/Termux." >&2
   exit 2
 fi
 
@@ -89,8 +102,48 @@ run_quick_setup() {
     echo "Retry: $binary setup" >&2
     return 1
   fi
-  printf '\nHermes runtime is ready for provider setup.\n'
-  printf 'Next: run hermes setup to choose a provider and model, then pair Hermes Wing.\n'
+  if [[ "$termux" == true ]]; then
+    local runtime_dir="${HOME}/.local/state/hermes-wing-link"
+    local log_file="${runtime_dir}/wing-link.log"
+    [[ ! -L "$runtime_dir" ]] || { echo "Wing Link runtime directory must not be a symlink." >&2; return 1; }
+    mkdir -p "$runtime_dir"
+    [[ -d "$runtime_dir" && ! -L "$runtime_dir" ]] || { echo "Wing Link runtime directory is unsafe." >&2; return 1; }
+    chmod 0700 "$runtime_dir"
+    [[ ! -L "$log_file" ]] || { echo "Wing Link log file must not be a symlink." >&2; return 1; }
+    touch "$log_file"
+    [[ -f "$log_file" && ! -L "$log_file" ]] || { echo "Wing Link log file is unsafe." >&2; return 1; }
+    chmod 0600 "$log_file"
+    if ! curl --fail --silent --show-error --connect-timeout 2 --max-time 3 \
+      http://127.0.0.1:8654/healthz >/dev/null 2>&1; then
+      command -v nohup >/dev/null 2>&1 || { echo "nohup is required." >&2; return 1; }
+      nohup "$binary" serve --listen 127.0.0.1:8654 >>"$log_file" 2>&1 &
+      local health_attempt=0
+      while (( health_attempt < 120 )); do
+        if curl --fail --silent --show-error --connect-timeout 2 --max-time 3 \
+          http://127.0.0.1:8654/healthz >/dev/null 2>&1; then
+          break
+        fi
+        health_attempt=$((health_attempt + 1))
+        sleep 0.25
+      done
+    fi
+    curl --fail --silent --show-error --connect-timeout 2 --max-time 3 \
+      http://127.0.0.1:8654/healthz >/dev/null 2>&1 || {
+      echo "Wing Link did not become healthy on loopback." >&2
+      return 1
+    }
+    printf '\nHermes and Wing Link are ready on this phone.\n'
+    WING_LINK_SERVICE=external "$binary" pair --local --same-device
+    return
+  fi
+  printf '\nHermes Agent gateway is running.\n'
+  printf 'Required next step (unless already configured): hermes setup\n'
+  printf 'Choose a provider and model in that Hermes wizard before pairing.\n'
+  printf 'Same host: wing-link pair --local\n'
+  printf 'Android with Tailscale: wing-link pair\n'
+  printf 'Other VPNs: bind the Hermes API to its trusted address and set WING_HERMES_URL.\n'
+  printf 'Pairing stays in the foreground until Wing confirms; leave that terminal open.\n'
+  printf 'Guide: docs/runbooks/android-hermes-setup.md\n'
 }
 
 run_version_probe() {
@@ -240,6 +293,21 @@ if [[ "$auto_release" == false && ( -z "$tag" || -z "$expected_sha256" || -z "$e
   echo "--tag, --sha256, and --size must be supplied together." >&2
   exit 2
 fi
+if [[ "$auto_release" == false ]]; then
+  expected_sha256="${expected_sha256,,}"
+  [[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
+    echo "--sha256 must be exactly 64 hexadecimal characters." >&2
+    exit 2
+  }
+  [[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
+    echo "--size must be the exact positive asset byte count." >&2
+    exit 2
+  }
+  (( expected_size <= 52428800 )) || {
+    echo "--size exceeds the 50 MiB Wing Link asset limit." >&2
+    exit 2
+  }
+fi
 command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
 command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 1; }
 [[ "$install_dir" == /* ]] || { echo "Install prefix must be absolute." >&2; exit 2; }
@@ -260,18 +328,6 @@ fi
   echo "--tag must be an alpha release tag." >&2
   exit 2
 }
-if [[ "$auto_release" == false ]]; then
-  expected_sha256="${expected_sha256,,}"
-  [[ "$expected_sha256" =~ ^[a-f0-9]{64}$ ]] || {
-    echo "--sha256 must be exactly 64 hexadecimal characters." >&2
-    exit 2
-  }
-  [[ "$expected_size" =~ ^[1-9][0-9]*$ ]] || {
-    echo "--size must be the exact positive asset byte count." >&2
-    exit 2
-  }
-fi
-
 machine="$(uname -m)"
 case "$machine" in
   x86_64|amd64) architecture="amd64" ;;

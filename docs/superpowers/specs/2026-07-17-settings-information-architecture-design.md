@@ -9,14 +9,14 @@ Make Settings short enough to scan on a phone while keeping gateway management a
 
 ## Decisions
 
-| Decision | Choice |
-|---|---|
-| Structure | Short overview plus dedicated **Voice & speech** and **Diagnostics** pages |
-| Overview priorities | Saved gateways, connection management, Continuous voice, Speak replies |
-| Advanced controls | Progressive disclosure inside the Voice & speech page |
-| Appearance section | Remove it; it currently describes the UI but provides no setting |
-| Debug controls | Show only in builds where their existing feature flag is enabled |
-| Navigation | `/settings`, `/settings/voice`, and `/settings/diagnostics` inside the existing app shell |
+| Decision            | Choice                                                                                    |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| Structure           | Short overview plus dedicated **Voice & speech** and **Diagnostics** pages                |
+| Overview priorities | Saved gateways, connection management, Continuous voice, Speak replies                    |
+| Advanced controls   | Progressive disclosure inside the Voice & speech page                                     |
+| Appearance section  | Remove it; it currently describes the UI but provides no setting                          |
+| Debug controls      | Show only in builds where their existing feature flag is enabled                          |
+| Navigation          | `/settings`, `/settings/voice`, and `/settings/diagnostics` inside the existing app shell |
 
 ## Settings overview
 

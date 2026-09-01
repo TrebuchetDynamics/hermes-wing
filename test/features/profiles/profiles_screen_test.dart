@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -156,6 +157,10 @@ void main() {
   testWidgets(
     'Wing Link profiles remain manageable when Agent omits profile endpoints',
     (tester) async {
+      tester.view.physicalSize = const Size(800, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final channel = FakeHermesChannel(
         status: HermesConnectionStatus.disconnected,
       );
@@ -168,6 +173,7 @@ void main() {
             baseUrl: 'https://a.example:8642',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
         ],
         loader: FakeGatewaySummaryLoader({
@@ -177,7 +183,12 @@ void main() {
       );
       await directory.refresh();
       await directory.activateGateway('alpha');
-      var wingLinkCalls = 0;
+      final wingLinkCalls = <String>[];
+      var directoryCapabilities = const [
+        'directories.roots.read',
+        'directories.children.read',
+      ];
+      var directoryScopes = const ['directories:read'];
 
       await tester.pumpWidget(
         _profilesTestApp(
@@ -191,21 +202,179 @@ void main() {
               }) => WingLinkClient(
                 origin: origin,
                 token: token,
-                get: (_, _) async {
-                  wingLinkCalls++;
-                  return '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''';
+                get: (uri, _) async {
+                  wingLinkCalls.add(uri.path);
+                  return switch (uri.path) {
+                    '/v1/profiles' =>
+                      '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
+                    '/meta' => jsonEncode({
+                      'protocol_generation': 2,
+                      'minimum_protocol_generation': 1,
+                      'supported_protocol_generations': [1, 2],
+                      'version': 'test',
+                      'host_fingerprint': 'sha256/test',
+                      'capabilities': directoryCapabilities,
+                    }),
+                    '/v2/devices/self' => jsonEncode({
+                      'device_id': 'cred_phone',
+                      'name': 'Phone',
+                      'scopes': directoryScopes,
+                      'created_at': '2026-08-30T00:00:00Z',
+                      'legacy': false,
+                    }),
+                    '/v2/directories' => '{"directories":[]}',
+                    _ => throw StateError('unexpected GET $uri'),
+                  };
                 },
               ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(wingLinkCalls, 1);
+      expect(wingLinkCalls, ['/v1/profiles']);
       expect(find.text('Profiles unavailable'), findsNothing);
       expect(find.text('Link'), findsOneWidget);
       expect(find.text('New Profile'), findsOneWidget);
+      expect(find.text('Browse folders'), findsOneWidget);
+
+      final browseFolders = find.byKey(
+        const ValueKey('agent-browse-folders-link'),
+      );
+      await tester.scrollUntilVisible(browseFolders, 200);
+      await tester.tap(browseFolders);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Approved folders'), findsOneWidget);
+      expect(
+        find.textContaining('wing-link directories grant PATH'),
+        findsOneWidget,
+      );
+      expect(wingLinkCalls, [
+        '/v1/profiles',
+        '/meta',
+        '/v2/devices/self',
+        '/v2/directories',
+      ]);
+
+      await tester.tap(find.text('Close').last);
+      await tester.pumpAndSettle();
+
+      for (final capabilities in [
+        const ['directories.roots.read'],
+        const ['directories.children.read'],
+      ]) {
+        directoryCapabilities = capabilities;
+        directoryScopes = const ['directories:read'];
+        wingLinkCalls.clear();
+        await tester.tap(browseFolders);
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('pair again with directory access'),
+          findsOneWidget,
+        );
+        expect(wingLinkCalls, ['/meta']);
+        await tester.pump(const Duration(seconds: 5));
+      }
+
+      directoryCapabilities = const [
+        'directories.roots.read',
+        'directories.children.read',
+      ];
+      directoryScopes = const [];
+      wingLinkCalls.clear();
+      await tester.tap(browseFolders);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('pair again with directory access'),
+        findsOneWidget,
+      );
+      expect(wingLinkCalls, ['/meta', '/v2/devices/self']);
+      expect(wingLinkCalls, isNot(contains('/v2/directories')));
     },
   );
+
+  testWidgets('late same-gateway Wing Link inventory cannot replace a newer load', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.disconnected,
+    );
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://a.example:8642',
+          wingLinkOrigin: 'https://a.example:8654',
+          wingLinkToken: 'wlc-secret',
+        ),
+        HermesEndpointConfig(
+          id: 'beta',
+          label: 'Beta',
+          baseUrl: 'https://b.example:8642',
+          wingLinkOrigin: 'https://b.example:8654',
+          wingLinkToken: 'wlc-secret',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+        'beta': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    final alphaResponses = [Completer<String>(), Completer<String>()];
+    var alphaCalls = 0;
+
+    await tester.pumpWidget(
+      _profilesTestApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder:
+            ({required origin, required token, required hostFingerprint}) =>
+                WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (_, _) {
+                    if (origin.host == 'a.example') {
+                      return alphaResponses[alphaCalls++].future;
+                    }
+                    return Future.value('{"profiles":[]}');
+                  },
+                ),
+      ),
+    );
+    await tester.pump();
+    expect(alphaCalls, 1);
+
+    await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
+    await tester.pump();
+    await tester.tap(find.text('Beta').last);
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
+    await tester.pump();
+    await tester.tap(find.text('Alpha').last);
+    await tester.pump();
+    await tester.pump();
+    expect(alphaCalls, 2);
+
+    alphaResponses[1].complete(
+      '''{"profiles":[{"id":"fresh","name":"Fresh","topology_revision":"fresh-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Fresh'), findsOneWidget);
+
+    alphaResponses[0].complete(
+      '''{"profiles":[{"id":"stale","name":"Stale","topology_revision":"stale-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fresh'), findsOneWidget);
+    expect(find.text('Stale'), findsNothing);
+  });
 
   testWidgets(
     'Wing Link rows distinguish enrolled endpoints from inventory-only profiles',
@@ -223,6 +392,7 @@ void main() {
             apiKey: 'default-secret',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
           HermesEndpointConfig(
             id: 'link-endpoint',
@@ -231,6 +401,7 @@ void main() {
             apiKey: 'link-secret',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
         ],
         loader: FakeGatewaySummaryLoader({
@@ -292,6 +463,7 @@ void main() {
             apiKey: 'default-secret',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
           HermesEndpointConfig(
             id: 'link-endpoint',
@@ -300,6 +472,7 @@ void main() {
             apiKey: 'link-secret',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
         ],
         loader: FakeGatewaySummaryLoader({
@@ -345,6 +518,195 @@ void main() {
       expect(directory.activeContactId?.gatewayId, 'link-endpoint');
     },
   );
+
+  testWidgets(
+    'Wing Link profile approval retries the same body and idempotency key',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://a.example:8642',
+            wingLinkOrigin: 'https://a.example:8654',
+            wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+      final requestBodies = <String>[];
+      final idempotencyKeys = <String>[];
+
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async => '{"profiles":[]}',
+                post: (uri, headers, body) async {
+                  requestBodies.add(body);
+                  idempotencyKeys.add(headers['Idempotency-Key']!);
+                  if (requestBodies.length == 1) {
+                    return jsonEncode({
+                      'error': {'code': 'approval_required'},
+                      'approval_id': 'appr_pending',
+                      'operation_id': 'op_pending',
+                      'expires_at':
+                          DateTime.now()
+                              .add(const Duration(minutes: 1))
+                              .millisecondsSinceEpoch ~/
+                          1000,
+                    });
+                  }
+                  return '{"profile":{"id":"readyqa","name":"readyqa","revision":"rev-1"}}';
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('New Profile'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Profile name'),
+        'readyqa',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Provider'),
+        'openrouter',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Model'),
+        'openai/gpt-5.2',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'New provider credential'),
+        'write-only-fixture',
+      );
+      final create = find.widgetWithText(FilledButton, 'Create');
+      await tester.ensureVisible(create);
+      await tester.tap(create);
+      await tester.pump();
+      final retry = find.text('Retry approved setup');
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+
+      expect(requestBodies, hasLength(2));
+      expect(requestBodies.last, requestBodies.first);
+      expect(idempotencyKeys, hasLength(2));
+      expect(idempotencyKeys.last, idempotencyKeys.first);
+      expect(jsonDecode(requestBodies.first), {
+        'name': 'readyqa',
+        'provider': 'openrouter',
+        'model': 'openai/gpt-5.2',
+        'provider_api_key': 'write-only-fixture',
+      });
+      expect(find.text('write-only-fixture'), findsNothing);
+    },
+  );
+
+  testWidgets('successful create closes when authoritative reload fails', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.disconnected,
+    );
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://a.example:8642',
+          wingLinkOrigin: 'https://a.example:8654',
+          wingLinkToken: 'wlc-secret',
+          wingLinkHostFingerprint: 'sha256/reviewed-pin',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    var gets = 0;
+    var posts = 0;
+
+    await tester.pumpWidget(
+      _profilesTestApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder:
+            ({
+              required origin,
+              required token,
+              required hostFingerprint,
+            }) => WingLinkClient(
+              origin: origin,
+              token: token,
+              get: (_, _) async {
+                gets++;
+                if (gets == 1) return '{"profiles":[]}';
+                throw StateError('response lost');
+              },
+              post: (_, _, _) async {
+                posts++;
+                return '{"profile":{"id":"readyqa","name":"readyqa","revision":"rev-1"}}';
+              },
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('New Profile'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Profile name'),
+      'readyqa',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Provider'),
+      'openrouter',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Model'),
+      'openai/gpt-5.2',
+    );
+    final create = find.widgetWithText(FilledButton, 'Create');
+    await tester.ensureVisible(create);
+    await tester.tap(create);
+    await tester.pumpAndSettle();
+
+    expect(posts, 1);
+    expect(gets, 2);
+    expect(find.text('Create profile'), findsNothing);
+    expect(find.text('Could not load local profiles.'), findsOneWidget);
+  });
 
   testWidgets('Wing Link stale mutation refreshes inventory before retry', (
     tester,
@@ -487,6 +849,7 @@ void main() {
             baseUrl: 'https://a.example:8642',
             wingLinkOrigin: 'https://a.example:8654',
             wingLinkToken: 'wlc-secret',
+            wingLinkHostFingerprint: 'sha256/reviewed-pin',
           ),
         ],
         loader: FakeGatewaySummaryLoader({
@@ -716,6 +1079,42 @@ void main() {
     expect(
       find.descendant(of: selectedCard, matching: find.text('Hermes One')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('uses a compact two-column profile layout on wide screens', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Hermes One', revision: 'd'),
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+        HermesProfile(
+          id: 'writer',
+          displayName: 'Writing Agent',
+          revision: 'w',
+        ),
+      ],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_profilesTestApp(channel));
+    await tester.pumpAndSettle();
+
+    final cards = find.byType(Card);
+    expect(cards, findsNWidgets(3));
+    expect(
+      tester.getTopLeft(cards.at(1)).dx,
+      greaterThan(tester.getTopLeft(cards.at(0)).dx),
+    );
+    expect(
+      tester.getTopLeft(cards.at(2)).dy,
+      greaterThan(tester.getTopLeft(cards.at(0)).dy),
     );
   });
 

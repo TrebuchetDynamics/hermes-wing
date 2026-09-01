@@ -70,6 +70,7 @@ func bootstrapCommand(stdout, stderr io.Writer, args []string) int {
 		}
 		return 0
 	}
-	_, _ = fmt.Fprintln(stdout, "Hermes Agent is ready.")
+	_, _ = fmt.Fprintln(stdout, "Hermes Agent gateway is running.")
+	_, _ = fmt.Fprintln(stdout, "Provider/model setup is separate: run hermes setup before pairing if this host is not configured yet.")
 	return 0
 }

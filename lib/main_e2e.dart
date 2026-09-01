@@ -1,6 +1,7 @@
 // E2E test entry point for Playwright testing.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,9 @@ external set _wingE2EHermesSendText(JSFunction callback);
 
 @JS('wingE2EHermesSubmitVoice')
 external set _wingE2EHermesSubmitVoice(JSFunction callback);
+
+@JS('wingE2EHermesStateSummary')
+external set _wingE2EHermesStateSummary(JSFunction callback);
 
 @JS('wingE2EReduceMotion')
 external set _wingE2EReduceMotion(JSFunction callback);
@@ -55,6 +59,31 @@ void main() {
       confidence: 0.95,
     );
     hermesChannel.submitVoiceRun(id);
+  }).toJS;
+  _wingE2EHermesStateSummary = (() {
+    final messages = hermesChannel.state.activeMessages;
+    final last = messages.isEmpty ? null : messages.last;
+    final error = hermesChannel.state.errorMessage?.toLowerCase();
+    final errorKind = error == null
+        ? null
+        : error.contains('run failed')
+        ? 'run_failed'
+        : error.contains('without an assistant reply')
+        ? 'empty_reply'
+        : error.contains('still active')
+        ? 'still_active'
+        : error.contains('timed out')
+        ? 'timeout'
+        : error.contains('stream')
+        ? 'stream'
+        : 'other';
+    return jsonEncode({
+      'has_error': error != null,
+      'error_kind': errorKind,
+      'last_turn_status': last?.status.name,
+      'last_turn_text_length': last?.text.length ?? 0,
+      'has_unreconciled_run': hermesChannel.state.hasUnreconciledRun,
+    }).toJS;
   }).toJS;
   _wingE2EReduceMotion = (() {
     reduceMotion.value = true;

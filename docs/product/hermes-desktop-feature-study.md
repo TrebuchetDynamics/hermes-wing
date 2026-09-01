@@ -4,9 +4,11 @@ This is a source-backed inventory of the sibling `../hermes-desktop` application
 
 ## Study baseline
 
-- Repository: sibling `../hermes-desktop`
-- Version: `0.7.3`
-- Studied commit: `8da8d212abd40b449d55957b2cff9a220797ff71`
+- Repository: ignored local reference checkout `hermes-desktop/`
+- Version: `0.7.4`
+- Refreshed commit: `3aaadb01076a749d7f9389dca4ffce081cf8ebaa`
+- Previous study commit: `8da8d212abd40b449d55957b2cff9a220797ff71`
+- Refresh range: 68 commits, reviewed locally on 2026-08-06.
 - Existing frozen Wing planning baseline: `d31e52e85449b6effcfd4d037b7517541c8fadf2`
 - Architecture: Electron main process + context-isolated preload bridge + React renderer (`../hermes-desktop/src/main/app/start.ts:25`, `../hermes-desktop/src/preload/index.d.ts:229`, `../hermes-desktop/src/renderer/src/App.tsx:21`)
 
@@ -14,15 +16,52 @@ The studied checkout is newer than the frozen planning baseline. Its notable pos
 
 ## How to read this inventory
 
-| Disposition | Meaning for Hermes Wing |
-| --- | --- |
-| **Remote outcome** | A mobile-safe outcome Wing may provide through an advertised Hermes Agent contract. |
-| **Contract-gated** | Do not expose until the selected gateway advertises the exact operation and required scope. |
-| **Host-only** | Requires a supported desktop host adapter; exclude from Android/web rather than emulating it. |
-| **Account-service** | Belongs to the optional Hermes One account service, independently of Hermes Agent. |
-| **Presentation** | Reuse the outcome and interaction model, not necessarily Desktop's rendering technology. |
+| Disposition         | Meaning for Hermes Wing                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| **Remote outcome**  | A mobile-safe outcome Wing may provide through an advertised Hermes Agent contract.           |
+| **Contract-gated**  | Do not expose until the selected gateway advertises the exact operation and required scope.   |
+| **Host-only**       | Requires a supported desktop host adapter; exclude from Android/web rather than emulating it. |
+| **Account-service** | Belongs to the optional Hermes One account service, independently of Hermes Agent.            |
+| **Presentation**    | Reuse the outcome and interaction model, not necessarily Desktop's rendering technology.      |
 
 Hermes Desktop often implements domain operations by invoking the Hermes CLI or directly reading `~/.hermes`, YAML, JSON, SQLite, PID files, and SSH-host files. Hermes Wing must not copy those mechanisms. Hermes Agent remains authoritative.
+
+## Refresh delta: 68 commits reviewed
+
+The refresh range is mostly UI polish and host integration. The changes below
+are the ones relevant to Wing parity; Electron/CLI implementation remains
+reference-only.
+
+- **Chat model picker:** current Desktop adds a searchable model picker shell
+  and keeps the selected provider/model as a per-session override. Wing now
+  uses the Agent-advertised `/api/model/options` inventory and the
+  backend-confirmed `/api/sessions/{session_id}/model` lock instead of copying
+  Desktop's local override store.
+- **Reasoning controls:** Desktop adds a keyboard- and pointer-operable
+  Faster-to-Smarter effort rail. Wing should expose an equivalent only when an
+  exact reasoning input contract is advertised; its existing bounded reasoning
+  cards remain the safe default.
+- **Session history:** Desktop adds persisted chat/automation/source filters,
+  richer metadata, and bulk-selection polish. Wing can add presentation-only
+  filters over its Agent-owned session list, but must not create a SQLite cache
+  or infer automation state from arbitrary source strings without a contract.
+- **Remote folder picker:** Desktop's picker now has clearer loading/recovery
+  behavior. Wing's approved-root, opaque-handle browser provides the stronger
+  remote boundary: folders only, no host paths or file entries.
+- **Provider, MCP, OAuth, web-preview, Docker/SSH, and Office updates:** these
+  are either contract-gated Agent outcomes or Desktop/host-only features. They
+  are not permission to add Wing Link proxy methods, local shadow state, or
+  Electron-specific presentation.
+- **Entry/loading/accessibility polish:** Desktop adds onboarding visuals,
+  loading states, focus treatment, and web-preview annotations. Wing should
+  port the accessible outcome through Flutter semantics and adaptive layout,
+  not the renderer/CSS implementation.
+
+The complete commit list is reproducible with:
+
+```bash
+git -C hermes-desktop log --oneline 8da8d212abd40b449d55957b2cff9a220797ff71..3aaadb01076a749d7f9389dca4ffce081cf8ebaa
+```
 
 ## Product topology
 
@@ -443,15 +482,15 @@ Source: `../hermes-desktop/src/preload/index.d.ts:229-1249` compared with non-te
 
 ## Source contradictions resolved
 
-| Claim | Live-source finding |
-| --- | --- |
-| “22 slash commands” | Commands are runtime-discovered and merged with larger fallback/Desktop catalogs; no stable fixed count. |
-| “14 toolsets” | Current `TOOLSET_DEFS` has 19. |
-| “16 messaging gateways” | Current messaging catalog has 20 cards. |
-| Models and Soul are standalone screens | Current navigation folds Models into Providers and Soul into Memory/Profile. |
+| Claim                                     | Live-source finding                                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| “22 slash commands”                       | Commands are runtime-discovered and merged with larger fallback/Desktop catalogs; no stable fixed count.             |
+| “14 toolsets”                             | Current `TOOLSET_DEFS` has 19.                                                                                       |
+| “16 messaging gateways”                   | Current messaging catalog has 20 cards.                                                                              |
+| Models and Soul are standalone screens    | Current navigation folds Models into Providers and Soul into Memory/Profile.                                         |
 | Office uses an external Claw3D dev server | Current Office uses an in-renderer React Three Fiber scene; old Claw3D bridge methods remain unused by the renderer. |
-| Schedule editing is available | Current Schedules UI creates, pauses/resumes, triggers, and deletes; it does not edit an existing job. |
-| All preload APIs are product features | 38 declared methods have no current non-test renderer call. |
+| Schedule editing is available             | Current Schedules UI creates, pauses/resumes, triggers, and deletes; it does not edit an existing job.               |
+| All preload APIs are product features     | 38 declared methods have no current non-test renderer call.                                                          |
 
 ## What Wing should copy
 

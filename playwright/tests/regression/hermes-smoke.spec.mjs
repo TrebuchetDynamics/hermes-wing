@@ -10,7 +10,7 @@ function semanticLabel(page, text) {
 }
 
 function semanticText(page, text) {
-  return page.locator("flt-semantics").filter({ hasText: text }).last();
+  return page.getByRole("group", { name: text, exact: true });
 }
 
 test.beforeEach(async ({ request }) => {
@@ -121,7 +121,9 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("hello hermes browser"),
   );
-  await expect(page.getByText("hello hermes browser").first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: "hello hermes browser", exact: true }),
+  ).toBeVisible();
   await expect(semanticLabel(page, "Approve e2e browser run")).toBeVisible();
   await expect(semanticLabel(page, "Risk: low")).toBeVisible();
   await page.getByRole("button", { name: "Approve once" }).click();
@@ -146,7 +148,9 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("new session browser"),
   );
-  await expect(page.getByText("new session browser").first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: "new session browser", exact: true }),
+  ).toBeVisible();
   await expect(semanticLabel(page, "Approve e2e browser run")).toBeVisible();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
@@ -165,7 +169,9 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await page.evaluate(() =>
     globalThis.wingE2EHermesSubmitVoice("voice browser turn"),
   );
-  await expect(page.getByText("voice browser turn").first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: "voice browser turn", exact: true }),
+  ).toBeVisible();
   await expect(semanticLabel(page, "Approve e2e browser run")).toBeVisible();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
@@ -186,7 +192,9 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("slow browser turn"),
   );
-  await expect(page.getByText("slow browser turn").first()).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: "slow browser turn", exact: true }),
+  ).toBeVisible();
   await expect(semanticLabel(page, "Approve e2e browser run")).toBeVisible();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(

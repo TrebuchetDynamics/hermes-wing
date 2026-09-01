@@ -103,6 +103,31 @@ void main() {
     });
 
     test(
+      'uses the run identity when current Agent omits an approval id',
+      () async {
+        final responder = HermesApprovalResponder();
+        final posts = <(Uri, Map<String, Object?>)>[];
+        final client = _client(
+          onPost: (uri, h, body) async {
+            posts.add((uri, jsonDecode(body) as Map<String, Object?>));
+          },
+        );
+
+        await responder.respond(
+          client: client,
+          state: _stateFor(_runsCapableCapabilitiesFixture),
+          approvalId: '',
+          runId: 'run_current',
+          decision: HermesApprovalDecision.once,
+          activeRunIds: ['run_current'],
+        );
+
+        expect(posts.single.$1.path, '/v1/runs/run_current/approval');
+        expect(posts.single.$2, {'choice': 'once'});
+      },
+    );
+
+    test(
       'denies when capabilities forbid run approvals and reports the message',
       () async {
         final responder = HermesApprovalResponder();
@@ -202,7 +227,7 @@ void main() {
         final (uri, body) = posts.single;
         expect(uri.path, '/v1/runs/run_1/approval');
         expect(uri.queryParameters['profile'], 'coder');
-        expect(body, {'approval_id': 'appr_1', 'decision': 'always'});
+        expect(body, {'approval_id': 'appr_1', 'choice': 'always'});
       },
     );
 
@@ -227,7 +252,7 @@ void main() {
 
         final (uri, body) = posts.single;
         expect(uri.path, '/v1/runs/run_7/approval');
-        expect(body, {'approval_id': 'appr_2', 'decision': 'once'});
+        expect(body, {'approval_id': 'appr_2', 'choice': 'once'});
       },
     );
 

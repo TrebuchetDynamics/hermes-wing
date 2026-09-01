@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 
+int _approvalExpiry({Duration offset = const Duration(minutes: 5)}) =>
+    DateTime.now().add(offset).millisecondsSinceEpoch ~/ 1000;
+
 void main() {
   test('negotiates current and previous Wing Link generations', () async {
     late Map<String, String> requestedHeaders;
@@ -54,6 +57,259 @@ void main() {
     },
   );
 
+  test('lists opaque directory roots without accepting host paths', () async {
+    late Uri requested;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requested = uri;
+        return jsonEncode({
+          'directories': [
+            {'handle': 'dirh_AAAAAAAAAAAAAAAAAAAAAA', 'name': 'repository'},
+          ],
+        });
+      },
+    );
+
+    final roots = await client.listDirectoryRoots();
+
+    expect(requested.path, '/v2/directories');
+    expect(roots.single.name, 'repository');
+    expect(roots.single.handle, startsWith('dirh_'));
+  });
+
+  test('lists child directories with only the bounded opaque query', () async {
+    late Uri requested;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async {
+        requested = uri;
+        return jsonEncode({
+          'directories': [
+            {'handle': 'dirh_BBBBBBBBBBBBBBBBBBBBBB', 'name': 'src'},
+          ],
+          'next_offset': 50,
+        });
+      },
+    );
+
+    final page = await client.listChildDirectories(
+      handle: 'dirh_AAAAAAAAAAAAAAAAAAAAAA',
+      offset: 0,
+      limit: 50,
+    );
+
+    expect(
+      requested.path,
+      '/v2/directories/dirh_AAAAAAAAAAAAAAAAAAAAAA/children',
+    );
+    expect(requested.queryParameters, {'offset': '0', 'limit': '50'});
+    expect(page.directories.single.name, 'src');
+    expect(page.nextOffset, 50);
+  });
+
+  test('directory models enforce wire bounds and reject path fields', () async {
+    String handle(int index) => 'dirh_${index.toString().padLeft(22, 'A')}';
+    final maxName = '${List.filled(127, 'é').join()}a';
+    final oversizedName = List.filled(128, 'é').join();
+
+    Future<Object?> load(
+      Map<String, Object?> payload, {
+      bool children = false,
+    }) async {
+      final client = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        get: (_, _) async => jsonEncode(payload),
+      );
+      return children
+          ? client.listChildDirectories(handle: handle(0))
+          : client.listDirectoryRoots();
+    }
+
+    final rootBoundary =
+        await load({
+              'directories': [
+                for (var index = 0; index < 32; index++)
+                  {'handle': handle(index), 'name': maxName},
+              ],
+            })
+            as List<WingLinkDirectory>;
+    expect(rootBoundary, hasLength(32));
+    expect(utf8.encode(rootBoundary.first.name), hasLength(255));
+    expect(
+      WingLinkDirectory.fromJson({
+        'handle': 'dirh_${List.filled(92, 'A').join()}',
+        'name': maxName,
+      }).handle,
+      hasLength(97),
+    );
+
+    final childBoundary =
+        await load({
+              'directories': [
+                for (var index = 0; index < 100; index++)
+                  {'handle': handle(index), 'name': 'child-$index'},
+              ],
+              'next_offset': 1000,
+            }, children: true)
+            as WingLinkDirectoryPage;
+    expect(childBoundary.directories, hasLength(100));
+    expect(childBoundary.nextOffset, 1000);
+
+    for (final invalid in <({Map<String, Object?> payload, bool children})>[
+      (
+        payload: {
+          'directories': [
+            {
+              'handle': handle(1),
+              'name': 'repository',
+              'path': '/private/root',
+            },
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': 'dirh_bad', 'name': 'repository'},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {
+              'handle': 'dirh_${List.filled(21, 'A').join()}',
+              'name': 'repository',
+            },
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {
+              'handle': 'dirh_${List.filled(93, 'A').join()}',
+              'name': 'repository',
+            },
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': handle(1), 'name': ''},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': handle(1), 'name': 'private\\folder'},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': handle(1), 'name': 'private\u0000folder'},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': handle(1), 'name': '../private'},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            {'handle': handle(1), 'name': oversizedName},
+          ],
+        },
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            for (var index = 0; index < 33; index++)
+              {'handle': handle(index), 'name': 'root-$index'},
+          ],
+        },
+        children: false,
+      ),
+      (payload: {'directories': const [], 'next_offset': 1}, children: false),
+      (
+        payload: {'directories': const [], 'path': '/private/root'},
+        children: false,
+      ),
+      (
+        payload: {
+          'directories': [
+            for (var index = 0; index < 101; index++)
+              {'handle': handle(index), 'name': 'child-$index'},
+          ],
+        },
+        children: true,
+      ),
+      (payload: {'directories': const [], 'next_offset': 1001}, children: true),
+      (payload: {'directories': const [], 'next_offset': null}, children: true),
+    ]) {
+      await expectLater(
+        load(invalid.payload, children: invalid.children),
+        throwsA(isA<WingLinkException>()),
+      );
+    }
+  });
+
+  test('rejects invalid directory requests before transport', () async {
+    var requested = false;
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (_, _) async {
+        requested = true;
+        return '{}';
+      },
+    );
+
+    for (final request in [
+      () => client.listChildDirectories(handle: 'dirh_bad'),
+      () => client.listChildDirectories(
+        handle: 'dirh_AAAAAAAAAAAAAAAAAAAAAA',
+        offset: -1,
+      ),
+      () => client.listChildDirectories(
+        handle: 'dirh_AAAAAAAAAAAAAAAAAAAAAA',
+        offset: 1001,
+      ),
+      () => client.listChildDirectories(
+        handle: 'dirh_AAAAAAAAAAAAAAAAAAAAAA',
+        limit: 0,
+      ),
+      () => client.listChildDirectories(
+        handle: 'dirh_AAAAAAAAAAAAAAAAAAAAAA',
+        limit: 101,
+      ),
+    ]) {
+      await expectLater(request(), throwsA(isA<WingLinkException>()));
+    }
+    expect(requested, isFalse);
+  });
+
   test('starts bounded setup and polls its operation', () async {
     final requests = <String>[];
     late Map<String, String> setupHeaders;
@@ -90,7 +346,7 @@ void main() {
         'protocol_version': 2,
         'operation_id': 'op_pending',
         'approval_id': 'appr_pending',
-        'expires_at': 1800000000,
+        'expires_at': _approvalExpiry(),
         'error': {'code': 'approval_required'},
       }),
     );
@@ -110,6 +366,35 @@ void main() {
     );
   });
 
+  test('rejects past and far-future approval expiry values', () async {
+    for (final expiry in [
+      _approvalExpiry(offset: const Duration(seconds: -1)),
+      _approvalExpiry(offset: const Duration(minutes: 6)),
+    ]) {
+      final client = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        post: (_, _, _) async => jsonEncode({
+          'protocol_version': 2,
+          'operation_id': 'op_pending',
+          'approval_id': 'appr_pending',
+          'expires_at': expiry,
+          'error': {'code': 'approval_required'},
+        }),
+      );
+      await expectLater(
+        client.startSetup(idempotencyKey: 'setup-retry-expiry'),
+        throwsA(
+          isA<WingLinkException>().having(
+            (error) => error.message,
+            'message',
+            contains('invalid approval data'),
+          ),
+        ),
+      );
+    }
+  });
+
   test('destructive profile approval preserves exact retry key', () async {
     late Map<String, String> sentHeaders;
     final client = WingLinkClient(
@@ -121,7 +406,7 @@ void main() {
           'protocol_version': 2,
           'operation_id': 'op_delete',
           'approval_id': 'appr_delete',
-          'expires_at': 1800000000,
+          'expires_at': _approvalExpiry(),
           'error': {'code': 'approval_required'},
         });
       },
@@ -143,6 +428,52 @@ void main() {
     );
     expect(sentHeaders['If-Match'], 'rev-1');
     expect(sentHeaders['Idempotency-Key'], 'delete-retry-1');
+  });
+
+  test('delete accepts only a committed successful terminal replay', () async {
+    final success = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      delete: (_, _) async => jsonEncode({
+        'operation_id': 'op_delete_replay',
+        'replayed': true,
+        'operation': {
+          'operation_id': 'op_delete_replay',
+          'phase': 'committed',
+          'percent': 100,
+          'terminal': true,
+        },
+      }),
+    );
+    await success.deleteProfile(id: 'qa', revision: 'rev-1');
+
+    for (final phase in ['failed', 'cancelled']) {
+      final failed = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        delete: (_, _) async => jsonEncode({
+          'operation_id': 'op_delete_replay',
+          'replayed': true,
+          'operation': {
+            'operation_id': 'op_delete_replay',
+            'phase': phase,
+            'percent': 100,
+            'terminal': true,
+            'error_code': 'operation_$phase',
+          },
+        }),
+      );
+      await expectLater(
+        failed.deleteProfile(id: 'qa', revision: 'rev-1'),
+        throwsA(
+          isA<WingLinkException>().having(
+            (error) => error.message,
+            'message',
+            contains('deletion failed'),
+          ),
+        ),
+      );
+    }
   });
 
   test('rejects unsafe operation identifiers before transport', () async {
@@ -251,64 +582,6 @@ void main() {
     expect(profiles.single.canDelete, isTrue);
   });
 
-  test('CRUDs custom providers with revision guards', () async {
-    final requests = <String>[];
-    final client = WingLinkClient(
-      origin: Uri.parse('https://hermes.example:8654'),
-      token: 'wlc-secret',
-      get: (uri, headers) async {
-        requests.add('GET ${uri.path} ${uri.queryParameters['profile']}');
-        return '{"providers":[{"id":"acme","base_url":"https://api.example/v1","model":"v1","revision":"rev-1"}]}';
-      },
-      post: (uri, headers, body) async {
-        requests.add(
-          'POST ${uri.path} ${uri.queryParameters['profile']} $body',
-        );
-        return '{"provider":{"id":"new","base_url":"https://new.example/v1","model":"m","revision":"rev-2"}}';
-      },
-      patch: (uri, headers, body) async {
-        requests.add(
-          'PATCH ${uri.path} ${uri.queryParameters['profile']} $body',
-        );
-        return '{"provider":{"id":"acme","base_url":"https://new.example/v1","model":"v2","revision":"rev-3"}}';
-      },
-      delete: (uri, headers) async {
-        requests.add(
-          'DELETE ${uri.path} ${uri.queryParameters['profile']} ${headers['If-Match']}',
-        );
-        return '{}';
-      },
-    );
-
-    final listed = await client.listProviders(profile: 'default');
-    final created = await client.createProvider(
-      profile: 'default',
-      id: 'new',
-      baseUrl: 'https://new.example/v1',
-      model: 'm',
-    );
-    final updated = await client.updateProvider(
-      profile: 'default',
-      id: 'acme',
-      baseUrl: 'https://new.example/v1',
-      model: 'v2',
-      revision: 'rev-1',
-    );
-    await client.deleteProvider(
-      profile: 'default',
-      id: 'acme',
-      revision: 'rev-3',
-    );
-
-    expect(listed.single.id, 'acme');
-    expect(created.id, 'new');
-    expect(updated.model, 'v2');
-    expect(requests.first, 'GET /v1/providers default');
-    expect(requests[1], contains('"id":"new"'));
-    expect(requests[2], contains('"revision":"rev-1"'));
-    expect(requests.last, 'DELETE /v1/providers/acme default rev-3');
-  });
-
   test('profile mutation exposes a typed stale-revision failure', () async {
     final client = WingLinkClient(
       origin: Uri.parse('https://hermes.example:8654'),
@@ -322,6 +595,94 @@ void main() {
       throwsA(isA<WingLinkPreconditionFailed>()),
     );
   });
+
+  test(
+    'profile-create replay normalizes the expected authoritative ID',
+    () async {
+      var posts = 0;
+      var gets = 0;
+      final client = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        post: (_, headers, body) async {
+          posts++;
+          expect(headers['Idempotency-Key'], 'profile-create-response-loss');
+          expect(
+            jsonDecode(body),
+            allOf([
+              containsPair('name', ' ReadyQA '),
+              containsPair('provider_api_key', 'write-only-provider-secret'),
+            ]),
+          );
+          return jsonEncode({
+            'protocol_version': 2,
+            'operation_id': 'op_profile_create',
+            'replayed': true,
+            'operation': {
+              'protocol_version': 2,
+              'operation_id': 'op_profile_create',
+              'phase': 'committed',
+              'message': 'Committed',
+              'percent': 100,
+              'terminal': true,
+            },
+          });
+        },
+        get: (uri, headers) async {
+          gets++;
+          expect(uri.path, '/v1/profiles');
+          return '{"profiles":[{"id":"readyqa","name":"readyqa","revision":"rev-1","source":"cli","gateway_state":"running"}]}';
+        },
+      );
+
+      final profile = await client.createProfile(
+        name: ' ReadyQA ',
+        provider: 'openrouter',
+        model: 'openai/gpt-5.2',
+        providerApiKey: 'write-only-provider-secret',
+        idempotencyKey: 'profile-create-response-loss',
+      );
+
+      expect(profile.id, 'readyqa');
+      expect((posts, gets), (1, 1));
+    },
+  );
+
+  test(
+    'profile-create replay fails without the exact authoritative profile',
+    () async {
+      final client = WingLinkClient(
+        origin: Uri.parse('https://hermes.example:8654'),
+        token: 'wlc-secret',
+        post: (_, _, _) async => jsonEncode({
+          'protocol_version': 2,
+          'operation_id': 'op_profile_create',
+          'replayed': true,
+          'operation': {
+            'operation_id': 'op_profile_create',
+            'phase': 'committed',
+            'percent': 100,
+            'terminal': true,
+          },
+        }),
+        get: (_, _) async => '{"profiles":[{"id":"other","name":"other"}]}',
+      );
+
+      await expectLater(
+        client.createProfile(
+          name: 'readyqa',
+          idempotencyKey: 'profile-create-missing',
+        ),
+        throwsA(
+          isA<WingLinkException>().having(
+            (error) => error.message,
+            'message',
+            contains('could not reconcile'),
+          ),
+        ),
+      );
+    },
+  );
 
   test(
     'acknowledges before profile mutations and sends revision guards',

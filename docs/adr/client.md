@@ -12,6 +12,12 @@ Use platform-native features where practical. Voice may use exact advertised
 Agent audio routes with platform processing as fallback; availability and
 physical/acoustic evidence must remain explicit.
 
+Agent chat and run traffic stays on direct authenticated Hermes Agent
+transports. Remote VPS connections may use an advertised HTTPS/WebSocket
+transport, but Wing Link never proxies Agent data-plane traffic. ACP is an
+optional local desktop stdio transport only; Wing reuses its session, event,
+and approval semantics without exposing its terminal/file toolset remotely.
+
 ## Flexible guidance
 
 - Reuse existing seams before introducing a new abstraction or dependency.

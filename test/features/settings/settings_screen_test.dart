@@ -84,6 +84,11 @@ void main() {
       find.byKey(const ValueKey('voice-speak-replies-enabled')),
       findsOneWidget,
     );
+    final completionSound = find.byKey(
+      const ValueKey('voice-completion-sound-enabled'),
+    );
+    expect(completionSound, findsOneWidget);
+    expect(tester.widget<SwitchListTile>(completionSound).value, isFalse);
     expect(voiceLink, findsOneWidget);
     expect(
       find.text('Credentials stay in secure storage; values hidden'),
@@ -306,6 +311,54 @@ void main() {
     expect(
       find.byKey(const ValueKey('settings-gateway-connection-save')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('chat spellcheck preference is enabled by default and persists', (
+    tester,
+  ) async {
+    tester.platformDispatcher.nativeSpellCheckServiceDefinedTestValue = true;
+    addTearDown(tester.platformDispatcher.clearNativeSpellCheckServiceDefined);
+    SharedPreferences.setMockInitialValues({});
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final store = FakeHermesEndpointStore(profiles: const []);
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader(const {}),
+      activeChannel: channel,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+          hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const SettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final spellcheck = find.byKey(const ValueKey('chat-spellcheck-enabled'));
+    await Scrollable.ensureVisible(tester.element(spellcheck), alignment: 0.5);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(spellcheck).value, isTrue);
+    await tester.tap(spellcheck);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<SwitchListTile>(spellcheck).value, isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).getBool(
+        'wing.chat.spellcheck_enabled',
+      ),
+      isFalse,
     );
   });
 

@@ -194,25 +194,25 @@ A relay `OK` frame is not a Hermes completion receipt.
 
 ## 6. Feature disposition from Buzz
 
-| Buzz outcome | Wing disposition | Reason |
-|---|---|---|
-| Channel-first Home | Adapt early | Matches requested conversation model. |
-| Activity/inbox | Defer until channel event contract | Requires authoritative unread/activity semantics. |
-| Search | Contract-gated | Must not download all private history for local search. |
-| NIP-29 channels/threads | Adapt through Hermes/Buzz contract | Good interoperable message context. |
-| NIP-42 relay auth | Adapt | Authenticates relay session but does not replace app authorization. |
-| Reconnect replay + dedupe | Adapt early | Required for mobile lifecycle correctness. |
-| Visible-channel replay priority | Adapt | Improves foreground recovery. |
-| NIP-AB pairing UX/validation | Adapt mechanics | Transfer public keys and grants, not host/profile `nsec`. |
-| Mobile storage of community `nsec` | Never copy for host/profile keys | Expands signing authority and compromise surface. |
-| NIP-46 client/signer separation | Adapt identity model | Phone has disposable/scoped client key; host keeps signing/authority keys. |
-| Presence/typing | Defer | Ephemeral and battery-sensitive; not core control transport. |
-| Reactions/rich content | Defer | Useful after reliable channels and threads. |
-| Relay/member admin | Contract-gated | Requires a clearly identified relay owner/admin and auditable operations. |
-| NIP-17 DMs | Adapt later | Appropriate for human/private conversations, not generic administration. |
-| Desktop approval cards | Adapt through Hermes approvals | Buzz desktop can approve/deny; Buzz mobile currently projects approval events without decision controls. |
-| Voice huddles | Defer | Buzz desktop huddles are implemented; Buzz mobile only renders lifecycle events. Wing continuous voice is not a multiparty huddle. |
-| Community/relay switching | Adapt presentation | Show relay/domain provenance and never switch silently; a community is not a VPN. |
+| Buzz outcome                       | Wing disposition                   | Reason                                                                                                                             |
+| ---------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Channel-first Home                 | Adapt early                        | Matches requested conversation model.                                                                                              |
+| Activity/inbox                     | Defer until channel event contract | Requires authoritative unread/activity semantics.                                                                                  |
+| Search                             | Contract-gated                     | Must not download all private history for local search.                                                                            |
+| NIP-29 channels/threads            | Adapt through Hermes/Buzz contract | Good interoperable message context.                                                                                                |
+| NIP-42 relay auth                  | Adapt                              | Authenticates relay session but does not replace app authorization.                                                                |
+| Reconnect replay + dedupe          | Adapt early                        | Required for mobile lifecycle correctness.                                                                                         |
+| Visible-channel replay priority    | Adapt                              | Improves foreground recovery.                                                                                                      |
+| NIP-AB pairing UX/validation       | Adapt mechanics                    | Transfer public keys and grants, not host/profile `nsec`.                                                                          |
+| Mobile storage of community `nsec` | Never copy for host/profile keys   | Expands signing authority and compromise surface.                                                                                  |
+| NIP-46 client/signer separation    | Adapt identity model               | Phone has disposable/scoped client key; host keeps signing/authority keys.                                                         |
+| Presence/typing                    | Defer                              | Ephemeral and battery-sensitive; not core control transport.                                                                       |
+| Reactions/rich content             | Defer                              | Useful after reliable channels and threads.                                                                                        |
+| Relay/member admin                 | Contract-gated                     | Requires a clearly identified relay owner/admin and auditable operations.                                                          |
+| NIP-17 DMs                         | Adapt later                        | Appropriate for human/private conversations, not generic administration.                                                           |
+| Desktop approval cards             | Adapt through Hermes approvals     | Buzz desktop can approve/deny; Buzz mobile currently projects approval events without decision controls.                           |
+| Voice huddles                      | Defer                              | Buzz desktop huddles are implemented; Buzz mobile only renders lifecycle events. Wing continuous voice is not a multiparty huddle. |
+| Community/relay switching          | Adapt presentation                 | Show relay/domain provenance and never switch silently; a community is not a VPN.                                                  |
 
 ## 7. Roadmap and implementation work packages
 
@@ -221,6 +221,7 @@ A relay `OK` frame is not a Hermes completion receipt.
 **Objective:** Prevent “Nostr management” from becoming an ambiguous second Hermes backend or an unsafe universal-key design.
 
 **Files:**
+
 - Create: `docs/adr/0045-nostr-relay-transport-and-channel-authority.md`
 - Create: `docs/security/nostr-relay-link-threat-model.md`
 - Modify: `docs/adr/0012-hermes-agent-domain-authority.md`
@@ -246,6 +247,7 @@ git diff --check
 **Objective:** Define deterministic pairing, envelope, replay, receipt, rotation, and revocation semantics without inventing undocumented wire behavior in client code.
 
 **Files:**
+
 - Create: `docs/protocol/nostr-relay-link-v1.md`
 - Create: `docs/protocol/fixtures/nostr_relay_link_v1_vectors.json`
 - Test: `test/tooling/nostr_protocol_contract_test.dart`
@@ -281,6 +283,7 @@ git diff --check
 **Required upstream Hermes contract:** A versioned capability/readiness projection for relay transports, messaging channels, profile bindings, enrollment, supported event kinds/versions, signature-verification readiness, confidentiality mode, and feature states.
 
 **Files:**
+
 - Create: `lib/core/hermes/models/hermes_relay_transport.dart`
 - Create: `lib/core/hermes/models/hermes_messaging_channel.dart`
 - Modify: `lib/core/hermes/models/hermes_capabilities.dart`
@@ -300,6 +303,7 @@ git diff --check
 **Objective:** Give Wing Link a dedicated host transport identity without exporting it or conflating it with Hermes profile or relay operator keys.
 
 **Files:**
+
 - Create: `wing_link/nostr_identity.go`
 - Create: `wing_link/nostr_identity_test.go`
 - Modify: `wing_link/state.go`
@@ -327,6 +331,7 @@ go vet ./...
 **Objective:** Pair a Wing device to Wing Link across a reachable relay using ephemeral keys, SAS confirmation, and a scoped grant while each side retains its own private key.
 
 **Files:**
+
 - Create: `wing_link/nostr_pairing.go`
 - Create: `wing_link/nostr_pairing_test.go`
 - Modify: `wing_link/pair.go`
@@ -357,6 +362,7 @@ Never transfer Wing Link, Hermes profile, or relay operator private keys. Requir
 **Objective:** Make Wing Link operationally responsible for outbound pairing/health connectivity and bounded diagnostics without becoming the message/control domain backend or a general Nostr event processor.
 
 **Files:**
+
 - Create: `wing_link/nostr_relay_config.go`
 - Create: `wing_link/nostr_pairing_relay_client.go`
 - Create: `wing_link/nostr_relay_supervisor.go`
@@ -388,6 +394,7 @@ Do not subscribe to, decrypt, route, cache, or proxy channel messages, approvals
 **Objective:** Qualify behavior under the delivery semantics Nostr relays actually permit.
 
 **Files:**
+
 - Create: `wing_link/testdata/nostr_relay_fixture/fixture.go`
 - Create: `wing_link/nostr_relay_integration_test.go`
 - Create: `scripts/test_nostr_relay_link.sh`
@@ -425,6 +432,7 @@ cd wing_link && go test -race ./...
 **Objective:** Give users a clear “Wing Link manages the connection” experience without exposing raw keys or implying that Wing Link is the relay server.
 
 **Files:**
+
 - Create: `lib/features/gateway/screens/nostr_link_screen.dart`
 - Create: `lib/features/gateway/widgets/nostr_link_status.dart`
 - Create: `lib/features/gateway/providers/nostr_link_provider.dart`
@@ -456,6 +464,7 @@ cd wing_link && go test -race ./...
 **Objective:** Make channels the user-facing conversation destination while preserving profiles as participants and policy contexts.
 
 **Files:**
+
 - Create: `lib/features/hermes_chat/channels/hermes_conversation_ref.dart`
 - Create: `lib/features/hermes_chat/channels/hermes_channel_directory.dart`
 - Create: `lib/features/hermes_chat/channels/hermes_channel_cache.dart`
@@ -496,6 +505,7 @@ On wide layouts, threads may use a side panel; on phones, use a full-screen thre
 **Objective:** Make channel conversations primary without cloning Buzz presentation mechanically.
 
 **Files:**
+
 - Modify: `lib/router/providers/app_router.dart`
 - Modify: `lib/router/routes/app_routes.dart`
 - Modify: `lib/shared/widgets/app_shell.dart`
@@ -533,6 +543,7 @@ Search is added only after authoritative server-side search exists. Do not copy 
 - preserve profile-specific skills, memory, provider, and policy.
 
 **Wing files after contract lands:**
+
 - Modify: `lib/core/hermes/channel/hermes_channel.dart`
 - Modify: `lib/core/hermes/channel/hermes_api_channel.dart`
 - Modify: `lib/core/hermes/channel/hermes_channel_state.dart`
@@ -549,6 +560,7 @@ Search is added only after authoritative server-side search exists. Do not copy 
 **Objective:** Preserve Jarvis-like continuous conversation while making its target unambiguous.
 
 **Files:**
+
 - Modify: `lib/features/hermes_chat/controllers/hermes_voice_input_controller.dart`
 - Modify: `lib/features/hermes_chat/screens/hermes_chat_screen.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_message_flow.dart`
@@ -572,6 +584,7 @@ Search is added only after authoritative server-side search exists. Do not copy 
 **Allowed first tracer:** Read-only capability/health request. Then one low-risk, idempotent action such as stopping an already-owned run. Do not start with provider secrets, profile deletion, arbitrary tools, or configuration.
 
 **Wing files after upstream support:**
+
 - Create: `lib/core/hermes/channel/hermes_relay_channel.dart`
 - Create: `lib/core/hermes/channel/hermes_transport_selector.dart`
 - Test: `test/core/hermes/channel/hermes_relay_channel_test.dart`
@@ -587,6 +600,7 @@ Search is added only after authoritative server-side search exists. Do not copy 
 **Objective:** Make compromised-device and relay-failure recovery operational rather than theoretical.
 
 **Files:**
+
 - Create: `wing_link/nostr_grants.go`
 - Create: `wing_link/nostr_grants_test.go`
 - Modify: `wing_link/state.go`
@@ -615,6 +629,7 @@ Search is added only after authoritative server-side search exists. Do not copy 
 **Objective:** Ship without silently breaking existing direct endpoint users or overstating evidence.
 
 **Files:**
+
 - Modify: `lib/core/hermes/setup/secure_hermes_endpoint_store.dart`
 - Modify: `lib/features/hermes_chat/screens/state/hermes_chat_connection.dart`
 - Test: `test/core/hermes/setup/secure_hermes_endpoint_store_test.dart`

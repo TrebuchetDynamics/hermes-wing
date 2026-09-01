@@ -7,6 +7,7 @@ import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/features/voice/services/tts/platform_text_to_speech_service.dart';
 import 'package:wing/shared/async/fire_and_forget.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 
@@ -65,10 +66,13 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(container.read(hermesTextToSpeechServiceProvider), isNull);
+    expect(
+      container.read(hermesTextToSpeechServiceProvider),
+      isA<PlatformTextToSpeechService>(),
+    );
   });
 
-  test('chat TTS requires an audio-capable channel', () {
+  test('chat TTS falls back to device speech without Agent audio', () {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(audioSpeak: true),
     );
@@ -78,7 +82,10 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(container.read(hermesTextToSpeechServiceProvider), isNull);
+    expect(
+      container.read(hermesTextToSpeechServiceProvider),
+      isA<PlatformTextToSpeechService>(),
+    );
   });
 
   test('chat TTS requires every declared endpoint scope', () {
@@ -99,7 +106,10 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(container.read(hermesTextToSpeechServiceProvider), isNull);
+    expect(
+      container.read(hermesTextToSpeechServiceProvider),
+      isA<PlatformTextToSpeechService>(),
+    );
   });
 
   test('profile-scoped chat TTS requires supported profile context', () {
@@ -112,7 +122,10 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(container.read(hermesTextToSpeechServiceProvider), isNull);
+    expect(
+      container.read(hermesTextToSpeechServiceProvider),
+      isA<PlatformTextToSpeechService>(),
+    );
   });
 
   test('chat TTS becomes available when Agent audio is advertised', () async {
@@ -135,7 +148,7 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(subscription.read(), isNull);
+    expect(subscription.read(), isA<PlatformTextToSpeechService>());
 
     channel.replaceCapabilitiesAndProfiles(
       _capabilities(audioSpeak: true),
@@ -174,7 +187,7 @@ void main() {
     );
     await Future<void>.delayed(Duration.zero);
 
-    expect(subscription.read(), isNull);
+    expect(subscription.read(), isA<PlatformTextToSpeechService>());
     expect(agent.disposeCalls, 1);
   });
 

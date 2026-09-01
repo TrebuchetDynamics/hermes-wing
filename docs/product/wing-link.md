@@ -37,6 +37,13 @@ Pairing gives Wing two independently verified connections:
 - a profile-bound Hermes Agent origin and credential; and
 - a Wing Link origin and management credential.
 
+For VPS deployments, Agent chat and run traffic may use an advertised
+HTTPS/WebSocket transport through a TLS 1.3 reverse proxy or a private VPN. The
+connection remains direct from Wing to Hermes Agent; Wing Link never relays the
+Agent data plane. ACP is an optional local desktop stdio transport, not a remote
+Wing Link tunnel. Wing reuses ACP's session, event, and approval semantics while
+keeping its privileged terminal/file toolset out of remote connections.
+
 ## Current implementation
 
 The current Linux implementation provides:
@@ -50,12 +57,15 @@ The current Linux implementation provides:
 - durable idempotent operation tracking and explicit cancellation;
 - current/previous protocol-generation negotiation; and
 - profile list, create/clone, rename, and delete through fixed Hermes CLI
-  argument vectors.
+  argument vectors; and
+- remote browsing of locally approved child folders through device-bound,
+  expiring opaque handles without returning paths or file names.
 
 Persistent service management is Linux/systemd-user only. New-profile setup can
 write an allowlisted provider, bounded model string, and provider credential
-through fixed Hermes CLI operations. Existing-profile provider editing, profile persona editing,
-workspace browsing, and project assignment are not shipped behavior.
+through fixed Hermes CLI operations. Existing-profile provider editing, profile
+persona editing, directory selection, Project creation, and Project assignment
+are not shipped behavior. Approved folder browsing is read-only and ephemeral.
 
 ## Target management surface
 
@@ -65,11 +75,15 @@ Wing Link will expose typed, capability-advertised operations in four areas:
    gateway settings, lifecycle, health, repair, and diagnostics.
 2. **Profiles** — list, create/clone, rename, describe, and delete. Hermes Agent
    remains authoritative; Wing Link delegates only reviewed fixed operations.
-3. **Providers and models** — new-profile setup selects an allowlisted provider and
-   bounded model string and may write a credential through `hermes auth add` stdin without ever
-   returning the secret. General provider editing remains a target surface.
-4. **Projects and folders** — browse explicitly approved host directories and
-   create or update a Hermes Project inside a selected profile.
+3. **Agent-owned providers and models** — Wing uses Hermes Agent's advertised
+   provider/model APIs directly. Wing Link does not expose provider inventory,
+   custom-provider CRUD, or general provider configuration. The only compatibility
+   exception is transactional new-profile setup, which may select an allowlisted
+   provider and bounded model string and write a credential through `hermes auth
+add` stdin without ever returning the secret.
+4. **Projects and folders** — browsing explicitly approved host directories is
+   implemented; creating or updating a Hermes Project remains blocked on an
+   advertised Agent contract.
 
 Every response advertises what this Wing Link build and installed Agent release
 can actually perform. Unsupported operations are absent or return a stable
@@ -98,9 +112,12 @@ supported Agent can persist a Project but cannot start a remote session in that
 context, Wing shows the assignment and keeps **Start in Project** unavailable; it
 does not use `project use` or a hidden process-global working directory.
 
-The compatibility adapter may eventually delegate fixed commands equivalent to
-`hermes --profile <id> project create|list|show|add-folder|remove-folder|rename|set-primary|archive|restore`.
-It must never invoke `project use` as hidden global state.
+Current Desktop RPC and human-readable `hermes project` output are reference
+evidence, not remote compatibility contracts. Wing Link must not parse or invoke
+them for Project mutation. A separately reviewed adapter is considered only
+after bounded machine-readable input/output and explicit profile identity exist;
+it must never invoke `project use` as hidden global state and must be removed when
+the minimum supported Agent release advertises equivalent operations.
 
 For example, the picker may show `git → gormes → gancho`; selecting `gancho`
 returns a directory handle that can become the Project's primary folder. It does
@@ -112,7 +129,9 @@ Wing Link is a **folder picker**, not a file browser. It returns folders only. I
 does not enumerate file names or metadata and cannot read, upload, edit, delete,
 or download file contents.
 
-- A local operator configures the roots Wing Link may expose.
+- A local operator configures roots with `wing-link directories grant <local-root>`,
+  inspects them with `wing-link directories list`, and revokes them with
+  `wing-link directories revoke <directory-id>`. These commands are host-local.
 - The API returns opaque root and directory handles plus bounded display names.
 - Requests cannot contain absolute paths, `..`, drive prefixes, or shell text.
 - Every lookup resolves and revalidates containment; symlinks cannot escape a
@@ -126,21 +145,15 @@ or download file contents.
 
 ## Provider boundary
 
-Provider and model state belongs to Hermes Agent. Wing Link may offer a typed
-compatibility adapter only when the official Agent API lacks an equivalent and
-the exact operation is reviewed.
+Provider and model state belongs to Hermes Agent and is accessed through its
+advertised APIs. Wing Link exposes no provider inventory, custom-provider CRUD,
+or general provider configuration endpoints.
 
-- Provider IDs and configurable fields come from an allowlist or authoritative
-  Agent inventory; clients cannot submit arbitrary config keys.
-- Credentials are write-only: set/remove and configured/not-configured only.
-- Secrets never appear in responses, command arguments, logs, diagnostics, or
-  persisted Wing Link state.
-- A change reports whether an Agent reload or gateway restart is required; Wing
-  does not hide disruptive lifecycle work inside an ordinary save.
-
-Credential replacement on existing profiles remains blocked. New-profile setup
-uses the released stdin-driven `hermes auth add` contract and rolls back the new
-profile if setup or readiness fails; direct `.env` editing remains prohibited.
+Credential replacement on existing profiles remains blocked. The only setup
+exception is transactional new-profile setup, which uses an allowlisted provider,
+a bounded model string, and the released stdin-driven `hermes auth add` contract;
+it rolls back the new profile if setup or readiness fails. Direct `.env` editing
+remains prohibited.
 
 ## Non-goals
 

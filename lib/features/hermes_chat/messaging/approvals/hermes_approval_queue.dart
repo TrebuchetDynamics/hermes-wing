@@ -65,7 +65,11 @@ class HermesApprovalQueue extends ChangeNotifier {
     final duplicate = _pending.any(
       (pending) => _requestKey(pending) == requestKey,
     );
-    if (duplicate || _answeringId == request.id.trim()) return;
+    if (duplicate ||
+        _answeringId == request.id.trim() ||
+        _answeringId == _requestKey(request)) {
+      return;
+    }
     _pending.addLast(request);
     notifyListeners();
   }
@@ -85,23 +89,29 @@ class HermesApprovalQueue extends ChangeNotifier {
       return;
     }
     final approvalId = request.id.trim();
-    if (approvalId.isEmpty) return;
-    _answeringId = approvalId;
+    final requestKey = _requestKey(request);
+    if (approvalId.isEmpty && (request.runId?.trim().isEmpty ?? true)) return;
+    _answeringId = approvalId.isEmpty ? requestKey : approvalId;
     notifyListeners();
     try {
       await _channel().respondToApproval(
         approvalId: approvalId,
         decision: decision,
+        runId: request.runId,
       );
       if (_disposed) return;
       _pending.removeWhere(
         (pending) => _requestKey(pending) == _requestKey(request),
       );
-      if (_answeringId == approvalId) _answeringId = null;
+      if (_answeringId == (approvalId.isEmpty ? requestKey : approvalId)) {
+        _answeringId = null;
+      }
       notifyListeners();
     } catch (error) {
       if (_disposed) return;
-      if (_answeringId == approvalId) _answeringId = null;
+      if (_answeringId == (approvalId.isEmpty ? requestKey : approvalId)) {
+        _answeringId = null;
+      }
       notifyListeners();
       _onResolveError(error);
     }

@@ -47,6 +47,16 @@
   "profileStableNameHint": "Use 1–64 lowercase letters, numbers, _ or -.",
   "chatWithAgent": "Chat",
   "profileChatUnavailable": "Management only — this Hermes endpoint does not advertise profile chat context.",
+  "profileBrowseFoldersAction": "Browse folders",
+  "directoryBrowserTitle": "Approved folders",
+  "directoryBrowserLoading": "Loading approved folders",
+  "directoryBrowserEmptyTitle": "No approved folders",
+  "directoryBrowserEmptyBody": "Approve a root on the host with: wing-link directories grant PATH",
+  "directoryBrowserError": "Approved folders are unavailable. Refresh the host grants and try again.",
+  "directoryBrowserUnavailable": "Folder browsing is unavailable for this Wing Link device. Update Wing Link or pair again with directory access.",
+  "directoryBrowserBackAction": "Back",
+  "directoryBrowserLoadMoreAction": "Load more",
+  "directoryBrowserProjectUnavailable": "Folder browsing is available, but Project creation remains unavailable until Hermes Agent advertises a compatible Project API.",
   "chatWithNamedAgent": "Chat with {name}",
   "@chatWithNamedAgent": {
     "placeholders": {
@@ -395,6 +405,10 @@
   "chooseModelAction": "Choose model",
   "refreshCatalogAction": "Refresh catalog",
   "modelPickerTitle": "Select model",
+  "sessionModelPickerTitle": "Use a model for this session",
+  "sessionModelPickerDescription": "Hermes Agent will keep this model selection scoped to the current session.",
+  "sessionModelLockAction": "Use for session",
+  "sessionModelLockFailed": "Hermes could not confirm this session model.",
   "modelSlotLabel": "Slot",
   "modelSlotMain": "Main",
   "modelProviderLabel": "Provider",
@@ -506,6 +520,7 @@
   "showLessAction": "Show less",
   "reasoningTitle": "Reasoning",
   "localCommandsTitle": "Wing commands",
+  "localCommandsKeyboardHint": "↑↓ navigate  •  Enter select  •  Tab complete",
   "localCommandsHelpTitle": "Wing commands",
   "localCommandsHelpBody": "These commands run on this device and are never sent to Hermes Agent.",
   "localCommandHelpDescription": "Show Wing-owned commands.",
@@ -569,9 +584,9 @@
   },
   "localCommandClearDescription": "Clear the current draft.",
   "localCommandSettingsDescription": "Open Wing settings.",
-  "localCommandUsageDescription": "Show token usage for the latest reply.",
-  "noRunTokenUsageMessage": "No server-reported token usage is available yet.",
-  "runTokenUsage": "{inputTokens} in · {outputTokens} out · {totalTokens} total tokens",
+  "localCommandUsageDescription": "Show server-reported usage for the latest Hermes run.",
+  "noRunTokenUsageMessage": "No server-reported Hermes run usage is available yet.",
+  "runTokenUsage": "Latest Hermes run · {inputTokens} input · {outputTokens} output · {totalTokens} total",
   "@runTokenUsage": {
     "placeholders": {
       "inputTokens": {
@@ -585,7 +600,7 @@
       }
     }
   },
-  "transcriptRunTokenUsage": "Usage: {inputTokens} input · {outputTokens} output · {totalTokens} total tokens",
+  "transcriptRunTokenUsage": "Latest Hermes run usage: {inputTokens} input · {outputTokens} output · {totalTokens} total tokens",
   "@transcriptRunTokenUsage": {
     "placeholders": {
       "inputTokens": {
@@ -599,7 +614,8 @@
       }
     }
   },
-  "runTokenUsageSemantics": "Token usage: {inputTokens} input, {outputTokens} output, {totalTokens} total",
+  "runTokenUsageSemantics": "Latest Hermes run token usage: {inputTokens} input, {outputTokens} output, {totalTokens} total. Input can include instructions, conversation context, and tool results; this is not a billing estimate.",
+  "runTokenUsageTooltip": "Latest server-reported Hermes run. Input may include instructions, conversation context, and tool results. This is not a billing estimate.",
   "@runTokenUsageSemantics": {
     "placeholders": {
       "inputTokens": {
@@ -710,6 +726,8 @@
   "voiceContinuousSubtitle": "Allow on-device STT transcripts to be sent to Hermes",
   "voiceSpeakRepliesTitle": "Speak replies aloud",
   "voiceSpeakRepliesSubtitle": "Allow hands-free voice to speak Hermes replies aloud; the chat's hands-free switch turns this on and off",
+  "voiceCompletionSoundTitle": "Response completion sound",
+  "voiceCompletionSoundSubtitle": "Play a device alert when a Hermes reply finishes",
   "voiceAdvancedSection": "Advanced",
   "voiceRecognitionLanguageTitle": "Recognition language",
   "voiceRecognitionLanguageSubtitle": "Automatic lets the device recognizer choose; fixed modes request one language.",
@@ -856,6 +874,14 @@
   "gatewayContactsEmptyTitle": "Add your first Hermes profile",
   "gatewayContactsEmptyBody": "Connect a gateway to see its profiles and start a conversation.",
   "gatewayContactsConnectAction": "Add gateway or profile",
+  "chatGroupsNewAction": "New group",
+  "chatGroupsNewTitle": "New group",
+  "chatGroupsRenameTitle": "Rename group",
+  "chatGroupsRenameAction": "Rename",
+  "chatGroupsDeleteAction": "Delete",
+  "chatGroupsNameLabel": "Group name",
+  "chatGroupsUngrouped": "Ungrouped",
+  "chatGroupsMoveAction": "Move to group",
   "chatQueuedCancelTitle": "{count, plural, one{Cancel {count} queued follow-up?} other{Cancel {count} queued follow-ups?}}",
   "@chatQueuedCancelTitle": {
     "placeholders": {
@@ -872,9 +898,73 @@
       }
     }
   },
+  "chatQueuedSummary": "{count, plural, one{Queued {count} follow-up after current reply: {preview}} other{Queued {count} follow-ups after current reply: {preview}}}",
+  "@chatQueuedSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "preview": {
+        "type": "String"
+      }
+    }
+  },
+  "chatQueuedWaitingForTransport": "Waiting for a supported Hermes chat transport.",
+  "chatQueuedWaitingForOriginalSession": "Waiting for the original session.",
   "chatQueuedRedactedNote": "Queued text is redacted and bounded in this confirmation.",
+  "chatQueuedAttachmentPreview": "Attachment: {name}",
+  "@chatQueuedAttachmentPreview": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chatQueuedKeepAction": "Keep",
   "chatQueuedCancelAllAction": "Cancel all",
+  "chatQueuedManageAction": "Manage",
+  "chatQueuedMoreActions": "More queued follow-up actions",
+  "chatQueuedManageTitle": "{count, plural, one{{count} queued follow-up} other{{count} queued follow-ups}}",
+  "@chatQueuedManageTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatQueuedCancelOneAction": "Cancel queued follow-up",
+  "chatQueuedFullError": "Queued follow-ups are full ({count}). Wait for Hermes to finish before adding more.",
+  "@chatQueuedFullError": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatQueuedOpenSessionError": "Could not open queued follow-up session: {message}",
+  "@chatQueuedOpenSessionError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatQueuedSendError": "Could not send queued follow-up: {message}",
+  "@chatQueuedSendError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSteerFailed": "Could not guide the active Hermes run: {message}",
+  "@chatSteerFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "chatConnectionRenameProfileTitle": "Rename Hermes profile",
   "chatConnectionProfileLabelLabel": "Profile label",
   "chatConnectionProfileLabelHelper": "Leave blank to show the endpoint URL.",
@@ -1009,10 +1099,74 @@
   "chatTranscriptCopyChatMarkdownAction": "Copy entire chat (Markdown)",
   "chatTranscriptReplyAction": "Reply",
   "chatTranscriptCopyAction": "Copy",
+  "chatTranscriptReadAloudAction": "Read aloud",
+  "chatTranscriptReadingAloudLabel": "Reading aloud",
+  "chatTranscriptStopReadAloudAction": "Stop reading aloud",
   "chatTranscriptMessageCopiedLabel": "Message copied",
-  "chatTranscriptToolStatusNeedsAttentionLabel": "Needs attention",
-  "chatTranscriptToolStatusRunningLabel": "Running",
-  "chatTranscriptToolStatusCompletedLabel": "Completed",
+  "chatTranscriptFullTimestamp": "{date}, {time}",
+  "@chatTranscriptFullTimestamp": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTranscriptTimestampJustNow": "Just now",
+  "chatTranscriptTimestampMinutesAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@chatTranscriptTimestampMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatTranscriptTimestampHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@chatTranscriptTimestampHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatTranscriptTimestampDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@chatTranscriptTimestampDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatTranscriptToolStatusNeedsAttentionLabel": "Host action needs attention",
+  "chatTranscriptToolStatusRunningLabel": "Working on Hermes host",
+  "chatTranscriptToolStatusCompletedLabel": "Completed on Hermes host",
+  "chatTranscriptHostActivityTitle": "Hermes host activity",
+  "chatTranscriptToolCategoryWeb": "Web activity",
+  "chatTranscriptToolCategoryBrowser": "Browser activity",
+  "chatTranscriptToolCategoryFiles": "File activity",
+  "chatTranscriptToolCategoryCode": "Code activity",
+  "chatTranscriptToolCategoryVoice": "Voice activity",
+  "chatTranscriptToolCategoryMemory": "Memory activity",
+  "chatTranscriptToolCategoryDelegation": "Delegated activity",
+  "chatTranscriptToolCategorySchedule": "Scheduled activity",
+  "chatTranscriptHostActivityCountTitle": "Hermes host activity · {count} steps",
+  "@chatTranscriptHostActivityCountTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatTranscriptHostStepTitle": "Host step {step}",
+  "@chatTranscriptHostStepTitle": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
   "chatTranscriptToolActivitySingleTitle": "Tool activity: {name}",
   "@chatTranscriptToolActivitySingleTitle": {
     "placeholders": {
@@ -1082,30 +1236,47 @@
   "chatErrorConnectUnreachableBody": "Check the base URL, network, VPN, and that Hermes API server is running.",
   "chatErrorConnectGenericTitle": "Could not connect to Hermes.",
   "chatErrorConnectGenericBody": "Check the endpoint and try again.",
-  "chatLayoutConnectTitle": "Connect to your Hermes VPS",
-  "chatLayoutConnectBody": "Hermes Wing connects to the Hermes Agent on your VPS over HTTPS, Tailscale, or another private network.",
-  "chatLayoutVpsConnectionTitle": "VPS connection",
-  "chatLayoutVpsConnectionBody": "Use HTTPS or a private-network URL. Never expose an unauthenticated Hermes port to the internet.",
+  "chatLayoutConnectTitle": "Add Hermes",
+  "chatLayoutConnectBody": "Connect directly to Hermes Agent. Choose how this device can reach it; Wing Link host management stays separate.",
+  "chatLayoutConnectionModeLabel": "How will Wing reach Hermes?",
+  "chatLayoutConnectionModeLocalLabel": "This device",
+  "chatLayoutConnectionModeRemoteLabel": "Remote HTTPS",
+  "chatLayoutConnectionModeVpnLabel": "VPN / Tailscale",
+  "chatLayoutConnectionModeSshLabel": "SSH tunnel",
+  "chatLayoutConnectionModeLocalBody": "Use a local Agent URL, or install Hermes on this device when local setup is available.",
+  "chatLayoutConnectionModeRemoteBody": "Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.",
+  "chatLayoutConnectionModeVpnBody": "Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.",
+  "chatLayoutConnectionModeSshBody": "Start a fixed, trusted SSH tunnel outside Wing, then enter its local Agent URL. Wing never runs arbitrary SSH commands or stores SSH keys.",
+  "chatLayoutConnectionModeLocalUrlHelper": "Enter the local Agent URL. This device usually uses http://127.0.0.1:8642.",
+  "chatLayoutConnectionModeRemoteUrlHelper": "Enter the HTTPS Agent URL. Wing currently uses HTTPS/SSE; WebSocket support waits for an exact Hermes contract.",
+  "chatLayoutConnectionModeVpnUrlHelper": "Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.",
+  "chatLayoutConnectionModeSshUrlHelper": "Start the fixed tunnel outside Wing, then enter the local Agent URL it exposes.",
+  "chatLayoutVpsConnectionTitle": "Hermes Agent connection",
+  "chatLayoutVpsConnectionBody": "Use an HTTPS or trusted private-network URL. Never expose an unauthenticated Hermes port to the internet.",
   "chatLayoutScanQrAction": "Scan wing-cli QR code",
-  "chatLayoutServerUrlLabel": "Hermes server URL",
+  "chatLayoutServerUrlLabel": "Hermes Agent URL",
   "chatLayoutServerUrlHint": "https://hermes.example.com",
-  "chatLayoutServerUrlHelper": "Enter the HTTPS or private-network URL without /v1.",
+  "chatLayoutServerUrlHelper": "Enter the Agent URL without /v1. For a trusted local or SSH tunnel, a loopback HTTP URL may be used.",
   "chatLayoutAccessTokenLabel": "Access token",
   "chatLayoutAccessTokenHelper": "Required for internet-facing servers; optional only on trusted private networks.",
   "chatLayoutShowAccessTokenTooltip": "Show access token",
   "chatLayoutHideAccessTokenTooltip": "Hide access token",
-  "chatLayoutVpsNameLabel": "VPS name (optional)",
-  "chatLayoutVpsNameHint": "My Hermes VPS",
+  "chatLayoutVpsNameLabel": "Connection name (optional)",
+  "chatLayoutVpsNameHint": "My Hermes connection",
   "chatLayoutVpsNameHelper": "A private label shown only on this device.",
   "chatLayoutTokenStorageBody": "Your token is stored in secure device storage and is never shown after connecting.",
+  "chatLayoutCredentialBoundaryTitle": "Two separate connections",
+  "chatLayoutCredentialBoundaryBody": "This token is only for Hermes Agent chat. Wing Link pairing, when available, uses a separate management credential and never carries chat traffic.",
   "chatLayoutConnectingAction": "Connecting…",
-  "chatLayoutConnectAction": "Connect to VPS",
+  "chatLayoutConnectAction": "Add Hermes",
   "chatLayoutDevShortcutsTitle": "Connecting to a local Agent?",
   "chatLayoutDevShortcutsBody": "Use a development shortcut instead of a VPS address.",
   "chatLayoutPresetThisDeviceLabel": "This device",
   "chatLayoutPresetAndroidEmulatorLabel": "Android emulator",
   "chatLayoutPresetClearAction": "Clear server details",
   "chatLayoutModelFallbackLabel": "Hermes model",
+  "chatComposerModelPickerTooltip": "Choose profile model",
+  "chatComposerModelsLoadFailed": "Models could not be loaded from Hermes.",
   "chatLayoutTransportUnavailableBody": "Hermes did not advertise a supported chat transport for this endpoint.",
   "chatLayoutOpenSessionAction": "Open session",
   "chatLayoutFollowUpsCopiedBody": "Copied redacted Hermes queued follow-ups.",
@@ -1116,10 +1287,56 @@
   "chatLayoutNoSessionsNoCreateBody": "No Hermes sessions are available, and this endpoint did not advertise session creation.",
   "chatLayoutVoiceLoopOnLabel": "Voice loop on",
   "chatLayoutVoiceReadyLabel": "Voice ready",
+  "chatVoiceCaptureTimedOut": "Voice capture timed out.",
+  "chatVoiceMicrophonePermissionDenied": "Microphone permission denied. Grant microphone access in system settings, then return to Hermes Wing.",
+  "chatVoiceDeviceLanguageUnavailable": "Device speech recognition has no offline language for this device locale. Install that language's offline speech data in Android settings, then return to Hermes Wing.",
+  "chatVoiceDeviceSpeechUnavailable": "Device speech recognition is unavailable. Install or enable device speech recognition, then return to Hermes Wing.",
+  "chatVoiceNoSpeechDetected": "No speech was recognized. Tap Speak, wait for Listening, then speak clearly and close to the microphone.",
+  "chatVoiceCaptureFailed": "Voice capture failed: {detail}",
+  "@chatVoiceCaptureFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "chatVoiceCaptureFailedFallback": "Voice capture failed.",
+  "chatVoiceCaptureSessionChanged": "Voice capture was discarded because the Hermes session changed.",
+  "chatVoiceInputUnavailable": "Voice input is not available here.",
+  "chatVoiceTurnSendFailed": "Voice turn could not be sent: {detail}",
+  "@chatVoiceTurnSendFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "chatVoiceTurnSendFailedFallback": "Voice turn could not be sent.",
+  "chatVoiceShutdownTimedOut": "Voice shutdown timed out. Continuous voice paused.",
+  "chatVoiceShutdownFailed": "Voice shutdown failed. Continuous voice paused.",
+  "chatVoicePlaybackUnavailable": "Voice playback is unavailable for this connection. The reply is available as text. Voice input remains available from the microphone.",
+  "chatVoicePlaybackUnavailableContinuous": "Voice playback is unavailable for this connection. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.",
+  "chatVoicePlaybackFailed": "Voice playback failed. The reply is available as text. Voice input remains available from the microphone.",
+  "chatVoicePlaybackFailedContinuous": "Voice playback failed. The reply is available as text. Hands-free listening stopped. Voice input remains available from the microphone.",
+  "chatVoicePlaybackSessionChanged": "Hermes session changed before the spoken reply finished.",
+  "chatVoicePlaybackSessionChangedContinuous": "Hermes session changed before voice could re-arm. Continuous voice paused.",
+  "chatVoicePausedByLocalCommand": "Continuous voice paused by local command.",
+  "chatVoiceSessionChangedContinuous": "Hermes session changed. Continuous voice paused.",
+  "chatVoiceSessionChangedSpeaking": "Hermes session changed. Spoken reply stopped.",
+  "chatVoiceSessionChangedCapturing": "Hermes session changed. Voice capture stopped.",
+  "chatVoiceContinuousPaused": "{message} Continuous voice paused.",
+  "@chatVoiceContinuousPaused": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "chatLayoutComposerSpeakingHint": "Speaking reply…",
   "chatLayoutComposerHint": "Message Hermes…",
   "chatLayoutComposerUnavailableHint": "Chat unavailable",
   "chatLayoutComposerTransportUnavailableHint": "Chat transport unavailable",
+  "chatLayoutComposerRunRecoveryHint": "Reconnect to reconcile the active run…",
   "chatLayoutChatMenuTooltip": "Chat menu",
   "chatLayoutSessionsLabel": "Sessions",
   "chatLayoutHandsFreeVoiceLabel": "Hands-free voice",
@@ -1147,9 +1364,31 @@
   "chatLayoutReadyToSendLabel": "Ready to send",
   "chatLayoutRemoveAttachmentTooltip": "Remove attachment",
   "chatLayoutAttachFileTooltip": "Attach image or text file",
+  "chatAttachmentRemoveCurrentError": "Remove the current attachment before adding another.",
+  "chatAttachmentInsertedImageReadError": "Could not read the inserted image.",
+  "chatAttachmentImageSizeError": "Images must be 10 MB or smaller.",
+  "chatAttachmentPastedImageTypeError": "Hermes accepts pasted PNG, JPEG, GIF, and WebP images.",
+  "chatAttachmentTextSizeError": "Text files must be 256 KB or smaller.",
+  "chatAttachmentUnsupportedTypeError": "Hermes accepts PNG, JPEG, GIF, WebP, and UTF-8 text files; PDFs, binary files, and videos cannot be sent.",
+  "chatAttachmentInvalidUtf8Error": "Text attachments must contain valid UTF-8.",
+  "chatAttachmentOpenError": "Could not open attachment: {error}",
+  "@chatAttachmentOpenError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "chatLayoutStopSpeakingTooltip": "Stop speaking",
-  "chatLayoutSpeakAndSendTooltip": "Speak and send",
+  "chatLayoutSpeakAndSendTooltip": "Start hands-free voice",
   "chatLayoutSendTooltip": "Send",
+  "chatLayoutVoiceOutputUnavailableTitle": "Voice output unavailable",
+  "chatLayoutVoiceOutputUnavailableBody": "The reply is available as text. Voice playback stopped, and hands-free listening is off. Voice input remains available from the microphone.",
+  "chatLayoutContinueInTextAction": "Continue in text",
+  "chatLocalArtifactUndeliveredTitle": "Not delivered to this device",
+  "chatLocalAudioArtifactUndeliveredBody": "A tool created audio on the Hermes host, but Wing did not receive a playable audio attachment. Use the text reply instead.",
+  "chatLocalMediaArtifactUndeliveredBody": "Hermes referenced media on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.",
+  "chatLocalFileArtifactUndeliveredBody": "Hermes created a file on its host, but Wing did not receive an attachment. Ask Hermes to attach the file to deliver it to this device.",
   "chatShellVoicePausedBackgroundBody": "Continuous voice paused while Hermes Wing is not in the foreground.",
   "chatShellVoicePausedSwitchingAgentsBody": "Continuous voice paused while switching profiles.",
   "chatShellApprovalAnswerFailedBody": "Could not answer Hermes approval: {message}",
@@ -1406,6 +1645,9 @@
   "chatStatusCopiedApprovalDetailsBody": "Copied redacted Hermes approval details.",
   "chatStatusCopyDetailsAction": "Copy details",
   "chatRailSessionsTitle": "Sessions",
+  "chatRailPinnedGroupLabel": "Pinned",
+  "chatRailPinSessionAction": "Pin",
+  "chatRailUnpinSessionAction": "Unpin",
   "chatRailHermesSessionsTitle": "Hermes sessions",
   "chatRailNewSessionAction": "New",
   "chatRailSelectAction": "Select",
@@ -1427,6 +1669,8 @@
     }
   },
   "chatRailSearchSessionsLabel": "Search sessions",
+  "chatRailSourceFilterLabel": "Filter by source",
+  "chatRailAllSourcesLabel": "All sources",
   "chatRailClearSearchTooltip": "Clear search",
   "chatRailSessionCountLabel": "{count, plural, =1{1 session} other{{count} sessions}}",
   "@chatRailSessionCountLabel": {
@@ -1466,8 +1710,10 @@
     }
   },
   "chatRailActiveHermesSessionLabel": "Active Hermes session",
+  "chatRailCycleActiveSessionsTooltip": "Switch live chats · Ctrl+Tab or Ctrl/Command+1–9",
   "chatRailActiveLabel": "Active",
   "chatRailStatusStreamingLabel": "Streaming",
+  "chatRailNewReplyLabel": "New reply",
   "chatRailStatusReadyLabel": "Ready",
   "chatRailStatusTransportUnavailableLabel": "Transport unavailable",
   "chatRailMessageCountLabel": "{count, plural, =1{1 message} other{{count} messages}}",
@@ -1566,7 +1812,7 @@
       }
     }
   },
-  "chatRailDetailInputTokensLabel": "Input tokens: {count}",
+  "chatRailDetailInputTokensLabel": "Session input tokens: {count}",
   "@chatRailDetailInputTokensLabel": {
     "placeholders": {
       "count": {
@@ -1574,7 +1820,7 @@
       }
     }
   },
-  "chatRailDetailOutputTokensLabel": "Output tokens: {count}",
+  "chatRailDetailOutputTokensLabel": "Session output tokens: {count}",
   "@chatRailDetailOutputTokensLabel": {
     "placeholders": {
       "count": {
@@ -1582,7 +1828,7 @@
       }
     }
   },
-  "chatRailDetailCacheReadTokensLabel": "Cache read tokens: {count}",
+  "chatRailDetailCacheReadTokensLabel": "Session cache read tokens: {count}",
   "@chatRailDetailCacheReadTokensLabel": {
     "placeholders": {
       "count": {
@@ -1590,7 +1836,7 @@
       }
     }
   },
-  "chatRailDetailCacheWriteTokensLabel": "Cache write tokens: {count}",
+  "chatRailDetailCacheWriteTokensLabel": "Session cache write tokens: {count}",
   "@chatRailDetailCacheWriteTokensLabel": {
     "placeholders": {
       "count": {
@@ -1598,7 +1844,7 @@
       }
     }
   },
-  "chatRailDetailReasoningTokensLabel": "Reasoning tokens: {count}",
+  "chatRailDetailReasoningTokensLabel": "Session reasoning tokens: {count}",
   "@chatRailDetailReasoningTokensLabel": {
     "placeholders": {
       "count": {
@@ -1702,6 +1948,9 @@
     }
   },
   "settingsAppearanceSection": "Appearance",
+  "settingsChatSection": "Chat",
+  "chatSpellcheckTitle": "Check spelling",
+  "chatSpellcheckSubtitle": "Use the platform spell checker while composing messages",
   "themeModeSystem": "System",
   "themeModeLight": "Light",
   "themeModeDark": "Dark",
@@ -1711,7 +1960,7 @@
   "themePaletteAmber": "Amber",
   "themePaletteMulberry": "Mulberry",
   "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.",
-  "tipVoice": "Tap Speak and send to dictate and send in one step, or long-press it to review the transcript in the composer first.",
+  "tipVoice": "Tap the microphone for hands-free voice. Long-press to dictate for review. Wing reports listening and playback separately.",
   "tipApprovals": "Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.",
   "tipDismissTooltip": "Dismiss tip",
   "toolsLoading": "Loading tools",
@@ -1737,5 +1986,29 @@
   "localSetupRetryAction": "Check again",
   "localSetupConsentTitle": "Allow local Hermes setup?",
   "localSetupConsentBody": "Wing Link will run a verified Hermes installer when needed, create or update user-level service files, secure local API access, and start the Hermes gateway. It will not configure profiles or providers.",
-  "localSetupConsentAction": "Run setup"
+  "localSetupConsentAction": "Run setup",
+  "termuxSetupTitle": "Install Hermes Agent on this phone",
+  "termuxSetupBody": "Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.",
+  "termuxInstallAction": "Install Termux",
+  "termuxInstallGuideFailedMessage": "The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.",
+  "termuxCopyAction": "Copy setup command",
+  "termuxCopiedMessage": "Setup command copied. Open Termux and run it without changes.",
+  "termuxCopyFailedMessage": "The setup command could not be copied. Select the command and copy it manually.",
+  "termuxMetadataUnavailable": "This build cannot install the matching Wing Link release.",
+  "termuxRunStep": "Open Termux and run the copied command. Keep Termux in the foreground while setup finishes.",
+  "termuxReturnStep": "Tap the local link shown by Termux, then return here to review the connection.",
+  "termuxTierTwoNotice": "Android / Termux is Tier 2. Android may stop background processes; rerun the same command to recover.",
+  "enrollInstallOnPhoneAction": "Install Hermes Agent on this phone",
+  "enrollConnectedLocalBody": "Hermes Agent is connected on this phone. To configure the existing default profile, run hermes setup in Termux. To configure more in Wing, create a new profile with its provider and model, approve the request in Termux, retry the unchanged request, then pair once more to enroll that profile.",
+  "profileApprovalRequired": "Approve this request locally on the Wing Link host, then retry the unchanged setup. Run wing-link approvals list, then wing-link approvals approve {approvalId}.",
+  "@profileApprovalRequired": {
+    "placeholders": {
+      "approvalId": {
+        "type": "String"
+      }
+    }
+  },
+  "profileRetryApprovedSetup": "Retry approved setup",
+  "profileCancelSetup": "Cancel setup",
+  "profileApprovalExpired": "The local approval expired. Enter the credential again to start a new request."
 }

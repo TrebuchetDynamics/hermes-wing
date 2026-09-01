@@ -23,6 +23,10 @@ Thumbs.db
 .idea/
 *.iml
 
+# Local upstream reference checkouts
+/hermes-agent/
+/hermes-desktop/
+
 # Agent artifacts
 .pi/
 **/.pi/
@@ -35,8 +39,15 @@ codebase-map-understand.md
 
 # Node / Playwright
 node_modules/
+.eslintcache
+*.log
+*.log.*
+*.har
+*.trace.zip
 playwright/results.json
 playwright/test-results/
+playwright-report/
+blob-report/
 playwright/screenshots/*.png
 .maestro/device-evidence/
 phone-screenshot*.png
@@ -50,3 +61,10 @@ phone-screenshot*.png
 
 test-results/
 test/tooling/failures/
+
+# Local release artifacts
+*.apk
+*.aab
+*.ipa
+*.dSYM/
+*.dSYM.zip

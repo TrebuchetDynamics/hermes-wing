@@ -44,6 +44,34 @@ void main() {
       );
     });
 
+    test('a background completion reports its session exactly once', () {
+      observation.adopt(
+        _state(
+          activeSessionId: 'session-1',
+          messages: {
+            'session-2': [
+              _turn(
+                id: 'background',
+                sessionId: 'session-2',
+                status: HermesTurnStatus.streaming,
+              ),
+            ],
+          },
+        ),
+      );
+      final completed = _state(
+        activeSessionId: 'session-1',
+        messages: {
+          'session-2': [_turn(id: 'background', sessionId: 'session-2')],
+        },
+      );
+
+      expect(observation.observe(completed).completedReplySessionIds, {
+        'session-2',
+      });
+      expect(observation.observe(completed).completedReplySessionIds, isEmpty);
+    });
+
     test('a second reply is a new edge', () {
       observation.adopt(_state());
       observation.observe(

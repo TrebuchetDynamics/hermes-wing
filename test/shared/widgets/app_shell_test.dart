@@ -36,21 +36,39 @@ void _usePhoneSize(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('mobile shell has no persistent navigation bar', (tester) async {
-    _usePhoneSize(tester);
+  testWidgets(
+    'mobile shell keeps Chat, Settings, and More in bottom navigation',
+    (tester) async {
+      _usePhoneSize(tester);
 
-    await tester.pumpWidget(
-      _testApp(
-        const AppShell(
-          location: AppRoutes.hermes,
-          child: SizedBox(key: ValueKey('body')),
+      await tester.pumpWidget(
+        _testApp(
+          AppShell(
+            location: AppRoutes.hermes,
+            child: Scaffold(
+              appBar: AppBar(actions: const [AppShellMenuButton()]),
+              body: SizedBox(key: ValueKey('body')),
+            ),
+          ),
         ),
-      ),
-    );
+      );
 
-    expect(find.byKey(const ValueKey('body')), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-  });
+      expect(find.byKey(const ValueKey('body')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('mobile-shell-navigation-bar')),
+        findsOneWidget,
+      );
+      expect(find.text('Hermes'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('More'), findsOneWidget);
+      expect(find.byKey(const ValueKey('app-shell-menu-button')), findsNothing);
+
+      await tester.tap(find.text('More').hitTestable());
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, 'Office'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Hermes'), findsNothing);
+    },
+  );
 
   testWidgets('header menu exposes every app destination', (tester) async {
     _usePhoneSize(tester);
@@ -82,6 +100,42 @@ void main() {
       }
       expect(destination, findsOneWidget);
     }
+  });
+
+  testWidgets('mobile menu omits the current destination', (tester) async {
+    _usePhoneSize(tester);
+    final router = GoRouter(
+      initialLocation: AppRoutes.settings,
+      routes: [
+        GoRoute(
+          path: AppRoutes.settings,
+          builder: (context, state) =>
+              Scaffold(appBar: AppBar(actions: const [AppShellMenuButton()])),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(
+            FakeHermesChannel.disconnected(),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(ListTile, 'Settings'), findsNothing);
+    expect(find.widgetWithText(ListTile, 'Hermes'), findsOneWidget);
   });
 
   testWidgets('mobile menu prioritizes destinations over status summary', (

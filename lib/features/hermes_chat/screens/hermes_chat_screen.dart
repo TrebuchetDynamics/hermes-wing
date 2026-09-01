@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,28 +24,36 @@ import '../../../shared/security/wing_redaction.dart';
 import '../../../l10n/app_localizations_en.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../profiles/providers/profile_selection_provider.dart';
+import '../../providers/widgets/model_picker_sheet.dart';
+import '../widgets/session_model_picker_sheet.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../settings/providers/chat_preferences_provider.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
 import '../../voice/services/platform/voice_capture_platform.dart';
 import '../../voice/services/tts/hermes_agent_text_to_speech_service.dart';
+import '../../voice/services/tts/platform_text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
+import '../composer/attachments/hermes_image_attachment_normalizer.dart';
 import '../composer/attachments/staged_attachment.dart';
 import '../messaging/approvals/hermes_approval_queue.dart';
 import '../controllers/hermes_channel_observation.dart';
 import '../controllers/hermes_connection_form.dart';
 import '../controllers/hermes_follow_up_queue.dart';
+import '../voice/hermes_voice_failure.dart';
 import '../voice/hermes_voice_input_controller.dart';
 import '../gateways/gateway_contact.dart';
 import '../gateways/gateway_contacts_view.dart';
+import '../groups/chat_group_controller.dart';
 import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../providers/hermes_channel_provider.dart';
+import '../session/hermes_session_pin_store.dart';
 import '../widgets/hermes_profile_identity.dart';
 import '../presentation/hermes_rich_text.dart';
 
@@ -91,14 +100,20 @@ final hermesTextToSpeechServiceProvider = Provider<TextToSpeechService?>((ref) {
   final capabilities = ref.watch(
     hermesChannelStateProvider.select((state) => state.capabilities),
   );
-  if (channel is! HermesAudioChannel ||
-      capabilities == null ||
-      !HermesTransportPolicy(capabilities).supportsSpeechSynthesis) {
+  final TextToSpeechService service;
+  if (channel is HermesAudioChannel &&
+      capabilities != null &&
+      HermesTransportPolicy(capabilities).supportsSpeechSynthesis) {
+    service = ref.watch(hermesAgentTtsFactoryProvider)(
+      (channel as HermesAudioChannel).synthesizeSpeech,
+    );
+  } else if (kIsWeb || defaultTargetPlatform != TargetPlatform.linux) {
+    // Agent synthesis is authoritative when advertised. Device speech keeps
+    // replies usable with older Agents that do not expose audio_api.
+    service = PlatformTextToSpeechService();
+  } else {
     return null;
   }
-  final service = ref.watch(hermesAgentTtsFactoryProvider)(
-    (channel as HermesAudioChannel).synthesizeSpeech,
-  );
   ref.onDispose(
     () => fireAndForget(service.dispose(), 'Hermes Agent TTS disposal'),
   );
@@ -110,7 +125,16 @@ const _hermesBaseUrlHint =
     'Android emulator: http://10.0.2.2:8642\n'
     'Physical device: LAN/VPN/Tailscale URL';
 const _maxQueuedFollowUps = 5;
+const _maxComposerHistoryEntries = 50;
+const _maxUnreadCompletedSessions = 64;
+const _composerImageInsertionMimeTypes = <String>[
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+];
 const _configuredHermesBaseUrl = String.fromEnvironment('WING_HERMES_BASE_URL');
+const _hermesLocalBaseUrl = 'http://127.0.0.1:8642';
 const _composerEmojis = [
   '😀',
   '😂',
@@ -140,7 +164,36 @@ const _composerEmojis = [
 
 enum _ComposerMenuAction { sessions, handsFree }
 
+enum _HermesConnectionMode { local, remote, vpn, ssh }
+
 enum _TranscriptCopyFormat { text, markdown }
+
+typedef _ComposerDraftKey = ({
+  String gatewayId,
+  String profileId,
+  String sessionId,
+});
+
+const _maxComposerDraftEntries = 64;
+const _maxComposerDraftCharacters = 64 * 1024;
+
+final class _FailedDirectTurnPayload {
+  const _FailedDirectTurnPayload({
+    required this.sessionId,
+    required this.text,
+    this.imageDataUrl,
+    this.textAttachment,
+    this.attachmentName,
+  });
+
+  final String sessionId;
+  final String text;
+  final String? imageDataUrl;
+  final String? textAttachment;
+  final String? attachmentName;
+
+  bool get hasAttachment => imageDataUrl != null || textAttachment != null;
+}
 
 class _OpenSessionsIntent extends Intent {
   const _OpenSessionsIntent();
@@ -149,6 +202,50 @@ class _OpenSessionsIntent extends Intent {
 class _CreateSessionIntent extends Intent {
   const _CreateSessionIntent();
 }
+
+class _CycleActiveSessionIntent extends Intent {
+  const _CycleActiveSessionIntent(this.delta);
+
+  final int delta;
+}
+
+class _SelectActiveSessionOrdinalIntent extends Intent {
+  const _SelectActiveSessionOrdinalIntent(this.ordinal);
+
+  final int ordinal;
+}
+
+const _activeSessionOrdinalKeys = <(LogicalKeyboardKey, int)>[
+  (LogicalKeyboardKey.digit1, 1),
+  (LogicalKeyboardKey.digit2, 2),
+  (LogicalKeyboardKey.digit3, 3),
+  (LogicalKeyboardKey.digit4, 4),
+  (LogicalKeyboardKey.digit5, 5),
+  (LogicalKeyboardKey.digit6, 6),
+  (LogicalKeyboardKey.digit7, 7),
+  (LogicalKeyboardKey.digit8, 8),
+  (LogicalKeyboardKey.digit9, 9),
+  (LogicalKeyboardKey.numpad1, 1),
+  (LogicalKeyboardKey.numpad2, 2),
+  (LogicalKeyboardKey.numpad3, 3),
+  (LogicalKeyboardKey.numpad4, 4),
+  (LogicalKeyboardKey.numpad5, 5),
+  (LogicalKeyboardKey.numpad6, 6),
+  (LogicalKeyboardKey.numpad7, 7),
+  (LogicalKeyboardKey.numpad8, 8),
+  (LogicalKeyboardKey.numpad9, 9),
+];
+
+List<HermesSession> _switchableHermesSessions(
+  HermesChannelState state, {
+  Set<String> retainedSessionIds = const {},
+}) => [
+  for (final session in state.sessions)
+    if (session.id == state.activeSessionId ||
+        state.isSessionStreaming(session.id) ||
+        retainedSessionIds.contains(session.id))
+      session,
+];
 
 bool get _usesDesktopKeyboardShortcuts =>
     !kIsWeb &&
@@ -194,22 +291,112 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     with WidgetsBindingObserver {
   late final HermesConnectionForm _connectionForm;
   final _composerController = TextEditingController();
+  late final FocusNode _composerFocusNode;
   final _transcriptScrollController = ScrollController();
   late final HermesVoiceInputController _voiceInputController;
   StagedAttachment? _stagedAttachment;
+  _FailedDirectTurnPayload? _failedDirectTurn;
+  String? _attachmentError;
+  int _selectedLocalSlashCommandIndex = 0;
+  final Map<String, GlobalKey> _localSlashCommandKeys = {};
+  final _localSlashSuggestionsKey = GlobalKey();
+  String? _dismissedLocalSlashCommandDraft;
+  final LinkedHashMap<_ComposerDraftKey, List<String>> _composerHistories =
+      LinkedHashMap();
+  final LinkedHashMap<_ComposerDraftKey, String> _composerDrafts =
+      LinkedHashMap();
+  _ComposerDraftKey? _activeComposerDraftKey;
+  _ComposerDraftKey? _activeComposerHistoryKey;
+  int? _composerHistoryIndex;
+  String _composerHistoryDraft = '';
+  bool _applyingComposerHistory = false;
+  bool _composerCompositionActive = false;
+  int _composerCompositionRevision = 0;
+  bool _initialComposerFocusScheduled = false;
+  double? _transcriptPinchStartScale;
+  bool _profileSwitchPending = false;
 
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
+  late final ProviderSubscription<bool> _completionSoundSubscription;
+  bool _completionSoundEnabled = false;
   late final HermesGatewayDirectory _gatewayDirectory;
+  late final ChatGroupController _chatGroupController;
+  late final HermesSessionPinStore _sessionPins;
   late final HermesApprovalQueue _approvals;
   final HermesFollowUpQueue _followUps = HermesFollowUpQueue(
     capacity: _maxQueuedFollowUps,
   );
   final HermesChannelObservation _observation = HermesChannelObservation();
+  final LinkedHashSet<String> _unreadCompletedSessionIds = LinkedHashSet();
   bool _reconnectingOnResume = false;
+  bool _reconnectInFlight = false;
+  _HermesConnectionMode _connectionMode = _HermesConnectionMode.remote;
   late bool _editingConnection;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
+
+  void _startTranscriptPinch(ScaleStartDetails details) {
+    if (details.pointerCount < 2) return;
+    _transcriptPinchStartScale = ref
+        .read(wingChatPreferencesProvider)
+        .transcriptTextScale;
+  }
+
+  void _updateTranscriptPinch(ScaleUpdateDetails details) {
+    final startScale = _transcriptPinchStartScale;
+    if (startScale == null || details.pointerCount < 2) return;
+    ref
+        .read(wingChatPreferencesProvider.notifier)
+        .setTranscriptTextScale(startScale * details.scale);
+  }
+
+  void _endTranscriptPinch(ScaleEndDetails details) {
+    _transcriptPinchStartScale = null;
+  }
+
+  String _localizedVoiceFailureMessage(
+    HermesVoiceFailure failure,
+    String? detail,
+  ) {
+    final strings = AppLocalizations.of(context);
+    return switch (failure) {
+      HermesVoiceFailure.timedOut => strings.chatVoiceCaptureTimedOut,
+      HermesVoiceFailure.microphonePermissionDenied =>
+        strings.chatVoiceMicrophonePermissionDenied,
+      HermesVoiceFailure.deviceLanguageUnavailable =>
+        strings.chatVoiceDeviceLanguageUnavailable,
+      HermesVoiceFailure.deviceSpeechUnavailable =>
+        strings.chatVoiceDeviceSpeechUnavailable,
+      HermesVoiceFailure.noSpeech => strings.chatVoiceNoSpeechDetected,
+      HermesVoiceFailure.generic =>
+        detail == null || detail.isEmpty
+            ? strings.chatVoiceCaptureFailedFallback
+            : strings.chatVoiceCaptureFailed(detail),
+      HermesVoiceFailure.captureSessionChanged =>
+        strings.chatVoiceCaptureSessionChanged,
+      HermesVoiceFailure.inputUnavailable => strings.chatVoiceInputUnavailable,
+      HermesVoiceFailure.turnSendFailed =>
+        detail == null || detail.isEmpty
+            ? strings.chatVoiceTurnSendFailedFallback
+            : strings.chatVoiceTurnSendFailed(detail),
+      HermesVoiceFailure.shutdownTimedOut => strings.chatVoiceShutdownTimedOut,
+      HermesVoiceFailure.shutdownFailed => strings.chatVoiceShutdownFailed,
+      HermesVoiceFailure.playbackUnavailable =>
+        strings.chatVoicePlaybackUnavailable,
+      HermesVoiceFailure.playbackUnavailableContinuous =>
+        strings.chatVoicePlaybackUnavailableContinuous,
+      HermesVoiceFailure.playbackFailed => strings.chatVoicePlaybackFailed,
+      HermesVoiceFailure.playbackFailedContinuous =>
+        strings.chatVoicePlaybackFailedContinuous,
+      HermesVoiceFailure.playbackSessionChanged =>
+        strings.chatVoicePlaybackSessionChanged,
+      HermesVoiceFailure.playbackSessionChangedContinuous =>
+        strings.chatVoicePlaybackSessionChangedContinuous,
+      HermesVoiceFailure.pausedByLocalCommand =>
+        strings.chatVoicePausedByLocalCommand,
+    };
+  }
 
   @override
   void initState() {
@@ -222,6 +409,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       initialBaseUrl: _defaultHermesBaseUrl,
     )..addListener(_onConnectionFormChanged);
     _connectionForm.baseUrl.addListener(_onConnectionFormChanged);
+    _composerFocusNode = FocusNode(
+      debugLabel: 'Hermes composer',
+      onKeyEvent: (_, event) => _handleLocalSlashCommandKeyEvent(
+        event,
+        ref.read(hermesChannelProvider),
+      ),
+    );
+    HardwareKeyboard.instance.addHandler(_handleGlobalSlashCommandKeyEvent);
     _composerController.addListener(_onComposerChanged);
     _voiceInputController = HermesVoiceInputController(
       channel: () => ref.read(hermesChannelProvider),
@@ -233,12 +428,26 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           ref.read(hermesTextToSpeechServiceProvider),
       settings: () => ref.read(wingVoiceSettingsProvider),
       onDraft: _appendVoiceDraft,
+      failureMessage: _localizedVoiceFailureMessage,
+      continuousPausedMessage: (message) =>
+          AppLocalizations.of(context).chatVoiceContinuousPaused(message),
     )..addListener(_onVoiceInputChanged);
     _approvals = HermesApprovalQueue(
       channel: () => ref.read(hermesChannelProvider),
       onResolveError: _showApprovalError,
     )..addListener(_onApprovalsChanged);
     _gatewayDirectory = ref.read(hermesGatewayDirectoryProvider);
+    _chatGroupController = ChatGroupController();
+    unawaited(_chatGroupController.load());
+    _sessionPins = HermesSessionPinStore()..addListener(_onSessionPinsChanged);
+    unawaited(_sessionPins.load());
+    _completionSoundSubscription = ref.listenManual<bool>(
+      wingVoiceSettingsProvider.select(
+        (settings) => settings.completionSoundEnabled,
+      ),
+      (_, enabled) => _completionSoundEnabled = enabled,
+      fireImmediately: true,
+    );
     _channelProviderSubscription = ref.listenManual<HermesChannel>(
       hermesChannelProvider,
       (_, channel) => _subscribeToChannel(channel),
@@ -258,19 +467,27 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   @override
   void dispose() {
+    final subscribed = _subscribed;
+    _subscribed = null;
+    subscribed?.removeListener(_onChannelChanged);
     appShellNavigationVisible.value = true;
     WidgetsBinding.instance.removeObserver(this);
     _channelProviderSubscription.close();
+    _completionSoundSubscription.close();
     _voiceInputController.removeListener(_onVoiceInputChanged);
     _voiceInputController.dispose();
-    _subscribed?.removeListener(_onChannelChanged);
     _approvals.removeListener(_onApprovalsChanged);
     _approvals.dispose();
+    _chatGroupController.dispose();
+    _sessionPins.removeListener(_onSessionPinsChanged);
+    _sessionPins.dispose();
     _connectionForm.baseUrl.removeListener(_onConnectionFormChanged);
     _connectionForm.removeListener(_onConnectionFormChanged);
     _connectionForm.dispose();
     _composerController.removeListener(_onComposerChanged);
+    HardwareKeyboard.instance.removeHandler(_handleGlobalSlashCommandKeyEvent);
     _composerController.dispose();
+    _composerFocusNode.dispose();
     _transcriptScrollController.dispose();
     super.dispose();
   }
@@ -287,14 +504,96 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (mounted) setState(() {});
   }
 
+  void _selectConnectionMode(_HermesConnectionMode mode) {
+    if (_connectionMode == mode) return;
+    if ((mode == _HermesConnectionMode.local ||
+            mode == _HermesConnectionMode.ssh) &&
+        _connectionForm.baseUrl.text.trim().isEmpty) {
+      _connectionForm.baseUrl.text = _hermesLocalBaseUrl;
+    }
+    setState(() => _connectionMode = mode);
+  }
+
+  void _onSessionPinsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _cycleActiveSession(
+    BuildContext context,
+    HermesChannel channel,
+    HermesChannelState state,
+    int delta,
+  ) {
+    final sessions = _switchableHermesSessions(
+      state,
+      retainedSessionIds: _unreadCompletedSessionIds,
+    );
+    if (sessions.length < 2) return;
+    final current = sessions.indexWhere(
+      (session) => session.id == state.activeSessionId,
+    );
+    if (current < 0) return;
+    final next = (current + delta) % sessions.length;
+    unawaited(_selectSession(context, channel, sessions[next]));
+  }
+
+  void _selectActiveSessionOrdinal(
+    BuildContext context,
+    HermesChannel channel,
+    HermesChannelState state,
+    int ordinal,
+  ) {
+    final sessions = _switchableHermesSessions(
+      state,
+      retainedSessionIds: _unreadCompletedSessionIds,
+    );
+    if (sessions.length < 2) return;
+    final index = ordinal == 9 ? sessions.length - 1 : ordinal - 1;
+    if (index < 0 || index >= sessions.length) return;
+    final session = sessions[index];
+    if (session.id == state.activeSessionId) return;
+    unawaited(_selectSession(context, channel, session));
+  }
+
+  GatewayContactId _sessionPinContact(HermesChannelState state) {
+    return _gatewayDirectory.activeContactId ??
+        GatewayContactId(
+          gatewayId: 'direct',
+          profileId: state.selectedProfileId ?? 'default',
+        );
+  }
+
   void _onComposerChanged() {
+    final composing = _composerController.value.composing;
+    final isComposing = composing.isValid && !composing.isCollapsed;
+    final revision = ++_composerCompositionRevision;
+    if (isComposing) {
+      _composerCompositionActive = true;
+    } else if (_composerCompositionActive) {
+      scheduleMicrotask(() {
+        if (_composerCompositionRevision == revision) {
+          _composerCompositionActive = false;
+        }
+      });
+    }
+    _selectedLocalSlashCommandIndex = 0;
+    if (_dismissedLocalSlashCommandDraft != _composerController.text) {
+      _dismissedLocalSlashCommandDraft = null;
+    }
+    if (!_applyingComposerHistory) {
+      _composerHistoryIndex = null;
+      _composerHistoryDraft = '';
+    }
     if (mounted) setState(() {});
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_reconnectAfterResumeIfRecoverable());
+      fireAndForget(
+        _reconnectAfterResumeIfRecoverable(),
+        'Hermes reconnect after resume',
+      );
     } else {
       _voiceInputController.pause(
         _hermesStrings(context).chatShellVoicePausedBackgroundBody,
@@ -313,6 +612,120 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       text: draft,
       selection: TextSelection.collapsed(offset: draft.length),
     );
+    if (_usesDesktopKeyboardShortcuts) _composerFocusNode.requestFocus();
+  }
+
+  _ComposerDraftKey? _composerDraftKey(HermesChannelState state) {
+    final sessionId = state.activeSessionId;
+    final contact = _gatewayDirectory.activeContactId;
+    final profileId = state.selectedProfileId ?? contact?.profileId;
+    if (sessionId == null || profileId == null || profileId.isEmpty) {
+      return null;
+    }
+    return (
+      gatewayId: contact?.gatewayId ?? 'direct',
+      profileId: profileId,
+      sessionId: sessionId,
+    );
+  }
+
+  _ComposerDraftKey? _composerHistoryKey(HermesChannelState state) {
+    final sessionId = state.activeSessionId;
+    if (sessionId == null) return null;
+    final contact = _gatewayDirectory.activeContactId;
+    return (
+      gatewayId: contact?.gatewayId ?? 'direct',
+      profileId: state.selectedProfileId ?? contact?.profileId ?? 'default',
+      sessionId: sessionId,
+    );
+  }
+
+  void _syncComposerDraft(HermesChannelState state) {
+    final nextKey = _composerDraftKey(state);
+    final nextHistoryKey = _composerHistoryKey(state);
+    if (nextHistoryKey != _activeComposerHistoryKey) {
+      _activeComposerHistoryKey = nextHistoryKey;
+      _composerHistoryIndex = null;
+      _composerHistoryDraft = '';
+    }
+    if (nextKey == _activeComposerDraftKey) return;
+    final previousKey = _activeComposerDraftKey;
+    if (previousKey != null) {
+      _composerDrafts.remove(previousKey);
+      final text = _composerController.text;
+      if (text.isNotEmpty) {
+        final characters = text.characters;
+        _composerDrafts[previousKey] =
+            characters.length <= _maxComposerDraftCharacters
+            ? text
+            : characters.take(_maxComposerDraftCharacters).join();
+        while (_composerDrafts.length > _maxComposerDraftEntries) {
+          _composerDrafts.remove(_composerDrafts.keys.first);
+        }
+      }
+    }
+    _activeComposerDraftKey = nextKey;
+    _composerHistoryIndex = null;
+    _composerHistoryDraft = '';
+    final draft = nextKey == null ? '' : _composerDrafts.remove(nextKey) ?? '';
+    _composerController.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
+  }
+
+  void _rememberComposerText(String text) {
+    final prompt = text.trim();
+    final key = _activeComposerHistoryKey;
+    if (prompt.isEmpty || key == null) return;
+    final history = _composerHistories.remove(key) ?? <String>[];
+    history.add(prompt);
+    if (history.length > _maxComposerHistoryEntries) history.removeAt(0);
+    _composerHistories[key] = history;
+    while (_composerHistories.length > _maxComposerDraftEntries) {
+      _composerHistories.remove(_composerHistories.keys.first);
+    }
+    _composerHistoryIndex = null;
+    _composerHistoryDraft = '';
+  }
+
+  String? _recallPreviousComposerText() {
+    final key = _activeComposerHistoryKey;
+    final history = key == null ? null : _composerHistories[key];
+    if (history == null || history.isEmpty) return null;
+    final currentIndex = _composerHistoryIndex;
+    if (currentIndex == null) {
+      _composerHistoryDraft = _composerController.text;
+      _composerHistoryIndex = history.length - 1;
+    } else if (currentIndex > 0) {
+      _composerHistoryIndex = currentIndex - 1;
+    }
+    return history[_composerHistoryIndex!];
+  }
+
+  String? _recallNextComposerText() {
+    final key = _activeComposerHistoryKey;
+    final history = key == null ? null : _composerHistories[key];
+    final currentIndex = _composerHistoryIndex;
+    if (history == null || currentIndex == null) return null;
+    if (currentIndex < history.length - 1) {
+      _composerHistoryIndex = currentIndex + 1;
+      return history[_composerHistoryIndex!];
+    }
+    _composerHistoryIndex = null;
+    return _composerHistoryDraft;
+  }
+
+  void _applyComposerHistoryText(String text) {
+    _applyingComposerHistory = true;
+    try {
+      _composerController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    } finally {
+      _applyingComposerHistory = false;
+    }
   }
 
   void _setState(VoidCallback fn) => setState(fn);
@@ -339,7 +752,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         : selected.displayName;
     return TextButton.icon(
       key: const ValueKey('hermes-profile-switcher'),
-      onPressed: () => _showProfileSwitcher(context, channel, state),
+      onPressed: _profileSwitchPending
+          ? null
+          : () => _showProfileSwitcher(context, channel, state),
       icon: const Icon(Icons.support_agent_outlined),
       label: Text(
         _safeHermesUiPreview(label, maxLength: 24),
@@ -422,9 +837,27 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _voiceInputController.pause(
       _hermesStrings(context).chatShellVoicePausedSwitchingAgentsBody,
     );
-    setState(_approvals.reset);
+    setState(() {
+      _profileSwitchPending = true;
+      _approvals.reset();
+    });
     try {
-      await channel.selectProfile(profileId);
+      final activeContact = _gatewayDirectory.activeContactId;
+      if (activeContact == null) {
+        await channel.selectProfile(profileId);
+      } else {
+        await _gatewayDirectory.selectProfileOnActiveGateway(
+          profileId,
+          discoveredProfile: channel.state.profiles
+              .where((profile) => profile.id == profileId)
+              .firstOrNull,
+        );
+      }
+      if (!mounted) return;
+      setState(() {
+        _stagedAttachment = null;
+        _attachmentError = null;
+      });
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -436,6 +869,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           ),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _profileSwitchPending = false);
     }
   }
 
@@ -616,6 +1051,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         (hasGateways || !state.isConnected) &&
         !legacyConnected;
     final activeContact = directory.activeContact;
+    if (state.isConnected) {
+      _activeComposerDraftKey ??= _composerDraftKey(state);
+      _activeComposerHistoryKey ??= _composerHistoryKey(state);
+    }
     final selectedProfile = state.profiles
         .where((profile) => profile.id == state.selectedProfileId)
         .firstOrNull;
@@ -624,12 +1063,33 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       advertisedColor: selectedProfile?.color,
     );
     _requestShellNavigation(activeContact == null);
+    final switchableSessions = _switchableHermesSessions(
+      state,
+      retainedSessionIds: _unreadCompletedSessionIds,
+    );
     final desktopShortcuts = <ShortcutActivator, Intent>{
       if (_usesDesktopKeyboardShortcuts && state.isConnected) ...{
         const SingleActivator(LogicalKeyboardKey.keyK, control: true):
             const _OpenSessionsIntent(),
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
             const _OpenSessionsIntent(),
+        if (switchableSessions.length > 1) ...{
+          const SingleActivator(LogicalKeyboardKey.tab, control: true):
+              const _CycleActiveSessionIntent(1),
+          const SingleActivator(
+            LogicalKeyboardKey.tab,
+            control: true,
+            shift: true,
+          ): const _CycleActiveSessionIntent(
+            -1,
+          ),
+          for (final entry in _activeSessionOrdinalKeys) ...{
+            SingleActivator(entry.$1, control: true):
+                _SelectActiveSessionOrdinalIntent(entry.$2),
+            SingleActivator(entry.$1, meta: true):
+                _SelectActiveSessionOrdinalIntent(entry.$2),
+          },
+        },
       },
       if (_usesDesktopKeyboardShortcuts &&
           state.isConnected &&
@@ -653,7 +1113,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               ),
         title: activeContact == null
             ? Text(
-                showingDirectory
+                _editingConnection
+                    ? strings.chatLayoutConnectTitle
+                    : showingDirectory
                     ? strings.agentsTitle
                     : _safeHermesUiPreview(
                         activeSession?.title ?? strings.chatShellHermesTitle,
@@ -748,7 +1210,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
           if (!showingDirectory && state.isConnected) ...[
-            if (activeContact == null && state.profiles.isNotEmpty)
+            if (state.profiles.isNotEmpty)
               _buildProfileSwitcher(context, channel, state),
             if (!compactAppBar) ...[
               IconButton(
@@ -872,6 +1334,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               onRefresh: directory.refresh,
               onOpen: (id) => unawaited(_openGatewayContact(id)),
               onConnect: () => context.push(AppRoutes.enroll),
+              groupController: _chatGroupController,
             )
           : state.isConnected
           ? _buildChat(context, channel, state)
@@ -895,6 +1358,30 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 return null;
               },
             ),
+            _CycleActiveSessionIntent:
+                CallbackAction<_CycleActiveSessionIntent>(
+                  onInvoke: (intent) {
+                    _cycleActiveSession(
+                      context,
+                      channel,
+                      channel.state,
+                      intent.delta,
+                    );
+                    return null;
+                  },
+                ),
+            _SelectActiveSessionOrdinalIntent:
+                CallbackAction<_SelectActiveSessionOrdinalIntent>(
+                  onInvoke: (intent) {
+                    _selectActiveSessionOrdinal(
+                      context,
+                      channel,
+                      channel.state,
+                      intent.ordinal,
+                    );
+                    return null;
+                  },
+                ),
           },
           child: Focus(autofocus: true, child: content),
         ),
@@ -977,19 +1464,22 @@ List<String> _hermesTranscriptSections(
   for (final turn in turns) {
     final toolCall = turn.toolCall;
     if (turn.kind == HermesTurnKind.toolCall && toolCall != null) {
-      final detail = (toolCall.result ?? toolCall.preview)?.trim();
-      final heading = strings.transcriptToolHeading(toolCall.name);
+      final status = switch (toolCall.status) {
+        'failed' => strings.chatTranscriptToolStatusNeedsAttentionLabel,
+        'running' => strings.chatTranscriptToolStatusRunningLabel,
+        _ => strings.chatTranscriptToolStatusCompletedLabel,
+      };
+      final heading = strings.chatTranscriptHostActivityTitle;
       sections.add(
         [
           markdown ? '## $heading' : heading,
-          strings.transcriptToolStatus(toolCall.status),
-          if (detail?.isNotEmpty ?? false) detail!,
+          status,
         ].join(markdown ? '\n\n' : '\n'),
       );
       continue;
     }
 
-    final text = turn.text.trim();
+    final text = _safeHermesUiText(turn.text.trim());
     final attachment = turn.attachment;
     final attachmentText = attachment == null
         ? null

@@ -1,7 +1,14 @@
 part of '../screens/hermes_chat_screen.dart';
 
+enum _QueuedFollowUpMenuAction { openSession, copy, sendNow, cancelAll }
+
 extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   void _sendComposerText(HermesChannel channel) {
+    final composing = _composerController.value.composing;
+    if (_composerCompositionActive ||
+        composing.isValid && !composing.isCollapsed) {
+      return;
+    }
     final text = _composerController.text.trim();
     final staged = _stagedAttachment;
     if (text.isEmpty && staged == null) return;
@@ -9,30 +16,42 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       return;
     }
     if (_isTurnActive(channel.state)) {
-      if (staged != null) {
-        _setState(() {
-          _followUps.error =
-              'Wait for Hermes to finish before sending an attachment.';
-        });
+      if (staged == null && channel.canSteerActiveTurn) {
+        _rememberComposerText(text);
+        _composerController.clear();
+        _setState(() => _followUps.error = null);
+        unawaited(_steerActiveTurn(channel, text));
         return;
       }
       if (_followUps.isFull) {
         _setState(() {
-          _followUps.error =
-              'Queued follow-ups are full ($_maxQueuedFollowUps). Wait for Hermes to finish before adding more.';
+          _followUps.error = AppLocalizations.of(
+            context,
+          ).chatQueuedFullError(_maxQueuedFollowUps);
         });
         return;
       }
+      _rememberComposerText(text);
       _composerController.clear();
       _setState(() {
-        _followUps.enqueue(text, channel.state.activeSessionId);
+        _stagedAttachment = null;
+        _attachmentError = null;
+        _followUps.enqueue(
+          text,
+          channel.state.activeSessionId,
+          imageDataUrl: staged?.imageDataUrl,
+          textAttachment: staged?.textContent,
+          attachmentName: staged?.name,
+        );
       });
       return;
     }
+    _rememberComposerText(text);
     _composerController.clear();
     _setState(() {
       _followUps.error = null;
       _stagedAttachment = null;
+      _attachmentError = null;
     });
     _sendText(
       channel,
@@ -43,37 +62,119 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     );
   }
 
+  ContentInsertionConfiguration get _composerContentInsertionConfiguration =>
+      ContentInsertionConfiguration(
+        allowedMimeTypes: _composerImageInsertionMimeTypes,
+        onContentInserted: _insertComposerContent,
+      );
+
+  bool _rejectAdditionalComposerAttachment() {
+    if (_stagedAttachment == null) return false;
+    _showAttachmentError(
+      AppLocalizations.of(context).chatAttachmentRemoveCurrentError,
+    );
+    return true;
+  }
+
+  void _insertComposerContent(KeyboardInsertedContent content) {
+    if (_rejectAdditionalComposerAttachment()) return;
+    final strings = AppLocalizations.of(context);
+    final bytes = content.data;
+    if (bytes == null || bytes.isEmpty) {
+      _showAttachmentError(strings.chatAttachmentInsertedImageReadError);
+      return;
+    }
+    if (bytes.length > maxImageAttachmentInputBytes) {
+      _showAttachmentError(strings.chatAttachmentImageSizeError);
+      return;
+    }
+    final mimeType = supportedImageMimeType(bytes);
+    if (mimeType == null) {
+      _showAttachmentError(strings.chatAttachmentPastedImageTypeError);
+      return;
+    }
+    final extension = switch (mimeType) {
+      'image/png' => 'png',
+      'image/jpeg' => 'jpg',
+      'image/gif' => 'gif',
+      'image/webp' => 'webp',
+      _ => 'image',
+    };
+    final name = 'pasted-image.$extension';
+    if (bytes.length <= maxImageAttachmentBytes) {
+      _setState(() {
+        _attachmentError = null;
+        _stagedAttachment = StagedImageAttachment(
+          name: name,
+          bytes: bytes,
+          mimeType: mimeType,
+        );
+      });
+      return;
+    }
+    unawaited(
+      _stageComposerImage(name: name, bytes: bytes, mimeType: mimeType),
+    );
+  }
+
+  Future<void> _stageComposerImage({
+    required String name,
+    required Uint8List bytes,
+    required String mimeType,
+  }) async {
+    final normalized = await normalizeHermesImageAttachment(
+      name: name,
+      bytes: bytes,
+      mimeType: mimeType,
+    );
+    if (!mounted) return;
+    if (normalized == null) {
+      _showAttachmentError(
+        AppLocalizations.of(context).chatAttachmentImageSizeError,
+      );
+      return;
+    }
+    _setState(() {
+      _attachmentError = null;
+      _stagedAttachment = StagedImageAttachment(
+        name: normalized.name,
+        bytes: normalized.bytes,
+        mimeType: normalized.mimeType,
+      );
+    });
+  }
+
   Future<void> _pickAttachment() async {
+    if (_rejectAdditionalComposerAttachment()) return;
+    final strings = AppLocalizations.of(context);
     try {
       final file = await ref.read(hermesAttachmentPickerProvider)();
       if (file == null || !mounted) return;
       final length = await file.length();
       final isText = isTextAttachment(name: file.name, mimeType: file.mimeType);
       if (isText && length > maxTextAttachmentBytes) {
-        _showAttachmentError('Text files must be 256 KB or smaller.');
+        _showAttachmentError(strings.chatAttachmentTextSizeError);
         return;
       }
-      if (!isText && length > maxImageAttachmentBytes) {
-        _showAttachmentError('Images must be 10 MB or smaller.');
+      if (!isText && length > maxImageAttachmentInputBytes) {
+        _showAttachmentError(strings.chatAttachmentImageSizeError);
         return;
       }
       final bytes = await file.readAsBytes();
       final mimeType = supportedImageMimeType(bytes);
       if (mimeType != null) {
-        if (!mounted) return;
-        _setState(() {
-          _stagedAttachment = StagedImageAttachment(
-            name: file.name,
-            bytes: bytes,
-            mimeType: mimeType,
-          );
-        });
+        await _stageComposerImage(
+          name: file.name,
+          bytes: bytes,
+          mimeType: mimeType,
+        );
         return;
       }
       if (isText) {
         final content = utf8.decode(bytes);
         if (!mounted) return;
         _setState(() {
+          _attachmentError = null;
           _stagedAttachment = StagedTextAttachment(
             name: file.name,
             content: content,
@@ -81,37 +182,45 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
         });
         return;
       }
-      _showAttachmentError(
-        'Hermes accepts PNG, JPEG, GIF, WebP, and UTF-8 text files; PDFs, binary files, and videos cannot be sent.',
-      );
+      _showAttachmentError(strings.chatAttachmentUnsupportedTypeError);
     } on FormatException {
       if (mounted) {
-        _showAttachmentError('Text attachments must contain valid UTF-8.');
+        _showAttachmentError(strings.chatAttachmentInvalidUtf8Error);
       }
     } catch (error) {
       if (mounted) {
         _showAttachmentError(
-          'Could not open attachment: ${_safeHermesUiError(error)}',
+          strings.chatAttachmentOpenError(_safeAttachmentErrorDetail(error)),
         );
       }
     }
   }
 
+  String _safeAttachmentErrorDetail(Object error) {
+    final detail = error.toString().replaceFirst(
+      RegExp(r'^(?:Bad state|Exception):\s*'),
+      '',
+    );
+    return _safeHermesUiError(detail);
+  }
+
   void _showAttachmentError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    _setState(() => _attachmentError = message);
   }
 
   bool _isTurnActive(HermesChannelState state) =>
       state.activeMessages.isNotEmpty &&
       state.activeMessages.last.status == HermesTurnStatus.streaming;
 
-  bool _canSendTurns(HermesChannelState state) {
-    if (state.activeSessionId == null || state.hasUnreconciledRun) return false;
+  bool _hasChatTransport(HermesChannelState state) {
     final capabilities = state.capabilities;
     if (capabilities == null) return true;
     return HermesTransportPolicy(capabilities).supportsAnyChatTransport;
+  }
+
+  bool _canSendTurns(HermesChannelState state) {
+    if (state.activeSessionId == null || state.hasUnreconciledRun) return false;
+    return _hasChatTransport(state);
   }
 
   bool _canRespondToApprovals(HermesChannelState state) {
@@ -121,6 +230,29 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canCreateSession(HermesChannelState state) => state.canCreateSessions;
+
+  Future<void> _steerActiveTurn(HermesChannel channel, String text) async {
+    try {
+      await channel.steerActiveTurn(text);
+    } catch (error) {
+      if (!mounted || !channel.state.isConnected) return;
+      if (_composerController.text.isEmpty) {
+        _composerController.text = text;
+        _composerController.selection = TextSelection.collapsed(
+          offset: text.length,
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).chatSteerFailed(_safeHermesUiError(error)),
+          ),
+        ),
+      );
+    }
+  }
 
   void _sendQueuedFollowUpIfIdle(HermesChannel channel) {
     final queued = _followUps.takeNextIfEligible(
@@ -134,13 +266,19 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       queued.text,
       requeueOnFailure: true,
       requeueSessionId: queued.sessionId,
+      imageDataUrl: queued.imageDataUrl,
+      textAttachment: queued.textAttachment,
+      attachmentName: queued.attachmentName,
     );
   }
 
   void _dropQueuedFollowUpsForMissingSessions(HermesChannelState state) {
-    _followUps.dropForMissingSessions(
-      state.sessions.map((session) => session.id).toSet(),
-    );
+    final knownSessionIds = state.sessions.map((session) => session.id).toSet();
+    _followUps.dropForMissingSessions(knownSessionIds);
+    final retained = _failedDirectTurn;
+    if (retained != null && !knownSessionIds.contains(retained.sessionId)) {
+      _failedDirectTurn = null;
+    }
   }
 
   bool _canSendQueuedFollowUp(HermesChannelState state) =>
@@ -163,25 +301,36 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     if (!_canOpenQueuedFollowUpSession(channel.state)) return;
     final sessionId = _followUps.next?.sessionId;
     if (sessionId == null) return;
+    final strings = AppLocalizations.of(context);
     try {
       await channel.selectSession(sessionId);
     } catch (error) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Could not open queued follow-up session: ${_safeHermesUiError(error)}',
-          ),
-        ),
-      );
+      _setState(() {
+        _followUps.error = strings.chatQueuedOpenSessionError(
+          _safeHermesUiError(error),
+        );
+      });
     }
   }
 
   void _retryLastFailedTurn(HermesChannel channel) {
     if (!_canSendTurns(channel.state)) return;
-    final text = _retryableFailedUserText(channel.state);
-    if (text == null) return;
-    _sendText(channel, text);
+    final retryableText = _retryableFailedUserText(channel.state);
+    if (retryableText == null) return;
+    final retained = _failedDirectTurn;
+    if (retained != null &&
+        retained.sessionId == channel.state.activeSessionId) {
+      _sendText(
+        channel,
+        retained.text,
+        imageDataUrl: retained.imageDataUrl,
+        textAttachment: retained.textAttachment,
+        attachmentName: retained.attachmentName,
+      );
+      return;
+    }
+    _sendText(channel, retryableText);
   }
 
   void _sendText(
@@ -194,6 +343,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     String? attachmentName,
   }) {
     final sessionId = requeueSessionId ?? channel.state.activeSessionId;
+    if (!requeueOnFailure) _failedDirectTurn = null;
     if (ref.read(wingVoiceSettingsProvider).speakRepliesEnabled) {
       _voiceInputController.speakNextReply();
     }
@@ -206,59 +356,90 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
             attachmentName: attachmentName,
           )
           .catchError((Object error) {
-            if (!mounted || !requeueOnFailure || !channel.state.isConnected) {
+            if (!mounted || !channel.state.isConnected) return;
+            if (requeueOnFailure) {
+              _setState(
+                () => _followUps.requeueFailed(
+                  text,
+                  sessionId,
+                  imageDataUrl: imageDataUrl,
+                  textAttachment: textAttachment,
+                  attachmentName: attachmentName,
+                  message: AppLocalizations.of(
+                    context,
+                  ).chatQueuedSendError(_safeHermesUiError(error)),
+                ),
+              );
               return;
             }
-            _setState(
-              () => _followUps.requeueFailed(
-                text,
-                sessionId,
-                message:
-                    'Could not send queued follow-up: ${_safeHermesUiError(error)}',
-              ),
-            );
+            if (sessionId == null ||
+                channel.state.activeSessionId != sessionId) {
+              return;
+            }
+            _setState(() {
+              _failedDirectTurn = _FailedDirectTurnPayload(
+                sessionId: sessionId,
+                text: text,
+                imageDataUrl: imageDataUrl,
+                textAttachment: textAttachment,
+                attachmentName: attachmentName,
+              );
+            });
           }),
     );
   }
 
   String? _retryableFailedUserText(HermesChannelState state) {
     final turns = state.activeMessages;
-    for (var index = turns.length - 1; index > 0; index--) {
-      final turn = turns[index];
-      if (turn.author != HermesTurnAuthor.assistant ||
-          turn.status != HermesTurnStatus.failed) {
-        continue;
-      }
-      for (var userIndex = index - 1; userIndex >= 0; userIndex--) {
-        final userTurn = turns[userIndex];
-        if (userTurn.author == HermesTurnAuthor.user &&
-            userTurn.text.trim().isNotEmpty) {
-          return userTurn.text.trim();
-        }
-      }
+    if (turns.length < 2) return null;
+    final assistantTurn = turns.last;
+    final userTurn = turns[turns.length - 2];
+    if (assistantTurn.author != HermesTurnAuthor.assistant ||
+        assistantTurn.status != HermesTurnStatus.failed ||
+        userTurn.author != HermesTurnAuthor.user) {
+      return null;
     }
-    return null;
+    final text = userTurn.text.trim();
+    if (text.isNotEmpty) return text;
+    final retained = _failedDirectTurn;
+    return retained != null &&
+            retained.sessionId == state.activeSessionId &&
+            retained.hasAttachment
+        ? ''
+        : null;
   }
 
   String _queuedFollowUpSummary(HermesChannelState state) {
+    final strings = AppLocalizations.of(context);
     final count = _followUps.length;
-    final label = count == 1 ? 'follow-up' : 'follow-ups';
     final preview = _followUps.pending
         .take(2)
-        .map((queued) => _queuedFollowUpPreview(queued.text))
+        .map((queued) => _queuedFollowUpPreview(queued, strings))
         .join(' • ');
     final remaining = count - 2;
-    final suffix = remaining > 0 ? ' • +$remaining more' : '';
-    final waiting = !_canSendTurns(state)
-        ? ' Waiting for a supported Hermes chat transport.'
-        : _followUps.next?.sessionId != state.activeSessionId
-        ? ' Waiting for the original session.'
+    final suffix = remaining > 0
+        ? ' • ${strings.chatQueuedMore(remaining)}'
         : '';
-    return 'Queued $count $label after current reply: $preview$suffix$waiting';
+    final waiting = !_canSendTurns(state)
+        ? ' ${strings.chatQueuedWaitingForTransport}'
+        : _followUps.next?.sessionId != state.activeSessionId
+        ? ' ${strings.chatQueuedWaitingForOriginalSession}'
+        : '';
+    return '${strings.chatQueuedSummary(count, preview)}$suffix$waiting';
   }
 
-  String _queuedFollowUpPreview(String text) =>
-      _safeHermesUiPreview(text, maxLength: 48);
+  String _queuedFollowUpPreview(
+    QueuedFollowUp queued,
+    AppLocalizations strings,
+  ) {
+    final text = _safeHermesUiPreview(queued.text, maxLength: 48);
+    final attachmentName = queued.attachmentName;
+    if (attachmentName == null || attachmentName.isEmpty) return text;
+    final attachment = strings.chatQueuedAttachmentPreview(
+      _safeHermesUiPreview(attachmentName, maxLength: 48),
+    );
+    return text.isEmpty ? attachment : '$text · $attachment';
+  }
 
   String _queuedFollowUpDetailsSummary(HermesChannelState state) {
     final buffer = StringBuffer()
@@ -273,13 +454,76 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       ..writeln('Can send now: ${_canSendQueuedFollowUp(state)}');
     var index = 1;
     for (final queued in _followUps.pending.take(_maxQueuedFollowUps)) {
-      buffer.writeln(
-        '$index. ${_safeHermesUiPreview(queued.text, maxLength: 160)}',
-      );
+      final text = _safeHermesUiPreview(queued.text, maxLength: 160);
+      final attachment = queued.attachmentName == null
+          ? ''
+          : ' [attachment: ${_safeHermesUiPreview(queued.attachmentName!, maxLength: 80)}]';
+      buffer.writeln('$index. $text$attachment');
       index += 1;
     }
     buffer.write('Secrets: redacted');
     return buffer.toString();
+  }
+
+  Future<void> _manageQueuedFollowUps(BuildContext context) async {
+    if (_followUps.isEmpty) return;
+    final strings = AppLocalizations.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final pending = _followUps.pending;
+          return AlertDialog(
+            key: const ValueKey('hermes-queued-follow-up-manage-dialog'),
+            title: Text(strings.chatQueuedManageTitle(pending.length)),
+            content: SizedBox(
+              width: 420,
+              height: pending.length * 72.0,
+              child: ListView.separated(
+                itemCount: pending.length,
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final queued = pending[index];
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      _queuedFollowUpPreview(queued, strings),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Semantics(
+                      key: ValueKey('hermes-queued-follow-up-remove-$index'),
+                      button: true,
+                      label: strings.chatQueuedCancelOneAction,
+                      child: ExcludeSemantics(
+                        child: IconButton(
+                          tooltip: strings.chatQueuedCancelOneAction,
+                          onPressed: () {
+                            _setState(() => _followUps.removeAt(index));
+                            if (_followUps.isEmpty) {
+                              Navigator.of(dialogContext).pop();
+                              return;
+                            }
+                            setDialogState(() {});
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(strings.closeAction),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _confirmClearQueuedFollowUps(BuildContext context) async {

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -83,6 +84,7 @@ type profileHarness struct {
 	profiles            map[string]string
 	readErr             error
 	failReadAfterCreate bool
+	failCreateApplied   bool
 	retainRenameSource  bool
 	cancelRequest       context.CancelFunc
 	approvals           *ApprovalStore
@@ -175,6 +177,9 @@ func newProfileHarness(t *testing.T) *profileHarness {
 			switch {
 			case len(args) >= 4 && reflect.DeepEqual(args[:2], []string{"profile", "create"}):
 				harness.profiles[args[2]] = "stopped"
+				if harness.failCreateApplied {
+					return errors.New("create reported failure after applying")
+				}
 				if harness.failReadAfterCreate {
 					harness.readErr = errors.New("persistent post-create inventory failure")
 				}
@@ -269,16 +274,21 @@ func (h *profileHarness) request(t *testing.T, method, path string, body any, au
 	}
 	response := doRequest()
 	if response.StatusCode == http.StatusAccepted && h.approvals != nil {
+		responseBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = response.Body.Close()
 		var pending struct {
 			ApprovalID string `json:"approval_id"`
 		}
-		if err := json.NewDecoder(response.Body).Decode(&pending); err == nil && pending.ApprovalID != "" {
-			_ = response.Body.Close()
+		if json.Unmarshal(responseBody, &pending) == nil && pending.ApprovalID != "" {
 			if _, err := h.approvals.Decide(pending.ApprovalID, true); err != nil {
 				t.Fatal(err)
 			}
 			return doRequest()
 		}
+		response.Body = io.NopCloser(bytes.NewReader(responseBody))
 	}
 	return response
 }
@@ -308,7 +318,7 @@ func TestWingLinkProfileRoutesAreExposedButProviderRoutesStayQuarantined(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := newWingLinkServer(backend, store, &providerBackend{})
+	handler := newWingLinkServer(backend, store)
 	cases := []struct {
 		method string
 		path   string
@@ -418,6 +428,9 @@ func TestServerFailsClosedWhenAuditLogIsUnsafe(t *testing.T) {
 	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/healthz", nil))
 	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), "host_state_unavailable") {
 		t.Fatalf("unsafe audit state response = %d %s", response.Code, response.Body.String())
+	}
+	if response.Header().Get("Cache-Control") != "no-store" || response.Header().Get("Wing-Protocol") == "" {
+		t.Fatalf("unsafe audit state response omitted safety headers: %v", response.Header())
 	}
 }
 
@@ -775,6 +788,28 @@ func TestProfileCreateRollsBackWhenPostCreateInventoryReadFails(t *testing.T) {
 	}
 }
 
+func TestProfileCreateRollsBackWhenCLIReportsAppliedFailure(t *testing.T) {
+	harness := newProfileHarness(t)
+	harness.failCreateApplied = true
+	response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": " AppliedQA ",
+	}, true, nil)
+	if response.StatusCode != http.StatusBadGateway {
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+	_ = response.Body.Close()
+	if _, exists := harness.profiles["appliedqa"]; exists {
+		t.Fatal("profile survived an applied create failure")
+	}
+	want := [][]string{
+		{"profile", "create", "appliedqa", "--no-alias"},
+		{"profile", "delete", "--yes", "appliedqa"},
+	}
+	if !reflect.DeepEqual(harness.commands, want) {
+		t.Fatalf("commands = %#v, want %#v", harness.commands, want)
+	}
+}
+
 func TestProfileCreateRollsBackWhenProviderCredentialSetupFails(t *testing.T) {
 	harness := newProfileHarness(t)
 	harness.secretErr = errors.New("credential rejected")
@@ -792,6 +827,64 @@ func TestProfileCreateRollsBackWhenProviderCredentialSetupFails(t *testing.T) {
 	wantLast := []string{"profile", "delete", "--yes", "brokenqa"}
 	if len(harness.commands) == 0 || !reflect.DeepEqual(harness.commands[len(harness.commands)-1], wantLast) {
 		t.Fatalf("commands = %#v", harness.commands)
+	}
+}
+
+func TestRoutineProfileCreateReplaysExactKeyWithoutApprovalOrMutation(t *testing.T) {
+	harness := newProfileHarness(t)
+	missingKeyRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/profiles",
+		strings.NewReader(`{"name":"missingkey"}`),
+	)
+	missingKeyRequest.Header.Set("Authorization", "Bearer "+harness.token)
+	missingKeyRequest.Header.Set("Content-Type", "application/json")
+	missingKeyResponse := httptest.NewRecorder()
+	harness.handler.ServeHTTP(missingKeyResponse, missingKeyRequest)
+	if missingKeyResponse.Code != http.StatusPreconditionRequired || len(harness.commands) != 0 {
+		t.Fatalf("missing key status=%d commands=%#v", missingKeyResponse.Code, harness.commands)
+	}
+
+	headers := map[string]string{"Idempotency-Key": "routine-create-replay"}
+	first := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": "RoutineQA",
+	}, true, headers)
+	if first.StatusCode != http.StatusCreated {
+		t.Fatalf("first status = %d", first.StatusCode)
+	}
+	_ = first.Body.Close()
+
+	replay := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": "RoutineQA",
+	}, true, headers)
+	if replay.StatusCode != http.StatusAccepted {
+		t.Fatalf("replay status = %d", replay.StatusCode)
+	}
+	var replayBody struct {
+		Replayed  bool           `json:"replayed"`
+		Operation OperationEvent `json:"operation"`
+	}
+	decodeBody(t, replay, &replayBody)
+	if !replayBody.Replayed || !replayBody.Operation.Terminal || replayBody.Operation.Phase != "committed" {
+		t.Fatalf("replay = %#v", replayBody)
+	}
+	if len(harness.commands) != 1 {
+		t.Fatalf("routine create mutated %d times: %#v", len(harness.commands), harness.commands)
+	}
+	pending, err := harness.approvals.List()
+	if err != nil || len(pending) != 0 {
+		t.Fatalf("routine create prompted for approval: %#v err=%v", pending, err)
+	}
+
+	conflict := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+		"name": "differentqa",
+	}, true, headers)
+	if conflict.StatusCode != http.StatusConflict {
+		t.Fatalf("conflict status = %d", conflict.StatusCode)
+	}
+	_ = conflict.Body.Close()
+	if len(harness.commands) != 1 {
+		t.Fatalf("conflicting replay mutated: %#v", harness.commands)
 	}
 }
 

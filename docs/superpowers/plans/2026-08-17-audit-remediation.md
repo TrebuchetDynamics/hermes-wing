@@ -27,6 +27,7 @@
 **Status:** Implementation complete in the working tree; not yet committed.
 
 **Files:**
+
 - Commit as one logical change: pubspec.yaml, pubspec.lock, the deleted lib/features/voice/services/tts/pocket_speech_* files, lib/features/voice/services/tts/text_to_speech_service.dart, and the platform plugin registrants.
 
 **Context:** The working tree removes the pocket_speech git dependency (a shell-based TTS engine) and replaces it with a _FallbackTtsBackend state machine inside FallbackTextToSpeechService so late audio from a stopped primary can never start after pause/navigation.
@@ -66,6 +67,7 @@ Merge the branch; re-run `flutter test --concurrency=1` on main. Expected: green
 **Status:** DONE in this session (the failing test was part of the in-flight worktree).
 
 **Files:**
+
 - Modify: lib/core/hermes/channel/api_channel/hermes_api_channel_profiles.dart:294-296
 - Test: test/core/hermes/channel/hermes_api_channel_test.dart:1023-1061 ("deleting the final profile clears every profile-owned snapshot")
 
@@ -104,6 +106,7 @@ Expected: all channel tests pass (the profile-deletion tests included).
 ## Task 0.3: Rerun the complete validation gate and record evidence
 
 **Files:**
+
 - Modify: docs/quality/evidence-matrix.md
 
 - [ ] **Step 1: Run the full gate**
@@ -130,6 +133,7 @@ Expected: checker passes; no row stale.
 ## Task 0.4: Document the vendored forks
 
 **Files:**
+
 - Create: third_party/speech_to_text/CHANGELOG.md, third_party/speech_to_text/README.md, third_party/malsami/README.md
 
 - [ ] **Step 1: Write fork rationale**
@@ -149,6 +153,7 @@ Add to test/tooling/: assert that pubspec.yaml pins the documented upstream comm
 ## Task 1.1: Replace the sha256(apiKey) cache discriminator
 
 **Files:**
+
 - Modify: lib/core/hermes/channel/hermes_api_channel.dart:2-3,108-116
 
 **Why:** _recentTurnKey derives its discriminator from sha256(apiKey). The key is already in memory; hashing a low-entropy credential into a cache key adds no isolation and a heap dump can still recover the key. crypto and dart:convert are imported only for this line (verified: grep shows usage at line 113 only).
@@ -228,6 +233,7 @@ git commit -am "fix(channel): use connection generation, not a key hash, for tur
 ## Task 1.2: Retire the tautological taxonomy tests
 
 **Files:**
+
 - Delete: test/features/profiles/profiles_screen_taxonomy_test.dart, test/features/hermes_chat/composer/attachments/composer_attachment_taxonomy_test.dart, test/features/hermes_chat/composer/hermes_composer_taxonomy_test.dart, test/features/hermes_chat/presentation/hermes_presentation_taxonomy_test.dart, test/features/hermes_chat/messaging/approvals/hermes_approval_taxonomy_test.dart, test/features/hermes_chat/session/hermes_session_taxonomy_test.dart, test/features/hermes_chat/voice/hermes_voice_taxonomy_test.dart
 
 **Why:** Each asserts only that a constructor returns an instance of its own type (e.g. `expect(const ProfilesScreen(), isA<ProfilesScreen>())`). Zero behavioral value.
@@ -264,6 +270,7 @@ Expected: suite green with the same total behavioral coverage minus 7 empty test
 ## Task 2.1: Extract the approvals response concern
 
 **Files:**
+
 - Create: lib/core/hermes/channel/approvals/hermes_approval_responder.dart
 - Create: test/core/hermes/channel/approvals/hermes_approval_responder_test.dart
 - Modify: lib/core/hermes/channel/hermes_api_channel.dart (remove part 'api_channel/hermes_api_channel_approvals.dart', delegate instead)
@@ -363,6 +370,7 @@ git commit -am "refactor(channel): extract approval responses into HermesApprova
 ## Task 2.2: Extract the session management concern
 
 **Files:**
+
 - Create: lib/core/hermes/channel/sessions/hermes_session_manager.dart
 - Create: test/core/hermes/channel/sessions/hermes_session_manager_test.dart
 - Modify: lib/core/hermes/channel/hermes_api_channel.dart (remove part 'api_channel/hermes_api_channel_sessions.dart', delegate)
@@ -418,15 +426,18 @@ git commit -am "refactor(channel): extract session CRUD into HermesSessionManage
 ## Task 2.3: Shrink the contract-test surface
 
 **Files:**
+
 - Modify/Delete: test/tooling/ (17 files today)
 
 **Keep (high value, hard to cover behaviorally):**
+
 - package_scripts_contract_test.dart — Waydroid fixture callback ordering (native Kotlin, no Dart seam).
 - hermes_readiness_audit_contract_test.dart — readiness script blocker list stays in sync with runbooks.
 - evidence_matrix_contract_test.dart — staleness/checker contract.
 - wing_link_docs_contract_test.dart and wing_link_distribution_contract_test.dart — Go/docs/release component wiring.
 
 **Convert or delete the rest (12 files):** for each, decide per the deletion test:
+
 1. If the guard is a behavioral invariant expressible in Dart (e.g. redaction ordering, JSON parsing tolerance), move it into a unit test with real inputs.
 2. If the guard exists only to keep two docs/scripts textually in sync, and the code under test is exercised by CI anyway, delete it and rely on the workflow that runs the underlying script.
 3. If the guard protects a release artifact (installer script contents), keep it but tighten it to semantic assertions rather than exact string positions.
@@ -450,6 +461,7 @@ git commit -am "test: shrink source-contract surface to behavioral coverage"
 ## Task 3.1: Property-based redaction tests
 
 **Files:**
+
 - Create: test/shared/security/wing_redaction_property_test.dart
 
 **Approach:** Add fast_check to dev_dependencies (test-only). If adding the dependency is undesirable, implement the property test with a hand-rolled loop over generated credential shapes (the existing fixtures already enumerate most shapes).
@@ -494,6 +506,7 @@ git commit -am "test(security): property-test redaction invariants"
 ## Task 3.2: Property-based URL validation tests
 
 **Files:**
+
 - Create: test/core/hermes/client/hermes_api_config_property_test.dart
 
 - [ ] **Step 1: Define injection-vector properties**
@@ -534,6 +547,7 @@ git commit -am "test(security): property-test endpoint URL validation"
 ## Task 3.3: Enrich the linter
 
 **Files:**
+
 - Modify: analysis_options.yaml
 
 - [ ] **Step 1: Add rules, then fix what surfaces**
@@ -572,6 +586,7 @@ git commit -am "style: enforce types, consts, and leading-underscore lints"
 ## Task 3.4: Document the channel lifecycle
 
 **Files:**
+
 - Create: docs/adr/channel-lifecycle.md (or extend docs/adr/api-and-state.md per the ADR README rule: update an existing decision before adding a new one)
 
 - [ ] **Step 1: Extract the state machine from code**

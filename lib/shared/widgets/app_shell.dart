@@ -6,6 +6,7 @@ import '../../core/hermes/channel/hermes_channel_state.dart';
 import '../../features/profiles/providers/profile_selection_provider.dart';
 import '../../features/hermes_chat/providers/hermes_channel_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../router/app_routes.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
@@ -28,18 +29,116 @@ class AppShell extends ConsumerWidget {
       animation: channel,
       builder: (context, _) => LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < 600) return child;
+          final status = _AppShellStatus.fromState(channel.state, l10n);
+          if (constraints.maxWidth < 600) {
+            return _MobileShell(
+              location: location,
+              presentation: presentation,
+              status: status,
+              child: child,
+            );
+          }
           return _DesktopShell(
             destinations: presentation.destinations,
             selectedIndex: presentation.selectedIndex,
             onSelected: (index) =>
                 context.go(presentation.destinations[index].path),
-            status: _AppShellStatus.fromState(channel.state, l10n),
+            status: status,
             child: child,
           );
         },
       ),
     );
+  }
+}
+
+class _AppShellNavigationScope extends InheritedWidget {
+  const _AppShellNavigationScope({
+    required this.suppressPageMenu,
+    required super.child,
+  });
+
+  final bool suppressPageMenu;
+
+  static bool suppressMenuOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_AppShellNavigationScope>()
+          ?.suppressPageMenu ??
+      false;
+
+  @override
+  bool updateShouldNotify(_AppShellNavigationScope oldWidget) =>
+      suppressPageMenu != oldWidget.suppressPageMenu;
+}
+
+class _MobileShell extends StatelessWidget {
+  const _MobileShell({
+    required this.location,
+    required this.child,
+    required this.presentation,
+    required this.status,
+  });
+
+  final String location;
+  final Widget child;
+  final AppShellNavigationState presentation;
+  final _AppShellStatus status;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: appShellNavigationVisible,
+    builder: (context, visible, _) => _AppShellNavigationScope(
+      suppressPageMenu: visible,
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: visible
+            ? NavigationBar(
+                key: const ValueKey('mobile-shell-navigation-bar'),
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: (index) {
+                  if (index == 2) {
+                    _showMoreDestinations(
+                      context,
+                      title: AppLocalizations.of(context).moreDestinations,
+                      destinations: presentation.destinations,
+                      status: status,
+                      currentPath: location,
+                    );
+                    return;
+                  }
+                  context.go(
+                    index == 0 ? AppRoutes.hermes : AppRoutes.settings,
+                  );
+                },
+                destinations: [
+                  NavigationDestination(
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                    label: AppLocalizations.of(context).hermesDestination,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.settings_outlined),
+                    label: AppLocalizations.of(context).settingsDestination,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.more_horiz),
+                    label: AppLocalizations.of(context).moreDestinations,
+                  ),
+                ],
+              )
+            : null,
+      ),
+    ),
+  );
+
+  int get _selectedIndex {
+    if (AppRoutes.isNavigationDestinationLocation(
+      location: location,
+      destinationPath: AppRoutes.hermes,
+    )) {
+      return 0;
+    }
+    if (AppRoutes.isSettingsLocation(location)) return 1;
+    return 2;
   }
 }
 
@@ -54,7 +153,9 @@ class AppShellMenuButton extends ConsumerWidget {
       builder: (context, _) => ValueListenableBuilder<bool>(
         valueListenable: appShellNavigationVisible,
         builder: (context, visible, _) {
-          if (!visible || MediaQuery.sizeOf(context).width >= 600) {
+          if (!visible ||
+              MediaQuery.sizeOf(context).width >= 600 ||
+              _AppShellNavigationScope.suppressMenuOf(context)) {
             return const SizedBox.shrink();
           }
           final l10n = AppLocalizations.of(context);
@@ -64,32 +165,61 @@ class AppShellMenuButton extends ConsumerWidget {
             key: const ValueKey('app-shell-menu-button'),
             tooltip: presentation.mobileOverflowTooltip,
             icon: const Icon(Icons.apps_outlined),
-            onPressed: () => showSheet(
-              context,
-              InfoActionSheet(
-                presentation.mobileOverflowLabel,
-                infoRows: status.infoRows,
-                actions: [
-                  for (final destination in presentation.destinations)
-                    SheetActionRow(
-                      destination.icon,
-                      destination.label,
-                      onTap: (sheetContext) {
-                        final currentPath = GoRouterState.of(context).uri.path;
-                        Navigator.of(sheetContext).pop();
-                        if (currentPath != destination.path) {
-                          context.push(destination.path);
-                        }
-                      },
-                    ),
-                ],
-              ),
-            ),
+            onPressed: () {
+              final currentPath = _routerPathOrEmpty(context);
+              _showMoreDestinations(
+                context,
+                title: presentation.mobileOverflowLabel,
+                destinations: presentation.destinations,
+                status: status,
+                currentPath: currentPath,
+              );
+            },
           );
         },
       ),
     );
   }
+}
+
+String _routerPathOrEmpty(BuildContext context) {
+  try {
+    return GoRouterState.of(context).uri.path;
+  } on GoError {
+    // Standalone widget previews/tests can use the menu without a router.
+    return '';
+  }
+}
+
+void _showMoreDestinations(
+  BuildContext context, {
+  required String title,
+  required List<AppShellDestination> destinations,
+  required _AppShellStatus status,
+  required String currentPath,
+}) {
+  showSheet(
+    context,
+    InfoActionSheet(
+      title,
+      infoRows: status.infoRows,
+      actions: [
+        for (final destination in destinations)
+          if (!AppRoutes.isNavigationDestinationLocation(
+            location: currentPath,
+            destinationPath: destination.path,
+          ))
+            SheetActionRow(
+              destination.icon,
+              destination.label,
+              onTap: (sheetContext) {
+                Navigator.of(sheetContext).pop();
+                context.push(destination.path);
+              },
+            ),
+      ],
+    ),
+  );
 }
 
 class _AppShellStatus {

@@ -5,12 +5,22 @@ import 'package:flutter/foundation.dart';
 /// A turn the operator composed while Hermes was still replying.
 @immutable
 class QueuedFollowUp {
-  const QueuedFollowUp(this.text, this.sessionId);
+  const QueuedFollowUp(
+    this.text,
+    this.sessionId, {
+    this.imageDataUrl,
+    this.textAttachment,
+    this.attachmentName,
+  });
 
   final String text;
 
   /// Session this was composed against; it is only sent back to that session.
   final String? sessionId;
+
+  final String? imageDataUrl;
+  final String? textAttachment;
+  final String? attachmentName;
 }
 
 /// Holds follow-up turns typed while a reply is streaming, and decides when one
@@ -47,11 +57,34 @@ class HermesFollowUpQueue {
   QueuedFollowUp? get next => _queued.isEmpty ? null : _queued.first;
 
   /// Queues [text] against [sessionId]. Returns false when already at capacity.
-  bool enqueue(String text, String? sessionId) {
+  bool enqueue(
+    String text,
+    String? sessionId, {
+    String? imageDataUrl,
+    String? textAttachment,
+    String? attachmentName,
+  }) {
     if (isFull) return false;
     error = null;
-    _queued.addLast(QueuedFollowUp(text, sessionId));
+    _queued.addLast(
+      QueuedFollowUp(
+        text,
+        sessionId,
+        imageDataUrl: imageDataUrl,
+        textAttachment: textAttachment,
+        attachmentName: attachmentName,
+      ),
+    );
     return true;
+  }
+
+  /// Removes one queued turn by its current display position.
+  QueuedFollowUp? removeAt(int index) {
+    if (index < 0 || index >= _queued.length) return null;
+    final queued = _queued.elementAt(index);
+    _queued.remove(queued);
+    error = null;
+    return queued;
   }
 
   /// Whether the next turn can be sent into the session now on screen.
@@ -98,11 +131,22 @@ class HermesFollowUpQueue {
   void requeueFailed(
     String text,
     String? sessionId, {
+    String? imageDataUrl,
+    String? textAttachment,
+    String? attachmentName,
     required String message,
   }) {
     error = message;
     if (isFull) return;
-    _queued.addFirst(QueuedFollowUp(text, sessionId));
+    _queued.addFirst(
+      QueuedFollowUp(
+        text,
+        sessionId,
+        imageDataUrl: imageDataUrl,
+        textAttachment: textAttachment,
+        attachmentName: attachmentName,
+      ),
+    );
   }
 
   /// Drops turns bound to sessions Hermes no longer lists.

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
 
@@ -33,6 +35,7 @@ void main() {
 
       final constants = <String, String>{
         'AppRoutes.hermes': AppRoutes.hermes,
+        'AppRoutes.addHermes': AppRoutes.addHermes,
         'AppRoutes.office': AppRoutes.office,
         'AppRoutes.profiles': AppRoutes.profiles,
         'AppRoutes.agents': AppRoutes.agents,
@@ -71,7 +74,8 @@ void main() {
           redirectDestinations.add(location);
           continue;
         }
-        final state = matchList.last.buildState(
+        final state = _buildRouteState(
+          matchList.last,
           router.configuration,
           matchList,
         );
@@ -111,6 +115,28 @@ void main() {
     },
   );
 
+  test('Android local setup route builds the Termux guide', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final router = container.read(routerProvider);
+    final matchList = router.configuration.findMatch(
+      Uri.parse(AppRoutes.localSetup),
+    );
+    final route = matchList.last.route;
+    final state = _buildRouteState(
+      matchList.last,
+      router.configuration,
+      matchList,
+    );
+
+    expect(
+      _leafScreenWidget(route.builder!(_FakeContext(), state)),
+      isA<TermuxHermesSetupScreen>(),
+    );
+  });
+
   testWidgets('the shared page fades its child in', (tester) async {
     final page = wingFadeThroughPage(
       key: const ValueKey('page'),
@@ -129,6 +155,25 @@ void main() {
 }
 
 class _FakeContext extends Fake implements BuildContext {}
+
+// go_router 18 added required metadata to this internal test seam; keep the
+// test runnable with the locked 17.x API until the dependency is upgraded.
+GoRouterState _buildRouteState(
+  dynamic match,
+  dynamic configuration,
+  dynamic matches,
+) {
+  try {
+    return match.buildState(
+          configuration,
+          matches,
+          metadata: const <String, dynamic>{},
+        )
+        as GoRouterState;
+  } on NoSuchMethodError {
+    return match.buildState(configuration, matches) as GoRouterState;
+  }
+}
 
 /// The screen widget underneath the router's page and shell wrappers.
 ///

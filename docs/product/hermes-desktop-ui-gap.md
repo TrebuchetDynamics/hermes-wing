@@ -1,6 +1,6 @@
 # Hermes Desktop UI Gap Audit
 
-Source reference: `https://github.com/fathah/hermes-desktop`, inspected from `/tmp/hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx`, `/tmp/hermes-desktop/src/renderer/src/screens/Chat/*`, and `/tmp/hermes-desktop/previews/*.png`.
+Source reference: `https://github.com/fathah/hermes-desktop`, inspected from the ignored local `hermes-desktop/` reference checkout. The detailed study records the exact commit; refresh it before relying on newer checkout deltas.
 
 Current Hermes Wing evidence:
 
@@ -16,14 +16,14 @@ Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capabi
 
 ## What is now close after the first scaffold slice
 
-| Hermes Desktop aspect | Hermes Wing current state | Status |
-| --- | --- | --- |
-| Chat-first main route | `/hermes` is primary and routes directly into Hermes sessions. | Close |
-| Persistent desktop session list | Desktop/tablet widths now show a 320px session rail next to the chat pane. | Close structurally |
-| Mobile chat priority | Mobile keeps a single-pane chat with bottom composer and bottom nav. | Intentionally Telegram-like |
-| Empty chat hero | Empty sessions now show a centered Hermes mark, title, subtitle, and prompt chips. | Close structurally |
-| Composer action affordances | Composer now has model, voice, ready/stop, retry, and diagnostics chips above the Telegram-like text row. | Close structurally |
-| Capability inventory placement | Capability chip wall moved out of the main chat surface into Diagnostics. | Better than before |
+| Hermes Desktop aspect           | Hermes Wing current state                                                                                 | Status                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Chat-first main route           | `/hermes` is primary and routes directly into Hermes sessions.                                            | Close                       |
+| Persistent desktop session list | Desktop/tablet widths now show a 320px session rail next to the chat pane.                                | Close structurally          |
+| Mobile chat priority            | Mobile keeps a single-pane chat with bottom composer and bottom nav.                                      | Intentionally Telegram-like |
+| Empty chat hero                 | Empty sessions now show a centered Hermes mark, title, subtitle, and prompt chips.                        | Close structurally          |
+| Composer action affordances     | Composer now has model, voice, ready/stop, retry, and diagnostics chips above the Telegram-like text row. | Close structurally          |
+| Capability inventory placement  | Capability chip wall moved out of the main chat surface into Diagnostics.                                 | Better than before          |
 
 ## Current gap audit after implemented desktop-parity slices
 
@@ -165,13 +165,20 @@ Evidence:
 
 ## Recommended next implementation slice
 
-**Polish and harden visual QA artifacts** is now the highest-impact remaining slice.
+The current direct-Agent parity slice now covers session model options/locking
+and plain-text steering for active runs. The highest-impact remaining UI gap is
+session-history polish from the refreshed Desktop reference.
 
 Suggested scope:
 
-1. Refresh screenshot artifacts for the active-session bar, settings dashboard, assistant timeline, session search, and mobile composer.
-2. Add focused widget/E2E assertions for the settings dashboard cards and desktop active-session bar.
-3. Review any future Desktop-only surfaces against the explicit non-copy list before adding them.
+1. Add presentation-only session type/source filters over the Agent-owned list,
+   with no local transcript or SQLite cache.
+2. Refresh screenshot artifacts for the model picker, active-session bar,
+   settings dashboard, assistant timeline, session search, and mobile composer.
+3. Add focused widget/E2E assertions for the new model picker and existing
+   desktop active-session/settings surfaces.
+4. Review every future Desktop-only surface against the explicit non-copy list
+   before adding it.
 
 ## Keep from Telegram
 

@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux && !android
 
 package app
 
@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -22,7 +21,7 @@ const wingLinkServiceName = "hermes-wing-link.service"
 
 func EnsureWingLinkService(controlOrigin, hermesOrigin *url.URL) error {
 	if strings.EqualFold(strings.TrimSpace(os.Getenv("WING_LINK_SERVICE")), "external") {
-		return verifyWingLinkHealth(loopbackControlOrigin(controlOrigin))
+		return ensureExternalWingLinkService(controlOrigin)
 	}
 	systemctl, err := exec.LookPath("systemctl")
 	if err != nil {
@@ -208,26 +207,6 @@ func runSystemctl(path string, args ...string) error {
 		return errors.New("wing link user service command failed")
 	}
 	return nil
-}
-
-func verifyWingLinkHealth(origin *url.URL) error {
-	client := &http.Client{Timeout: 2 * time.Second}
-	endpoint := origin.ResolveReference(&url.URL{Path: "/healthz"})
-	for attempt := 0; attempt < 20; attempt++ {
-		request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, endpoint.String(), nil)
-		if err != nil {
-			return errors.New("invalid Wing Link health endpoint")
-		}
-		response, err := client.Do(request)
-		if err == nil {
-			_ = response.Body.Close()
-			if response.StatusCode == http.StatusOK {
-				return nil
-			}
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-	return errors.New("wing link service did not become healthy")
 }
 
 func wingLinkSystemdUnit(binary, listen, hermesOrigin, path, statePath, hermesHome string) string {

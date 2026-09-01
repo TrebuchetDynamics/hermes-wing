@@ -83,6 +83,21 @@ func TestAuditRejectsSecretsPathsPairingCodesAndUnknownOperations(t *testing.T) 
 	}
 }
 
+func TestDirectoryAuditOperationsRemainExactAndRoutine(t *testing.T) {
+	for _, operation := range []string{
+		"directory.roots.read",
+		"directory.children.read",
+	} {
+		tier, ok := TierOf(operation)
+		if !ok || tier != TierRoutine {
+			t.Fatalf("operation=%q tier=%q ok=%v", operation, tier, ok)
+		}
+	}
+	if _, ok := TierOf("filesystem.read"); ok {
+		t.Fatal("generic filesystem audit operation was accepted")
+	}
+}
+
 func TestAuditRollsOldestEventsAndRequiresConfirmedClear(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "audit.jsonl")
 	log, err := Open(path)

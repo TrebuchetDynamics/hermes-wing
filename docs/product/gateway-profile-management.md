@@ -21,12 +21,12 @@ A paired host has two credentials:
 Hermes Agent 0.20 documents profile lifecycle through CLI. Current Wing Link uses
 fixed argument vectors for:
 
-| Outcome | Hermes command |
-| --- | --- |
-| List | `hermes profile list` |
-| Create or clone | `hermes profile create ...` |
-| Rename | `hermes profile rename <old> <new>` |
-| Delete | `hermes profile delete --yes <name>` |
+| Outcome         | Hermes command                       |
+| --------------- | ------------------------------------ |
+| List            | `hermes profile list`                |
+| Create or clone | `hermes profile create ...`          |
+| Rename          | `hermes profile rename <old> <new>`  |
+| Delete          | `hermes profile delete --yes <name>` |
 
 It invokes no shell, validates identifiers, bounds output and time, and never
 calls `hermes profile use`.
@@ -65,16 +65,10 @@ must never use `project use` as hidden global state.
 Current Agent APIs provide model inventory/options and model selection. Wing must
 prefer them when advertised.
 
-The target Wing Link provider adapter is typed and allowlisted:
-
-- provider IDs and fields come from an authoritative schema;
-- credentials are set/remove only and never returned;
-- clients cannot submit arbitrary environment or config keys; and
-- restart/reload is a separate confirmed operation.
-
-Remote provider-key mutation remains blocked until Hermes offers a noninteractive
-secret contract that does not expose values in argv or require direct `.env`
-editing.
+Wing Link has no provider-configuration adapter. Provider and model state stays
+in Hermes Agent and is accessed through its advertised APIs. Remote provider-key
+mutation remains blocked until Hermes offers a noninteractive secret contract
+that does not expose values in argv or require direct `.env` editing.
 
 ## Remote boundary
 

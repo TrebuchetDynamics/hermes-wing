@@ -111,11 +111,17 @@ class _BlockingEnrollmentStore extends FakeHermesEndpointStore {
 }
 
 class _FakeConnectIntentSource implements HermesConnectIntentSource {
-  _FakeConnectIntentSource({this.initial, this.scanned, this.imported});
+  _FakeConnectIntentSource({
+    this.initial,
+    this.scanned,
+    this.imported,
+    this.scanThrowsOnce = false,
+  });
 
   final String? initial;
   final String? scanned;
   final String? imported;
+  final bool scanThrowsOnce;
   int scanCalls = 0;
   int importCalls = 0;
   final _events = StreamController<String>.broadcast();
@@ -135,6 +141,9 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
   @override
   Future<String?> scanQrCode() async {
     scanCalls++;
+    if (scanThrowsOnce && scanCalls == 1) {
+      throw StateError('scanner launch failed');
+    }
     return scanned;
   }
 
@@ -1911,15 +1920,110 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('Linux chooser preserves local setup and manual actions', (
+    testWidgets(
+      'Linux chooser offers pairing, local setup, and manual actions',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          findsOneWidget,
+        );
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
+    testWidgets(
+      'desktop clipboard failure preserves paste and manual recovery',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+              if (call.method == 'Clipboard.getData') {
+                throw PlatformException(code: 'clipboard-unavailable');
+              }
+              return null;
+            });
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(SystemChannels.platform, null),
+        );
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource(
+          initial: 'wing://connect?code=missing-origin',
+        );
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              _preview,
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-paste-another')),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Paste another link'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-scan-another')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-import-qr-image')),
+          findsNothing,
+        );
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
+    testWidgets('non-Android failure offers usable setup actions', (
       tester,
     ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
       final store = FakeHermesEndpointStore();
-      final source = _FakeConnectIntentSource();
+      final source = _FakeConnectIntentSource(initial: _validPayload);
       addTearDown(source.dispose);
       final controller = HermesEnrollmentController(
-        inspectEnrollment: ({required origin, required code}) async => _preview,
+        inspectEnrollment: ({required origin, required code}) async =>
+            throw StateError('offline'),
         exchangeEnrollment: ({required origin, required code}) async => _issued,
         endpointStore: store,
       );
@@ -1938,7 +2042,11 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        find.byKey(const ValueKey('hermes-enrollment-scan-another')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-import-qr-image')),
         findsNothing,
       );
       debugDefaultTargetPlatformOverride = null;
@@ -2032,12 +2140,52 @@ void main() {
         buildApp(controller: controller, source: source, store: store),
       );
       await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+        findsOneWidget,
+      );
+      expect(find.text('Install Hermes Agent on this phone'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('hermes-enrollment-scan-qr')));
       await tester.pumpAndSettle();
 
       expect(source.scanCalls, 1);
       expect(controller.status, HermesEnrollmentStatus.ready);
       expect(find.text('hermes.example'), findsOneWidget);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('scanner launch failure permits an immediate retry', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(
+        scanned: _validPayload,
+        scanThrowsOnce: true,
+      );
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      final scanButton = find.byKey(
+        const ValueKey('hermes-enrollment-scan-qr'),
+      );
+      await tester.tap(scanButton);
+      await tester.pumpAndSettle();
+      expect(source.scanCalls, 1);
+      expect(tester.widget<FilledButton>(scanButton).onPressed, isNotNull);
+
+      await tester.tap(scanButton);
+      await tester.pumpAndSettle();
+      expect(source.scanCalls, 2);
+      expect(controller.status, HermesEnrollmentStatus.ready);
       debugDefaultTargetPlatformOverride = null;
     });
 
@@ -2128,6 +2276,7 @@ void main() {
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsOneWidget,
       );
+      debugDefaultTargetPlatformOverride = null;
     });
 
     testWidgets('review and success remain usable at 200 percent text scale', (
@@ -2301,6 +2450,98 @@ void main() {
       },
     );
 
+    testWidgets('loopback success shows honest Termux follow-up guidance', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'This phone',
+              origin: 'http://127.0.0.1:8642',
+              scopes: ['Full Hermes access'],
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            const HermesIssuedOperatorToken(
+              token: _secretToken,
+              label: 'This phone',
+              credentialId: 'local_default',
+            ),
+        endpointStore: store,
+      );
+      await controller.inspect(
+        HermesEnrollmentPayload(
+          origin: Uri.parse('http://127.0.0.1:8642'),
+          code: 'once',
+        ),
+      );
+      await controller.confirm();
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.confirmedLoopback, isTrue);
+      expect(find.textContaining('run hermes setup in Termux'), findsOneWidget);
+      expect(
+        find.textContaining('retry the unchanged request'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('pair once more'), findsOneWidget);
+      expect(anyTextContainsToken(tester), isFalse);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('desktop loopback success keeps platform-neutral guidance', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async =>
+            const HermesEnrollmentPreview(
+              label: 'This computer',
+              origin: 'http://127.0.0.1:8642',
+              scopes: ['Full Hermes access'],
+            ),
+        exchangeEnrollment: ({required origin, required code}) async =>
+            const HermesIssuedOperatorToken(
+              token: _secretToken,
+              label: 'This computer',
+              credentialId: 'local_default',
+            ),
+        endpointStore: store,
+      );
+      await controller.inspect(
+        HermesEnrollmentPayload(
+          origin: Uri.parse('http://127.0.0.1:8642'),
+          code: 'once',
+        ),
+      );
+      await controller.confirm();
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.confirmedLoopback, isTrue);
+      expect(find.textContaining('run hermes setup in Termux'), findsNothing);
+      expect(
+        find.text('Wing Link is ready for profile and gateway management.'),
+        findsOneWidget,
+      );
+      debugDefaultTargetPlatformOverride = null;
+    });
+
     testWidgets('one-profile review and success use singular grammar', (
       tester,
     ) async {
@@ -2473,9 +2714,52 @@ void main() {
       expect(store.saveCalls, isEmpty);
     });
 
+    testWidgets(
+      'desktop failure restores paste without Android scanner actions',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource(initial: _validPayload);
+        addTearDown(source.dispose);
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async =>
+              throw StateError('offline'),
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+
+        await tester.pumpWidget(
+          buildApp(controller: controller, source: source, store: store),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-another')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-scan-another')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-import-qr-image')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+          findsOneWidget,
+        );
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+
     testWidgets('expired recovery remains usable at 200 percent text scale', (
       tester,
     ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       tester.view.physicalSize = const Size(360, 640);
       tester.view.devicePixelRatio = 1;
@@ -2519,6 +2803,7 @@ void main() {
         find.byKey(const ValueKey('hermes-enrollment-scan-another')),
         findsOneWidget,
       );
+      debugDefaultTargetPlatformOverride = null;
     });
 
     testWidgets('countdown expires into actionable paste and scan recovery', (

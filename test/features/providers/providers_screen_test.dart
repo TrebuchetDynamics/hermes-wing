@@ -7,7 +7,6 @@ import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_runtime_model.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/providers/screens/providers_screen.dart';
@@ -197,16 +196,11 @@ Widget _testApp(
   FakeHermesChannel channel, {
   double textScale = 1.0,
   HermesGatewayDirectory? directory,
-  ProvidersWingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
     if (directory != null)
       hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
-    if (wingLinkClientBuilder != null)
-      providersWingLinkClientBuilderProvider.overrideWithValue(
-        wingLinkClientBuilder,
-      ),
   ],
   child: MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -423,53 +417,34 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Wing Link provider fallback stays quarantined when Agent omits APIs',
-    (tester) async {
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'alpha',
-            label: 'Alpha',
-            baseUrl: 'https://alpha',
-            wingLinkOrigin: 'https://alpha:8654',
-            wingLinkToken: 'wing-link-secret',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'alpha': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('alpha');
-      var wingLinkCalls = 0;
-
-      await tester.pumpWidget(
-        _testApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({required origin, required token, required hostFingerprint}) =>
-                  WingLinkClient(
-                    origin: origin,
-                    token: token,
-                    get: (_, _) async {
-                      wingLinkCalls++;
-                      return '{"providers":[]}';
-                    },
-                  ),
+  testWidgets('provider management stays unavailable when Agent omits APIs', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+          wingLinkOrigin: 'https://alpha:8654',
+          wingLinkToken: 'wing-link-secret',
         ),
-      );
-      await tester.pumpAndSettle();
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
 
-      expect(wingLinkCalls, 0);
-      expect(find.text('Providers unavailable'), findsOneWidget);
-      expect(find.text('Create'), findsNothing);
-    },
-  );
+    expect(find.text('Providers unavailable'), findsOneWidget);
+    expect(find.text('Create'), findsNothing);
+  });
 
   testWidgets('direct Hermes provider API does not depend on Wing Link', (
     tester,
@@ -493,27 +468,9 @@ void main() {
     );
     await directory.refresh();
     await directory.activateGateway('alpha');
-    var wingLinkReads = 0;
-
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder:
-            ({required origin, required token, required hostFingerprint}) =>
-                WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (uri, headers) async {
-                    wingLinkReads++;
-                    throw StateError('Wing Link unavailable');
-                  },
-                ),
-      ),
-    );
+    await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
 
-    expect(wingLinkReads, 0);
     expect(find.text('OpenAI'), findsOneWidget);
     expect(
       find.text('Providers could not be loaded from Hermes.'),

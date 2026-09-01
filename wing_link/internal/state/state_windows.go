@@ -48,10 +48,17 @@ func statePathOwnerOnly(path string, _ bool) (bool, error) {
 	descriptor, err := windows.GetNamedSecurityInfo(
 		path,
 		windows.SE_FILE_OBJECT,
-		windows.DACL_SECURITY_INFORMATION|windows.PROTECTED_DACL_SECURITY_INFORMATION,
+		windows.DACL_SECURITY_INFORMATION,
 	)
 	if err != nil {
 		return false, err
+	}
+	control, _, err := descriptor.Control()
+	if err != nil {
+		return false, err
+	}
+	if control&windows.SE_DACL_PROTECTED == 0 {
+		return false, nil
 	}
 	sddl := descriptor.String()
 	return strings.Contains(sddl, ";FA;;;"+user.User.Sid.String()+")") && strings.Count(sddl, "(") == 1, nil

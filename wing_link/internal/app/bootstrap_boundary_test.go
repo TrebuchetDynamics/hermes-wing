@@ -66,7 +66,7 @@ func TestBootstrapAdoptsHealthyGatewayWithoutRestart(t *testing.T) {
 	if !result.GatewayStarted {
 		t.Fatalf("result = %#v", result)
 	}
-	if !reflect.DeepEqual(messages, []string{"Hermes gateway already healthy", "Verifying Hermes gateway health", "Hermes setup complete"}) {
+	if !reflect.DeepEqual(messages, []string{"Hermes gateway already healthy", "Verifying Hermes gateway health", "Hermes gateway is running"}) {
 		t.Fatalf("messages = %#v", messages)
 	}
 }

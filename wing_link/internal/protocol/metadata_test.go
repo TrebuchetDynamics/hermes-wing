@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 )
 
@@ -19,6 +20,31 @@ func TestMetadataAdvertisesOnlyCurrentAndPreviousGeneration(t *testing.T) {
 	}
 	if len(payload) > 4096 {
 		t.Fatalf("metadata payload is unbounded: %d bytes", len(payload))
+	}
+}
+
+func TestMetadataAddsOnlyKnownDirectoryCapabilities(t *testing.T) {
+	metadata := CurrentMetadata(
+		"dev",
+		"sha256/test",
+		"directories.roots.read",
+		"directories.children.read",
+		"directories.roots.read",
+		"projects.write",
+	)
+	for _, capability := range []string{
+		"directories.roots.read",
+		"directories.children.read",
+	} {
+		if !slices.Contains(metadata.Capabilities, capability) {
+			t.Fatalf("capabilities omitted %q: %v", capability, metadata.Capabilities)
+		}
+	}
+	if slices.Contains(metadata.Capabilities, "projects.write") {
+		t.Fatalf("unknown capability was advertised: %v", metadata.Capabilities)
+	}
+	if !slices.IsSorted(metadata.Capabilities) {
+		t.Fatalf("capabilities are not stable: %v", metadata.Capabilities)
 	}
 }
 

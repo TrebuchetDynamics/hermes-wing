@@ -322,6 +322,12 @@ func openRootNoSymlinks(absolute string) (*os.Root, error) {
 			_ = current.Close()
 			return nil, ErrDirectoryUnavailable
 		}
+		latestInfo, err := current.Lstat(component)
+		if err != nil || !os.SameFile(info, latestInfo) || latestInfo.Mode()&os.ModeSymlink != 0 {
+			_ = next.Close()
+			_ = current.Close()
+			return nil, ErrDirectoryUnavailable
+		}
 		_ = current.Close()
 		current = next
 	}

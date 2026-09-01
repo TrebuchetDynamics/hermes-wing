@@ -32,6 +32,21 @@ func TestRiskClassificationFailsClosedAndMatchesFixedPolicy(t *testing.T) {
 	}
 }
 
+func TestApprovalRejectsSubsecondTTLThatCannotSurviveUnixPersistence(t *testing.T) {
+	store, err := Open(filepath.Join(t.TempDir(), "approvals.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = store.Request(Request{
+		DeviceID: "cred_phone", DeviceName: "Pixel", Operation: OpProfileDelete,
+		Route: "DELETE /v1/profiles/qa", PayloadDigest: strings.Repeat("a", 64),
+		IdempotencyKey: "delete-subsecond-1", Summary: "Delete profile qa",
+	}, TierSensitive, time.Nanosecond)
+	if err == nil {
+		t.Fatal("subsecond TTL was accepted")
+	}
+}
+
 func TestApprovalIsDigestBoundOneUseAndPersistent(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "approvals.json")
 	store, err := Open(path)

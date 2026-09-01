@@ -28,6 +28,42 @@ HermesModelInventory _inventory(List<String> modelIds) => HermesModelInventory(
 /// behavior. The plain fake's `refreshModels` only counts calls and never
 /// touches state, which is not enough to prove `ModelPickerSheet` re-derives
 /// its local selection from the channel after a refresh.
+class _ConflictingFakeChannel extends FakeHermesChannel {
+  _ConflictingFakeChannel({
+    required HermesModelInventory initialInventory,
+    required this.refreshedInventory,
+  }) : super(modelInventory: initialInventory, selectedProfileId: 'default');
+
+  final HermesModelInventory refreshedInventory;
+  var conflictResolved = false;
+
+  @override
+  HermesChannelState get state => conflictResolved
+      ? super.state.copyWith(modelInventory: refreshedInventory)
+      : super.state;
+
+  @override
+  Future<void> assignModel({
+    required String scope,
+    String? task,
+    required String provider,
+    required String model,
+    required String revision,
+  }) async {
+    assignModelCalls.add({
+      'scope': scope,
+      'task': task,
+      'provider': provider,
+      'model': model,
+      'revision': revision,
+    });
+    if (!conflictResolved) {
+      conflictResolved = true;
+      throw StateError('Hermes API returned HTTP 412');
+    }
+  }
+}
+
 class _RefreshingFakeChannel extends FakeHermesChannel {
   _RefreshingFakeChannel({
     required HermesModelInventory initialInventory,
@@ -180,6 +216,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Flagship reasoning model'), findsOneWidget);
+  });
+
+  testWidgets('revision conflicts refresh the open sheet before retry', (
+    tester,
+  ) async {
+    final initial = _inventory(const ['gpt-5']);
+    final refreshed = HermesModelInventory(
+      catalog: initial.catalog,
+      assignment: const HermesModelAssignment(
+        activeProvider: 'openai',
+        activeModel: 'gpt-5',
+        revision: 'rev-2',
+      ),
+    );
+    final channel = _ConflictingFakeChannel(
+      initialInventory: initial,
+      refreshedInventory: refreshed,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel, initial));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'The model selection changed elsewhere. Reopen the picker to try again.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+
+    expect(channel.assignModelCalls.map((call) => call['revision']), [
+      'rev-1',
+      'rev-2',
+    ]);
   });
 
   testWidgets('refresh updates the open sheet with the newly fetched catalog', (

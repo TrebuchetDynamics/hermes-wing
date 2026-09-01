@@ -268,20 +268,22 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
                   child: Text(widget.strings.noSkillsMatchBody),
                 )
               else
-                for (final skill in filtered)
+                for (var index = 0; index < filtered.length; index++)
                   ListTile(
-                    key: ValueKey('installed-skill-${skill.name}'),
+                    key: ValueKey(
+                      'installed-skill-${filtered[index].name}-$index',
+                    ),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(skill.name),
+                    title: Text(filtered[index].name),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (skill.description.isNotEmpty)
-                          Text(skill.description),
-                        if (skill.category.isNotEmpty) ...[
+                        if (filtered[index].description.isNotEmpty)
+                          Text(filtered[index].description),
+                        if (filtered[index].category.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            skill.category,
+                            filtered[index].category,
                             style: Theme.of(context).textTheme.labelMedium
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.primary,
@@ -425,8 +427,12 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
                   child: Text(widget.strings.noToolsetsMatchBody),
                 )
               else
-                for (final toolset in filtered)
-                  _ToolsetTile(toolset: toolset, strings: widget.strings),
+                for (var index = 0; index < filtered.length; index++)
+                  _ToolsetTile(
+                    toolset: filtered[index],
+                    index: index,
+                    strings: widget.strings,
+                  ),
             ],
           ],
         ),
@@ -436,9 +442,14 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
 }
 
 class _ToolsetTile extends StatelessWidget {
-  const _ToolsetTile({required this.toolset, required this.strings});
+  const _ToolsetTile({
+    required this.toolset,
+    required this.index,
+    required this.strings,
+  });
 
   final HermesToolset toolset;
+  final int index;
   final AppLocalizations strings;
 
   @override
@@ -462,14 +473,14 @@ class _ToolsetTile extends StatelessWidget {
     );
     if (toolset.tools.isEmpty) {
       return ListTile(
-        key: ValueKey('toolset-${toolset.name}'),
+        key: ValueKey('toolset-${toolset.name}-$index'),
         contentPadding: EdgeInsets.zero,
         title: Text(toolset.displayName),
         subtitle: subtitle,
       );
     }
     return ExpansionTile(
-      key: ValueKey('toolset-${toolset.name}'),
+      key: ValueKey('toolset-${toolset.name}-$index'),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 12),
       title: Text(toolset.displayName),

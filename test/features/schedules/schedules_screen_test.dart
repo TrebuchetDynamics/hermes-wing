@@ -51,6 +51,14 @@ const _pausedJob = HermesJob(
   lastError: 'private remote stack trace',
 );
 
+const _errorJob = HermesJob(
+  id: 'error',
+  name: 'Failed task',
+  enabled: false,
+  state: 'error',
+  lastError: 'private remote stack trace',
+);
+
 Widget _testApp(
   FakeHermesChannel channel, {
   double textScale = 1,
@@ -98,6 +106,23 @@ void main() {
     expect(find.textContaining('private remote'), findsNothing);
     expect(find.textContaining('Read-only schedule inventory'), findsOneWidget);
     expect(find.text('New task'), findsNothing);
+  });
+
+  testWidgets('renders errored jobs as errors even when disabled', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      jobs: const [_errorJob],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Failed task'), findsOneWidget);
+    expect(find.text('Error'), findsOneWidget);
+    expect(find.text('Disabled'), findsNothing);
   });
 
   testWidgets('refresh reloads jobs through the advertised channel seam', (

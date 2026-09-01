@@ -592,6 +592,50 @@ void _hermesApiChannelSessionMutationTests() {
     },
   );
 
+  test('deleteSession preserves a newer session selection', () async {
+    final deleteGate = Completer<void>();
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' =>
+              '''
+{"object":"list","data":[
+  {"id":"sess_1","source":"api_server"},
+  {"id":"sess_2","source":"api_server"},
+  {"id":"sess_3","source":"api_server"}
+]}
+''',
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/api/sessions/sess_3/messages' =>
+              '{"object":"list","session_id":"sess_3","data":[]}',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+        delete: (uri, headers) async {
+          await deleteGate.future;
+          return '{"object":"hermes.session.deleted","id":"sess_1","deleted":true}';
+        },
+      ),
+    );
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    final deleting = channel.deleteSession('sess_1');
+    await pumpEventQueue();
+    await channel.selectSession('sess_3');
+    deleteGate.complete();
+    await deleting;
+
+    expect(channel.state.activeSessionId, 'sess_3');
+    expect(channel.state.sessions.map((session) => session.id), [
+      'sess_2',
+      'sess_3',
+    ]);
+  });
+
   test(
     'deleteSession cancels active stream before removing active session',
     () async {

@@ -176,10 +176,20 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     bool canUseHermesProfileContext(HermesProfile profile) =>
         profile.id == 'default' ||
         capabilities?.profileContext.isSupportedQueryContext == true;
-    // Seed the default profile for display when nothing is selected yet, so
-    // the UI has profile context on mount. This is a pure derivation and never
-    // triggers an active-profile network call.
-    final selectedId = effectiveSelectedProfileId(state);
+    // Seed the displayed inventory too when Wing Link is the profile source;
+    // Agent profile state is empty on that compatibility path.
+    final selectedId = usingWingLink
+        ? (state.selectedProfileId != null &&
+                  profiles.any(
+                    (profile) => profile.id == state.selectedProfileId,
+                  )
+              ? state.selectedProfileId
+              : profiles.isEmpty
+              ? null
+              : profiles.any((profile) => profile.id == kDefaultProfileId)
+              ? kDefaultProfileId
+              : profiles.first.id)
+        : effectiveSelectedProfileId(state);
     final canCreateNatively = _canUseEndpoint(
       capabilities,
       scope: 'profiles:write',

@@ -42,6 +42,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _deviceRevoked = false;
   bool _approvalPending = false;
   String? _trustGatewayId;
+  HermesEndpointConfig? _trustConfig;
   Future<_WingLinkTrustState>? _trustFuture;
 
   @override
@@ -205,8 +206,11 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
         const WingLinkException('Wing Link is not configured'),
       );
     }
-    if (_trustGatewayId != gatewayId || _trustFuture == null) {
+    if (_trustGatewayId != gatewayId ||
+        _trustConfig != config ||
+        _trustFuture == null) {
       _trustGatewayId = gatewayId;
+      _trustConfig = config;
       _deviceRevoked = false;
       _approvalPending = false;
       _trustFuture = _loadTrust(_wingLinkClient(config), config);

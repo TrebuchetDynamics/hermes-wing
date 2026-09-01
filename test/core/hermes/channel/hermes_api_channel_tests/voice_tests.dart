@@ -1,5 +1,17 @@
 part of '../hermes_api_channel_test.dart';
 
+const _voiceProfileCapabilitiesFixture = '''
+{
+  "profile_context": {"type":"query","name":"profile","required":true,"default_profile_id":"default"},
+  "auth": {"type":"bearer","required":true,"granted_scopes":["profiles:read"]},
+  "features": {"session_chat_streaming": true},
+  "endpoints": {
+    "session_chat_stream": {"method":"POST","path":"/api/sessions/{session_id}/chat/stream"},
+    "profiles": {"method":"GET","path":"/api/profiles","required_scopes":["profiles:read"]}
+  }
+}
+''';
+
 void _hermesApiChannelVoiceTests() {
   test(
     'continuous voice: stage then submit sends the transcript as a Hermes text turn',
@@ -12,7 +24,8 @@ void _hermesApiChannelVoiceTests() {
           get: (uri, headers) async {
             return switch (uri.path) {
               '/health' => '{"status":"ok"}',
-              '/v1/capabilities' => _capabilitiesFixture,
+              '/v1/capabilities' => _voiceProfileCapabilitiesFixture,
+              '/api/profiles' => _profilesFixture,
               '/api/sessions' => _sessionsFixture,
               '/api/sessions/sess_1/messages' =>
                 (messagesRequests++ == 0)
@@ -28,11 +41,17 @@ void _hermesApiChannelVoiceTests() {
         ),
       );
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      await channel.selectProfile('coder');
 
       final voiceRunId = channel.startVoiceRun();
       expect(
         channel.state.voiceRuns[voiceRunId]?.status,
         WingVoiceRunStatus.recording,
+      );
+      expect(channel.state.voiceRuns[voiceRunId]?.profileId, 'coder');
+      expect(
+        channel.state.voiceRuns[voiceRunId]?.profileId,
+        isNot(channel.state.activeSessionId),
       );
 
       channel.stageVoiceRunTranscript(

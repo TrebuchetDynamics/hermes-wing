@@ -110,6 +110,8 @@ func (s *StateStore) issueControlToken(validate func(*persistedState) error) (st
 		if err != nil {
 			return err
 		}
+		now := s.currentTime().UTC()
+		pruneExpiredDevices(&state, now)
 		if err := validate(&state); err != nil {
 			return err
 		}
@@ -149,6 +151,7 @@ func (s *StateStore) AcknowledgeControlToken(id, token string) error {
 		}
 		now := s.currentTime().UTC()
 		prunePendingState(&state, now)
+		pruneExpiredDevices(&state, now)
 		index := -1
 		var pending persistedPendingCredential
 		for candidate := range state.PendingDevices {
@@ -207,6 +210,17 @@ func (s *StateStore) authorizePending(token string, predicate func(persistedPend
 		return s.save(state)
 	})
 	return authorized
+}
+
+func pruneExpiredDevices(state *persistedState, now time.Time) {
+	kept := state.Devices[:0]
+	for _, device := range state.Devices {
+		if device.ExpiresAt != 0 && !now.Before(time.Unix(device.ExpiresAt, 0)) {
+			continue
+		}
+		kept = append(kept, device)
+	}
+	state.Devices = kept
 }
 
 func prunePendingState(state *persistedState, now time.Time) {

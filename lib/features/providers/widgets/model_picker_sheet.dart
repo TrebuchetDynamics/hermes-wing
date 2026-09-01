@@ -343,11 +343,17 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
     } catch (error) {
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
-      setState(() {
-        _error = error.toString().contains('412')
-            ? strings.modelRevisionConflict
-            : strings.modelAssignmentFailed;
-      });
+      if (error.toString().contains('412')) {
+        final inventory = widget.channel.state.modelInventory;
+        if (inventory != null) {
+          setState(() {
+            _applyInventory(inventory);
+            _error = strings.modelRevisionConflict;
+          });
+          return;
+        }
+      }
+      setState(() => _error = strings.modelAssignmentFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

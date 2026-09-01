@@ -85,6 +85,7 @@ jobs:
         run: |
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
+          dart run scripts/check_evidence_matrix.dart
           flutter test --coverage --concurrency=1
           coverage_percent=$(awk -F'[:,]' '/^DA:/{total++; if ($3 > 0) covered++} END {printf "%.0f", total ? covered * 100 / total : 0}' coverage/lcov.info)
           test "$coverage_percent" -ge 50

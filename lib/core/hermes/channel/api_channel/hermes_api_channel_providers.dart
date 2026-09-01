@@ -52,13 +52,21 @@ extension _ProvidersExtension on HermesApiChannel {
     _requireNonBlank(envVar, 'envVar');
     _requireNonBlank(value, 'value');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final provider = await client.setProviderCredential(
       slug: slug,
       envVar: envVar,
       value: value,
       profile: profile,
     );
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _replaceProvider(provider);
   }
 
@@ -78,12 +86,20 @@ extension _ProvidersExtension on HermesApiChannel {
     _requireNonBlank(slug, 'slug');
     _requireNonBlank(envVar, 'envVar');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final provider = await client.removeProviderCredential(
       slug: slug,
       envVar: envVar,
       profile: profile,
     );
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _replaceProvider(provider);
   }
 
@@ -218,8 +234,16 @@ extension _ProvidersExtension on HermesApiChannel {
     );
     final profile = _requireSelectedProfile('refresh the model catalog');
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final catalog = await client.refreshModelCatalog(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     final current = _state.modelInventory ?? const HermesModelInventory();
     _setState(_state.copyWith(modelInventory: current.withCatalog(catalog)));
   }

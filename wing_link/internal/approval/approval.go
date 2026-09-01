@@ -114,7 +114,7 @@ func Open(path string) (*Store, error) {
 
 func (s *Store) Request(request Request, tier RiskTier, ttl time.Duration) (Approval, error) {
 	expectedTier, known := RiskOf(request.Operation)
-	if !known || expectedTier != tier || (tier != TierSensitive && tier != TierTrust) || ttl <= 0 || ttl > 15*time.Minute {
+	if !known || expectedTier != tier || (tier != TierSensitive && tier != TierTrust) || ttl < time.Second || ttl > 15*time.Minute {
 		return Approval{}, errors.New("invalid approval policy")
 	}
 	request = sanitizeRequest(request)

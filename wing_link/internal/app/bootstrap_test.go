@@ -579,9 +579,9 @@ func TestPinnedHermesInstallerIsOfficialAndImmutable(t *testing.T) {
 	}
 }
 
-func TestHermesGatewayCommandsInstallWithoutRestartingExistingProfiles(t *testing.T) {
+func TestHermesGatewayCommandsRestartAfterInstallingService(t *testing.T) {
 	commands := hermesGatewayCommands()
-	want := [][]string{{"gateway", "install", "--no-start-now"}, {"gateway", "start"}}
+	want := [][]string{{"gateway", "install", "--no-start-now"}, {"gateway", "restart"}}
 	if !reflect.DeepEqual(commands, want) {
 		t.Fatalf("commands = %#v, want %#v", commands, want)
 	}

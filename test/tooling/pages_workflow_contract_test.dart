@@ -26,6 +26,11 @@ void main() {
     );
     expect(workflow, contains('app/flutter_bootstrap.js'));
     expect(workflow, contains('app/main.dart.js'));
+    expect(
+      workflow,
+      contains('cp site/assets/app-icon.png build/pages/assets/app-icon.png'),
+    );
+    expect(File('site/assets/app-icon.png').existsSync(), isTrue);
 
     expect(landing, contains('<main'));
     expect(landing, contains('Hermes Wing'));

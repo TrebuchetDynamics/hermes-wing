@@ -234,6 +234,34 @@ func TestStageDeviceCredentialRejectsInvalidMetadata(t *testing.T) {
 	}
 }
 
+func TestExpiredDeviceCredentialsDoNotConsumeCapacity(t *testing.T) {
+	now := time.Unix(1_000, 0).UTC()
+	store := newTestStateStore(t, func() time.Time { return now })
+	for index := 0; index < maxControlTokens; index++ {
+		id, token, err := store.stageDeviceCredential(
+			"Temporary",
+			nil,
+			allControlScopes,
+			time.Minute,
+			true,
+		)
+		if err != nil {
+			t.Fatalf("stage credential %d: %v", index, err)
+		}
+		if err := store.AcknowledgeControlToken(id, token); err != nil {
+			t.Fatalf("acknowledge credential %d: %v", index, err)
+		}
+	}
+
+	now = now.Add(time.Minute)
+	if _, _, err := store.StageBearerDeviceCredential(
+		"Replacement",
+		[]string{ScopeHealthRead},
+	); err != nil {
+		t.Fatalf("expired credentials blocked replacement: %v", err)
+	}
+}
+
 func TestExpiredDeviceCredentialFailsClosed(t *testing.T) {
 	now := time.Unix(1_000, 0).UTC()
 	store := newTestStateStore(t, func() time.Time { return now })

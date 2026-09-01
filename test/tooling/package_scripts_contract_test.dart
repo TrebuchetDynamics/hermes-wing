@@ -106,6 +106,16 @@ void main() {
     expect(runner, contains('get-role-holders'));
   });
 
+  test('Linux installer rejects launcher symlinks before building', () {
+    final installer = File('scripts/install_linux.sh').readAsStringSync();
+    final launcherGuard = installer.indexOf(r'[[ ! -L "$launcher" ]]');
+    final build = installer.indexOf('./scripts/run_linux_release_build.sh');
+
+    expect(launcherGuard, greaterThanOrEqualTo(0));
+    expect(build, greaterThanOrEqualTo(0));
+    expect(launcherGuard, lessThan(build));
+  });
+
   test('Linux rootless build exposes paired clang executables', () {
     final helper = File(
       'scripts/run_linux_release_build.sh',

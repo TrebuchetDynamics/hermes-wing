@@ -234,6 +234,15 @@ void main() {
       expect(wingLinkCalls, ['/v1/profiles']);
       expect(find.text('Profiles unavailable'), findsNothing);
       expect(find.text('Link'), findsOneWidget);
+      expect(find.text('Selected'), findsOneWidget);
+      final selectedCard = find.ancestor(
+        of: find.text('Selected'),
+        matching: find.byType(Card),
+      );
+      expect(
+        find.descendant(of: selectedCard, matching: find.text('Link')),
+        findsOneWidget,
+      );
       expect(find.text('New Profile'), findsOneWidget);
       expect(find.text('Browse folders'), findsOneWidget);
 

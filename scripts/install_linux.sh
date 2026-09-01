@@ -34,6 +34,12 @@ if ! command -v flutter >/dev/null 2>&1; then
   exit 1
 fi
 
+launcher="$bin_dir/hermes-wing"
+[[ ! -L "$launcher" ]] || {
+  echo "Launcher must not be a symlink: $launcher" >&2
+  exit 1
+}
+
 cd "$repo_root"
 printf '[1/3] Fetching Flutter dependencies...\n'
 flutter pub get
@@ -73,11 +79,6 @@ fi
 trap - EXIT
 rm -rf "$backup"
 
-launcher="$bin_dir/hermes-wing"
-[[ ! -L "$launcher" ]] || {
-  echo "Launcher must not be a symlink: $launcher" >&2
-  exit 1
-}
 printf -v quoted_binary '%q' "$install_dir/wing"
 printf '#!/usr/bin/env bash\nexec %s "$@"\n' "$quoted_binary" > "$launcher"
 chmod 0755 "$launcher"

@@ -384,10 +384,12 @@ class WingLinkClient {
     if (profiles is! List) {
       throw const WingLinkException('Wing Link returned invalid data');
     }
+    if (profiles.any((profile) => profile is! Map)) {
+      throw const WingLinkException('Wing Link returned invalid data');
+    }
     return [
       for (final profile in profiles)
-        if (profile is Map)
-          WingLinkProfile.fromJson(profile.cast<String, Object?>()),
+        WingLinkProfile.fromJson((profile as Map).cast<String, Object?>()),
     ];
   }
 

@@ -584,6 +584,16 @@ void main() {
     expect(profiles.single.canDelete, isTrue);
   });
 
+  test('rejects a malformed profile row instead of hiding it', () async {
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async => '{"profiles":[{"id":"valid"},"broken"]}',
+    );
+
+    await expectLater(client.listProfiles(), throwsA(isA<WingLinkException>()));
+  });
+
   test('profile mutation exposes a typed stale-revision failure', () async {
     final client = WingLinkClient(
       origin: Uri.parse('https://hermes.example:8654'),

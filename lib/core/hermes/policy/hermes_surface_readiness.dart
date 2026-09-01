@@ -35,6 +35,8 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
     }
     final endpoint = capabilities.endpoints[name];
     return endpoint != null &&
+        (!endpoint.profileScoped ||
+            capabilities.profileContext.isSupportedQueryContext) &&
         endpoint.requiredScopes.every(capabilities.auth.allows);
   }
 

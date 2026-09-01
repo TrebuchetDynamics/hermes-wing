@@ -109,7 +109,7 @@ class GatewayContact {
       ),
       gatewayLabel: json['gatewayLabel']?.toString() ?? '',
       profileName: json['profileName']?.toString() ?? '',
-      sessionCount: int.tryParse('${json['sessionCount'] ?? 0}') ?? 0,
+      sessionCount: _nonNegativeCount(json['sessionCount']),
       availability: GatewayAvailability.values.firstWhere(
         (value) => value.name == json['availability'],
         orElse: () => GatewayAvailability.offline,
@@ -129,6 +129,11 @@ class GatewayContact {
             ),
     );
   }
+}
+
+int _nonNegativeCount(Object? value) {
+  final count = int.tryParse('$value') ?? 0;
+  return count < 0 ? 0 : count;
 }
 
 List<GatewayContact> sortGatewayContacts(Iterable<GatewayContact> contacts) {

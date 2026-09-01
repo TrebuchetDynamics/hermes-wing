@@ -82,6 +82,19 @@ class MainActivity : FlutterActivity() {
         )
     }
 
+    override fun onDestroy() {
+        qrImageResult?.let { result ->
+            qrImageResult = null
+            qrOperationGate.finish()
+            result.error(
+                "qr_image_cancelled",
+                "The image picker was closed before the QR code was read.",
+                null,
+            )
+        }
+        super.onDestroy()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -328,7 +341,7 @@ class MainActivity : FlutterActivity() {
             action = intent.action,
             type = intent.type,
             data = intent.data?.toString(),
-            text = intent.getStringExtra(Intent.EXTRA_TEXT),
+            text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString(),
         )?.toMethodChannelMap()
     }
 

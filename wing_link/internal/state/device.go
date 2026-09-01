@@ -140,6 +140,7 @@ func (s *StateStore) stageDeviceCredentialMode(name string, publicKey ed25519.Pu
 			return err
 		}
 		prunePendingState(&state, now)
+		pruneExpiredDevices(&state, now)
 		if len(state.Devices)+len(state.ControlTokenHashes)+len(state.PendingDevices) >= maxControlTokens {
 			return errors.New("too many control tokens")
 		}

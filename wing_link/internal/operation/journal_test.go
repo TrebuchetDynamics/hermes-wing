@@ -11,6 +11,32 @@ import (
 	"testing"
 )
 
+func TestJournalTerminalUpdatesNormalizeTheirEvent(t *testing.T) {
+	journal, err := OpenJournal(filepath.Join(t.TempDir(), "operations.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := sha256.Sum256([]byte(`{}`))
+	record, _, err := journal.Start(IdempotencyRequest{
+		DeviceID:      "cred_phone",
+		Route:         "POST /v1/setup",
+		Key:           "terminal-normalization",
+		PayloadDigest: hex.EncodeToString(digest[:]),
+		Kind:          "setup",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := journal.Update(record.ID, PhaseCommitted, OperationEvent{Phase: PhaseRunning}); err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot, ok := journal.Snapshot(record.ID)
+	if !ok || snapshot.Phase != PhaseCommitted || snapshot.Event.Phase != PhaseCommitted || !snapshot.Event.Terminal {
+		t.Fatalf("snapshot = %#v, ok=%v", snapshot, ok)
+	}
+}
+
 func TestJournalReplaysSameIdempotentRequestAndRejectsChangedPayload(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "operations.json")
 	journal, err := OpenJournal(path)

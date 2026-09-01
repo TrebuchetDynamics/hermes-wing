@@ -18,7 +18,7 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3b82f6"></a>
 </p>
 
-## Control Hermes Agent from your phone
+## Hermes Wing: control Hermes Agent from your phone
 
 Hermes Wing is an independent, Android-first Flutter client for staying attached
 to [Hermes Agent](https://github.com/NousResearch/hermes-agent) away from your
@@ -82,7 +82,8 @@ cd hermes-wing
 ```
 
 The host setup is separate: Wing Link installs or adopts the pinned Hermes
-Agent build, prepares API access, and starts the Hermes gateway:
+Agent build, prepares API access, and starts the Hermes gateway only if needed.
+An already-running gateway is left undisturbed:
 
 ```bash
 ./install-wing-link.sh
@@ -210,7 +211,8 @@ hermes setup
 
 The installer defaults to building the current checkout into `~/.local/bin`, then
 runs the installed Wing Link binary to install or adopt Hermes, prepare API
-access, and start the local runtime. Use `--release` to install the most recent
+access, and start the local runtime only if needed. An already-running gateway
+is left undisturbed. Use `--release` to install the most recent
 published alpha instead. `hermes setup` remains the
 authoritative wizard for provider, model, tools, and messaging configuration.
 Today, Wing Link's Agent-domain compatibility surface (see

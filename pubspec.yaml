@@ -15,7 +15,7 @@ dependencies:
   go_router: ^18.0.0
   uuid: ^4.6.0
   shared_preferences: ^2.5.3
-  flutter_secure_storage: ^10.3.1
+  flutter_secure_storage: ^11.0.0
   web: ^1.1.1
   speech_to_text:
     path: third_party/speech_to_text

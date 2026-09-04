@@ -542,7 +542,14 @@ func TestOpenRootNoSymlinksRejectsComponentsAndSwaps(t *testing.T) {
 	if err := os.Rename(original, component); err != nil {
 		t.Fatal(err)
 	}
-	expectedInfo, err := os.Stat(component)
+	// Windows path-based Stat defers file identity lookup until SameFile.
+	// Capture it through a handle before the path starts changing.
+	expectedRoot, err := os.OpenRoot(component)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedInfo, err := expectedRoot.Stat(".")
+	_ = expectedRoot.Close()
 	if err != nil {
 		t.Fatal(err)
 	}

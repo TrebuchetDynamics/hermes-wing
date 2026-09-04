@@ -27,11 +27,24 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   String? _switchingGatewayId;
   String? _actionError;
   bool _refreshing = false;
+  int _refreshGeneration = 0;
   bool _refreshFailed = false;
 
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
+    ref.listen(hermesChannelStateProvider, (previous, next) {
+      if (previous?.connectedBaseUrl != next.connectedBaseUrl ||
+          previous?.selectedProfileId != next.selectedProfileId ||
+          previous?.status != next.status ||
+          !identical(previous?.capabilities, next.capabilities)) {
+        setState(() {
+          _refreshGeneration++;
+          _refreshing = false;
+          _refreshFailed = false;
+        });
+      }
+    });
     final directory = ref.watch(hermesGatewayDirectoryProvider);
     final strings = AppLocalizations.of(context);
     return AnimatedBuilder(
@@ -50,9 +63,12 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                       ? null
                       : () => unawaited(_refresh(channel)),
                   icon: _refreshing
-                      ? const SizedBox.square(
+                      ? SizedBox.square(
                           dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            semanticsLabel: strings.schedulesRefreshing,
+                          ),
                         )
                       : const Icon(Icons.refresh),
                 ),
@@ -74,7 +90,10 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                   ),
                 if (_actionError != null)
                   MaterialBanner(
-                    content: Text(_actionError!),
+                    content: Semantics(
+                      liveRegion: true,
+                      child: Text(_actionError!),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => setState(() => _actionError = null),
@@ -87,6 +106,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                     state: channel.state,
                     strings: strings,
                     refreshFailed: _refreshFailed,
+                    onRetry: () => unawaited(_refresh(channel)),
                   ),
                 ),
               ],
@@ -104,6 +124,8 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   ) async {
     setState(() {
       _switchingGatewayId = gatewayId;
+      _refreshGeneration++;
+      _refreshing = false;
       _actionError = null;
       _refreshFailed = false;
     });
@@ -117,6 +139,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   }
 
   Future<void> _refresh(HermesChannel channel) async {
+    final generation = ++_refreshGeneration;
     setState(() {
       _refreshing = true;
       _refreshFailed = false;
@@ -124,9 +147,13 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     try {
       await channel.loadJobs();
     } catch (_) {
-      if (mounted) setState(() => _refreshFailed = true);
+      if (mounted && generation == _refreshGeneration) {
+        setState(() => _refreshFailed = true);
+      }
     } finally {
-      if (mounted) setState(() => _refreshing = false);
+      if (mounted && generation == _refreshGeneration) {
+        setState(() => _refreshing = false);
+      }
     }
   }
 }
@@ -136,11 +163,13 @@ class _SchedulesBody extends StatelessWidget {
     required this.state,
     required this.strings,
     required this.refreshFailed,
+    required this.onRetry,
   });
 
   final HermesChannelState state;
   final AppLocalizations strings;
   final bool refreshFailed;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +180,7 @@ class _SchedulesBody extends StatelessWidget {
       if (state.status == HermesConnectionStatus.error) {
         return WingEmptyState(
           icon: Icons.cloud_off_outlined,
+          liveRegion: true,
           title: strings.schedulesUnavailableTitle,
           body: strings.schedulesConnectionErrorBody,
         );
@@ -172,8 +202,11 @@ class _SchedulesBody extends StatelessWidget {
         state.optionalResourceErrors.containsKey(HermesOptionalResource.jobs)) {
       return WingEmptyState(
         icon: Icons.sync_problem_outlined,
+        liveRegion: true,
         title: strings.schedulesUnavailableTitle,
         body: strings.schedulesLoadFailedBody,
+        actionLabel: strings.retryAction,
+        onAction: onRetry,
       );
     }
 
@@ -182,11 +215,9 @@ class _SchedulesBody extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
         Text(
-          strings.schedulesTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
+          strings.schedulesSubtitle,
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
-        const SizedBox(height: 6),
-        Text(strings.schedulesSubtitle),
         const SizedBox(height: 16),
         Card(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -205,11 +236,13 @@ class _SchedulesBody extends StatelessWidget {
         const SizedBox(height: 16),
         if (jobs.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
-            child: Text(
-              strings.schedulesEmptyBody,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: WingEmptyState(
+              icon: Icons.event_available_outlined,
+              title: strings.schedulesEmptyTitle,
+              body: strings.schedulesEmptyBody,
+              actionLabel: strings.schedulesRefreshTooltip,
+              onAction: onRetry,
             ),
           )
         else
@@ -235,26 +268,36 @@ class _ScheduleCard extends StatelessWidget {
     final nextRun = _formatTimestamp(context, job.nextRunAt);
     final lastRun = _formatTimestamp(context, job.lastRunAt);
     final hasError = job.lastError?.trim().isNotEmpty ?? false;
+    final title = Text(
+      _safePreview(job.displayName, 120),
+      style: Theme.of(context).textTheme.titleMedium,
+    );
+    final status = Chip(label: Text(stateLabel));
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    _safePreview(job.displayName, 120),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Chip(label: Text(stateLabel)),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final largeText =
+                    MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                if (constraints.maxWidth < 400 || largeText) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [title, const SizedBox(height: 10), status],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: title),
+                    const SizedBox(width: 12),
+                    status,
+                  ],
+                );
+              },
             ),
             if (schedule != null && schedule.isNotEmpty) ...[
               const SizedBox(height: 10),

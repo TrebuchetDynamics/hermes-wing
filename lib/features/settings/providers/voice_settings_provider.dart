@@ -5,6 +5,8 @@ import '../../../shared/voice/voice_settings.dart';
 
 export '../../../shared/voice/voice_settings.dart';
 
+const maxVoiceCommandWordCharacters = 64;
+
 class WingVoiceSettingsController extends Notifier<WingVoiceSettings> {
   static const _keyVoiceEnabled = 'wing.voice.continuous_enabled';
   static const _keySpeakReplies = 'wing.voice.speak_replies_enabled';

@@ -42,7 +42,12 @@ test("unknown routes render a bounded not-found screen", async ({ page }) => {
 
   await expect(page.getByText("Hermes Wing").first()).toBeVisible();
   await expect(
-    page.getByText("Route not found: /does-not-exist"),
+    page.getByRole("group", {
+      name: "Page not found Hermes Wing does not have a screen for /does-not-exist.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Return to chat" }),
   ).toBeVisible();
 });
 
@@ -78,7 +83,14 @@ test("Standalone persona route stays explicit without a selected profile", async
 }) => {
   await openConnected(page, "/soul");
 
-  await expect(page.getByText("No profiles available")).toBeVisible();
+  await expect(
+    page.getByRole("group", {
+      name: "Choose a profile Select a profile before opening its persona editor.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Open profiles" }),
+  ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Persona" })).toHaveCount(0);
 });
 

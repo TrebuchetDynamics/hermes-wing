@@ -327,6 +327,7 @@ void main() {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(),
       basicHealth: _initialHealth,
+      refreshedDetailedHealth: _richHealth,
       optionalResourceErrors: const {
         HermesOptionalResource.detailedHealth:
             'private gateway process path and stack trace',
@@ -346,6 +347,32 @@ void main() {
     );
     expect(find.textContaining('private gateway'), findsNothing);
     expect(find.text('0.18.0'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('gateway-status-inline-retry')));
+    await tester.pumpAndSettle();
+    expect(channel.loadDetailedHealthCalls, 1);
+    expect(find.text('0.18.1'), findsOneWidget);
+  });
+
+  testWidgets('missing detailed health offers an inline retry action', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      refreshedDetailedHealth: _richHealth,
+      optionalResourceErrors: const {
+        HermesOptionalResource.detailedHealth: 'private transport failure',
+      },
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    expect(find.text('Gateway status unavailable'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+    await tester.pumpAndSettle();
+
+    expect(channel.loadDetailedHealthCalls, 1);
+    expect(find.text('0.18.1'), findsOneWidget);
   });
 
   testWidgets('gateway picker activates the selected saved gateway', (
@@ -497,6 +524,7 @@ void main() {
   testWidgets('shows changed identity, upgrade, and expired states at 100%', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final cases = <({Object? error, String fingerprint, String message})>[
       (
         error: null,
@@ -509,9 +537,14 @@ void main() {
         message: 'outside the supported compatibility window',
       ),
       (
-        error: Exception('Wing Link HTTP 401'),
+        error: const WingLinkHttpException(401),
         fingerprint: _testFingerprint,
         message: 'expired or revoked',
+      ),
+      (
+        error: Exception('Wing Link HTTP 401'),
+        fingerprint: _testFingerprint,
+        message: 'trust status is unavailable',
       ),
     ];
     for (final testCase in cases) {
@@ -535,14 +568,18 @@ void main() {
         find.textContaining(testCase.message, findRichText: true),
         findsOneWidget,
       );
+      final error = find.byKey(const ValueKey('gateway-trust-error'));
+      expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
       await tester.pumpWidget(const SizedBox.shrink());
       channel.dispose();
     }
+    semantics.dispose();
   });
 
   testWidgets('shows host approval pending without request identifiers', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final channel = FakeHermesChannel(
       capabilities: _capabilities(),
       basicHealth: _initialHealth,
@@ -581,6 +618,16 @@ void main() {
     );
     expect(find.textContaining('appr_test'), findsNothing);
     expect(find.textContaining('op_test'), findsNothing);
+    expect(
+      tester
+          .getSemantics(
+            find.byKey(const ValueKey('gateway-trust-approval-pending')),
+          )
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
+    semantics.dispose();
   });
 
   testWidgets('shows pinned trust and confirms self-revocation at 200% scale', (
@@ -645,7 +692,20 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(revoked, isTrue);
-    expect(find.byKey(const ValueKey('gateway-trust-revoked')), findsOneWidget);
+    final retainedAgentEndpoint = directory.configForGateway('alpha');
+    expect(retainedAgentEndpoint, isNotNull);
+    expect(retainedAgentEndpoint!.baseUrl, 'https://alpha');
+    expect(retainedAgentEndpoint.wingLinkOrigin, isNull);
+    expect(retainedAgentEndpoint.wingLinkToken, isNull);
+    expect(retainedAgentEndpoint.wingLinkHostFingerprint, isNull);
+    expect(retainedAgentEndpoint.wingLinkDeviceId, isNull);
+    expect(
+      find.text(
+        'This device was revoked. Pair it again from the host to restore '
+        'management access.',
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

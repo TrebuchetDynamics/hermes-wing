@@ -272,7 +272,7 @@ a responsive device/emulator:
 3. Connect using the platform-appropriate URL:
    - desktop/Linux/Windows/iOS simulator: `http://127.0.0.1:8642`
    - Android emulator: `http://10.0.2.2:8642`
-   - physical device: LAN/VPN/Tailscale URL
+   - physical device: LAN/VPN/NetBird/Tailscale URL
 4. Verify: session list/create, typed text turn, streamed assistant response,
    tool progress card, approval prompt + response, stop, reconnect from saved
    endpoint, push-to-talk voice transcript, and continuous voice loop.

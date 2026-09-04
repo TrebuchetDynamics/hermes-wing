@@ -43,9 +43,13 @@ Status: alpha baseline; not an independent security assessment
   and output, and pending-token acknowledgment before mutation.
 - Profile compatibility delegates list/create/rename/delete to Hermes CLI without
   retaining a shadow profile inventory.
-- HTTP is loopback-only. Non-loopback Wing Link uses TLS 1.3 and native clients
-  pin the durable host identity's SHA-256 SPKI fingerprint; browsers require a
-  normally trusted certificate.
+- Wing Link HTTP is loopback-only. Non-loopback Wing Link uses TLS 1.3 and native
+  clients pin the durable host identity's SHA-256 SPKI fingerprint; browsers
+  require a normally trusted certificate.
+- Android allows Agent HTTP transport so private NetBird/Tailscale literal IPs can
+  work through the encrypted tunnel, but Wing requires explicit confirmation
+  before sending an Agent credential to any non-local HTTP origin. This exception
+  does not apply to Wing Link and does not make network location authorization.
 - Named device credentials have exact scopes and independent revocation. A remote
   device can inspect and revoke only itself; the host console administers trust.
 - Sensitive operations consume a short-lived local approval bound to requester,

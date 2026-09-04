@@ -65,7 +65,8 @@ class PluginSpeechToTextEngine
         SpeechToTextEngine,
         SpeechToTextListeningStateEngine,
         SpeechToTextGenerationBoundEngine,
-        SpeechToTextSoundLevelEngine {
+        SpeechToTextSoundLevelEngine,
+        VoiceCaptureLifecycleService {
   PluginSpeechToTextEngine({
     stt.SpeechToText? speechToText,
     this.androidIntentLookup = false,
@@ -76,6 +77,7 @@ class PluginSpeechToTextEngine
   final _soundLevels = StreamController<double>.broadcast();
   final bool androidIntentLookup;
   final bool androidNoBluetooth;
+  bool _disposed = false;
 
   @override
   bool get isListening => _speechToText.isListening;
@@ -121,7 +123,9 @@ class PluginSpeechToTextEngine
     required bool onDevice,
   }) async {
     await _speechToText.listen(
-      onSoundLevelChange: _soundLevels.add,
+      onSoundLevelChange: (level) {
+        if (!_disposed) _soundLevels.add(level);
+      },
       onResult: (SpeechRecognitionResult result) => onResult(
         SpeechToTextSnapshot(
           words: result.recognizedWords,
@@ -146,6 +150,13 @@ class PluginSpeechToTextEngine
 
   @override
   Future<void> cancel() => _speechToText.cancel();
+
+  @override
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    await _soundLevels.close();
+  }
 }
 
 class SpeechToTextVoiceCaptureService
@@ -153,7 +164,8 @@ class SpeechToTextVoiceCaptureService
         VoiceCaptureService,
         VoiceCaptureProgressService,
         VoiceCaptureSoundLevelService,
-        VoiceCaptureProvenanceService {
+        VoiceCaptureProvenanceService,
+        VoiceCaptureLifecycleService {
   factory SpeechToTextVoiceCaptureService({
     SpeechToTextEngine? engine,
     DateTime Function()? clock,
@@ -213,6 +225,8 @@ class SpeechToTextVoiceCaptureService
   final _soundLevels = StreamController<double>.broadcast(sync: true);
   bool _initialized = false;
   bool _captureInProgress = false;
+  bool _disposed = false;
+  Future<void>? _disposal;
   Completer<void>? _activeCancellation;
   Completer<SpeechToTextSnapshot>? _activeCompletion;
   Completer<void>? _activeRecognitionEnded;
@@ -225,6 +239,31 @@ class SpeechToTextVoiceCaptureService
 
   @override
   Stream<double> get soundLevels => _soundLevels.stream;
+
+  @override
+  Future<void> dispose() {
+    final existing = _disposal;
+    if (existing != null) return existing;
+    _disposed = true;
+    _onError = null;
+    _onStatus = null;
+    final ended = _activeRecognitionEnded;
+    _activeRecognitionEnded = null;
+    // This instance will never capture again. Release its waiters without
+    // treating disposal as proof that a replacement recognizer may start.
+    if (ended != null && !ended.isCompleted) ended.complete();
+    return _disposal = () async {
+      try {
+        await cancel().timeout(const Duration(seconds: 10));
+      } finally {
+        await Future.wait<void>([
+          _partialTranscripts.close(),
+          _soundLevels.close(),
+          if (_engine is PluginSpeechToTextEngine) _engine.dispose(),
+        ]);
+      }
+    }();
+  }
 
   @override
   Future<void> cancel() {
@@ -284,6 +323,9 @@ class SpeechToTextVoiceCaptureService
 
   @override
   Future<VoiceCapture> capture({required Duration timeout}) async {
+    if (_disposed) {
+      throw const SpeechToTextCaptureFailure('capture service disposed');
+    }
     if (_captureInProgress) {
       throw const SpeechToTextCaptureFailure('capture already in progress');
     }
@@ -300,6 +342,9 @@ class SpeechToTextVoiceCaptureService
       timeout,
       onTimeout: () => throw const VoiceCaptureTimeout(),
     );
+    if (_disposed) {
+      throw const SpeechToTextCaptureFailure('capture service disposed');
+    }
     final startedAt = _clock();
     final elapsed = Stopwatch()..start();
     final cancellation = Completer<void>();
@@ -325,7 +370,8 @@ class SpeechToTextVoiceCaptureService
                 ? (_engine as SpeechToTextSoundLevelEngine).soundLevels
                 : null)
             ?.listen((level) {
-              if (!identical(_activeRecognitionEnded, recognitionEnded) ||
+              if (_disposed ||
+                  !identical(_activeRecognitionEnded, recognitionEnded) ||
                   cancellation.isCompleted ||
                   recognitionEnded.isCompleted) {
                 return;
@@ -355,6 +401,7 @@ class SpeechToTextVoiceCaptureService
     }
 
     void completeWithError(Object error) {
+      if (_disposed) return;
       cancelPartialResultTimer();
       log(_coordinator.errorDiagnostic(error));
       // An error callback is not proof that the platform recognizer has
@@ -439,6 +486,7 @@ class SpeechToTextVoiceCaptureService
         _initialize(
           onError: completeWithError,
           onStatus: (status) {
+            if (_disposed) return;
             log('status=$status');
             final normalizedStatus = status.trim().toLowerCase();
             if (normalizedStatus == 'listening') recognitionStarted = true;
@@ -548,7 +596,8 @@ class SpeechToTextVoiceCaptureService
           localeId: effectiveLocaleId,
           onDevice: onDeviceOnly,
           onResult: (snapshot) {
-            if (!identical(_activeRecognitionEnded, recognitionEnded) ||
+            if (_disposed ||
+                !identical(_activeRecognitionEnded, recognitionEnded) ||
                 cancellation.isCompleted ||
                 recognitionCancellationAttempted ||
                 recognitionEnded.isCompleted) {
@@ -665,6 +714,7 @@ class SpeechToTextVoiceCaptureService
     required void Function(Object error) onError,
     required void Function(String status) onStatus,
   }) async {
+    if (_disposed) return false;
     _onError = onError;
     _onStatus = onStatus;
     if (_initialized) return true;

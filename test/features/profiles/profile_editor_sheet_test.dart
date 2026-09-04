@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
+import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -14,6 +15,13 @@ Widget _editorTestApp(Widget child) => MaterialApp(
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(body: child),
 );
+
+final class _TestHermesStatusException implements HermesApiStatusException {
+  const _TestHermesStatusException(this.statusCode);
+
+  @override
+  final int statusCode;
+}
 
 void main() {
   testWidgets('delete requires typing the agent display name', (tester) async {
@@ -642,7 +650,10 @@ void main() {
   testWidgets('a revision conflict surfaces the conflict message', (
     tester,
   ) async {
-    final channel = FakeHermesChannel(renameProfileFails: true);
+    final channel = FakeHermesChannel(
+      renameProfileFails: true,
+      profileMutationFailure: const _TestHermesStatusException(412),
+    );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(
@@ -674,6 +685,7 @@ void main() {
   ) async {
     final channel = FakeHermesChannel(
       writeProfileSoulFails: true,
+      profileMutationFailure: const _TestHermesStatusException(412),
       profileSoul: const HermesProfileSoul(
         soul: 'Server version',
         revision: 'server-rev',

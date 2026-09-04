@@ -216,6 +216,35 @@ Widget _testApp(
 );
 
 void main() {
+  testWidgets('connection errors are bounded and offer Chat recovery', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.error,
+      errorMessage: 'private endpoint and server stack trace',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Providers could not be loaded from Hermes.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('private endpoint'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Open chat'), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(find.text('Providers could not be loaded from Hermes.'))
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
+    semantics.dispose();
+  });
+
   testWidgets(
     'disconnected channel shows a neutral select-gateway prompt, not the '
     'unavailable lock state',
@@ -380,6 +409,46 @@ void main() {
     },
   );
 
+  testWidgets('gateway picker shows one host for a paired profile bundle', (
+    tester,
+  ) async {
+    final channel = _GatewaySwitchingProviderChannel();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'default-endpoint',
+          label: 'BlueBlack · default',
+          baseUrl: 'https://home.example/p/default',
+          wingLinkOrigin: 'https://control.example:8654',
+          wingLinkDeviceId: 'device-1',
+        ),
+        HermesEndpointConfig(
+          id: 'coder-endpoint',
+          label: 'BlueBlack · coder',
+          baseUrl: 'https://home.example/p/coder',
+          wingLinkOrigin: 'https://control.example:8654',
+          wingLinkDeviceId: 'device-1',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'default-endpoint': gatewaySummary(['default']),
+        'coder-endpoint': gatewaySummary(['coder']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('providers-gateway-picker')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('BlueBlack'), findsOneWidget);
+    expect(find.text('BlueBlack · default'), findsNothing);
+    expect(find.text('BlueBlack · coder'), findsNothing);
+  });
+
   testWidgets(
     'reloads providers and models when the selected profile changes mid-session',
     (tester) async {
@@ -502,6 +571,58 @@ void main() {
 
     expect(find.text('Title generation: openai / gpt-5'), findsOneWidget);
     expect(find.textContaining('title_generation'), findsNothing);
+  });
+
+  testWidgets('OAuth providers do not open the API-key credential sheet', (
+    tester,
+  ) async {
+    const oauthProvider = HermesProvider(
+      slug: 'subscription',
+      label: 'Subscription account',
+      authType: 'oauth',
+      configured: false,
+    );
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(const ['providers:read', 'providers:write']),
+      providers: const [oauthProvider],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('OAuth sign-in'), findsOneWidget);
+    expect(find.text('Manage credential'), findsNothing);
+    expect(find.textContaining('Hermes host'), findsOneWidget);
+  });
+
+  testWidgets('provider cards fit narrow screens at 200% text scale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const provider = HermesProvider(
+      slug: 'long-provider',
+      label: 'Long subscription provider account',
+      authType: 'api_key',
+      envVars: ['PROVIDER_API_KEY'],
+      configured: true,
+    );
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(const ['providers:read', 'providers:write']),
+      providers: const [provider],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel, textScale: 2));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Long subscription provider account'), findsOneWidget);
   });
 
   testWidgets('write scopes expose mutation affordances', (tester) async {

@@ -23,13 +23,13 @@ import (
 )
 
 const (
-	pinnedHermesCommit              = "60dc87fd108b4da6d674dd8a260f0e77fef22e88"
-	pinnedHermesPOSIXURL            = "https://raw.githubusercontent.com/NousResearch/hermes-agent/60dc87fd108b4da6d674dd8a260f0e77fef22e88/scripts/install.sh"
-	pinnedHermesPOSIXSize     int64 = 134649
-	pinnedHermesPOSIXSHA256         = "c5ba7e89627577fab914514736ecfb3359b66956ca00199bfef616ca35953cb9"
-	pinnedHermesWindowsURL          = "https://raw.githubusercontent.com/NousResearch/hermes-agent/60dc87fd108b4da6d674dd8a260f0e77fef22e88/scripts/install.ps1"
-	pinnedHermesWindowsSize   int64 = 179412
-	pinnedHermesWindowsSHA256       = "5af3faec3d2387923fd09aab3fe25410932c3898c93a76012c3d960041eec425"
+	pinnedHermesCommit              = "afc3d9d34c9c3b01fa2e1332d2c66a5b5fabae3f"
+	pinnedHermesPOSIXURL            = "https://raw.githubusercontent.com/NousResearch/hermes-agent/afc3d9d34c9c3b01fa2e1332d2c66a5b5fabae3f/scripts/install.sh"
+	pinnedHermesPOSIXSize     int64 = 170273
+	pinnedHermesPOSIXSHA256         = "5854b15670b51a8daae8f59ddfa917062de9f74be261eb73b4b8d719710f8968"
+	pinnedHermesWindowsURL          = "https://raw.githubusercontent.com/NousResearch/hermes-agent/afc3d9d34c9c3b01fa2e1332d2c66a5b5fabae3f/scripts/install.ps1"
+	pinnedHermesWindowsSize   int64 = 245415
+	pinnedHermesWindowsSHA256       = "98a63d33472cb2880829cca974302c840babee0b315e5581a81f4787e45c5d3f"
 )
 
 var (

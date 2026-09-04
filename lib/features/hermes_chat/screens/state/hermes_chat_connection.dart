@@ -226,11 +226,15 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       baseUrl: baseUrl,
       apiKey: apiKey,
     );
+    bool ownsAttempt() =>
+        mounted &&
+        !_connectionForm.isStale(attempt) &&
+        identical(ref.read(hermesChannelProvider), channel);
     await channel.connect(
       baseUrl: attempt.baseUrl,
       apiKey: attempt.storedApiKey,
     );
-    if (_connectionForm.isStale(attempt) ||
+    if (!ownsAttempt() ||
         channel.state.status != HermesConnectionStatus.connected) {
       return;
     }
@@ -243,8 +247,11 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
             apiKey: attempt.storedApiKey,
             label: attempt.storedLabel,
           );
+      // Secure storage can finish after a newer connection has taken ownership.
+      if (!ownsAttempt()) return;
       _refreshEndpointProfiles();
       await channel.disconnect();
+      if (!ownsAttempt()) return;
       unawaited(ref.read(hermesGatewayDirectoryProvider).reload());
     }
   }
@@ -392,7 +399,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       builder: (sheetContext) {
         final pinContact = _sessionPinContact(channel.state);
         return ListenableBuilder(
-          listenable: _sessionPins,
+          listenable: Listenable.merge([channel, _sessionPins]),
           builder: (_, _) => _HermesSessionsPanel(
             state: channel.state,
             canCreate: _canCreateSession(channel.state),
@@ -407,6 +414,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
               Navigator.of(sheetContext).pop();
               unawaited(_createSession(context, channel));
             },
+            onLoadMore: () => unawaited(channel.loadMoreSessions()),
             onSelect: (session) {
               Navigator.of(sheetContext).pop();
               unawaited(_selectSession(context, channel, session));

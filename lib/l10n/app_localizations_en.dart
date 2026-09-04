@@ -9,6 +9,22 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatAttachmentDraftEvicted =>
+      'The attachment was released to save memory. Attach it again before sending.';
+
+  @override
+  String get chatTranscriptLatestAction => 'Latest activity';
+
+  @override
+  String get chatVoiceMuteOutputAction => 'Mute speech';
+
+  @override
+  String get chatVoiceUnmuteOutputAction => 'Unmute speech';
+
+  @override
+  String get chatVoicePauseMicrophoneAction => 'Pause microphone';
+
+  @override
   String get appTitle => 'Hermes Wing';
 
   @override
@@ -224,6 +240,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retryAction => 'Retry';
 
   @override
+  String get openChatAction => 'Open chat';
+
+  @override
+  String get gatewayConnectionRecoveryBody =>
+      'Choose another saved gateway above, or return to Chat to reconnect.';
+
+  @override
+  String get chatSavedEndpointsLoading => 'Loading saved Hermes gateways';
+
+  @override
+  String get chatSavedEndpointsLoadFailedTitle => 'Saved gateways unavailable';
+
+  @override
+  String get chatSavedEndpointsLoadFailedBody =>
+      'Hermes Wing could not read saved gateways from secure storage. You can still enter connection details manually.';
+
+  @override
   String get saveAction => 'Save';
 
   @override
@@ -231,6 +264,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personaLabel => 'Persona';
+
+  @override
+  String get personaLoading => 'Loading the authoritative persona';
 
   @override
   String get personaHint =>
@@ -287,6 +323,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toolsTitle => 'Tools';
+
+  @override
+  String get toolsRefreshAction => 'Refresh inventory';
+
+  @override
+  String get toolsRefreshFailed => 'Tool inventory could not be refreshed.';
 
   @override
   String get toolsSubtitle =>
@@ -571,6 +613,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Schedules could not be loaded from Hermes.';
 
   @override
+  String get schedulesEmptyTitle => 'No schedules yet';
+
+  @override
   String get schedulesEmptyBody =>
       'No scheduled jobs were reported for this profile.';
 
@@ -580,6 +625,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesRefreshTooltip => 'Refresh schedules';
+
+  @override
+  String get schedulesRefreshing => 'Refreshing scheduled jobs';
 
   @override
   String get scheduleEnabled => 'Enabled';
@@ -646,6 +694,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gatewayTrustRevokeAction => 'Revoke this device';
+
+  @override
+  String get gatewayTrustRevoking => 'Revoking this device’s Wing Link access';
 
   @override
   String get gatewayTrustRevokeTitle => 'Revoke this device?';
@@ -848,6 +899,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String providerKeyHintLabel(String hint) {
     return 'Key $hint';
   }
+
+  @override
+  String get providerAuthApiKey => 'API key';
+
+  @override
+  String get providerAuthOAuth => 'OAuth sign-in';
+
+  @override
+  String get providerAuthOther => 'Provider-managed authentication';
+
+  @override
+  String get providerOAuthHostRequired =>
+      'Sign in on the Hermes host. This Agent does not advertise remote OAuth setup.';
 
   @override
   String get manageCredentialAction => 'Manage credential';
@@ -1394,11 +1458,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsCopyTitle => 'Copy diagnostics';
 
   @override
+  String get diagnosticsCopyInProgress => 'Copying diagnostics';
+
+  @override
   String get diagnosticsCopySubtitle =>
       'Safe snapshot; excludes secrets, raw logs, transcripts, and local paths.';
 
   @override
   String get diagnosticsCopiedNotice => 'Hermes diagnostics copied';
+
+  @override
+  String get diagnosticsCopyFailedNotice =>
+      'Could not copy diagnostics. Try again.';
 
   @override
   String get voiceSettingsTitle => 'Voice & speech';
@@ -1568,7 +1639,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String enrollCleartextDialogBody(String host) {
-    return 'The endpoint $host uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.';
+    return 'The endpoint $host uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.';
   }
 
   @override
@@ -1636,6 +1707,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollPasteLink => 'Paste pairing link';
+
+  @override
+  String get enrollReadingClipboard => 'Reading pairing link from clipboard';
 
   @override
   String get enrollSameDeviceHelper =>
@@ -1725,9 +1799,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeAction => 'Close';
 
   @override
+  String get routeNotFoundTitle => 'Page not found';
+
+  @override
   String routeNotFound(String path) {
-    return 'Route not found: $path';
+    return 'Hermes Wing does not have a screen for $path.';
   }
+
+  @override
+  String get routeNotFoundAction => 'Return to chat';
+
+  @override
+  String get soulConnectionRequiredTitle => 'Connect to edit a persona';
+
+  @override
+  String get soulConnectionRequiredBody =>
+      'Open a saved gateway chat before editing its selected profile persona.';
+
+  @override
+  String get soulOpenChatAction => 'Open chat';
+
+  @override
+  String get soulProfileRequiredTitle => 'Choose a profile';
+
+  @override
+  String get soulProfileRequiredBody =>
+      'Select a profile before opening its persona editor.';
+
+  @override
+  String get soulOpenProfilesAction => 'Open profiles';
+
+  @override
+  String get soulUnavailableTitle => 'Persona editing unavailable';
+
+  @override
+  String get soulUnavailableBody =>
+      'This gateway did not advertise scoped SOUL read and write operations for the selected profile.';
 
   @override
   String get agentsGatewayPickerHelp =>
@@ -1877,7 +1984,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatConnectionCleartextWarningBody(String endpoint) {
-    return 'The endpoint $endpoint uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.';
+    return 'The endpoint $endpoint uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.';
   }
 
   @override
@@ -2000,6 +2107,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String chatSessionActionDeleteFailedBody(String error) {
     return 'Could not delete session: $error';
   }
+
+  @override
+  String get chatUnsupportedAgentTitle => 'Update Hermes Wing or Hermes Agent';
+
+  @override
+  String get chatUnsupportedAgentBody =>
+      'This Hermes Agent uses a capability format that this version of Hermes Wing cannot safely operate. Update Hermes Wing or Hermes Agent, then reconnect.';
+
+  @override
+  String get chatTranscriptLoadEarlierAction => 'Load earlier messages';
+
+  @override
+  String get chatTranscriptLoadingEarlierLabel => 'Loading earlier messages…';
 
   @override
   String get chatTranscriptCopyChatTextAction => 'Copy entire chat (text)';
@@ -2262,6 +2382,36 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check the endpoint API key in Hermes and try again.';
 
   @override
+  String get chatErrorConnectInvalidEndpointTitle =>
+      'Check the Hermes address.';
+
+  @override
+  String get chatErrorConnectInvalidEndpointBody =>
+      'Enter a complete HTTP or HTTPS Hermes Agent URL, then try again.';
+
+  @override
+  String get chatErrorConnectIncompatibleTitle =>
+      'Hermes returned an unsupported response.';
+
+  @override
+  String get chatErrorConnectIncompatibleBody =>
+      'Update Hermes Wing or Hermes Agent, verify the address points to Hermes Agent, then reconnect.';
+
+  @override
+  String get chatErrorConnectTlsTitle => 'Secure connection to Hermes failed.';
+
+  @override
+  String get chatErrorConnectTlsBody =>
+      'Check the HTTPS certificate or pinned host identity. Re-pair explicitly if the trusted identity changed.';
+
+  @override
+  String get chatErrorConnectTimeoutTitle => 'Hermes did not respond in time.';
+
+  @override
+  String get chatErrorConnectTimeoutBody =>
+      'Check that Hermes Agent is running and reachable, then try again.';
+
+  @override
   String get chatErrorConnectUnreachableTitle =>
       'Hermes endpoint is unreachable.';
 
@@ -2292,7 +2442,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutConnectionModeRemoteLabel => 'Remote HTTPS';
 
   @override
-  String get chatLayoutConnectionModeVpnLabel => 'VPN / Tailscale';
+  String get chatLayoutConnectionModeVpnLabel => 'VPN / NetBird / Tailscale';
 
   @override
   String get chatLayoutConnectionModeSshLabel => 'SSH tunnel';
@@ -2307,7 +2457,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatLayoutConnectionModeVpnBody =>
-      'Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.';
+      'Use the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN. Prefer HTTPS; non-local HTTP requires explicit confirmation. Wing does not treat network location as authorization.';
 
   @override
   String get chatLayoutConnectionModeSshBody =>
@@ -2323,7 +2473,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatLayoutConnectionModeVpnUrlHelper =>
-      'Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.';
+      'Enter the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN.';
 
   @override
   String get chatLayoutConnectionModeSshUrlHelper =>
@@ -2604,6 +2754,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatLayoutAttachFileTooltip => 'Attach image or text file';
+
+  @override
+  String get chatAttachmentPicking => 'Opening the attachment picker';
 
   @override
   String get chatAttachmentRemoveCurrentError =>
@@ -2922,7 +3075,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatStatusApprovalIdMissingBody =>
-      'Hermes sent this approval without an approval id, so it cannot be answered.';
+      'Hermes sent this approval without a run or approval id, so it cannot be answered.';
 
   @override
   String get chatStatusAnsweringApprovalLabel => 'Answering Hermes approval…';
@@ -2976,6 +3129,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Risk preview truncated for mobile review.';
 
   @override
+  String get chatStatusCommandTruncatedBody =>
+      'Command preview truncated for mobile review.';
+
+  @override
+  String chatStatusCommandLabel(String value) {
+    return 'Command: $value';
+  }
+
+  @override
   String chatStatusToolCallLabel(String value) {
     return 'Tool call: $value';
   }
@@ -2987,7 +3149,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatStatusDecisionsDisabledIdBody =>
-      'Decision buttons are disabled because Hermes did not include an approval id.';
+      'Decision buttons are disabled because Hermes did not include a run or approval id.';
 
   @override
   String get chatStatusCopiedApprovalDetailsBody =>
@@ -3013,6 +3175,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatRailNewSessionAction => 'New';
+
+  @override
+  String get chatRailLoadMoreSessionsAction => 'Load more sessions';
+
+  @override
+  String get chatRailLoadingMoreSessionsAction => 'Loading more sessions…';
 
   @override
   String get chatRailSelectAction => 'Select';
@@ -3385,7 +3553,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localSetupBody =>
-      'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Profiles, providers, Tailscale, tools, channels, and schedules remain managed by Hermes after connection.';
+      'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Hermes remains authoritative for profiles, providers, tools, channels, and schedules; VPN software such as NetBird or Tailscale stays external.';
 
   @override
   String get localSetupDetecting => 'Checking this computer for Hermes Agent…';
@@ -3441,6 +3609,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localSetupRetryAction => 'Check again';
 
   @override
+  String get localSetupFailedTitle => 'Setup needs attention';
+
+  @override
+  String get localSetupFailedBody =>
+      'Hermes setup could not be checked. Review Diagnostics, then try again.';
+
+  @override
   String get localSetupConsentTitle => 'Allow local Hermes setup?';
 
   @override
@@ -3461,11 +3636,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termuxInstallAction => 'Install Termux';
 
   @override
+  String get termuxOpeningInstallGuide =>
+      'Opening the Termux installation guide';
+
+  @override
   String get termuxInstallGuideFailedMessage =>
       'The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.';
 
   @override
   String get termuxCopyAction => 'Copy setup command';
+
+  @override
+  String get termuxCopyingCommand => 'Copying the setup command';
+
+  @override
+  String get termuxPreparingCommand => 'Preparing the verified setup command…';
 
   @override
   String get termuxCopiedMessage =>

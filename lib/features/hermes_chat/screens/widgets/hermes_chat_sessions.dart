@@ -1,10 +1,49 @@
 part of '../hermes_chat_screen.dart';
 
+class _HermesSessionLoadMoreButton extends StatelessWidget {
+  const _HermesSessionLoadMoreButton({
+    required this.state,
+    required this.onPressed,
+    required this.buttonKey,
+  });
+
+  final HermesChannelState state;
+  final VoidCallback onPressed;
+  final Key buttonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!state.hasMoreSessions && !state.isLoadingMoreSessions) {
+      return const SizedBox.shrink();
+    }
+    final strings = _hermesStrings(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: OutlinedButton.icon(
+        key: buttonKey,
+        onPressed: state.isLoadingMoreSessions ? null : onPressed,
+        icon: state.isLoadingMoreSessions
+            ? const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.expand_more),
+        label: Text(
+          state.isLoadingMoreSessions
+              ? strings.chatRailLoadingMoreSessionsAction
+              : strings.chatRailLoadMoreSessionsAction,
+        ),
+      ),
+    );
+  }
+}
+
 class _HermesSessionRail extends StatefulWidget {
   const _HermesSessionRail({
     required this.state,
     required this.canCreate,
     required this.onCreate,
+    required this.onLoadMore,
     required this.onSelect,
     required this.onRename,
     required this.onFork,
@@ -18,6 +57,7 @@ class _HermesSessionRail extends StatefulWidget {
   final HermesChannelState state;
   final bool canCreate;
   final VoidCallback onCreate;
+  final VoidCallback onLoadMore;
   final ValueChanged<HermesSession> onSelect;
   final ValueChanged<HermesSession> onRename;
   final ValueChanged<HermesSession> onFork;
@@ -398,6 +438,11 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                     ],
                   ),
                 ),
+              _HermesSessionLoadMoreButton(
+                state: widget.state,
+                onPressed: widget.onLoadMore,
+                buttonKey: const ValueKey('hermes-session-rail-load-more'),
+              ),
             ],
           ),
         ),
@@ -757,6 +802,21 @@ class _HermesComposerStrip extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
+          if (isTurnActive)
+            ActionChip(
+              key: const ValueKey('hermes-composer-stop-chip'),
+              avatar: const Icon(Icons.stop_circle_outlined, size: 18),
+              label: Text(strings.chatRailStopAction),
+              onPressed: onStop,
+            )
+          else if (canRetry)
+            ActionChip(
+              key: const ValueKey('hermes-composer-retry-chip'),
+              avatar: const Icon(Icons.refresh, size: 18),
+              label: Text(strings.retryAction),
+              onPressed: onRetry,
+            ),
+          if (isTurnActive || canRetry) const SizedBox(width: 8),
           Tooltip(
             message: strings.chatComposerModelPickerTooltip,
             child: ActionChip(
@@ -768,15 +828,8 @@ class _HermesComposerStrip extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           _ComposerChip(icon: Icons.keyboard_voice_outlined, label: voiceLabel),
-          const SizedBox(width: 8),
-          if (isTurnActive)
-            ActionChip(
-              key: const ValueKey('hermes-composer-stop-chip'),
-              avatar: const Icon(Icons.stop_circle_outlined, size: 18),
-              label: Text(strings.chatRailStopAction),
-              onPressed: onStop,
-            )
-          else
+          if (!isTurnActive) ...[
+            const SizedBox(width: 8),
             _ComposerChip(
               icon: hasUnreconciledRun
                   ? Icons.hourglass_top
@@ -788,14 +841,6 @@ class _HermesComposerStrip extends StatelessWidget {
                   : canSendTurns
                   ? strings.chatRailStatusReadyLabel
                   : strings.chatRailStatusTransportUnavailableLabel,
-            ),
-          if (canRetry) ...[
-            const SizedBox(width: 8),
-            ActionChip(
-              key: const ValueKey('hermes-composer-retry-chip'),
-              avatar: const Icon(Icons.refresh, size: 18),
-              label: Text(strings.retryAction),
-              onPressed: onRetry,
             ),
           ],
         ],
@@ -825,6 +870,7 @@ class _HermesSessionsPanel extends StatefulWidget {
     required this.state,
     required this.canCreate,
     required this.onCreate,
+    required this.onLoadMore,
     required this.onSelect,
     required this.onRename,
     required this.onFork,
@@ -838,6 +884,7 @@ class _HermesSessionsPanel extends StatefulWidget {
   final HermesChannelState state;
   final bool canCreate;
   final VoidCallback onCreate;
+  final VoidCallback onLoadMore;
   final ValueChanged<HermesSession> onSelect;
   final ValueChanged<HermesSession> onRename;
   final ValueChanged<HermesSession> onFork;
@@ -1173,6 +1220,11 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                   ],
                 ),
               ),
+            _HermesSessionLoadMoreButton(
+              state: widget.state,
+              onPressed: widget.onLoadMore,
+              buttonKey: const ValueKey('hermes-sessions-load-more'),
+            ),
           ],
         ),
       ),

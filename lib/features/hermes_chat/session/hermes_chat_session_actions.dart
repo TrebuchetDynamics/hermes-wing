@@ -54,30 +54,42 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
       context: context,
       builder: (context) {
         final strings = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(strings.chatSessionActionRenameTitle),
-          content: TextFormField(
-            key: const ValueKey('hermes-session-title-field'),
-            initialValue: draftTitle,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: strings.chatSessionActionTitleFieldLabel,
-            ),
-            onChanged: (value) => draftTitle = value,
-            onFieldSubmitted: (value) =>
-                Navigator.of(context).pop(value.trim()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(strings.cancelAction),
-            ),
-            FilledButton(
-              key: const ValueKey('hermes-session-title-save'),
-              onPressed: () => Navigator.of(context).pop(draftTitle.trim()),
-              child: Text(strings.saveAction),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final normalized = draftTitle.trim();
+            final canSave = normalized.isNotEmpty && normalized != currentTitle;
+            void save() {
+              if (canSave) Navigator.of(context).pop(normalized);
+            }
+
+            return AlertDialog(
+              title: Text(strings.chatSessionActionRenameTitle),
+              content: TextFormField(
+                key: const ValueKey('hermes-session-title-field'),
+                initialValue: draftTitle,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: strings.chatSessionActionTitleFieldLabel,
+                ),
+                onChanged: (value) {
+                  draftTitle = value;
+                  setDialogState(() {});
+                },
+                onFieldSubmitted: (_) => save(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(strings.cancelAction),
+                ),
+                FilledButton(
+                  key: const ValueKey('hermes-session-title-save'),
+                  onPressed: canSave ? save : null,
+                  child: Text(strings.saveAction),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -201,7 +213,9 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
         continue;
       }
       try {
+        final draftOwner = _activeComposerDraftKey;
         await channel.deleteSession(session.id);
+        _forgetComposerSession(draftOwner, session.id);
         deleted += 1;
       } catch (_) {
         // Keep deleting the remaining selected sessions. The final bounded
@@ -255,7 +269,9 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
     );
     if (confirmed != true) return;
     try {
+      final draftOwner = _activeComposerDraftKey;
       await channel.deleteSession(session.id);
+      _forgetComposerSession(draftOwner, session.id);
       _refreshActiveGatewayContact();
     } catch (error) {
       if (!context.mounted) return;

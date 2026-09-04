@@ -146,12 +146,15 @@ class HermesSseEventDecoder {
 
   /// Same framing as [decode], but consumes chunks as they arrive on a live
   /// [Stream] instead of requiring the full transcript up front.
-  Stream<HermesSseEvent> decodeStream(Stream<String> chunks) async* {
+  Stream<HermesSseEvent> decodeStream(
+    Stream<String> chunks, {
+    void Function()? onActivity,
+  }) async* {
     final buffer = StringBuffer();
     await for (final chunk in chunks) {
       buffer.write(chunk);
       final events = <HermesSseEvent>[];
-      _drainEvents(buffer, events);
+      _drainEvents(buffer, events, onActivity: onActivity);
       for (final event in events) {
         yield event;
       }
@@ -164,9 +167,10 @@ class HermesSseEventDecoder {
 
   /// Same as [decodeJsonEvents], but over a live [Stream] via [decodeStream].
   Stream<HermesStreamEvent> decodeJsonEventStream(
-    Stream<String> chunks,
-  ) async* {
-    await for (final event in decodeStream(chunks)) {
+    Stream<String> chunks, {
+    void Function()? onActivity,
+  }) async* {
+    await for (final event in decodeStream(chunks, onActivity: onActivity)) {
       try {
         yield HermesStreamEvent.fromSse(event);
       } on FormatException {
@@ -175,7 +179,11 @@ class HermesSseEventDecoder {
     }
   }
 
-  void _drainEvents(StringBuffer buffer, List<HermesSseEvent> events) {
+  void _drainEvents(
+    StringBuffer buffer,
+    List<HermesSseEvent> events, {
+    void Function()? onActivity,
+  }) {
     var text = buffer.toString();
     var separator = _eventSeparatorIndex(text);
     if (separator.index == -1) return;
@@ -183,7 +191,7 @@ class HermesSseEventDecoder {
     buffer.clear();
     while (separator.index != -1) {
       final frame = text.substring(0, separator.index);
-      final event = _parseFrame(frame);
+      final event = _parseFrame(frame, onActivity: onActivity);
       if (event != null) events.add(event);
       text = text.substring(separator.index + separator.length);
       separator = _eventSeparatorIndex(text);
@@ -205,16 +213,23 @@ class HermesSseEventDecoder {
     return candidates.first;
   }
 
-  HermesSseEvent? _parseFrame(String frame) {
+  HermesSseEvent? _parseFrame(String frame, {void Function()? onActivity}) {
     String? id;
     var event = 'message';
     final dataLines = <String>[];
+    var hasComment = false;
+    var commentOnly = true;
 
     final normalizedFrame = frame
         .replaceAll('\r\n', '\n')
         .replaceAll('\r', '\n');
     for (final line in normalizedFrame.split('\n')) {
-      if (line.isEmpty || line.startsWith(':')) continue;
+      if (line.isEmpty) continue;
+      if (line.startsWith(':')) {
+        hasComment = true;
+        continue;
+      }
+      commentOnly = false;
       final colon = line.indexOf(':');
       final field = colon == -1 ? line : line.substring(0, colon);
       var value = colon == -1 ? '' : line.substring(colon + 1);
@@ -229,6 +244,7 @@ class HermesSseEventDecoder {
     }
 
     if (dataLines.isEmpty) {
+      if (hasComment && commentOnly) onActivity?.call();
       if (event == 'done') {
         return HermesSseEvent(id: id, event: 'done', data: '');
       }

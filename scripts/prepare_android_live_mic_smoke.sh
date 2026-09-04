@@ -16,7 +16,7 @@ android_endpoint_hint() {
   if [ -n "${WING_ANDROID_HERMES_URL:-}" ]; then
     printf '%s' "$WING_ANDROID_HERMES_URL"
   else
-    printf 'http://10.0.2.2:8642 for emulator, or LAN/VPN/Tailscale URL for physical device'
+    printf 'http://10.0.2.2:8642 for emulator, or LAN/VPN/NetBird/Tailscale URL for physical device'
   fi
 }
 

@@ -1,9 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import '../../shared/hermes_api_http.dart';
 
 const _maximumResponseBytes = 64 << 20;
+
+final class _HermesApiIoStatusException extends HttpException
+    implements HermesApiStatusException {
+  _HermesApiIoStatusException(this.statusCode, Uri uri)
+    : super(hermesApiHttpStatusMessage(statusCode), uri: uri);
+
+  @override
+  final int statusCode;
+}
 
 Future<String> defaultGet(Uri uri, Map<String, String> headers) {
   return _request(uri: uri, method: 'GET', headers: headers);
@@ -53,12 +63,21 @@ Stream<String> _requestStream({
     final response = await request.close();
     _checkResponseLength(response, uri);
     if (!hermesApiIsSuccessStatus(response.statusCode)) {
-      throw HttpException(
-        hermesApiHttpStatusMessage(response.statusCode),
-        uri: uri,
-      );
+      throw _HermesApiIoStatusException(response.statusCode, uri);
     }
     yield* utf8.decoder.bind(_boundedResponse(response, uri));
+  } on HandshakeException {
+    throw const HermesApiTransportException(HermesApiTransportFailureKind.tls);
+  } on TlsException {
+    throw const HermesApiTransportException(HermesApiTransportFailureKind.tls);
+  } on TimeoutException {
+    throw const HermesApiTransportException(
+      HermesApiTransportFailureKind.timeout,
+    );
+  } on SocketException {
+    throw const HermesApiTransportException(
+      HermesApiTransportFailureKind.network,
+    );
   } finally {
     client.close(force: true);
   }
@@ -83,12 +102,21 @@ Future<String> _request({
         .bind(_boundedResponse(response, uri))
         .join();
     if (!hermesApiIsSuccessStatus(response.statusCode)) {
-      throw HttpException(
-        hermesApiHttpStatusMessage(response.statusCode),
-        uri: uri,
-      );
+      throw _HermesApiIoStatusException(response.statusCode, uri);
     }
     return responseBody;
+  } on HandshakeException {
+    throw const HermesApiTransportException(HermesApiTransportFailureKind.tls);
+  } on TlsException {
+    throw const HermesApiTransportException(HermesApiTransportFailureKind.tls);
+  } on TimeoutException {
+    throw const HermesApiTransportException(
+      HermesApiTransportFailureKind.timeout,
+    );
+  } on SocketException {
+    throw const HermesApiTransportException(
+      HermesApiTransportFailureKind.network,
+    );
   } finally {
     client.close(force: true);
   }

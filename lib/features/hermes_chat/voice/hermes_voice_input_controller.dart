@@ -135,10 +135,15 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool _speaking = false;
   bool _speakNextReply = false;
   bool _playbackUnavailable = false;
+  bool _outputMuted = false;
   int _operationGeneration = 0;
   int _speechGeneration = 0;
+  int _conversationGeneration = 0;
+  HermesChannel? _ownedChannel;
+  (String?, String?, String?)? _conversationIdentity;
   String? _error;
   String? _lastSpokenTurnId;
+  String? _expectedVoiceRunId;
   String? _spokenReplyPrefix;
   String? _activeSpokenChunk;
   String? _readAloudTurnId;
@@ -160,6 +165,49 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool get speaking => _speaking;
   String? get readAloudTurnId => _readAloudTurnId;
   bool get playbackUnavailable => _playbackUnavailable;
+  bool get outputMuted => _outputMuted;
+
+  int _bindConversation() {
+    final channel = _channel();
+    final state = channel.state;
+    final identity = (
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.activeSessionId,
+    );
+    if (!identical(channel, _ownedChannel) ||
+        identity != _conversationIdentity) {
+      _ownedChannel?.removeListener(_onConversationChanged);
+      _ownedChannel = channel;
+      _conversationIdentity = identity;
+      _conversationGeneration += 1;
+      channel.addListener(_onConversationChanged);
+    }
+    return _conversationGeneration;
+  }
+
+  void _onConversationChanged() {
+    _ownsConversation(_conversationGeneration);
+  }
+
+  bool _ownsConversation(int generation) {
+    if (_disposed || generation != _conversationGeneration) return false;
+    final channel = _ownedChannel;
+    if (channel == null) return false;
+    final state = channel.state;
+    if (identical(channel, _channel()) &&
+        state.isConnected &&
+        (
+              state.connectedBaseUrl,
+              state.selectedProfileId,
+              state.activeSessionId,
+            ) ==
+            _conversationIdentity) {
+      return true;
+    }
+    pause(_failureMessage(HermesVoiceFailure.captureSessionChanged, null));
+    return false;
+  }
 
   Future<void> captureDraft() => _capture(autoSend: false);
 
@@ -171,6 +219,8 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   void speakNextReply() {
+    _expectedVoiceRunId = null;
+    _bindConversation();
     _baselineAssistantReplies();
     _speakNextReply = true;
   }
@@ -180,6 +230,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (phrases.isEmpty || _disposed || _capturing || _continuousEnabled) {
       return;
     }
+    final conversation = _bindConversation();
     if (_speaking) await _interruptActiveSpeech();
     if (!await _awaitSpeechTeardown() ||
         _disposed ||
@@ -187,6 +238,7 @@ class HermesVoiceInputController extends ChangeNotifier {
         _continuousEnabled) {
       return;
     }
+    if (!_ownsConversation(conversation)) return;
     final tts = _textToSpeechService();
     if (tts == null) {
       _playbackUnavailable = true;
@@ -204,7 +256,10 @@ class HermesVoiceInputController extends ChangeNotifier {
     notifyListeners();
     try {
       for (final phrase in phrases) {
-        if (_disposed || speechGeneration != _speechGeneration) return;
+        if (!_ownsConversation(conversation) ||
+            speechGeneration != _speechGeneration) {
+          return;
+        }
         _activeSpokenChunk = phrase;
         await tts.speak(phrase).timeout(_speechTimeout);
       }
@@ -229,13 +284,51 @@ class HermesVoiceInputController extends ChangeNotifier {
 
   Future<void> stopSpeaking() => _interruptActiveSpeech();
 
+  Future<void> muteOutput() {
+    _outputMuted = true;
+    _speakNextReply = false;
+    return _interruptActiveSpeech();
+  }
+
+  void unmuteOutput() {
+    _outputMuted = false;
+    if (!_disposed) notifyListeners();
+    unawaited(maybeContinue());
+  }
+
+  void pauseMicrophone() {
+    _operationGeneration += 1;
+    _continuousEnabled = false;
+    _capturing = false;
+    _liveTranscript = null;
+    _soundLevel = null;
+    unawaited(_partialTranscriptSubscription?.cancel());
+    _partialTranscriptSubscription = null;
+    unawaited(_soundLevelSubscription?.cancel());
+    _soundLevelSubscription = null;
+    final capture = _activeCaptureService;
+    _activeCaptureService = null;
+    if (capture != null) {
+      _captureTeardown = Future.wait<void>([
+        _captureTeardown,
+        _cancelCaptureForTeardown(capture, 'microphone pause'),
+      ]);
+      fireAndForget(_captureTeardown, 'microphone pause teardown');
+    }
+    if (!_disposed) notifyListeners();
+  }
+
   Future<void> captureAndSend() async {
+    _outputMuted = false;
+    _bindConversation();
     _baselineAssistantReplies();
     _speakNextReply = true;
     await _capture(autoSend: true);
   }
 
   Future<void> enableContinuous() async {
+    _outputMuted = false;
+    _bindConversation();
     _baselineAssistantReplies();
     _speakNextReply = false;
     _continuousEnabled = true;
@@ -262,7 +355,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     required bool autoSend,
     bool continuous = false,
   }) async {
-    if (_capturing) return;
+    if (_capturing || _disposed) return;
+    final conversation = _bindConversation();
     final operationGeneration = ++_operationGeneration;
     _capturing = true;
     _playbackUnavailable = false;
@@ -295,10 +389,14 @@ class HermesVoiceInputController extends ChangeNotifier {
       }
       return;
     }
-    if (_disposed || operationGeneration != _operationGeneration) return;
+    if (!_ownsConversation(conversation) ||
+        operationGeneration != _operationGeneration) {
+      return;
+    }
 
     final channel = _channel();
     final captureSessionId = channel.state.activeSessionId;
+    final interruptionTarget = channel.activeTurnInterruptionTarget;
     final service = _captureService();
     _activeCaptureService = service;
     unawaited(_partialTranscriptSubscription?.cancel());
@@ -309,7 +407,8 @@ class HermesVoiceInputController extends ChangeNotifier {
         : null;
     _partialTranscriptSubscription = progressService?.partialTranscripts.listen(
       (transcript) {
-        if (_disposed || operationGeneration != _operationGeneration) {
+        if (!_ownsConversation(conversation) ||
+            operationGeneration != _operationGeneration) {
           return;
         }
         final trimmed = transcript.trim();
@@ -328,7 +427,10 @@ class HermesVoiceInputController extends ChangeNotifier {
         ? service as VoiceCaptureSoundLevelService
         : null;
     _soundLevelSubscription = soundLevelService?.soundLevels.listen((level) {
-      if (_disposed || operationGeneration != _operationGeneration) return;
+      if (!_ownsConversation(conversation) ||
+          operationGeneration != _operationGeneration) {
+        return;
+      }
       _soundLevel = level;
       notifyListeners();
     });
@@ -340,7 +442,10 @@ class HermesVoiceInputController extends ChangeNotifier {
           ? const Duration(minutes: 5)
           : const Duration(seconds: 12),
     );
-    if (_disposed || operationGeneration != _operationGeneration) return;
+    if (!_ownsConversation(conversation) ||
+        operationGeneration != _operationGeneration) {
+      return;
+    }
     final effectiveContinuous = continuous || _continuousEnabled;
 
     _activeCaptureService = null;
@@ -394,7 +499,10 @@ class HermesVoiceInputController extends ChangeNotifier {
             // Device transcription remains the compatibility fallback for
             // older Hermes endpoints and interrupted uploads.
           }
-          if (_disposed || operationGeneration != _operationGeneration) return;
+          if (!_ownsConversation(conversation) ||
+              operationGeneration != _operationGeneration) {
+            return;
+          }
           if (!channel.state.isConnected ||
               channel.state.activeSessionId != captureSessionId) {
             _capturing = false;
@@ -417,7 +525,10 @@ class HermesVoiceInputController extends ChangeNotifier {
         }
         if (effectiveContinuous && _speaking) {
           await _interruptActiveSpeech();
-          if (_disposed || operationGeneration != _operationGeneration) return;
+          if (!_ownsConversation(conversation) ||
+              operationGeneration != _operationGeneration) {
+            return;
+          }
         }
         _activeSpokenChunk = null;
         if (effectiveContinuous && _handleLocalCommand(transcript)) {
@@ -435,9 +546,35 @@ class HermesVoiceInputController extends ChangeNotifier {
         if (effectiveContinuous &&
             captureSessionId != null &&
             channel.state.isSessionStreaming(captureSessionId)) {
-          channel.stopActiveTurn();
+          var stopped = false;
+          try {
+            if (interruptionTarget != null) {
+              stopped = await channel
+                  .stopTurn(interruptionTarget)
+                  .timeout(_teardownTimeout);
+            }
+          } catch (_) {
+            // Local output already stopped. Server work remains authoritative
+            // until the captured stop is confirmed or reconciliation completes.
+          }
+          if (!_ownsConversation(conversation) ||
+              operationGeneration != _operationGeneration) {
+            return;
+          }
+          if (!stopped) {
+            _recordCaptureFailure(
+              _failureMessage(
+                HermesVoiceFailure.turnSendFailed,
+                'Agent interruption was not confirmed. The previous run may still be active.',
+              ),
+              continuous: effectiveContinuous,
+            );
+            notifyListeners();
+            return;
+          }
         }
         final voiceRunId = channel.startVoiceRun();
+        _expectedVoiceRunId = voiceRunId;
         channel.stageVoiceRunTranscript(
           voiceRunId: voiceRunId,
           transcript: transcript,
@@ -474,10 +611,15 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   Future<void> maybeContinue() async {
+    if (_outputMuted) return;
+    final conversation = _conversationGeneration;
+    if (!_ownsConversation(conversation)) return;
     if ((!_continuousEnabled && !_speakNextReply) || _speaking || _disposed) {
       return;
     }
     if (!await _awaitSpeechTeardown()) return;
+    if (_outputMuted) return;
+    if (!_ownsConversation(conversation)) return;
     if ((!_continuousEnabled && !_speakNextReply) || _speaking || _disposed) {
       return;
     }
@@ -492,8 +634,17 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     final channel = _channel();
     if (channel.state.activeVoiceRun != null) return;
+    final expectedRun = _expectedVoiceRunId;
+    final expectedTurn = expectedRun == null
+        ? null
+        : channel.voiceReplyTurnId(expectedRun);
+    if (expectedRun != null && expectedTurn == null) return;
     final reply = hermesContinuousVoiceReplyChunkToSpeak(
-      turns: channel.state.activeMessages,
+      turns: expectedTurn == null
+          ? channel.state.activeMessages
+          : channel.state.activeMessages
+                .where((turn) => turn.id == expectedTurn)
+                .toList(),
       enabled: true,
       spokenTurnId: _lastSpokenTurnId,
       spokenCharacterCount: _spokenReplyCharacterCount,
@@ -557,7 +708,10 @@ class HermesVoiceInputController extends ChangeNotifier {
       );
       return;
     }
-    if (_disposed || speechGeneration != _speechGeneration) return;
+    if (!_ownsConversation(conversation) ||
+        speechGeneration != _speechGeneration) {
+      return;
+    }
 
     _speaking = false;
     _activeTextToSpeechService = null;
@@ -586,9 +740,12 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   Future<void> _rearmContinuousCapture() async {
+    final conversation = _conversationGeneration;
     await Future<void>.delayed(_rearmDelay);
+    if (!_ownsConversation(conversation)) return;
     if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
     if (_settings().speakRepliesEnabled) await maybeContinue();
+    if (!_ownsConversation(conversation)) return;
     if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
     await _capture(autoSend: true, continuous: true);
   }
@@ -731,6 +888,11 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   void pause([String? notice, bool playbackUnavailable = false]) {
+    _conversationGeneration += 1;
+    _ownedChannel?.removeListener(_onConversationChanged);
+    _ownedChannel = null;
+    _conversationIdentity = null;
+    _expectedVoiceRunId = null;
     _operationGeneration += 1;
     _speechGeneration += 1;
     final service = _activeCaptureService;
@@ -769,6 +931,9 @@ class HermesVoiceInputController extends ChangeNotifier {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    _conversationGeneration += 1;
+    _ownedChannel?.removeListener(_onConversationChanged);
+    _ownedChannel = null;
     _operationGeneration += 1;
     _speechGeneration += 1;
     final capture = _activeCaptureService;

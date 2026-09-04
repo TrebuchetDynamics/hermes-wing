@@ -23,6 +23,7 @@ import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 HermesCapabilityDocument _profileCapabilities(
   List<String> scopes, {
   bool advertisesDelete = true,
+  bool advertisesSoul = false,
 }) => HermesCapabilityDocument.fromJson({
   'schema_version': 1,
   'profile_context': {
@@ -54,6 +55,18 @@ HermesCapabilityDocument _profileCapabilities(
         'path': '/api/profiles/{name}',
         'required_scopes': ['profiles:write'],
       },
+    if (advertisesSoul) ...{
+      'profile_soul': {
+        'method': 'GET',
+        'path': '/api/profiles/{name}/soul',
+        'required_scopes': ['profiles:read'],
+      },
+      'profile_soul_update': {
+        'method': 'PUT',
+        'path': '/api/profiles/{name}/soul',
+        'required_scopes': ['profiles:write'],
+      },
+    },
   },
 });
 
@@ -112,6 +125,170 @@ Widget _profilesTestApp(
 );
 
 void main() {
+  testWidgets(
+    'profile lifecycle creates, uses, edits persona, renames, and removes an agent',
+    (tester) async {
+      tester.view.physicalSize = const Size(900, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel(
+        capabilities: _profileCapabilities(const [
+          'profiles:read',
+          'profiles:write',
+        ], advertisesSoul: true),
+        profiles: const [
+          HermesProfile(
+            id: 'default',
+            displayName: 'Hermes One',
+            revision: 'rev-default',
+          ),
+        ],
+        selectedProfileId: 'default',
+        profileSoul: const HermesProfileSoul(
+          soul: 'Initial persona.',
+          revision: 'soul-1',
+        ),
+      );
+      addTearDown(channel.dispose);
+      final router = GoRouter(
+        initialLocation: AppRoutes.agents,
+        routes: [
+          GoRoute(
+            path: AppRoutes.agents,
+            builder: (_, _) => const ProfilesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.hermes,
+            builder: (_, _) => const Scaffold(body: Text('Chat destination')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesGatewayDirectoryProvider.overrideWith(
+              (ref) => directoryFor(
+                configs: const [],
+                loader: FakeGatewaySummaryLoader(const {}),
+                activeChannel: channel,
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'New Profile'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        'Lifecycle Agent',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await tester.pumpAndSettle();
+      expect(channel.createProfileCalls, [
+        {'name': 'Lifecycle Agent', 'cloneFrom': 'default'},
+      ]);
+      expect(find.text('Lifecycle Agent'), findsOneWidget);
+
+      Finder lifecycleCard() => find.ancestor(
+        of: find.text('Lifecycle Agent'),
+        matching: find.byType(Card),
+      );
+      final chat = find.descendant(
+        of: lifecycleCard(),
+        matching: find.widgetWithText(FilledButton, 'Chat'),
+      );
+      await tester.ensureVisible(chat);
+      await tester.tap(chat);
+      await tester.pumpAndSettle();
+      expect(channel.selectProfileCalls, ['lifecycle-agent']);
+      expect(channel.state.selectedProfileId, 'lifecycle-agent');
+      expect(find.text('Chat destination'), findsOneWidget);
+
+      router.go(AppRoutes.agents);
+      await tester.pumpAndSettle();
+      final edit = find.descendant(
+        of: lifecycleCard(),
+        matching: find.widgetWithText(OutlinedButton, 'Edit'),
+      );
+      await tester.ensureVisible(edit);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(channel.readProfileSoulCalls, ['lifecycle-agent']);
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.first, 'Lifecycle Renamed');
+      await tester.enterText(fields.last, 'Updated persona.');
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+      expect(channel.renameProfileCalls.single, {
+        'profileId': 'lifecycle-agent',
+        'name': 'Lifecycle Renamed',
+        'revision': 'rev-new',
+      });
+      expect(channel.writeProfileSoulCalls.single, {
+        'profileId': 'lifecycle-agent',
+        'soul': 'Updated persona.',
+        'revision': 'soul-1',
+      });
+      expect(find.text('Lifecycle Renamed'), findsOneWidget);
+
+      final renamedCard = find.ancestor(
+        of: find.text('Lifecycle Renamed'),
+        matching: find.byType(Card),
+      );
+      final remove = find.descendant(
+        of: renamedCard,
+        matching: find.widgetWithText(TextButton, 'Delete profile'),
+      );
+      await tester.ensureVisible(remove);
+      await tester.tap(remove);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Delete profile').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Lifecycle Renamed');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
+      await tester.pumpAndSettle();
+
+      expect(channel.deleteProfileCalls.single, {
+        'profileId': 'lifecycle-agent',
+        'revision': 'rev-next',
+      });
+      expect(find.text('Lifecycle Renamed'), findsNothing);
+      expect(channel.state.selectedProfileId, 'default');
+    },
+  );
+
+  testWidgets('connection errors are bounded and offer Chat recovery', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.error,
+      errorMessage: 'private endpoint and server stack trace',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_profilesTestApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Profiles could not be loaded from Hermes.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('private endpoint'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Open chat'), findsOneWidget);
+  });
+
   testWidgets(
     'disconnected channel shows a neutral select-gateway prompt, not the '
     'unavailable lock state',
@@ -759,8 +936,7 @@ void main() {
                 listCalls++;
                 return '''{"profiles":[{"id":"link","name":"link","topology_revision":"rev-$listCalls","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-$listCalls"},"delete":{"revision":"rev-$listCalls"}}}]}''';
               },
-              patch: (_, _, _) async =>
-                  throw const WingLinkException('Wing Link HTTP 412'),
+              patch: (_, _, _) async => throw const WingLinkHttpException(412),
             ),
       ),
     );
@@ -1196,6 +1372,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(channel.selectProfileCalls, ['coder']);
+  });
+
+  testWidgets('failed profile selection is announced and remains recoverable', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel(
+      capabilities: _profileCapabilities(const ['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Hermes One', revision: 'd'),
+        HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
+      ],
+      selectedProfileId: 'default',
+      selectProfileFails: true,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_profilesTestApp(channel));
+    await tester.pumpAndSettle();
+    final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
+    await tester.ensureVisible(coderChat);
+    await tester.pumpAndSettle();
+    await tester.tap(coderChat);
+    await tester.pumpAndSettle();
+
+    final error = find.text('Hermes could not complete that profile change.');
+    expect(error, findsOneWidget);
+    expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
+    expect(find.text('Coding Agent'), findsOneWidget);
+    semantics.dispose();
   });
 
   testWidgets('Chat opens the selected profile in chat', (tester) async {

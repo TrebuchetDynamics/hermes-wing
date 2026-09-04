@@ -104,29 +104,68 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
                 title: strings.diagnosticsExportSection,
                 icon: Icons.copy_outlined,
                 children: [
-                  ListTile(
-                    key: const ValueKey('settings-copy-diagnostics'),
-                    leading: const Icon(Icons.copy_outlined),
-                    title: Text(strings.diagnosticsCopyTitle),
-                    subtitle: Text(strings.diagnosticsCopySubtitle),
-                    onTap: () async {
-                      await Clipboard.setData(
-                        ClipboardData(text: hermesDiagnosticsExport(state)),
-                      );
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(strings.diagnosticsCopiedNotice),
-                        ),
-                      );
-                    },
-                  ),
+                  _DiagnosticsCopyTile(state: state, strings: strings),
                 ],
               ),
             ],
           );
         },
       ),
+    );
+  }
+}
+
+class _DiagnosticsCopyTile extends StatefulWidget {
+  const _DiagnosticsCopyTile({required this.state, required this.strings});
+
+  final HermesChannelState state;
+  final AppLocalizations strings;
+
+  @override
+  State<_DiagnosticsCopyTile> createState() => _DiagnosticsCopyTileState();
+}
+
+class _DiagnosticsCopyTileState extends State<_DiagnosticsCopyTile> {
+  bool _copying = false;
+
+  Future<void> _copy() async {
+    if (_copying) return;
+    setState(() => _copying = true);
+    try {
+      await Clipboard.setData(
+        ClipboardData(text: hermesDiagnosticsExport(widget.state)),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.strings.diagnosticsCopiedNotice)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.strings.diagnosticsCopyFailedNotice)),
+      );
+    } finally {
+      if (mounted) setState(() => _copying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      key: const ValueKey('settings-copy-diagnostics'),
+      leading: const Icon(Icons.copy_outlined),
+      title: Text(widget.strings.diagnosticsCopyTitle),
+      subtitle: Text(widget.strings.diagnosticsCopySubtitle),
+      trailing: _copying
+          ? SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                semanticsLabel: widget.strings.diagnosticsCopyInProgress,
+              ),
+            )
+          : null,
+      onTap: _copying ? null : _copy,
     );
   }
 }
@@ -155,7 +194,7 @@ String _runTransportLabel(AppLocalizations strings, HermesChannelState state) {
 String _healthLabel(AppLocalizations strings, HermesChannelState state) {
   final health = state.detailedHealth;
   if (health == null) {
-    return state.errorMessage ?? strings.diagnosticsNoHealthDetails;
+    return strings.diagnosticsNoHealthDetails;
   }
   final version = health.version ?? strings.diagnosticsUnknownVersion;
   final gateway = health.gatewayState ?? strings.diagnosticsUnknownGateway;

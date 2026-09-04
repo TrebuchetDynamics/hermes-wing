@@ -12,6 +12,7 @@ import '../models/hermes_health.dart';
 import '../models/hermes_job.dart';
 import '../models/hermes_run.dart';
 import '../models/hermes_runtime_model.dart';
+import '../models/hermes_session.dart';
 import '../models/hermes_skill.dart';
 import '../models/hermes_toolset.dart';
 import '../policy/hermes_transport_policy.dart';
@@ -71,15 +72,27 @@ class HermesApiChannel extends ChangeNotifier
   final _activeRunIds = <String, String>{};
   final HermesApprovalResponder _approvalResponder = HermesApprovalResponder();
   final _sessionStreamGenerations = <String, int>{};
+  final _pendingRunSubmissionGenerations = <String, int>{};
+  final _explicitlyStoppedStreamGenerations = <int>{};
   final _detachedRuns = <String, HermesDetachedRunLease>{};
   final _confirmedDetachedRunKeys = <String>{};
   final _recentTurns = <String, List<HermesChatTurn>>{};
+  final _runHistorySnapshots = <String, _HermesRunHistorySnapshot>{};
+  final _messageHistoryPagination = <String, _HermesMessageHistoryPagination>{};
   Future<void>? _detachedRunsLoadFuture;
   bool _detachedRunsLoadFailed = false;
   int _nextStreamGeneration = 0;
   int _connectionGeneration = 0;
+  final _voiceOwners = <String, (int, String?, String?)>{};
+  final _voiceReplyTurns = <String, HermesChatTurn>{};
   int _sessionSelectionGeneration = 0;
   int _profileSelectionGeneration = 0;
+  int _jobsRequestGeneration = 0;
+  int _toolsRequestGeneration = 0;
+  int _healthRequestGeneration = 0;
+  int _providersRequestGeneration = 0;
+  int _modelsRequestGeneration = 0;
+  int _modelOptionsRequestGeneration = 0;
   String? _pendingProfileSelectionId;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
@@ -103,6 +116,8 @@ class HermesApiChannel extends ChangeNotifier
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();
     _detachedRuns.clear();
+    _runHistorySnapshots.clear();
+    _messageHistoryPagination.clear();
     _approvalController.close();
     super.dispose();
   }
@@ -122,6 +137,33 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   void _setState(HermesChannelState next) {
+    if (next.activeSessionId != _state.activeSessionId ||
+        next.selectedProfileId != _state.selectedProfileId ||
+        next.status != _state.status) {
+      _voiceOwners.clear();
+      _voiceReplyTurns.clear();
+    }
+    final client = _client;
+    if (client != null) {
+      final profileId = next.selectedProfileId ?? 'default';
+      final offsets = <String, int>{};
+      final hasEarlier = <String>{};
+      for (final session in next.sessions) {
+        final pagination =
+            _messageHistoryPagination[_recentTurnKey(
+              client,
+              session.id,
+              profileId: profileId,
+            )];
+        if (pagination == null) continue;
+        offsets[session.id] = pagination.nextOffset;
+        if (pagination.hasMore) hasEarlier.add(session.id);
+      }
+      next = next.copyWith(
+        messageHistoryNextOffsets: offsets,
+        sessionsWithEarlierMessages: hasEarlier,
+      );
+    }
     _state = next;
     notifyListeners();
   }
@@ -189,6 +231,12 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> selectSession(String sessionId) => _selectSession(sessionId);
 
   @override
+  Future<void> loadEarlierMessages() => _loadEarlierMessages();
+
+  @override
+  Future<void> loadMoreSessions() => _loadMoreSessions();
+
+  @override
   Future<void> createSession({String? title}) => _createSession(title: title);
 
   @override
@@ -243,6 +291,20 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> loadJobs() => _reloadJobs();
+
+  @override
+  Future<void> reconcileActiveSession() async {
+    final sessionId = _state.activeSessionId;
+    if (_state.status != HermesConnectionStatus.connected ||
+        sessionId == null ||
+        _state.isSessionStreaming(sessionId)) {
+      return;
+    }
+    await _selectSession(sessionId);
+  }
+
+  @override
+  Future<void> loadToolInventory() => _reloadToolInventory();
 
   @override
   Future<void> loadProviders() => _loadProviders();
@@ -358,7 +420,38 @@ class HermesApiChannel extends ChangeNotifier
   void cancelActiveTurn() => _cancelActiveTurn();
 
   @override
-  void stopActiveTurn() => _stopActiveTurn();
+  void stopActiveTurn() => fireAndForget(_stopActiveTurn(), 'stop active turn');
+
+  @override
+  HermesTurnInterruptionTarget? get activeTurnInterruptionTarget {
+    final session = _state.activeSessionId;
+    final generation = _sessionStreamGenerations[session];
+    if (session == null ||
+        generation == null ||
+        !_state.isSessionStreaming(session)) {
+      return null;
+    }
+    return HermesTurnInterruptionTarget(
+      owner: this,
+      connectionGeneration: _connectionGeneration,
+      profileId: _state.selectedProfileId,
+      sessionId: session,
+      streamGeneration: generation,
+      runId: _activeRunIds[session],
+    );
+  }
+
+  @override
+  Future<bool> stopTurn(HermesTurnInterruptionTarget target) async {
+    if (!target.matches(activeTurnInterruptionTarget)) return false;
+    final capabilities = _state.capabilities;
+    final canConfirm =
+        target.runId != null &&
+        capabilities != null &&
+        HermesTransportPolicy(capabilities).supportsRunStop;
+    await _stopActiveTurn();
+    return canConfirm;
+  }
 
   @override
   Future<void> steerActiveTurn(String text) async {
@@ -390,21 +483,37 @@ class HermesApiChannel extends ChangeNotifier
     required String approvalId,
     required HermesApprovalDecision decision,
     String? runId,
+    HermesApprovalRequest? origin,
   }) => _respondToApproval(
     approvalId: approvalId,
     decision: decision,
     runId: runId,
+    origin: origin,
   );
 
   Future<void> _respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
     String? runId,
+    HermesApprovalRequest? origin,
   }) async {
     final client = _client;
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
     }
+    if (origin != null &&
+        (origin.id.trim() != approvalId.trim() ||
+            origin.runId != runId ||
+            origin.connectionGeneration != _connectionGeneration ||
+            origin.profileSelectionGeneration != _profileSelectionGeneration ||
+            origin.profileId != _state.selectedProfileId ||
+            _activeRunIds[origin.sessionId] != runId)) {
+      throw StateError(
+        'This approval no longer belongs to the active Hermes context.',
+      );
+    }
+    final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     await _approvalResponder.respond(
       client: client,
       state: _state,
@@ -412,15 +521,33 @@ class HermesApiChannel extends ChangeNotifier
       decision: decision,
       activeRunIds: _activeRunIds.values,
       runId: runId,
-      selectedProfileId: _state.selectedProfileId,
+      selectedProfileId: origin == null
+          ? _state.selectedProfileId
+          : origin.profileId,
       safeError: _safeHermesError,
-      reportError: (message) =>
-          _setState(_state.copyWith(errorMessage: message)),
+      reportError: (message) {
+        if (_isCurrentConnection(generation, client) &&
+            profileGeneration == _profileSelectionGeneration) {
+          _setState(_state.copyWith(errorMessage: message));
+        }
+      },
     );
   }
 
   @override
   String startVoiceRun() => _startVoiceRun();
+
+  @override
+  String? voiceReplyTurnId(String voiceRunId) {
+    final expected = _voiceReplyTurns[voiceRunId];
+    if (expected == null) return null;
+    return _state.activeMessages.any(
+          (turn) =>
+              turn.id == expected.id && turn.createdAt == expected.createdAt,
+        )
+        ? expected.id
+        : null;
+  }
 
   @override
   void stageVoiceRunTranscript({
@@ -445,4 +572,24 @@ class HermesApiChannel extends ChangeNotifier
   @override
   void failVoiceRun(String voiceRunId, {required String reason}) =>
       _failVoiceRun(voiceRunId, reason: reason);
+}
+
+class _HermesMessageHistoryPagination {
+  const _HermesMessageHistoryPagination({
+    required this.nextOffset,
+    required this.hasMore,
+  });
+
+  final int nextOffset;
+  final bool hasMore;
+}
+
+class _HermesRunHistorySnapshot {
+  _HermesRunHistorySnapshot(List<HermesMessage> messages)
+    : messages = List.unmodifiable(messages);
+
+  final List<HermesMessage> messages;
+
+  bool get isPlain =>
+      messages.every((message) => message.isPlainRunHistoryMessage);
 }

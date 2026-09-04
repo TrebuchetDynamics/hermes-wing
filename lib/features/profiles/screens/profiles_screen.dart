@@ -133,8 +133,11 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     if (state.status == HermesConnectionStatus.error) {
       return WingEmptyState(
         icon: Icons.cloud_off_outlined,
+        liveRegion: true,
         title: strings.agentsConnectionError,
-        body: state.errorMessage ?? strings.profileOperationFailed,
+        body: strings.gatewayConnectionRecoveryBody,
+        actionLabel: strings.openChatAction,
+        onAction: () => context.go(AppRoutes.hermes),
       );
     }
     if (state.status != HermesConnectionStatus.connected) {
@@ -266,7 +269,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         if (_actionError != null) ...[
           const SizedBox(height: 16),
           MaterialBanner(
-            content: Text(_actionError!),
+            content: Semantics(liveRegion: true, child: Text(_actionError!)),
             actions: [
               TextButton(
                 onPressed: () => setState(() => _actionError = null),

@@ -13,6 +13,17 @@ const port =
   configuredPort <= 65535
     ? configuredPort
     : 8767;
+const defaultHermesPort = port === 65535 ? 8768 : port + 1;
+const configuredHermesPort = Number(
+  process.env.HERMES_E2E_PORT ?? defaultHermesPort,
+);
+const hermesPort =
+  Number.isInteger(configuredHermesPort) &&
+  configuredHermesPort > 0 &&
+  configuredHermesPort <= 65535 &&
+  configuredHermesPort !== port
+    ? configuredHermesPort
+    : defaultHermesPort;
 
 const MIME = {
   ".html": "text/html",
@@ -102,7 +113,8 @@ function json(res, status, body) {
   res.writeHead(status, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Headers":
+      "Authorization, Content-Type, Idempotency-Key",
     "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
     "Cache-Control": "no-store",
     "Content-Length": data.length,
@@ -431,10 +443,10 @@ async function handleHermesApi(req, res, url) {
     });
     res.write(
       `event: approval.request\ndata: ${JSON.stringify({
-        approval_id: run?.approval_id ?? "approval_missing",
-        tool_call_id: "tool_e2e",
-        prompt: "Approve e2e browser run?",
-        risk: "low",
+        run_id: run.id,
+        command: "echo e2e",
+        description: "Approve e2e browser run?",
+        choices: ["once", "session", "always", "deny"],
       })}\n\n`,
     );
     const decision = await new Promise((resolve) => {
@@ -584,6 +596,25 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+const hermesServer = http.createServer(async (req, res) => {
+  try {
+    const url = req.url.split("?")[0];
+    const handled = await handleHermesApi(req, res, url);
+    if (handled === false) {
+      json(res, 404, { error: { message: "not found" } });
+    }
+  } catch {
+    if (!res.headersSent) {
+      json(res, 400, { error: { message: "Invalid JSON request body" } });
+    } else {
+      res.destroy();
+    }
+  }
+});
+
 server.listen(port, "127.0.0.1", () => {
   console.log(`Server running at http://127.0.0.1:${port}/`);
+});
+hermesServer.listen(hermesPort, "127.0.0.1", () => {
+  console.log(`Hermes API running at http://127.0.0.1:${hermesPort}/`);
 });

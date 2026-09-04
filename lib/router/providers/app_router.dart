@@ -18,6 +18,7 @@ import '../../features/soul/screens/soul_screen.dart';
 import '../../features/tools/screens/tools_screen.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../../shared/widgets/wing_empty_state.dart';
 import '../app_routes.dart';
 
 /// The shared shell-route page: a motion-free 200ms fade-through, so route
@@ -166,16 +167,23 @@ final routerProvider = Provider<GoRouter>((ref) {
             _SelectableRoute(child: const HermesEnrollmentScreen()),
       ),
     ],
-    errorBuilder: (context, state) => _SelectableRoute(
-      child: Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context).appTitle)),
-        body: Center(
-          child: Text(
-            AppLocalizations.of(context).routeNotFound(state.uri.path),
+    errorBuilder: (context, state) {
+      final strings = AppLocalizations.of(context);
+      return _SelectableRoute(
+        child: Scaffold(
+          appBar: AppBar(title: Text(strings.appTitle)),
+          body: SafeArea(
+            child: WingEmptyState(
+              icon: Icons.explore_off_outlined,
+              title: strings.routeNotFoundTitle,
+              body: strings.routeNotFound(state.uri.path),
+              actionLabel: strings.routeNotFoundAction,
+              onAction: () => context.go(AppRoutes.hermes),
+            ),
           ),
         ),
-      ),
-    ),
+      );
+    },
   );
 });
 

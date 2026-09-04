@@ -61,6 +61,51 @@ explicit direct-Agent Project/working-directory contract. Project-aware Chat rem
   evidence before expanding stores or platforms.
 - Record physical-device voice evidence before expanding acoustic claims.
 
+## Conduit-informed polish program (2026-09-04)
+
+The [reliability roadmap and plan index](docs/superpowers/plans/2026-09-04-conduit-adaptation-roadmap.md)
+turn the Conduit review into five bounded implementation workstreams. Execution
+is underway in the dirty worktree; these changes are not a qualified release.
+The [execution receipt](docs/superpowers/plans/2026-09-04-conduit-adaptation-roadmap.md#execution-receipt-2026-09-04)
+separates implemented slices from remaining work and validation limits.
+
+| Order | User outcome | Execution plan |
+| --- | --- | --- |
+| 1 | Attachments and new drafts survive delayed work without crossing conversations | [Chat continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) |
+| 2 | Profile changes, refreshes, approvals, and reconnects never publish stale results | [Resource consistency](docs/superpowers/plans/2026-09-04-resource-consistency.md) |
+| 3 | Every qualification receipt identifies the exact artifact exercised | [Release evidence](docs/superpowers/plans/2026-09-04-release-evidence.md) |
+| 4 | Reading position survives foreground recovery; gateway/profile/session identity stays clear | [Chat continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md), [provenance](docs/superpowers/plans/2026-09-04-provenance-and-notifications.md) |
+| 5 | Voice events belong to the intended conversation and stop predictably | [Voice ownership](docs/superpowers/plans/2026-09-04-voice-ownership.md) |
+| 6 | Large responses remain usable with measured rendering budgets | [Resource consistency](docs/superpowers/plans/2026-09-04-resource-consistency.md) |
+| Gated | Durable continuity, notification delivery, and CI sharding | Retention decision, advertised notification contracts, and timing evidence respectively |
+
+Implemented reliability slices, with focused deterministic coverage:
+
+- Generation-fenced inventory refresh, attachment callbacks, provider/model sheets,
+  and origin-bound approval responses.
+- Detached recovery retains its retry lease until canonical hydration succeeds;
+  valid SSE comment keepalives refresh liveness.
+- Process-local generation-owned text/attachment drafts, presentation-only row
+  identity fallback, and semantic foreground viewport restoration.
+- Voice conversation ownership and separate speech mute/microphone pause controls.
+- Aligned hosted artifact names, digest-bound release receipts, sanitized manual
+  qualification recorders, and fail-closed CI test completeness reporting.
+
+Next: complete typed send-failure outcomes, transactional replacement connections,
+the exhaustive canonical-ordering matrix, and foreground/accessibility edge cases.
+The native rendering benchmark is blocked by missing GStreamer development
+packages; no measured optimization or performance claim has been made.
+Review [continuity retention](docs/product/continuity-retention-proposal.md) and
+[notification contracts](docs/product/notification-contract-proposal.md) before
+any durable storage or relay implementation. The
+[capability claim audit](docs/product/capability-claim-audit.md) records claim gates.
+
+Each slice must preserve Agent authority,
+accessible operation, and current transport protections. No new Dashboard,
+WebView credential bridge, or Wing Link domain/notification service is planned.
+Resolve the documented Agent HTTP policy inconsistency before transport changes;
+this program does not authorize a cleartext exception.
+
 ## Engineering quality (audit remediation, 2026-08)
 
 A technical audit (in [docs/superpowers/plans/2026-08-17-audit-remediation.md](docs/superpowers/plans/2026-08-17-audit-remediation.md))

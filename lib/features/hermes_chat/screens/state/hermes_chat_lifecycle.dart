@@ -2,6 +2,22 @@ part of '../hermes_chat_screen.dart';
 
 extension _HermesChatScreenLifecycle on _HermesChatScreenState {
   Future<void> _reconnectAfterResumeIfRecoverable() async {
+    final generation = _transcriptViewport.beginAuthoritativeRefresh();
+    final owner = _composerOwnerGeneration;
+    await _recoverConnectionAfterResume();
+    if (!mounted || owner != _composerOwnerGeneration) return;
+    final channel = ref.read(hermesChannelProvider);
+    if (!channel.state.isConnected) return;
+    await channel.reconcileActiveSession();
+    if (!mounted ||
+        owner != _composerOwnerGeneration ||
+        channel.state.hasUnreconciledRun) {
+      return;
+    }
+    _transcriptViewport.restore(generation);
+  }
+
+  Future<void> _recoverConnectionAfterResume() async {
     if (_reconnectingOnResume || !mounted) return;
     final channel = ref.read(hermesChannelProvider);
     final state = channel.state;
@@ -39,13 +55,24 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
 
   void _scheduleTranscriptScrollToBottom({bool force = false}) {
     if (!mounted) return;
+    if (force) _transcriptViewport.followLatest();
+    if (_transcriptViewport.mode != HermesViewportMode.followingLatest) return;
+    final generation = _transcriptViewport.generation;
     final controller = _transcriptScrollController;
     final wasNearBottom =
         !controller.hasClients ||
         controller.position.pixels - controller.position.minScrollExtent < 160;
     if (!force && !wasNearBottom) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !controller.hasClients) return;
+      if (!mounted ||
+          !controller.hasClients ||
+          generation != _transcriptViewport.generation) {
+        return;
+      }
+      if (MediaQuery.disableAnimationsOf(context)) {
+        controller.jumpTo(controller.position.minScrollExtent);
+        return;
+      }
       controller.animateTo(
         controller.position.minScrollExtent,
         duration: const Duration(milliseconds: 180),
@@ -119,6 +146,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     if (!mounted) return;
     final channel = _subscribed;
     if (channel != null) {
+      _syncAttachmentOwner(channel);
       if (channel.state.isConnected) {
         final change = _observation.observe(channel.state);
         _syncUnreadCompletedSessions(channel.state, change);
@@ -136,9 +164,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
           _scheduleDesktopComposerFocus();
         }
         if (change.activeSessionChanged) {
-          _stagedAttachment = null;
           _failedDirectTurn = null;
-          _attachmentError = null;
           final strings = AppLocalizations.of(context);
           final voiceNotice = _voiceInputController.continuousEnabled
               ? strings.chatVoiceSessionChangedContinuous
@@ -150,12 +176,10 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
           _voiceInputController.pause(voiceNotice);
         }
         _dropQueuedFollowUpsForMissingSessions(channel.state);
-        _scheduleTranscriptScrollToBottom(
-          force: change.activeSessionChanged || change.activeUserTurnArrived,
-        );
+        _scheduleTranscriptScrollToBottom(force: change.activeSessionChanged);
         _sendQueuedFollowUpIfIdle(channel);
       } else {
-        _stagedAttachment = null;
+        _syncComposerDraft(channel.state);
         _failedDirectTurn = null;
         _attachmentError = null;
         _followUps.reset();

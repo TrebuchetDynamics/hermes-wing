@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/security/wing_redaction.dart';
 
 /// Write-only credential entry for a single provider.
 ///
@@ -34,10 +35,19 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
   bool _validationOk = false;
   int? _validationLatencyMs;
   bool _busy = false;
+  late final HermesChannel _ownerChannel;
+  late final (String?, String?) _ownerIdentity;
+  bool _ownerInvalid = false;
 
   @override
   void initState() {
     super.initState();
+    _ownerChannel = widget.channel;
+    _ownerIdentity = (
+      _ownerChannel.state.connectedBaseUrl,
+      _ownerChannel.state.selectedProfileId,
+    );
+    _ownerChannel.addListener(_observeOwner);
     _envVar = widget.provider.envVars.isNotEmpty
         ? widget.provider.envVars.first
         : '';
@@ -45,11 +55,30 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
 
   @override
   void dispose() {
+    _ownerChannel.removeListener(_observeOwner);
     _valueController.dispose();
     super.dispose();
   }
 
   HermesProvider get _provider => widget.provider;
+
+  void _observeOwner() {
+    final state = _ownerChannel.state;
+    if (!state.isConnected ||
+        (state.connectedBaseUrl, state.selectedProfileId) != _ownerIdentity) {
+      _ownerInvalid = true;
+    }
+  }
+
+  void _assertOwner() {
+    _observeOwner();
+    if (_ownerInvalid ||
+        !identical(widget.channel, _ownerChannel) ||
+        (widget.channel.state.capabilities != null &&
+            !widget.channel.state.canWriteProviders)) {
+      throw StateError('Provider sheet ownership changed. Reopen the sheet.');
+    }
+  }
 
   Future<void> _runAction(Future<void> Function() action) async {
     setState(() {
@@ -57,7 +86,9 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
       _error = null;
     });
     try {
+      _assertOwner();
       await action();
+      _assertOwner();
       if (mounted) await Navigator.of(context).maybePop();
     } catch (_) {
       if (!mounted) return;
@@ -117,13 +148,15 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
     });
     final stopwatch = Stopwatch()..start();
     try {
+      _assertOwner();
       final probe = await widget.channel.validateProviderCredential(
         slug: _provider.slug,
       );
+      _assertOwner();
       if (!mounted) return;
       setState(() {
         _validationOk = probe.ok;
-        _validationDetail = probe.detail;
+        _validationDetail = wingRedactedPreview(probe.detail, maxLength: 160);
         _validationLatencyMs = stopwatch.elapsedMilliseconds;
       });
     } catch (_) {

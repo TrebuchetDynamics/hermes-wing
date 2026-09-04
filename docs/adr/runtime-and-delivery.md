@@ -27,7 +27,7 @@ Project. Wing Link may translate an approved opaque directory handle into a path
 for a fixed Project operation. It must not create a separate profile `workdir`
 store or invoke global `profile use`/`project use` state.
 
-Listeners stay on loopback plus at most one local private-LAN/Tailscale interface.
+Listeners stay on loopback plus at most one local private-LAN, NetBird, or Tailscale interface.
 Loopback may use HTTP; every non-loopback listener uses TLS 1.3 tied to the durable
 Wing Link host identity. Remote access requires a named, scoped, individually
 revocable Wing Link credential. Hermes API credentials are never accepted by the

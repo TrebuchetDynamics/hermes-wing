@@ -12,11 +12,14 @@ fi
 
 # Never kill an existing listener; it may belong to another local workflow.
 export PORT="${PORT:-8767}"
+export HERMES_E2E_PORT="${HERMES_E2E_PORT:-$((PORT + 1))}"
 export WING_APP_URL="${WING_APP_URL:-http://127.0.0.1:$PORT/}"
-if lsof -ti:"$PORT" >/dev/null 2>&1; then
-  echo "ERROR: Port $PORT is already in use; stop its owner before running E2E tests." >&2
-  exit 1
-fi
+for required_port in "$PORT" "$HERMES_E2E_PORT"; do
+  if lsof -ti:"$required_port" >/dev/null 2>&1; then
+    echo "ERROR: Port $required_port is already in use; stop its owner before running E2E tests." >&2
+    exit 1
+  fi
+done
 
 # The regular and e2e Flutter builds share build/web; always rebuild the e2e entrypoint.
 echo "Building Flutter web e2e app..."
@@ -50,6 +53,7 @@ echo ""
 echo "Running Playwright tests..."
 DEFAULT_SPECS=(
   playwright/tests/regression/browser-surfaces.spec.mjs
+  playwright/tests/regression/browser-cors-streams.spec.mjs
   playwright/tests/regression/chat-approval-confirmations.spec.mjs
   playwright/tests/regression/chat-tts.spec.mjs
   playwright/tests/regression/hermes-lifecycle.spec.mjs

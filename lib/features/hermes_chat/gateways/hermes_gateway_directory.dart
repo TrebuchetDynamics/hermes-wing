@@ -137,6 +137,47 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   List<GatewayContact> get contacts => List.unmodifiable(_contacts);
   List<GatewayOverview> get gateways => List.unmodifiable(_gateways);
+
+  /// Saved host connections for gateway-level UI.
+  ///
+  /// A Wing Link pairing can import one profile-bound Agent endpoint per profile.
+  /// Those credentials stay separate, while host selectors present the shared
+  /// Wing Link device as one connection.
+  List<GatewayHostOverview> get hosts {
+    final grouped = <String, List<GatewayOverview>>{};
+    for (final gateway in _gateways) {
+      final config = _configsById[gateway.id];
+      final wingLinkOrigin = config?.wingLinkOrigin?.trim() ?? '';
+      final wingLinkDeviceId = config?.wingLinkDeviceId?.trim() ?? '';
+      final groupKey = wingLinkOrigin.isNotEmpty && wingLinkDeviceId.isNotEmpty
+          ? 'wing-link:$wingLinkOrigin:$wingLinkDeviceId'
+          : 'endpoint:${gateway.id}';
+      grouped.putIfAbsent(groupKey, () => []).add(gateway);
+    }
+
+    return List.unmodifiable([
+      for (final gateways in grouped.values) _hostOverview(gateways),
+    ]);
+  }
+
+  GatewayHostOverview _hostOverview(List<GatewayOverview> gateways) {
+    final primary = gateways.first;
+    final config = _configsById[primary.id];
+    final managedByWingLink = config?.wingLinkOrigin?.trim().isNotEmpty == true;
+    return GatewayHostOverview(
+      id: primary.id,
+      label: _hostLabel(gateways, config?.wingLinkOrigin),
+      baseUrl: managedByWingLink
+          ? _agentAuthorityBaseUrl(primary.baseUrl)
+          : primary.baseUrl,
+      availability: _hostAvailability(gateways),
+      gatewayIds: List.unmodifiable([
+        for (final gateway in gateways) gateway.id,
+      ]),
+      managedByWingLink: managedByWingLink,
+    );
+  }
+
   GatewayContactId? get activeContactId => _activeContactId;
   GatewayContact? get activeContact {
     final id = _activeContactId;
@@ -675,6 +716,24 @@ class HermesGatewayDirectory extends ChangeNotifier
     await _saveContacts();
   }
 
+  Future<void> clearWingLinkEnrollment(String gatewayId) async {
+    final config = _configsById[gatewayId];
+    if (config == null) throw StateError('Gateway is no longer saved.');
+    final replacement = HermesEndpointConfig(
+      id: config.id,
+      label: config.label,
+      baseUrl: config.baseUrl,
+      apiKey: config.apiKey,
+    );
+    final configs = [
+      for (final entry in _configsById.entries)
+        entry.key == gatewayId ? replacement : entry.value,
+    ];
+    await _store.saveAll(configs);
+    _configsById[gatewayId] = replacement;
+    notifyListeners();
+  }
+
   Future<void> reconnectGateway(String gatewayId) async {
     final config = _configsById[gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');
@@ -963,6 +1022,51 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (_started) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+}
+
+String _hostLabel(List<GatewayOverview> gateways, String? wingLinkOrigin) {
+  if (gateways.length == 1) return gateways.single.label;
+  const separator = ' · ';
+  final firstLabel = gateways.first.label;
+  final separatorIndex = firstLabel.indexOf(separator);
+  if (separatorIndex > 0) {
+    final prefix = firstLabel.substring(0, separatorIndex).trim();
+    if (prefix.isNotEmpty &&
+        gateways.every(
+          (gateway) =>
+              gateway.label == prefix ||
+              gateway.label.startsWith('$prefix$separator'),
+        )) {
+      return prefix;
+    }
+  }
+
+  final uri = Uri.tryParse(wingLinkOrigin ?? '');
+  return uri?.host.isNotEmpty == true ? uri!.host : firstLabel;
+}
+
+String _agentAuthorityBaseUrl(String baseUrl) {
+  final uri = Uri.tryParse(baseUrl);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return baseUrl;
+  return Uri(
+    scheme: uri.scheme,
+    host: uri.host,
+    port: uri.hasPort ? uri.port : null,
+  ).toString();
+}
+
+GatewayAvailability _hostAvailability(List<GatewayOverview> gateways) {
+  final states = gateways.map((gateway) => gateway.availability).toSet();
+  if (states.contains(GatewayAvailability.refreshing)) {
+    return GatewayAvailability.refreshing;
+  }
+  if (states.contains(GatewayAvailability.online)) {
+    return GatewayAvailability.online;
+  }
+  if (states.contains(GatewayAvailability.authenticationFailed)) {
+    return GatewayAvailability.authenticationFailed;
+  }
+  return GatewayAvailability.offline;
 }
 
 String? _profileIdFromEndpoint(String baseUrl) {

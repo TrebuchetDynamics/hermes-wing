@@ -85,11 +85,19 @@ jobs:
         run: |
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
+          node --test test/tooling/*_test.mjs
           dart run scripts/check_evidence_matrix.dart
-          flutter test --coverage --concurrency=1
+          node scripts/ci_test_receipt.mjs
           coverage_percent=$(awk -F'[:,]' '/^DA:/{total++; if ($3 > 0) covered++} END {printf "%.0f", total ? covered * 100 / total : 0}' coverage/lcov.info)
           test "$coverage_percent" -ge 50
           npm audit --audit-level=high
+      - name: Upload bounded test timing and completeness receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-flutter-test-timing
+          path: build/receipts/flutter-ci-timing.json
+          if-no-files-found: error
 
   android:
     name: Signed Android APK and AAB
@@ -186,6 +194,11 @@ jobs:
           cp build/app/outputs/bundle/release/app-release.aab hermes-wing-android.aab
           sha256sum hermes-wing-android.apk > hermes-wing-android.apk.sha256
           sha256sum hermes-wing-android.aab > hermes-wing-android.aab.sha256
+      - name: Record exact Android build inputs and artifacts
+        env:
+          TAG: ${{ inputs.tag }}
+          WING_RELEASE_CERT_SHA256: ${{ secrets.WING_RELEASE_CERT_SHA256 }}
+        run: node scripts/release_evidence.mjs emit android .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-android-release
@@ -194,6 +207,8 @@ jobs:
             hermes-wing-android.apk.sha256
             hermes-wing-android.aab
             hermes-wing-android.aab.sha256
+            android-release-evidence.json
+            android-termux-bootstrap.json
           if-no-files-found: error
 
   linux:
@@ -220,12 +235,17 @@ jobs:
           flutter build linux --release
           tar -C build/linux/x64/release -czf hermes-wing-linux-x64.tar.gz bundle
           sha256sum hermes-wing-linux-x64.tar.gz > hermes-wing-linux-x64.tar.gz.sha256
+      - name: Record exact Linux build inputs and artifact
+        env:
+          TAG: ${{ inputs.tag }}
+        run: node scripts/release_evidence.mjs emit linux .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-linux-release
           path: |
             hermes-wing-linux-x64.tar.gz
             hermes-wing-linux-x64.tar.gz.sha256
+            linux-release-evidence.json
           if-no-files-found: error
 
   web:
@@ -244,12 +264,17 @@ jobs:
           flutter build web --release
           tar -C build/web -czf hermes-wing-web.tar.gz .
           sha256sum hermes-wing-web.tar.gz > hermes-wing-web.tar.gz.sha256
+      - name: Record exact web build inputs and artifact
+        env:
+          TAG: ${{ inputs.tag }}
+        run: node scripts/release_evidence.mjs emit web .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: hermes-wing-web-release
           path: |
             hermes-wing-web.tar.gz
             hermes-wing-web.tar.gz.sha256
+            web-release-evidence.json
           if-no-files-found: error
 
   wing-link:
@@ -279,6 +304,10 @@ jobs:
           GOOS=android GOARCH=arm64 go build -trimpath -buildmode=pie -ldflags="$ldflags" -o ../wing-link-android-arm64 .
       - name: Generate Wing Link checksums
         run: sha256sum wing-link-* > wing-link-checksums.sha256
+      - name: Record exact Wing Link build inputs and artifacts
+        env:
+          TAG: ${{ inputs.tag }}
+        run: node scripts/release_evidence.mjs emit wing-link .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: wing-link-release
@@ -290,6 +319,7 @@ jobs:
             wing-link-windows-amd64.exe
             wing-link-android-arm64
             wing-link-checksums.sha256
+            wing-link-release-evidence.json
           if-no-files-found: error
 
   verify-artifacts:
@@ -310,6 +340,7 @@ jobs:
           cache: npm
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
+          pattern: '*-release'
           path: dist
           merge-multiple: true
       - name: Install artifact verification dependencies
@@ -367,13 +398,23 @@ jobs:
             test -n "$expected"
             test "${#actual_signers[@]}" -eq 1
             test "${actual_signers[0]}" = "$expected"
+            artifact_sha256=$(sha256sum hermes-wing-android.apk | cut -d' ' -f1)
             adb install hermes-wing-android.apk
+            installed_path=$(adb shell pm path com.trebuchetdynamics.hermes.wing | tr -d '\r')
+            test "$(printf '%s\n' "$installed_path" | wc -l)" -eq 1
+            [[ "$installed_path" == package:*/base.apk ]]
+            installed_apk=$(mktemp)
+            adb pull "${installed_path#package:}" "$installed_apk"
+            test "$(sha256sum "$installed_apk" | cut -d' ' -f1)" = "$artifact_sha256"
+            rm -f "$installed_apk"
             adb logcat -c
             adb shell am start -W -n com.trebuchetdynamics.hermes.wing/.MainActivity
             sleep 5
             adb shell pidof com.trebuchetdynamics.hermes.wing
             adb uninstall com.trebuchetdynamics.hermes.wing
-            printf 'tag=%s\nsource_revision=%s\nresult=verified-installed-launched\n' "$TAG" "$GITHUB_SHA" > android-artifact-smoke.txt
+            manifest_sha256=$(sha256sum android-release-evidence.json | cut -d' ' -f1)
+            build_number=$(node -p "require('./android-release-evidence.json').identity.build_number")
+            printf 'tag=%s\nsource_revision=%s\nrun_id=%s\nrun_attempt=%s\nbuild_number=%s\nbinary=hermes-wing-android.apk\nartifact_sha256=%s\nmanifest_sha256=%s\nresult=verified-installed-launched\nevidence_kind=emulator\nscenario=apk-install-launch\ntimestamp_utc=%s\n' "$TAG" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$build_number" "$artifact_sha256" "$manifest_sha256" "$(date -u +%FT%TZ)" > android-artifact-smoke.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: android-artifact-smoke-receipt
@@ -406,7 +447,10 @@ jobs:
           esac
           chmod +x "$binary"
           test "$(./$binary version)" = "${TAG#v}"
-          printf 'tag=%s\nsource_revision=%s\nbinary=%s\nresult=verified-ran-version\n' "$TAG" "$GITHUB_SHA" "$binary" > wing-link-macos-smoke.txt
+          artifact_sha256=$(shasum -a 256 "$binary" | cut -d' ' -f1)
+          manifest_sha256=$(shasum -a 256 wing-link-release-evidence.json | cut -d' ' -f1)
+          build_number=$(node -p "require('./wing-link-release-evidence.json').identity.build_number")
+          printf 'tag=%s\nsource_revision=%s\nrun_id=%s\nrun_attempt=%s\nbuild_number=%s\nbinary=%s\nartifact_sha256=%s\nmanifest_sha256=%s\nresult=verified-ran-version\nevidence_kind=native\nscenario=binary-version\ntimestamp_utc=%s\n' "$TAG" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$build_number" "$binary" "$artifact_sha256" "$manifest_sha256" "$(date -u +%FT%TZ)" > wing-link-macos-smoke.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: wing-link-macos-smoke-receipt
@@ -441,16 +485,37 @@ jobs:
           $actualVersion = (& .\wing-link-windows-amd64.exe version).Trim()
           $expectedVersion = $env:TAG.TrimStart('v')
           if ($actualVersion -ne $expectedVersion) { throw "version mismatch" }
-          "tag=$env:TAG`nsource_revision=$env:GITHUB_SHA`nbinary=wing-link-windows-amd64.exe`nresult=verified-ran-version" | Set-Content wing-link-windows-smoke.txt
+          $artifactHash = (Get-FileHash -Algorithm SHA256 wing-link-windows-amd64.exe).Hash.ToLowerInvariant()
+          $manifestHash = (Get-FileHash -Algorithm SHA256 wing-link-release-evidence.json).Hash.ToLowerInvariant()
+          $buildNumber = (Get-Content wing-link-release-evidence.json | ConvertFrom-Json).identity.build_number
+          $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+          "tag=$env:TAG`nsource_revision=$env:GITHUB_SHA`nrun_id=$env:GITHUB_RUN_ID`nrun_attempt=$env:GITHUB_RUN_ATTEMPT`nbuild_number=$buildNumber`nbinary=wing-link-windows-amd64.exe`nartifact_sha256=$artifactHash`nmanifest_sha256=$manifestHash`nresult=verified-ran-version`nevidence_kind=native`nscenario=binary-version`ntimestamp_utc=$timestamp" | Set-Content -Encoding utf8 wing-link-windows-smoke.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: wing-link-windows-smoke-receipt
           path: wing-link-windows-smoke.txt
           if-no-files-found: error
 
+  release-readiness:
+    name: Release readiness
+    if: ${{ always() }}
+    needs: [validation, android, linux, web, wing-link, verify-artifacts, android-artifact-smoke, wing-link-macos-smoke, wing-link-windows-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: Require complete release results
+        env:
+          WING_CI_NEEDS: ${{ toJSON(needs) }}
+        run: node scripts/ci_gate.mjs release
+
   publish:
     name: Publish GitHub prerelease
     needs:
+      - release-readiness
       - verify-artifacts
       - android-artifact-smoke
       - wing-link-macos-smoke
@@ -459,6 +524,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: hermes-wing-verified-release
@@ -468,6 +537,10 @@ jobs:
           pattern: "*-smoke-receipt"
           path: dist
           merge-multiple: true
+      - name: Bind all artifacts and smoke receipts before publication
+        env:
+          TAG: ${{ inputs.tag }}
+        run: node scripts/release_evidence.mjs aggregate dist
       - name: Publish verified prerelease
         env:
           TAG: ${{ inputs.tag }}

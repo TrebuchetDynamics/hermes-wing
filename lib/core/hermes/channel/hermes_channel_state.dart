@@ -14,12 +14,23 @@ import '../models/hermes_toolset.dart';
 
 enum HermesConnectionStatus { disconnected, connecting, connected, error }
 
+enum HermesConnectionFailureKind {
+  invalidEndpoint,
+  authentication,
+  incompatibleResponse,
+  network,
+  tls,
+  timeout,
+  unknown,
+}
+
 enum HermesOptionalResource { detailedHealth, models, skills, toolsets, jobs }
 
 class HermesChannelState {
   const HermesChannelState({
     this.status = HermesConnectionStatus.disconnected,
     this.errorMessage,
+    this.connectionFailureKind,
     this.capabilities,
     this.basicHealth,
     this.detailedHealth,
@@ -32,6 +43,9 @@ class HermesChannelState {
     this.jobs = const [],
     this.optionalResourceErrors = const {},
     this.sessions = const [],
+    this.sessionsNextOffset = 0,
+    this.hasMoreSessions = false,
+    this.isLoadingMoreSessions = false,
     this.activeSessionId,
     this.profiles = const [],
     this.selectedProfileId,
@@ -43,12 +57,16 @@ class HermesChannelState {
     this.connectedWithApiKey = false,
     this.hasUnreconciledRun = false,
     this.messages = const {},
+    this.messageHistoryNextOffsets = const {},
+    this.sessionsWithEarlierMessages = const {},
+    this.sessionsLoadingEarlierMessages = const {},
     this.voiceRuns = const {},
     this.activeVoiceRunId,
   });
 
   final HermesConnectionStatus status;
   final String? errorMessage;
+  final HermesConnectionFailureKind? connectionFailureKind;
   final HermesCapabilityDocument? capabilities;
 
   /// Health returned by the mandatory `/health` connection check. Available
@@ -67,6 +85,9 @@ class HermesChannelState {
   /// unsupported; an empty loaded list is available but empty.
   final Map<HermesOptionalResource, String> optionalResourceErrors;
   final List<HermesSession> sessions;
+  final int sessionsNextOffset;
+  final bool hasMoreSessions;
+  final bool isLoadingMoreSessions;
   final String? activeSessionId;
 
   /// Profiles ("agents") advertised by the connected endpoint. Refreshed by
@@ -216,6 +237,9 @@ class HermesChannelState {
 
   /// Turns per session id, in arrival order.
   final Map<String, List<HermesChatTurn>> messages;
+  final Map<String, int> messageHistoryNextOffsets;
+  final Set<String> sessionsWithEarlierMessages;
+  final Set<String> sessionsLoadingEarlierMessages;
   final Map<String, WingVoiceRun> voiceRuns;
   final String? activeVoiceRunId;
 
@@ -232,6 +256,16 @@ class HermesChannelState {
 
   List<HermesChatTurn> get activeMessages =>
       messages[activeSessionId] ?? const [];
+
+  bool get hasEarlierActiveMessages {
+    final id = activeSessionId;
+    return id != null && sessionsWithEarlierMessages.contains(id);
+  }
+
+  bool get isLoadingEarlierActiveMessages {
+    final id = activeSessionId;
+    return id != null && sessionsLoadingEarlierMessages.contains(id);
+  }
 
   bool isSessionStreaming(String sessionId) =>
       messages[sessionId]?.any(
@@ -274,6 +308,7 @@ class HermesChannelState {
   HermesChannelState copyWith({
     HermesConnectionStatus? status,
     String? errorMessage,
+    HermesConnectionFailureKind? connectionFailureKind,
     bool clearErrorMessage = false,
     HermesCapabilityDocument? capabilities,
     HermesHealthStatus? basicHealth,
@@ -288,6 +323,9 @@ class HermesChannelState {
     List<HermesJob>? jobs,
     Map<HermesOptionalResource, String>? optionalResourceErrors,
     List<HermesSession>? sessions,
+    int? sessionsNextOffset,
+    bool? hasMoreSessions,
+    bool? isLoadingMoreSessions,
     String? activeSessionId,
     bool clearActiveSessionId = false,
     List<HermesProfile>? profiles,
@@ -304,6 +342,9 @@ class HermesChannelState {
     bool? connectedWithApiKey,
     bool? hasUnreconciledRun,
     Map<String, List<HermesChatTurn>>? messages,
+    Map<String, int>? messageHistoryNextOffsets,
+    Set<String>? sessionsWithEarlierMessages,
+    Set<String>? sessionsLoadingEarlierMessages,
     Map<String, WingVoiceRun>? voiceRuns,
     String? activeVoiceRunId,
     bool clearActiveVoiceRunId = false,
@@ -337,6 +378,9 @@ class HermesChannelState {
       errorMessage: clearErrorMessage
           ? null
           : errorMessage ?? this.errorMessage,
+      connectionFailureKind: clearErrorMessage
+          ? null
+          : connectionFailureKind ?? this.connectionFailureKind,
       capabilities: capabilities ?? this.capabilities,
       basicHealth: basicHealth ?? this.basicHealth,
       detailedHealth: clearDetailedHealth
@@ -352,6 +396,10 @@ class HermesChannelState {
       optionalResourceErrors:
           optionalResourceErrors ?? this.optionalResourceErrors,
       sessions: sessions ?? this.sessions,
+      sessionsNextOffset: sessionsNextOffset ?? this.sessionsNextOffset,
+      hasMoreSessions: hasMoreSessions ?? this.hasMoreSessions,
+      isLoadingMoreSessions:
+          isLoadingMoreSessions ?? this.isLoadingMoreSessions,
       activeSessionId: clearActiveSessionId
           ? null
           : activeSessionId ?? this.activeSessionId,
@@ -373,6 +421,12 @@ class HermesChannelState {
       connectedWithApiKey: connectedWithApiKey ?? this.connectedWithApiKey,
       hasUnreconciledRun: hasUnreconciledRun ?? this.hasUnreconciledRun,
       messages: messages ?? this.messages,
+      messageHistoryNextOffsets:
+          messageHistoryNextOffsets ?? this.messageHistoryNextOffsets,
+      sessionsWithEarlierMessages:
+          sessionsWithEarlierMessages ?? this.sessionsWithEarlierMessages,
+      sessionsLoadingEarlierMessages:
+          sessionsLoadingEarlierMessages ?? this.sessionsLoadingEarlierMessages,
       voiceRuns: voiceRuns ?? this.voiceRuns,
       activeVoiceRunId: clearActiveVoiceRunId
           ? null

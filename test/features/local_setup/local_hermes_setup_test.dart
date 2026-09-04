@@ -75,6 +75,51 @@ void main() {
     ]);
   });
 
+  testWidgets('inspection failure is announced and retry recovers', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    var calls = 0;
+    final host = LocalWingLinkHost(
+      executablePath: '/opt/hermes-wing/wing',
+      runner: (_, _) async {
+        calls++;
+        if (calls == 1) {
+          throw StateError('private host path and process detail');
+        }
+        return const LocalWingLinkProcessResult(
+          exitCode: 0,
+          stdout:
+              '{"protocol_version":1,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"hermes_version":"Hermes Agent v1.2.3","wing_link_version":"dev","setup_available":true}',
+        );
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [localWingLinkHostProvider.overrideWithValue(host)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: LocalHermesSetupScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final failure = find.byKey(const ValueKey('local-hermes-setup-failure'));
+    expect(failure, findsOneWidget);
+    expect(tester.getSemantics(failure).flagsCollection.isLiveRegion, isTrue);
+    expect(find.text('Setup needs attention'), findsOneWidget);
+    expect(find.textContaining('private host path'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('local-hermes-setup-retry')));
+    await tester.pumpAndSettle();
+    expect(calls, 2);
+    expect(find.text('Hermes Agent is ready'), findsOneWidget);
+    semantics.dispose();
+  });
+
   test('dispose cancels an active host setup operation', () async {
     final operation = _PendingSetupOperation();
     final host = LocalWingLinkHost(

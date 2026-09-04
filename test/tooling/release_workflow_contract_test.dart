@@ -3,6 +3,42 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'release evidence and CI gates verify emitted bytes and failures',
+    () async {
+      final result = await Process.run('node', [
+        '--test',
+        'test/tooling/release_evidence_test.mjs',
+        'test/tooling/record_release_qualification_test.mjs',
+        'test/tooling/linux_service_qualification_test.mjs',
+        'test/tooling/ci_gate_test.mjs',
+        'test/tooling/ci_test_receipt_test.mjs',
+        'test/tooling/platform_artifact_identity_test.mjs',
+      ]);
+      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+    },
+  );
+
+  test('release publication binds every downloaded smoke receipt', () {
+    final workflow = File(
+      '.github/workflows/release-alpha.yml',
+    ).readAsStringSync();
+    final publication = workflow.substring(workflow.indexOf('  publish:\n'));
+    expect(publication, contains('- release-readiness'));
+    expect(
+      publication.indexOf('release_evidence.mjs aggregate dist'),
+      greaterThan(publication.indexOf('pattern: "*-smoke-receipt"')),
+    );
+    expect(
+      publication.indexOf('gh release create'),
+      greaterThan(publication.indexOf('release_evidence.mjs aggregate dist')),
+    );
+    for (final target in ['android', 'linux', 'web', 'wing-link']) {
+      expect(workflow, contains('release_evidence.mjs emit $target .'));
+      expect(workflow, contains('$target-release-evidence.json'));
+    }
+  });
+
   test('release workflow actions are pinned to immutable commits', () {
     final workflow = File(
       '.github/workflows/release-alpha.yml',
@@ -70,7 +106,7 @@ void main() {
       contains('dart format --output=none --set-exit-if-changed'),
     );
     expect(workflow, contains('flutter analyze'));
-    expect(workflow, contains('flutter test --coverage --concurrency=1'));
+    expect(workflow, contains('node scripts/ci_test_receipt.mjs'));
     expect(workflow, contains('npm audit --audit-level=high'));
     expect(
       RegExp(r'  android:\n(?:.|\n)*?    needs: validation').hasMatch(workflow),
@@ -133,6 +169,7 @@ void main() {
     expect(
       RegExp(
         r'  publish:\n(?:.|\n)*?    needs:\n'
+        r'      - release-readiness\n'
         r'      - verify-artifacts\n'
         r'      - android-artifact-smoke\n'
         r'      - wing-link-macos-smoke\n'

@@ -54,7 +54,11 @@ extension _ProfilesExtension on HermesApiChannel {
         throw StateError('Hermes profile "$id" is not available.');
       }
 
-      final sessions = await client.listSessions(profile: id);
+      final sessionsPage = await client.listSessionsPage(profile: id);
+      if (sessionsPage.offset != 0) {
+        throw StateError('Hermes returned an unexpected session page offset.');
+      }
+      final sessions = sessionsPage.sessions;
       if (!_isCurrentProfileSelection(
         selectionGeneration,
         generation,
@@ -170,6 +174,9 @@ extension _ProfilesExtension on HermesApiChannel {
           profiles: profiles,
           selectedProfileId: id,
           sessions: sessions,
+          sessionsNextOffset: sessionsPage.nextOffset,
+          hasMoreSessions: sessionsPage.hasMore,
+          isLoadingMoreSessions: false,
           activeSessionId: activeId,
           clearActiveSessionId: activeId == null,
           hasUnreconciledRun: detachedRunStillActive,
@@ -431,6 +438,6 @@ extension _ProfilesExtension on HermesApiChannel {
   }
 
   bool _isPreconditionFailed(Object error) {
-    return error.toString().contains('HTTP 412');
+    return error is HermesApiStatusException && error.statusCode == 412;
   }
 }

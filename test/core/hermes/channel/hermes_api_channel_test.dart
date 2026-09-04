@@ -20,6 +20,13 @@ part 'hermes_api_channel_tests/lifecycle_race_tests.dart';
 part 'hermes_api_channel_tests/run_transport_tests.dart';
 part 'hermes_api_channel_tests/approval_stop_tests.dart';
 
+final class _TestHermesStatusException implements HermesApiStatusException {
+  const _TestHermesStatusException(this.statusCode);
+
+  @override
+  final int statusCode;
+}
+
 void main() {
   _hermesApiChannelConnectionTests();
   _hermesApiChannelDirectChatTests();
@@ -32,6 +39,7 @@ void main() {
   _hermesApiChannelAudioTests();
   _hermesApiChannelProfileTests();
   _hermesApiChannelProviderModelTests();
+  _hermesApiChannelToolInventoryTests();
   _hermesApiChannelJobsTests();
 }
 
@@ -266,6 +274,7 @@ const _runsCapableCapabilitiesFixture = '''
     "tool_progress_events": true
   },
   "endpoints": {
+    "session_chat_stream": {"method": "POST", "path": "/api/sessions/{session_id}/chat/stream"},
     "runs": {"method": "POST", "path": "/v1/runs"},
     "run_status": {"method": "GET", "path": "/v1/runs/{run_id}"},
     "run_events": {"method": "GET", "path": "/v1/runs/{run_id}/events"},
@@ -1189,7 +1198,7 @@ void _hermesApiChannelProfileTests() {
             };
           },
           patch: (uri, headers, body) async =>
-              throw StateError('Hermes API returned HTTP 412'),
+              throw const _TestHermesStatusException(412),
         ),
       );
       addTearDown(channel.dispose);
@@ -1201,7 +1210,7 @@ void _hermesApiChannelProfileTests() {
           name: 'Renamed',
           revision: 'stale',
         ),
-        throwsA(isA<StateError>()),
+        throwsA(isA<_TestHermesStatusException>()),
       );
 
       expect(channel.state.profiles.map((p) => p.id), ['default', 'coder']);
@@ -1724,6 +1733,47 @@ Future<HermesApiChannel> _connectedProviderModelChannel({
   return channel;
 }
 
+void _hermesApiChannelToolInventoryTests() {
+  test('loadToolInventory refreshes exact advertised read routes', () async {
+    var skillsCalls = 0;
+    var toolsetsCalls = 0;
+    final requests = <Uri>[];
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          requests.add(uri);
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _catalogCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/v1/models' => _modelsFixture,
+            '/v1/skills' =>
+              ++skillsCalls == 1
+                  ? _skillsFixture
+                  : '{"data":[{"name":"fresh-skill"}]}',
+            '/v1/toolsets' =>
+              ++toolsetsCalls == 1
+                  ? _toolsetsFixture
+                  : '{"data":[{"name":"fresh-tools","enabled":true,"tools":[]}]}',
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    requests.clear();
+
+    await channel.loadToolInventory();
+
+    expect(channel.state.skills, ['fresh-skill']);
+    expect(channel.state.enabledToolsets, ['fresh-tools']);
+    expect(requests.map((uri) => uri.path), ['/v1/skills', '/v1/toolsets']);
+  });
+}
+
 void _hermesApiChannelJobsTests() {
   test('loadJobs refreshes advertised read-only inventory', () async {
     var jobsBody = _jobsFixture;
@@ -2139,8 +2189,7 @@ void _hermesApiChannelProviderModelTests() {
         }
         return null;
       },
-      put: (uri, body) async =>
-          throw StateError('Hermes API returned HTTP 412'),
+      put: (uri, body) async => throw const _TestHermesStatusException(412),
     );
     await channel.loadModels();
     expect(channel.state.modelInventory!.assignment.revision, 'mrev-1');
@@ -2154,7 +2203,7 @@ void _hermesApiChannelProviderModelTests() {
         model: 'gpt-5',
         revision: 'mrev-1',
       ),
-      throwsStateError,
+      throwsA(isA<_TestHermesStatusException>()),
     );
 
     // The stale assignment refreshed the inventory before rethrowing: the

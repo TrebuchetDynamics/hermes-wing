@@ -489,11 +489,9 @@ test("approval review exposes bounded details before chat continues", async ({
 
   await page.getByRole("button", { name: "Review" }).click();
   await expect(page.getByText("Review Hermes approval")).toBeVisible();
-  const approvalSheet = page
-    .getByRole("group")
-    .filter({ hasText: "Risk: low" })
-    .last();
-  await expect(approvalSheet).toContainText("Tool call: tool_e2e");
+  // The current Agent fixture supplies a command and description, without
+  // optional risk/tool-call metadata. Selectable text uses textbox semantics.
+  await expect(page.getByRole("textbox")).toHaveCount(2);
   await screenshot(page, testInfo, "approval-review-sheet");
 
   await page.getByRole("button", { name: "Copy details" }).click();
@@ -504,6 +502,10 @@ test("approval review exposes bounded details before chat continues", async ({
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toContain("Approve e2e browser run?");
+  const copiedDetails = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copiedDetails).toContain("Command: echo e2e");
+  expect(copiedDetails).not.toContain("Risk:");
+  expect(copiedDetails).not.toContain("Tool call:");
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(

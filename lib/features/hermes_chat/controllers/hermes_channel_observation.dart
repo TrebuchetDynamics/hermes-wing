@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_chat_turn.dart';
+import '../presentation/hermes_turn_presentation_identity.dart';
 
 /// What changed between two looks at the Hermes channel.
 @immutable
@@ -38,6 +39,11 @@ class HermesChannelChange {
 /// and resumes transcript following when a user turn arrives. This stores the
 /// small previous-state signatures needed to answer what moved.
 class HermesChannelObservation {
+  static Iterable<HermesChatTurn> _identifiedTurns(List<HermesChatTurn> turns) {
+    final ids = HermesTurnPresentationIdentity.uniqueIds(turns);
+    return turns.where((turn) => ids.contains(turn.id));
+  }
+
   String? _activeSessionId;
   String? _activeUserTurnSignature;
   String? _activeCompletedReplySignature;
@@ -111,8 +117,9 @@ class HermesChannelObservation {
     final activeSessionId = state.activeSessionId;
     if (activeSessionId == null) return null;
     final ids = <String>[
-      for (final turn
-          in state.messages[activeSessionId] ?? const <HermesChatTurn>[])
+      for (final turn in _identifiedTurns(
+        state.messages[activeSessionId] ?? const <HermesChatTurn>[],
+      ))
         if (turn.author == HermesTurnAuthor.user) turn.id,
     ];
     return ids.isEmpty ? null : ids.join('\u001f');
@@ -124,8 +131,9 @@ class HermesChannelObservation {
     final activeSessionId = state.activeSessionId;
     if (activeSessionId == null) return null;
     final ids = <String>[
-      for (final turn
-          in state.messages[activeSessionId] ?? const <HermesChatTurn>[])
+      for (final turn in _identifiedTurns(
+        state.messages[activeSessionId] ?? const <HermesChatTurn>[],
+      ))
         if (turn.author == HermesTurnAuthor.assistant &&
             turn.status == HermesTurnStatus.completed)
           turn.id,
@@ -143,7 +151,7 @@ class HermesChannelObservation {
             turn.status == HermesTurnStatus.completed,
       ))
         entry.key: {
-          for (final turn in entry.value)
+          for (final turn in _identifiedTurns(entry.value))
             if (turn.author == HermesTurnAuthor.assistant &&
                 turn.status == HermesTurnStatus.completed)
               turn.id,
@@ -158,7 +166,7 @@ class HermesChannelObservation {
   static String? completedReplySignature(HermesChannelState state) {
     final ids = <String>[
       for (final turns in state.messages.values)
-        for (final turn in turns)
+        for (final turn in _identifiedTurns(turns))
           if (turn.author == HermesTurnAuthor.assistant &&
               turn.status == HermesTurnStatus.completed)
             '${turn.sessionId}:${turn.id}',

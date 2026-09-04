@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/features/providers/widgets/provider_credential_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -35,6 +36,46 @@ Iterable<String> _allRenderedText(WidgetTester tester) => tester
     .toList();
 
 void main() {
+  testWidgets(
+    'revoked capability prevents dispatch from an open credential sheet',
+    (tester) async {
+      final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+      await tester.pumpAndSettle();
+      channel.replaceCapabilitiesAndProfiles(
+        HermesCapabilityDocument.fromJson({}),
+        [],
+      );
+      await tester.enterText(find.byType(TextField), 'synthetic-test-value');
+      await tester.tap(find.text('Set'));
+      await tester.pumpAndSettle();
+      expect(channel.setProviderCredentialCalls, isEmpty);
+    },
+  );
+
+  for (final action in ['Set', 'Remove', 'Validate']) {
+    testWidgets('$action rejects profile A B A while sheet remains open', (
+      tester,
+    ) async {
+      final channel = FakeHermesChannel(
+        providers: const [_configuredProvider],
+        selectedProfileId: 'a',
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'synthetic-test-value');
+      await channel.selectProfile('b');
+      await channel.selectProfile('a');
+      await tester.tap(find.text(action));
+      await tester.pumpAndSettle();
+      expect(channel.setProviderCredentialCalls, isEmpty);
+      expect(channel.removeProviderCredentialCalls, isEmpty);
+      expect(channel.validateProviderCredentialCalls, isEmpty);
+    });
+  }
+
   testWidgets('never renders a stored key even when configured', (
     tester,
   ) async {
@@ -193,6 +234,36 @@ void main() {
     expect(find.textContaining('gpt-5, gpt-5-mini'), findsOneWidget);
     // Only this provider's models are disclosed.
     expect(find.textContaining('claude-sonnet'), findsNothing);
+  });
+
+  testWidgets('probe detail is redacted and bounded before rendering', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      providers: const [_configuredProvider],
+      validateProviderResult: HermesCredentialProbe(
+        ok: false,
+        detail:
+            'Authorization: Bearer sensitive-provider-token '
+            '/home/operator/private-config.json '
+            '${List.filled(300, 'x').join()}',
+      ),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+
+    final rendered = _allRenderedText(
+      tester,
+    ).singleWhere((text) => text.contains('Authorization:'));
+    expect(rendered, contains('[redacted]'));
+    expect(rendered, isNot(contains('sensitive-provider-token')));
+    expect(rendered, isNot(contains('/home/operator')));
+    expect(rendered.length, lessThanOrEqualTo(161));
+    expect(rendered, endsWith('…'));
   });
 
   testWidgets('probe results stay usable at 200% text scale', (tester) async {

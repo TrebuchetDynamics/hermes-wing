@@ -20,11 +20,13 @@ extension _SessionsExtension on HermesApiChannel {
     _requireKnownSession(sessionId);
     final selectionGeneration = ++_sessionSelectionGeneration;
     final connectionGeneration = _connectionGeneration;
+    final profileSelectionGeneration = _profileSelectionGeneration;
     final profileId = _state.selectedProfileId;
     final baseUrl = _state.connectedBaseUrl;
     final capabilities = _state.capabilities;
     bool isCurrentSelection() =>
         selectionGeneration == _sessionSelectionGeneration &&
+        profileSelectionGeneration == _profileSelectionGeneration &&
         _isCurrentConnection(connectionGeneration, client) &&
         _state.selectedProfileId == profileId;
     final detachedRunStillActive = baseUrl != null && capabilities != null
@@ -70,6 +72,163 @@ extension _SessionsExtension on HermesApiChannel {
     }
   }
 
+  Future<void> _loadEarlierMessages() async {
+    final client = _client;
+    if (client == null) {
+      throw StateError('Hermes channel is not connected.');
+    }
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null ||
+        !_state.sessionsWithEarlierMessages.contains(sessionId) ||
+        _state.sessionsLoadingEarlierMessages.contains(sessionId)) {
+      return;
+    }
+
+    final generation = _connectionGeneration;
+    final profileSelectionGeneration = _profileSelectionGeneration;
+    final profileId = _state.selectedProfileId;
+    final offset = _state.messageHistoryNextOffsets[sessionId] ?? 0;
+    bool isCurrentRequest() =>
+        _isCurrentConnection(generation, client) &&
+        _profileSelectionGeneration == profileSelectionGeneration &&
+        _state.selectedProfileId == profileId &&
+        _state.sessions.any((session) => session.id == sessionId);
+
+    _setState(
+      _state.copyWith(
+        sessionsLoadingEarlierMessages: {
+          ..._state.sessionsLoadingEarlierMessages,
+          sessionId,
+        },
+        clearErrorMessage: true,
+      ),
+    );
+    try {
+      final page = await client.sessionMessagesPage(
+        sessionId,
+        profile: profileId,
+        offset: offset,
+      );
+      if (!isCurrentRequest()) return;
+      if (page.offset != offset || page.order != 'latest') {
+        throw StateError('Hermes returned unexpected message pagination.');
+      }
+      final cacheKey = _recentTurnKey(client, sessionId, profileId: profileId);
+      const maxLoadedHistoryMessages = 5000;
+      final existingTurns = _state.messages[sessionId] ?? const [];
+      final olderTurns = _turnsFromHistory(
+        page.messages,
+        sessionId: sessionId,
+        unmatched: List.of(existingTurns),
+        fetchedAt: DateTime.now(),
+      );
+      final existingTurnIds = {
+        for (final turn in existingTurns)
+          if (turn.id.isNotEmpty) turn.id,
+      };
+      final mergedTurns = [
+        for (final turn in olderTurns)
+          if (turn.id.isEmpty || existingTurnIds.add(turn.id)) turn,
+        ...existingTurns,
+      ];
+
+      final existingHistory =
+          _runHistorySnapshots[cacheKey]?.messages ?? const <HermesMessage>[];
+      final existingMessageIds = {
+        for (final message in existingHistory)
+          if (message.id.isNotEmpty) message.id,
+      };
+      final mergedHistory = [
+        for (final message in page.messages)
+          if (message.id.isEmpty || existingMessageIds.add(message.id)) message,
+        ...existingHistory,
+      ];
+      _runHistorySnapshots.remove(cacheKey);
+      _runHistorySnapshots[cacheKey] = _HermesRunHistorySnapshot(
+        mergedHistory.length <= maxLoadedHistoryMessages
+            ? mergedHistory
+            : mergedHistory.sublist(
+                mergedHistory.length - maxLoadedHistoryMessages,
+              ),
+      );
+      _messageHistoryPagination[cacheKey] = _HermesMessageHistoryPagination(
+        nextOffset: page.nextOffset,
+        hasMore: page.hasMore && page.nextOffset < maxLoadedHistoryMessages,
+      );
+      _setState(
+        _state.copyWith(
+          messages: {..._state.messages, sessionId: mergedTurns},
+          sessionsLoadingEarlierMessages: {
+            ..._state.sessionsLoadingEarlierMessages,
+          }..remove(sessionId),
+          clearErrorMessage: true,
+        ),
+      );
+    } catch (error) {
+      if (!isCurrentRequest()) return;
+      _setState(
+        _state.copyWith(
+          sessionsLoadingEarlierMessages: {
+            ..._state.sessionsLoadingEarlierMessages,
+          }..remove(sessionId),
+          errorMessage: _safeHermesError(error),
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadMoreSessions() async {
+    final client = _client;
+    if (client == null) {
+      throw StateError('Hermes channel is not connected.');
+    }
+    if (!_state.hasMoreSessions || _state.isLoadingMoreSessions) return;
+
+    final generation = _connectionGeneration;
+    final profileSelectionGeneration = _profileSelectionGeneration;
+    final profileId = _state.selectedProfileId;
+    final offset = _state.sessionsNextOffset;
+    bool isCurrentRequest() =>
+        _isCurrentConnection(generation, client) &&
+        _profileSelectionGeneration == profileSelectionGeneration &&
+        _state.selectedProfileId == profileId;
+
+    _setState(
+      _state.copyWith(isLoadingMoreSessions: true, clearErrorMessage: true),
+    );
+    try {
+      final page = await client.listSessionsPage(
+        profile: profileId,
+        offset: offset,
+      );
+      if (!isCurrentRequest()) return;
+      if (page.offset != offset) {
+        throw StateError('Hermes returned an unexpected session page offset.');
+      }
+      final knownIds = _state.sessions.map((session) => session.id).toSet();
+      final additional = page.sessions
+          .where((session) => knownIds.add(session.id))
+          .toList(growable: false);
+      _setState(
+        _state.copyWith(
+          sessions: [..._state.sessions, ...additional],
+          sessionsNextOffset: page.nextOffset,
+          hasMoreSessions: page.hasMore,
+          isLoadingMoreSessions: false,
+          clearErrorMessage: true,
+        ),
+      );
+    } catch (error) {
+      if (!isCurrentRequest()) return;
+      _setState(
+        _state.copyWith(
+          isLoadingMoreSessions: false,
+          errorMessage: _safeHermesError(error),
+        ),
+      );
+    }
+  }
+
   Future<void> _createSession({String? title}) async {
     final client = _client;
     if (client == null) {
@@ -88,8 +247,6 @@ extension _SessionsExtension on HermesApiChannel {
       profile: profileId,
     );
     if (!_isConnectedProfile(client, profileId)) return;
-    final turns = await _fetchTurns(client, created.id, profileId: profileId);
-    if (!_isConnectedProfile(client, profileId)) return;
     _setState(
       _state.copyWith(
         sessions: [..._state.sessions, created],
@@ -98,6 +255,28 @@ extension _SessionsExtension on HermesApiChannel {
           sessionId: created.id,
           profileId: profileId,
         ),
+        clearErrorMessage: true,
+        messages: {..._state.messages, created.id: const []},
+      ),
+    );
+    final List<HermesChatTurn> turns;
+    try {
+      turns = await _fetchTurns(client, created.id, profileId: profileId);
+    } catch (error) {
+      if (_isConnectedProfile(client, profileId)) {
+        _setState(
+          _state.copyWith(
+            errorMessage:
+                'Hermes session was created, but its history could not be loaded: '
+                '${_safeHermesError(error)}',
+          ),
+        );
+      }
+      return;
+    }
+    if (!_isConnectedProfile(client, profileId)) return;
+    _setState(
+      _state.copyWith(
         clearErrorMessage: true,
         messages: {..._state.messages, created.id: turns},
       ),

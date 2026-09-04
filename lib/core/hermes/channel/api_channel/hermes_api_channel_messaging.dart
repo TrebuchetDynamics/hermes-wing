@@ -1,5 +1,11 @@
 part of '../hermes_api_channel.dart';
 
+final class _AmbiguousRunSubmissionFailure implements Exception {
+  const _AmbiguousRunSubmissionFailure(this.cause);
+
+  final Object cause;
+}
+
 final class _DetachedRunAdmissionFailure implements Exception {
   const _DetachedRunAdmissionFailure({
     required this.runId,
@@ -17,6 +23,8 @@ final class _DetachedRunAdmissionFailure implements Exception {
 extension _MessagingExtension on HermesApiChannel {
   Future<void> _sendText(
     String text, {
+    void Function(HermesChatTurn turn)? onAssistantTurnCreated,
+    bool Function()? isSubmissionCurrent,
     String? imageDataUrl,
     String? textAttachment,
     String? attachmentName,
@@ -65,6 +73,9 @@ extension _MessagingExtension on HermesApiChannel {
       throw StateError('Hermes channel is not connected to a session.');
     }
     await _ensureDetachedRunsLoaded();
+    if (isSubmissionCurrent != null && !isSubmissionCurrent()) {
+      throw StateError('Hermes voice conversation changed.');
+    }
     if (_detachedRunsLoadFailed) {
       const message =
           'Wing could not load durable Hermes run recovery state. Reconnect before sending.';
@@ -96,6 +107,9 @@ extension _MessagingExtension on HermesApiChannel {
       _setState(_state.copyWith(errorMessage: message));
       throw StateError(message);
     }
+    if (_pendingRunSubmissionGenerations.containsKey(sessionId)) {
+      throw StateError('Hermes run submission is still pending.');
+    }
     final activeCompleter = _activeStreamCompleters[sessionId];
     if ((activeCompleter != null && !activeCompleter.isCompleted) ||
         _state.messages[sessionId]?.lastOrNull?.status ==
@@ -103,10 +117,28 @@ extension _MessagingExtension on HermesApiChannel {
       throw StateError('Hermes turn is already streaming.');
     }
     final capabilities = _state.capabilities;
-    if (capabilities != null &&
-        !HermesTransportPolicy(capabilities).supportsAnyChatTransport) {
+    final transportPolicy = capabilities == null
+        ? null
+        : HermesTransportPolicy(capabilities);
+    if (transportPolicy != null && !transportPolicy.supportsAnyChatTransport) {
       throw StateError(
         'Hermes did not advertise a supported chat transport for this endpoint.',
+      );
+    }
+    final runHistoryKey = _recentTurnKey(
+      client,
+      sessionId,
+      profileId: profileId,
+    );
+    final runHistorySnapshot = _runHistorySnapshots[runHistoryKey];
+    final useRunTransport =
+        transportPolicy?.supportsRunsTransport == true &&
+        runHistorySnapshot?.isPlain == true;
+    if (transportPolicy?.supportsRunsTransport == true &&
+        !useRunTransport &&
+        transportPolicy?.supportsSessionChatStream != true) {
+      throw StateError(
+        'Hermes run transport cannot preserve this session history safely.',
       );
     }
 
@@ -138,16 +170,22 @@ extension _MessagingExtension on HermesApiChannel {
       status: HermesTurnStatus.streaming,
     );
     turns.add(assistantTurn);
+    onAssistantTurnCreated?.call(assistantTurn);
     var assistantIndex = turns.length - 1;
     var serverAssistantReplyObserved = false;
     _setTurns(sessionId, turns, clearErrorMessage: true);
 
-    final useRunTransport =
-        capabilities != null &&
-        HermesTransportPolicy(capabilities).supportsRunsTransport;
-
     final streamGeneration = ++_nextStreamGeneration;
     _sessionStreamGenerations[sessionId] = streamGeneration;
+    if (useRunTransport) {
+      _pendingRunSubmissionGenerations[sessionId] = streamGeneration;
+    }
+    void clearPendingRunSubmission() {
+      if (_pendingRunSubmissionGenerations[sessionId] == streamGeneration) {
+        _pendingRunSubmissionGenerations.remove(sessionId);
+      }
+    }
+
     bool isCurrentStream() =>
         identical(_client, client) &&
         _state.status == HermesConnectionStatus.connected &&
@@ -156,17 +194,29 @@ extension _MessagingExtension on HermesApiChannel {
     Stream<HermesStreamEvent>? events;
     String? runId;
     String? runOwnershipSessionId;
+    Future<HermesRun> startRun() async {
+      try {
+        return await client.startRun(
+          sessionId: sessionId,
+          message: requestMessage,
+          conversationHistory: runHistorySnapshot!.messages,
+          profile: profileId,
+        );
+      } catch (error) {
+        if (_isDefinitiveRunSubmissionRejection(error)) rethrow;
+        throw _AmbiguousRunSubmissionFailure(error);
+      }
+    }
+
     try {
       if (useRunTransport) {
         final store = _detachedRunStore;
         if (store == null) {
-          final run = await client.startRun(
-            sessionId: sessionId,
-            message: requestMessage,
-            profile: profileId,
-          );
+          final run = await startRun();
           if (run.id.isEmpty) {
-            throw StateError('Hermes returned a run without an id.');
+            throw const _AmbiguousRunSubmissionFailure(
+              'Hermes accepted the submission without returning a run id.',
+            );
           }
           runId = run.id;
           runOwnershipSessionId = run.sessionId;
@@ -184,13 +234,11 @@ extension _MessagingExtension on HermesApiChannel {
             if (!isCurrentStream()) {
               throw StateError('Hermes run submission was cancelled.');
             }
-            final run = await client.startRun(
-              sessionId: sessionId,
-              message: requestMessage,
-              profile: profileId,
-            );
+            final run = await startRun();
             if (run.id.isEmpty) {
-              throw StateError('Hermes returned a run without an id.');
+              throw const _AmbiguousRunSubmissionFailure(
+                'Hermes accepted the submission without returning a run id.',
+              );
             }
             final lease = HermesDetachedRunLease(
               runId: run.id,
@@ -227,6 +275,7 @@ extension _MessagingExtension on HermesApiChannel {
             'Hermes returned a run that does not match the requested session.',
           );
         }
+        _runHistorySnapshots.remove(runHistoryKey);
       } else {
         events = client.streamSessionChat(
           sessionId,
@@ -235,9 +284,14 @@ extension _MessagingExtension on HermesApiChannel {
         );
       }
     } catch (error) {
+      final ambiguousSubmission = error is _AmbiguousRunSubmissionFailure;
+      if (ambiguousSubmission) {
+        _runHistorySnapshots.remove(runHistoryKey);
+      }
       if (error is _DetachedRunAdmissionFailure) {
         runId = error.runId;
         runOwnershipSessionId = error.sessionId;
+        _runHistorySnapshots.remove(runHistoryKey);
         if (connectedBaseUrl != null) {
           final provisionalLease = HermesDetachedRunLease(
             runId: error.runId,
@@ -257,6 +311,15 @@ extension _MessagingExtension on HermesApiChannel {
         try {
           await client.stopRun(runId, profile: profileId);
           runStopped = true;
+          if (identical(_client, client) &&
+              _state.status == HermesConnectionStatus.connected &&
+              _state.selectedProfileId == profileId) {
+            try {
+              await _fetchTurns(client, sessionId, profileId: profileId);
+            } catch (_) {
+              // A failed authoritative reload keeps run transport unavailable.
+            }
+          }
           await _releaseDetachedRunBestEffort(
             runId: runId,
             sessionId: runOwnershipSessionId!,
@@ -270,6 +333,8 @@ extension _MessagingExtension on HermesApiChannel {
           // Keep exact provisional/durable ownership when Stop cannot complete.
         }
       }
+      if (!ambiguousSubmission) clearPendingRunSubmission();
+      _explicitlyStoppedStreamGenerations.remove(streamGeneration);
       if (!identical(_client, client) ||
           _state.status != HermesConnectionStatus.connected ||
           !isCurrentStream()) {
@@ -277,14 +342,18 @@ extension _MessagingExtension on HermesApiChannel {
       }
       assistantTurn = assistantTurn.copyWith(status: HermesTurnStatus.failed);
       turns[assistantIndex] = assistantTurn;
-      final message = runStopped
+      final message = ambiguousSubmission
+          ? 'Hermes may have started a run, but Wing did not receive its id. Further submission is blocked.'
+          : runStopped
           ? 'Hermes run was stopped because Wing could not persist its recovery lease.'
           : runOwnershipUncertain
           ? 'Hermes run started, but Wing could not persist its recovery lease. The run remains blocked from duplicate submission.'
           : _safeHermesError(error);
       _setState(
         _state.copyWith(
-          hasUnreconciledRun: runOwnershipUncertain
+          hasUnreconciledRun: ambiguousSubmission
+              ? true
+              : runOwnershipUncertain
               ? _sessionHasDetachedRun(
                   sessionId: sessionId,
                   profileId: profileId,
@@ -293,18 +362,42 @@ extension _MessagingExtension on HermesApiChannel {
         ),
       );
       _setTurns(sessionId, turns, errorMessage: message);
-      if (runOwnershipUncertain) throw StateError(message);
-      rethrow;
+      throw StateError(message);
     }
 
+    final explicitlyStoppedWhileSubmitting = _explicitlyStoppedStreamGenerations
+        .remove(streamGeneration);
     if (!identical(_client, client) ||
         _state.status != HermesConnectionStatus.connected ||
         !isCurrentStream()) {
+      try {
+        if (useRunTransport && runId != null && runOwnershipSessionId != null) {
+          await _stopLateAcceptedRun(
+            client: client,
+            runId: runId,
+            sessionId: runOwnershipSessionId,
+            profileId: profileId,
+            baseUrl: connectedBaseUrl,
+            canStop:
+                explicitlyStoppedWhileSubmitting &&
+                (capabilities == null ||
+                    HermesTransportPolicy(capabilities).supportsRunStop),
+          );
+        }
+      } finally {
+        clearPendingRunSubmission();
+      }
       return;
     }
+    clearPendingRunSubmission();
 
+    void Function()? onStreamActivity;
     try {
-      events ??= client.runEvents(runId!, profile: profileId);
+      events ??= client.runEvents(
+        runId!,
+        profile: profileId,
+        onActivity: () => onStreamActivity?.call(),
+      );
     } catch (error) {
       if (!identical(_client, client) ||
           _state.status != HermesConnectionStatus.connected ||
@@ -356,6 +449,10 @@ extension _MessagingExtension on HermesApiChannel {
         if (stream != null) unawaited(stream.cancel());
       });
     }
+
+    onStreamActivity = () {
+      if (isCurrentStream() && !completer.isCompleted) armIdleTimer();
+    };
 
     void armRunStatusTimer() {
       runStatusTimer?.cancel();
@@ -516,6 +613,7 @@ extension _MessagingExtension on HermesApiChannel {
               event,
               runId: runId,
               sessionId: sessionId,
+              profileId: profileId,
             );
             if (runId != null && request.id.isNotEmpty) {
               _approvalResponder.registerApproval(request.id, runId);
@@ -736,6 +834,7 @@ extension _MessagingExtension on HermesApiChannel {
       final recoveredOutput = recoveredRun?.output?.trim();
       if (recoveredRun?.status == HermesRunLifecycle.completed &&
           recoveredOutput?.isNotEmpty == true) {
+        _runHistorySnapshots.remove(runHistoryKey);
         assistantTurn = assistantTurn.copyWith(
           status: HermesTurnStatus.completed,
           text: recoveredOutput,
@@ -794,6 +893,7 @@ extension _MessagingExtension on HermesApiChannel {
     }
 
     if (!streamFailed) {
+      _runHistorySnapshots.remove(runHistoryKey);
       try {
         final serverTurns = await _fetchTurns(
           client,
@@ -1248,7 +1348,18 @@ extension _MessagingExtension on HermesApiChannel {
     HermesStreamEvent event, {
     required String? runId,
     required String sessionId,
+    required String? profileId,
   }) {
+    final command = _boundedApprovalText(event.payload['command'], 2048);
+    final description = _boundedApprovalText(
+      event.payload['description'],
+      1000,
+    );
+    final prompt =
+        _boundedApprovalText(event.payload['prompt'], 1000) ??
+        description ??
+        command ??
+        'Approval requested';
     return HermesApprovalRequest(
       id:
           wingOptionalStringFromJson(event.payload['approval_id']) ??
@@ -1259,13 +1370,45 @@ extension _MessagingExtension on HermesApiChannel {
           wingOptionalStringFromJson(event.payload['tool_call_id']) ??
           wingOptionalStringFromJson(event.payload['toolCallId']) ??
           '',
-      prompt:
-          wingOptionalStringFromJson(event.payload['prompt']) ??
-          'Approval requested',
-      risk: wingOptionalStringFromJson(event.payload['risk']),
+      prompt: prompt,
+      risk: _boundedApprovalText(event.payload['risk'], 240),
+      command: command,
+      description: description,
+      choices: _approvalChoicesFromEvent(event.payload),
       runId: runId,
       sessionId: sessionId,
+      profileId: profileId,
+      connectionGeneration: _connectionGeneration,
+      profileSelectionGeneration: _profileSelectionGeneration,
     );
+  }
+
+  String? _boundedApprovalText(Object? value, int maxLength) {
+    final text = wingOptionalStringFromJson(value)?.trim();
+    if (text == null || text.isEmpty) return null;
+    return text.length <= maxLength ? text : text.substring(0, maxLength);
+  }
+
+  Set<HermesApprovalDecision>? _approvalChoicesFromEvent(
+    Map<String, Object?> payload,
+  ) {
+    if (!payload.containsKey('choices')) return null;
+    final rawChoices = payload['choices'];
+    if (rawChoices is! List) return const <HermesApprovalDecision>{};
+    final choices = <HermesApprovalDecision>{};
+    for (final value in rawChoices.take(8)) {
+      final choice = switch (wingOptionalStringFromJson(
+        value,
+      )?.trim().toLowerCase()) {
+        'once' => HermesApprovalDecision.once,
+        'session' => HermesApprovalDecision.session,
+        'always' => HermesApprovalDecision.always,
+        'deny' => HermesApprovalDecision.deny,
+        _ => null,
+      };
+      if (choice != null) choices.add(choice);
+    }
+    return Set.unmodifiable(choices);
   }
 
   Future<void> _ensureDetachedRunsLoaded() {
@@ -1336,6 +1479,90 @@ extension _MessagingExtension on HermesApiChannel {
       return leases;
     });
     _replaceDetachedRuns(committed);
+  }
+
+  Future<void> _stopLateAcceptedRun({
+    required HermesApiClient client,
+    required String runId,
+    required String sessionId,
+    required String? profileId,
+    required String? baseUrl,
+    required bool canStop,
+  }) async {
+    DateTime? leaseCreatedAt;
+    if (baseUrl != null) {
+      final lookup = HermesDetachedRunLease(
+        runId: runId,
+        sessionId: sessionId,
+        baseUrl: _detachedRunBaseUrl(baseUrl),
+        profileId: profileId,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      );
+      final key = _detachedRunKey(lookup);
+      final existing = _detachedRuns[key];
+      if (existing == null) {
+        final provisional = HermesDetachedRunLease(
+          runId: runId,
+          sessionId: sessionId,
+          baseUrl: lookup.baseUrl,
+          profileId: profileId,
+          createdAt: DateTime.now().toUtc(),
+        );
+        _detachedRuns[key] = provisional;
+        leaseCreatedAt = provisional.createdAt;
+      } else {
+        leaseCreatedAt = existing.createdAt;
+      }
+    }
+
+    if (canStop) {
+      try {
+        await client.stopRun(runId, profile: profileId);
+        if (identical(_client, client) &&
+            _state.status == HermesConnectionStatus.connected &&
+            _state.selectedProfileId == profileId) {
+          final historyKey = _recentTurnKey(
+            client,
+            sessionId,
+            profileId: profileId,
+          );
+          _runHistorySnapshots.remove(historyKey);
+          try {
+            await _fetchTurns(client, sessionId, profileId: profileId);
+          } catch (_) {
+            // A failed authoritative reload keeps run transport unavailable.
+          }
+        }
+        await _releaseDetachedRunBestEffort(
+          runId: runId,
+          sessionId: sessionId,
+          profileId: profileId,
+          baseUrl: baseUrl,
+          expectedCreatedAt: leaseCreatedAt,
+        );
+      } catch (_) {
+        // Keep exact ownership when the accepted run cannot be stopped.
+      }
+    }
+
+    if (_client != null &&
+        _state.status == HermesConnectionStatus.connected &&
+        _state.selectedProfileId == profileId &&
+        _state.activeSessionId == sessionId &&
+        baseUrl != null &&
+        _state.connectedBaseUrl != null &&
+        _detachedRunBaseUrl(_state.connectedBaseUrl!) ==
+            _detachedRunBaseUrl(baseUrl)) {
+      _setState(
+        _state.copyWith(
+          hasUnreconciledRun: _sessionHasDetachedRun(
+            sessionId: sessionId,
+            baseUrl: baseUrl,
+            profileId: profileId,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _trackDetachedRun({
@@ -1602,7 +1829,13 @@ extension _MessagingExtension on HermesApiChannel {
     late final StreamSubscription<HermesStreamEvent> subscription;
     try {
       subscription = client
-          .runEvents(runId, profile: profileId)
+          .runEvents(
+            runId,
+            profile: profileId,
+            onActivity: () {
+              if (isCurrentStream() && !completer.isCompleted) armIdleTimer();
+            },
+          )
           .listen(
             (event) {
               if (!isCurrentStream() || terminal) return;
@@ -1671,6 +1904,7 @@ extension _MessagingExtension on HermesApiChannel {
                   event,
                   runId: runId,
                   sessionId: sessionId,
+                  profileId: profileId,
                 );
                 if (request.id.isNotEmpty) {
                   _approvalResponder.registerApproval(request.id, runId);
@@ -1758,16 +1992,6 @@ extension _MessagingExtension on HermesApiChannel {
       return;
     }
     _approvalResponder.forgetApprovalsForRun(runId);
-    await _releaseDetachedRunBestEffort(
-      runId: runId,
-      sessionId: sessionId,
-      profileId: profileId,
-      baseUrl: baseUrl,
-    );
-    if (!isCurrentStream()) return;
-    _setState(
-      _state.copyWith(hasUnreconciledRun: _activeSessionHasDetachedRun()),
-    );
     try {
       final serverTurns = await _fetchTurns(
         client,
@@ -1781,7 +2005,18 @@ extension _MessagingExtension on HermesApiChannel {
         clearErrorMessage: successful,
         errorMessage: successful ? null : 'Hermes run did not complete.',
       );
+      await _releaseDetachedRunBestEffort(
+        runId: runId,
+        sessionId: sessionId,
+        profileId: profileId,
+        baseUrl: baseUrl,
+      );
+      if (!isCurrentStream()) return;
+      _setState(
+        _state.copyWith(hasUnreconciledRun: _activeSessionHasDetachedRun()),
+      );
     } catch (_) {
+      if (!isCurrentStream()) return;
       assistantTurn = assistantTurn.copyWith(
         status: successful
             ? HermesTurnStatus.completed
@@ -1791,8 +2026,8 @@ extension _MessagingExtension on HermesApiChannel {
       _setTurns(
         sessionId,
         List.of(turns),
-        clearErrorMessage: successful,
-        errorMessage: successful ? null : 'Hermes run did not complete.',
+        errorMessage:
+            'Hermes run ended, but its history could not be refreshed. Reconnect before sending again.',
       );
     }
   }
@@ -1839,7 +2074,13 @@ extension _MessagingExtension on HermesApiChannel {
     required String? profileId,
     required String sessionId,
   }) async {
+    final generation = _connectionGeneration;
+    final selectionGeneration = _profileSelectionGeneration;
+    bool isCurrentOwner() =>
+        _isCurrentConnection(generation, client) &&
+        selectionGeneration == _profileSelectionGeneration;
     await _ensureDetachedRunsLoaded();
+    if (!isCurrentOwner()) return true;
     final matches = _detachedRuns.values
         .where(
           (run) =>
@@ -1859,6 +2100,7 @@ extension _MessagingExtension on HermesApiChannel {
           detached.runId,
           profile: profileId,
         );
+        if (!isCurrentOwner()) return true;
         if (run.id != detached.runId || run.sessionId != sessionId) {
           // A status response for another ownership tuple is not authoritative.
           // Keep the lease and fail closed without reattaching.
@@ -1868,6 +2110,15 @@ extension _MessagingExtension on HermesApiChannel {
         if (run.status == HermesRunLifecycle.completed ||
             run.status == HermesRunLifecycle.failed ||
             run.status == HermesRunLifecycle.cancelled) {
+          try {
+            await _fetchTurns(client, sessionId, profileId: profileId);
+            if (!isCurrentOwner()) return true;
+          } catch (_) {
+            // Terminal status resolves execution, not canonical history.
+            // Preserve the durable owner until that history can be loaded.
+            stillActive = true;
+            continue;
+          }
           final key = _detachedRunKey(detached);
           _detachedRuns.remove(key);
           _confirmedDetachedRunKeys.remove(key);
@@ -1877,6 +2128,7 @@ extension _MessagingExtension on HermesApiChannel {
           stillActive = true;
         }
       } catch (error) {
+        if (!isCurrentOwner()) return true;
         if (error.toString().contains(hermesApiHttpStatusMessage(404))) {
           // The run registry is process-local; a gateway restart makes an old
           // lease authoritatively absent rather than indefinitely active.
@@ -1933,11 +2185,20 @@ extension _MessagingExtension on HermesApiChannel {
     if (sessionId != null) _finishSessionTurnLocally(sessionId);
   }
 
-  void _stopActiveTurn() {
+  Future<void> _stopActiveTurn() async {
     final client = _client;
     final connectionGeneration = _connectionGeneration;
     final sessionId = _state.activeSessionId;
     final runId = sessionId == null ? null : _activeRunIds[sessionId];
+    final streamGeneration = sessionId == null
+        ? null
+        : _sessionStreamGenerations[sessionId];
+    if (sessionId != null &&
+        runId == null &&
+        streamGeneration != null &&
+        _pendingRunSubmissionGenerations[sessionId] == streamGeneration) {
+      _explicitlyStoppedStreamGenerations.add(streamGeneration);
+    }
     final profileId = _state.selectedProfileId;
     final baseUrl = _state.connectedBaseUrl;
     final detachedLeaseCreatedAt =
@@ -1969,33 +2230,43 @@ extension _MessagingExtension on HermesApiChannel {
         ? true
         : HermesTransportPolicy(capabilities).supportsRunStop;
     if (client != null && sessionId != null && runId != null && canStopRun) {
-      fireAndForget(
-        client.stopRun(runId, profile: profileId).then((_) async {
-          final stillCurrent =
-              _isCurrentConnection(connectionGeneration, client) &&
-              _state.selectedProfileId == profileId;
-          if (!stillCurrent &&
-              _state.status != HermesConnectionStatus.disconnected) {
-            return;
-          }
-          await _releaseDetachedRunBestEffort(
-            runId: runId,
-            sessionId: sessionId,
+      await client.stopRun(runId, profile: profileId).then((_) async {
+        final stillCurrent =
+            _isCurrentConnection(connectionGeneration, client) &&
+            _state.selectedProfileId == profileId;
+        if (!stillCurrent &&
+            _state.status != HermesConnectionStatus.disconnected) {
+          return;
+        }
+        if (stillCurrent) {
+          final historyKey = _recentTurnKey(
+            client,
+            sessionId,
             profileId: profileId,
-            baseUrl: baseUrl,
-            expectedCreatedAt: detachedLeaseCreatedAt,
           );
-          if (!stillCurrent) return;
-          final activeHasDetachedRun = _activeSessionHasDetachedRun();
-          _setState(
-            _state.copyWith(
-              hasUnreconciledRun: activeHasDetachedRun,
-              clearErrorMessage: !activeHasDetachedRun,
-            ),
-          );
-        }),
-        'stop detached run',
-      );
+          _runHistorySnapshots.remove(historyKey);
+          try {
+            await _fetchTurns(client, sessionId, profileId: profileId);
+          } catch (_) {
+            // A failed authoritative reload keeps run transport unavailable.
+          }
+        }
+        await _releaseDetachedRunBestEffort(
+          runId: runId,
+          sessionId: sessionId,
+          profileId: profileId,
+          baseUrl: baseUrl,
+          expectedCreatedAt: detachedLeaseCreatedAt,
+        );
+        if (!stillCurrent) return;
+        final activeHasDetachedRun = _activeSessionHasDetachedRun();
+        _setState(
+          _state.copyWith(
+            hasUnreconciledRun: activeHasDetachedRun,
+            clearErrorMessage: !activeHasDetachedRun,
+          ),
+        );
+      });
     }
   }
 
@@ -2043,6 +2314,13 @@ extension _MessagingExtension on HermesApiChannel {
     );
     _setTurns(sessionId, turns);
   }
+}
+
+bool _isDefinitiveRunSubmissionRejection(Object error) {
+  return error is HermesApiStatusException &&
+      error.statusCode >= 400 &&
+      error.statusCode < 500 &&
+      error.statusCode != 408;
 }
 
 String _detachedRunBaseUrl(String value) => hermesPublicEndpointBaseUrl(value);

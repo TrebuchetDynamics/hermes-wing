@@ -19,8 +19,10 @@ Hermes Wing ── data plane ─────────────▶ Hermes 
 ```
 
 Wing Link and Hermes Agent run on the same host. The service automatically selects
-a local private/Tailscale address when available and also binds loopback;
-`--listen` can select an exact loopback, private-LAN, or Tailscale address. HTTP is
+a positively identified NetBird address or a default-range NetBird/Tailscale
+address, otherwise a local private address, and also binds loopback; `--listen`
+can select an exact loopback,
+private-LAN, NetBird, or Tailscale address. HTTP is
 loopback-only. Every non-loopback listener uses TLS 1.3 tied to the durable Wing
 Link host identity. Native clients pin its reviewed SHA-256 SPKI fingerprint;
 browser clients require normally trusted HTTPS. Each device receives a separate,
@@ -31,6 +33,11 @@ Wing Link exposure and Hermes Agent exposure are separate. `wing-link setup`
 configures the Agent API on `127.0.0.1`; Wing Link does not proxy it. A remote Wing
 client therefore needs an independently reachable direct Agent origin, provided
 by a trusted VPN address or HTTPS reverse proxy and verified before pairing.
+Default-range NetBird/Tailscale addresses are recognized automatically. Fixed,
+bounded NetBird CLI probes also identify local custom-range IPv4 and IPv6
+addresses without treating ordinary LAN addresses as overlay identity. Distinct
+simultaneous NetBird and Tailscale addresses fail closed and require explicit
+selection. Network location never substitutes for TLS, pinning, or credentials.
 
 Pairing gives Wing two independently verified connections:
 
@@ -55,7 +62,7 @@ The current Linux implementation provides:
 - persistent pinned host identity and named per-device credentials;
 - host-local approval for install, secret-write, and destructive operations;
 - durable idempotent operation tracking and explicit cancellation;
-- current/previous protocol-generation negotiation; and
+- current/previous protocol-generation negotiation;
 - profile list, create/clone, rename, and delete through fixed Hermes CLI
   argument vectors; and
 - remote browsing of locally approved child folders through device-bound,
@@ -64,8 +71,9 @@ The current Linux implementation provides:
 Persistent service management is Linux/systemd-user only. New-profile setup can
 write an allowlisted provider, bounded model string, and provider credential
 through fixed Hermes CLI operations. Existing-profile provider editing, profile
-persona editing, directory selection, Project creation, and Project assignment
-are not shipped behavior. Approved folder browsing is read-only and ephemeral.
+persona editing, using a browsed folder for Project creation or assignment, and
+project-scoped Chat are not shipped behavior. Approved folder browsing is
+read-only and ephemeral; it does not commit a directory selection.
 
 ## Target management surface
 
@@ -125,9 +133,10 @@ not show the files inside `gancho`.
 
 ## Folder-selection boundary
 
-Wing Link is a **folder picker**, not a file browser. It returns folders only. It
-does not enumerate file names or metadata and cannot read, upload, edit, delete,
-or download file contents.
+Wing Link currently provides a read-only **folder browser**, not a file browser
+or a committed Project picker. It returns folders only. It does not enumerate
+file names or metadata and cannot read, upload, edit, delete, or download file
+contents.
 
 - A local operator configures roots with `wing-link directories grant <local-root>`,
   inspects them with `wing-link directories list`, and revokes them with
@@ -140,8 +149,8 @@ or download file contents.
   granted.
 - Folder results are paginated and bounded; diagnostics redact host paths.
 - A grant can be revoked without deleting the underlying directory or project.
-- The selected handle may be used only for a typed Hermes Project folder
-  operation.
+- A future selected handle may be consumed only by a typed Hermes Project folder
+  operation. The current browse-only UI does not commit one.
 
 ## Provider boundary
 

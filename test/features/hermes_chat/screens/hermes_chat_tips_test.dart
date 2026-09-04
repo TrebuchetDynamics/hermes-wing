@@ -68,7 +68,10 @@ void main() {
     );
     expect(find.byKey(const ValueKey('wing-tip-approvals')), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('wing-tip-approvals-dismiss')));
+    final dismiss = find.byKey(const ValueKey('wing-tip-approvals-dismiss'));
+    await tester.ensureVisible(dismiss);
+    await tester.pumpAndSettle();
+    await tester.tap(dismiss);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('wing-tip-approvals')), findsNothing);
     expect(

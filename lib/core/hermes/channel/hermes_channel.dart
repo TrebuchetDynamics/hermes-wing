@@ -19,6 +19,33 @@ abstract interface class HermesAudioChannel {
   Future<Uint8List> synthesizeSpeech(String text);
 }
 
+final class HermesTurnInterruptionTarget {
+  const HermesTurnInterruptionTarget({
+    required this.owner,
+    required this.connectionGeneration,
+    required this.profileId,
+    required this.sessionId,
+    required this.streamGeneration,
+    required this.runId,
+  });
+
+  final Object owner;
+  final int connectionGeneration;
+  final String? profileId;
+  final String sessionId;
+  final int streamGeneration;
+  final String? runId;
+
+  bool matches(HermesTurnInterruptionTarget? other) =>
+      other != null &&
+      identical(owner, other.owner) &&
+      connectionGeneration == other.connectionGeneration &&
+      profileId == other.profileId &&
+      sessionId == other.sessionId &&
+      streamGeneration == other.streamGeneration &&
+      runId == other.runId;
+}
+
 /// Native Hermes Agent channel: sessions, streamed chat turns, and the
 /// device-transcript voice-run lifecycle. Deliberately does not implement
 /// `WingChannel` — see docs/adr/client.md.
@@ -32,6 +59,12 @@ abstract interface class HermesChannel implements Listenable {
   /// any Agent-owned session.
   void clearActiveSession();
   Future<void> selectSession(String sessionId);
+
+  /// Refreshes canonical history for the selected idle session without
+  /// replacing the connection or disturbing an owned live stream.
+  Future<void> reconcileActiveSession();
+  Future<void> loadEarlierMessages();
+  Future<void> loadMoreSessions();
   Future<void> createSession({String? title});
   Future<void> renameSession({
     required String sessionId,
@@ -71,6 +104,11 @@ abstract interface class HermesChannel implements Listenable {
   /// only when exact `GET /api/jobs` and declared/granted `tasks:read` are
   /// present.
   Future<void> loadJobs();
+
+  /// Refreshes installed skills and resolved toolsets for the selected profile.
+  /// Each read is gated independently on its exact advertised endpoint and
+  /// declared/granted scopes; unsupported inventories remain unavailable.
+  Future<void> loadToolInventory();
 
   /// Loads the provider list + write-only credential presence for the selected
   /// profile into `state.providers`. All requests carry the mandatory
@@ -137,6 +175,12 @@ abstract interface class HermesChannel implements Listenable {
   /// transport is active, and always cancels the local stream subscription.
   void stopActiveTurn();
 
+  HermesTurnInterruptionTarget? get activeTurnInterruptionTarget;
+
+  /// Stops only the captured turn. False means server cancellation is not
+  /// confirmed and a replacement voice submission must not be sent.
+  Future<bool> stopTurn(HermesTurnInterruptionTarget target);
+
   /// Whether the active turn has a backend run ID and an advertised steer
   /// contract. False means a follow-up should use the normal queue.
   bool get canSteerActiveTurn;
@@ -154,9 +198,14 @@ abstract interface class HermesChannel implements Listenable {
     required String approvalId,
     required HermesApprovalDecision decision,
     String? runId,
+    HermesApprovalRequest? origin,
   });
 
   String startVoiceRun();
+
+  /// Locally captured assistant turn for this submission, when unambiguous.
+  /// Missing identity must not authorize speaking another conversation turn.
+  String? voiceReplyTurnId(String voiceRunId);
   void stageVoiceRunTranscript({
     required String voiceRunId,
     required String transcript,

@@ -6,6 +6,69 @@ final RegExp _wingMediaDeliveryTokenPattern = RegExp(
 bool wingContainsMediaDeliveryToken(String text) =>
     _wingMediaDeliveryTokenPattern.hasMatch(text);
 
+final RegExp _wingConnectCandidatePattern = RegExp(
+  r'(?:(?<![a-z0-9_%+=-])(?:[a-z][a-z0-9+.-]*)?wing|(?<==)wing)://connect\?(?:(?!(?:(?<![a-z0-9_%+=-])(?:[a-z][a-z0-9+.-]*)?wing|(?<==)wing)://connect\?|\s).)*',
+  caseSensitive: false,
+);
+final RegExp _wingGeneratedPairingCodePattern = RegExp(
+  r'^[a-z0-9_-]+',
+  caseSensitive: false,
+);
+final RegExp _wingTrailingPunctuationPattern = RegExp(r'''^[.,;:!?)\]}'"]+$''');
+
+String _wingRedactConnectHandoffs(String text) {
+  final safe = StringBuffer();
+  var cursor = 0;
+
+  for (final match in _wingConnectCandidatePattern.allMatches(text)) {
+    final candidate = match[0]!;
+    final schemeEnd = candidate.indexOf('://');
+    if (candidate.substring(0, schemeEnd).toLowerCase() != 'wing') continue;
+
+    safe.write(text.substring(cursor, match.start));
+    safe.write(_wingRedactPairingCodes(candidate));
+    cursor = match.end;
+  }
+  safe.write(text.substring(cursor));
+  return safe.toString();
+}
+
+String _wingRedactPairingCodes(String handoff) {
+  final queryStart = handoff.indexOf('?');
+  if (queryStart < 0) return handoff;
+  final prefix = handoff.substring(0, queryStart + 1);
+  final safeQuery = handoff
+      .substring(queryStart + 1)
+      .split('&')
+      .map((field) {
+        final separator = field.indexOf('=');
+        if (separator < 0) return field;
+        final rawName = field.substring(0, separator);
+        String name;
+        try {
+          name = Uri.decodeQueryComponent(rawName);
+        } on FormatException {
+          return field;
+        }
+        if (name.toLowerCase() != 'code') return field;
+
+        // Wing Link generates RawURL-safe base64 codes. Preserve only obvious
+        // sentence punctuation after that shape; any other value shape is
+        // removed completely rather than risking a partial secret leak.
+        final rawValue = field.substring(separator + 1);
+        final generated = _wingGeneratedPairingCodePattern.firstMatch(rawValue);
+        final remainder = generated == null
+            ? ''
+            : rawValue.substring(generated.end);
+        final punctuation = _wingTrailingPunctuationPattern.hasMatch(remainder)
+            ? remainder
+            : '';
+        return '$rawName=[redacted]$punctuation';
+      })
+      .join('&');
+  return '$prefix$safeQuery';
+}
+
 final RegExp _wingHostArtifactLabelPattern = RegExp(
   r'(?:^|\s)(?:\*{1,2})?(?:file|path|saved(?:\s+(?:to|at))?|output|result|image|location)\s*:\s*(?:\*{1,2})?\s*',
   caseSensitive: false,
@@ -95,6 +158,11 @@ String wingRedactSensitiveText(String text) {
     _wingMediaDeliveryTokenPattern,
     '[media not delivered]',
   );
+
+  // A Wing connect handoff carries a short-lived pairing secret in its code
+  // query field. Preserve the handoff shape for diagnosis, but never expose
+  // the code in UI, clipboard, or diagnostic output.
+  safe = _wingRedactConnectHandoffs(safe);
 
   // Models can occasionally leak tool protocol wrappers into prose. Treat
   // snake_case tags as tool payloads, and fail closed on an unfinished wrapper

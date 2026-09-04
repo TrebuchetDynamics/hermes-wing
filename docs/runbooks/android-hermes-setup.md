@@ -31,9 +31,9 @@ cd hermes-wing
    ```
 
 3. `wing-link setup` initially binds the Hermes Agent API to `127.0.0.1`. Wing
-   Link's remote listener does not forward the Agent API. With Tailscale active,
-   bare pairing safely detects the local Tailscale address, binds Hermes to it,
-   restarts the gateway, and continues automatically:
+   Link's remote listener does not forward the Agent API. With NetBird or
+   Tailscale active, bare pairing detects a local overlay address, binds Hermes
+   to it, restarts the gateway, and continues automatically:
 
    ```bash
    wing-link pair --label "My Android device"
@@ -43,10 +43,14 @@ cd hermes-wing
    confirms it. Leave this terminal open while you paste or scan the handoff;
    press `Ctrl-C` only to cancel and create a new one.
 
-   Automatic exposure is limited to a locally detected Tailscale address. Never
-   bind the Agent API to a public interface. For another encrypted VPN or trusted
-   HTTPS reverse proxy, bind Hermes explicitly and set `WING_HERMES_URL` and
-   `WING_LINK_URL` to its phone-reachable origins before pairing.
+   Wing Link uses fixed, bounded NetBird CLI probes for local custom-range IPv4
+   and IPv6 addresses and retains the default-range NetBird/Tailscale fallback.
+   If NetBird and Tailscale are both active with different addresses, pairing
+   fails closed; bind the intended local address explicitly and set
+   `WING_HERMES_URL` and `WING_LINK_URL` before pairing. Never bind the Agent API
+   to a public interface. Android asks for explicit confirmation before sending
+   the Agent credential over non-local HTTP; approve only inside the authenticated
+   encrypted VPN or an isolated trusted LAN.
 
 4. The pairing command installs, starts, and verifies the persistent per-user
    Wing Link service; no separate `serve` terminal is required.

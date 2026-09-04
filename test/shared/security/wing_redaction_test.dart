@@ -45,6 +45,76 @@ void main() {
       expect(safe, contains('token'));
     });
 
+    test('Wing pairing codes use exact fields and preserve punctuation', () {
+      final firstCode = ['first', 'synthetic', 'marker'].join('-');
+      final secondCode = ['second', 'synthetic', 'marker'].join('-');
+      final safe = wingRedactSensitiveText(
+        '(WING://CONNECT?code=$firstCode'
+        '&promo-code=E42&note=x.code=E42&%63ode=$secondCode), continue',
+      );
+
+      expect(safe, isNot(contains(firstCode)));
+      expect(safe, isNot(contains(secondCode)));
+      expect(
+        safe,
+        '(WING://CONNECT?code=[redacted]'
+        '&promo-code=E42&note=x.code=E42&%63ode=[redacted]), continue',
+      );
+      expect(
+        wingRedactSensitiveText(
+          'wing://connect?code=$firstCode.'
+          'wing://connect?origin=local&code=$secondCode; continue',
+        ),
+        'wing://connect?code=[redacted].'
+        'wing://connect?origin=local&code=[redacted]; continue',
+      );
+      expect(
+        wingRedactSensitiveText(
+          'wing://connect?origin=https://hermes.example&code=$firstCode',
+        ),
+        'wing://connect?origin=https://hermes.example&code=[redacted]',
+      );
+      expect(
+        wingRedactSensitiveText(
+          'wing://connect?note=alpha:beta&code=$secondCode',
+        ),
+        'wing://connect?note=alpha:beta&code=[redacted]',
+      );
+      for (final unrelated in [
+        'https://example.test/status?code=E42',
+        'swing://connect?code=E42',
+        'notwing://connect?code=E43',
+        'x-wing://connect?code=E44',
+        'x.wing://connect?code=E45',
+      ]) {
+        expect(wingRedactSensitiveText(unrelated), unrelated);
+      }
+
+      final adjacentCode = ['real', 'adjacent', 'marker'].join('-');
+      for (final prefix in [
+        'x.wing://connect?code=E47.',
+        'swing://connect?code=E48.',
+        'wing://connect?code=%ZZ.',
+        'wing://connect?code=.',
+      ]) {
+        final safeAdjacent = wingRedactSensitiveText(
+          '$prefix'
+          'wing://connect?code=$adjacentCode',
+        );
+        expect(safeAdjacent, isNot(contains(adjacentCode)));
+        expect(safeAdjacent, contains('wing://connect?code=[redacted]'));
+      }
+      for (final suffix in [
+        'x.wing://connect?code=E49',
+        'swing://connect?code=E50',
+      ]) {
+        expect(
+          wingRedactSensitiveText('wing://connect?code=$adjacentCode.$suffix'),
+          'wing://connect?code=[redacted].$suffix',
+        );
+      }
+    });
+
     test('url userinfo is redacted', () {
       expect(
         wingRedactSensitiveText('https://user:secretpass@example.test/path'),

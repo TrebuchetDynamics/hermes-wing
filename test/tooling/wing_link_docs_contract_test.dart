@@ -27,8 +27,11 @@ void main() {
     expect(adr, contains('authenticated remote management plane'));
     expect(adr, contains('arbitrary commands,'));
     expect(adr, contains('config keys, and paths'));
-    expect(adr, contains('private-LAN/Tailscale interface'));
+    expect(adr, contains('private-LAN, NetBird, or Tailscale interface'));
     expect(adr, contains('every non-loopback listener uses TLS 1.3'));
+    expect(wingLinkGuide, contains('Default-range NetBird/Tailscale'));
+    expect(wingLinkGuide, contains('custom-range IPv4 and IPv6'));
+    expect(wingLinkGuide, contains('Network location never substitutes'));
     expect(context, contains('remote management API'));
     expect(threatModel, contains('opaque handles'));
     expect(roadmap, contains('Profiles, directories, and Projects'));
@@ -39,11 +42,9 @@ void main() {
     expect(roadmap, contains('Project-aware Chat remains gated'));
     expect(profileGuide, contains('Current profile path'));
     expect(profileGuide, contains('Repository and subfolder assignment'));
-    expect(wingLinkGuide, contains('folder picker'));
-    expect(
-      wingLinkGuide,
-      contains('does not enumerate file names or metadata'),
-    );
+    expect(wingLinkGuide, contains('folder browser'));
+    expect(wingLinkGuide, contains('does not enumerate'));
+    expect(wingLinkGuide, contains('file names or metadata'));
     expect(wingLinkGuide, contains('Every non-loopback listener uses TLS 1.3'));
     expect(wingLinkGuide, contains('not a chat proxy'));
     expect(wingLinkGuide, isNot(contains('arbitrary remote shell')));

@@ -1716,6 +1716,36 @@ void main() {
     },
   );
 
+  test('session message pages preserve latest-history pagination', () async {
+    Uri? requestUri;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        requestUri = uri;
+        return '''
+{"object":"list","session_id":"sess_1","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Older"}],"pagination":{"limit":500,"offset":500,"order":"latest","returned":1}}
+''';
+      },
+    );
+
+    final page = await client.sessionMessagesPage(
+      'sess_1',
+      offset: 500,
+      order: 'latest',
+    );
+
+    expect(requestUri?.queryParameters, {
+      'limit': '500',
+      'offset': '500',
+      'order': 'latest',
+    });
+    expect(page.messages.single.content, 'Older');
+    expect(page.limit, 500);
+    expect(page.offset, 500);
+    expect(page.nextOffset, 501);
+    expect(page.hasMore, isFalse);
+  });
+
   test('job fields are bounded and control-safe at the model boundary', () {
     final job = HermesJob.fromJson({
       'id': 'job-1',
@@ -1766,12 +1796,34 @@ void main() {
     });
   });
 
+  test('session inventory preserves Agent pagination metadata', () async {
+    Uri? requestUri;
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async {
+        requestUri = uri;
+        return '''
+{"object":"list","data":[{"id":"session-51","source":"api_server"}],"limit":50,"offset":50,"has_more":true}
+''';
+      },
+    );
+
+    final page = await client.listSessionsPage(offset: 50, limit: 50);
+
+    expect(requestUri?.queryParameters, {'limit': '50', 'offset': '50'});
+    expect(page.sessions.single.id, 'session-51');
+    expect(page.offset, 50);
+    expect(page.limit, 50);
+    expect(page.nextOffset, 100);
+    expect(page.hasMore, isTrue);
+  });
+
   test('session inventory bounds the number of returned sessions', () async {
     final client = HermesApiClient(
       config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
       get: (uri, headers) async => jsonEncode({
         'data': [
-          for (var index = 0; index < 129; index++)
+          for (var index = 0; index < 201; index++)
             {'id': 'session-$index', 'source': 'api_server'},
         ],
       }),
@@ -1779,7 +1831,7 @@ void main() {
 
     final sessions = await client.listSessions();
 
-    expect(sessions, hasLength(128));
+    expect(sessions, hasLength(200));
   });
 
   test('session usage metadata preserves zeroes and rejects unsafe values', () {
@@ -1925,7 +1977,7 @@ void main() {
           expect(headers['Authorization'], 'Bearer api-key');
           expect(headers['Content-Type'], 'application/json');
           expect(headers['Accept'], 'text/event-stream');
-          expect(headers['Cache-Control'], 'no-cache');
+          expect(headers['Cache-Control'], isNull);
           posts[uri.path] = jsonDecode(body) as Map<String, Object?>;
           return Stream.fromIterable([
             'event: run.started\ndata: {"run_id":"run_1"}\n\n',
@@ -2063,6 +2115,50 @@ void main() {
   });
 
   test(
+    'run submission preserves plain authoritative session history',
+    () async {
+      Map<String, Object?>? requestBody;
+      final client = HermesApiClient(
+        config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+        post: (uri, headers, body) async {
+          expect(uri.path, '/v1/runs');
+          requestBody = jsonDecode(body) as Map<String, Object?>;
+          return '{"run_id":"run_1","session_id":"sess_1"}';
+        },
+      );
+
+      await client.startRun(
+        sessionId: 'sess_1',
+        message: 'What did I ask?',
+        conversationHistory: const [
+          HermesMessage(
+            id: 'msg_1',
+            sessionId: 'sess_1',
+            role: 'user',
+            content: 'Remember the blue key.',
+          ),
+          HermesMessage(
+            id: 'msg_2',
+            sessionId: 'sess_1',
+            role: 'assistant',
+            content: 'I will remember it.',
+          ),
+        ],
+      );
+
+      expect(requestBody, {
+        'session_id': 'sess_1',
+        'input': 'What did I ask?',
+        'message': 'What did I ask?',
+        'conversation_history': [
+          {'role': 'user', 'content': 'Remember the blue key.'},
+          {'role': 'assistant', 'content': 'I will remember it.'},
+        ],
+      });
+    },
+  );
+
+  test(
     'run transport: starts a run, streams run events over GET SSE, responds to approval, and stops',
     () async {
       final posts = <String, Map<String, Object?>>{};
@@ -2085,7 +2181,7 @@ void main() {
           getStreamRequests.add(uri.path);
           expect(headers['Authorization'], 'Bearer api-key');
           expect(headers['Accept'], 'text/event-stream');
-          expect(headers['Cache-Control'], 'no-cache');
+          expect(headers['Cache-Control'], isNull);
           return Stream.fromIterable([
             'event: message.delta\ndata: {"delta":"Hi"}\n\n',
             'event: approval.request\ndata: {"approval_id":"appr_1"}\n\ndata: [DONE]\n\n',

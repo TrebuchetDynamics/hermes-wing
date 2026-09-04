@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/core/wing_link/wing_link_http.dart';
 import 'package:wing/core/wing_link/wing_link_transport_io.dart';
 
 void main() {
@@ -64,7 +65,13 @@ void main() {
         Uri.parse('http://127.0.0.1:${redirect.port}/redirect'),
         const {'Authorization': 'Bearer redirect-secret'},
       ),
-      throwsA(isA<HttpException>()),
+      throwsA(
+        isA<WingLinkHttpException>().having(
+          (error) => error.statusCode,
+          'statusCode',
+          HttpStatus.temporaryRedirect,
+        ),
+      ),
     );
     expect(authorizationHeaders, isEmpty);
   });

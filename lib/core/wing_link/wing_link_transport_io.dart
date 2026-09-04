@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
+import 'wing_link_http.dart';
+
 class WingLinkTransport {
   WingLinkTransport({String? expectedHostFingerprint})
     : _expectedHostFingerprint = expectedHostFingerprint?.trim() ?? '' {
@@ -72,7 +74,7 @@ class WingLinkTransport {
         }
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw HttpException('Wing Link HTTP ${response.statusCode}', uri: uri);
+        throw WingLinkHttpException(response.statusCode);
       }
       return utf8.decode(bytes);
     } finally {

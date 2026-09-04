@@ -35,6 +35,24 @@ void main() {
     expect(find.byKey(const ValueKey('hermes-sessions-panel')), findsOneWidget);
   });
 
+  testWidgets('sessions panel exposes Agent-backed load more', (tester) async {
+    final harness = await _pumpGatewayChat(tester);
+    harness.channel.setSessionPagination(hasMore: true);
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('hermes-contact-header')));
+    await tester.pumpAndSettle();
+
+    final loadMore = find.byKey(const ValueKey('hermes-sessions-load-more'));
+    expect(loadMore, findsOneWidget);
+    expect(find.text('Load more sessions'), findsOneWidget);
+    await tester.tap(loadMore);
+    await tester.pumpAndSettle();
+
+    expect(harness.channel.loadMoreSessionsCalls, 1);
+    expect(loadMore, findsNothing);
+  });
+
   testWidgets(
     'desktop shortcuts open sessions and create an authorized session',
     (tester) async {
@@ -720,6 +738,39 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('session rename requires a nonblank changed title', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final harness = await _pumpGatewayChat(tester);
+    harness.channel.replaceSessions(const [
+      HermesSession(id: 'rename-me', source: 'chat', title: 'Original title'),
+    ], activeSessionId: 'rename-me');
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-session-menu-rename-me')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rename'));
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(const ValueKey('hermes-session-title-field'));
+    final save = find.byKey(const ValueKey('hermes-session-title-save'));
+    expect(tester.widget<FilledButton>(save).onPressed, isNull);
+
+    await tester.enterText(field, '   ');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(save).onPressed, isNull);
+
+    await tester.enterText(field, 'Updated title');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+  });
 
   testWidgets('session search highlights title and preview matches', (
     tester,

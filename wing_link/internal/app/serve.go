@@ -195,14 +195,14 @@ Wing Link may already be running.
 }
 
 func parseServeOptions(args []string) (serveOptions, error) {
+	return parseServeOptionsWithAdvertiseIP(args, advertiseIP)
+}
+
+func parseServeOptionsWithAdvertiseIP(
+	args []string,
+	discover func() (string, error),
+) (serveOptions, error) {
 	listenValue := strings.TrimSpace(os.Getenv("WING_LINK_LISTEN"))
-	if listenValue == "" {
-		host, err := advertiseIP()
-		if err != nil {
-			return serveOptions{}, err
-		}
-		listenValue = net.JoinHostPort(host, fmt.Sprint(defaultWingLinkPort))
-	}
 	for index := 0; index < len(args); index++ {
 		switch args[index] {
 		case "--listen":
@@ -215,12 +215,19 @@ func parseServeOptions(args []string) (serveOptions, error) {
 			return serveOptions{}, fmt.Errorf("unknown option %s", args[index])
 		}
 	}
+	if listenValue == "" {
+		host, err := discover()
+		if err != nil {
+			return serveOptions{}, err
+		}
+		listenValue = net.JoinHostPort(host, fmt.Sprint(defaultWingLinkPort))
+	}
 	listenAddress, err := net.ResolveTCPAddr("tcp", listenValue)
 	if err != nil || listenAddress.IP == nil {
 		return serveOptions{}, errors.New("--listen must be a valid host:port")
 	}
 	if !isTrustedControlPlaneIP(listenAddress.IP) {
-		return serveOptions{}, errors.New("--listen must use loopback, a private LAN, or a Tailscale address")
+		return serveOptions{}, errors.New("--listen must use loopback, a private LAN, NetBird, or Tailscale")
 	}
 	if !isLocalInterfaceIP(listenAddress.IP) {
 		return serveOptions{}, errors.New("--listen address is not assigned to this host")

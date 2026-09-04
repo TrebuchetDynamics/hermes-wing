@@ -174,7 +174,7 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
     page.getByRole("group", { name: "hello hermes browser", exact: true }),
   ).toBeVisible();
   await expect(semanticLabel(page, "Approve e2e browser run")).toBeVisible();
-  await expect(semanticLabel(page, "Risk: low")).toBeVisible();
+  await expect(semanticLabel(page, "Command: echo e2e")).toBeVisible();
   await page.getByRole("button", { name: "Approve once" }).click();
   await expect(
     semanticLabel(page, "Approve e2e browser run"),

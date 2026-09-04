@@ -114,10 +114,12 @@ profiles, or credentials. If host setup fails, Wing Link stays installed so
 `~/.local/bin/wing-link inspect` can explain what needs attention.
 
 > [!IMPORTANT]
-> `--setup` is currently qualified only on Linux hosts with a systemd user
-> session. The installer can place the Android ARM64 PIE binary in Termux, but
-> guided Termux Hermes hosting is not yet qualified. For Android today, run
-> Hermes on Linux and pair the phone.
+> Linux with a systemd user session is the qualified host path. Same-phone
+> Android/Termux setup is a Tier 2 candidate: Android may stop its background
+> processes, so the copied setup command may need to be rerun. Signed Wing
+> releases install a verified Android ARM64 binary; source-built development
+> APKs verify the current pinned Hermes installer and compile a commit-pinned
+> Wing Link source archive in Termux.
 
 ## Install or try Hermes Wing
 
@@ -194,7 +196,7 @@ reviewed host fingerprint. Browser builds require normally trusted HTTPS.
 that runs beside Hermes Agent. It can install or adopt the pinned Agent build,
 prepare authentication, control the gateway, and create a short-lived pairing QR
 code. It binds loopback plus a selected or automatically discovered local
-private-LAN/Tailscale interface, using HTTP on loopback and TLS 1.3 with the
+private-LAN, NetBird, or Tailscale interface, using HTTP on loopback and TLS 1.3 with the
 persistent Wing Link host identity everywhere else.
 
 The source path needs Git, `curl`, Go 1.26 or newer, and network access.
@@ -229,9 +231,11 @@ and per-profile Hermes Project creation remain unshipped; general provider opera
 After Hermes is ready, pair the phone.
 
 `wing-link setup` initially binds the Hermes Agent API to loopback. Exposing
-Wing Link does **not** proxy the direct Agent data plane. When Tailscale is active,
-the default pairing command detects its local address, binds Hermes to that
-address with a fixed configuration operation, restarts the gateway, and continues:
+Wing Link does **not** proxy the direct Agent data plane. When NetBird or Tailscale
+is active, the default pairing command uses fixed, bounded provider probes to detect
+a local NetBird IPv4 or IPv6 address (including custom private ranges), or the
+shared default `100.64.0.0/10` range, binds Hermes to it with a fixed configuration
+operation, restarts the gateway, and continues:
 
 ```bash
 ~/.local/bin/wing-link pair
@@ -242,9 +246,11 @@ confirms it. Leave that terminal open while you paste or scan the handoff; it
 exits after confirmation. Press `Ctrl-C` to cancel and start a new five-minute
 handoff later.
 
-Automatic exposure is limited to a locally detected Tailscale address. For another
-trusted VPN, bind Hermes explicitly and set `WING_HERMES_URL` as documented in the
-[Android setup runbook](docs/runbooks/android-hermes-setup.md):
+Automatic exposure covers a positively identified local NetBird address and the
+default NetBird/Tailscale range. If NetBird and Tailscale are both active with
+different addresses, selection fails closed; bind the intended local address
+explicitly and set `WING_HERMES_URL` as
+documented in the [Android setup runbook](docs/runbooks/android-hermes-setup.md):
 
 ```bash
 hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
@@ -301,7 +307,9 @@ directory to your shell `PATH`:
 Loopback always means the device running the client. Keep Hermes bound to
 loopback for same-host use. For a phone, expose the Agent API only on a trusted
 encrypted VPN address or through HTTPS, verify `/health`, and create a remote
-pairing handoff as shown above. Do not bind it to a public interface.
+pairing handoff as shown above. Android asks for explicit confirmation before
+sending an Agent credential to a non-local HTTP origin; that confirmation is not
+authentication. Do not bind it to a public interface.
 
 ### Hermes is healthy but Wing Link is unavailable
 

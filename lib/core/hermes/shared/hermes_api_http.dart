@@ -2,11 +2,29 @@
 const hermesApiAuthorizationHeader = 'Authorization';
 const hermesApiContentTypeHeader = 'Content-Type';
 const hermesApiAcceptHeader = 'Accept';
-const hermesApiCacheControlHeader = 'Cache-Control';
 const hermesApiIfMatchHeader = 'If-Match';
 const hermesApiJsonContentType = 'application/json';
 const hermesApiEventStreamContentType = 'text/event-stream';
-const hermesApiNoCache = 'no-cache';
+
+abstract interface class HermesApiStatusException implements Exception {
+  int get statusCode;
+}
+
+enum HermesApiTransportFailureKind { network, tls, timeout }
+
+final class HermesApiTransportException implements Exception {
+  const HermesApiTransportException(this.kind);
+
+  final HermesApiTransportFailureKind kind;
+
+  @override
+  String toString() => switch (kind) {
+    HermesApiTransportFailureKind.network =>
+      'Hermes API network connection failed',
+    HermesApiTransportFailureKind.tls => 'Hermes API secure connection failed',
+    HermesApiTransportFailureKind.timeout => 'Hermes API request timed out',
+  };
+}
 
 String hermesApiBearerAuthorization(String apiKey) {
   final trimmed = apiKey.trim();

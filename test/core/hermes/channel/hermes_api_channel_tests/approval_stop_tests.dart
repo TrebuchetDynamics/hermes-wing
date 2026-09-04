@@ -1,6 +1,61 @@
 part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelApprovalStopTests() {
+  test('approval response cannot retarget after profile roundtrip', () async {
+    final capabilities =
+        jsonDecode(_profileCapabilitiesFixture) as Map<String, dynamic>;
+    final runs =
+        jsonDecode(_runsCapableCapabilitiesFixture) as Map<String, dynamic>;
+    (capabilities['endpoints'] as Map).addAll(runs['endpoints'] as Map);
+    (capabilities['features'] as Map).addAll(runs['features'] as Map);
+    final stream = _ManualStringStream();
+    final requests = <HermesApprovalRequest>[];
+    var approvalPosts = 0;
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => jsonEncode(capabilities),
+          '/api/profiles' => _profilesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          _ => throw StateError('unexpected route'),
+        },
+        post: (uri, headers, body) async {
+          if (uri.path.endsWith('/approval')) {
+            approvalPosts++;
+            return '{}';
+          }
+          return '{"run_id":"run_1","session_id":"sess_1"}';
+        },
+        getStream: (uri, headers) => stream,
+      ),
+    );
+    addTearDown(channel.dispose);
+    channel.approvalRequests.listen(requests.add);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    final send = channel.sendText('synthetic request');
+    await pumpEventQueue();
+    stream.emit(
+      'event: approval.request\ndata: {"approval_id":"appr_1","run_id":"run_1","session_id":"sess_1"}\n\n',
+    );
+    await pumpEventQueue();
+    final origin = requests.single;
+    await channel.selectProfile('coder');
+    await channel.selectProfile('default');
+    await expectLater(
+      channel.respondToApproval(
+        approvalId: origin.id,
+        decision: HermesApprovalDecision.once,
+        runId: origin.runId,
+        origin: origin,
+      ),
+      throwsStateError,
+    );
+    expect(approvalPosts, 0);
+    await send;
+  });
   test(
     'respondToApproval rejects locally when approval endpoint is absent',
     () async {

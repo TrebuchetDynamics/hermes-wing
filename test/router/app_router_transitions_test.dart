@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
+import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
 
@@ -152,6 +153,38 @@ void main() {
       _leafScreenWidget(route.builder!(_FakeContext(), state)),
       isA<TermuxHermesSetupScreen>(),
     );
+  });
+
+  testWidgets('unknown routes explain the error and offer chat recovery', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final router = container.read(routerProvider);
+    addTearDown(router.dispose);
+    router.go('/missing-screen');
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Page not found'), findsOneWidget);
+    expect(
+      find.text('Hermes Wing does not have a screen for /missing-screen.'),
+      findsOneWidget,
+    );
+    final recovery = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Return to chat'),
+    );
+    expect(recovery.onPressed, isNotNull);
+
+    recovery.onPressed!();
+    expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
   });
 
   testWidgets('the shared page fades its child in', (tester) async {

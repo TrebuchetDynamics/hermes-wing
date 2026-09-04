@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,7 +49,56 @@ HermesCapabilityDocument _personaCapabilities({
   },
 });
 
+class _DeferredSoulChannel extends FakeHermesChannel {
+  _DeferredSoulChannel()
+    : super(
+        capabilities: _personaCapabilities(),
+        profiles: const [
+          HermesProfile(id: 'coder', displayName: 'Coder', revision: 'rev-1'),
+        ],
+        selectedProfileId: 'coder',
+      );
+
+  final soulGate = Completer<HermesProfileSoul>();
+
+  @override
+  Future<HermesProfileSoul> readProfileSoul(String profileId) {
+    readProfileSoulCalls.add(profileId);
+    return soulGate.future;
+  }
+}
+
 void main() {
+  testWidgets('disconnected state points back to chat', (tester) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+
+    expect(find.text('Connect to edit a persona'), findsOneWidget);
+    expect(
+      find.text(
+        'Open a saved gateway chat before editing its selected profile persona.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(FilledButton, 'Open chat'), findsOneWidget);
+  });
+
+  testWidgets('missing profile points to profile selection', (tester) async {
+    final channel = FakeHermesChannel(capabilities: _personaCapabilities());
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+
+    expect(find.text('Choose a profile'), findsOneWidget);
+    expect(
+      find.text('Select a profile before opening its persona editor.'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(FilledButton, 'Open profiles'), findsOneWidget);
+  });
+
   testWidgets('blocks the route when the SOUL contract is absent', (
     tester,
   ) async {
@@ -61,7 +112,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(channel));
 
-    expect(find.text('Profiles unavailable'), findsOneWidget);
+    expect(find.text('Persona editing unavailable'), findsOneWidget);
     expect(find.text('Persona'), findsOneWidget);
     expect(channel.readProfileSoulCalls, isEmpty);
   });
@@ -102,6 +153,39 @@ void main() {
     ]);
   });
 
+  testWidgets('cannot save before authoritative persona loading finishes', (
+    tester,
+  ) async {
+    final channel = _DeferredSoulChannel();
+    addTearDown(channel.dispose);
+    addTearDown(() {
+      if (!channel.soulGate.isCompleted) {
+        channel.soulGate.complete(
+          const HermesProfileSoul(
+            soul: 'Server persona',
+            revision: 'soul-rev-1',
+          ),
+        );
+      }
+    });
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pump();
+
+    final save = find.widgetWithText(FilledButton, 'Save');
+    expect(channel.readProfileSoulCalls, ['coder']);
+    expect(tester.widget<FilledButton>(save).onPressed, isNull);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+
+    channel.soulGate.complete(
+      const HermesProfileSoul(soul: 'Server persona', revision: 'soul-rev-1'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Server persona'), findsOneWidget);
+    expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+    expect(channel.writeProfileSoulCalls, isEmpty);
+  });
+
   testWidgets('blocks default persona without profile query context', (
     tester,
   ) async {
@@ -116,7 +200,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(channel));
 
-    expect(find.text('Profiles unavailable'), findsOneWidget);
+    expect(find.text('Persona editing unavailable'), findsOneWidget);
     expect(channel.readProfileSoulCalls, isEmpty);
   });
 
@@ -134,7 +218,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(channel));
 
-    expect(find.text('Profiles unavailable'), findsOneWidget);
+    expect(find.text('Persona editing unavailable'), findsOneWidget);
     expect(channel.readProfileSoulCalls, isEmpty);
   });
 
@@ -152,7 +236,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(channel));
 
-    expect(find.text('Profiles unavailable'), findsOneWidget);
+    expect(find.text('Persona editing unavailable'), findsOneWidget);
     expect(channel.readProfileSoulCalls, isEmpty);
   });
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,6 +52,52 @@ Widget _testApp(
 );
 
 void main() {
+  testWidgets('old refresh cannot report failure after gateway roundtrip', (
+    tester,
+  ) async {
+    final channel = _DeferredToolsChannel();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+        ),
+        HermesEndpointConfig(
+          id: 'beta',
+          label: 'Beta',
+          baseUrl: 'https://beta',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+        'beta': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('tools-refresh')));
+    await tester.pump();
+    for (final label in ['Beta', 'Alpha']) {
+      await tester.tap(find.byKey(const ValueKey('tools-gateway-picker')));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text(label).last);
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+    final refresh = find.byKey(const ValueKey('tools-refresh'));
+    expect(tester.widget<IconButton>(refresh).onPressed, isNotNull);
+    await tester.tap(refresh);
+    await tester.pump();
+    channel.gates.first.completeError(StateError('old refresh failure'));
+    await tester.pump();
+    expect(find.text('Tool inventory could not be refreshed.'), findsNothing);
+    expect(tester.widget<IconButton>(refresh).onPressed, isNull);
+    channel.gates.last.complete();
+    await tester.pumpAndSettle();
+  });
   testWidgets('shows advertised installed skills and enabled toolsets', (
     tester,
   ) async {
@@ -279,6 +327,115 @@ void main() {
     expect(find.textContaining('2 resolved tools'), findsOneWidget);
   });
 
+  testWidgets('refresh preserves active inventory search filters', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skillDetails: const [
+        HermesSkill(name: 'browser-old'),
+        HermesSkill(name: 'terminal-old'),
+      ],
+      refreshedSkillDetails: const [
+        HermesSkill(name: 'browser-new'),
+        HermesSkill(name: 'terminal-new'),
+      ],
+      toolsets: const [
+        HermesToolset(name: 'web-old', label: 'Web Old'),
+        HermesToolset(name: 'local-old', label: 'Local Old'),
+      ],
+      refreshedToolsets: const [
+        HermesToolset(name: 'web-new', label: 'Web New'),
+        HermesToolset(name: 'local-new', label: 'Local New'),
+      ],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('installed-skills-search')),
+      'browser',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('toolsets-search')),
+      250,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('toolsets-search')),
+      'web',
+    );
+    await tester.tap(find.byKey(const ValueKey('tools-refresh')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('installed-skills-search')),
+          )
+          .controller
+          ?.text,
+      'browser',
+    );
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('toolsets-search')))
+          .controller
+          ?.text,
+      'web',
+    );
+    expect(find.text('browser-new'), findsOneWidget);
+    expect(find.text('terminal-new'), findsNothing);
+    expect(find.text('Web New'), findsOneWidget);
+    expect(find.text('Local New'), findsNothing);
+  });
+
+  testWidgets('refresh reloads advertised tool inventory', (tester) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      optionalResourceErrors: const {
+        HermesOptionalResource.skills: 'stale failure',
+      },
+      refreshedSkillDetails: const [
+        HermesSkill(name: 'fresh-skill', description: 'Fresh inventory.'),
+      ],
+      refreshedToolsets: const [
+        HermesToolset(name: 'web', label: 'Web Tools', enabled: true),
+      ],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('tools-refresh')));
+    await tester.pumpAndSettle();
+
+    expect(channel.loadToolInventoryCalls, 1);
+    expect(find.text('fresh-skill'), findsOneWidget);
+    expect(
+      find.text('Installed skills could not be loaded from Hermes.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('refresh failure shows bounded retry feedback', (tester) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      loadToolInventoryFails: true,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('tools-refresh')));
+    await tester.pumpAndSettle();
+
+    expect(channel.loadToolInventoryCalls, 1);
+    expect(find.text('Tool inventory could not be refreshed.'), findsOneWidget);
+    expect(find.textContaining('tool inventory refresh failed'), findsNothing);
+  });
+
   testWidgets('load failures are distinct and do not expose raw errors', (
     tester,
   ) async {
@@ -414,4 +571,16 @@ void main() {
       findsNothing,
     );
   });
+}
+
+class _DeferredToolsChannel extends FakeHermesChannel {
+  _DeferredToolsChannel() : super(capabilities: _capabilities());
+  final gates = <Completer<void>>[];
+
+  @override
+  Future<void> loadToolInventory() {
+    final gate = Completer<void>();
+    gates.add(gate);
+    return gate.future;
+  }
 }

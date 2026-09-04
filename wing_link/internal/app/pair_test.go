@@ -73,9 +73,9 @@ func TestPairOptionsDefaultToRemoteAndQRWithExplicitLinkOverride(t *testing.T) {
 		{args: []string{"--same-device"}, wantRemote: false, wantLink: true, wantQR: true},
 	} {
 		observedRemote := false
-		options, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (string, error) {
+		options, err := parsePairOptionsWithAdvertiseHost(test.args, func(remote bool) (pairingAdvertiseAddress, error) {
 			observedRemote = remote
-			return "127.0.0.1", nil
+			return pairingAdvertiseAddress{Host: "127.0.0.1"}, nil
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -98,8 +98,8 @@ func TestPairOptionsRejectSameDeviceConflicts(t *testing.T) {
 		{"--same-device", "--qr"},
 		{"--same-device", "--origin", "http://192.168.1.20:8642"},
 	} {
-		if _, err := parsePairOptionsWithAdvertiseHost(args, func(bool) (string, error) {
-			return "127.0.0.1", nil
+		if _, err := parsePairOptionsWithAdvertiseHost(args, func(bool) (pairingAdvertiseAddress, error) {
+			return pairingAdvertiseAddress{Host: "127.0.0.1"}, nil
 		}); !errors.Is(err, errPairUsage) {
 			t.Fatalf("args %v: err = %v", args, err)
 		}
@@ -995,22 +995,199 @@ func TestNormalizeOriginRejectsWildcardHosts(t *testing.T) {
 	}
 }
 
-func TestPreferredPairingIPPrefersTailscale(t *testing.T) {
+func TestPreferredPairingIPPrefersDefaultNetBirdOverlay(t *testing.T) {
 	addresses := []net.Addr{
 		&net.IPNet{IP: net.ParseIP("192.168.1.20"), Mask: net.CIDRMask(24, 32)},
-		&net.IPNet{IP: net.ParseIP("100.90.80.70"), Mask: net.CIDRMask(10, 32)},
+		&net.IPNet{IP: net.ParseIP("100.100.20.30"), Mask: net.CIDRMask(10, 32)},
 	}
 	got, err := preferredPairingIP(addresses)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got != "100.90.80.70" {
+	if got != "100.100.20.30" {
 		t.Fatalf("address = %s", got)
 	}
 }
 
-func TestPrepareAutomaticHermesOriginBindsUnreachableTailscaleAddress(t *testing.T) {
-	origin, err := normalizeOrigin("http://100.90.80.70:8642")
+func TestOverlayVPNIPRecognizesNetBirdAndTailscaleRanges(t *testing.T) {
+	for _, address := range []string{
+		"100.100.20.30",
+		"fd7a:115c:a1e0::1",
+	} {
+		if !isOverlayVPNIP(net.ParseIP(address)) {
+			t.Fatalf("overlay VPN address rejected: %s", address)
+		}
+	}
+	if isOverlayVPNIP(net.ParseIP("192.168.1.20")) {
+		t.Fatal("private LAN address classified as an overlay VPN address")
+	}
+}
+
+func TestPreferredPairingAddressSelectsIdentifiedCustomNetBirdRange(t *testing.T) {
+	selection, err := preferredPairingAddress(
+		[]net.Addr{
+			&net.IPNet{IP: net.ParseIP("192.168.1.20"), Mask: net.CIDRMask(24, 32)},
+		},
+		[]meshVPNAddress{{Provider: "NetBird", IP: net.ParseIP("10.80.1.7")}},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if selection.Host != "10.80.1.7" || !selection.AutomaticHermesBinding {
+		t.Fatalf("selection = %#v", selection)
+	}
+}
+
+func TestPreferredPairingAddressUsesNetBirdIPv4OnDualStackHost(t *testing.T) {
+	selection, err := preferredPairingAddress(nil, []meshVPNAddress{
+		{Provider: "NetBird", IP: net.ParseIP("fd00:1234::7")},
+		{Provider: "NetBird", IP: net.ParseIP("10.80.1.7")},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if selection.Host != "10.80.1.7" || !selection.AutomaticHermesBinding {
+		t.Fatalf("selection = %#v", selection)
+	}
+}
+
+func TestPreferredPairingAddressRejectsDistinctMeshVPNProviders(t *testing.T) {
+	_, err := preferredPairingAddress(nil, []meshVPNAddress{
+		{Provider: "NetBird", IP: net.ParseIP("10.80.1.7")},
+		{Provider: "Tailscale", IP: net.ParseIP("100.90.8.7")},
+	})
+	if err == nil || !strings.Contains(err.Error(), "multiple mesh VPN addresses") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestDiscoverMeshVPNAddressesRejectsUntrustedOrNonlocalOutput(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		address string
+		local   bool
+	}{
+		{name: "public", address: "203.0.113.7", local: true},
+		{name: "nonlocal", address: "10.80.1.7", local: false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := discoverMeshVPNAddressesWith(
+				func(name string) (string, error) {
+					if name == "netbird" {
+						return "/usr/bin/netbird", nil
+					}
+					return "", errors.New("not installed")
+				},
+				func(_ context.Context, spec CommandSpec, _ int) ([]byte, ProcessResult) {
+					if slices.Equal(spec.Args, []string{"status", "--ipv4"}) {
+						return []byte(test.address + "\n"), ProcessResult{}
+					}
+					return nil, ProcessResult{ExitCode: 1, Err: errors.New("unavailable")}
+				},
+				func(net.IP) bool { return test.local },
+			)
+			if err == nil || !strings.Contains(err.Error(), "untrusted or nonlocal") {
+				t.Fatalf("err = %v", err)
+			}
+		})
+	}
+}
+
+func TestDiscoverMeshVPNAddressesSupportsNetBirdIPv4OnlyWithBoundedFixedProbes(t *testing.T) {
+	type call struct {
+		spec    CommandSpec
+		maximum int
+	}
+	var calls []call
+	addresses, err := discoverMeshVPNAddressesWith(
+		func(name string) (string, error) { return "/usr/bin/" + name, nil },
+		func(_ context.Context, spec CommandSpec, maximum int) ([]byte, ProcessResult) {
+			calls = append(calls, call{spec: spec, maximum: maximum})
+			if strings.HasSuffix(spec.Path, "/netbird") {
+				if slices.Equal(spec.Args, []string{"status", "--ipv4"}) {
+					return []byte("10.80.1.7\n"), ProcessResult{}
+				}
+				return nil, ProcessResult{}
+			}
+			return nil, ProcessResult{ExitCode: 1, Err: errors.New("not connected")}
+		},
+		func(ip net.IP) bool { return ip.String() == "10.80.1.7" },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(addresses) != 1 || addresses[0].Provider != "NetBird" || addresses[0].IP.String() != "10.80.1.7" {
+		t.Fatalf("addresses = %#v", addresses)
+	}
+	if len(calls) != 3 || !slices.Equal(calls[0].spec.Args, []string{"status", "--ipv4"}) ||
+		!slices.Equal(calls[1].spec.Args, []string{"status", "--ipv6"}) ||
+		calls[0].spec.Timeout != 3*time.Second || calls[0].maximum != 256 {
+		t.Fatalf("calls = %#v", calls)
+	}
+}
+
+func TestDiscoverMeshVPNAddressesSupportsNetBirdIPv6Only(t *testing.T) {
+	addresses, err := discoverMeshVPNAddressesWith(
+		func(name string) (string, error) {
+			if name == "netbird" {
+				return "/usr/bin/netbird", nil
+			}
+			return "", errors.New("not installed")
+		},
+		func(_ context.Context, spec CommandSpec, _ int) ([]byte, ProcessResult) {
+			if slices.Equal(spec.Args, []string{"status", "--ipv6"}) {
+				return []byte("fd00:1234::7\n"), ProcessResult{}
+			}
+			return nil, ProcessResult{}
+		},
+		func(ip net.IP) bool { return ip.String() == "fd00:1234::7" },
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(addresses) != 1 || addresses[0].Provider != "NetBird" || addresses[0].IP.String() != "fd00:1234::7" {
+		t.Fatalf("addresses = %#v", addresses)
+	}
+}
+
+func TestDiscoverMeshVPNAddressesRejectsTimedOutProviderProbe(t *testing.T) {
+	_, err := discoverMeshVPNAddressesWith(
+		func(name string) (string, error) {
+			if name == "netbird" {
+				return "/usr/bin/netbird", nil
+			}
+			return "", errors.New("not installed")
+		},
+		func(context.Context, CommandSpec, int) ([]byte, ProcessResult) {
+			return nil, ProcessResult{ExitCode: -1, Err: context.DeadlineExceeded}
+		},
+		func(net.IP) bool { return true },
+	)
+	if err == nil || !strings.Contains(err.Error(), "NetBird") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestDiscoverMeshVPNAddressesRejectsOversizedProviderOutput(t *testing.T) {
+	_, err := discoverMeshVPNAddressesWith(
+		func(name string) (string, error) {
+			if name == "netbird" {
+				return "/usr/bin/netbird", nil
+			}
+			return "", errors.New("not installed")
+		},
+		func(context.Context, CommandSpec, int) ([]byte, ProcessResult) {
+			return bytes.Repeat([]byte{'1'}, 256), ProcessResult{ExitCode: -1, Err: errors.New("output too large")}
+		},
+		func(net.IP) bool { return true },
+	)
+	if err == nil || !strings.Contains(err.Error(), "NetBird") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestPrepareAutomaticHermesOriginBindsUnreachableDefaultNetBirdAddress(t *testing.T) {
+	origin, err := normalizeOrigin("http://100.100.20.30:8642")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1034,13 +1211,13 @@ func TestPrepareAutomaticHermesOriginBindsUnreachableTailscaleAddress(t *testing
 	}
 }
 
-func TestPrepareAutomaticHermesOriginDoesNotExposeLANOrExplicitOrigins(t *testing.T) {
+func TestPrepareAutomaticHermesOriginDoesNotExposeUnverifiedOrExplicitOrigins(t *testing.T) {
 	for _, test := range []struct {
 		automatic bool
 		origin    string
 	}{
-		{automatic: false, origin: "http://100.90.80.70:8642"},
-		{automatic: true, origin: "http://10.0.0.8:8642"},
+		{automatic: false, origin: "http://100.100.20.30:8642"},
+		{automatic: false, origin: "http://10.0.0.8:8642"},
 	} {
 		origin, err := normalizeOrigin(test.origin)
 		if err != nil {
@@ -1069,14 +1246,14 @@ func TestConfigureHermesVPNOriginUsesFixedCommandShapes(t *testing.T) {
 		return ProcessResult{}
 	}
 	updatedEnvironment := false
-	if err := configureHermesVPNOriginWithRunner("/usr/bin/hermes", "100.90.80.70", run, func() error {
+	if err := configureHermesVPNOriginWithRunner("/usr/bin/hermes", "100.100.20.30", true, run, func() error {
 		updatedEnvironment = true
 		return nil
 	}); err != nil {
 		t.Fatal(err)
 	}
 	want := [][]string{
-		{"config", "set", "--force", "platforms.api_server.extra.host", "100.90.80.70"},
+		{"config", "set", "--force", "platforms.api_server.extra.host", "100.100.20.30"},
 		{"gateway", "restart"},
 	}
 	if !slices.EqualFunc(commands, want, slices.Equal) {

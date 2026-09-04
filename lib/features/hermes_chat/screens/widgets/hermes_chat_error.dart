@@ -79,103 +79,110 @@ class _HermesChatError extends StatelessWidget {
     final summary = _hermesErrorSummary(error, title: title);
     final colorScheme = Theme.of(context).colorScheme;
     return _AssistantTimelineItem(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Card(
-            key: const ValueKey('hermes-chat-error'),
-            color: colorScheme.errorContainer,
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.error_outline, color: colorScheme.error),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(recovery),
-                  if (summary != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      strings.chatErrorRedactedDetailsLabel,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 2),
-                    SelectableText(
-                      summary,
-                      key: const ValueKey('hermes-chat-error-summary'),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+      child: Semantics(
+        key: const ValueKey('hermes-chat-error-announcement'),
+        container: true,
+        liveRegion: true,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Card(
+              key: const ValueKey('hermes-chat-error'),
+              color: colorScheme.errorContainer,
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        TextButton.icon(
-                          key: const ValueKey('hermes-chat-error-details'),
-                          onPressed: () => _showHermesErrorDetailsSheet(
-                            context,
-                            title: title,
-                            recovery: recovery,
-                            error: error,
+                        Icon(Icons.error_outline, color: colorScheme.error),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
-                          icon: const Icon(Icons.article_outlined),
-                          label: Text(strings.chatErrorDetailsAction),
                         ),
-                        if (authRejected && onReauthorize != null)
-                          OutlinedButton.icon(
-                            key: const ValueKey(
-                              'hermes-chat-error-reauthorize',
-                            ),
-                            onPressed: onReauthorize,
-                            icon: const Icon(Icons.key_outlined),
-                            label: Text(strings.chatErrorUpdateKeyAction),
-                          )
-                        else if (providerUsageExhausted &&
-                            onManageProviders != null)
-                          OutlinedButton.icon(
-                            key: const ValueKey(
-                              'hermes-chat-error-manage-providers',
-                            ),
-                            onPressed: onManageProviders,
-                            icon: const Icon(Icons.hub_outlined),
-                            label: Text(strings.chatErrorOpenProvidersAction),
-                          )
-                        else if ((runStillActive || streamOrNetworkFailure) &&
-                            onReconnect != null)
-                          OutlinedButton.icon(
-                            key: const ValueKey('hermes-chat-error-reconnect'),
-                            onPressed: onReconnect,
-                            icon: const Icon(Icons.cable_outlined),
-                            label: Text(strings.chatErrorReconnectAction),
-                          ),
-                        if (!providerUsageExhausted && onRetry != null)
-                          FilledButton.icon(
-                            key: const ValueKey('hermes-chat-error-retry'),
-                            onPressed: onRetry,
-                            icon: const Icon(Icons.refresh),
-                            label: Text(
-                              strings.chatErrorRetryLastMessageAction,
-                            ),
-                          ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(recovery),
+                    if (summary != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        strings.chatErrorRedactedDetailsLabel,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                      const SizedBox(height: 2),
+                      SelectableText(
+                        summary,
+                        key: const ValueKey('hermes-chat-error-summary'),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          TextButton.icon(
+                            key: const ValueKey('hermes-chat-error-details'),
+                            onPressed: () => _showHermesErrorDetailsSheet(
+                              context,
+                              title: title,
+                              recovery: recovery,
+                              error: error,
+                            ),
+                            icon: const Icon(Icons.article_outlined),
+                            label: Text(strings.chatErrorDetailsAction),
+                          ),
+                          if (authRejected && onReauthorize != null)
+                            OutlinedButton.icon(
+                              key: const ValueKey(
+                                'hermes-chat-error-reauthorize',
+                              ),
+                              onPressed: onReauthorize,
+                              icon: const Icon(Icons.key_outlined),
+                              label: Text(strings.chatErrorUpdateKeyAction),
+                            )
+                          else if (providerUsageExhausted &&
+                              onManageProviders != null)
+                            OutlinedButton.icon(
+                              key: const ValueKey(
+                                'hermes-chat-error-manage-providers',
+                              ),
+                              onPressed: onManageProviders,
+                              icon: const Icon(Icons.hub_outlined),
+                              label: Text(strings.chatErrorOpenProvidersAction),
+                            )
+                          else if ((runStillActive || streamOrNetworkFailure) &&
+                              onReconnect != null)
+                            OutlinedButton.icon(
+                              key: const ValueKey(
+                                'hermes-chat-error-reconnect',
+                              ),
+                              onPressed: onReconnect,
+                              icon: const Icon(Icons.cable_outlined),
+                              label: Text(strings.chatErrorReconnectAction),
+                            ),
+                          if (!providerUsageExhausted && onRetry != null)
+                            FilledButton.icon(
+                              key: const ValueKey('hermes-chat-error-retry'),
+                              onPressed: onRetry,
+                              icon: const Icon(Icons.refresh),
+                              label: Text(
+                                strings.chatErrorRetryLastMessageAction,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -291,6 +298,65 @@ String? _hermesErrorSummary(String error, {required String title}) {
         .replaceFirst(RegExp(r'^[\s:;.!?-]+'), '');
   }
   return summary.isEmpty ? null : summary;
+}
+
+class _EndpointProfilesLoadError extends StatelessWidget {
+  const _EndpointProfilesLoadError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Container(
+        key: const ValueKey('hermes-endpoints-load-error'),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.errorContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.storage_outlined, color: colors.onErrorContainer),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    strings.chatSavedEndpointsLoadFailedTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colors.onErrorContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              strings.chatSavedEndpointsLoadFailedBody,
+              style: TextStyle(color: colors.onErrorContainer),
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              key: const ValueKey('hermes-endpoints-retry'),
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text(strings.retryAction),
+              style: TextButton.styleFrom(
+                foregroundColor: colors.onErrorContainer,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _EndpointProfileChips extends StatelessWidget {
@@ -468,17 +534,39 @@ bool _isHermesNetworkError(String lowerCaseError) {
 }
 
 class _HermesConnectError extends StatelessWidget {
-  const _HermesConnectError({required this.error});
+  const _HermesConnectError({required this.error, this.failureKind});
 
   final String error;
+  final HermesConnectionFailureKind? failureKind;
 
   @override
   Widget build(BuildContext context) {
     final lower = error.toLowerCase();
     final strings = AppLocalizations.of(context);
-    final (title, recovery) = _isHermesAuthError(lower)
+    final isAuthenticationFailure =
+        failureKind == HermesConnectionFailureKind.authentication ||
+        (failureKind == null && _isHermesAuthError(lower));
+    final (title, recovery) = isAuthenticationFailure
         ? (strings.chatErrorConnectAuthTitle, strings.chatErrorConnectAuthBody)
-        : _isHermesNetworkError(lower)
+        : failureKind == HermesConnectionFailureKind.invalidEndpoint
+        ? (
+            strings.chatErrorConnectInvalidEndpointTitle,
+            strings.chatErrorConnectInvalidEndpointBody,
+          )
+        : failureKind == HermesConnectionFailureKind.incompatibleResponse
+        ? (
+            strings.chatErrorConnectIncompatibleTitle,
+            strings.chatErrorConnectIncompatibleBody,
+          )
+        : failureKind == HermesConnectionFailureKind.tls
+        ? (strings.chatErrorConnectTlsTitle, strings.chatErrorConnectTlsBody)
+        : failureKind == HermesConnectionFailureKind.timeout
+        ? (
+            strings.chatErrorConnectTimeoutTitle,
+            strings.chatErrorConnectTimeoutBody,
+          )
+        : failureKind == HermesConnectionFailureKind.network ||
+              _isHermesNetworkError(lower)
         ? (
             strings.chatErrorConnectUnreachableTitle,
             strings.chatErrorConnectUnreachableBody,
@@ -487,31 +575,34 @@ class _HermesConnectError extends StatelessWidget {
             strings.chatErrorConnectGenericTitle,
             strings.chatErrorConnectGenericBody,
           );
-    return Column(
+    return Semantics(
       key: const ValueKey('hermes-connect-error'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
-        const SizedBox(height: 4),
-        Text(recovery),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            key: const ValueKey('hermes-connect-error-details'),
-            onPressed: () => _showHermesErrorDetailsSheet(
-              context,
-              title: title,
-              recovery: recovery,
-              error: error,
-            ),
-            icon: const Icon(Icons.article_outlined),
-            label: Text(strings.chatErrorDetailsAction),
+      liveRegion: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(recovery),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              key: const ValueKey('hermes-connect-error-details'),
+              onPressed: () => _showHermesErrorDetailsSheet(
+                context,
+                title: title,
+                recovery: recovery,
+                error: error,
+              ),
+              icon: const Icon(Icons.article_outlined),
+              label: Text(strings.chatErrorDetailsAction),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

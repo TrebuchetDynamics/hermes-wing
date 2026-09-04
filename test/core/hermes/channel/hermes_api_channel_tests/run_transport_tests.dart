@@ -49,6 +49,9 @@ void _hermesApiChannelRunTransportTests() {
         'session_id': 'sess_1',
         'input': 'rm the temp dir',
         'message': 'rm the temp dir',
+        'conversation_history': [
+          {'role': 'user', 'content': 'Hello'},
+        ],
       });
       expect(approvals, hasLength(1));
       expect(approvals.single.id, 'appr_1');
@@ -61,6 +64,91 @@ void _hermesApiChannelRunTransportTests() {
         'Hello',
         'Hi there',
       ]);
+    },
+  );
+
+  test(
+    'run transport includes the loaded authoritative user and assistant history',
+    () async {
+      Map<String, Object?>? runRequest;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _reconciledMessagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async {
+            if (uri.path != '/v1/runs') return '{}';
+            runRequest = jsonDecode(body) as Map<String, Object?>;
+            return '{"run_id":"run_1","session_id":"sess_1"}';
+          },
+          getStream: (uri, headers) => Stream.fromIterable(const [
+            'event: run.completed\ndata: {"run_id":"run_1","session_id":"sess_1","output":"The blue key."}\n\n',
+          ]),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText('What did I ask?');
+
+      expect(runRequest?['conversation_history'], [
+        {'role': 'user', 'content': 'Hello'},
+        {'role': 'assistant', 'content': 'Hi there'},
+      ]);
+    },
+  );
+
+  test(
+    'structured authoritative history falls back without flattening tool context',
+    () async {
+      var runSubmitted = false;
+      String? directStreamPath;
+      const structuredHistory = '''
+{
+  "object": "list",
+  "session_id": "sess_1",
+  "data": [
+    {"id":"msg_1","session_id":"sess_1","role":"user","content":"Inspect it"},
+    {"id":"msg_2","session_id":"sess_1","role":"assistant","content":"","tool_calls":[{"id":"call_1","type":"function","function":{"name":"terminal","arguments":"{}"}}]},
+    {"id":"msg_3","session_id":"sess_1","role":"tool","content":"private tool result","tool_call_id":"call_1"}
+  ]
+}
+''';
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => structuredHistory,
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async {
+            if (uri.path == '/v1/runs') runSubmitted = true;
+            return '{"run_id":"run_1","session_id":"sess_1"}';
+          },
+          postStream: (uri, headers, body) {
+            directStreamPath = uri.path;
+            expect(body, isNot(contains('private tool result')));
+            return Stream.fromIterable(const [
+              'event: assistant.delta\ndata: {"delta":"Done"}\n\ndata: [DONE]\n\n',
+            ]);
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      await channel.sendText('Continue safely');
+
+      expect(runSubmitted, isFalse);
+      expect(directStreamPath, '/api/sessions/sess_1/chat/stream');
     },
   );
 
@@ -688,9 +776,10 @@ void _hermesApiChannelRunTransportTests() {
   });
 
   test(
-    'sendText keeps the owned run attached when approval omits its id',
+    'sendText preserves current run-id-only approval details and choices',
     () async {
       final approvals = <HermesApprovalRequest>[];
+      Map<String, Object?>? approvalResponse;
       final stream = _ManualStringStream();
       final sendDone = Completer<void>();
       final channel = HermesApiChannel(
@@ -706,6 +795,10 @@ void _hermesApiChannelRunTransportTests() {
             };
           },
           post: (uri, headers, body) async {
+            if (uri.path.endsWith('/approval')) {
+              approvalResponse = jsonDecode(body) as Map<String, Object?>;
+              return '{}';
+            }
             return switch (uri.path) {
               '/v1/runs' =>
                 '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
@@ -722,13 +815,32 @@ void _hermesApiChannelRunTransportTests() {
         channel.sendText('needs approval').whenComplete(sendDone.complete),
       );
       await pumpEventQueue();
-      stream.emit('event: approval.request\ndata: {"prompt":"Approve?"}\n\n');
+      stream.emit(
+        'event: approval.request\n'
+        'data: {"run_id":"run_1","command":"bash -c safe-command","description":"Run the reviewed command?","choices":["once","session","deny"]}\n\n',
+      );
       await pumpEventQueue();
 
       expect(sendDone.isCompleted, isFalse);
       expect(approvals, hasLength(1));
       expect(approvals.single.id, isEmpty);
       expect(approvals.single.runId, 'run_1');
+      expect(approvals.single.prompt, 'Run the reviewed command?');
+      expect(approvals.single.description, 'Run the reviewed command?');
+      expect(approvals.single.command, 'bash -c safe-command');
+      expect(approvals.single.choices, {
+        HermesApprovalDecision.once,
+        HermesApprovalDecision.session,
+        HermesApprovalDecision.deny,
+      });
+      expect(approvals.single.allows(HermesApprovalDecision.always), isFalse);
+      expect(approvals.single.hasResponseIdentity, isTrue);
+      await channel.respondToApproval(
+        approvalId: '',
+        decision: HermesApprovalDecision.session,
+        runId: approvals.single.runId,
+      );
+      expect(approvalResponse, {'choice': 'session'});
       expect(channel.state.errorMessage, isNull);
       expect(
         channel.state.activeMessages.last.status,
@@ -1138,6 +1250,8 @@ void _hermesApiChannelRunTransportTests() {
     'sendText keeps local failed assistant turn when run failed event arrives',
     () async {
       var messagesRequests = 0;
+      var runRequests = 0;
+      String? directStreamPath;
       final channel = HermesApiChannel(
         clientBuilder: (config) => HermesApiClient(
           config: config,
@@ -1155,8 +1269,10 @@ void _hermesApiChannelRunTransportTests() {
           },
           post: (uri, headers, body) async {
             return switch (uri.path) {
-              '/v1/runs' =>
-                '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+              '/v1/runs' => () {
+                runRequests += 1;
+                return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
+              }(),
               _ => '{}',
             };
           },
@@ -1164,6 +1280,12 @@ void _hermesApiChannelRunTransportTests() {
             'event: message.delta\ndata: {"delta":"partial"}\n\n',
             'event: run.failed\ndata: {}\n\ndata: [DONE]\n\n',
           ]),
+          postStream: (uri, headers, body) {
+            directStreamPath = uri.path;
+            return Stream.fromIterable(const [
+              'event: assistant.delta\ndata: {"delta":"safe retry"}\n\ndata: [DONE]\n\n',
+            ]);
+          },
         ),
       );
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
@@ -1178,6 +1300,11 @@ void _hermesApiChannelRunTransportTests() {
         'partial',
       ]);
       expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
+
+      await channel.sendText('retry safely');
+
+      expect(runRequests, 1);
+      expect(directStreamPath, '/api/sessions/sess_1/chat/stream');
     },
   );
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,16 +27,50 @@ class ToolsScreen extends ConsumerStatefulWidget {
 class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   String? _switchingGatewayId;
   String? _actionError;
+  bool _refreshing = false;
+  int _refreshGeneration = 0;
 
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
+    ref.listen(hermesChannelStateProvider, (previous, next) {
+      if (previous?.connectedBaseUrl != next.connectedBaseUrl ||
+          previous?.selectedProfileId != next.selectedProfileId ||
+          previous?.status != next.status ||
+          !identical(previous?.capabilities, next.capabilities)) {
+        setState(() {
+          _refreshGeneration++;
+          _refreshing = false;
+          _actionError = null;
+        });
+      }
+    });
     final directory = ref.watch(hermesGatewayDirectoryProvider);
     final strings = AppLocalizations.of(context);
+    final state = channel.state;
+    final canRefresh =
+        state.status == HermesConnectionStatus.connected &&
+        (state.canReadSkills || state.canReadToolsets);
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.toolsTitle),
-        actions: const [AppShellMenuButton()],
+        actions: [
+          if (canRefresh)
+            IconButton(
+              key: const ValueKey('tools-refresh'),
+              tooltip: strings.toolsRefreshAction,
+              onPressed: _refreshing
+                  ? null
+                  : () => unawaited(_refreshInventory(channel, strings)),
+              icon: _refreshing
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+            ),
+          const AppShellMenuButton(),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -74,6 +107,28 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
     );
   }
 
+  Future<void> _refreshInventory(
+    HermesChannel channel,
+    AppLocalizations strings,
+  ) async {
+    final generation = ++_refreshGeneration;
+    setState(() {
+      _refreshing = true;
+      _actionError = null;
+    });
+    try {
+      await channel.loadToolInventory();
+    } catch (_) {
+      if (mounted && generation == _refreshGeneration) {
+        setState(() => _actionError = strings.toolsRefreshFailed);
+      }
+    } finally {
+      if (mounted && generation == _refreshGeneration) {
+        setState(() => _refreshing = false);
+      }
+    }
+  }
+
   Future<void> _selectGateway(
     HermesGatewayDirectory directory,
     String gatewayId,
@@ -81,6 +136,8 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   ) async {
     setState(() {
       _switchingGatewayId = gatewayId;
+      _refreshGeneration++;
+      _refreshing = false;
       _actionError = null;
     });
     try {
@@ -110,6 +167,7 @@ class _ToolsBody extends StatelessWidget {
       if (state.status == HermesConnectionStatus.error) {
         return WingEmptyState(
           icon: Icons.cloud_off_outlined,
+          liveRegion: true,
           title: strings.toolsUnavailableTitle,
           body: strings.toolsConnectionErrorBody,
         );
@@ -174,16 +232,6 @@ class _SkillsInventorySection extends StatefulWidget {
 class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
   final _searchController = TextEditingController();
   String _query = '';
-
-  @override
-  void didUpdateWidget(covariant _SkillsInventorySection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!listEquals(oldWidget.details, widget.details) ||
-        !listEquals(oldWidget.fallbackNames, widget.fallbackNames)) {
-      _searchController.clear();
-      _query = '';
-    }
-  }
 
   @override
   void dispose() {
@@ -324,16 +372,6 @@ class _ToolsetsInventorySection extends StatefulWidget {
 class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
   final _searchController = TextEditingController();
   String _query = '';
-
-  @override
-  void didUpdateWidget(covariant _ToolsetsInventorySection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.details, widget.details) ||
-        !identical(oldWidget.fallbackNames, widget.fallbackNames)) {
-      _searchController.clear();
-      _query = '';
-    }
-  }
 
   @override
   void dispose() {

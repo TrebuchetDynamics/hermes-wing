@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,7 +84,66 @@ Widget _testApp(
   ),
 );
 
+class _DeferredJobsChannel extends FakeHermesChannel {
+  _DeferredJobsChannel(this.gate)
+    : super(capabilities: _capabilities(), jobs: const [_morningJob]);
+
+  final Completer<void> gate;
+
+  @override
+  Future<void> loadJobs() async {
+    await gate.future;
+    await super.loadJobs();
+  }
+}
+
 void main() {
+  testWidgets('old refresh cannot report failure after gateway roundtrip', (
+    tester,
+  ) async {
+    final channel = _RacingJobsChannel();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+        ),
+        HermesEndpointConfig(
+          id: 'beta',
+          label: 'Beta',
+          baseUrl: 'https://beta',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+        'beta': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('schedules-refresh-button')));
+    await tester.pump();
+    for (final label in ['Beta', 'Alpha']) {
+      await tester.tap(find.byKey(const ValueKey('schedules-gateway-picker')));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text(label).last);
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+    final refresh = find.byKey(const ValueKey('schedules-refresh-button'));
+    expect(tester.widget<IconButton>(refresh).onPressed, isNotNull);
+    await tester.tap(refresh);
+    await tester.pump();
+    channel.gates.first.completeError(StateError('old refresh failure'));
+    await tester.pump();
+    expect(find.text('Scheduled jobs could not be refreshed.'), findsNothing);
+    expect(tester.widget<IconButton>(refresh).onPressed, isNull);
+    channel.gates.last.complete();
+    await tester.pumpAndSettle();
+  });
   testWidgets('shows advertised jobs as a read-only schedule inventory', (
     tester,
   ) async {
@@ -123,6 +184,40 @@ void main() {
     expect(find.text('Failed task'), findsOneWidget);
     expect(find.text('Error'), findsOneWidget);
     expect(find.text('Disabled'), findsNothing);
+  });
+
+  testWidgets('refresh exposes labelled progress and blocks duplicate taps', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    addTearDown(() {
+      if (!gate.isCompleted) gate.complete();
+    });
+    final channel = _DeferredJobsChannel(gate);
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    final refresh = find.byKey(const ValueKey('schedules-refresh-button'));
+    await tester.tap(refresh);
+    await tester.pump();
+
+    expect(tester.widget<IconButton>(refresh).onPressed, isNull);
+    expect(
+      tester
+          .widget<CircularProgressIndicator>(
+            find.descendant(
+              of: refresh,
+              matching: find.byType(CircularProgressIndicator),
+            ),
+          )
+          .semanticsLabel,
+      'Refreshing scheduled jobs',
+    );
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(tester.widget<IconButton>(refresh).onPressed, isNotNull);
   });
 
   testWidgets('refresh reloads jobs through the advertised channel seam', (
@@ -199,6 +294,7 @@ void main() {
       optionalResourceErrors: const {
         HermesOptionalResource.jobs: 'private jobs transport failure',
       },
+      refreshedJobs: const [_pausedJob],
     );
     addTearDown(channel.dispose);
 
@@ -211,6 +307,25 @@ void main() {
     );
     expect(find.textContaining('private jobs'), findsNothing);
     expect(find.text('Morning check'), findsNothing);
+    await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+    await tester.pumpAndSettle();
+    expect(channel.loadJobsCalls, 1);
+    expect(find.text('Evening review'), findsOneWidget);
+  });
+
+  testWidgets('empty inventory offers an explicit refresh action', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(capabilities: _capabilities());
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No schedules yet'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Refresh schedules'));
+    await tester.pumpAndSettle();
+    expect(channel.loadJobsCalls, 1);
   });
 
   testWidgets('gateway picker activates the selected saved gateway', (
@@ -250,6 +365,56 @@ void main() {
     expect(channel.connectCalls.last.baseUrl, 'https://beta');
   });
 
+  testWidgets('Schedules title renders once in the app bar', (tester) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      jobs: const [_morningJob],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Schedules'), findsOneWidget);
+  });
+
+  testWidgets('long schedule cards fit narrow screens at 200% text scale', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const job = HermesJob(
+      id: 'long-job',
+      name: 'Long scheduled repository maintenance and review task',
+      enabled: true,
+      state: 'active',
+      scheduleDisplay: 'Every weekday at 09:00 in the selected profile',
+    );
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      jobs: const [job],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel, textScale: 2));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Long scheduled repository maintenance and review task'),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final title = find.text(
+      'Long scheduled repository maintenance and review task',
+    );
+    expect(title, findsOneWidget);
+    expect(tester.widget<Text>(title).maxLines, isNull);
+  });
+
   testWidgets('retains schedule content at 200% text scale', (tester) async {
     final channel = FakeHermesChannel(
       capabilities: _capabilities(),
@@ -266,4 +431,16 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Morning check'), findsOneWidget);
   });
+}
+
+class _RacingJobsChannel extends FakeHermesChannel {
+  _RacingJobsChannel() : super(capabilities: _capabilities());
+  final gates = <Completer<void>>[];
+
+  @override
+  Future<void> loadJobs() {
+    final gate = Completer<void>();
+    gates.add(gate);
+    return gate.future;
+  }
 }

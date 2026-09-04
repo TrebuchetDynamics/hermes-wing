@@ -107,8 +107,10 @@ async function captureProductFrames(browser) {
   );
   await desktop.page.getByRole("button", { name: "Approve once" }).click();
   await desktop.page
-    .getByText("Gateway is healthy. Profiles, skills, and toolsets are ready.")
-    .first()
+    .getByRole("group", {
+      name: "Gateway is healthy. Profiles, skills, and toolsets are ready.",
+      exact: true,
+    })
     .waitFor();
   await desktop.page.evaluate(() => globalThis.wingE2EReduceMotion());
   await desktop.page.waitForTimeout(100);

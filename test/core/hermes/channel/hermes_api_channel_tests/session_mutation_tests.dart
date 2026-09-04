@@ -1079,6 +1079,135 @@ void _hermesApiChannelSessionMutationTests() {
     expect(channel.state.hasUnreconciledRun, isTrue);
   });
 
+  test('loadEarlierMessages prepends the next latest-history page', () async {
+    final requestedOffsets = <String?>[];
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => (() {
+              final offset = uri.queryParameters['offset'];
+              requestedOffsets.add(offset);
+              final data = offset == '500'
+                  ? [
+                      {
+                        'id': 'msg_500',
+                        'session_id': 'sess_1',
+                        'role': 'assistant',
+                        'content': 'Message 500',
+                      },
+                    ]
+                  : [
+                      for (var index = 501; index <= 1000; index++)
+                        {
+                          'id': 'msg_$index',
+                          'session_id': 'sess_1',
+                          'role': index.isEven ? 'assistant' : 'user',
+                          'content': 'Message $index',
+                        },
+                    ];
+              return jsonEncode({
+                'object': 'list',
+                'session_id': 'sess_1',
+                'data': data,
+                'pagination': {
+                  'limit': 500,
+                  'offset': offset == '500' ? 500 : 0,
+                  'order': 'latest',
+                  'returned': data.length,
+                },
+              });
+            })(),
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.hasEarlierActiveMessages, isTrue);
+    await channel.loadEarlierMessages();
+
+    expect(requestedOffsets, ['0', '500']);
+    expect(channel.state.activeMessages, hasLength(501));
+    expect(channel.state.activeMessages.first.id, 'msg_500');
+    expect(channel.state.hasEarlierActiveMessages, isFalse);
+    expect(channel.state.isLoadingEarlierActiveMessages, isFalse);
+  });
+
+  test('loadMoreSessions appends the next authoritative Agent page', () async {
+    final requestedOffsets = <String?>[];
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' => (() {
+              requestedOffsets.add(uri.queryParameters['offset']);
+              return uri.queryParameters['offset'] == '50'
+                  ? '{"object":"list","data":[{"id":"sess_2","source":"api_server","title":"Older"}],"limit":50,"offset":50,"has_more":false}'
+                  : '{"object":"list","data":[{"id":"sess_1","source":"api_server","title":"Demo"}],"limit":50,"offset":0,"has_more":true}';
+            })(),
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    expect(channel.state.hasMoreSessions, isTrue);
+    await channel.loadMoreSessions();
+
+    expect(requestedOffsets, ['0', '50']);
+    expect(channel.state.sessions.map((session) => session.id), [
+      'sess_1',
+      'sess_2',
+    ]);
+    expect(channel.state.hasMoreSessions, isFalse);
+    expect(channel.state.isLoadingMoreSessions, isFalse);
+  });
+
+  test('loadMoreSessions rejects a mismatched Agent page cursor', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _capabilitiesFixture,
+            '/api/sessions' =>
+              uri.queryParameters['offset'] == '50'
+                  ? '{"object":"list","data":[{"id":"sess_2","source":"api_server"}],"limit":50,"offset":0,"has_more":true}'
+                  : '{"object":"list","data":[{"id":"sess_1","source":"api_server"}],"limit":50,"offset":0,"has_more":true}',
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          };
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+    await channel.loadMoreSessions();
+
+    expect(channel.state.sessions.map((session) => session.id), ['sess_1']);
+    expect(channel.state.hasMoreSessions, isTrue);
+    expect(channel.state.isLoadingMoreSessions, isFalse);
+    expect(
+      channel.state.errorMessage,
+      contains('unexpected session page offset'),
+    );
+  });
+
   test('createSession creates and selects a new session', () async {
     final posts = <String, Map<String, Object?>>{};
     final channel = HermesApiChannel(
@@ -1113,7 +1242,7 @@ void _hermesApiChannelSessionMutationTests() {
   });
 
   test(
-    'createSession leaves local state alone when new history fails to load',
+    'createSession keeps the accepted session when history hydration fails',
     () async {
       final channel = HermesApiChannel(
         sessionIdFactory: () => 'navi-test-2',
@@ -1137,15 +1266,19 @@ void _hermesApiChannelSessionMutationTests() {
       );
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
-      await expectLater(
-        channel.createSession(title: 'New chat'),
-        throwsStateError,
-      );
+      await channel.createSession(title: 'New chat');
 
-      expect(channel.state.sessions.map((s) => s.id), ['sess_1']);
-      expect(channel.state.activeSessionId, 'sess_1');
-      expect(channel.state.activeMessages.single.text, 'Hello');
-      expect(channel.state.messages.containsKey('navi-test-2'), isFalse);
+      expect(channel.state.sessions.map((s) => s.id), [
+        'sess_1',
+        'navi-test-2',
+      ]);
+      expect(channel.state.activeSessionId, 'navi-test-2');
+      expect(channel.state.activeMessages, isEmpty);
+      expect(channel.state.messages['navi-test-2'], isEmpty);
+      expect(
+        channel.state.errorMessage,
+        'Hermes session was created, but its history could not be loaded: Bad state: history failed',
+      );
     },
   );
 

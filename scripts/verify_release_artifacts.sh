@@ -38,6 +38,11 @@ trap cleanup EXIT
 }
 
 expected=(
+  android-release-evidence.json
+  android-termux-bootstrap.json
+  linux-release-evidence.json
+  web-release-evidence.json
+  wing-link-release-evidence.json
   hermes-wing-android.aab
   hermes-wing-android.aab.sha256
   hermes-wing-android.apk
@@ -67,6 +72,11 @@ if find "$dist" -mindepth 1 -maxdepth 1 ! -type f -print -quit | grep -q .; then
 fi
 for name in "${expected[@]}"; do
   [[ -s "$dist/$name" ]] || { echo "empty release artifact: $name" >&2; exit 1; }
+done
+
+# Evidence is checked before any archive extraction or artifact execution.
+for target in android linux web wing-link; do
+  TAG="$tag" node "$repo_root/scripts/release_evidence.mjs" verify "$target" "$dist"
 done
 
 verify_checksum_manifest() {

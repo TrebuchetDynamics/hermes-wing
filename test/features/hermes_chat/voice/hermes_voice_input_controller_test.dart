@@ -13,6 +13,151 @@ import 'package:wing/shared/voice/voice_settings.dart';
 import '../support/fake_hermes_channel.dart';
 
 void main() {
+  for (final confirmed in [false, true]) {
+    test(
+      'replacement voice waits for captured stop confirmation $confirmed',
+      () async {
+        final channel = _AwaitableStopVoiceChannel();
+        final capture = _TranscriptQueueThenBlockService([
+          'first',
+          'replacement',
+        ]);
+        final controller = HermesVoiceInputController(
+          channel: () => channel,
+          captureService: () => capture,
+          textToSpeechService: () => null,
+          settings: () => const WingVoiceSettings(
+            continuousVoiceEnabled: true,
+            speakRepliesEnabled: true,
+          ),
+          onDraft: (_) {},
+          rearmDelay: Duration.zero,
+        );
+        addTearDown(controller.dispose);
+        await controller.enableContinuous();
+        await pumpEventQueue();
+        expect(channel.stopRequests, 1);
+        expect(channel.sentVoiceTranscripts, ['first']);
+        channel.confirmation.complete(confirmed);
+        await pumpEventQueue();
+        expect(
+          channel.sentVoiceTranscripts,
+          confirmed ? ['first', 'replacement'] : ['first'],
+        );
+        if (!confirmed) {
+          expect(controller.error, contains('may still be active'));
+        }
+      },
+    );
+  }
+
+  test(
+    'output mute stops playback without starting or cancelling capture',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _FirstThenControlledCaptureService('question');
+      final tts = _ControlledTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+      await controller.enableContinuous();
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+      expect(controller.capturing, isTrue);
+      await controller.muteOutput();
+      expect(tts.stopCalls, 1);
+      expect(controller.capturing, isTrue);
+      expect(controller.speaking, isFalse);
+      controller.pauseMicrophone();
+      expect(controller.capturing, isFalse);
+    },
+  );
+
+  test(
+    'profile A B A invalidates capture even with the same session',
+    () async {
+      final channel = FakeHermesChannel(selectedProfileId: 'a');
+      final capture = _ControlledVoiceCaptureService();
+      final drafts = <String>[];
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => null,
+        settings: () => const WingVoiceSettings(),
+        onDraft: drafts.add,
+      );
+      addTearDown(controller.dispose);
+      final pending = controller.captureDraft();
+      await pumpEventQueue();
+      await channel.selectProfile('b');
+      await channel.selectProfile('a');
+      capture.complete('synthetic late capture');
+      await pending;
+      expect(drafts, isEmpty);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(capture.cancelCalls, 1);
+      expect(controller.capturing, isFalse);
+    },
+  );
+
+  test('same session on replacement channel cannot receive capture', () async {
+    var channel = FakeHermesChannel();
+    final capture = _ControlledVoiceCaptureService();
+    final drafts = <String>[];
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => capture,
+      textToSpeechService: () => null,
+      settings: () => const WingVoiceSettings(),
+      onDraft: drafts.add,
+    );
+    addTearDown(controller.dispose);
+    final pending = controller.captureAndSend();
+    await pumpEventQueue();
+    channel = FakeHermesChannel();
+    capture.complete('synthetic late capture');
+    await pending;
+    expect(drafts, isEmpty);
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(controller.capturing, isFalse);
+  });
+
+  test(
+    'unrelated newer reply cannot replace the submitted voice reply',
+    () async {
+      final channel = FakeHermesChannel();
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => FakeVoiceCaptureService(
+          audio: Uint8List(0),
+          transcript: 'synthetic question',
+          duration: Duration.zero,
+          confidence: 1,
+        ),
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+      await controller.captureAndSend();
+      channel.beginStreamingTurn('unrelated question');
+      channel.completeStreamingTurn(text: 'unrelated answer');
+      await controller.maybeContinue();
+      expect(tts.spoken, ['echo: synthetic question']);
+    },
+  );
+
   test(
     'voice input returns a composer draft without sending to Hermes',
     () async {
@@ -297,9 +442,10 @@ void main() {
   });
 
   test('hung recognizer teardown pauses rapid re-enable safely', () async {
+    final channel = FakeHermesChannel();
     final capture = _SlowCancellationCaptureService();
     final controller = HermesVoiceInputController(
-      channel: FakeHermesChannel.new,
+      channel: () => channel,
       captureService: () => capture,
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(continuousVoiceEnabled: true),
@@ -326,9 +472,10 @@ void main() {
   });
 
   test('failed recognizer teardown pauses rapid re-enable safely', () async {
+    final channel = FakeHermesChannel();
     final capture = _FailingCancellationCaptureService();
     final controller = HermesVoiceInputController(
-      channel: FakeHermesChannel.new,
+      channel: () => channel,
       captureService: () => capture,
       textToSpeechService: () => null,
       settings: () => const WingVoiceSettings(continuousVoiceEnabled: true),
@@ -1815,12 +1962,32 @@ class _AudioFakeHermesChannel extends FakeHermesChannel
 
 class _StreamingVoiceChannel extends FakeHermesChannel {
   int _voiceSubmissions = 0;
+  final _replyIds = <String, String>{};
+
+  @override
+  String? voiceReplyTurnId(String voiceRunId) =>
+      _replyIds[voiceRunId] ?? super.voiceReplyTurnId(voiceRunId);
 
   @override
   void submitVoiceRun(String voiceRunId) {
     _voiceSubmissions += 1;
     super.submitVoiceRun(voiceRunId);
-    if (_voiceSubmissions == 1) beginStreamingTurn('Hermes is writing');
+    if (_voiceSubmissions == 1) {
+      beginStreamingTurn('Hermes is writing');
+      _replyIds[voiceRunId] = state.activeMessages.last.id;
+    }
+  }
+}
+
+class _AwaitableStopVoiceChannel extends _StreamingVoiceChannel {
+  final confirmation = Completer<bool>();
+  int stopRequests = 0;
+
+  @override
+  Future<bool> stopTurn(HermesTurnInterruptionTarget target) async {
+    stopRequests += 1;
+    if (!await confirmation.future) return false;
+    return super.stopTurn(target);
   }
 }
 

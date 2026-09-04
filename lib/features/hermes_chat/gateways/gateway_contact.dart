@@ -39,6 +39,29 @@ class GatewayOverview {
 }
 
 @immutable
+class GatewayHostOverview {
+  const GatewayHostOverview({
+    required this.id,
+    required this.label,
+    required this.baseUrl,
+    required this.availability,
+    required this.gatewayIds,
+    required this.managedByWingLink,
+  });
+
+  final String id;
+  final String label;
+  final String baseUrl;
+  final GatewayAvailability availability;
+  final List<String> gatewayIds;
+  final bool managedByWingLink;
+
+  int get profileCount => gatewayIds.length;
+
+  bool containsGateway(String? gatewayId) => gatewayIds.contains(gatewayId);
+}
+
+@immutable
 class GatewayContact {
   const GatewayContact({
     required this.id,

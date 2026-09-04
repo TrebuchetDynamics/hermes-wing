@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -12,6 +14,193 @@ import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
 
 void main() {
+  testWidgets('superseded endpoint save cannot disconnect a newer attempt', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    final store = _DeferredSaveEndpointStore();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-connection-mode-local')),
+    );
+    await tester.pump();
+    final connect = tester
+        .widget<FilledButton>(
+          find.byKey(const ValueKey('hermes-connect-button')),
+        )
+        .onPressed!;
+    connect();
+    await tester.pump();
+    expect(store.pending, hasLength(1));
+    // A queued second action supersedes the attempt while its credential save
+    // is pending, even when the selected endpoint is unchanged.
+    connect();
+    await tester.pump();
+    expect(store.pending, hasLength(2));
+    final disconnects = channel.disconnectCalls;
+    store.pending.first.complete();
+    await tester.pump();
+    expect(channel.disconnectCalls, disconnects);
+    expect(channel.state.status, HermesConnectionStatus.connected);
+    store.pending.last.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('connection failures are announced as a live region', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.disconnected,
+      connectErrorMessage: 'SocketException: private transport detail',
+    );
+    addTearDown(channel.dispose);
+    final store = FakeHermesEndpointStore(
+      initial: const HermesEndpointConfig(
+        baseUrl: 'https://hermes.example.com',
+        apiKey: 'saved-agent-key',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-connection-mode-local')),
+    );
+    await tester.pump();
+    final connect = find.byKey(const ValueKey('hermes-connect-button'));
+    await tester.ensureVisible(connect);
+    await tester.tap(connect);
+    await tester.pumpAndSettle();
+
+    final error = find.byKey(const ValueKey('hermes-connect-error'));
+    expect(error, findsOneWidget);
+    expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
+    expect(find.textContaining('private transport'), findsNothing);
+    semantics.dispose();
+  });
+
+  testWidgets('typed connection auth failure ignores platform wording', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.error,
+      errorMessage: 'opaque transport failure',
+      connectionFailureKind: HermesConnectionFailureKind.authentication,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hermes API rejected the API key.'), findsOneWidget);
+    expect(find.textContaining('opaque transport'), findsNothing);
+  });
+
+  testWidgets('typed invalid endpoint overrides auth-like wording', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.error,
+      errorMessage: '401 platform wrapper',
+      connectionFailureKind: HermesConnectionFailureKind.invalidEndpoint,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Check the Hermes address.'), findsOneWidget);
+    expect(find.text('Hermes API rejected the API key.'), findsNothing);
+    expect(find.textContaining('platform wrapper'), findsNothing);
+  });
+
+  testWidgets('typed TLS failure gives trust recovery guidance', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      status: HermesConnectionStatus.error,
+      errorMessage: 'opaque secure transport failure',
+      connectionFailureKind: HermesConnectionFailureKind.tls,
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(initiallyEditingConnection: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Secure connection to Hermes failed.'), findsOneWidget);
+    expect(find.textContaining('Re-pair explicitly'), findsOneWidget);
+    expect(find.textContaining('opaque secure'), findsNothing);
+  });
+
   testWidgets('auth failures ask for a new key without deleting VPN profile', (
     tester,
   ) async {
@@ -239,6 +428,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Remote HTTPS'), findsOneWidget);
+    expect(find.text('VPN / NetBird / Tailscale'), findsOneWidget);
     expect(
       find.textContaining('authenticated WebSocket support waits'),
       findsOneWidget,
@@ -309,4 +499,36 @@ void main() {
     );
     expect(find.byKey(const ValueKey('hermes-approval-deny')), findsOneWidget);
   });
+}
+
+class _DeferredSaveEndpointStore extends FakeHermesEndpointStore {
+  final pending = <Completer<void>>[];
+
+  @override
+  Future<void> save({
+    required String baseUrl,
+    String? apiKey,
+    String? label,
+    String? profileId,
+    String? wingLinkOrigin,
+    String? wingLinkToken,
+    String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
+  }) async {
+    final gate = Completer<void>();
+    pending.add(gate);
+    await gate.future;
+    await super.save(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      label: label,
+      profileId: profileId,
+      wingLinkOrigin: wingLinkOrigin,
+      wingLinkToken: wingLinkToken,
+      wingLinkPendingCredentialId: wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: wingLinkHostFingerprint,
+      wingLinkDeviceId: wingLinkDeviceId,
+    );
+  }
 }

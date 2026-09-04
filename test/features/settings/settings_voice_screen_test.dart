@@ -126,6 +126,43 @@ void main() {
     expect(find.byKey(const ValueKey('settings-command-word')), findsOneWidget);
   });
 
+  testWidgets('command word save requires nonblank bounded input', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final advanced = find.byKey(const ValueKey('voice-advanced-expansion'));
+    await tester.scrollUntilVisible(advanced, 300);
+    await tester.tap(advanced);
+    await tester.pumpAndSettle();
+    final command = find.byKey(const ValueKey('settings-command-word'));
+    await tester.scrollUntilVisible(command, 300);
+    await tester.ensureVisible(command);
+    await tester.pumpAndSettle();
+    await tester.tap(command);
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(const ValueKey('settings-command-word-field'));
+    await tester.enterText(field, '   ');
+    await tester.pump();
+    final save = find.widgetWithText(FilledButton, 'Save');
+    expect(tester.widget<FilledButton>(save).onPressed, isNull);
+
+    await tester.enterText(field, 'wing');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+    expect(tester.widget<TextField>(field).maxLength, 64);
+  });
+
   testWidgets('the Advanced heading renders once', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(

@@ -5,7 +5,10 @@ Status: current behavior plus planned Wing Link expansion
 ## Identity and authority
 
 A saved gateway is one canonical Hermes Agent origin. Profile names are local to
-that origin; `coder` on two hosts means two different contacts.
+that origin; `coder` on two hosts means two different contacts. When pairing
+imports profile-bound `/p/<profile>` endpoints from one Wing Link device, Wing
+presents them as one host connection with a profile count rather than as separate
+gateways. The profile credentials and explicit request context remain distinct.
 
 Hermes Agent owns profiles, Projects, providers, models, sessions, and tools.
 Wing Link performs host management and reviewed fixed compatibility operations;
@@ -73,7 +76,7 @@ that does not expose values in argv or require direct `.env` editing.
 ## Remote boundary
 
 Wing Link runs on the Agent host. It serves HTTP only on loopback and TLS 1.3 on
-the selected private-LAN/Tailscale interface, using its durable host identity and
+the selected private-LAN, NetBird, or Tailscale interface, using its durable host identity and
 a dedicated named management credential. Native clients pin the reviewed SPKI;
 browser clients require normally trusted HTTPS. Wing Link does not proxy Agent
 chat or accept Agent API keys.

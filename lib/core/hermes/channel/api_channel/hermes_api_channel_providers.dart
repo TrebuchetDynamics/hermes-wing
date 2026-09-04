@@ -20,9 +20,11 @@ extension _ProvidersExtension on HermesApiChannel {
       'list providers',
     );
     final profile = _requireSelectedProfile('list providers');
+    final requestGeneration = ++_providersRequestGeneration;
     final generation = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
     final providers = await client.listProviders(profile: profile);
+    if (requestGeneration != _providersRequestGeneration) return;
     if (!_isCurrentProviderModelRequest(
       generation,
       profileGeneration,
@@ -129,9 +131,11 @@ extension _ProvidersExtension on HermesApiChannel {
       'list models',
     );
     final profile = _requireSelectedProfile('list models');
+    final requestGeneration = ++_modelsRequestGeneration;
     final generation = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
     final inventory = await client.getModelInventory(profile: profile);
+    if (requestGeneration != _modelsRequestGeneration) return;
     if (!_isCurrentProviderModelRequest(
       generation,
       profileGeneration,
@@ -156,10 +160,12 @@ extension _ProvidersExtension on HermesApiChannel {
         : null;
     final generation = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
+    final requestGeneration = ++_modelOptionsRequestGeneration;
     final options = await client.getModelOptions(
       profile: profile,
       refresh: refresh,
     );
+    if (requestGeneration != _modelOptionsRequestGeneration) return;
     if (!_isCurrentProviderModelRequest(
       generation,
       profileGeneration,
@@ -268,6 +274,7 @@ extension _ProvidersExtension on HermesApiChannel {
     _requireNonBlank(model, 'model');
     _requireRevision(revision);
     final generation = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
     final HermesModelAssignment assignment;
     try {
       assignment = await client.assignModel(
@@ -284,12 +291,29 @@ extension _ProvidersExtension on HermesApiChannel {
       // than retrying forever with the cached one. Responses that land after a
       // reconnect are dropped by the generation guard.
       if (_isPreconditionFailed(error) &&
-          _isCurrentConnection(generation, client)) {
-        await _refreshModelInventory(client, profile, generation);
+          _isCurrentProviderModelRequest(
+            generation,
+            profileGeneration,
+            client,
+            profile,
+          )) {
+        await _refreshModelInventory(
+          client,
+          profile,
+          generation,
+          profileGeneration,
+        );
       }
       rethrow;
     }
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     final current = _state.modelInventory ?? const HermesModelInventory();
     _setState(
       _state.copyWith(modelInventory: current.withAssignment(assignment)),
@@ -300,9 +324,17 @@ extension _ProvidersExtension on HermesApiChannel {
     HermesApiClient client,
     String profile,
     int generation,
+    int profileGeneration,
   ) async {
     final inventory = await client.getModelInventory(profile: profile);
-    if (!_isCurrentConnection(generation, client)) return;
+    if (!_isCurrentProviderModelRequest(
+      generation,
+      profileGeneration,
+      client,
+      profile,
+    )) {
+      return;
+    }
     _setState(_state.copyWith(modelInventory: inventory));
   }
 

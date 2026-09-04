@@ -7,7 +7,10 @@ import 'models/wing_link_device.dart';
 import 'models/wing_link_directory.dart';
 
 export 'models/wing_link_directory.dart';
+import 'wing_link_http.dart';
 import 'wing_link_transport.dart';
+
+export 'wing_link_http.dart';
 
 class WingLinkMetadata {
   const WingLinkMetadata({
@@ -240,7 +243,7 @@ class WingLinkClient {
     try {
       json = _decode(await _get(_uri('/meta'), _headers));
     } catch (error) {
-      if (error.toString().contains('HTTP 426')) {
+      if (error is WingLinkHttpException && error.statusCode == 426) {
         throw const WingLinkUpgradeRequired();
       }
       rethrow;
@@ -456,7 +459,7 @@ class WingLinkClient {
     try {
       return await mutation();
     } catch (error) {
-      if (error.toString().contains('HTTP 412')) {
+      if (error is WingLinkHttpException && error.statusCode == 412) {
         throw const WingLinkPreconditionFailed();
       }
       rethrow;

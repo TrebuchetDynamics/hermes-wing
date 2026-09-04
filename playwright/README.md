@@ -1,6 +1,6 @@
 # Hermes Wing Playwright
 
-Browser tests cover connection validation, all primary read-only surfaces, session search and selection, run stopping, connected chat workflows, delayed/denied/scoped approvals, browser TTS settings/playback/cancellation/queued replies/error recovery, disconnect cleanup, mobile controls, live Hermes API smoke, provider-backed chat, and route screenshots.
+Browser tests cover connection validation, cross-origin Agent SSE under the advertised CORS headers, all primary read-only surfaces, session search and selection, run stopping, connected chat workflows, delayed/denied/scoped approvals, browser TTS settings/playback/cancellation/queued replies/error recovery, disconnect cleanup, mobile controls, live Hermes API smoke, provider-backed chat, and route screenshots.
 
 ```bash
 npm run web:e2e

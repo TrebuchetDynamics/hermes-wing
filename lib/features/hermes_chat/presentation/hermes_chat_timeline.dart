@@ -39,12 +39,16 @@ RelativeRect _contextMenuPosition(BuildContext context, Offset globalPosition) {
 
 class _HermesTranscriptList extends StatelessWidget {
   const _HermesTranscriptList({
+    required this.viewport,
     required this.controller,
     required this.textScale,
     required this.onScaleStart,
     required this.onScaleUpdate,
     required this.onScaleEnd,
     required this.turns,
+    required this.canLoadEarlierMessages,
+    required this.isLoadingEarlierMessages,
+    required this.onLoadEarlierMessages,
     required this.profileId,
     required this.profileColor,
     required this.pendingApproval,
@@ -68,11 +72,15 @@ class _HermesTranscriptList extends StatelessWidget {
   });
 
   final ScrollController controller;
+  final HermesTranscriptViewportController viewport;
   final double textScale;
   final GestureScaleStartCallback onScaleStart;
   final GestureScaleUpdateCallback onScaleUpdate;
   final GestureScaleEndCallback onScaleEnd;
   final List<HermesChatTurn> turns;
+  final bool canLoadEarlierMessages;
+  final bool isLoadingEarlierMessages;
+  final VoidCallback onLoadEarlierMessages;
   final String profileId;
   final String? profileColor;
   final HermesApprovalRequest? pendingApproval;
@@ -106,8 +114,49 @@ class _HermesTranscriptList extends StatelessWidget {
         )
         .toList(growable: false);
     final rows = <Widget>[];
+    final uniqueIds = HermesTurnPresentationIdentity.uniqueIds(visibleTurns);
+    viewport.retainRows(uniqueIds);
+    if (canLoadEarlierMessages || isLoadingEarlierMessages) {
+      final strings = AppLocalizations.of(context);
+      rows.add(
+        Padding(
+          key: const ValueKey('hermes-transcript-load-earlier'),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Center(
+            child: isLoadingEarlierMessages
+                ? Semantics(
+                    container: true,
+                    liveRegion: true,
+                    label: strings.chatTranscriptLoadingEarlierLabel,
+                    child: ExcludeSemantics(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(strings.chatTranscriptLoadingEarlierLabel),
+                        ],
+                      ),
+                    ),
+                  )
+                : OutlinedButton.icon(
+                    key: const ValueKey(
+                      'hermes-transcript-load-earlier-action',
+                    ),
+                    onPressed: onLoadEarlierMessages,
+                    icon: const Icon(Icons.history),
+                    label: Text(strings.chatTranscriptLoadEarlierAction),
+                  ),
+          ),
+        ),
+      );
+    }
     for (var index = 0; index < visibleTurns.length; index++) {
       final turn = visibleTurns[index];
+      final rowIndex = index;
       final showAssistantAvatar =
           turn.author != HermesTurnAuthor.user &&
           (index == 0 ||
@@ -154,6 +203,18 @@ class _HermesTranscriptList extends StatelessWidget {
           ),
         );
       }
+      rows[rows.length - 1] = KeyedSubtree(
+        key: uniqueIds.contains(turn.id)
+            ? viewport.rowKey(turn.id)
+            : ValueKey(
+                HermesTurnPresentationIdentity.resolve(
+                  visibleTurns,
+                  rowIndex,
+                  unique: uniqueIds,
+                ),
+              ),
+        child: rows.last,
+      );
     }
 
     final approval = pendingApproval;
@@ -162,7 +223,7 @@ class _HermesTranscriptList extends StatelessWidget {
         _ApprovalBanner(
           request: approval,
           pendingCount: pendingApprovalCount,
-          responding: approval.id.trim() == respondingApprovalId,
+          responding: approval.identityKey == respondingApprovalId,
           canRespond: canRespondToApprovals,
           onDecide: onResolveApproval,
           onDismissMalformed: onDismissApproval,
@@ -214,13 +275,49 @@ class _HermesTranscriptList extends StatelessWidget {
               ],
             ),
           ),
-          child: ListView(
-            key: const ValueKey('hermes-transcript'),
-            controller: controller,
-            reverse: true,
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
-            children: rows.reversed.toList(growable: false),
+          child: Column(
+            children: [
+              ListenableBuilder(
+                listenable: viewport,
+                builder: (context, child) =>
+                    viewport.mode == HermesViewportMode.followingLatest
+                    ? const SizedBox.shrink()
+                    : Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: child,
+                      ),
+                child: TextButton.icon(
+                  key: const ValueKey('hermes-transcript-latest'),
+                  onPressed: () {
+                    viewport.followLatest();
+                    if (controller.hasClients) {
+                      controller.jumpTo(controller.position.minScrollExtent);
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_downward, size: 16),
+                  label: Text(
+                    AppLocalizations.of(context).chatTranscriptLatestAction,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox(
+                  key: viewport.listKey,
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: viewport.onScroll,
+                    child: ListView(
+                      key: const ValueKey('hermes-transcript'),
+                      controller: controller,
+                      reverse: true,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                      children: rows.reversed.toList(growable: false),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

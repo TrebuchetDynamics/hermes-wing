@@ -31,6 +31,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     HermesConnectionStatus status = HermesConnectionStatus.connected,
     String sessionId = 'sess_1',
     String? errorMessage,
+    HermesConnectionFailureKind? connectionFailureKind,
     HermesCapabilityDocument? capabilities,
     String? activeSessionId,
     HermesHealthStatus? basicHealth,
@@ -58,9 +59,14 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.loadDetailedHealthFails = false,
     this.refreshedJobs,
     this.loadJobsFails = false,
+    this.refreshedSkillDetails,
+    this.refreshedToolsets,
+    this.loadToolInventoryFails = false,
     String connectedBaseUrl = 'http://fake-hermes:8642',
     bool connectedWithApiKey = true,
     bool hasUnreconciledRun = false,
+    Set<String> sessionsWithEarlierMessages = const {},
+    Set<String> sessionsLoadingEarlierMessages = const {},
     this.createSessionFails = false,
     this.selectSessionFails = false,
     this.selectSessionFailureMessage = 'select failed',
@@ -68,6 +74,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.approvalResponsesFail = false,
     this.approvalResponseGate,
     this.connectGate,
+    this.connectErrorMessage,
+    this.connectFailureKind,
     this.sendTextGate,
     this.selectProfileGate,
     this.selectProfileFails = false,
@@ -75,7 +83,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     this.renameProfileFails = false,
     this.deleteProfileFails = false,
     this.writeProfileSoulFails = false,
-    this.profileMutationFailureMessage = 'Hermes API returned HTTP 412',
+    this.profileMutationFailureMessage = 'profile mutation failed',
+    this.profileMutationFailure,
   }) : connectCapabilities = capabilities,
        connectBasicHealth = basicHealth,
        _state = status == HermesConnectionStatus.connected
@@ -93,9 +102,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                jobs: jobs,
                optionalResourceErrors: optionalResourceErrors,
                errorMessage: errorMessage,
+               connectionFailureKind: connectionFailureKind,
                connectedBaseUrl: connectedBaseUrl,
                connectedWithApiKey: connectedWithApiKey,
                hasUnreconciledRun: hasUnreconciledRun,
+               sessionsWithEarlierMessages: sessionsWithEarlierMessages,
+               sessionsLoadingEarlierMessages: sessionsLoadingEarlierMessages,
                sessions:
                    sessions ?? [HermesSession(id: sessionId, source: 'fake')],
                profiles: profiles,
@@ -113,7 +125,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
                    session.id: const <HermesChatTurn>[],
                },
              )
-           : HermesChannelState(status: status, errorMessage: errorMessage);
+           : HermesChannelState(
+               status: status,
+               errorMessage: errorMessage,
+               connectionFailureKind: connectionFailureKind,
+             );
 
   factory FakeHermesChannel.disconnected({
     Set<String> deleteSessionFailureIds = const {},
@@ -131,6 +147,8 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final List<String?> sentTextAttachments = [];
   final List<String?> createSessionCalls = [];
   final List<String> selectSessionCalls = [];
+  int loadEarlierMessagesCalls = 0;
+  int loadMoreSessionsCalls = 0;
   final List<Map<String, String>> renameSessionCalls = [];
   final List<String> deleteSessionCalls = [];
   final List<String> forkSessionCalls = [];
@@ -152,6 +170,10 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   int loadJobsCalls = 0;
   final List<HermesJob>? refreshedJobs;
   final bool loadJobsFails;
+  int loadToolInventoryCalls = 0;
+  final List<HermesSkill>? refreshedSkillDetails;
+  final List<HermesToolset>? refreshedToolsets;
+  final bool loadToolInventoryFails;
   int loadProvidersCalls = 0;
   final List<Map<String, String>> setProviderCredentialCalls = [];
   final List<Map<String, String>> removeProviderCredentialCalls = [];
@@ -171,19 +193,24 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   final bool approvalResponsesFail;
   final Future<void> Function()? approvalResponseGate;
   final Future<void> Function()? connectGate;
+  final String? connectErrorMessage;
+  final HermesConnectionFailureKind? connectFailureKind;
   final Future<void> Function()? sendTextGate;
   final Future<void> Function(String profileId)? selectProfileGate;
 
   /// Profile-mutation failure injection. When set, the corresponding mutation
-  /// records its call, refreshes nothing successfully, and throws a
-  /// [StateError] carrying [profileMutationFailureMessage] (default contains
-  /// `HTTP 412`, which the UI maps to a revision-conflict message).
+  /// records its call and throws [profileMutationFailure], or a generic
+  /// [StateError] carrying [profileMutationFailureMessage].
   final bool selectProfileFails;
   final bool createProfileFails;
   final bool renameProfileFails;
   final bool deleteProfileFails;
   final bool writeProfileSoulFails;
   final String profileMutationFailureMessage;
+  final Object? profileMutationFailure;
+
+  Object get _profileMutationError =>
+      profileMutationFailure ?? StateError(profileMutationFailureMessage);
   int stopActiveTurnCalls = 0;
   final List<String> steerActiveTurnCalls = [];
   final _approvalController =
@@ -244,6 +271,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     _setState(_state.copyWith(capabilities: capabilities, profiles: profiles));
   }
 
+  void setSessionPagination({required bool hasMore, bool loading = false}) {
+    _setState(
+      _state.copyWith(hasMoreSessions: hasMore, isLoadingMoreSessions: loading),
+    );
+  }
+
   void replaceSessions(
     List<HermesSession> sessions, {
     required String? activeSessionId,
@@ -270,6 +303,20 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         const HermesChannelState(status: HermesConnectionStatus.connecting),
       );
       await gate();
+    }
+    final connectError = connectErrorMessage;
+    if (connectError != null) {
+      _setState(
+        HermesChannelState(
+          status: HermesConnectionStatus.error,
+          errorMessage: connectError,
+          connectionFailureKind:
+              connectFailureKind ?? HermesConnectionFailureKind.unknown,
+          connectedBaseUrl: baseUrl,
+          connectedWithApiKey: apiKey?.trim().isNotEmpty ?? false,
+        ),
+      );
+      return;
     }
     const sessionId = 'sess_1';
     _setState(
@@ -304,6 +351,39 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       throw StateError(selectSessionFailureMessage);
     }
     _setState(_state.copyWith(activeSessionId: sessionId));
+  }
+
+  int reconcileActiveSessionCalls = 0;
+  Future<void> Function()? onReconcileActiveSession;
+
+  @override
+  Future<void> reconcileActiveSession() async {
+    reconcileActiveSessionCalls += 1;
+    await onReconcileActiveSession?.call();
+  }
+
+  @override
+  Future<void> loadEarlierMessages() async {
+    loadEarlierMessagesCalls += 1;
+    final sessionId = _state.activeSessionId;
+    if (sessionId == null) return;
+    _setState(
+      _state.copyWith(
+        sessionsWithEarlierMessages: {..._state.sessionsWithEarlierMessages}
+          ..remove(sessionId),
+        sessionsLoadingEarlierMessages: {
+          ..._state.sessionsLoadingEarlierMessages,
+        }..remove(sessionId),
+      ),
+    );
+  }
+
+  @override
+  Future<void> loadMoreSessions() async {
+    loadMoreSessionsCalls += 1;
+    _setState(
+      _state.copyWith(hasMoreSessions: false, isLoadingMoreSessions: false),
+    );
   }
 
   @override
@@ -403,7 +483,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     final gate = selectProfileGate;
     if (gate != null) await gate(profileId);
     if (selectProfileFails) {
-      throw StateError(profileMutationFailureMessage);
+      throw _profileMutationError;
     }
     _setState(_state.copyWith(selectedProfileId: profileId));
   }
@@ -412,7 +492,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> createProfile({required String name, String? cloneFrom}) async {
     createProfileCalls.add({'name': name, 'cloneFrom': cloneFrom});
     if (createProfileFails) {
-      throw StateError(profileMutationFailureMessage);
+      throw _profileMutationError;
     }
     final id = name.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
     _setState(
@@ -437,7 +517,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       'revision': revision,
     });
     if (renameProfileFails) {
-      throw StateError(profileMutationFailureMessage);
+      throw _profileMutationError;
     }
     _setState(
       _state.copyWith(
@@ -467,14 +547,20 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }) async {
     deleteProfileCalls.add({'profileId': profileId, 'revision': revision});
     if (deleteProfileFails) {
-      throw StateError(profileMutationFailureMessage);
+      throw _profileMutationError;
     }
+    final survivors = [
+      for (final profile in _state.profiles)
+        if (profile.id != profileId) profile,
+    ];
+    final deletedSelectedProfile = _state.selectedProfileId == profileId;
     _setState(
       _state.copyWith(
-        profiles: [
-          for (final profile in _state.profiles)
-            if (profile.id != profileId) profile,
-        ],
+        profiles: survivors,
+        selectedProfileId: deletedSelectedProfile && survivors.isNotEmpty
+            ? survivors.first.id
+            : null,
+        clearSelectedProfileId: deletedSelectedProfile && survivors.isEmpty,
       ),
     );
   }
@@ -497,7 +583,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
       'revision': revision,
     });
     if (writeProfileSoulFails) {
-      throw StateError(profileMutationFailureMessage);
+      throw _profileMutationError;
     }
   }
 
@@ -531,6 +617,32 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     )..remove(HermesOptionalResource.jobs);
     _setState(
       _state.copyWith(jobs: replacement, optionalResourceErrors: errors),
+    );
+  }
+
+  @override
+  Future<void> loadToolInventory() async {
+    loadToolInventoryCalls += 1;
+    if (loadToolInventoryFails) {
+      throw StateError('tool inventory refresh failed');
+    }
+    final skills = refreshedSkillDetails ?? _state.skillDetails;
+    final toolsets = refreshedToolsets ?? _state.toolsets;
+    final errors =
+        Map<HermesOptionalResource, String>.from(_state.optionalResourceErrors)
+          ..remove(HermesOptionalResource.skills)
+          ..remove(HermesOptionalResource.toolsets);
+    _setState(
+      _state.copyWith(
+        skills: skills.map((skill) => skill.name).toList(growable: false),
+        skillDetails: skills,
+        toolsets: toolsets,
+        enabledToolsets: toolsets
+            .where((toolset) => toolset.enabled)
+            .map((toolset) => toolset.name)
+            .toList(growable: false),
+        optionalResourceErrors: errors,
+      ),
     );
   }
 
@@ -971,10 +1083,34 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
+  HermesTurnInterruptionTarget? get activeTurnInterruptionTarget {
+    final turn = state.activeMessages
+        .where((t) => t.status == HermesTurnStatus.streaming)
+        .lastOrNull;
+    if (turn == null) return null;
+    return HermesTurnInterruptionTarget(
+      owner: this,
+      connectionGeneration: 0,
+      profileId: state.selectedProfileId,
+      sessionId: turn.sessionId,
+      streamGeneration: turn.id.hashCode,
+      runId: turn.id,
+    );
+  }
+
+  @override
+  Future<bool> stopTurn(HermesTurnInterruptionTarget target) async {
+    if (!target.matches(activeTurnInterruptionTarget)) return false;
+    stopActiveTurn();
+    return true;
+  }
+
+  @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
     String? runId,
+    HermesApprovalRequest? origin,
   }) async {
     respondToApprovalCalls.add({
       'approvalId': approvalId,
@@ -1006,6 +1142,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     );
     return id;
   }
+
+  final _voiceReplyTurnIds = <String, String>{};
+
+  @override
+  String? voiceReplyTurnId(String voiceRunId) => _voiceReplyTurnIds[voiceRunId];
 
   @override
   void stageVoiceRunTranscript({
@@ -1054,6 +1195,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     );
     sentVoiceTranscripts.add(transcript);
     _appendExchange(transcript);
+    _voiceReplyTurnIds[voiceRunId] = _state.activeMessages.last.id;
     _updateVoiceRun(_state.voiceRuns[voiceRunId]!.markCompleted());
   }
 

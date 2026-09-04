@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Artifact-bound Android observations use a separate, sanitized receipt schema.
+if [[ "${WING_RELEASE_QUALIFICATION:-}" == true ]]; then
+  exec node "$(dirname "${BASH_SOURCE[0]}")/record_release_qualification.mjs" server-audio
+fi
+
 for cmd in git python3; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "$cmd is required to record the Hermes server-audio receipt." >&2

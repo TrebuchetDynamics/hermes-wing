@@ -385,6 +385,50 @@ void main() {
     expect(directory.contacts.single.profileName, 'sidon');
   });
 
+  test('paired profile endpoints project one host connection', () async {
+    const configs = [
+      HermesEndpointConfig(
+        id: 'default-endpoint',
+        label: 'BlueBlack · default',
+        baseUrl: 'https://home.example/p/default',
+        wingLinkOrigin: 'https://control.example:8654',
+        wingLinkDeviceId: 'device-1',
+      ),
+      HermesEndpointConfig(
+        id: 'sidon-endpoint',
+        label: 'BlueBlack · sidon',
+        baseUrl: 'https://home.example/p/sidon',
+        wingLinkOrigin: 'https://control.example:8654',
+        wingLinkDeviceId: 'device-1',
+      ),
+    ];
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: configs),
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'default-endpoint': gatewaySummary(['default']),
+        'sidon-endpoint': gatewaySummary(['sidon']),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+
+    await directory.refresh();
+
+    expect(directory.gateways, hasLength(2));
+    expect(directory.hosts, hasLength(1));
+    expect(directory.hosts.single.label, 'BlueBlack');
+    expect(directory.hosts.single.baseUrl, 'https://home.example');
+    expect(directory.hosts.single.profileCount, 2);
+    expect(directory.hosts.single.gatewayIds, [
+      'default-endpoint',
+      'sidon-endpoint',
+    ]);
+    expect(directory.hosts.single.managedByWingLink, isTrue);
+  });
+
   test(
     'profile-prefixed endpoint never projects another profile from broad inventory',
     () async {

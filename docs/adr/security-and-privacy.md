@@ -31,6 +31,13 @@ browsers require normally trusted HTTPS and cannot bypass certificate validation
 Fingerprint change or host-key loss requires explicit re-pairing. Network location
 is not authorization.
 
+Android permits cleartext transport at the OS layer because literal private VPN
+addresses cannot be safely range-whitelisted in Android network-security XML.
+Hermes Wing still requires an explicit user confirmation before sending an Agent
+credential to any non-local HTTP origin; this path is only for an authenticated,
+encrypted VPN or isolated trusted LAN. The Wing Link client independently rejects
+non-loopback HTTP, so its TLS and pinning requirement is unchanged.
+
 Each device receives a named bearer credential with exact, least-privilege grants
 and independent expiry, usage metadata, and revocation. The host console is the
 root of trust. A remote device may inspect and revoke only itself; it cannot list

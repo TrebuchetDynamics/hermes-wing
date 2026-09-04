@@ -138,6 +138,25 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 FutureBuilder<List<HermesEndpointConfig>>(
                   future: _endpointProfilesFuture,
                   builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Semantics(
+                          label: strings.chatSavedEndpointsLoading,
+                          child: const LinearProgressIndicator(
+                            key: ValueKey('hermes-endpoints-loading'),
+                          ),
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: _EndpointProfilesLoadError(
+                          onRetry: _refreshEndpointProfiles,
+                        ),
+                      );
+                    }
                     final profiles = snapshot.data ?? const [];
                     if (profiles.isEmpty) return const SizedBox.shrink();
                     return Padding(
@@ -201,9 +220,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           controller: _connectionForm.baseUrl,
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.next,
-                          autofillHints: const [AutofillHints.url],
                           autocorrect: false,
                           enableSuggestions: false,
+                          enableIMEPersonalizedLearning: false,
                           decoration: InputDecoration(
                             labelText: strings.chatLayoutServerUrlLabel,
                             hintText: strings.chatLayoutServerUrlHint,
@@ -223,6 +242,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
                           enableSuggestions: false,
+                          enableIMEPersonalizedLearning: false,
                           decoration: InputDecoration(
                             labelText: strings.chatLayoutAccessTokenLabel,
                             helperText: strings.chatLayoutAccessTokenHelper,
@@ -247,6 +267,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           key: const ValueKey('hermes-profile-label-field'),
                           controller: _connectionForm.label,
                           textInputAction: TextInputAction.done,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          enableIMEPersonalizedLearning: false,
                           onSubmitted: canConnect
                               ? (_) => unawaited(_connect(channel))
                               : null,
@@ -332,7 +355,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         if (state.status == HermesConnectionStatus.error &&
                             state.errorMessage != null) ...[
                           const SizedBox(height: 16),
-                          _HermesConnectError(error: state.errorMessage!),
+                          _HermesConnectError(
+                            error: state.errorMessage!,
+                            failureKind: state.connectionFailureKind,
+                          ),
                         ],
                         const SizedBox(height: 20),
                         FilledButton.icon(
@@ -482,6 +508,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               state: state,
               canCreate: _canCreateSession(state),
               onCreate: () => unawaited(_createSession(context, channel)),
+              onLoadMore: () => unawaited(channel.loadMoreSessions()),
               onSelect: (session) =>
                   unawaited(_selectSession(context, channel, session)),
               onRename: (session) =>
@@ -864,7 +891,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       );
     }
 
+    final activeSessionId = state.activeSessionId;
+    final canLoadEarlierMessages = state.sessionsWithEarlierMessages.contains(
+      activeSessionId,
+    );
+    final isLoadingEarlierMessages = state.sessionsLoadingEarlierMessages
+        .contains(activeSessionId);
     if (state.activeMessages.isEmpty &&
+        !canLoadEarlierMessages &&
+        !isLoadingEarlierMessages &&
         pendingApproval == null &&
         chatError == null) {
       return _HermesEmptyState(
@@ -877,6 +912,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     }
 
     return _HermesTranscriptList(
+      viewport: _transcriptViewport,
       controller: _transcriptScrollController,
       textScale: ref.watch(
         wingChatPreferencesProvider.select(
@@ -887,6 +923,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       onScaleUpdate: _updateTranscriptPinch,
       onScaleEnd: _endTranscriptPinch,
       turns: state.activeMessages,
+      canLoadEarlierMessages: canLoadEarlierMessages,
+      isLoadingEarlierMessages: isLoadingEarlierMessages,
+      onLoadEarlierMessages: () => unawaited(channel.loadEarlierMessages()),
       profileId: state.selectedProfileId ?? 'default',
       profileColor: state.profiles
           .where((profile) => profile.id == state.selectedProfileId)
@@ -1814,6 +1853,33 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              key: const ValueKey('hermes-voice-controls'),
+              tooltip: strings.chatLayoutHandsFreeVoiceLabel,
+              onSelected: (action) {
+                if (action == 'microphone') {
+                  _voiceInputController.pauseMicrophone();
+                } else if (_voiceInputController.outputMuted) {
+                  _voiceInputController.unmuteOutput();
+                } else {
+                  unawaited(_voiceInputController.muteOutput());
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'output',
+                  child: Text(
+                    _voiceInputController.outputMuted
+                        ? strings.chatVoiceUnmuteOutputAction
+                        : strings.chatVoiceMuteOutputAction,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'microphone',
+                  child: Text(strings.chatVoicePauseMicrophoneAction),
+                ),
+              ],
+            ),
             IconButton.filled(
               key: const ValueKey('hermes-voice-mode-end-button'),
               tooltip: strings.closeAction,
@@ -2125,8 +2191,20 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     return IconButton(
       key: const ValueKey('hermes-attachment-button'),
       tooltip: AppLocalizations.of(context).chatLayoutAttachFileTooltip,
-      icon: const Icon(Icons.attach_file),
-      onPressed: canSendTurns ? () => unawaited(_pickAttachment()) : null,
+      icon: _pickingAttachment
+          ? SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                semanticsLabel: AppLocalizations.of(
+                  context,
+                ).chatAttachmentPicking,
+              ),
+            )
+          : const Icon(Icons.attach_file),
+      onPressed: canSendTurns && !_pickingAttachment
+          ? () => unawaited(_pickAttachment())
+          : null,
     );
   }
 

@@ -8,6 +8,62 @@ import 'package:wing/shared/voice/voice_capture_service.dart';
 
 void main() {
   test(
+    'dispose during readiness closes streams and prevents listening',
+    () async {
+      final engine = _StaleTerminalSpeechToTextEngine();
+      final readiness = Completer<String?>();
+      final service = SpeechToTextVoiceCaptureService(
+        engine: engine,
+        readinessCheck: () => readiness.future,
+      );
+      final partials = service.partialTranscripts.toList();
+      final levels = service.soundLevels.toList();
+      final capture = service.capture(timeout: const Duration(seconds: 1));
+      final failure = expectLater(
+        capture,
+        throwsA(isA<SpeechToTextCaptureFailure>()),
+      );
+      await pumpEventQueue();
+      final disposal = service.dispose();
+      expect(identical(disposal, service.dispose()), isTrue);
+      readiness.complete(null);
+      await disposal;
+      await failure;
+      expect(await partials, isEmpty);
+      expect(await levels, isEmpty);
+      expect(engine.listenCalls, 0);
+      await expectLater(
+        service.capture(timeout: const Duration(seconds: 1)),
+        throwsA(isA<SpeechToTextCaptureFailure>()),
+      );
+    },
+  );
+
+  test(
+    'dispose rejects late result status error and sound callbacks',
+    () async {
+      final engine = _OwnedSoundLevelSpeechToTextEngine();
+      final service = SpeechToTextVoiceCaptureService(engine: engine);
+      final partials = service.partialTranscripts.toList();
+      final levels = service.soundLevels.toList();
+      final capture = service.capture(timeout: const Duration(seconds: 1));
+      final failure = expectLater(
+        capture,
+        throwsA(isA<SpeechToTextCaptureFailure>()),
+      );
+      await pumpEventQueue();
+      await service.dispose();
+      engine.emitResult('synthetic late words');
+      engine.emitSoundLevel(99);
+      engine.emitStatus('listening');
+      engine.emitError(StateError('late callback'));
+      await failure;
+      expect(await partials, isEmpty);
+      expect(await levels, isEmpty);
+    },
+  );
+
+  test(
     'rejects concurrent capture without disturbing the active recognizer',
     () async {
       final engine = _StaleTerminalSpeechToTextEngine();

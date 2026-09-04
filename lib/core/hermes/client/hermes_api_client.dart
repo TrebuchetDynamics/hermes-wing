@@ -120,12 +120,33 @@ class HermesApiClient {
   }
 
   Future<List<HermesSession>> listSessions({String? profile}) async {
-    final body = await _getJson(_scoped(config.sessionsUri, profile));
-    return wingMapListFromJson(body['data'])
-        .take(_maxJobs)
-        .map(HermesSession.fromJson)
-        .where((session) => session.id.isNotEmpty)
-        .toList(growable: false);
+    return (await listSessionsPage(profile: profile)).sessions;
+  }
+
+  Future<HermesSessionPage> listSessionsPage({
+    String? profile,
+    int offset = 0,
+    int limit = 50,
+  }) async {
+    if (offset < 0 || offset > 1000000) {
+      throw ArgumentError.value(
+        offset,
+        'offset',
+        'must be between 0 and 1000000',
+      );
+    }
+    if (limit < 1 || limit > 200) {
+      throw ArgumentError.value(limit, 'limit', 'must be between 1 and 200');
+    }
+    final scopedUri = _scoped(config.sessionsUri, profile);
+    final uri = scopedUri.replace(
+      queryParameters: {
+        ...scopedUri.queryParameters,
+        'limit': '$limit',
+        'offset': '$offset',
+      },
+    );
+    return HermesSessionPage.fromJson(await _getJson(uri));
   }
 
   Future<HermesModelOptions> getModelOptions({
@@ -187,12 +208,44 @@ class HermesApiClient {
     String sessionId, {
     String? profile,
   }) async {
-    final body = await _getJson(
-      _scoped(config.sessionMessagesUri(sessionId), profile),
+    return (await sessionMessagesPage(sessionId, profile: profile)).messages;
+  }
+
+  Future<HermesMessagePage> sessionMessagesPage(
+    String sessionId, {
+    String? profile,
+    int offset = 0,
+    int limit = 500,
+    String order = 'latest',
+  }) async {
+    if (offset < 0 || offset > 1000000) {
+      throw ArgumentError.value(
+        offset,
+        'offset',
+        'must be between 0 and 1000000',
+      );
+    }
+    if (limit < 1 || limit > 500) {
+      throw ArgumentError.value(limit, 'limit', 'must be between 1 and 500');
+    }
+    if (order != 'oldest' && order != 'latest') {
+      throw ArgumentError.value(order, 'order', 'must be oldest or latest');
+    }
+    final scopedUri = _scoped(config.sessionMessagesUri(sessionId), profile);
+    final uri = scopedUri.replace(
+      queryParameters: {
+        ...scopedUri.queryParameters,
+        'limit': '$limit',
+        'offset': '$offset',
+        'order': order,
+      },
     );
-    return wingMapListFromJson(
-      body['data'],
-    ).map(HermesMessage.fromJson).toList(growable: false);
+    return HermesMessagePage.fromJson(
+      await _getJson(uri),
+      requestedLimit: limit,
+      requestedOffset: offset,
+      requestedOrder: order,
+    );
   }
 
   Future<HermesSession> updateSessionTitle(
@@ -244,7 +297,6 @@ class HermesApiClient {
       ...config.headers,
       hermesApiContentTypeHeader: hermesApiJsonContentType,
       hermesApiAcceptHeader: hermesApiEventStreamContentType,
-      hermesApiCacheControlHeader: hermesApiNoCache,
     };
     final body = jsonEncode({'message': message});
     final chunks = _postStream(
@@ -290,8 +342,16 @@ class HermesApiClient {
   Future<HermesRun> startRun({
     required String sessionId,
     required Object message,
+    List<HermesMessage> conversationHistory = const [],
     String? profile,
   }) async {
+    if (conversationHistory.any((entry) => !entry.isPlainRunHistoryMessage)) {
+      throw ArgumentError.value(
+        conversationHistory,
+        'conversationHistory',
+        'must contain only plain user and assistant text messages',
+      );
+    }
     final input = message is String
         ? message
         : [
@@ -304,6 +364,11 @@ class HermesApiClient {
       // transition while parsing either flat or enveloped run responses below.
       'input': input,
       'message': message,
+      if (conversationHistory.isNotEmpty)
+        'conversation_history': [
+          for (final entry in conversationHistory)
+            {'role': entry.role, 'content': entry.content},
+        ],
     });
     final run = response['run'] is Map
         ? wingMapFromJson(response['run'])
@@ -326,17 +391,23 @@ class HermesApiClient {
     );
   }
 
-  Stream<HermesStreamEvent> runEvents(String runId, {String? profile}) {
+  Stream<HermesStreamEvent> runEvents(
+    String runId, {
+    String? profile,
+    void Function()? onActivity,
+  }) {
     final headers = <String, String>{
       ...config.headers,
       hermesApiAcceptHeader: hermesApiEventStreamContentType,
-      hermesApiCacheControlHeader: hermesApiNoCache,
     };
     final chunks = _getStream(
       _scoped(config.runEventsUri(runId), profile),
       headers,
     );
-    return const HermesSseEventDecoder().decodeJsonEventStream(chunks);
+    return const HermesSseEventDecoder().decodeJsonEventStream(
+      chunks,
+      onActivity: onActivity,
+    );
   }
 
   Future<void> respondApproval({

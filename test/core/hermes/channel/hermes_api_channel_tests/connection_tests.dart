@@ -529,6 +529,66 @@ void _hermesApiChannelConnectionTests() {
     expect(channel.state.errorMessage, contains('offline'));
   });
 
+  test('connect records authentication failure from HTTP status', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (_, _) async =>
+            throw const _TestHermesApiStatusException(401, 'request rejected'),
+      ),
+    );
+
+    await channel.connect(baseUrl: 'https://hermes.example.com');
+
+    expect(channel.state.status, HermesConnectionStatus.error);
+    expect(
+      channel.state.connectionFailureKind,
+      HermesConnectionFailureKind.authentication,
+    );
+  });
+
+  test('connect records incompatible response failures', () async {
+    final channel = HermesApiChannel(
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (_, _) async => '<html>not Hermes Agent</html>',
+      ),
+    );
+
+    await channel.connect(baseUrl: 'https://hermes.example.com');
+
+    expect(channel.state.status, HermesConnectionStatus.error);
+    expect(
+      channel.state.connectionFailureKind,
+      HermesConnectionFailureKind.incompatibleResponse,
+    );
+  });
+
+  test('connect preserves typed transport failure causes', () async {
+    for (final (transportKind, connectionKind) in [
+      (
+        HermesApiTransportFailureKind.network,
+        HermesConnectionFailureKind.network,
+      ),
+      (HermesApiTransportFailureKind.tls, HermesConnectionFailureKind.tls),
+      (
+        HermesApiTransportFailureKind.timeout,
+        HermesConnectionFailureKind.timeout,
+      ),
+    ]) {
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (_, _) async => throw HermesApiTransportException(transportKind),
+        ),
+      );
+
+      await channel.connect(baseUrl: 'https://hermes.example.com');
+
+      expect(channel.state.connectionFailureKind, connectionKind);
+    }
+  });
+
   test('connect redacts local filesystem paths from stored errors', () async {
     // The chat UI and diagnostics export both strip local paths; the channel
     // path must too, because Agents, Providers, and Diagnostics render
@@ -571,6 +631,10 @@ void _hermesApiChannelConnectionTests() {
     await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
     expect(channel.state.status, HermesConnectionStatus.error);
+    expect(
+      channel.state.connectionFailureKind,
+      HermesConnectionFailureKind.unknown,
+    );
     expect(channel.state.errorMessage, contains('401 unauthorized'));
     expect(channel.state.errorMessage, contains('Bearer [redacted]'));
     expect(channel.state.errorMessage, contains('Basic [redacted]'));
@@ -603,6 +667,10 @@ void _hermesApiChannelConnectionTests() {
     expect(clientBuilt, isFalse);
     expect(channel.state.status, HermesConnectionStatus.error);
     expect(channel.state.errorMessage, contains('baseUrl'));
+    expect(
+      channel.state.connectionFailureKind,
+      HermesConnectionFailureKind.invalidEndpoint,
+    );
     expect(channel.state.sessions, isEmpty);
   });
 

@@ -8,7 +8,7 @@
     <application
         android:label="Hermes Wing"
         android:name="${applicationName}"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher">
         <activity

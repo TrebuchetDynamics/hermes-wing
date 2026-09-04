@@ -1,5 +1,39 @@
 # Android Live Microphone Hermes Smoke
 
+## Release evidence boundary
+
+The default manual recorder produces a historical local observation receipt; it
+does not bind the installed APK to the new release manifest. Its input/output
+schema includes spoken/provider excerpts, device identity, package paths, and a
+sanitized private origin. Keep those receipts local and out of public artifacts.
+They are deliberately rejected by the release qualification aggregator. Do not
+silently upgrade them to exact-artifact physical qualification.
+
+Set `WING_RELEASE_QUALIFICATION=true` to use the versioned sanitized recorder.
+It compares the installed base APK bytes and package version/build against the
+selected release manifest at observation time. It exports observation booleans,
+device class/Android API level, artifact and manifest digests, scenario, timestamp,
+result, and fixed limitations. It never reads spoken phrases or private origins.
+The source checkout must match the build and `TAG`, `GITHUB_RUN_ID`,
+`GITHUB_RUN_ATTEMPT`, and `GITHUB_REPOSITORY` must identify that build. Set
+`WING_RELEASE_EVIDENCE_DIR` to the downloaded Android artifact set and
+`WING_ANDROID_DEVICE_ID` to the explicitly selected device. Set a new
+`WING_RELEASE_QUALIFICATION_RECEIPT` path for each observation; existing receipts
+are never overwritten.
+
+The physical path retains all existing boolean observation gates and additionally
+requires `WING_ANDROID_PROVIDER_REPLY_OBSERVED=true` and
+`WING_ANDROID_DISTINCT_REARMED_TURN_OBSERVED=true`. The server-audio recorder offers
+the same opt-in for an installed Android APK and retains its explicit transport,
+provider reply, playback, round-trip, and no-device-STT/no-local-TTS gates. It does
+not claim physical microphone qualification, even on a physical device. Other
+server-audio client targets are not implemented by this recorder.
+
+Split/store installations are rejected and require a separately identified
+delivered set. These optional manual receipts remain separate from the automated
+release index. Physical microphone, restart/rollback, and signed distribution
+qualification remain open until those paths run on their intended targets.
+
 Required manual smoke for Android physical microphone + continuous voice evidence.
 This is the physical-audio receipt that deterministic transcript tests,
 `android:voice-smoke`, and `android:hermes-voice-loop-smoke` cannot provide.
@@ -14,7 +48,7 @@ Prerequisites:
 - an audio-capable, responsive physical Android device; emulators can exercise
   prep/regression helpers but cannot close this live-mic receipt;
 - a configured Hermes Agent API server with provider/model credentials;
-- a safe Android-reachable Hermes URL, usually a LAN/VPN/Tailscale URL for the
+- a safe Android-reachable Hermes URL, usually a LAN/VPN/NetBird/Tailscale URL for the
   physical device (`http://10.0.2.2:8642` is emulator-only prep context, not a
   final live-mic receipt URL);
 - a debug APK build or permission to let the prep helper build one.
@@ -150,3 +184,24 @@ Update this runbook when `scripts/prepare_android_live_mic_smoke.sh`,
 `integration_test/android_device_speech_smoke_test.dart`,
 `integration_test/hermes_continuous_voice_android_smoke_test.dart`, or Hermes
 voice transport behavior changes.
+
+## Conversation ownership qualification (2026-09-04)
+
+The conversation-epoch and provider-disposal changes require a new physical
+receipt for the exact APK under test. Earlier receipts and deterministic Flutter
+tests do not qualify this changed artifact. Record artifact SHA-256, source/build
+identity, OS/device class, audio route, outcome, and limitations; omit serials,
+endpoints, spoken phrases, and transcript content.
+
+Exercise built-in mic/speaker, wired and Bluetooth routes where available;
+permission revoke, background/foreground, screen lock, route loss, and sustained
+use. Include profile A → B → A, identical session IDs on different gateways,
+late recognition/playback callbacks, independent output mute and microphone
+pause, and failed/unconfirmed Agent interruption. Verify that stale speech is
+discarded and replacement input is not submitted before the captured stop is
+confirmed. Observe interruption latency and accidental speaker self-triggering
+directly; a deterministic partial-transcript test is not AEC or double-talk proof.
+
+Mark unsupported routes separately from failed scenarios. Harness and production
+APKs are different artifacts; attach qualification only to the one exercised.
+No physical device or audio route was exercised for this plan execution.

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -81,7 +82,8 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   Timer? _approvalExpiryTimer;
 
   bool get _editing => widget.profile != null;
-  bool get _payloadFrozen => _saving || _pendingApproval != null;
+  bool get _payloadFrozen =>
+      _saving || _loadingPersona || _pendingApproval != null;
 
   @override
   void initState() {
@@ -163,7 +165,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString().contains('412')
+        _error = _isProfileRevisionConflict(error)
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
       });
@@ -210,6 +212,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   }
 
   Future<void> _save() async {
+    if (_loadingPersona || _saving) return;
     final pendingApproval = _pendingApproval;
     if (pendingApproval != null && _approvalExpired(pendingApproval)) {
       setState(() {
@@ -300,7 +303,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         });
       }
     } catch (error) {
-      final conflict = error.toString().contains('412');
+      final conflict = _isProfileRevisionConflict(error);
       if (conflict && widget.canEditSoul && mounted) {
         // A rejected SOUL write means the server has newer content. Reconcile
         // before showing the conflict so a retry cannot overwrite stale text.
@@ -538,7 +541,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
               if (profile != null && widget.canEditSoul) ...[
                 const SizedBox(height: 16),
                 if (_loadingPersona)
-                  const LinearProgressIndicator()
+                  Semantics(
+                    liveRegion: true,
+                    label: strings.personaLoading,
+                    child: const LinearProgressIndicator(),
+                  )
                 else
                   TextFormField(
                     controller: _personaController,
@@ -610,7 +617,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     ),
                   ),
                   FilledButton(
-                    onPressed: _saving ? null : _save,
+                    onPressed: _saving || _loadingPersona ? null : _save,
                     child: _saving
                         ? const SizedBox.square(
                             dimension: 20,
@@ -639,6 +646,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 /// [TextEditingController] so it is disposed only after the dialog is fully
 /// gone from the tree (a synchronous dispose after `showDialog` returns races
 /// the exit transition).
+bool _isProfileRevisionConflict(Object error) =>
+    (error is HermesApiStatusException && error.statusCode == 412) ||
+    error is WingLinkPreconditionFailed;
+
 class _DeleteConfirmationDialog extends StatefulWidget {
   const _DeleteConfirmationDialog({
     required this.expectedName,

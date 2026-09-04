@@ -39,6 +39,12 @@ class HermesProvider {
   final List<String> envVars;
   final bool configured;
 
+  bool get acceptsWriteOnlyCredential =>
+      authType.trim().toLowerCase() == 'api_key';
+
+  bool get requiresInteractiveSignIn =>
+      authType.trim().toLowerCase() == 'oauth';
+
   /// Masked last-4-only presence hint (e.g. `····ab12`) or `null` when unset.
   /// NEVER a full credential.
   final String? keyHint;

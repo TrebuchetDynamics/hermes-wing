@@ -4,6 +4,7 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   FakeHermesEndpointStore({
     HermesEndpointConfig? initial,
     List<HermesEndpointConfig>? profiles,
+    this.onLoadProfiles,
     this.onSaveAll,
   }) : _config = initial,
        _profiles = profiles == null ? [] : [...profiles] {
@@ -14,6 +15,8 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   final List<HermesEndpointConfig> _profiles;
   final List<HermesEndpointConfig> saveCalls = [];
   final List<List<HermesEndpointConfig>> saveAllCalls = [];
+  final Future<List<HermesEndpointConfig>> Function()? onLoadProfiles;
+  int loadProfilesCalls = 0;
   final void Function()? onSaveAll;
   final List<String> deleteProfileCalls = [];
   int clearCalls = 0;
@@ -22,7 +25,10 @@ class FakeHermesEndpointStore implements HermesEndpointStore {
   Future<HermesEndpointConfig?> load() async => _config;
 
   @override
-  Future<List<HermesEndpointConfig>> loadProfiles() async => [..._profiles];
+  Future<List<HermesEndpointConfig>> loadProfiles() async {
+    loadProfilesCalls += 1;
+    return onLoadProfiles?.call() ?? [..._profiles];
+  }
 
   @override
   Future<void> saveAll(List<HermesEndpointConfig> profiles) async {

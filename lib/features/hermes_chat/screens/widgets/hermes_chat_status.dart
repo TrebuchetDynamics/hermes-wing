@@ -429,8 +429,9 @@ class _ApprovalBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final risk = request.risk;
-    final hasApprovalId = request.id.trim().isNotEmpty;
-    final canAnswer = canRespond && hasApprovalId;
+    final hasResponseIdentity = request.hasResponseIdentity;
+    bool canAnswer(HermesApprovalDecision decision) =>
+        canRespond && hasResponseIdentity && request.allows(decision);
     final colorScheme = Theme.of(context).colorScheme;
     return _AssistantTimelineItem(
       child: Align(
@@ -482,6 +483,15 @@ class _ApprovalBanner extends StatelessWidget {
                             _safeHermesUiPreview(risk, maxLength: 120),
                           ),
                         ),
+                      if (request.command != null)
+                        Text(
+                          strings.chatStatusCommandLabel(
+                            _safeHermesUiPreview(
+                              request.command!,
+                              maxLength: 240,
+                            ),
+                          ),
+                        ),
                       if (!canRespond) ...[
                         const SizedBox(height: 8),
                         Text(
@@ -490,7 +500,7 @@ class _ApprovalBanner extends StatelessWidget {
                             'hermes-approval-response-unavailable',
                           ),
                         ),
-                      ] else if (!hasApprovalId) ...[
+                      ] else if (!hasResponseIdentity) ...[
                         const SizedBox(height: 8),
                         Text(
                           strings.chatStatusApprovalIdMissingBody,
@@ -518,7 +528,7 @@ class _ApprovalBanner extends StatelessWidget {
                             icon: const Icon(Icons.security_outlined),
                             label: Text(strings.chatStatusReviewAction),
                           ),
-                          if (!hasApprovalId)
+                          if (!hasResponseIdentity)
                             TextButton(
                               key: const ValueKey(
                                 'hermes-approval-dismiss-malformed',
@@ -526,37 +536,51 @@ class _ApprovalBanner extends StatelessWidget {
                               onPressed: responding ? null : onDismissMalformed,
                               child: Text(strings.chatStatusDismissAction),
                             ),
-                          TextButton(
-                            key: const ValueKey('hermes-approval-deny'),
-                            onPressed: responding || !canAnswer
-                                ? null
-                                : () => onDecide(HermesApprovalDecision.deny),
-                            child: Text(strings.chatStatusDenyAction),
-                          ),
-                          OutlinedButton(
-                            key: const ValueKey('hermes-approval-session'),
-                            onPressed: responding || !canAnswer
-                                ? null
-                                : () =>
-                                      unawaited(_confirmSessionAllow(context)),
-                            child: Text(
-                              strings.chatStatusAllowForSessionAction,
+                          if (request.allows(HermesApprovalDecision.deny))
+                            TextButton(
+                              key: const ValueKey('hermes-approval-deny'),
+                              onPressed:
+                                  responding ||
+                                      !canAnswer(HermesApprovalDecision.deny)
+                                  ? null
+                                  : () => onDecide(HermesApprovalDecision.deny),
+                              child: Text(strings.chatStatusDenyAction),
                             ),
-                          ),
-                          OutlinedButton(
-                            key: const ValueKey('hermes-approval-always'),
-                            onPressed: responding || !canAnswer
-                                ? null
-                                : () => unawaited(_confirmAlwaysAllow(context)),
-                            child: Text(strings.chatStatusAlwaysAllowAction),
-                          ),
-                          FilledButton(
-                            key: const ValueKey('hermes-approval-once'),
-                            onPressed: responding || !canAnswer
-                                ? null
-                                : () => onDecide(HermesApprovalDecision.once),
-                            child: Text(strings.chatStatusApproveOnceAction),
-                          ),
+                          if (request.allows(HermesApprovalDecision.session))
+                            OutlinedButton(
+                              key: const ValueKey('hermes-approval-session'),
+                              onPressed:
+                                  responding ||
+                                      !canAnswer(HermesApprovalDecision.session)
+                                  ? null
+                                  : () => unawaited(
+                                      _confirmSessionAllow(context),
+                                    ),
+                              child: Text(
+                                strings.chatStatusAllowForSessionAction,
+                              ),
+                            ),
+                          if (request.allows(HermesApprovalDecision.always))
+                            OutlinedButton(
+                              key: const ValueKey('hermes-approval-always'),
+                              onPressed:
+                                  responding ||
+                                      !canAnswer(HermesApprovalDecision.always)
+                                  ? null
+                                  : () =>
+                                        unawaited(_confirmAlwaysAllow(context)),
+                              child: Text(strings.chatStatusAlwaysAllowAction),
+                            ),
+                          if (request.allows(HermesApprovalDecision.once))
+                            FilledButton(
+                              key: const ValueKey('hermes-approval-once'),
+                              onPressed:
+                                  responding ||
+                                      !canAnswer(HermesApprovalDecision.once)
+                                  ? null
+                                  : () => onDecide(HermesApprovalDecision.once),
+                              child: Text(strings.chatStatusApproveOnceAction),
+                            ),
                         ],
                       ),
                     ],
@@ -656,18 +680,24 @@ class _ApprovalBanner extends StatelessWidget {
       builder: (sheetContext) {
         final strings = AppLocalizations.of(sheetContext);
         final risk = request.risk;
-        final hasApprovalId = request.id.trim().isNotEmpty;
-        final canAnswer = canRespond && hasApprovalId;
+        final hasResponseIdentity = request.hasResponseIdentity;
+        bool canAnswer(HermesApprovalDecision decision) =>
+            canRespond && hasResponseIdentity && request.allows(decision);
         final safePrompt = _safeHermesUiText(request.prompt);
         final promptTruncated = safePrompt.length > 600;
         final safeRisk = risk == null ? null : _safeHermesUiText(risk);
         final riskTruncated = (safeRisk?.length ?? 0) > 240;
+        final safeCommand = request.command == null
+            ? null
+            : _safeHermesUiText(request.command!);
+        final commandTruncated = (safeCommand?.length ?? 0) > 600;
         final safeToolCallId = _safeHermesUiText(request.toolCallId);
         final approvalSummary = _approvalReviewSummary(
           safePrompt: safePrompt,
           safeRisk: safeRisk,
+          safeCommand: safeCommand,
           safeToolCallId: safeToolCallId,
-          hasApprovalId: hasApprovalId,
+          hasResponseIdentity: hasResponseIdentity,
         );
         return SafeArea(
           child: Padding(
@@ -724,6 +754,22 @@ class _ApprovalBanner extends StatelessWidget {
                         ),
                       ),
                   ],
+                  if (safeCommand != null) ...[
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      strings.chatStatusCommandLabel(
+                        _safeHermesUiPreview(safeCommand, maxLength: 600),
+                      ),
+                      key: const ValueKey('hermes-approval-sheet-command'),
+                    ),
+                    if (commandTruncated)
+                      Text(
+                        strings.chatStatusCommandTruncatedBody,
+                        key: const ValueKey(
+                          'hermes-approval-sheet-command-truncated',
+                        ),
+                      ),
+                  ],
                   if (request.toolCallId.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
@@ -739,7 +785,7 @@ class _ApprovalBanner extends StatelessWidget {
                         '{run_id}',
                       ),
                     ),
-                  ] else if (!hasApprovalId) ...[
+                  ] else if (!hasResponseIdentity) ...[
                     const SizedBox(height: 8),
                     Text(strings.chatStatusDecisionsDisabledIdBody),
                   ],
@@ -773,7 +819,7 @@ class _ApprovalBanner extends StatelessWidget {
                         onPressed: () => Navigator.of(sheetContext).pop(),
                         child: Text(strings.closeAction),
                       ),
-                      if (!hasApprovalId)
+                      if (!hasResponseIdentity)
                         TextButton(
                           key: const ValueKey(
                             'hermes-approval-sheet-dismiss-malformed',
@@ -784,50 +830,54 @@ class _ApprovalBanner extends StatelessWidget {
                           },
                           child: Text(strings.chatStatusDismissAction),
                         ),
-                      TextButton(
-                        key: const ValueKey('hermes-approval-sheet-deny'),
-                        onPressed: canAnswer
-                            ? () {
-                                Navigator.of(sheetContext).pop();
-                                onDecide(HermesApprovalDecision.deny);
-                              }
-                            : null,
-                        child: Text(strings.chatStatusDenyAction),
-                      ),
-                      OutlinedButton(
-                        key: const ValueKey('hermes-approval-sheet-session'),
-                        onPressed: canAnswer
-                            ? () => unawaited(
-                                _confirmSessionAllow(
-                                  sheetContext,
-                                  closeSheetOnConfirm: true,
-                                ),
-                              )
-                            : null,
-                        child: Text(strings.chatStatusAllowForSessionAction),
-                      ),
-                      OutlinedButton(
-                        key: const ValueKey('hermes-approval-sheet-always'),
-                        onPressed: canAnswer
-                            ? () => unawaited(
-                                _confirmAlwaysAllow(
-                                  sheetContext,
-                                  closeSheetOnConfirm: true,
-                                ),
-                              )
-                            : null,
-                        child: Text(strings.chatStatusAlwaysAllowAction),
-                      ),
-                      FilledButton(
-                        key: const ValueKey('hermes-approval-sheet-once'),
-                        onPressed: canAnswer
-                            ? () {
-                                Navigator.of(sheetContext).pop();
-                                onDecide(HermesApprovalDecision.once);
-                              }
-                            : null,
-                        child: Text(strings.chatStatusApproveOnceAction),
-                      ),
+                      if (request.allows(HermesApprovalDecision.deny))
+                        TextButton(
+                          key: const ValueKey('hermes-approval-sheet-deny'),
+                          onPressed: canAnswer(HermesApprovalDecision.deny)
+                              ? () {
+                                  Navigator.of(sheetContext).pop();
+                                  onDecide(HermesApprovalDecision.deny);
+                                }
+                              : null,
+                          child: Text(strings.chatStatusDenyAction),
+                        ),
+                      if (request.allows(HermesApprovalDecision.session))
+                        OutlinedButton(
+                          key: const ValueKey('hermes-approval-sheet-session'),
+                          onPressed: canAnswer(HermesApprovalDecision.session)
+                              ? () => unawaited(
+                                  _confirmSessionAllow(
+                                    sheetContext,
+                                    closeSheetOnConfirm: true,
+                                  ),
+                                )
+                              : null,
+                          child: Text(strings.chatStatusAllowForSessionAction),
+                        ),
+                      if (request.allows(HermesApprovalDecision.always))
+                        OutlinedButton(
+                          key: const ValueKey('hermes-approval-sheet-always'),
+                          onPressed: canAnswer(HermesApprovalDecision.always)
+                              ? () => unawaited(
+                                  _confirmAlwaysAllow(
+                                    sheetContext,
+                                    closeSheetOnConfirm: true,
+                                  ),
+                                )
+                              : null,
+                          child: Text(strings.chatStatusAlwaysAllowAction),
+                        ),
+                      if (request.allows(HermesApprovalDecision.once))
+                        FilledButton(
+                          key: const ValueKey('hermes-approval-sheet-once'),
+                          onPressed: canAnswer(HermesApprovalDecision.once)
+                              ? () {
+                                  Navigator.of(sheetContext).pop();
+                                  onDecide(HermesApprovalDecision.once);
+                                }
+                              : null,
+                          child: Text(strings.chatStatusApproveOnceAction),
+                        ),
                     ],
                   ),
                 ],
@@ -842,8 +892,9 @@ class _ApprovalBanner extends StatelessWidget {
   String _approvalReviewSummary({
     required String safePrompt,
     required String? safeRisk,
+    required String? safeCommand,
     required String safeToolCallId,
-    required bool hasApprovalId,
+    required bool hasResponseIdentity,
   }) {
     final buffer = StringBuffer()
       ..writeln('Hermes approval review')
@@ -851,13 +902,18 @@ class _ApprovalBanner extends StatelessWidget {
     if (safeRisk != null) {
       buffer.writeln('Risk: ${_safeHermesUiPreview(safeRisk, maxLength: 240)}');
     }
+    if (safeCommand != null) {
+      buffer.writeln(
+        'Command: ${_safeHermesUiPreview(safeCommand, maxLength: 600)}',
+      );
+    }
     if (safeToolCallId.trim().isNotEmpty) {
       buffer.writeln(
         'Tool call: ${_safeHermesUiPreview(safeToolCallId, maxLength: 160)}',
       );
     }
     buffer
-      ..writeln('Approval id present: $hasApprovalId')
+      ..writeln('Response identity present: $hasResponseIdentity')
       ..write('Pending approvals: $pendingCount');
     return buffer.toString();
   }

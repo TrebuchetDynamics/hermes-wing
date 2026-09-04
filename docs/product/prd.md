@@ -2,6 +2,11 @@
 
 Status: current product direction
 
+Pending decisions: [continuity retention](continuity-retention-proposal.md) and
+[notification contracts](notification-contract-proposal.md) are proposals, not
+approved storage or delivery features. See the
+[capability claim audit](capability-claim-audit.md) before expanding support claims.
+
 ## Product
 
 Hermes Wing is an independent Flutter client for Hermes Agent on mobile, web,
@@ -55,8 +60,9 @@ general file manager, or second Agent backend.
 ## Current status
 
 The alpha supports direct Agent chat/runs/sessions, approvals, health, pairing,
-Linux Wing Link lifecycle, and bounded profile lifecycle. Provider mutation,
-profile persona editing, directory navigation, Hermes Project assignment, signed
+Linux Wing Link lifecycle, bounded profile lifecycle, capability-gated provider,
+model, and SOUL management, and read-only navigation of locally approved host
+folders. Hermes Project creation and assignment, project-scoped Chat, signed
 packages, and non-Linux Wing Link services remain planned or unqualified.
 
 See [Wing Link](wing-link.md), [Routes](routes.md), the

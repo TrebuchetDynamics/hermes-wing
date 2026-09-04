@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -125,6 +127,47 @@ void main() {
     },
   );
 
+  testWidgets('shows progress while Office refresh is in flight', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final gate = Completer<void>();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha Gateway',
+          baseUrl: 'https://alpha',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': _summary(id: 'alice', name: 'Alice'),
+      }, gate: gate),
+      activeChannel: channel,
+    );
+
+    await tester.pumpWidget(_testApp(channel: channel, directory: directory));
+    await tester.tap(find.byKey(const ValueKey('office-refresh')));
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('office-refresh-progress')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(const ValueKey('office-refresh')))
+          .onPressed,
+      isNull,
+    );
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('office-refresh-progress')), findsNothing);
+    expect(find.text('Alice'), findsOneWidget);
+  });
+
   testWidgets('gateway endpoint contact remains usable at 200% text scale', (
     tester,
   ) async {
@@ -177,6 +220,7 @@ void main() {
   testWidgets('open failure is bounded and keeps the Office available', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final channel = _FailingOfficeChannel();
     addTearDown(channel.dispose);
     final directory = directoryFor(
@@ -208,6 +252,18 @@ void main() {
       findsNothing,
     );
     expect(find.text('Alice'), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(
+            find.text(
+              'Could not open this Hermes profile. Refresh and try again.',
+            ),
+          )
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
+    semantics.dispose();
   });
 
   testWidgets('open chat activates the selected gateway agent', (tester) async {

@@ -2,6 +2,29 @@
 
 Use this when handing a local Hermes Wing Android build to a trusted tester or installing it on a development device.
 
+## Exact release evidence
+
+The release workflow emits `android-release-evidence.json` after dependency
+resolution, generated Termux metadata, and APK/AAB creation. It records actual
+input digests, source dirty status, version/build, toolchain, workflow run and
+attempt, signing certificate identity, and separate APK/AAB digests. The generated
+metadata travels as `android-termux-bootstrap.json` so verification checks the
+bytes embedded by the Android build rather than the original checkout metadata.
+
+The emulator smoke pulls the installed single base APK back through Android's
+package manager identity and checks its digest against the artifact being tested.
+Split/store installations are rejected by this smoke and remain unqualified.
+APK install/launch evidence never qualifies the AAB, physical microphone, acoustic
+quality, or service lifecycle.
+
+Before publication, `release-qualification-index.json` hashes all four build
+manifests, payloads, auxiliary files, the host verification receipt, and all three
+platform smoke receipts. Missing or mismatched receipts fail publication.
+Historical manual receipts are not imported into this index; opt-in sanitized
+physical/server-audio receipts remain a separate manual evidence chain. See the
+[live microphone runbook](live-mic-smoke.md). No signed release or hosted workflow
+was executed to validate this new evidence path locally.
+
 ## Debug APK for local testers
 
 Build a debug APK from the repository root:
@@ -86,9 +109,10 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup separately. With Tailscale active on the host, `wing-link pair`
-  automatically binds Hermes Agent to the detected local Tailscale address and
-  starts non-loopback pairing. For another trusted VPN or isolated trusted LAN,
+- Share setup separately. With NetBird or Tailscale active on the host,
+  `wing-link pair` automatically binds Hermes Agent to a safely detected local
+  overlay address and starts non-loopback pairing. Distinct simultaneous overlay
+  addresses fail closed. For another trusted VPN or an isolated trusted LAN,
   configure a phone-reachable Agent address explicitly and set `WING_HERMES_URL`
   and `WING_LINK_URL` before running `wing-link pair`.
 
@@ -108,8 +132,8 @@ build/app/outputs/bundle/release/app-release.aab
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Run the default pairing command with a phone-reachable trusted VPN/Tailscale
-   or isolated-LAN address. Use `--local` only for same-host pairing. Verify the QR
+3. Run the default pairing command with a phone-reachable trusted NetBird,
+   Tailscale, or other VPN address, or an isolated-LAN address. Use `--local` only for same-host pairing. Verify the QR
    flow from the host screen and Android **Share → Hermes Wing** for an existing
    pairing message. Use loopback `/open` only when Wing runs on that same host,
    and manual URL/token

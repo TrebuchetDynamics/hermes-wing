@@ -50,7 +50,13 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
             onPressed: directory.refreshing
                 ? null
                 : () => unawaited(directory.refresh()),
-            icon: const Icon(Icons.refresh),
+            icon: directory.refreshing
+                ? const SizedBox.square(
+                    key: ValueKey('office-refresh-progress'),
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
           ),
           const AppShellMenuButton(),
         ],
@@ -63,7 +69,10 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
             children: [
               if (_openFailed)
                 MaterialBanner(
-                  content: Text(strings.officeOpenFailed),
+                  content: Semantics(
+                    liveRegion: true,
+                    child: Text(strings.officeOpenFailed),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => setState(() => _openFailed = false),

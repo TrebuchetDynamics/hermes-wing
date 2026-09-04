@@ -12,12 +12,16 @@ HermesApprovalRequest _request({
   String prompt = 'Run the deploy script?',
   String? sessionId,
   String? runId,
+  String? profileId,
+  int? connectionGeneration,
 }) => HermesApprovalRequest(
   id: id,
   toolCallId: toolCallId,
   prompt: prompt,
   runId: runId,
   sessionId: sessionId,
+  profileId: profileId,
+  connectionGeneration: connectionGeneration,
 );
 
 void main() {
@@ -46,12 +50,78 @@ void main() {
     expect(queue.hasPendingWork, isTrue);
   });
 
+  test('old approval failure cannot affect replacement queue', () async {
+    final gate = Completer<void>();
+    build(
+      withChannel: FakeHermesChannel(approvalResponseGate: () => gate.future),
+    );
+    final request = _request(id: 'same');
+    queue.add(request);
+    final old = queue.resolve(HermesApprovalDecision.once, request);
+    queue.reset();
+    queue.add(request);
+    gate.completeError(StateError('obsolete response'));
+    await old;
+    expect(queue.pending, [request]);
+    expect(errors, isEmpty);
+  });
+
   test('a replayed approval is not queued twice', () {
     build();
     queue.add(_request(id: 'a'));
     queue.add(_request(id: 'a'));
 
     expect(queue.pending, hasLength(1));
+  });
+
+  test('run-id approvals dedupe on connection, profile, session, and run', () {
+    build();
+    final first = _request(
+      id: '',
+      toolCallId: '',
+      prompt: 'Approve?',
+      connectionGeneration: 1,
+      profileId: 'alpha',
+      sessionId: 'session-1',
+      runId: 'run-1',
+    );
+    queue.add(first);
+    queue.add(first);
+    queue.add(
+      _request(
+        id: '',
+        toolCallId: '',
+        prompt: 'Approve?',
+        connectionGeneration: 1,
+        profileId: 'alpha',
+        sessionId: 'session-1',
+        runId: 'run-2',
+      ),
+    );
+    queue.add(
+      _request(
+        id: '',
+        toolCallId: '',
+        prompt: 'Approve?',
+        connectionGeneration: 1,
+        profileId: 'beta',
+        sessionId: 'session-1',
+        runId: 'run-1',
+      ),
+    );
+    queue.add(
+      _request(
+        id: '',
+        toolCallId: '',
+        prompt: 'Approve?',
+        connectionGeneration: 2,
+        profileId: 'alpha',
+        sessionId: 'session-1',
+        runId: 'run-1',
+      ),
+    );
+
+    expect(queue.pending, hasLength(4));
   });
 
   test('identity falls back to tool call then prompt', () {
@@ -92,6 +162,23 @@ void main() {
     expect(errors, isEmpty);
   });
 
+  test('a decision omitted by Agent choices is never sent', () async {
+    build();
+    const request = HermesApprovalRequest(
+      id: '',
+      toolCallId: '',
+      prompt: 'Approve?',
+      choices: {HermesApprovalDecision.once, HermesApprovalDecision.deny},
+      runId: 'run-1',
+    );
+    queue.add(request);
+
+    await queue.resolve(HermesApprovalDecision.always, request);
+
+    expect(channel.respondToApprovalCalls, isEmpty);
+    expect(queue.pending, [request]);
+  });
+
   test('a second decision is ignored while one is in flight', () async {
     final gate = Completer<void>();
     build(
@@ -102,7 +189,7 @@ void main() {
 
     final first = queue.resolve(HermesApprovalDecision.once, request);
     await queue.resolve(HermesApprovalDecision.deny, request);
-    expect(queue.answeringId, 'a');
+    expect(queue.answeringId, request.identityKey);
     expect(channel.respondToApprovalCalls, hasLength(1));
 
     gate.complete();
@@ -185,11 +272,15 @@ void main() {
     final request = _request(id: 'a');
     queue.add(request);
     unawaited(queue.resolve(HermesApprovalDecision.once, request));
-    expect(queue.answeringId, 'a');
+    expect(queue.answeringId, request.identityKey);
 
     queue.clearPending();
     expect(queue.pending, isEmpty);
-    expect(queue.answeringId, 'a', reason: 'an in-flight answer is tracked');
+    expect(
+      queue.answeringId,
+      request.identityKey,
+      reason: 'an in-flight answer is tracked',
+    );
 
     queue.reset();
     expect(queue.answeringId, isNull);

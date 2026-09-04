@@ -132,15 +132,20 @@ class _LocalHermesSetupScreenState
           ),
         );
       case LocalHermesSetupStatus.failed:
-        return _messageState(
-          icon: Icons.error_outline,
-          title: controller.errorMessage ?? strings.localSetupUnhealthyTitle,
-          body: '',
-          action: OutlinedButton.icon(
-            key: const ValueKey('local-hermes-setup-retry'),
-            onPressed: () => unawaited(controller.inspect()),
-            icon: const Icon(Icons.refresh),
-            label: Text(strings.localSetupRetryAction),
+        return Semantics(
+          key: const ValueKey('local-hermes-setup-failure'),
+          container: true,
+          liveRegion: true,
+          child: _messageState(
+            icon: Icons.error_outline,
+            title: strings.localSetupFailedTitle,
+            body: controller.errorMessage ?? strings.localSetupFailedBody,
+            action: OutlinedButton.icon(
+              key: const ValueKey('local-hermes-setup-retry'),
+              onPressed: () => unawaited(controller.inspect()),
+              icon: const Icon(Icons.refresh),
+              label: Text(strings.localSetupRetryAction),
+            ),
           ),
         );
     }

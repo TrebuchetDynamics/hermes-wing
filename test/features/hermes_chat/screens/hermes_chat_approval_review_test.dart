@@ -83,7 +83,45 @@ void main() {
     expect(find.textContaining('/home/operator'), findsNothing);
   });
 
-  testWidgets('an approval without an id cannot be answered', (tester) async {
+  testWidgets('current choices hide unsupported approval decisions', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    await _openReview(
+      tester,
+      channel,
+      const HermesApprovalRequest(
+        id: '',
+        toolCallId: '',
+        prompt: 'Run the reviewed command?',
+        command: 'bash -c safe-command',
+        choices: {HermesApprovalDecision.once, HermesApprovalDecision.deny},
+        runId: 'run-1',
+      ),
+    );
+
+    expect(find.textContaining('Command: bash -c safe-command'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('hermes-approval-sheet-session')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-approval-sheet-always')),
+      findsNothing,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('hermes-approval-sheet-once')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('a current run-id-only approval can be answered', (tester) async {
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
 
@@ -98,12 +136,19 @@ void main() {
       ),
     );
 
-    // Without an approval id there is nothing to answer, so the decision
-    // controls must stay disabled rather than sending an unroutable reply.
-    final approve = find.widgetWithText(FilledButton, 'Approve');
-    if (approve.evaluate().isNotEmpty) {
-      expect(tester.widget<FilledButton>(approve).onPressed, isNull);
-    }
-    expect(channel.respondToApprovalCalls, isEmpty);
+    final approve = find.byKey(const ValueKey('hermes-approval-sheet-once'));
+    expect(approve, findsOneWidget);
+    expect(tester.widget<FilledButton>(approve).onPressed, isNotNull);
+
+    await tester.tap(approve);
+    await tester.pumpAndSettle();
+
+    expect(channel.respondToApprovalCalls, [
+      {
+        'approvalId': '',
+        'decision': HermesApprovalDecision.once,
+        'runId': 'run-1',
+      },
+    ]);
   });
 }

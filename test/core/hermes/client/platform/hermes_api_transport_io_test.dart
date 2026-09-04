@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/platform/hermes_api_transport_io.dart';
+import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 
 void main() {
   test('rejects oversized response bodies before buffering', () async {
@@ -28,6 +29,50 @@ void main() {
     } finally {
       await server.close(force: true);
     }
+  });
+
+  test('HTTP rejection preserves typed status identity', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server.listen((request) async {
+      request.response.statusCode = HttpStatus.unauthorized;
+      await request.response.close();
+    });
+
+    try {
+      await expectLater(
+        defaultPost(
+          Uri.parse('http://127.0.0.1:${server.port}/runs'),
+          {},
+          '{}',
+        ),
+        throwsA(
+          isA<HermesApiStatusException>().having(
+            (error) => error.statusCode,
+            'statusCode',
+            HttpStatus.unauthorized,
+          ),
+        ),
+      );
+    } finally {
+      await server.close(force: true);
+    }
+  });
+
+  test('wraps socket failures without exposing endpoint details', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final port = server.port;
+    await server.close(force: true);
+
+    await expectLater(
+      defaultGet(Uri.parse('http://127.0.0.1:$port/health'), const {}),
+      throwsA(
+        isA<HermesApiTransportException>().having(
+          (error) => error.kind,
+          'kind',
+          HermesApiTransportFailureKind.network,
+        ),
+      ),
+    );
   });
 
   test('POST sends Unicode JSON as UTF-8', () async {

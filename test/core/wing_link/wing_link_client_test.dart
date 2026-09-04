@@ -57,6 +57,19 @@ void main() {
     },
   );
 
+  test('maps typed HTTP 426 metadata responses to upgrade recovery', () async {
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-test-token',
+      get: (_, _) async => throw const WingLinkHttpException(426),
+    );
+
+    await expectLater(
+      client.getMetadata(),
+      throwsA(isA<WingLinkUpgradeRequired>()),
+    );
+  });
+
   test('lists opaque directory roots without accepting host paths', () async {
     late Uri requested;
     final client = WingLinkClient(
@@ -598,13 +611,26 @@ void main() {
     final client = WingLinkClient(
       origin: Uri.parse('https://hermes.example:8654'),
       token: 'wlc-secret',
-      patch: (_, _, _) async =>
-          throw const WingLinkException('Wing Link HTTP 412'),
+      patch: (_, _, _) async => throw const WingLinkHttpException(412),
     );
 
     await expectLater(
       client.renameProfile(id: 'qa', name: 'qa2', revision: 'rev-1'),
       throwsA(isA<WingLinkPreconditionFailed>()),
+    );
+  });
+
+  test('does not infer a stale revision from arbitrary error text', () async {
+    const original = WingLinkException('Wing Link HTTP 412');
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-test-token',
+      patch: (_, _, _) async => throw original,
+    );
+
+    await expectLater(
+      client.renameProfile(id: 'qa', name: 'qa2', revision: 'rev-1'),
+      throwsA(same(original)),
     );
   });
 

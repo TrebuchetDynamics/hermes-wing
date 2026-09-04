@@ -97,6 +97,23 @@ void main() {
     },
   );
 
+  test('Android release strips the integration-only plugin registrant', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+
+    expect(gradle, contains('stripIntegrationTestFromReleaseRegistrant'));
+    expect(gradle, contains('compileFlutterBuildRelease'));
+    expect(
+      gradle,
+      contains('finalizedBy(stripIntegrationTestFromReleaseRegistrant)'),
+    );
+    expect(gradle, contains('compileReleaseJavaWithJavac'));
+    expect(
+      gradle,
+      contains('dependsOn(stripIntegrationTestFromReleaseRegistrant)'),
+    );
+    expect(gradle, contains('dev.flutter.plugins.integration_test'));
+  });
+
   test('Waydroid voice runner supports role CLIs without get-role-holders', () {
     final runner = File(
       'scripts/run_waydroid_hermes_voice_maestro.sh',

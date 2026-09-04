@@ -1,4 +1,9 @@
 {
+  "chatAttachmentDraftEvicted": "The attachment was released to save memory. Attach it again before sending.",
+  "chatTranscriptLatestAction": "Latest activity",
+  "chatVoiceMuteOutputAction": "Mute speech",
+  "chatVoiceUnmuteOutputAction": "Unmute speech",
+  "chatVoicePauseMicrophoneAction": "Pause microphone",
   "@@locale": "en",
   "appTitle": "Hermes Wing",
   "hermesDestination": "Hermes",
@@ -91,9 +96,15 @@
   "createAction": "Create",
   "cancelAction": "Cancel",
   "retryAction": "Retry",
+  "openChatAction": "Open chat",
+  "gatewayConnectionRecoveryBody": "Choose another saved gateway above, or return to Chat to reconnect.",
+  "chatSavedEndpointsLoading": "Loading saved Hermes gateways",
+  "chatSavedEndpointsLoadFailedTitle": "Saved gateways unavailable",
+  "chatSavedEndpointsLoadFailedBody": "Hermes Wing could not read saved gateways from secure storage. You can still enter connection details manually.",
   "saveAction": "Save",
   "doneAction": "Done",
   "personaLabel": "Persona",
+  "personaLoading": "Loading the authoritative persona",
   "personaHint": "Describe this profile’s role, voice, and working style.",
   "deleteAgent": "Delete profile",
   "deleteNamedAgent": "Delete {name}",
@@ -130,6 +141,8 @@
   "providersDestination": "Providers",
   "toolsDestination": "Tools",
   "toolsTitle": "Tools",
+  "toolsRefreshAction": "Refresh inventory",
+  "toolsRefreshFailed": "Tool inventory could not be refreshed.",
   "toolsSubtitle": "Installed skills and resolved toolsets advertised by this gateway.",
   "toolsConnectionRequiredBody": "Open a saved gateway chat before viewing its tool inventory.",
   "toolsConnectionErrorBody": "Tool inventory could not be loaded from Hermes.",
@@ -243,9 +256,11 @@
   "schedulesConnectionErrorBody": "Schedules could not be loaded from Hermes.",
   "schedulesUnavailableBody": "This gateway did not advertise scheduled-job inventory.",
   "schedulesLoadFailedBody": "Schedules could not be loaded from Hermes.",
+  "schedulesEmptyTitle": "No schedules yet",
   "schedulesEmptyBody": "No scheduled jobs were reported for this profile.",
   "schedulesReadOnlyNote": "Read-only schedule inventory. Create, pause, trigger, and delete remain hidden until this gateway advertises exact scoped administration contracts.",
   "schedulesRefreshTooltip": "Refresh schedules",
+  "schedulesRefreshing": "Refreshing scheduled jobs",
   "scheduleEnabled": "Enabled",
   "scheduleDisabled": "Disabled",
   "scheduleActive": "Active",
@@ -267,6 +282,7 @@
   "gatewayTrustScopes": "Granted scopes",
   "gatewayTrustHostInstructions": "Trust changes require the host console: wing-link devices list · wing-link approvals list",
   "gatewayTrustRevokeAction": "Revoke this device",
+  "gatewayTrustRevoking": "Revoking this device’s Wing Link access",
   "gatewayTrustRevokeTitle": "Revoke this device?",
   "gatewayTrustRevokeBody": "This removes only this device's Wing Link credential. Reconnecting requires a new host pairing flow.",
   "gatewayTrustRevoked": "This device was revoked. Pair it again from the host to restore management access.",
@@ -361,6 +377,10 @@
       }
     }
   },
+  "providerAuthApiKey": "API key",
+  "providerAuthOAuth": "OAuth sign-in",
+  "providerAuthOther": "Provider-managed authentication",
+  "providerOAuthHostRequired": "Sign in on the Hermes host. This Agent does not advertise remote OAuth setup.",
   "manageCredentialAction": "Manage credential",
   "providerOperationFailed": "The provider operation could not be completed.",
   "modelSelectionTitle": "Model selection",
@@ -719,8 +739,10 @@
   "diagnosticsActiveNone": "none",
   "diagnosticsExportSection": "Export",
   "diagnosticsCopyTitle": "Copy diagnostics",
+  "diagnosticsCopyInProgress": "Copying diagnostics",
   "diagnosticsCopySubtitle": "Safe snapshot; excludes secrets, raw logs, transcripts, and local paths.",
   "diagnosticsCopiedNotice": "Hermes diagnostics copied",
+  "diagnosticsCopyFailedNotice": "Could not copy diagnostics. Try again.",
   "voiceSettingsTitle": "Voice & speech",
   "voiceBehaviorSection": "Voice behavior",
   "voiceContinuousTitle": "Continuous voice",
@@ -784,7 +806,7 @@
   "enrollInvalidLinkBody": "Paste another pairing link or scan a new QR code.",
   "enrollClipboardEmpty": "The clipboard does not contain a pairing link.",
   "enrollCleartextDialogTitle": "Pair over plain HTTP?",
-  "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
+  "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
   "@enrollCleartextDialogBody": {
     "placeholders": {
       "host": {
@@ -817,6 +839,7 @@
   "enrollPasteAnotherLink": "Paste another link",
   "enrollScanAnotherQr": "Scan another QR",
   "enrollPasteLink": "Paste pairing link",
+  "enrollReadingClipboard": "Reading pairing link from clipboard",
   "enrollSameDeviceHelper": "If the link is on this phone, tap it or share it to Hermes Wing.",
   "enrollOpeningScanner": "Opening scanner…",
   "enrollScanQr": "Scan QR from another screen",
@@ -863,7 +886,8 @@
   },
   "enrollConnectAction": "Connect",
   "closeAction": "Close",
-  "routeNotFound": "Route not found: {path}",
+  "routeNotFoundTitle": "Page not found",
+  "routeNotFound": "Hermes Wing does not have a screen for {path}.",
   "@routeNotFound": {
     "placeholders": {
       "path": {
@@ -871,6 +895,15 @@
       }
     }
   },
+  "routeNotFoundAction": "Return to chat",
+  "soulConnectionRequiredTitle": "Connect to edit a persona",
+  "soulConnectionRequiredBody": "Open a saved gateway chat before editing its selected profile persona.",
+  "soulOpenChatAction": "Open chat",
+  "soulProfileRequiredTitle": "Choose a profile",
+  "soulProfileRequiredBody": "Select a profile before opening its persona editor.",
+  "soulOpenProfilesAction": "Open profiles",
+  "soulUnavailableTitle": "Persona editing unavailable",
+  "soulUnavailableBody": "This gateway did not advertise scoped SOUL read and write operations for the selected profile.",
   "agentsGatewayPickerHelp": "Add and edit profiles on the selected gateway.",
   "gatewayContactsEmptyTitle": "Add your first Hermes profile",
   "gatewayContactsEmptyBody": "Connect a gateway to see its profiles and start a conversation.",
@@ -978,7 +1011,7 @@
     }
   },
   "chatConnectionCleartextWarningTitle": "Send API key without TLS?",
-  "chatConnectionCleartextWarningBody": "The endpoint {endpoint} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
+  "chatConnectionCleartextWarningBody": "The endpoint {endpoint} uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
   "@chatConnectionCleartextWarningBody": {
     "placeholders": {
       "endpoint": {
@@ -1096,6 +1129,10 @@
       }
     }
   },
+  "chatUnsupportedAgentTitle": "Update Hermes Wing or Hermes Agent",
+  "chatUnsupportedAgentBody": "This Hermes Agent uses a capability format that this version of Hermes Wing cannot safely operate. Update Hermes Wing or Hermes Agent, then reconnect.",
+  "chatTranscriptLoadEarlierAction": "Load earlier messages",
+  "chatTranscriptLoadingEarlierLabel": "Loading earlier messages…",
   "chatTranscriptCopyChatTextAction": "Copy entire chat (text)",
   "chatTranscriptCopyChatMarkdownAction": "Copy entire chat (Markdown)",
   "chatTranscriptReplyAction": "Reply",
@@ -1233,6 +1270,14 @@
   "chatErrorRemoveProfileAction": "Remove",
   "chatErrorConnectAuthTitle": "Hermes API rejected the API key.",
   "chatErrorConnectAuthBody": "Check the endpoint API key in Hermes and try again.",
+  "chatErrorConnectInvalidEndpointTitle": "Check the Hermes address.",
+  "chatErrorConnectInvalidEndpointBody": "Enter a complete HTTP or HTTPS Hermes Agent URL, then try again.",
+  "chatErrorConnectIncompatibleTitle": "Hermes returned an unsupported response.",
+  "chatErrorConnectIncompatibleBody": "Update Hermes Wing or Hermes Agent, verify the address points to Hermes Agent, then reconnect.",
+  "chatErrorConnectTlsTitle": "Secure connection to Hermes failed.",
+  "chatErrorConnectTlsBody": "Check the HTTPS certificate or pinned host identity. Re-pair explicitly if the trusted identity changed.",
+  "chatErrorConnectTimeoutTitle": "Hermes did not respond in time.",
+  "chatErrorConnectTimeoutBody": "Check that Hermes Agent is running and reachable, then try again.",
   "chatErrorConnectUnreachableTitle": "Hermes endpoint is unreachable.",
   "chatErrorConnectUnreachableBody": "Check the base URL, network, VPN, and that Hermes API server is running.",
   "chatErrorConnectGenericTitle": "Could not connect to Hermes.",
@@ -1242,15 +1287,15 @@
   "chatLayoutConnectionModeLabel": "How will Wing reach Hermes?",
   "chatLayoutConnectionModeLocalLabel": "This device",
   "chatLayoutConnectionModeRemoteLabel": "Remote HTTPS",
-  "chatLayoutConnectionModeVpnLabel": "VPN / Tailscale",
+  "chatLayoutConnectionModeVpnLabel": "VPN / NetBird / Tailscale",
   "chatLayoutConnectionModeSshLabel": "SSH tunnel",
   "chatLayoutConnectionModeLocalBody": "Use a local Agent URL, or install Hermes on this device when local setup is available.",
   "chatLayoutConnectionModeRemoteBody": "Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.",
-  "chatLayoutConnectionModeVpnBody": "Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.",
+  "chatLayoutConnectionModeVpnBody": "Use the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN. Prefer HTTPS; non-local HTTP requires explicit confirmation. Wing does not treat network location as authorization.",
   "chatLayoutConnectionModeSshBody": "Start a fixed, trusted SSH tunnel outside Wing, then enter its local Agent URL. Wing never runs arbitrary SSH commands or stores SSH keys.",
   "chatLayoutConnectionModeLocalUrlHelper": "Enter the local Agent URL. This device usually uses http://127.0.0.1:8642.",
   "chatLayoutConnectionModeRemoteUrlHelper": "Enter the HTTPS Agent URL. Wing currently uses HTTPS/SSE; WebSocket support waits for an exact Hermes contract.",
-  "chatLayoutConnectionModeVpnUrlHelper": "Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.",
+  "chatLayoutConnectionModeVpnUrlHelper": "Enter the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN.",
   "chatLayoutConnectionModeSshUrlHelper": "Start the fixed tunnel outside Wing, then enter the local Agent URL it exposes.",
   "chatLayoutVpsConnectionTitle": "Hermes Agent connection",
   "chatLayoutVpsConnectionBody": "Use an HTTPS or trusted private-network URL. Never expose an unauthenticated Hermes port to the internet.",
@@ -1365,6 +1410,7 @@
   "chatLayoutReadyToSendLabel": "Ready to send",
   "chatLayoutRemoveAttachmentTooltip": "Remove attachment",
   "chatLayoutAttachFileTooltip": "Attach image or text file",
+  "chatAttachmentPicking": "Opening the attachment picker",
   "chatAttachmentRemoveCurrentError": "Remove the current attachment before adding another.",
   "chatAttachmentInsertedImageReadError": "Could not read the inserted image.",
   "chatAttachmentImageSizeError": "Images must be 10 MB or smaller.",
@@ -1603,7 +1649,7 @@
     }
   },
   "chatStatusApprovalResponseUnavailableBody": "Hermes did not advertise approval responses for this run.",
-  "chatStatusApprovalIdMissingBody": "Hermes sent this approval without an approval id, so it cannot be answered.",
+  "chatStatusApprovalIdMissingBody": "Hermes sent this approval without a run or approval id, so it cannot be answered.",
   "chatStatusAnsweringApprovalLabel": "Answering Hermes approval…",
   "chatStatusReviewAction": "Review",
   "chatStatusDismissAction": "Dismiss",
@@ -1626,6 +1672,15 @@
   },
   "chatStatusPromptTruncatedBody": "Prompt preview truncated for mobile review.",
   "chatStatusRiskTruncatedBody": "Risk preview truncated for mobile review.",
+  "chatStatusCommandTruncatedBody": "Command preview truncated for mobile review.",
+  "chatStatusCommandLabel": "Command: {value}",
+  "@chatStatusCommandLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "chatStatusToolCallLabel": "Tool call: {value}",
   "@chatStatusToolCallLabel": {
     "placeholders": {
@@ -1642,7 +1697,7 @@
       }
     }
   },
-  "chatStatusDecisionsDisabledIdBody": "Decision buttons are disabled because Hermes did not include an approval id.",
+  "chatStatusDecisionsDisabledIdBody": "Decision buttons are disabled because Hermes did not include a run or approval id.",
   "chatStatusCopiedApprovalDetailsBody": "Copied redacted Hermes approval details.",
   "chatStatusCopyDetailsAction": "Copy details",
   "chatRailSessionsTitle": "Sessions",
@@ -1651,6 +1706,8 @@
   "chatRailUnpinSessionAction": "Unpin",
   "chatRailHermesSessionsTitle": "Hermes sessions",
   "chatRailNewSessionAction": "New",
+  "chatRailLoadMoreSessionsAction": "Load more sessions",
+  "chatRailLoadingMoreSessionsAction": "Loading more sessions…",
   "chatRailSelectAction": "Select",
   "chatRailSelectAllAction": "Select all",
   "chatRailSelectedCountLabel": "{count} selected",
@@ -1968,7 +2025,7 @@
   "gatewayLoading": "Loading gateway status",
   "schedulesLoading": "Loading schedules",
   "localSetupTitle": "Set up Hermes on this Linux computer",
-  "localSetupBody": "Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Profiles, providers, Tailscale, tools, channels, and schedules remain managed by Hermes after connection.",
+  "localSetupBody": "Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Hermes remains authoritative for profiles, providers, tools, channels, and schedules; VPN software such as NetBird or Tailscale stays external.",
   "localSetupDetecting": "Checking this computer for Hermes Agent…",
   "localSetupMissingTitle": "Hermes Agent is not installed",
   "localSetupMissingBody": "Install the verified Hermes Agent release for your user account, secure the local API, and start the gateway.",
@@ -1985,14 +2042,19 @@
   "localSetupCompleteBody": "Local installation and gateway startup are verified. Continue to pairing before managing Hermes capabilities.",
   "localSetupContinueAction": "Continue to pairing",
   "localSetupRetryAction": "Check again",
+  "localSetupFailedTitle": "Setup needs attention",
+  "localSetupFailedBody": "Hermes setup could not be checked. Review Diagnostics, then try again.",
   "localSetupConsentTitle": "Allow local Hermes setup?",
   "localSetupConsentBody": "Wing Link will run a verified Hermes installer when needed, create or update user-level service files, secure local API access, and start the Hermes gateway. It will not configure profiles or providers.",
   "localSetupConsentAction": "Run setup",
   "termuxSetupTitle": "Install Hermes Agent on this phone",
   "termuxSetupBody": "Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.",
   "termuxInstallAction": "Install Termux",
+  "termuxOpeningInstallGuide": "Opening the Termux installation guide",
   "termuxInstallGuideFailedMessage": "The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.",
   "termuxCopyAction": "Copy setup command",
+  "termuxCopyingCommand": "Copying the setup command",
+  "termuxPreparingCommand": "Preparing the verified setup command…",
   "termuxCopiedMessage": "Setup command copied. Open Termux and run it without changes.",
   "termuxCopyFailedMessage": "The setup command could not be copied. Select the command and copy it manually.",
   "termuxMetadataUnavailable": "This build cannot install the matching Wing Link release.",

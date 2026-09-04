@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_runtime_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../router/routes/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
@@ -164,8 +166,11 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     if (state.status == HermesConnectionStatus.error) {
       return WingEmptyState(
         icon: Icons.cloud_off_outlined,
+        liveRegion: true,
         title: strings.providersConnectionError,
-        body: state.errorMessage ?? strings.providerOperationFailed,
+        body: strings.gatewayConnectionRecoveryBody,
+        actionLabel: strings.openChatAction,
+        onAction: () => context.go(AppRoutes.hermes),
       );
     }
     if (state.status != HermesConnectionStatus.connected) {
@@ -205,6 +210,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     if (_loadFailed) {
       return WingEmptyState(
         icon: Icons.sync_problem_outlined,
+        liveRegion: true,
         title: strings.providersConnectionError,
         body: strings.providerOperationFailed,
         actionLabel: strings.retryAction,
@@ -355,12 +361,32 @@ class _ProviderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final label = provider.label.isEmpty ? provider.slug : provider.label;
-    final semanticsLabel = [
-      label,
-      provider.configured
-          ? strings.providerConfiguredBadge
-          : strings.providerNotConfiguredBadge,
-    ].join(', ');
+    final authLabel = provider.acceptsWriteOnlyCredential
+        ? strings.providerAuthApiKey
+        : provider.requiresInteractiveSignIn
+        ? strings.providerAuthOAuth
+        : strings.providerAuthOther;
+    final statusLabel = provider.configured
+        ? strings.providerConfiguredBadge
+        : strings.providerNotConfiguredBadge;
+    final semanticsLabel = [label, authLabel, statusLabel].join(', ');
+    final identity = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 3),
+        Text(authLabel, style: theme.textTheme.bodySmall),
+      ],
+    );
+    final status = Chip(
+      avatar: Icon(
+        provider.configured
+            ? Icons.check_circle_outline
+            : Icons.remove_circle_outline,
+        size: 18,
+      ),
+      label: Text(statusLabel),
+    );
 
     return Semantics(
       container: true,
@@ -371,36 +397,25 @@ class _ProviderCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final largeText =
+                      MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                  if (constraints.maxWidth < 400 || largeText) {
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(label, style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 3),
-                        Text(
-                          provider.authType,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Chip(
-                    avatar: Icon(
-                      provider.configured
-                          ? Icons.check_circle_outline
-                          : Icons.remove_circle_outline,
-                      size: 18,
-                    ),
-                    label: Text(
-                      provider.configured
-                          ? strings.providerConfiguredBadge
-                          : strings.providerNotConfiguredBadge,
-                    ),
-                  ),
-                ],
+                      children: [identity, const SizedBox(height: 10), status],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: identity),
+                      const SizedBox(width: 12),
+                      status,
+                    ],
+                  );
+                },
               ),
               if (provider.keyHint != null) ...[
                 const SizedBox(height: 10),
@@ -414,7 +429,11 @@ class _ProviderCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (canManage) ...[
+              if (provider.requiresInteractiveSignIn) ...[
+                const SizedBox(height: 12),
+                Text(strings.providerOAuthHostRequired),
+              ],
+              if (canManage && provider.acceptsWriteOnlyCredential) ...[
                 const SizedBox(height: 14),
                 Align(
                   alignment: Alignment.centerLeft,

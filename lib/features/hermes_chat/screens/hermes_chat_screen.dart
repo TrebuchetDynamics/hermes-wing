@@ -32,6 +32,7 @@ import '../../../shared/tips/wing_tips.dart';
 import '../../../shared/voice/text_to_speech_service.dart';
 import '../../../shared/voice/voice_capture_service.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../../shared/widgets/wing_empty_state.dart';
 import '../../settings/providers/chat_preferences_provider.dart';
 import '../../settings/providers/voice_settings_provider.dart';
 import '../../voice/services/platform/default_voice_capture_service.dart';
@@ -41,6 +42,7 @@ import '../../voice/services/tts/platform_text_to_speech_service.dart';
 import '../composer/attachments/hermes_attachment_content.dart';
 import '../composer/attachments/hermes_image_attachment_normalizer.dart';
 import '../composer/attachments/staged_attachment.dart';
+import '../composer/hermes_composer_draft_store.dart';
 import '../messaging/approvals/hermes_approval_queue.dart';
 import '../controllers/hermes_channel_observation.dart';
 import '../controllers/hermes_connection_form.dart';
@@ -56,6 +58,8 @@ import '../providers/hermes_channel_provider.dart';
 import '../session/hermes_session_pin_store.dart';
 import '../widgets/hermes_profile_identity.dart';
 import '../presentation/hermes_rich_text.dart';
+import '../presentation/hermes_turn_presentation_identity.dart';
+import '../presentation/hermes_transcript_viewport.dart';
 
 part 'widgets/hermes_chat_error.dart';
 part 'widgets/hermes_chat_sessions.dart';
@@ -77,10 +81,21 @@ final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>((ref) {
   final languageMode = ref.watch(
     wingVoiceSettingsProvider.select((settings) => settings.languageMode),
   );
-  return createDefaultVoiceCaptureService(
+  final service = createDefaultVoiceCaptureService(
     platform: platform,
     localeId: languageMode.localeId,
   );
+  ref.onDispose(() {
+    if (service is VoiceCaptureLifecycleService) {
+      fireAndForget(
+        (service as VoiceCaptureLifecycleService).dispose(),
+        'voice capture disposal',
+      );
+    } else if (service != null) {
+      fireAndForget(service.cancel(), 'voice capture cancellation');
+    }
+  });
+  return service;
 });
 
 final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
@@ -168,14 +183,9 @@ enum _HermesConnectionMode { local, remote, vpn, ssh }
 
 enum _TranscriptCopyFormat { text, markdown }
 
-typedef _ComposerDraftKey = ({
-  String gatewayId,
-  String profileId,
-  String sessionId,
-});
+typedef _ComposerDraftKey = HermesComposerDraftKey;
 
 const _maxComposerDraftEntries = 64;
-const _maxComposerDraftCharacters = 64 * 1024;
 
 final class _FailedDirectTurnPayload {
   const _FailedDirectTurnPayload({
@@ -293,18 +303,60 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final _composerController = TextEditingController();
   late final FocusNode _composerFocusNode;
   final _transcriptScrollController = ScrollController();
+  late final _transcriptViewport = HermesTranscriptViewportController(
+    _transcriptScrollController,
+  );
   late final HermesVoiceInputController _voiceInputController;
-  StagedAttachment? _stagedAttachment;
+  StagedAttachment? get _stagedAttachment => _activeComposerDraftKey == null
+      ? null
+      : _composerDrafts.read(_activeComposerDraftKey!).attachment;
+  set _stagedAttachment(StagedAttachment? value) {
+    _invalidateAttachmentPick();
+    final key = _activeComposerDraftKey;
+    if (key != null) {
+      _composerDrafts.update(
+        key,
+        text: _composerController.text,
+        attachment: value,
+      );
+    }
+  }
+
+  int _attachmentPickGeneration = 0;
+  int _composerOwnerGeneration = 0;
+  Object? _attachmentOwner;
+
+  void _invalidateAttachmentPick() {
+    _attachmentPickGeneration++;
+    _pickingAttachment = false;
+  }
+
+  void _syncAttachmentOwner(HermesChannel channel) {
+    final state = channel.state;
+    final owner = (
+      channel,
+      state.isConnected,
+      state.connectedBaseUrl,
+      _gatewayDirectory.activeContactId,
+      state.selectedProfileId,
+      state.activeSessionId,
+    );
+    if (_attachmentOwner == owner) return;
+    _attachmentOwner = owner;
+    _composerOwnerGeneration++;
+    _invalidateAttachmentPick();
+  }
+
   _FailedDirectTurnPayload? _failedDirectTurn;
   String? _attachmentError;
+  bool _pickingAttachment = false;
   int _selectedLocalSlashCommandIndex = 0;
   final Map<String, GlobalKey> _localSlashCommandKeys = {};
   final _localSlashSuggestionsKey = GlobalKey();
   String? _dismissedLocalSlashCommandDraft;
   final LinkedHashMap<_ComposerDraftKey, List<String>> _composerHistories =
       LinkedHashMap();
-  final LinkedHashMap<_ComposerDraftKey, String> _composerDrafts =
-      LinkedHashMap();
+  final _composerDrafts = HermesComposerDraftStore();
   _ComposerDraftKey? _activeComposerDraftKey;
   _ComposerDraftKey? _activeComposerHistoryKey;
   int? _composerHistoryIndex;
@@ -321,6 +373,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   late final ProviderSubscription<bool> _completionSoundSubscription;
   bool _completionSoundEnabled = false;
   late final HermesGatewayDirectory _gatewayDirectory;
+  Set<String> _knownGatewayIds = {};
   late final ChatGroupController _chatGroupController;
   late final HermesSessionPinStore _sessionPins;
   late final HermesApprovalQueue _approvals;
@@ -437,6 +490,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       onResolveError: _showApprovalError,
     )..addListener(_onApprovalsChanged);
     _gatewayDirectory = ref.read(hermesGatewayDirectoryProvider);
+    _knownGatewayIds = _gatewayDirectory.gateways
+        .map((gateway) => gateway.id)
+        .toSet();
+    _gatewayDirectory.addListener(_onGatewayDirectoryChanged);
     _chatGroupController = ChatGroupController();
     unawaited(_chatGroupController.load());
     _sessionPins = HermesSessionPinStore()..addListener(_onSessionPinsChanged);
@@ -467,6 +524,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   @override
   void dispose() {
+    _gatewayDirectory.removeListener(_onGatewayDirectoryChanged);
+    _composerDrafts.clear();
+    _transcriptViewport.dispose();
+    _invalidateAttachmentPick();
     final subscribed = _subscribed;
     _subscribed = null;
     subscribed?.removeListener(_onChannelChanged);
@@ -518,6 +579,31 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (mounted) setState(() {});
   }
 
+  void _onGatewayDirectoryChanged() {
+    final current = _gatewayDirectory.gateways
+        .map((gateway) => gateway.id)
+        .toSet();
+    final removed = _knownGatewayIds.difference(current);
+    _knownGatewayIds = current;
+    if (removed.isEmpty) return;
+    _composerDrafts.forgetWhere((key) => removed.contains(key.gatewayId));
+    _transcriptViewport.forgetWhere(
+      (owner) =>
+          owner is HermesComposerDraftKey && removed.contains(owner.gatewayId),
+    );
+  }
+
+  void _forgetComposerSession(HermesComposerDraftKey? owner, String sessionId) {
+    if (owner == null) return;
+    final key = (
+      gatewayId: owner.gatewayId,
+      profileId: owner.profileId,
+      sessionId: sessionId,
+    );
+    _composerDrafts.forgetWhere((candidate) => candidate == key);
+    _transcriptViewport.forgetWhere((candidate) => candidate == key);
+  }
+
   void _cycleActiveSession(
     BuildContext context,
     HermesChannel channel,
@@ -564,6 +650,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   }
 
   void _onComposerChanged() {
+    final key = _activeComposerDraftKey;
+    if (key != null) {
+      _composerDrafts.update(
+        key,
+        text: _composerController.text,
+        attachment: _stagedAttachment,
+      );
+    }
     final composing = _composerController.value.composing;
     final isComposing = composing.isValid && !composing.isCollapsed;
     final revision = ++_composerCompositionRevision;
@@ -595,6 +689,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         'Hermes reconnect after resume',
       );
     } else {
+      _transcriptViewport.capture();
       _voiceInputController.pause(
         _hermesStrings(context).chatShellVoicePausedBackgroundBody,
       );
@@ -619,11 +714,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final sessionId = state.activeSessionId;
     final contact = _gatewayDirectory.activeContactId;
     final profileId = state.selectedProfileId ?? contact?.profileId;
-    if (sessionId == null || profileId == null || profileId.isEmpty) {
+    if (sessionId == null || !state.isConnected) {
       return null;
     }
     return (
-      gatewayId: contact?.gatewayId ?? 'direct',
+      gatewayId: contact?.gatewayId ?? state.connectedBaseUrl ?? 'direct',
       profileId: profileId,
       sessionId: sessionId,
     );
@@ -649,25 +744,18 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       _composerHistoryDraft = '';
     }
     if (nextKey == _activeComposerDraftKey) return;
-    final previousKey = _activeComposerDraftKey;
-    if (previousKey != null) {
-      _composerDrafts.remove(previousKey);
-      final text = _composerController.text;
-      if (text.isNotEmpty) {
-        final characters = text.characters;
-        _composerDrafts[previousKey] =
-            characters.length <= _maxComposerDraftCharacters
-            ? text
-            : characters.take(_maxComposerDraftCharacters).join();
-        while (_composerDrafts.length > _maxComposerDraftEntries) {
-          _composerDrafts.remove(_composerDrafts.keys.first);
-        }
-      }
-    }
     _activeComposerDraftKey = nextKey;
+    _transcriptViewport.setOwner(nextKey);
+    _composerDrafts.activate(nextKey);
     _composerHistoryIndex = null;
     _composerHistoryDraft = '';
-    final draft = nextKey == null ? '' : _composerDrafts.remove(nextKey) ?? '';
+    final saved = nextKey == null
+        ? const HermesComposerDraft()
+        : _composerDrafts.read(nextKey);
+    final draft = saved.text;
+    _attachmentError = saved.attachmentEvicted
+        ? AppLocalizations.of(context).chatAttachmentDraftEvicted
+        : null;
     _composerController.value = TextEditingValue(
       text: draft,
       selection: TextSelection.collapsed(offset: draft.length),
@@ -854,10 +942,6 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         );
       }
       if (!mounted) return;
-      setState(() {
-        _stagedAttachment = null;
-        _attachmentError = null;
-      });
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1040,6 +1124,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final channel = ref.watch(hermesChannelProvider);
     final strings = _hermesStrings(context);
     final state = channel.state;
+    final unsupportedCapabilitySchema =
+        state.capabilities?.supportsSchema == false;
+    final canUseConnectedAgent =
+        state.isConnected && !unsupportedCapabilitySchema;
     final activeSession = state.activeSession;
     final compactAppBar = MediaQuery.sizeOf(context).width < 480;
     final hasGateways =
@@ -1068,7 +1156,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       retainedSessionIds: _unreadCompletedSessionIds,
     );
     final desktopShortcuts = <ShortcutActivator, Intent>{
-      if (_usesDesktopKeyboardShortcuts && state.isConnected) ...{
+      if (_usesDesktopKeyboardShortcuts && canUseConnectedAgent) ...{
         const SingleActivator(LogicalKeyboardKey.keyK, control: true):
             const _OpenSessionsIntent(),
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
@@ -1092,7 +1180,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         },
       },
       if (_usesDesktopKeyboardShortcuts &&
-          state.isConnected &&
+          canUseConnectedAgent &&
           _canCreateSession(state)) ...{
         const SingleActivator(LogicalKeyboardKey.keyN, control: true):
             const _CreateSessionIntent(),
@@ -1209,7 +1297,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               onPressed: () => context.push(AppRoutes.enroll),
               icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
-          if (!showingDirectory && state.isConnected) ...[
+          if (!showingDirectory && canUseConnectedAgent) ...[
             if (state.profiles.isNotEmpty)
               _buildProfileSwitcher(context, channel, state),
             if (!compactAppBar) ...[
@@ -1335,6 +1423,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               onOpen: (id) => unawaited(_openGatewayContact(id)),
               onConnect: () => context.push(AppRoutes.enroll),
               groupController: _chatGroupController,
+            )
+          : unsupportedCapabilitySchema
+          ? WingEmptyState(
+              key: const ValueKey('hermes-unsupported-capability-schema'),
+              icon: Icons.system_update_alt,
+              title: strings.chatUnsupportedAgentTitle,
+              body: strings.chatUnsupportedAgentBody,
+              actionLabel: strings.chatShellDiagnosticsLabel,
+              onAction: () => context.push(AppRoutes.settingsDiagnostics),
+              liveRegion: true,
             )
           : state.isConnected
           ? _buildChat(context, channel, state)

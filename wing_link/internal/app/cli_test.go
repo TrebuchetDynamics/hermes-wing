@@ -43,10 +43,10 @@ func TestHelpExplainsTheNormalServiceWorkflow(t *testing.T) {
 	for _, want := range []string{
 		"Wing Link\n  Local supervisor",
 		"Managed service:",
-		"Typical first run with Tailscale:",
+		"Typical first run with NetBird or Tailscale:",
 		"wing-link pair --local",
-		"--remote                Pair through Tailscale or a trusted VPN (default)",
-		"Tailscale API binding is configured automatically",
+		"--remote                Pair through NetBird, Tailscale, or a trusted VPN (default)",
+		"NetBird/Tailscale API binding is configured automatically",
 		"Prints a scannable QR and single-use paste link by default",
 		"--local                 Pair on this device only",
 		"--same-device           Print only the code-free local /open URL",

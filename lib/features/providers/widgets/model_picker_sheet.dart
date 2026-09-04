@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/model_preset.dart';
 import '../models/model_preset_store.dart';
@@ -75,6 +76,9 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
   String? _model;
   String? _error;
   bool _busy = false;
+  late final HermesChannel _ownerChannel;
+  late final (String?, String?) _ownerIdentity;
+  bool _ownerInvalid = false;
 
   HermesModelCatalog get _catalog => _inventory.catalog;
   HermesModelAssignment get _assignment => _inventory.assignment;
@@ -82,12 +86,42 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
   @override
   void initState() {
     super.initState();
+    _ownerChannel = widget.channel;
+    _ownerIdentity = (
+      _ownerChannel.state.connectedBaseUrl,
+      _ownerChannel.state.selectedProfileId,
+    );
+    _ownerChannel.addListener(_observeOwner);
     _applyInventory(widget.inventory);
     unawaited(
       _presetStore.load().then((presets) {
         if (mounted) setState(() => _presets = presets);
       }),
     );
+  }
+
+  @override
+  void dispose() {
+    _ownerChannel.removeListener(_observeOwner);
+    super.dispose();
+  }
+
+  void _observeOwner() {
+    final state = _ownerChannel.state;
+    if (!state.isConnected ||
+        (state.connectedBaseUrl, state.selectedProfileId) != _ownerIdentity) {
+      _ownerInvalid = true;
+    }
+  }
+
+  void _assertOwner() {
+    _observeOwner();
+    if (_ownerInvalid ||
+        !identical(widget.channel, _ownerChannel) ||
+        (widget.channel.state.capabilities != null &&
+            !widget.channel.state.canWriteModels)) {
+      throw StateError('Model sheet ownership changed. Reopen the sheet.');
+    }
   }
 
   /// The stored slot identifier for the current selection: `main` or the
@@ -306,7 +340,9 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
       _error = null;
     });
     try {
+      _assertOwner();
       await widget.channel.refreshModels();
+      _assertOwner();
       if (!mounted) return;
       final inventory = widget.channel.state.modelInventory;
       if (inventory != null) {
@@ -332,6 +368,7 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
       _error = null;
     });
     try {
+      _assertOwner();
       await widget.channel.assignModel(
         scope: slot.scope,
         task: slot.task,
@@ -339,11 +376,15 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
         model: model,
         revision: _assignment.revision,
       );
+      _assertOwner();
       if (mounted) await Navigator.of(context).maybePop();
     } catch (error) {
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
-      if (error.toString().contains('412')) {
+      _observeOwner();
+      if (!_ownerInvalid &&
+          error is HermesApiStatusException &&
+          error.statusCode == 412) {
         final inventory = widget.channel.state.modelInventory;
         if (inventory != null) {
           setState(() {

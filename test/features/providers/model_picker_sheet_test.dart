@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
+import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 import 'package:wing/features/providers/widgets/model_picker_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -28,13 +30,22 @@ HermesModelInventory _inventory(List<String> modelIds) => HermesModelInventory(
 /// behavior. The plain fake's `refreshModels` only counts calls and never
 /// touches state, which is not enough to prove `ModelPickerSheet` re-derives
 /// its local selection from the channel after a refresh.
+final class _TestHermesStatusException implements HermesApiStatusException {
+  const _TestHermesStatusException(this.statusCode);
+
+  @override
+  final int statusCode;
+}
+
 class _ConflictingFakeChannel extends FakeHermesChannel {
   _ConflictingFakeChannel({
     required HermesModelInventory initialInventory,
     required this.refreshedInventory,
+    this.conflict = const _TestHermesStatusException(412),
   }) : super(modelInventory: initialInventory, selectedProfileId: 'default');
 
   final HermesModelInventory refreshedInventory;
+  final Object conflict;
   var conflictResolved = false;
 
   @override
@@ -59,7 +70,7 @@ class _ConflictingFakeChannel extends FakeHermesChannel {
     });
     if (!conflictResolved) {
       conflictResolved = true;
-      throw StateError('Hermes API returned HTTP 412');
+      throw conflict;
     }
   }
 }
@@ -96,6 +107,41 @@ Widget _testApp(FakeHermesChannel channel, HermesModelInventory inventory) =>
     );
 
 void main() {
+  testWidgets('revoked capability prevents assignment from an open picker', (
+    tester,
+  ) async {
+    final inventory = _inventory(['synthetic-model']);
+    final channel = FakeHermesChannel(modelInventory: inventory);
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel, inventory));
+    await tester.pumpAndSettle();
+    channel.replaceCapabilitiesAndProfiles(
+      HermesCapabilityDocument.fromJson({}),
+      [],
+    );
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+    expect(channel.assignModelCalls, isEmpty);
+  });
+
+  testWidgets('assignment rejects profile A B A while picker stays open', (
+    tester,
+  ) async {
+    final inventory = _inventory(['synthetic-model']);
+    final channel = FakeHermesChannel(
+      modelInventory: inventory,
+      selectedProfileId: 'a',
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel, inventory));
+    await tester.pumpAndSettle();
+    await channel.selectProfile('b');
+    await channel.selectProfile('a');
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+    expect(channel.assignModelCalls, isEmpty);
+  });
+
   testWidgets('selecting an auxiliary slot preserves its assigned model', (
     tester,
   ) async {
@@ -254,6 +300,29 @@ void main() {
       'rev-1',
       'rev-2',
     ]);
+  });
+
+  testWidgets('does not infer a conflict from arbitrary 412 text', (
+    tester,
+  ) async {
+    final initial = _inventory(const ['gpt-5']);
+    final channel = _ConflictingFakeChannel(
+      initialInventory: initial,
+      refreshedInventory: initial,
+      conflict: StateError('Hermes API returned HTTP 412'),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel, initial));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assign'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('The model assignment could not be saved.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('changed elsewhere'), findsNothing);
   });
 
   testWidgets('refresh updates the open sheet with the newly fetched catalog', (

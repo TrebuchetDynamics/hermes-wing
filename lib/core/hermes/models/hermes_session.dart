@@ -31,7 +31,7 @@ class HermesSession {
   factory HermesSession.fromJson(Map<String, Object?> json) {
     return HermesSession(
       id: wingStringFieldFromJson(json, 'id'),
-      source: wingStringFromJson(json['source'], fallback: 'api_server'),
+      source: wingStringFromJson(json['source'], fallback: ''),
       model: wingOptionalStringFromJson(json['model']),
       title: wingOptionalStringFromJson(json['title']),
       messageCount: _optionalNonNegativeInt(json['message_count']) ?? 0,
@@ -77,6 +77,40 @@ class HermesSession {
   final String? lastActive;
   final String? preview;
   final String? parentSessionId;
+}
+
+class HermesSessionPage {
+  const HermesSessionPage({
+    required this.sessions,
+    required this.limit,
+    required this.offset,
+    required this.hasMore,
+  });
+
+  factory HermesSessionPage.fromJson(Map<String, Object?> json) {
+    final limit = (_optionalNonNegativeInt(json['limit']) ?? 50).clamp(1, 200);
+    final offset = (_optionalNonNegativeInt(json['offset']) ?? 0).clamp(
+      0,
+      1000000,
+    );
+    return HermesSessionPage(
+      sessions: wingMapListFromJson(json['data'])
+          .take(200)
+          .map(HermesSession.fromJson)
+          .where((session) => session.id.isNotEmpty)
+          .toList(growable: false),
+      limit: limit,
+      offset: offset,
+      hasMore: json['has_more'] == true,
+    );
+  }
+
+  final List<HermesSession> sessions;
+  final int limit;
+  final int offset;
+  final bool hasMore;
+
+  int get nextOffset => offset + limit;
 }
 
 const _maxSafeSessionCount = 9007199254740991;
@@ -138,6 +172,8 @@ class HermesMessage {
     this.timestamp,
     this.finishReason,
     this.usage,
+    this.hasStructuredContent = false,
+    this.hasModelContext = false,
   });
 
   factory HermesMessage.fromJson(Map<String, Object?> json) {
@@ -158,6 +194,16 @@ class HermesMessage {
       usage: wingMapFromJson(json['usage']).isEmpty
           ? null
           : HermesRunUsage.fromJson(wingMapFromJson(json['usage'])),
+      hasStructuredContent: json['content'] is! String,
+      hasModelContext:
+          role == 'tool' ||
+          const [
+            'tool_call_id',
+            'tool_calls',
+            'tool_name',
+            'reasoning',
+            'reasoning_content',
+          ].any((key) => json[key] != null),
     );
   }
 
@@ -170,6 +216,63 @@ class HermesMessage {
   final String? timestamp;
   final String? finishReason;
   final HermesRunUsage? usage;
+  final bool hasStructuredContent;
+  final bool hasModelContext;
+
+  bool get isPlainRunHistoryMessage =>
+      (role == 'user' || role == 'assistant') &&
+      content.trim().isNotEmpty &&
+      !hasStructuredContent &&
+      !hasModelContext;
+}
+
+class HermesMessagePage {
+  const HermesMessagePage({
+    required this.messages,
+    required this.limit,
+    required this.offset,
+    required this.order,
+  });
+
+  factory HermesMessagePage.fromJson(
+    Map<String, Object?> json, {
+    required int requestedLimit,
+    required int requestedOffset,
+    required String requestedOrder,
+  }) {
+    final pagination = wingMapFromJson(json['pagination']);
+    final limit =
+        (_optionalNonNegativeInt(pagination['limit']) ?? requestedLimit).clamp(
+          1,
+          500,
+        );
+    final offset =
+        (_optionalNonNegativeInt(pagination['offset']) ?? requestedOffset)
+            .clamp(0, 1000000);
+    final parsedOrder = wingStringFromJson(
+      pagination['order'],
+      fallback: requestedOrder,
+    );
+    return HermesMessagePage(
+      messages: wingMapListFromJson(
+        json['data'],
+      ).take(500).map(HermesMessage.fromJson).toList(growable: false),
+      limit: limit,
+      offset: offset,
+      order: parsedOrder == 'oldest' || parsedOrder == 'latest'
+          ? parsedOrder
+          : requestedOrder,
+    );
+  }
+
+  final List<HermesMessage> messages;
+  final int limit;
+  final int offset;
+  final String order;
+
+  int get returned => messages.length;
+  int get nextOffset => offset + returned;
+  bool get hasMore => returned >= limit;
 }
 
 ({String text, HermesTurnAttachment? attachment}) _hermesMessageContent(

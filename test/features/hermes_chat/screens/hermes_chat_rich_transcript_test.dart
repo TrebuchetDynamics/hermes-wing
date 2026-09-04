@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/models/hermes_run.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
@@ -26,6 +27,98 @@ Widget _localizedApp(Widget home) => MaterialApp(
 );
 
 void main() {
+  testWidgets('unsupported Agent schema blocks unsafe Chat controls', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel(
+      capabilities: HermesCapabilityDocument.fromJson(const {
+        'schema_version': 99,
+        'object': 'hermes.api_server.capabilities',
+        'platform': 'linux',
+        'model': 'unknown',
+        'auth': <String, Object?>{},
+        'features': <String, Object?>{},
+        'endpoints': <String, Object?>{},
+      }),
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final unsupported = find.byKey(
+      const ValueKey('hermes-unsupported-capability-schema'),
+    );
+    expect(unsupported, findsOneWidget);
+    final title = find.text('Update Hermes Wing or Hermes Agent');
+    expect(tester.getSemantics(title).flagsCollection.isLiveRegion, isTrue);
+    expect(title, findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-new-session')), findsNothing);
+    expect(find.byKey(const ValueKey('hermes-sessions-button')), findsNothing);
+    semantics.dispose();
+  });
+
+  testWidgets('transcript exposes earlier Agent history on demand', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      sessionsWithEarlierMessages: const {'sess_1'},
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final action = find.byKey(
+      const ValueKey('hermes-transcript-load-earlier-action'),
+    );
+    await tester.ensureVisible(action);
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+
+    expect(channel.loadEarlierMessagesCalls, 1);
+    expect(action, findsNothing);
+  });
+
+  testWidgets('earlier transcript loading is announced', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final channel = FakeHermesChannel(
+      sessionsWithEarlierMessages: const {'sess_1'},
+      sessionsLoadingEarlierMessages: const {'sess_1'},
+    );
+    addTearDown(channel.dispose);
+    channel.beginStreamingTurn('Recent question');
+    channel.completeStreamingTurn(text: 'Recent answer');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    final loading = find.bySemanticsLabel('Loading earlier messages…');
+    await tester.ensureVisible(loading);
+    expect(tester.getSemantics(loading).flagsCollection.isLiveRegion, isTrue);
+    expect(
+      find.byKey(const ValueKey('hermes-transcript-load-earlier-action')),
+      findsNothing,
+    );
+    semantics.dispose();
+  });
+
   testWidgets('streaming turn uses a static indicator under reduced motion', (
     tester,
   ) async {
@@ -1740,6 +1833,30 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     },
   );
 
+  testWidgets('retry stays visible before status chips on a narrow phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel()..addFailedExchange('Retry this turn');
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final retry = find.byKey(const ValueKey('hermes-composer-retry-chip'));
+    final model = find.byKey(const ValueKey('hermes-composer-model-chip'));
+    expect(retry.hitTestable(), findsOneWidget);
+    expect(tester.getTopLeft(retry).dx, lessThan(tester.getTopLeft(model).dx));
+  });
+
   testWidgets('failed direct image retry preserves the attachment payload', (
     tester,
   ) async {
@@ -1990,6 +2107,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
   testWidgets(
     'run failures show redacted server detail without opening a sheet',
     (tester) async {
+      final semantics = tester.ensureSemantics();
       final channel = FakeHermesChannel();
       channel.addFailedExchange(
         'Run it.',
@@ -2014,6 +2132,11 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
         findsOneWidget,
       );
       expect(find.textContaining('secret-key'), findsNothing);
+      final announcement = tester.getSemantics(
+        find.byKey(const ValueKey('hermes-chat-error-announcement')),
+      );
+      expect(announcement.flagsCollection.isLiveRegion, isTrue);
+      semantics.dispose();
     },
   );
 

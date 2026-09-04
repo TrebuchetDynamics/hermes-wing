@@ -13,6 +13,58 @@ const _voiceProfileCapabilitiesFixture = '''
 ''';
 
 void _hermesApiChannelVoiceTests() {
+  for (final switchProfile in [false, true]) {
+    test(
+      'voice staging rejects ${switchProfile ? 'profile' : 'session'} A B A before HTTP',
+      () async {
+        var sends = 0;
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async => switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _voiceProfileCapabilitiesFixture,
+              '/api/profiles' => _profilesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              _ => throw StateError('unexpected GET'),
+            },
+            postStream: (uri, headers, body) {
+              sends += 1;
+              return const Stream.empty();
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        final id = channel.startVoiceRun();
+        channel.stageVoiceRunTranscript(
+          voiceRunId: id,
+          transcript: 'synthetic voice request',
+          duration: Duration.zero,
+          confidence: 1,
+        );
+        if (switchProfile) {
+          final original = channel.state.selectedProfileId!;
+          await channel.selectProfile('coder');
+          await channel.selectProfile(original);
+        } else {
+          channel.clearActiveSession();
+          await channel.selectSession('sess_1');
+        }
+        channel.submitVoiceRun(id);
+        await pumpEventQueue();
+        expect(sends, 0);
+        // Profile replacement retires its local voice inventory entirely;
+        // session-only changes retain a terminal failed entry.
+        expect(
+          channel.state.voiceRuns[id]?.status,
+          switchProfile ? isNull : WingVoiceRunStatus.failed,
+        );
+      },
+    );
+  }
+
   test(
     'continuous voice: stage then submit sends the transcript as a Hermes text turn',
     () async {

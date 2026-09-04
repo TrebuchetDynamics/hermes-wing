@@ -37,7 +37,11 @@ Hermes Agent 0.20 documents these API-server surfaces relevant to Wing:
 
 The API server uses `Authorization: Bearer <API_SERVER_KEY>`. The key grants full
 access to the API server, including tools. Keep browser CORS origins narrow and do
-not expose the server to an untrusted network.
+not expose the server to an untrusted network. Browser SSE requests use only the
+necessary authentication, content, and accept headers; Wing does not add a
+request `Cache-Control` header that the Agent's CORS policy does not advertise.
+Streaming requests use the channel's activity timeout rather than the ordinary
+HTTP request deadline, so an open approval can outlive a short request timeout.
 
 Hermes Agent 0.20 does not advertise a network WebSocket or ACP transport for
 these surfaces. Hermes Desktop's authenticated dashboard WebSocket is a separate
@@ -52,11 +56,16 @@ Wing treats an absent `schema_version` as schema 1 and currently understands onl
 schema 1. Additive unknown fields and event types are ignored. A required
 operation remains hidden unless its exact method and path are advertised. If an
 endpoint declares scopes, Wing also requires every declared scope before it shows
-controls or begins network I/O.
+controls or begins network I/O. When a connected Agent reports an unsupported
+schema, Chat shows an update-and-reconnect recovery state and hides session and
+run controls instead of guessing at compatibility.
 
 This strict client policy is intentionally stronger than assuming that a route
 exists because another Hermes surface uses it. Unsupported, unauthorized, and
 failed optional inventory are distinct from an authoritative empty result.
+Connection setup preserves typed invalid-address, authentication, incompatible-
+response, network, TLS, and timeout causes so recovery does not depend on platform
+error wording; rendered details remain bounded and redacted.
 
 A usable connection must provide:
 
@@ -71,7 +80,21 @@ Wing supports the advertised session and runs APIs for chat, streaming replies,
 tool progress, approvals, stop and plain-text steer controls, reconnect, and
 session history. It does
 not infer a mutation from a read route. Rename, delete, fork, approval, stop, and
-run-status requests each require their exact advertised endpoint.
+run-status requests each require their exact advertised endpoint. Before a
+preferred `/v1/runs` submission, Wing includes the loaded Agent-authoritative
+plain user/assistant history. If that history contains structured content, tool
+boundaries, or reasoning context, Wing uses the advertised session stream rather
+than flattening hidden model context; without that safe fallback it fails closed.
+Current run approvals are bound to the exact connection, profile, session, and
+run even when Agent supplies no separate approval id. Wing shows bounded
+reviewed command details and sends only a decision listed in the event's
+advertised choices.
+
+A successful session create is published and selected as soon as Agent confirms
+it. Initial history hydration is a separate recoverable read, so a failed read
+cannot turn a durable create into a duplicate-producing retry. Session inventory
+uses Agent's bounded `limit`/`offset` contract and preserves `has_more`; older
+pages are fetched only through an explicit **Load more sessions** action.
 
 Session bulk deletion is client orchestration over exact per-session `DELETE`.
 It confirms once, excludes sessions with live work, continues after an individual

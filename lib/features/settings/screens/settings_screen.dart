@@ -101,19 +101,20 @@ class _GatewaySettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final groups = directory.hosts;
     return _SettingsSectionCard(
       title: strings.settingsGatewaysSection,
       icon: Icons.cable_outlined,
       children: [
-        if (directory.gateways.isEmpty)
+        if (groups.isEmpty)
           _StatusTile(
             icon: Icons.link_off,
             title: strings.settingsGatewaysSection,
             value: strings.settingsNoSavedGateways,
           )
         else
-          for (final gateway in directory.gateways)
-            _GatewaySettingsTile(gateway: gateway, directory: directory),
+          for (final group in groups)
+            _GatewaySettingsTile(group: group, directory: directory),
         ListTile(
           key: const ValueKey('settings-connect-another-gateway'),
           leading: const Icon(Icons.add_link),
@@ -306,43 +307,55 @@ String _paletteLabel(AppLocalizations strings, WingThemePalette palette) =>
     };
 
 class _GatewaySettingsTile extends StatelessWidget {
-  const _GatewaySettingsTile({required this.gateway, required this.directory});
+  const _GatewaySettingsTile({required this.group, required this.directory});
 
-  final GatewayOverview gateway;
+  final GatewayHostOverview group;
   final HermesGatewayDirectory directory;
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final profileCount = group.profileCount > 1
+        ? ' · ${strings.officeAgentCount(group.profileCount)}'
+        : '';
+    final primary = directory.gateways.firstWhere(
+      (gateway) => gateway.id == group.id,
+    );
     return ListTile(
       leading: Icon(
-        gateway.availability == GatewayAvailability.online
+        group.availability == GatewayAvailability.online
             ? Icons.cloud_done_outlined
             : Icons.cloud_off_outlined,
       ),
-      title: Text(gateway.label),
-      subtitle: Text('${gateway.baseUrl} · ${gateway.availability.name}'),
+      title: Text(group.label),
+      subtitle: Text(
+        '${group.baseUrl}$profileCount · ${group.availability.name}',
+      ),
       trailing: PopupMenuButton<String>(
-        key: ValueKey('settings-gateway-menu-${gateway.id}'),
-        tooltip: strings.settingsGatewayActionsTooltip(gateway.label),
+        key: ValueKey('settings-gateway-menu-${group.id}'),
+        tooltip: strings.settingsGatewayActionsTooltip(group.label),
         onSelected: (action) async {
           if (action == 'agents') {
             await _runGatewayAction(context, () async {
-              await directory.activateGateway(gateway.id);
+              final activeGatewayId = directory.activeContactId?.gatewayId;
+              final gatewayId = group.containsGateway(activeGatewayId)
+                  ? activeGatewayId!
+                  : group.id;
+              await directory.activateGateway(gatewayId);
               if (context.mounted) context.go(AppRoutes.profiles);
             }, strings.settingsConnectGatewayError);
           } else if (action == 'rename') {
-            await _renameGateway(context, directory, gateway);
+            await _renameGateway(context, directory, primary);
           } else if (action == 'connection') {
-            await _updateGatewayConnection(context, directory, gateway);
+            await _updateGatewayConnection(context, directory, primary);
           } else if (action == 'reconnect') {
-            await _runGatewayAction(
-              context,
-              () => directory.reconnectGateway(gateway.id),
-              strings.settingsReconnectGatewayError,
-            );
+            await _runGatewayAction(context, () async {
+              for (final gatewayId in group.gatewayIds) {
+                await directory.reconnectGateway(gatewayId);
+              }
+            }, strings.settingsReconnectGatewayError);
           } else if (action == 'remove') {
-            await _removeGateway(context, directory, gateway);
+            await _removeGatewayGroup(context, directory, group);
           }
         },
         itemBuilder: (_) => [
@@ -350,14 +363,16 @@ class _GatewaySettingsTile extends StatelessWidget {
             value: 'agents',
             child: Text(strings.settingsManageAgentsAction),
           ),
-          PopupMenuItem(
-            value: 'rename',
-            child: Text(strings.settingsRenameAction),
-          ),
-          PopupMenuItem(
-            value: 'connection',
-            child: Text(strings.settingsUpdateConnectionAction),
-          ),
+          if (!group.managedByWingLink)
+            PopupMenuItem(
+              value: 'rename',
+              child: Text(strings.settingsRenameAction),
+            ),
+          if (!group.managedByWingLink)
+            PopupMenuItem(
+              value: 'connection',
+              child: Text(strings.settingsUpdateConnectionAction),
+            ),
           PopupMenuItem(
             value: 'reconnect',
             child: Text(strings.settingsReconnectAction),
@@ -571,10 +586,10 @@ String? _gatewayBaseUrlError(AppLocalizations strings, String? value) {
   return null;
 }
 
-Future<void> _removeGateway(
+Future<void> _removeGatewayGroup(
   BuildContext context,
   HermesGatewayDirectory directory,
-  GatewayOverview gateway,
+  GatewayHostOverview group,
 ) async {
   final strings = AppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
@@ -582,7 +597,7 @@ Future<void> _removeGateway(
     builder: (dialogContext) => AlertDialog(
       key: const ValueKey('settings-gateway-remove-dialog'),
       title: Text(strings.settingsRemoveGatewayTitle),
-      content: Text(strings.settingsRemoveGatewayBody(gateway.label)),
+      content: Text(strings.settingsRemoveGatewayBody(group.label)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
@@ -597,11 +612,11 @@ Future<void> _removeGateway(
     ),
   );
   if (confirmed != true || !context.mounted) return;
-  await _runGatewayAction(
-    context,
-    () => directory.removeGateway(gateway.id),
-    strings.settingsRemoveGatewayError,
-  );
+  await _runGatewayAction(context, () async {
+    for (final gatewayId in group.gatewayIds) {
+      await directory.removeGateway(gatewayId);
+    }
+  }, strings.settingsRemoveGatewayError);
 }
 
 Future<void> _runGatewayAction(

@@ -3,6 +3,25 @@ part of '../screens/hermes_chat_screen.dart';
 enum _QueuedFollowUpMenuAction { openSession, copy, sendNow, cancelAll }
 
 extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
+  HermesComposerSubmission? _captureComposerSubmission() {
+    final key = _activeComposerDraftKey;
+    return key == null ? null : _composerDrafts.captureForSubmission(key);
+  }
+
+  void _restoreComposerSubmission(HermesComposerSubmission? submission) {
+    if (submission == null ||
+        submission.key != _activeComposerDraftKey ||
+        !_composerDrafts.restoreSubmission(submission)) {
+      return;
+    }
+    final text = _composerDrafts.read(submission.key).text;
+    _composerController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+    _setState(() {});
+  }
+
   void _sendComposerText(HermesChannel channel) {
     final composing = _composerController.value.composing;
     if (_composerCompositionActive ||
@@ -12,15 +31,17 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     final text = _composerController.text.trim();
     final staged = _stagedAttachment;
     if (text.isEmpty && staged == null) return;
+    _scheduleTranscriptScrollToBottom(force: true);
     if (staged == null && _runExactLocalSlashCommand(text, channel)) {
       return;
     }
     if (_isTurnActive(channel.state)) {
       if (staged == null && channel.canSteerActiveTurn) {
         _rememberComposerText(text);
+        final submission = _captureComposerSubmission();
         _composerController.clear();
         _setState(() => _followUps.error = null);
-        unawaited(_steerActiveTurn(channel, text));
+        unawaited(_steerActiveTurn(channel, text, submission));
         return;
       }
       if (_followUps.isFull) {
@@ -47,6 +68,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       return;
     }
     _rememberComposerText(text);
+    final submission = _captureComposerSubmission();
     _composerController.clear();
     _setState(() {
       _followUps.error = null;
@@ -59,6 +81,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       imageDataUrl: staged?.imageDataUrl,
       textAttachment: staged?.textContent,
       attachmentName: staged?.name,
+      submission: submission,
     );
   }
 
@@ -78,6 +101,8 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
 
   void _insertComposerContent(KeyboardInsertedContent content) {
     if (_rejectAdditionalComposerAttachment()) return;
+    _invalidateAttachmentPick();
+    final generation = _attachmentPickGeneration;
     final strings = AppLocalizations.of(context);
     final bytes = content.data;
     if (bytes == null || bytes.isEmpty) {
@@ -113,7 +138,12 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       return;
     }
     unawaited(
-      _stageComposerImage(name: name, bytes: bytes, mimeType: mimeType),
+      _stageComposerImage(
+        name: name,
+        bytes: bytes,
+        mimeType: mimeType,
+        generation: generation,
+      ),
     );
   }
 
@@ -121,13 +151,14 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     required String name,
     required Uint8List bytes,
     required String mimeType,
+    required int generation,
   }) async {
     final normalized = await normalizeHermesImageAttachment(
       name: name,
       bytes: bytes,
       mimeType: mimeType,
     );
-    if (!mounted) return;
+    if (!mounted || generation != _attachmentPickGeneration) return;
     if (normalized == null) {
       _showAttachmentError(
         AppLocalizations.of(context).chatAttachmentImageSizeError,
@@ -145,12 +176,21 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   Future<void> _pickAttachment() async {
-    if (_rejectAdditionalComposerAttachment()) return;
+    if (_pickingAttachment || _rejectAdditionalComposerAttachment()) return;
+    final channel = ref.read(hermesChannelProvider);
+    if (!channel.state.isConnected || channel.state.activeSessionId == null) {
+      return;
+    }
+    _syncAttachmentOwner(channel);
+    final generation = ++_attachmentPickGeneration;
+    bool isCurrent() => mounted && generation == _attachmentPickGeneration;
+    _setState(() => _pickingAttachment = true);
     final strings = AppLocalizations.of(context);
     try {
       final file = await ref.read(hermesAttachmentPickerProvider)();
-      if (file == null || !mounted) return;
+      if (file == null || !isCurrent()) return;
       final length = await file.length();
+      if (!isCurrent()) return;
       final isText = isTextAttachment(name: file.name, mimeType: file.mimeType);
       if (isText && length > maxTextAttachmentBytes) {
         _showAttachmentError(strings.chatAttachmentTextSizeError);
@@ -161,18 +201,20 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
         return;
       }
       final bytes = await file.readAsBytes();
+      if (!isCurrent()) return;
       final mimeType = supportedImageMimeType(bytes);
       if (mimeType != null) {
         await _stageComposerImage(
           name: file.name,
           bytes: bytes,
           mimeType: mimeType,
+          generation: generation,
         );
         return;
       }
       if (isText) {
         final content = utf8.decode(bytes);
-        if (!mounted) return;
+        if (!isCurrent()) return;
         _setState(() {
           _attachmentError = null;
           _stagedAttachment = StagedTextAttachment(
@@ -184,15 +226,17 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       }
       _showAttachmentError(strings.chatAttachmentUnsupportedTypeError);
     } on FormatException {
-      if (mounted) {
+      if (isCurrent()) {
         _showAttachmentError(strings.chatAttachmentInvalidUtf8Error);
       }
     } catch (error) {
-      if (mounted) {
+      if (isCurrent()) {
         _showAttachmentError(
           strings.chatAttachmentOpenError(_safeAttachmentErrorDetail(error)),
         );
       }
+    } finally {
+      if (isCurrent()) _setState(() => _pickingAttachment = false);
     }
   }
 
@@ -231,17 +275,21 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
 
   bool _canCreateSession(HermesChannelState state) => state.canCreateSessions;
 
-  Future<void> _steerActiveTurn(HermesChannel channel, String text) async {
+  Future<void> _steerActiveTurn(
+    HermesChannel channel,
+    String text,
+    HermesComposerSubmission? submission,
+  ) async {
+    final ownerGeneration = _composerOwnerGeneration;
     try {
       await channel.steerActiveTurn(text);
     } catch (error) {
-      if (!mounted || !channel.state.isConnected) return;
-      if (_composerController.text.isEmpty) {
-        _composerController.text = text;
-        _composerController.selection = TextSelection.collapsed(
-          offset: text.length,
-        );
+      if (!mounted ||
+          !channel.state.isConnected ||
+          ownerGeneration != _composerOwnerGeneration) {
+        return;
       }
+      _restoreComposerSubmission(submission);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -341,7 +389,9 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     String? imageDataUrl,
     String? textAttachment,
     String? attachmentName,
+    HermesComposerSubmission? submission,
   }) {
+    final ownerGeneration = _composerOwnerGeneration;
     final sessionId = requeueSessionId ?? channel.state.activeSessionId;
     if (!requeueOnFailure) _failedDirectTurn = null;
     if (ref.read(wingVoiceSettingsProvider).speakRepliesEnabled) {
@@ -356,7 +406,12 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
             attachmentName: attachmentName,
           )
           .catchError((Object error) {
-            if (!mounted || !channel.state.isConnected) return;
+            if (!mounted ||
+                !channel.state.isConnected ||
+                ownerGeneration != _composerOwnerGeneration) {
+              return;
+            }
+            _restoreComposerSubmission(submission);
             if (requeueOnFailure) {
               _setState(
                 () => _followUps.requeueFailed(

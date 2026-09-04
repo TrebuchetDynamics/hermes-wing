@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../router/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -46,20 +48,24 @@ class _SoulScaffold extends StatelessWidget {
         child: !state.isConnected
             ? WingEmptyState(
                 icon: Icons.cloud_off_outlined,
-                title: strings.agentsUnavailableTitle,
-                body: strings.agentsEmptyBody,
+                title: strings.soulConnectionRequiredTitle,
+                body: strings.soulConnectionRequiredBody,
+                actionLabel: strings.soulOpenChatAction,
+                onAction: () => context.go(AppRoutes.hermes),
               )
             : profile == null
             ? WingEmptyState(
                 icon: Icons.person_search_outlined,
-                title: strings.agentsEmptyTitle,
-                body: strings.agentsEmptyBody,
+                title: strings.soulProfileRequiredTitle,
+                body: strings.soulProfileRequiredBody,
+                actionLabel: strings.soulOpenProfilesAction,
+                onAction: () => context.go(AppRoutes.profiles),
               )
             : !_supportsPersona(state)
             ? WingEmptyState(
                 icon: Icons.lock_outline,
-                title: strings.agentsUnavailableTitle,
-                body: strings.agentsUnavailableBody,
+                title: strings.soulUnavailableTitle,
+                body: strings.soulUnavailableBody,
               )
             : ProfileEditorSheet(
                 key: ValueKey('soul-editor-${profile.id}'),

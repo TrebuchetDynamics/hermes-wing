@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The versioned release path does not collect transcripts, origins, or device IDs
+# in its public receipt. Historical local receipts retain their existing schema.
+if [[ "${WING_RELEASE_QUALIFICATION:-}" == true ]]; then
+  exec node "$(dirname "${BASH_SOURCE[0]}")/record_release_qualification.mjs" physical-voice
+fi
+
 for cmd in adb flutter python3; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "$cmd is required to record the Android live microphone receipt." >&2

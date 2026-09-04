@@ -1,5 +1,28 @@
 part of '../hermes_api_channel.dart';
 
+HermesConnectionFailureKind _connectionFailureKind(Object error) {
+  if (error is ArgumentError) {
+    return HermesConnectionFailureKind.invalidEndpoint;
+  }
+  if (error is HermesApiStatusException &&
+      (error.statusCode == 401 || error.statusCode == 403)) {
+    return HermesConnectionFailureKind.authentication;
+  }
+  if (error is FormatException) {
+    return HermesConnectionFailureKind.incompatibleResponse;
+  }
+  if (error is HermesApiTransportException) {
+    return switch (error.kind) {
+      HermesApiTransportFailureKind.network =>
+        HermesConnectionFailureKind.network,
+      HermesApiTransportFailureKind.tls => HermesConnectionFailureKind.tls,
+      HermesApiTransportFailureKind.timeout =>
+        HermesConnectionFailureKind.timeout,
+    };
+  }
+  return HermesConnectionFailureKind.unknown;
+}
+
 extension _ConnectionExtension on HermesApiChannel {
   Future<void> _connect({required String baseUrl, String? apiKey}) async {
     final generation = _connectionGeneration + 1;
@@ -86,7 +109,13 @@ extension _ConnectionExtension on HermesApiChannel {
         load: () => client!.listJobs(profile: initialProfileId),
         errors: optionalResourceErrors,
       );
-      final sessions = await client.listSessions(profile: initialProfileId);
+      final sessionsPage = await client.listSessionsPage(
+        profile: initialProfileId,
+      );
+      if (sessionsPage.offset != 0) {
+        throw StateError('Hermes returned an unexpected session page offset.');
+      }
+      final sessions = sessionsPage.sessions;
       if (!_isCurrentConnection(generation, client)) return;
       final detachedActiveId = await _recoverActiveDetachedSession(
         client: client,
@@ -145,6 +174,9 @@ extension _ConnectionExtension on HermesApiChannel {
           jobs: jobs,
           optionalResourceErrors: optionalResourceErrors,
           sessions: sessions,
+          sessionsNextOffset: sessionsPage.nextOffset,
+          hasMoreSessions: sessionsPage.hasMore,
+          isLoadingMoreSessions: false,
           selectedProfileId: initialProfileId,
           activeSessionId: activeId,
           clearActiveSessionId: activeId == null,
@@ -179,6 +211,7 @@ extension _ConnectionExtension on HermesApiChannel {
         _state.copyWith(
           status: HermesConnectionStatus.error,
           errorMessage: _safeHermesError(error),
+          connectionFailureKind: _connectionFailureKind(error),
         ),
       );
     }
@@ -218,9 +251,13 @@ extension _ConnectionExtension on HermesApiChannel {
       throw StateError('Hermes did not advertise detailed gateway health.');
     }
     final generation = _connectionGeneration;
+    final requestGeneration = ++_healthRequestGeneration;
+    bool isCurrent() =>
+        _isCurrentConnection(generation, client) &&
+        requestGeneration == _healthRequestGeneration;
     try {
       final health = await client.healthDetailed();
-      if (!_isCurrentConnection(generation, client)) return;
+      if (!isCurrent()) return;
       final errors = Map<HermesOptionalResource, String>.from(
         _state.optionalResourceErrors,
       )..remove(HermesOptionalResource.detailedHealth);
@@ -228,7 +265,7 @@ extension _ConnectionExtension on HermesApiChannel {
         _state.copyWith(detailedHealth: health, optionalResourceErrors: errors),
       );
     } catch (error) {
-      if (_isCurrentConnection(generation, client)) {
+      if (isCurrent()) {
         final errors = Map<HermesOptionalResource, String>.from(
           _state.optionalResourceErrors,
         )..[HermesOptionalResource.detailedHealth] = _safeHermesError(error);
@@ -249,15 +286,23 @@ extension _ConnectionExtension on HermesApiChannel {
       throw StateError('Hermes did not advertise scheduled-job inventory.');
     }
     final generation = _connectionGeneration;
+    final profileId = _state.selectedProfileId;
+    final selectionGeneration = _profileSelectionGeneration;
+    final requestGeneration = ++_jobsRequestGeneration;
+    bool isCurrent() =>
+        _isCurrentConnection(generation, client) &&
+        _isConnectedProfile(client, profileId) &&
+        selectionGeneration == _profileSelectionGeneration &&
+        requestGeneration == _jobsRequestGeneration;
     try {
-      final jobs = await client.listJobs(profile: _state.selectedProfileId);
-      if (!_isCurrentConnection(generation, client)) return;
+      final jobs = await client.listJobs(profile: profileId);
+      if (!isCurrent()) return;
       final errors = Map<HermesOptionalResource, String>.from(
         _state.optionalResourceErrors,
       )..remove(HermesOptionalResource.jobs);
       _setState(_state.copyWith(jobs: jobs, optionalResourceErrors: errors));
     } catch (error) {
-      if (_isCurrentConnection(generation, client)) {
+      if (isCurrent()) {
         final errors = Map<HermesOptionalResource, String>.from(
           _state.optionalResourceErrors,
         )..[HermesOptionalResource.jobs] = _safeHermesError(error);
@@ -269,32 +314,127 @@ extension _ConnectionExtension on HermesApiChannel {
     }
   }
 
+  Future<void> _reloadToolInventory() async {
+    final client = _requireConnectedClient();
+    final canReadSkills = _state.canReadSkills;
+    final canReadToolsets = _state.canReadToolsets;
+    if (!canReadSkills && !canReadToolsets) {
+      throw StateError('Hermes did not advertise tool inventory.');
+    }
+    final profileId = _state.selectedProfileId;
+    final generation = _connectionGeneration;
+    final selectionGeneration = _profileSelectionGeneration;
+    final requestGeneration = ++_toolsRequestGeneration;
+    final errors = <HermesOptionalResource, String>{};
+    final skillsFuture = _loadOptional<List<HermesSkill>>(
+      advertised: canReadSkills,
+      resource: HermesOptionalResource.skills,
+      load: () => client.listSkillDetails(profile: profileId),
+      errors: errors,
+    );
+    final toolsetsFuture = _loadOptional<List<HermesToolset>>(
+      advertised: canReadToolsets,
+      resource: HermesOptionalResource.toolsets,
+      load: () => client.listToolsets(profile: profileId),
+      errors: errors,
+    );
+    final skillDetails = await skillsFuture ?? const <HermesSkill>[];
+    final toolsets = await toolsetsFuture ?? const <HermesToolset>[];
+    if (!_isConnectedProfile(client, profileId) ||
+        !_isCurrentConnection(generation, client) ||
+        selectionGeneration != _profileSelectionGeneration ||
+        requestGeneration != _toolsRequestGeneration) {
+      return;
+    }
+    final mergedErrors =
+        Map<HermesOptionalResource, String>.from(_state.optionalResourceErrors)
+          ..remove(HermesOptionalResource.skills)
+          ..remove(HermesOptionalResource.toolsets)
+          ..addAll(errors);
+    _setState(
+      _state.copyWith(
+        skills: skillDetails.map((skill) => skill.name).toList(growable: false),
+        skillDetails: skillDetails,
+        toolsets: toolsets,
+        enabledToolsets: toolsets
+            .where((toolset) => toolset.enabled)
+            .map((toolset) => toolset.name)
+            .toList(growable: false),
+        optionalResourceErrors: mergedErrors,
+      ),
+    );
+  }
+
   Future<List<HermesChatTurn>> _fetchTurns(
     HermesApiClient client,
     String sessionId, {
     String? profileId,
   }) async {
-    final history = await client.sessionMessages(
-      sessionId,
-      profile: profileId ?? _state.selectedProfileId,
-    );
-    final fetchedAt = DateTime.now();
-    final resolvedProfile = profileId ?? _state.selectedProfileId ?? 'default';
+    final connectionGeneration = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
+    final requestProfile = profileId ?? _state.selectedProfileId;
+    final resolvedProfile = requestProfile ?? 'default';
     final cacheKey = _recentTurnKey(
       client,
       sessionId,
       profileId: resolvedProfile,
     );
+    final page = await client.sessionMessagesPage(
+      sessionId,
+      profile: requestProfile,
+    );
+    if (!_isCurrentConnection(connectionGeneration, client) ||
+        profileGeneration != _profileSelectionGeneration) {
+      return const [];
+    }
+    if (page.offset != 0 || page.order != 'latest') {
+      throw StateError('Hermes returned unexpected message pagination.');
+    }
+    final history = page.messages;
+    _messageHistoryPagination[cacheKey] = _HermesMessageHistoryPagination(
+      nextOffset: page.nextOffset,
+      hasMore: page.hasMore,
+    );
+    while (_messageHistoryPagination.length > 64) {
+      _messageHistoryPagination.remove(_messageHistoryPagination.keys.first);
+    }
+    final fetchedAt = DateTime.now();
     final stateProfile = _state.selectedProfileId ?? 'default';
+    _runHistorySnapshots.remove(cacheKey);
+    _runHistorySnapshots[cacheKey] = _HermesRunHistorySnapshot(history);
+    while (_runHistorySnapshots.length > 32) {
+      _runHistorySnapshots.remove(_runHistorySnapshots.keys.first);
+    }
     final unmatched = List<HermesChatTurn>.of(
       (resolvedProfile == stateProfile ? _state.messages[sessionId] : null) ??
           _recentTurns[cacheKey] ??
           const [],
     );
+    final turns = _turnsFromHistory(
+      history,
+      sessionId: sessionId,
+      unmatched: unmatched,
+      fetchedAt: fetchedAt,
+    );
+    _recentTurns.remove(cacheKey);
+    _recentTurns[cacheKey] = turns.length <= 500
+        ? List.unmodifiable(turns)
+        : List.unmodifiable(turns.sublist(turns.length - 500));
+    while (_recentTurns.length > 32) {
+      _recentTurns.remove(_recentTurns.keys.first);
+    }
+    return turns;
+  }
+
+  List<HermesChatTurn> _turnsFromHistory(
+    Iterable<HermesMessage> history, {
+    required String sessionId,
+    required List<HermesChatTurn> unmatched,
+    required DateTime fetchedAt,
+  }) {
     // Tool results are model context, not user-visible transcript text.
-    final visibleHistory = history.where((message) => message.role != 'tool');
-    final turns = [
-      for (final message in visibleHistory)
+    return [
+      for (final message in history.where((message) => message.role != 'tool'))
         (() {
           final author = switch (message.role) {
             'user' => HermesTurnAuthor.user,
@@ -338,14 +478,6 @@ extension _ConnectionExtension on HermesApiChannel {
           );
         })(),
     ];
-    _recentTurns.remove(cacheKey);
-    _recentTurns[cacheKey] = turns.length <= 500
-        ? List.unmodifiable(turns)
-        : List.unmodifiable(turns.sublist(turns.length - 500));
-    while (_recentTurns.length > 32) {
-      _recentTurns.remove(_recentTurns.keys.first);
-    }
-    return turns;
   }
 }
 

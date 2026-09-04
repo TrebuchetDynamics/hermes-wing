@@ -116,6 +116,7 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
     this.scanned,
     this.imported,
     this.scanThrowsOnce = false,
+    this.consumeInitialThrows = false,
   }) : pendingInitial = initial;
 
   final String? initial;
@@ -123,6 +124,7 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
   final String? scanned;
   final String? imported;
   final bool scanThrowsOnce;
+  final bool consumeInitialThrows;
   int scanCalls = 0;
   int importCalls = 0;
   final _events = StreamController<String>.broadcast();
@@ -132,6 +134,9 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
 
   @override
   Future<String?> consumeInitialPayload() async {
+    if (consumeInitialThrows) {
+      throw StateError('private Android intent transport failure');
+    }
     final value = pendingInitial;
     pendingInitial = null;
     return value;
@@ -156,6 +161,8 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
   }
 
   void emit(String payload) => _events.add(payload);
+
+  void emitError(Object error) => _events.addError(error);
 
   void dispose() => unawaited(_events.close());
 }
@@ -1696,6 +1703,66 @@ void main() {
     bool anyTextContainsToken(WidgetTester tester) =>
         anyTextContains(tester, _secretToken);
 
+    testWidgets('initial intent source failure stays recoverable and bounded', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      var inspectCalls = 0;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource(consumeInitialThrows: true);
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspectCalls++;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      final error = find.byKey(
+        const ValueKey('hermes-enrollment-payload-error'),
+      );
+      expect(error, findsOneWidget);
+      expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
+      expect(find.textContaining('private Android'), findsNothing);
+      expect(find.text('Paste pairing link'), findsOneWidget);
+      expect(inspectCalls, 0);
+      semantics.dispose();
+    });
+
+    testWidgets('intent event stream failure stays recoverable and bounded', (
+      tester,
+    ) async {
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      source.emitError(StateError('private intent stream failure'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-payload-error')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('private intent'), findsNothing);
+      expect(find.text('Paste pairing link'), findsOneWidget);
+    });
+
     testWidgets(
       'Android chooser actions are ordered, full width, and bounded',
       (tester) async {
@@ -1797,6 +1864,57 @@ void main() {
 
       expect(clipboardReads, 1);
       expect(inspectCalls, 1);
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('blocks duplicate paste while clipboard read is pending', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final clipboardGate = Completer<void>();
+      addTearDown(() {
+        if (!clipboardGate.isCompleted) clipboardGate.complete();
+      });
+      var clipboardReads = 0;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.getData') {
+              clipboardReads += 1;
+              await clipboardGate.future;
+              return <String, Object?>{'text': _validPayload};
+            }
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+      final paste = find.byKey(const ValueKey('hermes-enrollment-paste-link'));
+      await tester.tap(paste);
+      await tester.pump();
+
+      expect(clipboardReads, 1);
+      expect(tester.widget<FilledButton>(paste).onPressed, isNull);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      clipboardGate.complete();
+      await tester.pumpAndSettle();
+      expect(clipboardReads, 1);
       expect(controller.status, HermesEnrollmentStatus.ready);
       debugDefaultTargetPlatformOverride = null;
     });

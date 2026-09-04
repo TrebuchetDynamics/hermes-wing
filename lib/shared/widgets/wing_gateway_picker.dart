@@ -39,13 +39,14 @@ class WingGatewayPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final selectedId = directory.activeContactId?.gatewayId;
-    // A stale id must not be shown as a selection: it would render a value the
-    // dropdown has no item for.
-    final selected =
-        directory.gateways.any((gateway) => gateway.id == selectedId)
-        ? selectedId
-        : null;
+    final hosts = directory.hosts;
+    final activeGatewayId = directory.activeContactId?.gatewayId;
+    // A profile-bound endpoint maps back to its paired host. A stale endpoint
+    // must not be shown as a selection because the dropdown has no item for it.
+    final selected = hosts
+        .where((host) => host.containsGateway(activeGatewayId))
+        .firstOrNull
+        ?.id;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
@@ -60,8 +61,8 @@ class WingGatewayPicker extends StatelessWidget {
             ),
             hint: Text(hint ?? strings.selectGatewayHint),
             items: [
-              for (final gateway in directory.gateways)
-                DropdownMenuItem(value: gateway.id, child: Text(gateway.label)),
+              for (final host in hosts)
+                DropdownMenuItem(value: host.id, child: Text(host.label)),
             ],
             onChanged: enabled
                 ? (gatewayId) {

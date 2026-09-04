@@ -60,6 +60,9 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
             : directory.gateways
                   .where((gateway) => gateway.id == activeGatewayId)
                   .firstOrNull;
+        final activeHost = directory.hosts
+            .where((host) => host.containsGateway(activeGatewayId))
+            .firstOrNull;
         final activeConfig = directory.activeGatewayConfig;
         final trustFuture =
             activeGatewayId == null ||
@@ -72,7 +75,8 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
           appBar: AppBar(
             title: Text(strings.gatewayStatusTitle),
             actions: [
-              if (activeGateway != null)
+              if (activeGateway != null &&
+                  activeHost?.managedByWingLink != true)
                 IconButton(
                   key: const ValueKey('gateway-rename-button'),
                   tooltip: strings.settingsRenameGatewayTitle,
@@ -153,7 +157,10 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                 ),
               if (_actionError != null)
                 MaterialBanner(
-                  content: Text(_actionError!),
+                  content: Semantics(
+                    liveRegion: true,
+                    child: Text(_actionError!),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => setState(() => _actionError = null),
@@ -166,6 +173,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   state: channel.state,
                   strings: strings,
                   refreshFailed: _refreshFailed,
+                  onRetry: () => unawaited(_refresh(channel)),
                   trust: trustFuture == null || activeConfig == null
                       ? null
                       : _WingLinkTrustCard(
@@ -245,7 +253,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       );
     } catch (error) {
       if (error is _WingLinkTrustLoadException) rethrow;
-      if (error.toString().contains('HTTP 401')) {
+      if (error is WingLinkHttpException && error.statusCode == 401) {
         throw const _WingLinkTrustLoadException(
           _WingLinkTrustFailure.credentialExpired,
         );
@@ -280,7 +288,19 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     setState(() => _revokingDevice = true);
     try {
       await _wingLinkClient(config).revokeCurrentDevice();
-      if (mounted) setState(() => _deviceRevoked = true);
+      final gatewayId = config.id;
+      if (gatewayId == null || gatewayId.isEmpty) {
+        throw StateError('Saved gateway identity is unavailable.');
+      }
+      await ref
+          .read(hermesGatewayDirectoryProvider)
+          .clearWingLinkEnrollment(gatewayId);
+      if (mounted) {
+        setState(() => _deviceRevoked = true);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(strings.gatewayTrustRevoked)));
+      }
     } on WingLinkApprovalRequired {
       if (mounted) setState(() => _approvalPending = true);
     } catch (_) {
@@ -421,12 +441,14 @@ class _GatewayBody extends StatelessWidget {
     required this.state,
     required this.strings,
     required this.refreshFailed,
+    required this.onRetry,
     required this.trust,
   });
 
   final HermesChannelState state;
   final AppLocalizations strings;
   final bool refreshFailed;
+  final VoidCallback onRetry;
   final Widget? trust;
 
   @override
@@ -440,6 +462,7 @@ class _GatewayBody extends StatelessWidget {
       if (state.status == HermesConnectionStatus.error) {
         return WingEmptyState(
           icon: Icons.cloud_off_outlined,
+          liveRegion: true,
           title: strings.gatewayStatusUnavailableTitle,
           body: strings.gatewayStatusConnectionErrorBody,
         );
@@ -464,10 +487,13 @@ class _GatewayBody extends StatelessWidget {
         icon: detailedAdvertised
             ? Icons.sync_problem_outlined
             : Icons.lock_outline,
+        liveRegion: detailedAdvertised,
         title: strings.gatewayStatusUnavailableTitle,
         body: detailedAdvertised
             ? strings.gatewayStatusLoadFailedBody
             : strings.gatewayStatusUnavailableBody,
+        actionLabel: detailedAdvertised ? strings.retryAction : null,
+        onAction: detailedAdvertised ? onRetry : null,
       );
     }
     final fallbackNotice = !detailedAdvertised
@@ -491,20 +517,37 @@ class _GatewayBody extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  fallbackNotice == null
-                      ? Icons.visibility_outlined
-                      : Icons.info_outline,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      fallbackNotice == null
+                          ? Icons.visibility_outlined
+                          : Icons.info_outline,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        fallbackNotice ?? strings.gatewayStatusReadOnlyNote,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    fallbackNotice ?? strings.gatewayStatusReadOnlyNote,
+                if (detailedAdvertised && detailedFailed) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: TextButton.icon(
+                      key: const ValueKey('gateway-status-inline-retry'),
+                      onPressed: onRetry,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(strings.retryAction),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -605,7 +648,13 @@ class _WingLinkTrustCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text(message, key: const ValueKey('gateway-trust-error')),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    message,
+                    key: const ValueKey('gateway-trust-error'),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(strings.gatewayTrustHostInstructions),
               ],
@@ -645,14 +694,20 @@ class _WingLinkTrustCard extends StatelessWidget {
               Text(strings.gatewayTrustHostInstructions),
               const SizedBox(height: 12),
               if (approvalPending)
-                Text(
-                  strings.gatewayTrustApprovalPending,
-                  key: const ValueKey('gateway-trust-approval-pending'),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    strings.gatewayTrustApprovalPending,
+                    key: const ValueKey('gateway-trust-approval-pending'),
+                  ),
                 )
               else if (revoked)
-                Text(
-                  strings.gatewayTrustRevoked,
-                  key: const ValueKey('gateway-trust-revoked'),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    strings.gatewayTrustRevoked,
+                    key: const ValueKey('gateway-trust-revoked'),
+                  ),
                 )
               else
                 Align(
@@ -661,9 +716,12 @@ class _WingLinkTrustCard extends StatelessWidget {
                     key: const ValueKey('gateway-trust-revoke'),
                     onPressed: revoking ? null : onRevoke,
                     icon: revoking
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              semanticsLabel: strings.gatewayTrustRevoking,
+                            ),
                           )
                         : const Icon(Icons.phonelink_erase_outlined),
                     label: Text(strings.gatewayTrustRevokeAction),

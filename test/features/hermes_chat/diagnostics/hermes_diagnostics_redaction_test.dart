@@ -121,6 +121,17 @@ void main() {
   });
 
   group('embedded credentials and paths', () {
+    test('a Wing pairing handoff code is excluded from diagnostics', () {
+      const syntheticCode = 'synthetic-once-only-marker';
+      final out = exportWithTitle(
+        'wing://connect?origin=https%3A%2F%2Fhermes.example'
+        '&code=$syntheticCode',
+      );
+
+      expect(out, isNot(contains(syntheticCode)));
+      expect(out, contains('code=[redacted]'));
+    });
+
     test('URL userinfo is redacted', () {
       expect(
         exportWithTitle('https://user:hunter2@hermes.example'),

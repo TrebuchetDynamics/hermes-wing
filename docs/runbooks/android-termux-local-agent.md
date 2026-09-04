@@ -9,11 +9,16 @@ host](android-hermes-setup.md).
 ## Boundaries
 
 - Install Termux from an [officially documented source](https://github.com/termux/termux-app#installation).
-- Wing copies one public, release-pinned command after an explicit tap. The user
-  runs it in Termux; Wing does not request Termux external-command access.
-- The command downloads the immutable Wing installer, verifies its SHA-256, and
-  invokes Hermes Agent's reviewed official installer. It does not use the
-  mutable website one-liner or a community APT repository.
+- Wing copies one public, immutable, verified command after an explicit tap. The
+  user runs it in Termux; Wing does not request Termux external-command access.
+- Signed Wing releases copy a command that downloads the immutable Wing Link
+  binary and verifies its SHA-256. Source-built development APKs instead copy a
+  command that downloads a bounded, commit-pinned source archive, verifies its
+  exact size, archive SHA-256, and installer SHA-256, then builds Wing Link in
+  Termux. The development path separately verifies and runs the current pinned
+  Hermes Agent installer before Wing Link adopts it. Both paths invoke Hermes
+  Agent's reviewed official installer; neither
+  uses the mutable website one-liner or a community APT repository.
 - Hermes Agent binds `127.0.0.1:8642`; Wing Link binds `127.0.0.1:8654`.
   Authentication is still mandatory because any local app can probe loopback.
 - Android may suspend or kill both processes. There is no managed service,
@@ -23,7 +28,9 @@ host](android-hermes-setup.md).
 
 1. In Wing enrollment choose **Install Hermes Agent on this phone**.
 2. Copy the verified setup command, open Termux, paste it, and keep Termux in
-   the foreground while installation runs.
+   the foreground while installation runs. Development builds install Termux's
+   `golang` package and compile the pinned Wing Link source, so their first run
+   takes longer than a signed release installation.
 3. The installer adopts or installs Hermes Agent, starts both loopback services,
    and prints a code-free `http://127.0.0.1:<port>/open` link.
 4. Tap the link, choose **Open Hermes Wing**, review the host and requested

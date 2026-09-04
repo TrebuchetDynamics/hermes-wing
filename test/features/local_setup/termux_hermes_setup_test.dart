@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/local_setup/models/termux_bootstrap_command.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
+
+class _DeferredAssetBundle extends CachingAssetBundle {
+  _DeferredAssetBundle(this.metadata);
+
+  final Map<String, Object?> metadata;
+  final release = Completer<void>();
+
+  @override
+  Future<ByteData> load(String key) async {
+    await release.future;
+    final bytes = Uint8List.fromList(utf8.encode(jsonEncode(metadata)));
+    return ByteData.sublistView(bytes);
+  }
+}
 
 class _MemoryAssetBundle extends CachingAssetBundle {
   _MemoryAssetBundle(this.metadata);
@@ -44,8 +59,65 @@ Widget _testApp(Map<String, Object?> metadata, {double textScale = 1}) =>
       ),
     );
 
+Widget _packagedApp() => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: const TermuxHermesSetupScreen(),
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('announces setup command preparation while metadata loads', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final bundle = _DeferredAssetBundle(_validMetadata());
+    await tester.pumpWidget(
+      DefaultAssetBundle(
+        bundle: bundle,
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: TermuxHermesSetupScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final loading = find.byKey(const ValueKey('termux-command-loading'));
+    expect(loading, findsOneWidget);
+    await tester.ensureVisible(loading);
+    await tester.pump();
+    final loadingSemantics = tester.getSemantics(loading);
+    expect(
+      loadingSemantics.label,
+      contains('Preparing the verified setup command…'),
+    );
+    expect(loadingSemantics.flagsCollection.isLiveRegion, isTrue);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('termux-copy-command')),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    bundle.release.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('termux-command-loading')), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('termux-copy-command')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    semantics.dispose();
+  });
 
   testWidgets('copies only the validated release-pinned command after a tap', (
     tester,
@@ -93,6 +165,43 @@ void main() {
     }
   });
 
+  testWidgets('blocks duplicate command copies while clipboard is pending', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    addTearDown(() {
+      if (!gate.isCompleted) gate.complete();
+    });
+    var copyCalls = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copyCalls += 1;
+            await gate.future;
+          }
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
+    await tester.pumpWidget(_testApp(_validMetadata()));
+    await tester.pumpAndSettle();
+    final copy = find.byKey(const ValueKey('termux-copy-command'));
+    await tester.tap(copy);
+    await tester.pump();
+
+    expect(copyCalls, 1);
+    expect(tester.widget<FilledButton>(copy).onPressed, isNull);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(copyCalls, 1);
+    expect(find.textContaining('Setup command copied'), findsOneWidget);
+  });
+
   testWidgets('clipboard failure shows an explicit recovery message', (
     tester,
   ) async {
@@ -119,6 +228,23 @@ void main() {
 
     expect(find.textContaining('could not be copied'), findsOneWidget);
     expect(find.textContaining('Setup command copied'), findsNothing);
+  });
+
+  testWidgets('development build packages a usable verified command', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_packagedApp());
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<FilledButton>(
+      find.byKey(const ValueKey('termux-copy-command')),
+    );
+    expect(button.onPressed, isNotNull);
+    expect(
+      find.text('This build cannot install the matching Wing Link release.'),
+      findsNothing,
+    );
+    expect(find.textContaining('codeload.github.com'), findsOneWidget);
   });
 
   testWidgets('unqualified build disables command copy', (tester) async {

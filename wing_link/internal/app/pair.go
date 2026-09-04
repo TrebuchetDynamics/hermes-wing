@@ -420,12 +420,12 @@ func writePairJSON(writer http.ResponseWriter, status int, payload map[string]an
 }
 
 func parsePairOptions(args []string) (pairOptions, error) {
-	return parsePairOptionsWithAdvertiseHost(args, pairingAdvertiseHost)
+	return parsePairOptionsWithAdvertiseHost(args, pairingAdvertiseAddressForMode)
 }
 
 func parsePairOptionsWithAdvertiseHost(
 	args []string,
-	advertiseHost func(bool) (string, error),
+	advertiseHost func(bool) (pairingAdvertiseAddress, error),
 ) (pairOptions, error) {
 	label, err := os.Hostname()
 	if err != nil || strings.TrimSpace(label) == "" {
@@ -480,11 +480,14 @@ func parsePairOptionsWithAdvertiseHost(
 		return pairOptions{}, fmt.Errorf("%w: --same-device conflicts with --remote and --qr", errPairUsage)
 	}
 	automaticOrigin := originValue == ""
+	automaticHermesBinding := false
 	if originValue == "" {
-		host, hostErr := advertiseHost(remote)
+		selection, hostErr := advertiseHost(remote)
 		if hostErr != nil {
 			return pairOptions{}, hostErr
 		}
+		host := selection.Host
+		automaticHermesBinding = selection.AutomaticHermesBinding
 		port := 8642
 		if value := strings.TrimSpace(os.Getenv("WING_HERMES_PORT")); value != "" {
 			port, err = strconv.Atoi(value)
@@ -535,10 +538,10 @@ func parsePairOptionsWithAdvertiseHost(
 		return pairOptions{}, err
 	}
 	if err := prepareAutomaticHermesOrigin(
-		automaticOrigin,
+		automaticOrigin && automaticHermesBinding,
 		origin,
 		func() int { return pairRequestStatus(origin, token, "/v1/capabilities") },
-		func() error { return configureHermesVPNOrigin(origin) },
+		func() error { return configureHermesVPNOrigin(origin, automaticHermesBinding) },
 	); err != nil {
 		return pairOptions{}, err
 	}
@@ -578,14 +581,19 @@ func parsePairOptionsWithAdvertiseHost(
 }
 
 func pairingAdvertiseHost(remote bool) (string, error) {
+	selection, err := pairingAdvertiseAddressForMode(remote)
+	return selection.Host, err
+}
+
+func pairingAdvertiseAddressForMode(remote bool) (pairingAdvertiseAddress, error) {
 	if !remote {
-		return "127.0.0.1", nil
+		return pairingAdvertiseAddress{Host: "127.0.0.1"}, nil
 	}
-	return advertiseIP()
+	return advertiseAddress()
 }
 
 func prepareAutomaticHermesOrigin(automatic bool, origin *url.URL, probe func() int, configure func() error) error {
-	if !automatic || !isTailscaleIP(net.ParseIP(origin.Hostname())) {
+	if !automatic {
 		return nil
 	}
 	if probe() != 0 {
@@ -601,13 +609,13 @@ func prepareAutomaticHermesOrigin(automatic bool, origin *url.URL, probe func() 
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
-	return errors.New("agent API did not become reachable on Tailscale")
+	return errors.New("agent API did not become reachable over NetBird or Tailscale")
 }
 
-func configureHermesVPNOrigin(origin *url.URL) error {
+func configureHermesVPNOrigin(origin *url.URL, verifiedMeshVPN bool) error {
 	host := origin.Hostname()
-	if !isTailscaleIP(net.ParseIP(host)) {
-		return errors.New("automatic Hermes API binding requires a Tailscale address")
+	if !verifiedMeshVPN && !isOverlayVPNIP(net.ParseIP(host)) {
+		return errors.New("automatic Hermes API binding requires a NetBird or Tailscale address")
 	}
 	port, err := strconv.Atoi(origin.Port())
 	if err != nil || port < 1 || port > 65535 {
@@ -615,7 +623,7 @@ func configureHermesVPNOrigin(origin *url.URL) error {
 	}
 	hermes, err := exec.LookPath("hermes")
 	if err != nil {
-		return errors.New("could not find Hermes CLI to enable Tailscale pairing")
+		return errors.New("could not find Hermes CLI to enable mesh VPN pairing")
 	}
 	output, result := runProcessCapture(context.Background(), CommandSpec{
 		Path: hermes, Args: []string{"config", "env-path"}, Timeout: 5 * time.Second,
@@ -625,38 +633,39 @@ func configureHermesVPNOrigin(origin *url.URL) error {
 	if result.Err != nil || homeErr != nil || !filepath.IsAbs(path) ||
 		strings.ContainsAny(path, "\r\n") || !pathWithin(home, path) ||
 		rejectSymlinkedAncestors(path) != nil {
-		return errors.New("could not locate Hermes API environment for Tailscale pairing")
+		return errors.New("could not locate Hermes API environment for mesh VPN pairing")
 	}
-	return configureHermesVPNOriginWithRunner(hermes, host, runProcess, func() error {
+	return configureHermesVPNOriginWithRunner(hermes, host, verifiedMeshVPN, runProcess, func() error {
 		return ensureHermesAPIEnvironmentHost(path, host, port)
 	})
 }
 
 func configureHermesVPNOriginWithRunner(
 	hermes, host string,
+	verifiedMeshVPN bool,
 	run func(context.Context, CommandSpec, func(string)) ProcessResult,
 	updateEnvironment func() error,
 ) error {
-	if !isTailscaleIP(net.ParseIP(host)) {
-		return errors.New("automatic Hermes API binding requires a Tailscale address")
+	if !verifiedMeshVPN && !isOverlayVPNIP(net.ParseIP(host)) {
+		return errors.New("automatic Hermes API binding requires a NetBird or Tailscale address")
 	}
 	if result := run(context.Background(), CommandSpec{
 		Path: hermes, Args: []string{"config", "set", "--force", "platforms.api_server.extra.host", host}, Timeout: 90 * time.Second,
 	}, nil); result.Err != nil {
-		return errors.New("could not enable Hermes API access over Tailscale")
+		return errors.New("could not enable Hermes API access over the mesh VPN")
 	}
 	if err := updateEnvironment(); err != nil {
-		return errors.New("could not update Hermes API environment for Tailscale")
+		return errors.New("could not update Hermes API environment for the mesh VPN")
 	}
 	if result := run(context.Background(), CommandSpec{
 		Path: hermes, Args: []string{"gateway", "restart"}, Timeout: 90 * time.Second,
 	}, nil); result.Err != nil {
-		return errors.New("could not restart Hermes API for Tailscale")
+		return errors.New("could not restart Hermes API for the mesh VPN")
 	}
 	return nil
 }
 
-func isTailscaleIP(ip net.IP) bool {
+func isOverlayVPNIP(ip net.IP) bool {
 	if ip == nil {
 		return false
 	}
@@ -1191,13 +1200,116 @@ func validURLPort(value *url.URL) bool {
 	return err == nil && number >= 1 && number <= 65535
 }
 
-// advertiseIP prefers Tailscale, then the first private LAN address.
+type pairingAdvertiseAddress struct {
+	Host                   string
+	AutomaticHermesBinding bool
+}
+
+type meshVPNAddress struct {
+	Provider string
+	IP       net.IP
+}
+
+type meshVPNProbe struct {
+	Provider   string
+	Executable string
+	Arguments  []string
+}
+
+var meshVPNProbes = []meshVPNProbe{
+	{Provider: "NetBird", Executable: "netbird", Arguments: []string{"status", "--ipv4"}},
+	{Provider: "NetBird", Executable: "netbird", Arguments: []string{"status", "--ipv6"}},
+	{Provider: "Tailscale", Executable: "tailscale", Arguments: []string{"ip", "-4"}},
+}
+
+func discoverMeshVPNAddresses() ([]meshVPNAddress, error) {
+	return discoverMeshVPNAddressesWith(exec.LookPath, runProcessCapture, isLocalInterfaceIP)
+}
+
+func discoverMeshVPNAddressesWith(
+	lookPath func(string) (string, error),
+	capture func(context.Context, CommandSpec, int) ([]byte, ProcessResult),
+	isLocal func(net.IP) bool,
+) ([]meshVPNAddress, error) {
+	addresses := make([]meshVPNAddress, 0, len(meshVPNProbes))
+	for _, probe := range meshVPNProbes {
+		executable, err := lookPath(probe.Executable)
+		if err != nil {
+			continue
+		}
+		output, result := capture(context.Background(), CommandSpec{
+			Path: executable, Args: probe.Arguments, Timeout: 3 * time.Second,
+		}, 256)
+		if result.Err != nil || result.ExitCode != 0 {
+			if errors.Is(result.Err, context.DeadlineExceeded) || len(output) > 0 {
+				return nil, fmt.Errorf("%s VPN address probe failed safely", probe.Provider)
+			}
+			continue
+		}
+		if len(output) == 0 {
+			continue
+		}
+		fields := strings.Fields(string(output))
+		if len(fields) != 1 {
+			return nil, fmt.Errorf("%s returned an invalid VPN address", probe.Provider)
+		}
+		ip := net.ParseIP(fields[0])
+		if ip == nil || !ip.IsGlobalUnicast() || !isTrustedControlPlaneIP(ip) || !isLocal(ip) {
+			return nil, fmt.Errorf("%s returned an untrusted or nonlocal VPN address", probe.Provider)
+		}
+		addresses = append(addresses, meshVPNAddress{Provider: probe.Provider, IP: ip})
+	}
+	return addresses, nil
+}
+
+func preferredPairingAddress(addresses []net.Addr, meshAddresses []meshVPNAddress) (pairingAdvertiseAddress, error) {
+	byProvider := make(map[string]net.IP, len(meshAddresses))
+	for _, candidate := range meshAddresses {
+		if candidate.IP == nil {
+			continue
+		}
+		current := byProvider[candidate.Provider]
+		if current == nil || (current.To4() == nil && candidate.IP.To4() != nil) {
+			byProvider[candidate.Provider] = candidate.IP
+		}
+	}
+	unique := make(map[string]struct{}, len(byProvider))
+	for _, ip := range byProvider {
+		unique[ip.String()] = struct{}{}
+	}
+	if len(unique) > 1 {
+		return pairingAdvertiseAddress{}, errors.New("multiple mesh VPN addresses detected; set WING_HERMES_URL and WING_LINK_URL to the intended local address")
+	}
+	for host := range unique {
+		return pairingAdvertiseAddress{Host: host, AutomaticHermesBinding: true}, nil
+	}
+	host, err := preferredPairingIP(addresses)
+	if err != nil {
+		return pairingAdvertiseAddress{}, err
+	}
+	return pairingAdvertiseAddress{
+		Host:                   host,
+		AutomaticHermesBinding: isOverlayVPNIP(net.ParseIP(host)),
+	}, nil
+}
+
+// advertiseAddress prefers a positively identified mesh VPN, then the safe
+// address-class fallback used by earlier Wing Link releases.
 func advertiseIP() (string, error) {
+	selection, err := advertiseAddress()
+	return selection.Host, err
+}
+
+func advertiseAddress() (pairingAdvertiseAddress, error) {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
-		return "", fmt.Errorf("discover network address: %w", err)
+		return pairingAdvertiseAddress{}, fmt.Errorf("discover network address: %w", err)
 	}
-	return preferredPairingIP(addresses)
+	meshAddresses, err := discoverMeshVPNAddresses()
+	if err != nil {
+		return pairingAdvertiseAddress{}, err
+	}
+	return preferredPairingAddress(addresses, meshAddresses)
 }
 
 func preferredPairingIP(addresses []net.Addr) (string, error) {
@@ -1234,7 +1346,7 @@ func requireTrustedOriginHost(host string) error {
 	}
 	for _, address := range addresses {
 		if !isTrustedControlPlaneIP(address) {
-			return errors.New("pairing origins must use loopback, a private LAN, or Tailscale")
+			return errors.New("pairing origins must use loopback, a private LAN, NetBird, or Tailscale")
 		}
 		if !isLocalInterfaceIP(address) {
 			return errors.New("pairing origin is not assigned to this host")

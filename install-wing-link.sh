@@ -141,7 +141,7 @@ run_quick_setup() {
   printf 'Required next step (unless already configured): hermes setup\n'
   printf 'Choose a provider and model in that Hermes wizard before pairing.\n'
   printf 'Same host: wing-link pair --local\n'
-  printf 'Android with Tailscale: wing-link pair\n'
+  printf 'Android with NetBird or Tailscale: wing-link pair\n'
   printf 'Other VPNs: bind the Hermes API to its trusted address and set WING_HERMES_URL.\n'
   printf 'Pairing stays in the foreground until Wing confirms; leave that terminal open.\n'
   printf 'Guide: docs/runbooks/android-hermes-setup.md\n'

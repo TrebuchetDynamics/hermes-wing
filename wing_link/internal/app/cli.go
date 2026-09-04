@@ -78,8 +78,8 @@ Get started:
              --json-lines            Stream progress as JSON lines
   pair       Create a secure pairing handoff for Hermes Wing.
              Prints a scannable QR and single-use paste link by default.
-             --remote                Pair through Tailscale or a trusted VPN (default)
-                                     Tailscale API binding is configured automatically.
+             --remote                Pair through NetBird, Tailscale, or a trusted VPN (default)
+                                     NetBird/Tailscale API binding is configured automatically.
              --local                 Pair on this device only
              --same-device           Print only the code-free local /open URL
              --link                  Print the single-use link without the QR
@@ -114,7 +114,7 @@ Other:
   version    Print the build version.
   help       Show this help.
 
-Typical first run with Tailscale:
+Typical first run with NetBird or Tailscale:
   wing-link inspect
   wing-link setup
   wing-link pair

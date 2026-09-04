@@ -2,7 +2,18 @@ part of '../hermes_api_channel.dart';
 
 extension _VoiceExtension on HermesApiChannel {
   String _startVoiceRun() {
+    while (_voiceOwners.length >= 128) {
+      _voiceOwners.remove(_voiceOwners.keys.first);
+    }
+    while (_voiceReplyTurns.length >= 128) {
+      _voiceReplyTurns.remove(_voiceReplyTurns.keys.first);
+    }
     final id = 'voice-${_uuid.v4()}';
+    _voiceOwners[id] = (
+      _connectionGeneration,
+      _state.selectedProfileId,
+      _state.activeSessionId,
+    );
     final run = WingVoiceRun.recording(
       id: id,
       serverId: 'hermes',
@@ -26,6 +37,10 @@ extension _VoiceExtension on HermesApiChannel {
   }) {
     final run = _state.voiceRuns[voiceRunId];
     if (run == null || run.isTerminal) return;
+    if (!_voiceOwnerIsCurrent(voiceRunId)) {
+      _updateVoiceRun(run.markFailed('Hermes voice conversation changed.'));
+      return;
+    }
     _updateVoiceRun(
       run.withDeviceTranscript(
         transcript: transcript,
@@ -40,6 +55,10 @@ extension _VoiceExtension on HermesApiChannel {
     final run = _state.voiceRuns[voiceRunId];
     final transcript = run?.transcript;
     if (run == null || run.isTerminal || transcript == null) {
+      return;
+    }
+    if (!_voiceOwnerIsCurrent(voiceRunId)) {
+      _updateVoiceRun(run.markFailed('Hermes voice conversation changed.'));
       return;
     }
     final trimmedTranscript = transcript.trim();
@@ -67,7 +86,11 @@ extension _VoiceExtension on HermesApiChannel {
     _updateVoiceRun(
       run.markSubmitted(requestId: voiceRunId, sessionId: submittedSessionId),
     );
-    _sendText(trimmedTranscript)
+    _sendText(
+          trimmedTranscript,
+          isSubmissionCurrent: () => _voiceOwnerIsCurrent(voiceRunId),
+          onAssistantTurnCreated: (turn) => _voiceReplyTurns[voiceRunId] = turn,
+        )
         .then((_) {
           final current = _state.voiceRuns[voiceRunId];
           if (current == null || current.isTerminal) return;
@@ -107,6 +130,10 @@ extension _VoiceExtension on HermesApiChannel {
     if (run == null || run.isTerminal) return;
     _updateVoiceRun(run.markCancelled(reason));
   }
+
+  bool _voiceOwnerIsCurrent(String id) =>
+      _voiceOwners[id] ==
+      (_connectionGeneration, _state.selectedProfileId, _state.activeSessionId);
 
   void _failVoiceRun(String voiceRunId, {required String reason}) {
     final run = _state.voiceRuns[voiceRunId];

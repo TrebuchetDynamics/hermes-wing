@@ -74,7 +74,8 @@ jobs:
         run: |
           dart format --output=none --set-exit-if-changed lib test integration_test
           flutter analyze
-          flutter test --coverage --concurrency=1
+          node --test test/tooling/*_test.mjs
+          node scripts/ci_test_receipt.mjs
           coverage_percent=$(awk -F'[:,]' '/^DA:/{total++; if ($3 > 0) covered++} END {printf "%.0f", total ? covered * 100 / total : 0}' coverage/lcov.info)
           echo "Line coverage: ${coverage_percent}%"
           test "$coverage_percent" -ge 50
@@ -84,6 +85,13 @@ jobs:
         with:
           name: hermes-wing-lcov
           path: coverage/lcov.info
+          if-no-files-found: error
+      - name: Upload bounded test timing and completeness receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: platform-flutter-test-timing
+          path: build/receipts/flutter-ci-timing.json
           if-no-files-found: error
       - name: Build Web e2e app
         run: flutter build web --release -t lib/main_e2e.dart
@@ -249,7 +257,7 @@ jobs:
       - name: Upload Windows debug bundle
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: hermes-wing-windows-debug-bundle
+          name: wing-windows-debug-bundle
           path: build/windows/x64/runner/Debug/**
           if-no-files-found: error
 
@@ -270,7 +278,7 @@ jobs:
       - name: Upload iOS simulator app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: hermes-wing-ios-simulator-app
+          name: wing-ios-simulator-app
           path: build/ios/iphonesimulator/Runner.app/**
           if-no-files-found: error
 
@@ -291,6 +299,25 @@ jobs:
       - name: Upload macOS debug app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: hermes-wing-macos-debug-app
+          name: wing-macos-debug-app
           path: build/macos/Build/Products/Debug/wing.app/**
           if-no-files-found: error
+
+  platform-readiness:
+    name: Platform readiness
+    if: ${{ always() }}
+    needs: [linux-web-android, dependency-review, android-emulator-smoke, provider-hermes-smoke, wing-link-directory-host, wing-link-directory-android-build, windows-build, ios-simulator-build, macos-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: Require complete platform results
+        env:
+          WING_CI_NEEDS: ${{ toJSON(needs) }}
+          WING_CI_EVENT: ${{ github.event_name }}
+          WING_CI_ANDROID: ${{ inputs.run_android_emulator_smoke }}
+          WING_CI_PROVIDER: ${{ inputs.run_provider_smoke }}
+        run: node scripts/ci_gate.mjs platform

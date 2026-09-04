@@ -158,8 +158,8 @@ endpoints, host paths, and provider keys as sensitive.
 - Explicit paste is a user action, not background clipboard monitoring; discard
   raw handoff text immediately after parsing.
 - HTTP is loopback-only. Wing Link may bind loopback plus at most one local
-  private-LAN or Tailscale interface; every non-loopback listener requires TLS
-  1.3 and authenticated device credentials. Native clients pin the reviewed TLS
+  private-LAN, NetBird, or Tailscale interface; every non-loopback listener
+  requires TLS 1.3 and authenticated device credentials. Native clients pin the reviewed TLS
   key's SHA-256 SPKI fingerprint; a changed or missing pin fails closed and
   requires explicit re-pairing. Network location is never authorization.
 - Remote devices may inspect and revoke only themselves. Permission expansion,

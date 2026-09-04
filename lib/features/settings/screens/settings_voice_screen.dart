@@ -133,49 +133,66 @@ Future<void> _showCommandWordSheet(
   final controller = TextEditingController(text: commandWord);
   await showModalBottomSheet<void>(
     context: context,
-    builder: (context) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              strings.voiceCommandWordTitle,
-              style: Theme.of(context).textTheme.titleLarge,
+    builder: (context) => ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final normalized = value.text.trim();
+        final canSave = normalized.isNotEmpty;
+        void save() {
+          if (!canSave) return;
+          onSave(normalized);
+          Navigator.of(context).pop();
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              24 + MediaQuery.viewInsetsOf(context).bottom,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const ValueKey('settings-command-word-field'),
-              controller: controller,
-              autofocus: true,
-              autocorrect: false,
-              textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                labelText: strings.voiceCommandWordTitle,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.voiceCommandWordTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const ValueKey('settings-command-word-field'),
+                    controller: controller,
+                    autofocus: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    enableIMEPersonalizedLearning: false,
+                    textInputAction: TextInputAction.done,
+                    maxLength: maxVoiceCommandWordCharacters,
+                    decoration: InputDecoration(
+                      labelText: strings.voiceCommandWordTitle,
+                    ),
+                    onSubmitted: (_) => save(),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(strings.voiceCommandWordHint),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton(
+                      key: const ValueKey('settings-command-word-save'),
+                      onPressed: canSave ? save : null,
+                      child: Text(strings.saveAction),
+                    ),
+                  ),
+                ],
               ),
-              onSubmitted: (value) {
-                onSave(value);
-                Navigator.of(context).pop();
-              },
             ),
-            const SizedBox(height: 8),
-            Text(strings.voiceCommandWordHint),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton(
-                key: const ValueKey('settings-command-word-save'),
-                onPressed: () {
-                  onSave(controller.text);
-                  Navigator.of(context).pop();
-                },
-                child: Text(strings.saveAction),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     ),
   );
   controller.dispose();

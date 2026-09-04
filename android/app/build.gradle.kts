@@ -93,6 +93,42 @@ flutter {
     source = "../.."
 }
 
+// Flutter's integration target can leave its dev-only plugin in the generated
+// main-source registrant. Release Gradle excludes dev plugins, so strip only
+// that generated block after Flutter compilation and before javac. Debug and
+// integration builds keep their normal registration.
+val releasePluginRegistrant =
+    layout.projectDirectory.file(
+        "src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java",
+    )
+val stripIntegrationTestFromReleaseRegistrant by tasks.registering {
+    doLast {
+        val registrant = releasePluginRegistrant.asFile
+        if (!registrant.isFile) return@doLast
+        val integrationTestBlock =
+            """    try {
+      flutterEngine.getPlugins().add(new dev.flutter.plugins.integration_test.IntegrationTestPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin integration_test, dev.flutter.plugins.integration_test.IntegrationTestPlugin", e);
+    }
+"""
+        val source = registrant.readText()
+        if (!source.contains("dev.flutter.plugins.integration_test")) return@doLast
+        val releaseSource = source.replace(integrationTestBlock, "")
+        check(!releaseSource.contains("dev.flutter.plugins.integration_test")) {
+            "Flutter changed the integration_test registrant format."
+        }
+        registrant.writeText(releaseSource)
+    }
+}
+
+tasks.matching { it.name == "compileFlutterBuildRelease" }.configureEach {
+    finalizedBy(stripIntegrationTestFromReleaseRegistrant)
+}
+tasks.matching { it.name == "compileReleaseJavaWithJavac" }.configureEach {
+    dependsOn(stripIntegrationTestFromReleaseRegistrant)
+}
+
 dependencies {
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     implementation("com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1")

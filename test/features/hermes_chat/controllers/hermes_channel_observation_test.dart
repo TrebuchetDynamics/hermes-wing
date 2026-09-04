@@ -23,6 +23,22 @@ HermesChannelState _state({
 }) => HermesChannelState(activeSessionId: activeSessionId, messages: messages);
 
 void main() {
+  test('ambiguous missing and duplicate IDs never create completion edges', () {
+    final observer = HermesChannelObservation()..adopt(_state());
+    final result = observer.observe(
+      _state(
+        messages: {
+          'session-1': [
+            _turn(id: '', sessionId: 'session-1'),
+            _turn(id: 'duplicate', sessionId: 'session-1'),
+            _turn(id: 'duplicate', sessionId: 'session-1'),
+          ],
+        },
+      ),
+    );
+    expect(result.completedReplyArrived, isFalse);
+    expect(result.activeReplyCompleted, isFalse);
+  });
   late HermesChannelObservation observation;
 
   setUp(() => observation = HermesChannelObservation());

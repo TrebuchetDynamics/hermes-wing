@@ -2,6 +2,18 @@
 
 This ledger records the strongest evidence available for each capability without promoting deterministic tests into physical or production proof. Run `dart run scripts/check_evidence_matrix.dart` before release handoff. Receipt-bearing rows become stale after 90 days by default and must be refreshed against behaviorally equivalent source and artifacts.
 
+Release evidence tooling now binds per-target build inputs and artifact digests
+to exact smoke receipts in a final qualification index. Its local synthetic tests
+do not upgrade any classification below. Hosted execution, physical voice,
+split/store delivery, and Linux service rollback observations remain separate
+gaps. Legacy voice/server-audio receipts contain local observation fields and are
+not admitted to the public release index. CI timing measurement is tracked in
+[CI completeness and timing](ci-timing.md).
+Opt-in sanitized Android physical/server-audio recorders and the
+[Linux service phase recorder](linux-service-receipts.md) bind manual observations
+to artifacts without exporting transcripts or host paths. Their synthetic tests
+are recorder validation only; no physical or service classification changes.
+
 Classification meanings:
 
 - **battle-tested:** repeated representative production use with durable failure evidence.

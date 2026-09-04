@@ -5,6 +5,15 @@ import 'package:web/web.dart' as web;
 
 import '../../shared/hermes_api_http.dart';
 
+final class _HermesApiWebStatusException extends StateError
+    implements HermesApiStatusException {
+  _HermesApiWebStatusException(this.statusCode)
+    : super(hermesApiHttpStatusMessage(statusCode));
+
+  @override
+  final int statusCode;
+}
+
 Future<String> defaultGet(Uri uri, Map<String, String> headers) {
   return _request(uri: uri, method: 'GET', headers: headers);
 }
@@ -54,6 +63,8 @@ Stream<String> _requestStream({
   var settled = false;
 
   request.open(method, uri.toString(), true);
+  // XHR timeout limits total duration, including active SSE and approval waits.
+  // The channel owns stream inactivity and cancellation instead.
   headers.forEach((name, value) => request.setRequestHeader(name, value));
   request.onProgress.listen((_) {
     if (settled) return;
@@ -77,9 +88,7 @@ Stream<String> _requestStream({
     if (!_matchesRequestUrl(request.responseURL, uri)) {
       controller.addError(StateError('Hermes API redirects are not supported'));
     } else if (!hermesApiIsSuccessStatus(request.status)) {
-      controller.addError(
-        StateError(hermesApiHttpStatusMessage(request.status)),
-      );
+      controller.addError(_HermesApiWebStatusException(request.status));
     } else {
       final text = request.responseText;
       if (text.length > delivered) controller.add(text.substring(delivered));
@@ -89,9 +98,19 @@ Stream<String> _requestStream({
   request.onError.listen((_) {
     if (settled) return;
     settled = true;
-    controller.addError(StateError(hermesApiHttpStatusMessage(request.status)));
+    controller.addError(
+      const HermesApiTransportException(HermesApiTransportFailureKind.network),
+    );
     controller.close();
   });
+  request.ontimeout = ((web.Event _) {
+    if (settled) return;
+    settled = true;
+    controller.addError(
+      const HermesApiTransportException(HermesApiTransportFailureKind.timeout),
+    );
+    controller.close();
+  }).toJS;
 
   final payload = body;
   if (payload == null) {
@@ -112,6 +131,7 @@ Future<String> _request({
   final completer = Completer<String>();
 
   request.open(method, uri.toString(), true);
+  request.timeout = 20000;
   headers.forEach((name, value) => request.setRequestHeader(name, value));
   request.onLoad.listen((_) {
     if (!_matchesRequestUrl(request.responseURL, uri)) {
@@ -124,14 +144,21 @@ Future<String> _request({
     if (hermesApiIsSuccessStatus(status)) {
       completer.complete(request.responseText);
     } else {
-      completer.completeError(StateError(hermesApiHttpStatusMessage(status)));
+      completer.completeError(_HermesApiWebStatusException(status));
     }
   });
-  request.onError.listen(
-    (_) => completer.completeError(
-      StateError(hermesApiHttpStatusMessage(request.status)),
-    ),
-  );
+  request.onError.listen((_) {
+    if (completer.isCompleted) return;
+    completer.completeError(
+      const HermesApiTransportException(HermesApiTransportFailureKind.network),
+    );
+  });
+  request.ontimeout = ((web.Event _) {
+    if (completer.isCompleted) return;
+    completer.completeError(
+      const HermesApiTransportException(HermesApiTransportFailureKind.timeout),
+    );
+  }).toJS;
 
   final payload = body;
   if (payload == null) {

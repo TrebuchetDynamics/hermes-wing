@@ -13,6 +13,62 @@ import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  testWidgets('voice command editor fits a narrow phone above the keyboard', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final keyboardInset = ValueNotifier<double>(0);
+    addTearDown(keyboardInset.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => ValueListenableBuilder<double>(
+            valueListenable: keyboardInset,
+            builder: (context, inset, _) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                size: const Size(390, 844),
+                viewInsets: EdgeInsets.only(bottom: inset),
+                textScaler: const TextScaler.linear(2),
+              ),
+              child: child!,
+            ),
+          ),
+          home: const VoiceSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final advanced = find.byKey(const ValueKey('voice-advanced-expansion'));
+    await tester.scrollUntilVisible(advanced, 300);
+    await tester.tap(advanced);
+    await tester.pumpAndSettle();
+    final commandWord = find.byKey(const ValueKey('settings-command-word'));
+    await Scrollable.ensureVisible(tester.element(commandWord), alignment: 0.5);
+    await tester.pumpAndSettle();
+    await tester.tap(commandWord);
+    await tester.pumpAndSettle();
+    keyboardInset.value = 360;
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const ValueKey('settings-command-word-field')),
+      findsOneWidget,
+    );
+    final save = find.byKey(const ValueKey('settings-command-word-save'));
+    await tester.ensureVisible(save);
+    await tester.pumpAndSettle();
+    expect(save.hitTestable(), findsOneWidget);
+  });
+
   testWidgets('settings manage gateways without rendering credentials', (
     tester,
   ) async {
@@ -145,6 +201,81 @@ void main() {
     await tester.scrollUntilVisible(diagnostics, 300);
     expect(diagnostics, findsOneWidget);
   });
+
+  testWidgets(
+    'settings groups one paired host instead of listing its profiles as gateways',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final store = FakeHermesEndpointStore(
+        profiles: const [
+          HermesEndpointConfig(
+            id: 'default-endpoint',
+            label: 'BlueBlack · default',
+            baseUrl: 'http://127.0.0.1:8642/p/default',
+            wingLinkOrigin: 'http://127.0.0.1:8654',
+            wingLinkDeviceId: 'device-1',
+          ),
+          HermesEndpointConfig(
+            id: 'coder-endpoint',
+            label: 'BlueBlack · coder',
+            baseUrl: 'http://127.0.0.1:8642/p/coder',
+            wingLinkOrigin: 'http://127.0.0.1:8654',
+            wingLinkDeviceId: 'device-1',
+          ),
+        ],
+      );
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'default-endpoint': gatewaySummary(['default']),
+          'coder-endpoint': gatewaySummary(['coder']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesEndpointStoreProvider.overrideWithValue(store),
+            hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('BlueBlack'), findsOneWidget);
+      expect(find.text('BlueBlack · default'), findsNothing);
+      expect(find.text('BlueBlack · coder'), findsNothing);
+      expect(find.textContaining('2 profiles'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const ValueKey('settings-gateway-menu-default-endpoint')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Manage profiles'), findsOneWidget);
+      expect(find.text('Rename'), findsNothing);
+      expect(find.text('Update connection'), findsNothing);
+
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('settings-gateway-remove-confirm')),
+      );
+      await tester.pumpAndSettle();
+      expect(store.deleteProfileCalls, ['default-endpoint', 'coder-endpoint']);
+      expect(find.text('BlueBlack'), findsNothing);
+    },
+  );
 
   testWidgets(
     'settings rotates an inactive gateway connection without revealing credentials',

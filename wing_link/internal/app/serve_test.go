@@ -57,6 +57,26 @@ func TestProtocolMetadataAndNMinusOneNegotiation(t *testing.T) {
 	}
 }
 
+func TestParseServeOptionsExplicitListenBypassesAutomaticDiscovery(t *testing.T) {
+	t.Setenv("WING_LINK_LISTEN", "")
+	t.Setenv("WING_HERMES_HOME", t.TempDir())
+	t.Setenv("WING_LINK_STATE", filepath.Join(t.TempDir(), "state.json"))
+	discoveryCalled := false
+	options, err := parseServeOptionsWithAdvertiseIP(
+		[]string{"--listen", "127.0.0.1:8654"},
+		func() (string, error) {
+			discoveryCalled = true
+			return "", errors.New("ambiguous mesh VPNs")
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if discoveryCalled || options.Listen != "127.0.0.1:8654" {
+		t.Fatalf("discoveryCalled=%t options=%#v", discoveryCalled, options)
+	}
+}
+
 func TestServeListenErrorExplainsAnOccupiedAddress(t *testing.T) {
 	var stderr bytes.Buffer
 	writeServeListenError(&stderr, "127.0.0.1:8654", syscall.EADDRINUSE)

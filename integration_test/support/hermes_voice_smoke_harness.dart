@@ -202,6 +202,11 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
     return id;
   }
 
+  final _voiceReplyTurnIds = <String, String>{};
+
+  @override
+  String? voiceReplyTurnId(String voiceRunId) => _voiceReplyTurnIds[voiceRunId];
+
   @override
   void stageVoiceRunTranscript({
     required String voiceRunId,
@@ -245,6 +250,7 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
       ),
     );
     unawaited(sendText(transcript));
+    _voiceReplyTurnIds[voiceRunId] = _state.activeMessages.last.id;
   }
 
   @override
@@ -265,6 +271,15 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
 
   @override
   Future<void> selectSession(String sessionId) async {}
+
+  @override
+  Future<void> reconcileActiveSession() async {}
+
+  @override
+  Future<void> loadMoreSessions() async {}
+
+  @override
+  Future<void> loadEarlierMessages() async {}
 
   @override
   Future<void> createSession({String? title}) async {}
@@ -321,6 +336,9 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> loadJobs() async {}
 
   @override
+  Future<void> loadToolInventory() async {}
+
+  @override
   Future<void> loadProviders() async {}
 
   @override
@@ -366,10 +384,17 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   void stopActiveTurn() {}
 
   @override
+  HermesTurnInterruptionTarget? get activeTurnInterruptionTarget => null;
+
+  @override
+  Future<bool> stopTurn(HermesTurnInterruptionTarget target) async => false;
+
+  @override
   Future<void> respondToApproval({
     required String approvalId,
     required HermesApprovalDecision decision,
     String? runId,
+    HermesApprovalRequest? origin,
   }) async {}
 
   @override

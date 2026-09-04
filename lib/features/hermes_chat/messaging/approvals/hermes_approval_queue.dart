@@ -33,6 +33,7 @@ class HermesApprovalQueue extends ChangeNotifier {
   StreamSubscription<HermesApprovalRequest>? _subscription;
   String? _answeringId;
   bool _disposed = false;
+  int _generation = 0;
 
   /// Approvals awaiting an operator decision, oldest first.
   UnmodifiableListView<HermesApprovalRequest> get pending =>
@@ -65,9 +66,7 @@ class HermesApprovalQueue extends ChangeNotifier {
     final duplicate = _pending.any(
       (pending) => _requestKey(pending) == requestKey,
     );
-    if (duplicate ||
-        _answeringId == request.id.trim() ||
-        _answeringId == _requestKey(request)) {
+    if (duplicate || _answeringId == _requestKey(request)) {
       return;
     }
     _pending.addLast(request);
@@ -82,6 +81,7 @@ class HermesApprovalQueue extends ChangeNotifier {
     HermesApprovalDecision decision,
     HermesApprovalRequest request,
   ) async {
+    if (!request.allows(decision)) return;
     if (_answeringId != null ||
         !_pending.any(
           (pending) => _requestKey(pending) == _requestKey(request),
@@ -91,25 +91,27 @@ class HermesApprovalQueue extends ChangeNotifier {
     final approvalId = request.id.trim();
     final requestKey = _requestKey(request);
     if (approvalId.isEmpty && (request.runId?.trim().isEmpty ?? true)) return;
-    _answeringId = approvalId.isEmpty ? requestKey : approvalId;
+    final generation = _generation;
+    _answeringId = requestKey;
     notifyListeners();
     try {
       await _channel().respondToApproval(
         approvalId: approvalId,
         decision: decision,
         runId: request.runId,
+        origin: request,
       );
-      if (_disposed) return;
+      if (_disposed || generation != _generation) return;
       _pending.removeWhere(
         (pending) => _requestKey(pending) == _requestKey(request),
       );
-      if (_answeringId == (approvalId.isEmpty ? requestKey : approvalId)) {
+      if (_answeringId == requestKey) {
         _answeringId = null;
       }
       notifyListeners();
     } catch (error) {
-      if (_disposed) return;
-      if (_answeringId == (approvalId.isEmpty ? requestKey : approvalId)) {
+      if (_disposed || generation != _generation) return;
+      if (_answeringId == requestKey) {
         _answeringId = null;
       }
       notifyListeners();
@@ -129,6 +131,7 @@ class HermesApprovalQueue extends ChangeNotifier {
 
   /// Drops every queued approval and any in-flight answer.
   void reset() {
+    _generation++;
     _pending.clear();
     _answeringId = null;
   }
@@ -136,13 +139,8 @@ class HermesApprovalQueue extends ChangeNotifier {
   /// Drops queued approvals but keeps an in-flight answer tracked.
   void clearPending() => _pending.clear();
 
-  static String _requestKey(HermesApprovalRequest request) {
-    final id = request.id.trim();
-    if (id.isNotEmpty) return 'id:$id';
-    final toolCallId = request.toolCallId.trim();
-    if (toolCallId.isNotEmpty) return 'tool:$toolCallId';
-    return 'prompt:${request.prompt}';
-  }
+  static String _requestKey(HermesApprovalRequest request) =>
+      request.identityKey;
 
   @override
   void dispose() {

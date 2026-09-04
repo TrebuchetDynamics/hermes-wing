@@ -94,6 +94,36 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatAttachmentDraftEvicted.
+  ///
+  /// In en, this message translates to:
+  /// **'The attachment was released to save memory. Attach it again before sending.'**
+  String get chatAttachmentDraftEvicted;
+
+  /// No description provided for @chatTranscriptLatestAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest activity'**
+  String get chatTranscriptLatestAction;
+
+  /// No description provided for @chatVoiceMuteOutputAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute speech'**
+  String get chatVoiceMuteOutputAction;
+
+  /// No description provided for @chatVoiceUnmuteOutputAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute speech'**
+  String get chatVoiceUnmuteOutputAction;
+
+  /// No description provided for @chatVoicePauseMicrophoneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause microphone'**
+  String get chatVoicePauseMicrophoneAction;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
@@ -472,6 +502,36 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retryAction;
 
+  /// No description provided for @openChatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chat'**
+  String get openChatAction;
+
+  /// No description provided for @gatewayConnectionRecoveryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another saved gateway above, or return to Chat to reconnect.'**
+  String get gatewayConnectionRecoveryBody;
+
+  /// No description provided for @chatSavedEndpointsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading saved Hermes gateways'**
+  String get chatSavedEndpointsLoading;
+
+  /// No description provided for @chatSavedEndpointsLoadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved gateways unavailable'**
+  String get chatSavedEndpointsLoadFailedTitle;
+
+  /// No description provided for @chatSavedEndpointsLoadFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Wing could not read saved gateways from secure storage. You can still enter connection details manually.'**
+  String get chatSavedEndpointsLoadFailedBody;
+
   /// No description provided for @saveAction.
   ///
   /// In en, this message translates to:
@@ -489,6 +549,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Persona'**
   String get personaLabel;
+
+  /// No description provided for @personaLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading the authoritative persona'**
+  String get personaLoading;
 
   /// No description provided for @personaHint.
   ///
@@ -579,6 +645,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tools'**
   String get toolsTitle;
+
+  /// No description provided for @toolsRefreshAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh inventory'**
+  String get toolsRefreshAction;
+
+  /// No description provided for @toolsRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool inventory could not be refreshed.'**
+  String get toolsRefreshFailed;
 
   /// No description provided for @toolsSubtitle.
   ///
@@ -1018,6 +1096,12 @@ abstract class AppLocalizations {
   /// **'Schedules could not be loaded from Hermes.'**
   String get schedulesLoadFailedBody;
 
+  /// No description provided for @schedulesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedules yet'**
+  String get schedulesEmptyTitle;
+
   /// No description provided for @schedulesEmptyBody.
   ///
   /// In en, this message translates to:
@@ -1035,6 +1119,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh schedules'**
   String get schedulesRefreshTooltip;
+
+  /// No description provided for @schedulesRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing scheduled jobs'**
+  String get schedulesRefreshing;
 
   /// No description provided for @scheduleEnabled.
   ///
@@ -1161,6 +1251,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Revoke this device'**
   String get gatewayTrustRevokeAction;
+
+  /// No description provided for @gatewayTrustRevoking.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoking this device’s Wing Link access'**
+  String get gatewayTrustRevoking;
 
   /// No description provided for @gatewayTrustRevokeTitle.
   ///
@@ -1507,6 +1603,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Key {hint}'**
   String providerKeyHintLabel(String hint);
+
+  /// No description provided for @providerAuthApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get providerAuthApiKey;
+
+  /// No description provided for @providerAuthOAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'OAuth sign-in'**
+  String get providerAuthOAuth;
+
+  /// No description provided for @providerAuthOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider-managed authentication'**
+  String get providerAuthOther;
+
+  /// No description provided for @providerOAuthHostRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in on the Hermes host. This Agent does not advertise remote OAuth setup.'**
+  String get providerOAuthHostRequired;
 
   /// No description provided for @manageCredentialAction.
   ///
@@ -2445,6 +2565,12 @@ abstract class AppLocalizations {
   /// **'Copy diagnostics'**
   String get diagnosticsCopyTitle;
 
+  /// No description provided for @diagnosticsCopyInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying diagnostics'**
+  String get diagnosticsCopyInProgress;
+
   /// No description provided for @diagnosticsCopySubtitle.
   ///
   /// In en, this message translates to:
@@ -2456,6 +2582,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hermes diagnostics copied'**
   String get diagnosticsCopiedNotice;
+
+  /// No description provided for @diagnosticsCopyFailedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy diagnostics. Try again.'**
+  String get diagnosticsCopyFailedNotice;
 
   /// No description provided for @voiceSettingsTitle.
   ///
@@ -2754,7 +2886,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollCleartextDialogBody.
   ///
   /// In en, this message translates to:
-  /// **'The endpoint {host} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
+  /// **'The endpoint {host} uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
   String enrollCleartextDialogBody(String host);
 
   /// No description provided for @enrollContinueAction.
@@ -2864,6 +2996,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paste pairing link'**
   String get enrollPasteLink;
+
+  /// No description provided for @enrollReadingClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading pairing link from clipboard'**
+  String get enrollReadingClipboard;
 
   /// No description provided for @enrollSameDeviceHelper.
   ///
@@ -2997,11 +3135,71 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get closeAction;
 
+  /// No description provided for @routeNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found'**
+  String get routeNotFoundTitle;
+
   /// No description provided for @routeNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Route not found: {path}'**
+  /// **'Hermes Wing does not have a screen for {path}.'**
   String routeNotFound(String path);
+
+  /// No description provided for @routeNotFoundAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to chat'**
+  String get routeNotFoundAction;
+
+  /// No description provided for @soulConnectionRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to edit a persona'**
+  String get soulConnectionRequiredTitle;
+
+  /// No description provided for @soulConnectionRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a saved gateway chat before editing its selected profile persona.'**
+  String get soulConnectionRequiredBody;
+
+  /// No description provided for @soulOpenChatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chat'**
+  String get soulOpenChatAction;
+
+  /// No description provided for @soulProfileRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a profile'**
+  String get soulProfileRequiredTitle;
+
+  /// No description provided for @soulProfileRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a profile before opening its persona editor.'**
+  String get soulProfileRequiredBody;
+
+  /// No description provided for @soulOpenProfilesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open profiles'**
+  String get soulOpenProfilesAction;
+
+  /// No description provided for @soulUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Persona editing unavailable'**
+  String get soulUnavailableTitle;
+
+  /// No description provided for @soulUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This gateway did not advertise scoped SOUL read and write operations for the selected profile.'**
+  String get soulUnavailableBody;
 
   /// No description provided for @agentsGatewayPickerHelp.
   ///
@@ -3210,7 +3408,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatConnectionCleartextWarningBody.
   ///
   /// In en, this message translates to:
-  /// **'The endpoint {endpoint} uses plain HTTP. Continue only on a trusted VPN, Tailscale network, or isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
+  /// **'The endpoint {endpoint} uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.'**
   String chatConnectionCleartextWarningBody(String endpoint);
 
   /// No description provided for @chatConnectionContinueAction.
@@ -3378,6 +3576,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not delete session: {error}'**
   String chatSessionActionDeleteFailedBody(String error);
+
+  /// No description provided for @chatUnsupportedAgentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Hermes Wing or Hermes Agent'**
+  String get chatUnsupportedAgentTitle;
+
+  /// No description provided for @chatUnsupportedAgentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This Hermes Agent uses a capability format that this version of Hermes Wing cannot safely operate. Update Hermes Wing or Hermes Agent, then reconnect.'**
+  String get chatUnsupportedAgentBody;
+
+  /// No description provided for @chatTranscriptLoadEarlierAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier messages'**
+  String get chatTranscriptLoadEarlierAction;
+
+  /// No description provided for @chatTranscriptLoadingEarlierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading earlier messages…'**
+  String get chatTranscriptLoadingEarlierLabel;
 
   /// No description provided for @chatTranscriptCopyChatTextAction.
   ///
@@ -3787,6 +4009,54 @@ abstract class AppLocalizations {
   /// **'Check the endpoint API key in Hermes and try again.'**
   String get chatErrorConnectAuthBody;
 
+  /// No description provided for @chatErrorConnectInvalidEndpointTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the Hermes address.'**
+  String get chatErrorConnectInvalidEndpointTitle;
+
+  /// No description provided for @chatErrorConnectInvalidEndpointBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a complete HTTP or HTTPS Hermes Agent URL, then try again.'**
+  String get chatErrorConnectInvalidEndpointBody;
+
+  /// No description provided for @chatErrorConnectIncompatibleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes returned an unsupported response.'**
+  String get chatErrorConnectIncompatibleTitle;
+
+  /// No description provided for @chatErrorConnectIncompatibleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Hermes Wing or Hermes Agent, verify the address points to Hermes Agent, then reconnect.'**
+  String get chatErrorConnectIncompatibleBody;
+
+  /// No description provided for @chatErrorConnectTlsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure connection to Hermes failed.'**
+  String get chatErrorConnectTlsTitle;
+
+  /// No description provided for @chatErrorConnectTlsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the HTTPS certificate or pinned host identity. Re-pair explicitly if the trusted identity changed.'**
+  String get chatErrorConnectTlsBody;
+
+  /// No description provided for @chatErrorConnectTimeoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes did not respond in time.'**
+  String get chatErrorConnectTimeoutTitle;
+
+  /// No description provided for @chatErrorConnectTimeoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that Hermes Agent is running and reachable, then try again.'**
+  String get chatErrorConnectTimeoutBody;
+
   /// No description provided for @chatErrorConnectUnreachableTitle.
   ///
   /// In en, this message translates to:
@@ -3844,7 +4114,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeVpnLabel.
   ///
   /// In en, this message translates to:
-  /// **'VPN / Tailscale'**
+  /// **'VPN / NetBird / Tailscale'**
   String get chatLayoutConnectionModeVpnLabel;
 
   /// No description provided for @chatLayoutConnectionModeSshLabel.
@@ -3868,7 +4138,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeVpnBody.
   ///
   /// In en, this message translates to:
-  /// **'Use the HTTPS Agent URL reachable through your trusted VPN or Tailscale network. Wing does not treat network location as authorization.'**
+  /// **'Use the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN. Prefer HTTPS; non-local HTTP requires explicit confirmation. Wing does not treat network location as authorization.'**
   String get chatLayoutConnectionModeVpnBody;
 
   /// No description provided for @chatLayoutConnectionModeSshBody.
@@ -3892,7 +4162,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeVpnUrlHelper.
   ///
   /// In en, this message translates to:
-  /// **'Enter the HTTPS Agent URL reachable through your trusted VPN or Tailscale network.'**
+  /// **'Enter the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN.'**
   String get chatLayoutConnectionModeVpnUrlHelper;
 
   /// No description provided for @chatLayoutConnectionModeSshUrlHelper.
@@ -4368,6 +4638,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attach image or text file'**
   String get chatLayoutAttachFileTooltip;
+
+  /// No description provided for @chatAttachmentPicking.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening the attachment picker'**
+  String get chatAttachmentPicking;
 
   /// No description provided for @chatAttachmentRemoveCurrentError.
   ///
@@ -4858,7 +5134,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatStatusApprovalIdMissingBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes sent this approval without an approval id, so it cannot be answered.'**
+  /// **'Hermes sent this approval without a run or approval id, so it cannot be answered.'**
   String get chatStatusApprovalIdMissingBody;
 
   /// No description provided for @chatStatusAnsweringApprovalLabel.
@@ -4951,6 +5227,18 @@ abstract class AppLocalizations {
   /// **'Risk preview truncated for mobile review.'**
   String get chatStatusRiskTruncatedBody;
 
+  /// No description provided for @chatStatusCommandTruncatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Command preview truncated for mobile review.'**
+  String get chatStatusCommandTruncatedBody;
+
+  /// No description provided for @chatStatusCommandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Command: {value}'**
+  String chatStatusCommandLabel(String value);
+
   /// No description provided for @chatStatusToolCallLabel.
   ///
   /// In en, this message translates to:
@@ -4966,7 +5254,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatStatusDecisionsDisabledIdBody.
   ///
   /// In en, this message translates to:
-  /// **'Decision buttons are disabled because Hermes did not include an approval id.'**
+  /// **'Decision buttons are disabled because Hermes did not include a run or approval id.'**
   String get chatStatusDecisionsDisabledIdBody;
 
   /// No description provided for @chatStatusCopiedApprovalDetailsBody.
@@ -5016,6 +5304,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New'**
   String get chatRailNewSessionAction;
+
+  /// No description provided for @chatRailLoadMoreSessionsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more sessions'**
+  String get chatRailLoadMoreSessionsAction;
+
+  /// No description provided for @chatRailLoadingMoreSessionsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading more sessions…'**
+  String get chatRailLoadingMoreSessionsAction;
 
   /// No description provided for @chatRailSelectAction.
   ///
@@ -5560,7 +5860,7 @@ abstract class AppLocalizations {
   /// No description provided for @localSetupBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Profiles, providers, Tailscale, tools, channels, and schedules remain managed by Hermes after connection.'**
+  /// **'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Hermes remains authoritative for profiles, providers, tools, channels, and schedules; VPN software such as NetBird or Tailscale stays external.'**
   String get localSetupBody;
 
   /// No description provided for @localSetupDetecting.
@@ -5659,6 +5959,18 @@ abstract class AppLocalizations {
   /// **'Check again'**
   String get localSetupRetryAction;
 
+  /// No description provided for @localSetupFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup needs attention'**
+  String get localSetupFailedTitle;
+
+  /// No description provided for @localSetupFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes setup could not be checked. Review Diagnostics, then try again.'**
+  String get localSetupFailedBody;
+
   /// No description provided for @localSetupConsentTitle.
   ///
   /// In en, this message translates to:
@@ -5695,6 +6007,12 @@ abstract class AppLocalizations {
   /// **'Install Termux'**
   String get termuxInstallAction;
 
+  /// No description provided for @termuxOpeningInstallGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening the Termux installation guide'**
+  String get termuxOpeningInstallGuide;
+
   /// No description provided for @termuxInstallGuideFailedMessage.
   ///
   /// In en, this message translates to:
@@ -5706,6 +6024,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy setup command'**
   String get termuxCopyAction;
+
+  /// No description provided for @termuxCopyingCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying the setup command'**
+  String get termuxCopyingCommand;
+
+  /// No description provided for @termuxPreparingCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing the verified setup command…'**
+  String get termuxPreparingCommand;
 
   /// No description provided for @termuxCopiedMessage.
   ///

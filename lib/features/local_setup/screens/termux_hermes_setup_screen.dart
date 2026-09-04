@@ -21,6 +21,10 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
   );
 
   Future<TermuxBootstrapCommand?>? _command;
+  bool _copying = false;
+  bool _openingGuide = false;
+
+  bool get _actionPending => _copying || _openingGuide;
 
   @override
   void didChangeDependencies() {
@@ -42,8 +46,16 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
   }
 
   Future<void> _copy(TermuxBootstrapCommand command) async {
+    if (_actionPending) return;
+    setState(() => _copying = true);
     try {
       await Clipboard.setData(ClipboardData(text: command.command));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).termuxCopiedMessage),
+        ),
+      );
     } on Object {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,24 +63,26 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
           content: Text(AppLocalizations.of(context).termuxCopyFailedMessage),
         ),
       );
-      return;
+    } finally {
+      if (mounted) setState(() => _copying = false);
     }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context).termuxCopiedMessage)),
-    );
   }
 
   Future<void> _openTermuxInstallGuide() async {
+    if (_actionPending) return;
+    setState(() => _openingGuide = true);
+    var opened = false;
     try {
-      final opened = await launchUrl(
+      opened = await launchUrl(
         _termuxInstallUri,
         mode: LaunchMode.externalApplication,
       );
-      if (opened || !mounted) return;
     } on Object {
-      if (!mounted) return;
+      opened = false;
+    } finally {
+      if (mounted) setState(() => _openingGuide = false);
     }
+    if (opened || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -101,8 +115,16 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
                     style: const ButtonStyle(
                       minimumSize: WidgetStatePropertyAll(Size.fromHeight(48)),
                     ),
-                    onPressed: _openTermuxInstallGuide,
-                    icon: const Icon(Icons.open_in_new),
+                    onPressed: _actionPending ? null : _openTermuxInstallGuide,
+                    icon: _openingGuide
+                        ? SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              semanticsLabel: strings.termuxOpeningInstallGuide,
+                            ),
+                          )
+                        : const Icon(Icons.open_in_new),
                     label: Text(strings.termuxInstallAction),
                   ),
                 ),
@@ -119,13 +141,43 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
                             Size.fromHeight(48),
                           ),
                         ),
-                        onPressed: loading || command == null
+                        onPressed: loading || command == null || _actionPending
                             ? null
                             : () => _copy(command),
-                        icon: const Icon(Icons.copy_outlined),
+                        icon: _copying
+                            ? SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  semanticsLabel: strings.termuxCopyingCommand,
+                                ),
+                              )
+                            : const Icon(Icons.copy_outlined),
                         label: Text(strings.termuxCopyAction),
                       ),
-                      if (command != null) ...[
+                      if (loading) ...[
+                        const SizedBox(height: 12),
+                        Semantics(
+                          key: const ValueKey('termux-command-loading'),
+                          liveRegion: true,
+                          label: strings.termuxPreparingCommand,
+                          excludeSemantics: true,
+                          child: Row(
+                            children: [
+                              const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(strings.termuxPreparingCommand),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (command != null) ...[
                         const SizedBox(height: 12),
                         Card(
                           child: Padding(

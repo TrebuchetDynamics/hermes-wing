@@ -21,15 +21,16 @@ Usage:
   ./install-wing-link.sh --tag TAG --sha256 HEX --size BYTES [--setup] [--prefix DIR]
 
 By default, builds and installs the local Go wing_link package, then installs or
-adopts Hermes Agent and starts its gateway. Provider/model configuration remains
-a separate interactive `hermes setup` step. Release mode downloads an alpha Wing
+adopts Hermes Agent and starts its gateway only if needed. An already-running
+gateway is left undisturbed. Provider/model configuration remains a separate
+interactive `hermes setup` step. Release mode downloads an alpha Wing
 Link binary and verifies it against its published checksum. Supplying immutable
 release metadata verifies both the expected SHA-256 and exact byte size
 out-of-band. The binary is always validated and atomically installed.
 
   --build       Build and install the local Go wing_link package
   --release     Download and install the most recent alpha release
-  --setup       Install/adopt Hermes Agent, prepare API access, and start its gateway
+  --setup       Install/adopt Hermes Agent, prepare API access, and start its gateway if needed
   --system      With --build, install in /usr/local/bin (uses sudo when needed)
   --prefix DIR  Install in a custom directory
 EOF
@@ -96,7 +97,7 @@ fi
 run_quick_setup() {
   local binary="$1"
   [[ "$quick_setup" == true ]] || return 0
-  printf '\n[4/4] Installing or adopting Hermes Agent and starting its gateway...\n'
+  printf '\n[4/4] Installing or adopting Hermes Agent and starting its gateway if needed...\n'
   if ! "$binary" setup; then
     echo "Host setup failed. Wing Link remains installed so you can inspect and retry." >&2
     echo "Retry: $binary setup" >&2

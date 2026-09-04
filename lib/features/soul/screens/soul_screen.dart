@@ -79,9 +79,7 @@ bool _supportsPersona(HermesChannelState state) {
   if (capabilities == null || !capabilities.supportsSchema) return false;
   final profile = state.selectedProfile;
   if (profile == null) return false;
-  final profileContext =
-      profile.id == 'default' ||
-      capabilities.profileContext.isSupportedQueryContext;
+  final profileContext = capabilities.profileContext.isSupportedQueryContext;
   if (!profileContext ||
       !capabilities.auth.allows('profiles:read') ||
       !capabilities.auth.allows('profiles:write')) {

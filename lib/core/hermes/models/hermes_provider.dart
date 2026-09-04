@@ -29,7 +29,7 @@ class HermesProvider {
       authType: wingStringFromJson(json['auth_type'], fallback: ''),
       envVars: wingStringListFromJson(json['env_vars']),
       configured: wingBoolFromJson(json['configured']),
-      keyHint: wingOptionalStringFromJson(json['key_hint']),
+      keyHint: _maskedKeyHint(json['key_hint']),
     );
   }
 
@@ -42,6 +42,14 @@ class HermesProvider {
   /// Masked last-4-only presence hint (e.g. `····ab12`) or `null` when unset.
   /// NEVER a full credential.
   final String? keyHint;
+}
+
+String? _maskedKeyHint(Object? value) {
+  final hint = wingOptionalLiteralStringFromJson(value);
+  if (hint == null || !hint.startsWith('····') || hint.runes.length != 8) {
+    return null;
+  }
+  return hint;
 }
 
 /// Outcome of `POST /api/providers/{slug}/credential/validate`. Carries only a

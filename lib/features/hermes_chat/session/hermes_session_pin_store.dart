@@ -14,8 +14,13 @@ class HermesSessionPinStore extends ChangeNotifier {
   static const _maxIdentifierLength = 256;
 
   final LinkedHashSet<String> _entries = LinkedHashSet<String>();
+  Future<void>? _loadFuture;
 
-  Future<void> load() async {
+  Future<void> load() {
+    return _loadFuture ??= _load();
+  }
+
+  Future<void> _load() async {
     try {
       final stored =
           (await SharedPreferences.getInstance()).getStringList(_key) ??
@@ -35,6 +40,7 @@ class HermesSessionPinStore extends ChangeNotifier {
   }
 
   Future<void> toggle(GatewayContactId contactId, String sessionId) async {
+    await _loadFuture;
     final token = _token(contactId, sessionId);
     if (token == null) return;
     if (!_entries.remove(token)) {

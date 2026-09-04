@@ -49,6 +49,7 @@ class WingLinkTransport {
       ..connectionFactory = _connect;
     try {
       final request = await client.openUrl(method, uri);
+      request.followRedirects = false;
       headers.forEach(request.headers.set);
       if (body != null) request.write(body);
       final response = await request.close().timeout(

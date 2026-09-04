@@ -38,7 +38,7 @@ void main() {
     expect(command, isNot(allOf(contains('curl -fsSL'), contains('| bash'))));
     expect(command, isNot(contains('token')));
     expect(command, isNot(contains('code=')));
-    expect(command, contains('--max-filesize 1048576'));
+    expect(command, contains('--max-filesize 1234567'));
   });
 
   test('packaged metadata is unavailable or a valid release command', () {

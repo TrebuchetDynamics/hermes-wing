@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
@@ -35,6 +37,18 @@ void main() {
       expect(restored.single.availability, GatewayAvailability.offline);
     },
   );
+
+  test('cached negative session counts are clamped to zero', () async {
+    SharedPreferences.setMockInitialValues({
+      'wing.hermes.gateway_contacts.v1': jsonEncode([
+        {'gatewayId': 'alpha', 'profileId': 'default', 'sessionCount': -1},
+      ]),
+    });
+
+    final contacts = await GatewayContactCache().load();
+
+    expect(contacts.single.sessionCount, 0);
+  });
 
   test('cache round-trips the active contact and session selection', () async {
     SharedPreferences.setMockInitialValues({});

@@ -60,7 +60,7 @@ add_subdirectory("runner")
 # Build the bounded Linux host supervisor from source and bundle it beside Wing.
 # The Flutter process invokes only this sibling binary, never a PATH candidate.
 find_program(GO_EXECUTABLE go REQUIRED)
-file(GLOB WING_LINK_GO_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE WING_LINK_GO_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_SOURCE_DIR}/../wing_link/*.go")
 set(WING_LINK_BUNDLE_BINARY "${CMAKE_BINARY_DIR}/wing-link")
 if(DEFINED FLUTTER_VERSION_NAME AND NOT FLUTTER_VERSION_NAME STREQUAL "")

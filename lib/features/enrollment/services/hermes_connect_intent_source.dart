@@ -12,6 +12,11 @@ abstract interface class HermesConnectIntentSource {
   /// `null` on unsupported platforms or when no pairing intent is pending.
   Future<String?> initialPayload();
 
+  /// Returns and clears the launch payload after the app has routed to
+  /// enrollment. This prevents a one-time pairing link from being replayed by
+  /// a later manual enrollment visit.
+  Future<String?> consumeInitialPayload();
+
   /// Opens the native Android QR scanner and returns its raw payload.
   /// Returns `null` when canceled, unavailable, or unsupported.
   Future<String?> scanQrCode();
@@ -65,6 +70,19 @@ class MethodChannelHermesConnectIntentSource
       // An inbound intent is untrusted input surfaced across a platform
       // channel; a missing plugin, malformed payload, or transport error
       // must never crash enrollment. Treat every failure as "no payload".
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> consumeInitialPayload() async {
+    if (!_supportsNativeChannel) return null;
+    try {
+      final result = await _methodChannel.invokeMethod<Object?>(
+        'consumeInitialConnectIntent',
+      );
+      return _payloadFrom(result);
+    } catch (_) {
       return null;
     }
   }

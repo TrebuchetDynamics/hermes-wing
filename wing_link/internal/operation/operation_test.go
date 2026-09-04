@@ -83,6 +83,46 @@ func TestManagerDeliversTerminalEventToSlowSubscriber(t *testing.T) {
 	}
 }
 
+func TestManagerCancellationKeepsSlotUntilWorkerStops(t *testing.T) {
+	manager := NewOperationManager()
+	started := make(chan struct{})
+	release := make(chan struct{})
+	id, err := manager.Start("first", func(context.Context, func(OperationEvent)) error {
+		close(started)
+		<-release
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	<-started
+	if !manager.Cancel(id) {
+		t.Fatal("active operation was not cancelled")
+	}
+	if _, err := manager.Start("second", func(context.Context, func(OperationEvent)) error { return nil }); !errors.Is(err, ErrOperationInProgress) {
+		t.Fatalf("cancelled worker released slot early: %v", err)
+	}
+
+	close(release)
+	deadline := time.Now().Add(2 * time.Second)
+	var secondID string
+	for secondID == "" && time.Now().Before(deadline) {
+		secondID, err = manager.Start("second", func(context.Context, func(OperationEvent)) error { return nil })
+		if errors.Is(err, ErrOperationInProgress) {
+			secondID = ""
+			time.Sleep(time.Millisecond)
+			continue
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if secondID == "" {
+		t.Fatal("operation slot was not released after worker stopped")
+	}
+	waitForTerminal(t, manager, secondID)
+}
+
 func TestManagerAllowsNextOperationAfterCompletion(t *testing.T) {
 	manager := NewOperationManager()
 	id, err := manager.Start("first", func(context.Context, func(OperationEvent)) error { return nil })

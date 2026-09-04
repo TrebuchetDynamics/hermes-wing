@@ -105,7 +105,7 @@ class WingLinkProfile {
       description: json['description']?.toString() ?? '',
       model: json['model']?.toString() ?? '',
       skillsCount: json['skills_count'] is int
-          ? json['skills_count']! as int
+          ? (json['skills_count']! as int).clamp(0, 9007199254740991)
           : 0,
       apiRevision: json['api_revision']?.toString() ?? '',
       renameRevision: rename is Map ? rename['revision']?.toString() : null,
@@ -384,10 +384,12 @@ class WingLinkClient {
     if (profiles is! List) {
       throw const WingLinkException('Wing Link returned invalid data');
     }
+    if (profiles.any((profile) => profile is! Map)) {
+      throw const WingLinkException('Wing Link returned invalid data');
+    }
     return [
       for (final profile in profiles)
-        if (profile is Map)
-          WingLinkProfile.fromJson(profile.cast<String, Object?>()),
+        WingLinkProfile.fromJson((profile as Map).cast<String, Object?>()),
     ];
   }
 

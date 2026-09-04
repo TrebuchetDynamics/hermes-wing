@@ -44,8 +44,9 @@ class MainActivity : FlutterActivity() {
             CONNECT_INTENTS_METHOD_CHANNEL,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "initialConnectIntent" -> result.success(
-                    initialConnectIntent ?: connectPayloadFrom(intent),
+                "initialConnectIntent" -> result.success(initialConnectIntent)
+                "consumeInitialConnectIntent" -> result.success(
+                    initialConnectIntent.also { initialConnectIntent = null },
                 )
                 "scanQrCode" -> scanQrCode(result)
                 "importQrImage" -> importQrImage(result)
@@ -81,11 +82,25 @@ class MainActivity : FlutterActivity() {
         )
     }
 
+    override fun onDestroy() {
+        qrImageResult?.let { result ->
+            qrImageResult = null
+            qrOperationGate.finish()
+            result.error(
+                "qr_image_cancelled",
+                "The image picker was closed before the QR code was read.",
+                null,
+            )
+        }
+        super.onDestroy()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val payload = connectPayloadFrom(intent) ?: return
+        val payload = connectPayloadFrom(intent)
         initialConnectIntent = payload
+        if (payload == null) return
         connectIntentEvents?.success(payload)
     }
 
@@ -326,7 +341,7 @@ class MainActivity : FlutterActivity() {
             action = intent.action,
             type = intent.type,
             data = intent.data?.toString(),
-            text = intent.getStringExtra(Intent.EXTRA_TEXT),
+            text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString(),
         )?.toMethodChannelMap()
     }
 

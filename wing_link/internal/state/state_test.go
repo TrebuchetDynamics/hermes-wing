@@ -247,6 +247,39 @@ func TestRevokeAllRejectsIssuedToken(t *testing.T) {
 	}
 }
 
+func TestAcquireStateLockRejectsSymlink(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink creation may require elevated privileges")
+	}
+	dir := t.TempDir()
+	target := filepath.Join(dir, "target")
+	if err := os.WriteFile(target, []byte("do not touch"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(target, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	lock := filepath.Join(dir, "state.json.lock")
+	if err := os.Symlink(target, lock); err != nil {
+		t.Fatal(err)
+	}
+	if release, err := acquireStateLock(lock); err == nil {
+		_ = release()
+		t.Fatal("symlinked lock was accepted")
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0o644 {
+		t.Fatalf("symlink target permissions changed to %o", info.Mode().Perm())
+	}
+	contents, err := os.ReadFile(target)
+	if err != nil || string(contents) != "do not touch" {
+		t.Fatalf("symlink target changed: contents=%q err=%v", contents, err)
+	}
+}
+
 func TestStateStoreRejectsSymlink(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("symlink creation may require elevated privileges")

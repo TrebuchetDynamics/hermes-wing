@@ -251,6 +251,7 @@
   "scheduleActive": "Active",
   "schedulePaused": "Paused",
   "scheduleCompleted": "Completed",
+  "scheduleError": "Error",
   "scheduleExpressionLabel": "Schedule",
   "scheduleNextRunLabel": "Next run",
   "scheduleLastRunLabel": "Last run",

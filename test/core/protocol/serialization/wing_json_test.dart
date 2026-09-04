@@ -65,6 +65,10 @@ void main() {
     expect(wingStrictBoolFromJson(null, fallback: true), isTrue);
   });
 
+  test('string list parser ignores non-string wire values', () {
+    expect(wingStringListFromJson([null, 42, ' valid ']), ['valid']);
+  });
+
   test('map list parser keeps maps and ignores malformed entries', () {
     final maps = wingMapListFromJson([
       {'id': 'one', 'score': 1},

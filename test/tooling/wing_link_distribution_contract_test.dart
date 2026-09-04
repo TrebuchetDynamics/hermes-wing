@@ -25,8 +25,10 @@ void main() {
     expect(workflow, contains(r'${TAG#$tag_prefix}'));
     expect(workflow, contains(r'=~ ^[0-9]+$'));
     expect(workflow, contains('needs: [android, linux, web, wing-link]'));
+    expect(workflow, contains('dart run scripts/check_evidence_matrix.dart'));
     final linuxCmake = File('linux/CMakeLists.txt').readAsStringSync();
     expect(linuxCmake, contains('-X main.version='));
+    expect(linuxCmake, contains('file(GLOB_RECURSE WING_LINK_GO_SOURCES'));
   });
 
   test('release installer verifies downloads and is transactional', () {

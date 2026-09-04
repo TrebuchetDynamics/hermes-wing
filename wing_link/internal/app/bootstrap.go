@@ -160,7 +160,7 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 	if gatewayReady {
 		emitBootstrap(emit, "gateway", "Hermes gateway already healthy", 96)
 	} else if manager.StartGateway != nil {
-		emitBootstrap(emit, "gateway", "Starting Hermes gateway", 96)
+		emitBootstrap(emit, "gateway", "Starting Hermes gateway if needed", 96)
 		if err := manager.StartGateway(ctx); err != nil {
 			return BootstrapResult{}, fmt.Errorf("%w: gateway", ErrHermesInstall)
 		}
@@ -315,7 +315,12 @@ func resolveHermesAPIPort() (int, error) {
 }
 
 func hermesGatewayCommands() [][]string {
-	return [][]string{{"gateway", "install"}, {"gateway", "restart", "--all"}}
+	// Configuration is written before these commands run. `start` leaves an
+	// already-running service untouched, so it can keep serving a stale bind
+	// address inherited from the previous environment. Restart applies the
+	// newly secured local endpoint without using `start --all`, which would
+	// kill unrelated active profile processes.
+	return [][]string{{"gateway", "install", "--no-start-now"}, {"gateway", "restart"}}
 }
 
 func hermesSecondaryAPICommands(rows []profileRow) ([][]string, error) {

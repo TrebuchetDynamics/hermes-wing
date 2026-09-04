@@ -116,9 +116,10 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
     this.scanned,
     this.imported,
     this.scanThrowsOnce = false,
-  });
+  }) : pendingInitial = initial;
 
   final String? initial;
+  String? pendingInitial;
   final String? scanned;
   final String? imported;
   final bool scanThrowsOnce;
@@ -128,6 +129,13 @@ class _FakeConnectIntentSource implements HermesConnectIntentSource {
 
   @override
   Future<String?> initialPayload() async => initial;
+
+  @override
+  Future<String?> consumeInitialPayload() async {
+    final value = pendingInitial;
+    pendingInitial = null;
+    return value;
+  }
 
   @override
   Stream<String> payloadEvents() => _events.stream;

@@ -52,13 +52,17 @@ func newUpdateFixture(t *testing.T) *updateFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	manifestHits, fetchHits, restartCalls, healthCalls := 0, 0, 0, 0
 	return &updateFixture{
 		ctx:          context.Background(),
 		publicKey:    publicKey,
 		privateKey:   privateKey,
 		trustedKeys:  map[string]ed25519.PublicKey{"release-key": publicKey},
-		root:         t.TempDir(),
+		root:         root,
 		artifact:     []byte("wing-link linux binary payload 1.2.4"),
 		manifestHits: &manifestHits,
 		fetchHits:    &fetchHits,
@@ -413,6 +417,59 @@ func TestApplyStagesOwnerOnlyAndActivatesAtomically(t *testing.T) {
 	}
 	if len(*fixture.calls) != 2 || (*fixture.calls)[0] != "restart" || (*fixture.calls)[1] != "health" {
 		t.Fatalf("activation order = %v, want restart before health", *fixture.calls)
+	}
+}
+
+func TestApplyRejectsSymlinkedVersionDirectory(t *testing.T) {
+	fixture := newUpdateFixture(t)
+	fixture.signCatalog(t, fixture.defaultCatalog(t))
+	versionsRoot := filepath.Join(fixture.root, versionsDirName)
+	if err := os.MkdirAll(versionsRoot, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	outside := t.TempDir()
+	if err := os.Symlink(outside, filepath.Join(versionsRoot, "1.2.4")); err != nil {
+		t.Fatal(err)
+	}
+
+	updater, err := NewUpdater(fixture.config("1.2.3", 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := updater.Apply(fixture.ctx); !errors.Is(err, ErrUpdateState) {
+		t.Fatalf("symlinked version directory error=%v", err)
+	}
+	if *fixture.fetchHits != 0 {
+		t.Fatal("symlinked version directory triggered artifact fetch")
+	}
+	if _, err := os.Stat(filepath.Join(outside, wingLinkBinary)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("artifact escaped update root, stat error=%v", err)
+	}
+}
+
+func TestApplyRejectsSymlinkedUpdateRootAncestor(t *testing.T) {
+	fixture := newUpdateFixture(t)
+	fixture.signCatalog(t, fixture.defaultCatalog(t))
+	parent := t.TempDir()
+	outside := t.TempDir()
+	link := filepath.Join(parent, "linked")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+	fixture.root = filepath.Join(link, "releases")
+
+	updater, err := NewUpdater(fixture.config("1.2.3", 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := updater.Apply(fixture.ctx); !errors.Is(err, ErrUpdateState) {
+		t.Fatalf("symlinked update root ancestor error=%v", err)
+	}
+	if *fixture.fetchHits != 0 {
+		t.Fatal("symlinked update root ancestor triggered artifact fetch")
+	}
+	if _, err := os.Stat(filepath.Join(outside, "releases")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("update root escaped through ancestor, stat error=%v", err)
 	}
 }
 

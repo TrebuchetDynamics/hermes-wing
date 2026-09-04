@@ -270,6 +270,66 @@ void main() {
     expect(find.byKey(const ValueKey('chat-destination')), findsOneWidget);
   });
 
+  testWidgets('opening the active profile reconnects after channel loss', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha Gateway',
+          baseUrl: 'https://alpha',
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': _summary(id: 'alice', name: 'Alice'),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    const contactId = GatewayContactId(gatewayId: 'alpha', profileId: 'alice');
+    await directory.activate(contactId);
+    await channel.disconnect();
+
+    final router = GoRouter(
+      initialLocation: AppRoutes.office,
+      routes: [
+        GoRoute(
+          path: AppRoutes.office,
+          builder: (context, state) => const OfficeScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.hermes,
+          builder: (context, state) => const Text('Chat destination'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('office-open-alpha-alice')));
+    await tester.pumpAndSettle();
+
+    expect(channel.connectCalls, hasLength(2));
+    expect(directory.activeContactId, contactId);
+    expect(find.text('Chat destination'), findsOneWidget);
+  });
+
   testWidgets('the Office title and agent count each render once', (
     tester,
   ) async {

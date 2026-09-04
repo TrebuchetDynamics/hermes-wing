@@ -108,6 +108,39 @@ void main() {
     );
   });
 
+  test('rejects duplicate security-sensitive query parameters', () {
+    const fields = [
+      'origin',
+      'broker',
+      'control',
+      'protocol_generation',
+      'host_fingerprint',
+      'code',
+    ];
+    const values = {
+      'origin': 'https%3A%2F%2Fhermes.example',
+      'broker': 'https%3A%2F%2Fhermes.example',
+      'control': 'https%3A%2F%2Fhermes.example',
+      'protocol_generation': '1',
+      'host_fingerprint':
+          'sha256%2FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      'code': 'one-time',
+    };
+    final query = values.entries
+        .map((entry) => '${entry.key}=${entry.value}')
+        .join('&');
+
+    for (final field in fields) {
+      expect(
+        () => HermesEnrollmentPayload.parse(
+          'wing://connect?$query&$field=${values[field]}',
+        ),
+        throwsFormatException,
+        reason: field,
+      );
+    }
+  });
+
   test('rejects bearer token query parameters', () {
     expect(
       () => HermesEnrollmentPayload.parse(

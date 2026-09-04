@@ -287,15 +287,13 @@ func (m *OperationManager) Cancel(id string) bool {
 		_ = m.journal.Cancel(id)
 	}
 	m.publish(record, event, true)
-	if m.activeID == id {
-		m.activeID = ""
-	}
 	m.completed = append(m.completed, id)
 	if len(m.completed) > maxRetainedOperations {
 		oldest := m.completed[0]
 		m.completed = m.completed[1:]
 		delete(m.operations, oldest)
 	}
+	// Keep the active slot occupied until the worker observes cancellation and exits.
 	return true
 }
 

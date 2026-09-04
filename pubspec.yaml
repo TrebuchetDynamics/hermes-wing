@@ -17,8 +17,7 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^11.0.0
   web: ^1.1.1
-  speech_to_text:
-    path: third_party/speech_to_text
+  speech_to_text: ^7.4.0
   audioplayers: ^6.5.1
   flutter_tts: ^4.2.5
   flutter_markdown_plus: ^1.0.12
@@ -32,7 +31,6 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-  speech_to_text_platform_interface: ^2.4.0
   flutter_lints: ^6.0.0
 
 flutter:

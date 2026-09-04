@@ -3,6 +3,8 @@ import 'dart:io';
 
 import '../../shared/hermes_api_http.dart';
 
+const _maximumResponseBytes = 64 << 20;
+
 Future<String> defaultGet(Uri uri, Map<String, String> headers) {
   return _request(uri: uri, method: 'GET', headers: headers);
 }
@@ -49,13 +51,14 @@ Stream<String> _requestStream({
     final payload = body;
     if (payload != null) request.add(utf8.encode(payload));
     final response = await request.close();
+    _checkResponseLength(response, uri);
     if (!hermesApiIsSuccessStatus(response.statusCode)) {
       throw HttpException(
         hermesApiHttpStatusMessage(response.statusCode),
         uri: uri,
       );
     }
-    yield* utf8.decoder.bind(response);
+    yield* utf8.decoder.bind(_boundedResponse(response, uri));
   } finally {
     client.close(force: true);
   }
@@ -75,7 +78,10 @@ Future<String> _request({
     final payload = body;
     if (payload != null) request.add(utf8.encode(payload));
     final response = await request.close();
-    final responseBody = await utf8.decoder.bind(response).join();
+    _checkResponseLength(response, uri);
+    final responseBody = await utf8.decoder
+        .bind(_boundedResponse(response, uri))
+        .join();
     if (!hermesApiIsSuccessStatus(response.statusCode)) {
       throw HttpException(
         hermesApiHttpStatusMessage(response.statusCode),
@@ -85,5 +91,25 @@ Future<String> _request({
     return responseBody;
   } finally {
     client.close(force: true);
+  }
+}
+
+void _checkResponseLength(HttpClientResponse response, Uri uri) {
+  if (response.contentLength > _maximumResponseBytes) {
+    throw HttpException('Hermes API response exceeded its bound', uri: uri);
+  }
+}
+
+Stream<List<int>> _boundedResponse(
+  HttpClientResponse response,
+  Uri uri,
+) async* {
+  var total = 0;
+  await for (final chunk in response) {
+    total += chunk.length;
+    if (total > _maximumResponseBytes) {
+      throw HttpException('Hermes API response exceeded its bound', uri: uri);
+    }
+    yield chunk;
   }
 }

@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform;
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -83,8 +81,7 @@ class PluginSpeechToTextEngine
   bool get isListening => _speechToText.isListening;
 
   @override
-  bool get hasGenerationBoundCallbacks =>
-      defaultTargetPlatform == TargetPlatform.android;
+  bool get hasGenerationBoundCallbacks => false;
 
   @override
   Stream<double> get soundLevels => _soundLevels.stream;

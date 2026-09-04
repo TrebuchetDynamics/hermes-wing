@@ -77,12 +77,13 @@ Get started:
              --json                  Print one JSON result
              --json-lines            Stream progress as JSON lines
   pair       Create a secure pairing handoff for Hermes Wing.
-             Prints a single-use paste link by default.
+             Prints a scannable QR and single-use paste link by default.
              --remote                Pair through Tailscale or a trusted VPN (default)
                                      Tailscale API binding is configured automatically.
              --local                 Pair on this device only
              --same-device           Print only the code-free local /open URL
-             --qr                    Print a scannable QR instead of the link
+             --link                  Print the single-use link without the QR
+             --qr                    Print a scannable QR without the link
              --origin URL            Use a specific Hermes Agent API origin
              --label NAME            Name this Hermes Wing installation
 

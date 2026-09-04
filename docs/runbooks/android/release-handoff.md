@@ -156,7 +156,7 @@ Current live-mic blocker: a responsive emulator can cover deterministic voice-lo
 
 What is already covered in the app:
 
-- Android uses local `speech_to_text` capture when the platform is Android.
+- Android uses the hosted `speech_to_text` package for platform capture.
 - Bare gateway-reported `device STT unavailable` is advisory unless paired with an explicit disabled reason.
 - Runtime local STT failures switch continuous voice into an actionable unavailable state.
 - Permission failures show `microphone permission denied` and tell the tester to grant microphone permission in Android App info.

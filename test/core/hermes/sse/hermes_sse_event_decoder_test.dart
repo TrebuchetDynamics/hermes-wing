@@ -2,6 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/sse/hermes_sse_event_decoder.dart';
 
 void main() {
+  test('flushes the final unterminated batch SSE frame', () {
+    final events = const HermesSseEventDecoder().decodeJsonEvents([
+      'event: done\ndata: {}\n',
+    ]);
+
+    expect(events, hasLength(1));
+    expect(events.single.isDone, isTrue);
+  });
+
   test('normalizes a direct JSON event using its embedded type', () {
     final event = HermesStreamEvent.fromJson({
       'type': 'tool.progress',

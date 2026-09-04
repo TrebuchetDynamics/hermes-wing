@@ -557,6 +557,7 @@ void main() {
               'name': 'link',
               'revision': 'rev-1',
               'topology_revision': 'top-1',
+              'skills_count': -1,
               'source': 'api',
               'gateway_state': 'unknown',
               'actions': {
@@ -577,9 +578,20 @@ void main() {
     expect(profiles.single.source, 'api');
     expect(profiles.single.gatewayState, 'unknown');
     expect(profiles.single.revision, 'top-1');
+    expect(profiles.single.skillsCount, 0);
     expect(profiles.single.renameRevision, 'rev-1');
     expect(profiles.single.canRename, isTrue);
     expect(profiles.single.canDelete, isTrue);
+  });
+
+  test('rejects a malformed profile row instead of hiding it', () async {
+    final client = WingLinkClient(
+      origin: Uri.parse('https://hermes.example:8654'),
+      token: 'wlc-secret',
+      get: (uri, headers) async => '{"profiles":[{"id":"valid"},"broken"]}',
+    );
+
+    await expectLater(client.listProfiles(), throwsA(isA<WingLinkException>()));
   });
 
   test('profile mutation exposes a typed stale-revision failure', () async {

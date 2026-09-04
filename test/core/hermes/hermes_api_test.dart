@@ -101,6 +101,15 @@ void main() {
     expect(preview.connectionCount, 1);
   });
 
+  test('enrollment preview ignores unsafe expiry timestamps', () {
+    final preview = HermesEnrollmentPreview.fromJson({'expires_at': 1e100});
+    expect(preview.expiresAt, isNull);
+    expect(
+      HermesEnrollmentPreview.fromJson({'expires_at': -1}).expiresAt,
+      isNull,
+    );
+  });
+
   test('enrollment preview accepts only bounded explicit integer counts', () {
     expect(
       HermesEnrollmentPreview.fromJson({'connection_count': 9}).connectionCount,
@@ -1153,6 +1162,38 @@ void main() {
     expect(sessions.detail, contains('authorized'));
   });
 
+  test(
+    'surface readiness rejects session endpoints without profile context',
+    () {
+      final capabilities = HermesCapabilityDocument.fromJson({
+        'schema_version': 1,
+        'auth': {
+          'type': 'bearer',
+          'required': true,
+          'granted_scopes': ['sessions:read', 'sessions:write'],
+        },
+        'endpoints': {
+          'sessions': {
+            'method': 'GET',
+            'path': '/api/sessions',
+            'profile_scoped': true,
+          },
+          'session_create': {
+            'method': 'POST',
+            'path': '/api/sessions',
+            'profile_scoped': true,
+          },
+        },
+      });
+
+      final sessions = hermesSurfaceReadiness(
+        capabilities,
+      ).singleWhere((item) => item.title == 'Sessions');
+
+      expect(sessions.status, HermesSurfaceStatus.blocked);
+    },
+  );
+
   test('surface readiness recognizes advertised detailed gateway health', () {
     final capabilities = HermesCapabilityDocument.fromJson({
       'schema_version': 1,
@@ -1496,6 +1537,36 @@ void main() {
     },
   );
 
+  test('skills inventory bounds the number of returned skills', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async => jsonEncode({
+        'data': [
+          for (var index = 0; index < 129; index++) {'name': 'skill-$index'},
+        ],
+      }),
+    );
+
+    final skills = await client.listSkillDetails();
+
+    expect(skills, hasLength(128));
+  });
+
+  test('toolset inventory bounds the number of returned toolsets', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async => jsonEncode({
+        'data': [
+          for (var index = 0; index < 129; index++) {'name': 'toolset-$index'},
+        ],
+      }),
+    );
+
+    final toolsets = await client.listToolsets();
+
+    expect(toolsets, hasLength(128));
+  });
+
   test('toolset inventory preserves bounded resolved metadata', () async {
     final client = HermesApiClient(
       config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
@@ -1645,6 +1716,37 @@ void main() {
     },
   );
 
+  test('job fields are bounded and control-safe at the model boundary', () {
+    final job = HermesJob.fromJson({
+      'id': 'job-1',
+      'name': '${'x' * 300}\nname',
+      'state': '\u0000running',
+      'schedule_display': 'every minute',
+      'last_error': 'e' * 2000,
+    });
+
+    expect(job.id, 'job-1');
+    expect(job.name, hasLength(200));
+    expect(job.name, isNot(contains('\n')));
+    expect(job.state, 'running');
+    expect(job.lastError, hasLength(1000));
+  });
+
+  test('jobs inventory bounds the number of returned schedules', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async => jsonEncode({
+        'jobs': [
+          for (var index = 0; index < 129; index++) {'id': 'job-$index'},
+        ],
+      }),
+    );
+
+    final jobs = await client.listJobs();
+
+    expect(jobs, hasLength(128));
+  });
+
   test('jobs inventory requests disabled schedules explicitly', () async {
     Uri? requestedUri;
     final client = HermesApiClient(
@@ -1664,10 +1766,27 @@ void main() {
     });
   });
 
+  test('session inventory bounds the number of returned sessions', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (uri, headers) async => jsonEncode({
+        'data': [
+          for (var index = 0; index < 129; index++)
+            {'id': 'session-$index', 'source': 'api_server'},
+        ],
+      }),
+    );
+
+    final sessions = await client.listSessions();
+
+    expect(sessions, hasLength(128));
+  });
+
   test('session usage metadata preserves zeroes and rejects unsafe values', () {
     final session = HermesSession.fromJson({
       'id': 'session-bounds',
       'source': 'api_server',
+      'message_count': -1,
       'tool_call_count': 0,
       'input_tokens': -1,
       'output_tokens': 'not-a-number',
@@ -1683,6 +1802,7 @@ void main() {
       'last_active': '1784336000.2563922',
     });
 
+    expect(session.messageCount, 0);
     expect(session.toolCallCount, 0);
     expect(session.inputTokens, isNull);
     expect(session.outputTokens, isNull);
@@ -2056,17 +2176,17 @@ void main() {
     expect(events.last.isDone, isTrue);
   });
 
-  test(
-    'keeps incomplete final SSE frame buffered until a separator arrives',
-    () {
-      final decoder = HermesSseEventDecoder();
+  test('flushes an incomplete final SSE frame when input closes', () {
+    final decoder = HermesSseEventDecoder();
 
-      expect(
-        decoder.decode(['event: assistant.delta\ndata: {"delta":"partial"}']),
-        isEmpty,
-      );
-    },
-  );
+    final events = decoder.decode([
+      'event: assistant.delta\ndata: {"delta":"partial"}',
+    ]);
+
+    expect(events, hasLength(1));
+    expect(events.single.event, 'assistant.delta');
+    expect(events.single.data, '{"delta":"partial"}');
+  });
 
   test('ignores empty chunks and no-data CR-only control frames', () {
     final decoder = HermesSseEventDecoder();
@@ -2190,6 +2310,20 @@ void main() {
     expect(profiles.single.displayName, 'Coding Agent');
     expect(profiles.single.revision, 'rev-1');
     expect(profiles.single.skillsCount, 4);
+  });
+
+  test('profile metadata clamps a negative skill count', () async {
+    final client = HermesApiClient(
+      config: HermesApiConfig.fromBaseUrl('http://127.0.0.1:8642'),
+      get: (_, _) async => jsonEncode({
+        'data': [
+          {'id': 'negative', 'name': 'Negative', 'skills_count': -1},
+        ],
+      }),
+    );
+
+    final profiles = await client.listProfiles();
+    expect(profiles.single.skillsCount, 0);
   });
 
   test('listProfiles discards rows with a blank id', () async {
@@ -2413,6 +2547,16 @@ void main() {
     expect(openai.keyHint!.contains(sentinel), isFalse);
   });
 
+  test('provider parsing rejects an unmasked credential hint', () {
+    final provider = HermesProvider.fromJson(const {
+      'slug': 'openai',
+      'label': 'OpenAI',
+      'key_hint': 'sk-live-full-secret',
+    });
+
+    expect(provider.keyHint, isNull);
+  });
+
   test('setProviderCredential sends the value in the PUT body but never '
       'returns it', () async {
     const sentinel = 'sk-live-DEADBEEF-super-secret';
@@ -2537,7 +2681,7 @@ void main() {
           },
           'active': {'provider': 'openai', 'model': 'gpt-5'},
           'auxiliary': [
-            {'task': 'title', 'provider': 'auto', 'model': ''},
+            {'task': 'title', 'model': ''},
           ],
           'revision': 'mrev-1',
         });
@@ -2552,8 +2696,52 @@ void main() {
     expect(inventory.assignment.activeModel, 'gpt-5');
     expect(inventory.assignment.revision, 'mrev-1');
     expect(inventory.assignment.auxiliary.single.task, 'title');
+    expect(inventory.assignment.auxiliary.single.provider, 'auto');
     expect(inventory.catalog.providers.single.provider, 'openai');
     expect(inventory.catalog.providers.single.models.single.id, 'gpt-5');
+  });
+
+  test('model catalog parsing bounds providers and models per provider', () {
+    final catalog = HermesModelCatalog.fromJson({
+      'providers': {
+        for (var provider = 0; provider < 65; provider++)
+          'provider-$provider': {
+            'models': [
+              for (var model = 0; model < 257; model++) {'id': 'model-$model'},
+            ],
+          },
+      },
+    });
+
+    expect(catalog.providers, hasLength(64));
+    expect(catalog.providers.first.models, hasLength(256));
+  });
+
+  test('model catalog drops duplicate model identifiers', () {
+    final catalog = HermesModelCatalog.fromJson(const {
+      'providers': {
+        'openai': {
+          'models': [
+            {'id': 'gpt-5', 'description': 'first'},
+            {'id': 'gpt-5', 'description': 'duplicate'},
+          ],
+        },
+      },
+    });
+
+    expect(catalog.providers.single.models, hasLength(1));
+    expect(catalog.providers.single.models.single.description, 'first');
+  });
+
+  test('model assignment parsing bounds auxiliary rows', () {
+    final assignment = HermesModelAssignment.fromJson({
+      'auxiliary': [
+        for (var index = 0; index < 65; index++)
+          {'task': 'task-$index', 'model': 'model-$index'},
+      ],
+    });
+
+    expect(assignment.auxiliary, hasLength(64));
   });
 
   test('refreshModelCatalog hits the refresh endpoint, not the plain '

@@ -14,7 +14,7 @@ class HermesAuxiliaryModel {
   factory HermesAuxiliaryModel.fromJson(Map<String, Object?> json) {
     return HermesAuxiliaryModel(
       task: wingStringFromJson(json['task'], fallback: ''),
-      provider: wingStringFromJson(json['provider'], fallback: ''),
+      provider: wingStringFromJson(json['provider'], fallback: 'auto'),
       model: wingStringFromJson(json['model'], fallback: ''),
       baseUrl: wingStringFromJson(json['base_url'], fallback: ''),
     );
@@ -45,9 +45,10 @@ class HermesModelAssignment {
     return HermesModelAssignment(
       activeProvider: wingStringFromJson(active['provider'], fallback: ''),
       activeModel: wingStringFromJson(active['model'], fallback: ''),
-      auxiliary: wingMapListFromJson(
-        json['auxiliary'],
-      ).map(HermesAuxiliaryModel.fromJson).toList(growable: false),
+      auxiliary: wingMapListFromJson(json['auxiliary'])
+          .take(_maxAuxiliaryAssignments)
+          .map(HermesAuxiliaryModel.fromJson)
+          .toList(growable: false),
       revision: wingStringFromJson(json['revision'], fallback: ''),
     );
   }
@@ -92,24 +93,32 @@ class HermesModelCatalog {
   const HermesModelCatalog({this.providers = const []});
 
   factory HermesModelCatalog.fromJson(Object? raw) {
-    final providersJson = wingMapFieldFromJson(
-      wingMapFromJson(raw),
-      'providers',
-    );
+    final root = wingMapFromJson(raw);
+    final rawProviders = root['providers'];
+    if (rawProviders is! Map) return const HermesModelCatalog();
     final providers = <HermesCatalogProvider>[];
-    for (final entry in providersJson.entries) {
+    for (final entry in rawProviders.entries.take(_maxCatalogProviders)) {
+      if (entry.key is! String) continue;
       final block = wingMapFromJson(entry.value);
+      final modelIds = <String>{};
       final models = wingMapListFromJson(block['models'])
+          .take(_maxCatalogModelsPerProvider)
           .map(HermesCatalogModel.fromJson)
-          .where((model) => model.id.isNotEmpty)
+          .where((model) => model.id.isNotEmpty && modelIds.add(model.id))
           .toList(growable: false);
-      providers.add(HermesCatalogProvider(provider: entry.key, models: models));
+      providers.add(
+        HermesCatalogProvider(provider: entry.key as String, models: models),
+      );
     }
     return HermesModelCatalog(providers: providers);
   }
 
   final List<HermesCatalogProvider> providers;
 }
+
+const _maxCatalogProviders = 64;
+const _maxCatalogModelsPerProvider = 256;
+const _maxAuxiliaryAssignments = 64;
 
 /// The combined catalog + assignment returned by `GET /api/models`. Held in
 /// channel state as the single model-selection surface.

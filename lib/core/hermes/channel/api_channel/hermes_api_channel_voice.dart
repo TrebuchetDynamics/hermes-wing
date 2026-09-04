@@ -6,7 +6,7 @@ extension _VoiceExtension on HermesApiChannel {
     final run = WingVoiceRun.recording(
       id: id,
       serverId: 'hermes',
-      profileId: _state.activeSessionId ?? '',
+      profileId: _state.selectedProfileId ?? '',
       createdAt: DateTime.now(),
     );
     _setState(

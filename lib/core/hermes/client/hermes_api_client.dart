@@ -24,6 +24,8 @@ import 'platform/hermes_api_transport_stub.dart'
     if (dart.library.html) 'platform/hermes_api_transport_web.dart'
     as transport;
 
+const _maxJobs = 128;
+
 class HermesApiClient {
   HermesApiClient({
     required this.config,
@@ -95,6 +97,7 @@ class HermesApiClient {
   Future<List<HermesSkill>> listSkillDetails({String? profile}) async {
     final body = await _getJson(_scoped(config.skillsUri, profile));
     return wingMapListFromJson(body['data'])
+        .take(_maxJobs)
         .map(HermesSkill.fromJson)
         .where((skill) => skill.name.isNotEmpty)
         .toList(growable: false);
@@ -103,6 +106,7 @@ class HermesApiClient {
   Future<List<HermesToolset>> listToolsets({String? profile}) async {
     final body = await _getJson(_scoped(config.toolsetsUri, profile));
     return wingMapListFromJson(body['data'])
+        .take(_maxJobs)
         .map(HermesToolset.fromJson)
         .where((toolset) => toolset.name.isNotEmpty)
         .toList(growable: false);
@@ -118,6 +122,7 @@ class HermesApiClient {
   Future<List<HermesSession>> listSessions({String? profile}) async {
     final body = await _getJson(_scoped(config.sessionsUri, profile));
     return wingMapListFromJson(body['data'])
+        .take(_maxJobs)
         .map(HermesSession.fromJson)
         .where((session) => session.id.isNotEmpty)
         .toList(growable: false);
@@ -150,6 +155,7 @@ class HermesApiClient {
     final body = await _getJson(uri);
     final rawJobs = body['jobs'] ?? body['data'];
     return wingMapListFromJson(rawJobs)
+        .take(_maxJobs)
         .map(HermesJob.fromJson)
         .where((job) => job.id.isNotEmpty)
         .toList(growable: false);
@@ -874,9 +880,17 @@ Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
 
 DateTime? _epochSecondsToUtcDateTime(Object? value) {
   final seconds = wingDoubleFromJson(value);
-  if (seconds == null) return null;
-  return DateTime.fromMillisecondsSinceEpoch(
-    (seconds * 1000).round(),
-    isUtc: true,
-  );
+  if (seconds == null || !seconds.isFinite || seconds < 0) return null;
+  final milliseconds = seconds * Duration.millisecondsPerSecond;
+  if (!milliseconds.isFinite || milliseconds > 8640000000000000) {
+    return null;
+  }
+  try {
+    return DateTime.fromMillisecondsSinceEpoch(
+      milliseconds.round(),
+      isUtc: true,
+    );
+  } on RangeError {
+    return null;
+  }
 }

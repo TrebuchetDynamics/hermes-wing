@@ -315,9 +315,12 @@ func resolveHermesAPIPort() (int, error) {
 }
 
 func hermesGatewayCommands() [][]string {
-	// `start` is idempotent for an existing service; `start --all` would kill
-	// active profile processes before starting them.
-	return [][]string{{"gateway", "install", "--no-start-now"}, {"gateway", "start"}}
+	// Configuration is written before these commands run. `start` leaves an
+	// already-running service untouched, so it can keep serving a stale bind
+	// address inherited from the previous environment. Restart applies the
+	// newly secured local endpoint without using `start --all`, which would
+	// kill unrelated active profile processes.
+	return [][]string{{"gateway", "install", "--no-start-now"}, {"gateway", "restart"}}
 }
 
 func hermesSecondaryAPICommands(rows []profileRow) ([][]string, error) {

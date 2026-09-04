@@ -178,7 +178,10 @@ func (j *Journal) Update(id, phase string, event OperationEvent) error {
 	} else if event.Percent > 100 {
 		event.Percent = 100
 	}
-	if !terminalJournalPhase(phase) {
+	if terminalJournalPhase(phase) {
+		event.Phase = phase
+		event.Terminal = true
+	} else {
 		event.Terminal = false
 		event.ErrorCode = ""
 	}

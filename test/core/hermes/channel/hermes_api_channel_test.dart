@@ -1923,6 +1923,50 @@ void _hermesApiChannelProviderModelTests() {
   });
 
   test(
+    'late provider credential responses cannot cross profile state',
+    () async {
+      final setStarted = Completer<void>();
+      final releaseSet = Completer<String>();
+      final channel = await _connectedProviderModelChannel(
+        capabilities: _providerModelCapabilitiesFixture,
+        get: (uri) async =>
+            uri.path == '/api/providers' ? _providersFixtureBody() : null,
+        put: (uri, body) {
+          setStarted.complete();
+          return releaseSet.future;
+        },
+      );
+      await channel.loadProviders();
+
+      final mutation = channel.setProviderCredential(
+        slug: 'openai',
+        envVar: 'OPENAI_API_KEY',
+        value: 'secret-value',
+      );
+      await setStarted.future;
+      await channel.selectProfile('coder');
+      await channel.loadProviders();
+      expect(channel.state.selectedProfileId, 'coder');
+      expect(channel.state.providers.first.keyHint, '····1234');
+
+      releaseSet.complete(
+        jsonEncode({
+          'data': {
+            'slug': 'openai',
+            'label': 'OpenAI',
+            'auth_type': 'api_key',
+            'configured': true,
+            'key_hint': '····cret',
+          },
+        }),
+      );
+      await mutation;
+
+      expect(channel.state.providers.first.keyHint, '····1234');
+    },
+  );
+
+  test(
     'loadModels stores the parsed inventory scoped to the profile',
     () async {
       final requests = <Uri>[];

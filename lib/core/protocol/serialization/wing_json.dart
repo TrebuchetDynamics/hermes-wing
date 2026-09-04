@@ -180,7 +180,8 @@ List<String> wingStringListFieldFromJson(
 /// Returns non-empty trimmed string values in their original order.
 List<String> wingTrimmedStringList(Iterable<Object?> values) {
   return values
-      .map((item) => item.toString().trim())
+      .whereType<String>()
+      .map((item) => item.trim())
       .where((item) => item.isNotEmpty)
       .toList(growable: false);
 }

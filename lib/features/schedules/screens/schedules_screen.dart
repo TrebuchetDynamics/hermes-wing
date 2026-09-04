@@ -346,6 +346,7 @@ String _jobState(HermesJob job, AppLocalizations strings) {
     'active' => strings.scheduleActive,
     'paused' => strings.schedulePaused,
     'completed' => strings.scheduleCompleted,
+    'error' => strings.scheduleError,
     _ => job.enabled ? strings.scheduleEnabled : strings.scheduleDisabled,
   };
 }

@@ -59,7 +59,7 @@ jobs:
           cp assets/readme/showcase-mobile.png build/pages/assets/showcase-mobile.png
           cp assets/readme/runtime-flow.svg build/pages/assets/runtime-flow.svg
           cp assets/readme/runtime-flow-mobile.svg build/pages/assets/runtime-flow-mobile.svg
-          cp hermes-wing-icon.png build/pages/assets/app-icon.png
+          cp site/assets/app-icon.png build/pages/assets/app-icon.png
       - name: Landing and web client browser smoke
         run: |
           mkdir -p /tmp/hermes-wing-pages

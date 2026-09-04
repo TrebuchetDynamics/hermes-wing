@@ -99,6 +99,53 @@ void main() {
     );
   });
 
+  testWidgets('ignores a second folder tap while loading the first', (
+    tester,
+  ) async {
+    final release = Completer<void>();
+    final requests = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () => showProfileDirectoryBrowser(
+                context,
+                loadRoots: () async => const [
+                  WingLinkDirectory(
+                    handle: 'dirh_oneAAAAAAAAAAAAAAAAAAA',
+                    name: 'one',
+                  ),
+                  WingLinkDirectory(
+                    handle: 'dirh_twoAAAAAAAAAAAAAAAAAAA',
+                    name: 'two',
+                  ),
+                ],
+                loadChildren: (handle, offset) async {
+                  requests.add(handle);
+                  await release.future;
+                  return const WingLinkDirectoryPage();
+                },
+              ),
+              child: const Text('Browse'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Browse'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('one'));
+    await tester.tap(find.text('two'));
+    expect(requests, ['dirh_oneAAAAAAAAAAAAAAAAAAA']);
+
+    release.complete();
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('shows loading and an empty host-local grant instruction', (
     tester,
   ) async {

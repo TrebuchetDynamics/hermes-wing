@@ -1066,6 +1066,12 @@ abstract class AppLocalizations {
   /// **'Completed'**
   String get scheduleCompleted;
 
+  /// No description provided for @scheduleError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get scheduleError;
+
   /// No description provided for @scheduleExpressionLabel.
   ///
   /// In en, this message translates to:

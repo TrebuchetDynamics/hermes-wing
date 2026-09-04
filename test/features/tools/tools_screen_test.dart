@@ -72,6 +72,29 @@ void main() {
     expect(find.text('memory'), findsOneWidget);
   });
 
+  testWidgets('duplicate detailed inventory names do not collide in the UI', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skillDetails: const [
+        HermesSkill(name: 'duplicate'),
+        HermesSkill(name: 'duplicate'),
+      ],
+      toolsets: const [
+        HermesToolset(name: 'duplicate'),
+        HermesToolset(name: 'duplicate'),
+      ],
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('duplicate'), findsNWidgets(4));
+  });
+
   testWidgets('shows and searches bounded installed skill metadata', (
     tester,
   ) async {

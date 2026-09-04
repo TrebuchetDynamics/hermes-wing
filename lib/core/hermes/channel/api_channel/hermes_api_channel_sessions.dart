@@ -162,7 +162,6 @@ extension _SessionsExtension on HermesApiChannel {
     }
     final operation = Object();
     _deletingSessionOperations[sessionId] = operation;
-    final wasActive = _state.activeSessionId == sessionId;
     _finishSessionTurnLocally(sessionId);
     try {
       await client.deleteSession(sessionId, profile: profileId);
@@ -171,12 +170,13 @@ extension _SessionsExtension on HermesApiChannel {
         for (final session in _state.sessions)
           if (session.id != sessionId) session,
       ];
-      final nextActiveId = wasActive
+      final deletingCurrentSession = _state.activeSessionId == sessionId;
+      final nextActiveId = deletingCurrentSession
           ? remaining.firstOrNull?.id
           : _state.activeSessionId;
       final messages = Map<String, List<HermesChatTurn>>.from(_state.messages)
         ..remove(sessionId);
-      if (wasActive &&
+      if (deletingCurrentSession &&
           nextActiveId != null &&
           !messages.containsKey(nextActiveId)) {
         try {

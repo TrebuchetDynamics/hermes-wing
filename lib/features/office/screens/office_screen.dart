@@ -205,8 +205,11 @@ class _OfficeScreenState extends ConsumerState<OfficeScreen> {
       _openFailed = false;
     });
     try {
-      if (directory.activeContactId != id) await directory.activate(id);
-      final connected = ref.read(hermesChannelProvider).state.isConnected;
+      final channel = ref.read(hermesChannelProvider);
+      if (directory.activeContactId != id || !channel.state.isConnected) {
+        await directory.activate(id);
+      }
+      final connected = channel.state.isConnected;
       if (directory.activeContactId != id || !connected) {
         throw StateError('Hermes profile activation did not connect.');
       }

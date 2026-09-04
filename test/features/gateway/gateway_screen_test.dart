@@ -419,6 +419,50 @@ void main() {
     expect(find.text('Work'), findsOneWidget);
   });
 
+  testWidgets('trust reloads when the active gateway config is replaced', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(
+          id: 'alpha',
+          label: 'Alpha',
+          baseUrl: 'https://alpha',
+          wingLinkOrigin: 'https://host.example:8654',
+          wingLinkToken: 'token-old',
+          wingLinkHostFingerprint: _testFingerprint,
+        ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    var trustLoads = 0;
+
+    await tester.pumpWidget(
+      _testApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: (_) {
+          trustLoads++;
+          return _trustClient();
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(trustLoads, 1);
+
+    await directory.renameGateway('alpha', 'Renamed');
+    await tester.pumpAndSettle();
+
+    expect(trustLoads, 2);
+  });
+
   testWidgets('disconnect forgets the saved gateway', (tester) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);

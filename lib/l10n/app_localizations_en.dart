@@ -597,6 +597,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleCompleted => 'Completed';
 
   @override
+  String get scheduleError => 'Error';
+
+  @override
   String get scheduleExpressionLabel => 'Schedule';
 
   @override

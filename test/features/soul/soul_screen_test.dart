@@ -22,14 +22,16 @@ Widget _testApp(FakeHermesChannel channel) => ProviderScope(
 HermesCapabilityDocument _personaCapabilities({
   List<String> scopes = const ['profiles:read', 'profiles:write'],
   List<String> extraRequiredScopes = const [],
+  bool includeProfileContext = true,
 }) => HermesCapabilityDocument.fromJson({
   'schema_version': 1,
-  'profile_context': {
-    'type': 'query',
-    'name': 'profile',
-    'required': true,
-    'default_profile_id': 'default',
-  },
+  if (includeProfileContext)
+    'profile_context': {
+      'type': 'query',
+      'name': 'profile',
+      'required': true,
+      'default_profile_id': 'default',
+    },
   'auth': {'type': 'bearer', 'required': true, 'granted_scopes': scopes},
   'endpoints': {
     'profile_soul': {
@@ -98,6 +100,24 @@ void main() {
         'revision': 'soul-rev-1',
       },
     ]);
+  });
+
+  testWidgets('blocks default persona without profile query context', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _personaCapabilities(includeProfileContext: false),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Default', revision: 'rev-1'),
+      ],
+      selectedProfileId: 'default',
+    );
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+
+    expect(find.text('Profiles unavailable'), findsOneWidget);
+    expect(channel.readProfileSoulCalls, isEmpty);
   });
 
   testWidgets('requires both persona scopes before loading SOUL', (

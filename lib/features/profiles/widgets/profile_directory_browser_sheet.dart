@@ -104,6 +104,7 @@ class _ProfileDirectoryBrowserSheetState
   }
 
   Future<void> _open(WingLinkDirectory directory) async {
+    if (_loading) return;
     setState(() {
       _loading = true;
       _failed = false;

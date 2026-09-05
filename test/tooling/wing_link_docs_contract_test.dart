@@ -11,7 +11,7 @@ void main() {
     ).readAsStringSync();
     final roadmap = File('ROADMAP.md').readAsStringSync();
     final routes = File('docs/product/routes.md').readAsStringSync();
-    final readme = File('README.md').readAsStringSync();
+    final gettingStarted = File('docs/getting-started.md').readAsStringSync();
     final compatibility = File(
       'docs/product/hermes-compatibility.md',
     ).readAsStringSync();
@@ -54,13 +54,16 @@ void main() {
       roadmap,
       contains('File listing, preview, reading, or editing through Wing Link'),
     );
-    expect(readme, contains('general provider operations are planned.'));
     expect(
-      readme,
+      gettingStarted,
+      contains('general provider operations are planned.'),
+    );
+    expect(
+      gettingStarted,
       contains('existing-profile credential edits remain blocked'),
     );
     expect(
-      readme,
+      gettingStarted,
       contains(
         'hermes config set --force platforms.api_server.extra.host '
         '<trusted-vpn-ip>',

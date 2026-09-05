@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">Hermes Wing — your AI assistant, within reach</title>
+  <desc id="desc">The Wing app lets you talk to an AI assistant powered by Hermes Agent. Wing connects directly to Hermes Agent for conversations and independently to Wing Link for host management.</desc>
+  <rect width="1200" height="390" rx="20" fill="#0b1015"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <g id="headline" transform="translate(52 58)">
+      <text y="0" fill="#75dbcb" font-size="24" font-weight="700" letter-spacing="3">HERMES WING</text>
+      <text y="100" fill="#eef4fa" font-size="62" font-weight="700" letter-spacing="-3">Your AI assistant.</text>
+      <text y="183" fill="#eef4fa" font-size="76" font-weight="700" letter-spacing="-3">Within reach.</text>
+      <text y="240" fill="#a8b4c0" font-size="24">Chat. Follow tasks. Review requests.</text>
+    </g>
+    <g id="independent-connections">
+      <rect x="800" y="43" width="354" height="272" rx="18" fill="#101923" stroke="#31404c"/>
+      <text x="824" y="78" fill="#a8b4c0" font-size="18" letter-spacing="2">COMPUTER RUNNING HERMES</text>
+      <rect x="580" y="128" width="123" height="130" rx="20" fill="#15222c" stroke="#75dbcb" stroke-width="2"/>
+      <path d="M620 152h44v32h-25l-12 10v-10h-7z" fill="none" stroke="#75dbcb" stroke-width="2" stroke-linejoin="round"/>
+      <text x="641" y="226" text-anchor="middle" fill="#eef4fa" font-size="28" font-weight="600">Wing</text>
+      <path d="M703 162h43v-24h73M703 221h43v33h73" fill="none" stroke="#75dbcb" stroke-width="2"/>
+      <path d="m811 131 8 7-8 7m0 102 8 7-8 7" fill="none" stroke="#75dbcb" stroke-width="2"/>
+      <text x="838" y="138" fill="#eef4fa" font-size="30" font-weight="600">Hermes Agent</text>
+      <text x="838" y="169" fill="#a8b4c0" font-size="22">Runs your assistant</text>
+      <path d="M824 194h306" stroke="#31404c"/>
+      <text x="838" y="246" fill="#eef4fa" font-size="30" font-weight="600">Wing Link</text>
+      <text x="838" y="277" fill="#a8b4c0" font-size="22">Pairs &amp; manages the host</text>
+    </g>
+    <path d="M52 334h1102" stroke="#31404c"/>
+    <text x="52" y="366" fill="#a8b4c0" font-size="18" letter-spacing="1">ANDROID FIRST · FLUTTER · OPEN SOURCE</text>
+    <text x="1154" y="366" text-anchor="end" fill="#75dbcb" font-size="18" letter-spacing="1">EXPERIMENTAL ALPHA</text>
+  </g>
+</svg>

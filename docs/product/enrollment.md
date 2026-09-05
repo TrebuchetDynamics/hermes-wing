@@ -105,9 +105,10 @@ separate readiness evidence.
   require the native client's reviewed pinning flow.
 - Existing-profile provider configuration remains a Hermes host action. No
   compatibility configuration API or shadow model state was added.
-- OmniRoute installation remains optional future work. An installer needs its
-  own reviewed verification, local approval, health, and rollback contract. The
-  UI does not promise free or unlimited models.
+- Optional OmniRoute installation and its local wizard are available through the
+  [Wing Link CLI](../runbooks/wing-link-cli.md). They are not part of this screen
+  and do not configure Hermes provider access. The UI does not promise free or
+  unlimited models.
 
 ## Completion evidence
 

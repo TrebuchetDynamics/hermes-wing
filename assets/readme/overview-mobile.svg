@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="410" viewBox="0 0 600 410" role="img" aria-labelledby="title desc">
+  <title id="title">Hermes Wing — your AI assistant, within reach</title>
+  <desc id="desc">An app for chatting with a Hermes AI assistant, following tasks, and reviewing permission requests. Experimental open-source alpha.</desc>
+  <rect width="600" height="410" rx="20" fill="#0b1015"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <text x="36" y="60" fill="#75dbcb" font-size="28" font-weight="700" letter-spacing="3">HERMES WING</text>
+    <text x="32" y="161" fill="#eef4fa" font-size="64" font-weight="700" letter-spacing="-3">Your AI assistant.</text>
+    <text x="32" y="244" fill="#eef4fa" font-size="76" font-weight="700" letter-spacing="-3">Within reach.</text>
+    <text x="36" y="299" fill="#a8b4c0" font-size="26">Chat. Follow tasks. Review requests.</text>
+    <path d="M36 334h528" stroke="#31404c"/>
+    <text x="36" y="373" fill="#75dbcb" font-size="23">ANDROID FIRST · OPEN-SOURCE ALPHA</text>
+  </g>
+</svg>

@@ -15,12 +15,22 @@ func Run(args []string, stdout, stderr io.Writer, buildVersion string) int {
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
-		usage(stderr)
-		return 2
+		quickStart(stdout)
+		return 0
+	}
+	if args[0] == "help" && len(args) == 2 {
+		return commandHelp(stdout, stderr, args[1])
+	}
+	if len(args) == 2 && (args[1] == "--help" || args[1] == "-h") {
+		return commandHelp(stdout, stderr, args[0])
 	}
 
 	switch args[0] {
 	case "-h", "--help", "help":
+		if len(args) != 1 {
+			_, _ = fmt.Fprintln(stderr, "Use wing-link help or wing-link help <command>.")
+			return 2
+		}
 		usage(stdout)
 		return 0
 	case "version":
@@ -34,8 +44,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return pairCommand(stdout, stderr, args[1:])
 	case "setup":
 		return bootstrapCommand(stdout, stderr, args[1:])
+	case "omniroute-setup":
+		return omniRouteSetupCommand(stdout, stderr, args[1:])
 	case "inspect":
 		return inspectCommand(stdout, stderr, args[1:])
+	case "doctor":
+		return doctorCommand(stdout, stderr, args[1:])
 	case "serve":
 		return serveCommand(stdout, stderr, args[1:])
 	case "devices":
@@ -71,11 +85,15 @@ Usage:
   wing-link <command> [options]
 
 Get started:
+  doctor     Check the local CLI and connections, then show recovery steps.
+             --json                  Print the local diagnostic report
   inspect    Check for a local Hermes Agent installation without showing paths.
              --json                  Print machine-readable output
   setup      Install or adopt Hermes Agent, secure API access, and start it.
+             --with-omniroute         Also install the pinned OmniRoute runtime
              --json                  Print one JSON result
              --json-lines            Stream progress as JSON lines
+  omniroute-setup  Open OmniRoute's local setup wizard after installation.
   pair       Create a secure pairing handoff for Hermes Wing.
              Prints a scannable QR and single-use paste link by default.
              --remote                Pair through NetBird, Tailscale, or a trusted VPN (default)

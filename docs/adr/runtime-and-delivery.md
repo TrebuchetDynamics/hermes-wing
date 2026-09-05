@@ -42,6 +42,15 @@ pinned to reviewed release artifacts. Both listeners remain loopback-only and us
 best-effort background execution; this is not a managed-service qualification.
 Hermes Wing does not request Termux external-command access.
 
+An explicit local `wing-link setup --with-omniroute` may also install the
+external OmniRoute model gateway. Its npm package and complete dependency closure
+are integrity-locked; lifecycle scripts are disabled, installation is staged in
+an owner-only version directory, and CLI readiness is checked before activation.
+This option is not exposed through remote bootstrap requests. Installation does
+not start OmniRoute, change Hermes provider configuration, or copy credentials
+between the three systems. OmniRoute owns its own settings and credentials;
+Hermes Agent remains the profile and chat authority.
+
 Runtime and application artifacts must be versioned and signature/digest verified
 before activation. Wing Link updates stage under versioned owner-only paths,
 activate through a stable target, health-check locally, and restore the previous

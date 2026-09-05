@@ -11,6 +11,7 @@ The Wing documents below describe only this client's integration and evidence.
 
 ## Start here
 
+- [Your first conversation](getting-started.md) — beginner setup, explained step by step
 - [Android and remote-host setup](runbooks/android-hermes-setup.md)
 - [Hermes Agent compatibility](product/hermes-compatibility.md)
 - [Wing Link remote management](product/wing-link.md)

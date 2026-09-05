@@ -392,7 +392,12 @@ func hermesAPIEndpointCommands(port int) [][]string {
 func waitForHermesAPIHealth(ctx context.Context, port int, token string) error {
 	healthCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	client := &http.Client{Timeout: 2 * time.Second}
+	transport := &http.Transport{Proxy: nil, DisableKeepAlives: true}
+	defer transport.CloseIdleConnections()
+	client := &http.Client{
+		Transport: transport, Timeout: 2 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/v1/capabilities", port)
 	ticker := time.NewTicker(250 * time.Millisecond)
 	defer ticker.Stop()

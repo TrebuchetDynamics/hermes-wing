@@ -13,6 +13,7 @@ void main() {
     ).readAsStringSync();
     final fixture = File('serve_web.mjs').readAsStringSync();
     final readme = File('README.md').readAsStringSync();
+    final gettingStarted = File('docs/getting-started.md').readAsStringSync();
     final landing = File('site/index.html').readAsStringSync();
 
     expect(generator.existsSync(), isTrue);
@@ -65,18 +66,22 @@ void main() {
           'Move the pointer off transient controls before the settling delay.',
     );
     expect(readme, contains('Try the web alpha'));
+    expect(readme, contains('docs/getting-started.md'));
     expect(readme, contains('showcase-mobile.png'));
     expect(readme, contains('Hermes remains the source of truth'));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
-    expect(readme, contains('./install-wing-link.sh'));
-    expect(readme, contains('Use `--release`'));
-    expect(readme, contains('Go 1.26 or newer'));
-    expect(readme, contains('authenticated remote management API'));
-    expect(readme, contains("Today, Wing Link's"));
-    expect(readme, contains('Agent-domain compatibility surface'));
+    expect(gettingStarted, contains('./install-wing-link.sh'));
+    expect(gettingStarted, contains('Use `--release`'));
+    expect(gettingStarted, contains('Go 1.26 or newer'));
+    expect(gettingStarted, contains('authenticated remote management API'));
+    expect(gettingStarted, contains("Today, Wing Link's"));
+    expect(gettingStarted, contains('Agent-domain compatibility surface'));
     expect(readme, isNot(contains('--provider')));
+    expect(gettingStarted, isNot(contains('--provider')));
     expect(readme, isNot(contains('--profile')));
+    expect(gettingStarted, isNot(contains('--profile')));
     expect(readme, isNot(contains('--model')));
+    expect(gettingStarted, isNot(contains('--model')));
     expect(landing, contains('runtime-flow-mobile.svg'));
 
     for (final document in [readme, landing]) {

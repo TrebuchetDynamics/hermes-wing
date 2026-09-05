@@ -398,7 +398,7 @@ class _ProviderCard extends StatelessWidget {
       label: semanticsLabel,
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -439,7 +439,7 @@ class _ProviderCard extends StatelessWidget {
                 Text(strings.providerOAuthHostRequired),
               ],
               if (canManage && provider.acceptsWriteOnlyCredential) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: OutlinedButton.icon(
@@ -495,7 +495,7 @@ class _ModelSection extends StatelessWidget {
         else ...[
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -523,7 +523,7 @@ class _ModelSection extends StatelessWidget {
                       ),
                   ],
                   if (state.canWriteModels) ...[
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: FilledButton.tonalIcon(
@@ -565,7 +565,7 @@ class _RuntimeModelsCard extends StatelessWidget {
           ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

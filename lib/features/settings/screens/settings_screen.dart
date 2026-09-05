@@ -49,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
           return ListView(
             padding: EdgeInsets.fromLTRB(
               horizontalPadding,
-              wide ? 28 : 16,
+              wide ? 28 : 8,
               horizontalPadding,
               32,
             ),
@@ -123,7 +123,7 @@ class _GatewaySettingsSection extends StatelessWidget {
           onTap: () => context.push(AppRoutes.enroll),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Text(
             strings.settingsCredentialsNote,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -149,7 +149,7 @@ class _AppearanceSettingsSection extends ConsumerWidget {
       icon: Icons.palette_outlined,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: SegmentedButton<ThemeMode>(
             key: const ValueKey('settings-theme-mode'),
             showSelectedIcon: false,
@@ -173,23 +173,45 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              for (final palette in WingThemePalette.values)
-                ChoiceChip(
-                  key: ValueKey('settings-palette-${palette.name}'),
-                  avatar: CircleAvatar(
-                    backgroundColor: palette.seed,
-                    radius: 8,
-                  ),
-                  label: Text(_paletteLabel(strings, palette)),
-                  selected: appearance.palette == palette,
-                  onSelected: (_) => unawaited(controller.setPalette(palette)),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Semantics(
+            container: true,
+            identifier: 'settings-palette-picker',
+            child: InputDecorator(
+              decoration: InputDecoration(labelText: strings.themePaletteLabel),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<WingThemePalette>(
+                  key: const ValueKey('settings-palette-picker'),
+                  value: appearance.palette,
+                  isExpanded: true,
+                  isDense: true,
+                  itemHeight: null,
+                  items: [
+                    for (final palette in WingThemePalette.values)
+                      DropdownMenuItem(
+                        value: palette,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: palette.seed,
+                              radius: 8,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(_paletteLabel(strings, palette)),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                  onChanged: (palette) {
+                    if (palette != null) {
+                      unawaited(controller.setPalette(palette));
+                    }
+                  },
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ],
@@ -651,7 +673,7 @@ class _SettingsSectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -659,7 +681,7 @@ class _SettingsSectionCard extends StatelessWidget {
             container: true,
             headingLevel: 2,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
               child: Row(
                 children: [
                   ExcludeSemantics(

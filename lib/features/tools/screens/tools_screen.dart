@@ -182,29 +182,34 @@ class _ToolsBody extends StatelessWidget {
     final skillsAdvertised = state.canReadSkills;
     final toolsetsAdvertised = state.canReadToolsets;
 
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-      children: [
-        _SkillsInventorySection(
-          advertised: skillsAdvertised,
-          loadFailed: state.optionalResourceErrors.containsKey(
-            HermesOptionalResource.skills,
+      // Both inventory sections change height while filtering. Lay them out
+      // together so the route selection delegate never sees unlaid-out text.
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SkillsInventorySection(
+            advertised: skillsAdvertised,
+            loadFailed: state.optionalResourceErrors.containsKey(
+              HermesOptionalResource.skills,
+            ),
+            details: state.skillDetails,
+            fallbackNames: state.skills,
+            strings: strings,
           ),
-          details: state.skillDetails,
-          fallbackNames: state.skills,
-          strings: strings,
-        ),
-        const SizedBox(height: 16),
-        _ToolsetsInventorySection(
-          advertised: toolsetsAdvertised,
-          loadFailed: state.optionalResourceErrors.containsKey(
-            HermesOptionalResource.toolsets,
+          const SizedBox(height: 16),
+          _ToolsetsInventorySection(
+            advertised: toolsetsAdvertised,
+            loadFailed: state.optionalResourceErrors.containsKey(
+              HermesOptionalResource.toolsets,
+            ),
+            details: state.toolsets,
+            fallbackNames: state.enabledToolsets,
+            strings: strings,
           ),
-          details: state.toolsets,
-          fallbackNames: state.enabledToolsets,
-          strings: strings,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -266,7 +271,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -282,7 +287,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             if (message != null)
               Text(
                 message,
@@ -413,7 +418,7 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -431,7 +436,7 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             if (message != null)
               Text(
                 message,

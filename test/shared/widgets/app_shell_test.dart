@@ -36,6 +36,22 @@ void _usePhoneSize(WidgetTester tester) {
 }
 
 void main() {
+  testWidgets('desktop navigation reaches Settings in a short window', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      _testApp(const AppShell(location: AppRoutes.hermes, child: SizedBox())),
+    );
+    await tester.ensureVisible(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Settings').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'mobile shell keeps Chat, Profiles, Settings, and More in bottom navigation',
     (tester) async {
@@ -480,7 +496,7 @@ void main() {
       ),
     );
 
-    expect(find.text('HERMES WING'), findsOneWidget);
+    expect(find.text('Hermes Wing'), findsOneWidget);
     expect(find.text('Hermes'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -13,6 +14,42 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
 void main() {
+  test('inventory counts distinguish singular and plural resources', () async {
+    final strings = await AppLocalizations.delegate.load(const Locale('en'));
+    expect(
+      strings.diagnosticsResourcesSummary(1, 1, 1, 1),
+      '1 model • 1 skill • 1 toolset • 1 job',
+    );
+    expect(
+      strings.diagnosticsResourcesSummary(0, 2, 3, 0),
+      '0 models • 2 skills • 3 toolsets • 0 jobs',
+    );
+  });
+
+  for (final model in ['', '   ']) {
+    testWidgets('blank reported model ($model) shows an explicit fallback', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel(
+        capabilities: HermesCapabilityDocument.fromJson({'model': model}),
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const DiagnosticsSettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Not reported'), findsOneWidget);
+    });
+  }
+
   testWidgets('shows bounded inventory failures without raw errors', (
     tester,
   ) async {

@@ -678,6 +678,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gatewayStatusTitle => 'Gateway';
 
   @override
+  String get gatewayTrustDetails => 'Identity & permissions';
+
+  @override
   String get gatewayTrustTitle => 'Wing Link trust';
 
   @override
@@ -1421,7 +1424,31 @@ class AppLocalizationsEn extends AppLocalizations {
     int toolsets,
     int jobs,
   ) {
-    return '$models models • $skills skills • $toolsets toolsets • $jobs jobs';
+    String _temp0 = intl.Intl.pluralLogic(
+      models,
+      locale: localeName,
+      other: '$models models',
+      one: '1 model',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skills,
+      locale: localeName,
+      other: '$skills skills',
+      one: '1 skill',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      toolsets,
+      locale: localeName,
+      other: '$toolsets toolsets',
+      one: '1 toolset',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      jobs,
+      locale: localeName,
+      other: '$jobs jobs',
+      one: '1 job',
+    );
+    return '$_temp0 • $_temp1 • $_temp2 • $_temp3';
   }
 
   @override
@@ -3774,6 +3801,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dark';
+
+  @override
+  String get themePaletteLabel => 'Accent color';
 
   @override
   String get themePaletteWing => 'Wing';

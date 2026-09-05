@@ -114,7 +114,7 @@ void main() {
     }
   });
 
-  test('Hermes Wing themes use compact cards with subtle boundaries', () {
+  test('Hermes Wing themes use flat compact cards', () {
     for (final theme in [wingLightTheme, wingDarkTheme]) {
       final colorScheme = theme.colorScheme;
       final cardTheme = theme.cardTheme;
@@ -129,7 +129,7 @@ void main() {
       expect(cardTheme.surfaceTintColor, Colors.transparent);
       expect(cardTheme.elevation, 0);
       expect(cardShape?.borderRadius, BorderRadius.circular(10));
-      expect(cardShape?.side.color, colorScheme.outlineVariant.withAlpha(150));
+      expect(cardShape?.side, BorderSide.none);
     }
   });
 

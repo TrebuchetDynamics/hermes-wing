@@ -277,6 +277,7 @@
   "scheduleLastErrorNotice": "Last run reported an error.",
   "gatewayDestination": "Gateway",
   "gatewayStatusTitle": "Gateway",
+  "gatewayTrustDetails": "Identity & permissions",
   "gatewayTrustTitle": "Wing Link trust",
   "gatewayTrustLoading": "Checking pinned host identity and device grants…",
   "gatewayTrustUnavailable": "Wing Link trust status is unavailable. Verify the host is online and the saved identity has not changed.",
@@ -696,7 +697,7 @@
   },
   "diagnosticsInventorySection": "Inventory",
   "diagnosticsResourcesLabel": "Resources",
-  "diagnosticsResourcesSummary": "{models} models • {skills} skills • {toolsets} toolsets • {jobs} jobs",
+  "diagnosticsResourcesSummary": "{models, plural, one{1 model} other{{models} models}} • {skills, plural, one{1 skill} other{{skills} skills}} • {toolsets, plural, one{1 toolset} other{{toolsets} toolsets}} • {jobs, plural, one{1 job} other{{jobs} jobs}}",
   "@diagnosticsResourcesSummary": {
     "placeholders": {
       "models": {
@@ -2089,6 +2090,7 @@
   "themeModeSystem": "System",
   "themeModeLight": "Light",
   "themeModeDark": "Dark",
+  "themePaletteLabel": "Accent color",
   "themePaletteWing": "Wing",
   "themePaletteIndigo": "Indigo",
   "themePaletteForest": "Forest",

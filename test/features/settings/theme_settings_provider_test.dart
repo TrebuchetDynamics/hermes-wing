@@ -15,6 +15,10 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);
 
@@ -35,7 +39,24 @@ void main() {
     await tester.scrollUntilVisible(find.text('Dark'), 200);
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Forest'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('settings-palette-picker')),
+    );
+    final pickerBounds = tester.getRect(
+      find.byKey(const ValueKey('settings-palette-picker')),
+    );
+    final labelBounds = tester.getRect(find.text('Wing').hitTestable());
+    expect(labelBounds.top, greaterThanOrEqualTo(pickerBounds.top));
+    expect(labelBounds.bottom, lessThanOrEqualTo(pickerBounds.bottom));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.identifier == 'settings-palette-picker',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Forest').last);
     await tester.pumpAndSettle();
 
     final prefs = await SharedPreferences.getInstance();
@@ -47,6 +68,10 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);
 
@@ -69,10 +94,24 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(
-      find.byKey(const ValueKey('settings-palette-forest')),
+      find.byKey(const ValueKey('settings-palette-picker')),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('settings-palette-forest')));
+    final pickerBounds = tester.getRect(
+      find.byKey(const ValueKey('settings-palette-picker')),
+    );
+    final labelBounds = tester.getRect(find.text('Wing').hitTestable());
+    expect(labelBounds.top, greaterThanOrEqualTo(pickerBounds.top));
+    expect(labelBounds.bottom, lessThanOrEqualTo(pickerBounds.bottom));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.identifier == 'settings-palette-picker',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Forest').last);
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

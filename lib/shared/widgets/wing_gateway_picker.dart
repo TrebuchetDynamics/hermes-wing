@@ -58,6 +58,10 @@ class WingGatewayPicker extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
           initialValue: selected,
           decoration: InputDecoration(
+            filled: false,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
             prefixIcon: Tooltip(
               message: helpText,
               child: const Icon(Icons.dns_outlined, size: 18),

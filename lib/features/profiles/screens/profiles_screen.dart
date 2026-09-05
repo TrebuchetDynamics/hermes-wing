@@ -804,10 +804,6 @@ class _ProfilesHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (MediaQuery.sizeOf(context).width >= 600) ...[
-                Text(title, style: theme.textTheme.headlineSmall),
-                const SizedBox(height: 6),
-              ],
               Text(subtitle, style: theme.textTheme.bodyLarge),
               if (readOnly) ...[
                 const SizedBox(height: 10),

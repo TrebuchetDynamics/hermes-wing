@@ -13,6 +13,42 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
 void main() {
+  testWidgets('profile editor keeps actions visible while fields scroll', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(640, 480);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: ProfileEditorSheet(
+            channel: channel,
+            profiles: const [],
+            canConfigure: true,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final create = find.widgetWithText(FilledButton, 'Create');
+    expect(create.hitTestable(), findsOneWidget);
+    final before = tester.getRect(create);
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getRect(create), before);
+    expect(find.text('Create profile').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('setup inventory retains unconfigured providers and large catalogs', () {
     final options = HermesModelOptions.fromJson({
       'providers': [

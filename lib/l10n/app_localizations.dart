@@ -1222,6 +1222,12 @@ abstract class AppLocalizations {
   /// **'Gateway'**
   String get gatewayStatusTitle;
 
+  /// No description provided for @gatewayTrustDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity & permissions'**
+  String get gatewayTrustDetails;
+
   /// No description provided for @gatewayTrustTitle.
   ///
   /// In en, this message translates to:
@@ -2503,7 +2509,7 @@ abstract class AppLocalizations {
   /// No description provided for @diagnosticsResourcesSummary.
   ///
   /// In en, this message translates to:
-  /// **'{models} models • {skills} skills • {toolsets} toolsets • {jobs} jobs'**
+  /// **'{models, plural, one{1 model} other{{models} models}} • {skills, plural, one{1 skill} other{{skills} skills}} • {toolsets, plural, one{1 toolset} other{{toolsets} toolsets}} • {jobs, plural, one{1 job} other{{jobs} jobs}}'**
   String diagnosticsResourcesSummary(
     int models,
     int skills,
@@ -6234,6 +6240,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeModeDark;
+
+  /// No description provided for @themePaletteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get themePaletteLabel;
 
   /// No description provided for @themePaletteWing.
   ///

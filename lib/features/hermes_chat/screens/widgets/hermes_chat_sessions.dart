@@ -142,7 +142,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
               .toList(growable: false);
     return SizedBox(
       key: const ValueKey('hermes-session-rail'),
-      width: 320,
+      width: 280,
       child: Material(
         color: theme.colorScheme.surfaceContainerLow,
         child: SafeArea(

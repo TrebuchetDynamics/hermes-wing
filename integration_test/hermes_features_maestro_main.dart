@@ -109,6 +109,40 @@ class FeatureFixture {
   late HermesGatewayDirectory directory;
   late GoRouter router;
   final scale = ValueNotifier<double>(1);
+  final reviewStep = ValueNotifier<int>(-1);
+  static const reviewRoutes = [
+    '/profiles',
+    '/tools',
+    '/office',
+    '/providers',
+    '/soul',
+    '/gateway',
+    '/settings',
+    '/settings/voice',
+    '/settings/diagnostics',
+    '/tasks',
+    '/hermes',
+    '/enroll',
+    '/setup/local',
+  ];
+
+  Future<void> advanceReview(BuildContext context, {bool start = false}) async {
+    final next = start ? 0 : reviewStep.value + 1;
+    if (next >= reviewRoutes.length * 2) return;
+    if (next == 0 || next == reviewRoutes.length) {
+      await ProviderScope.containerOf(context)
+          .read(wingThemeSettingsProvider.notifier)
+          .setMode(next == 0 ? ThemeMode.light : ThemeMode.dark);
+    }
+    reviewStep.value = next;
+    router.go(reviewRoutes[next % reviewRoutes.length]);
+  }
+
+  Page<void> _reviewPage(GoRouterState state, Widget child) =>
+      reviewStep.value >= 0
+      ? NoTransitionPage<void>(key: state.pageKey, child: child)
+      : MaterialPage<void>(key: state.pageKey, child: child);
+
   String trustMode = 'valid';
   bool revoked = false;
   bool grantRevoked = false;
@@ -164,16 +198,21 @@ class FeatureFixture {
         }.entries)
           GoRoute(
             path: route.key,
-            builder: (_, _) =>
-                route.key == '/enroll' || route.key == '/setup/local'
-                ? route.value
-                : AppShell(location: route.key, child: route.value),
+            pageBuilder: (_, state) => _reviewPage(
+              state,
+              route.key == '/enroll' || route.key == '/setup/local'
+                  ? route.value
+                  : AppShell(location: route.key, child: route.value),
+            ),
           ),
         GoRoute(
           path: '/gateway',
-          builder: (_, _) => AppShell(
-            location: '/gateway',
-            child: GatewayScreen(wingLinkClientBuilder: (_) => trustClient()),
+          pageBuilder: (_, state) => _reviewPage(
+            state,
+            AppShell(
+              location: '/gateway',
+              child: GatewayScreen(wingLinkClientBuilder: (_) => trustClient()),
+            ),
           ),
         ),
       ],
@@ -270,6 +309,10 @@ class FeatureFixture {
     appBar: AppBar(title: const Text('Maestro fixture')),
     body: ListView(
       children: [
+        ListTile(
+          title: const Text('Start visual review'),
+          onTap: () => advanceReview(context, start: true),
+        ),
         for (final entry in const <String, String>{
           'Profiles fixture': '/profiles',
           'Tools fixture': '/tools',
@@ -492,17 +535,43 @@ class _FixtureApp extends ConsumerWidget {
               SafeArea(
                 top: false,
                 child: Material(
-                  child: Wrap(
-                    children: [
-                      TextButton(
-                        onPressed: fixture.controls,
-                        child: const Text('Fixture controls'),
-                      ),
-                      TextButton(
-                        onPressed: () => fixture.router.go('/qa'),
-                        child: const Text('Fixture home'),
-                      ),
-                    ],
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: fixture.reviewStep,
+                    builder: (context, step, _) => step < 0
+                        ? Wrap(
+                            children: [
+                              TextButton(
+                                onPressed: fixture.controls,
+                                child: const Text('Fixture controls'),
+                              ),
+                              TextButton(
+                                onPressed: () => fixture.router.go('/qa'),
+                                child: const Text('Fixture home'),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              TextButton(
+                                onPressed:
+                                    step + 1 <
+                                        FeatureFixture.reviewRoutes.length * 2
+                                    ? () => fixture.advanceReview(context)
+                                    : null,
+                                child: const Text('Next screen'),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${step + 1} / 26',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: fixture.controls,
+                                child: const Text('Fixture controls'),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),

@@ -97,6 +97,27 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                         )
                       : const Icon(Icons.edit_outlined),
                 ),
+              if (channel.state.isConnected && activeGatewayId != null)
+                IconButton(
+                  key: const ValueKey('gateway-disconnect-button'),
+                  tooltip: strings.chatConnectionDisconnectAction,
+                  onPressed: _disconnecting
+                      ? null
+                      : () => unawaited(
+                          _confirmDisconnect(
+                            directory,
+                            activeGatewayId,
+                            activeGateway?.label ?? activeGatewayId,
+                            strings,
+                          ),
+                        ),
+                  icon: _disconnecting
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.link_off),
+                ),
               if (canRefresh)
                 IconButton(
                   key: const ValueKey('gateway-refresh-button'),
@@ -127,33 +148,6 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                       !_renaming,
                   onSelected: (id) =>
                       unawaited(_selectGateway(directory, id, strings)),
-                ),
-              if (channel.state.isConnected && activeGatewayId != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('gateway-disconnect-button'),
-                      onPressed: _disconnecting
-                          ? null
-                          : () => unawaited(
-                              _confirmDisconnect(
-                                directory,
-                                activeGatewayId,
-                                activeGateway?.label ?? activeGatewayId,
-                                strings,
-                              ),
-                            ),
-                      icon: _disconnecting
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.link_off),
-                      label: Text(strings.chatConnectionDisconnectAction),
-                    ),
-                  ),
                 ),
               if (_actionError != null)
                 MaterialBanner(
@@ -506,19 +500,18 @@ class _GatewayBody extends StatelessWidget {
       key: const ValueKey('gateway-body-list'),
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        if (MediaQuery.sizeOf(context).width >= 600) ...[
-          Text(
-            strings.gatewayStatusTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 6),
-        ],
         Text(strings.gatewayStatusSubtitle),
         const SizedBox(height: 16),
+        _HealthCard(
+          health: health,
+          strings: strings,
+          showDetailedFields: fallbackNotice == null,
+        ),
+        const SizedBox(height: 8),
         Card(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -529,11 +522,15 @@ class _GatewayBody extends StatelessWidget {
                       fallbackNotice == null
                           ? Icons.visibility_outlined
                           : Icons.info_outline,
+                      size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         fallbackNotice ?? strings.gatewayStatusReadOnlyNote,
+                        style: fallbackNotice == null
+                            ? Theme.of(context).textTheme.bodySmall
+                            : null,
                       ),
                     ),
                   ],
@@ -553,11 +550,6 @@ class _GatewayBody extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        _HealthCard(
-          health: health,
-          strings: strings,
-          showDetailedFields: fallbackNotice == null,
         ),
         if (health.readiness case final readiness?
             when !readiness.isAbsent && readiness.checks.isNotEmpty) ...[
@@ -672,28 +664,40 @@ class _WingLinkTrustCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
-              _StatusRow(
-                label: strings.gatewayTrustFingerprint,
-                value: metadata.hostFingerprint,
+              _StatusRow(label: strings.gatewayTrustDevice, value: device.name),
+              ExpansionTile(
+                key: const PageStorageKey('gateway-trust-details'),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(bottom: 12),
+                shape: const Border(),
+                collapsedShape: const Border(),
+                title: Text(strings.gatewayTrustDetails),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StatusRow(
+                    label: strings.gatewayTrustFingerprint,
+                    value: metadata.hostFingerprint,
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustProtocol,
+                    value:
+                        'v${metadata.protocolGeneration} · ${metadata.supportedProtocolGenerations.join(', ')}',
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustDevice,
+                    value: '${device.name} · ${device.id}',
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustScopes,
+                    value: device.scopes.join(', '),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.gatewayTrustHostInstructions),
+                ],
               ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustProtocol,
-                value:
-                    'v${metadata.protocolGeneration} · ${metadata.supportedProtocolGenerations.join(', ')}',
-              ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustDevice,
-                value: '${device.name} · ${device.id}',
-              ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustScopes,
-                value: device.scopes.join(', '),
-              ),
-              const SizedBox(height: 12),
-              Text(strings.gatewayTrustHostInstructions),
               const SizedBox(height: 12),
               if (approvalPending)
                 Semantics(

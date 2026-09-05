@@ -150,6 +150,11 @@ import '../test/shared/widgets/sheet_presenter_test.dart' as suite_82;
 import '../test/shared/widgets/wing_empty_state_test.dart' as suite_83;
 import '../test/shared/widgets/wing_skeleton_test.dart' as suite_84;
 
+import '../test/app/hermes_connect_intent_stream_test.dart' as suite_85;
+import '../test/features/enrollment/hermes_enrollment_journey_test.dart'
+    as suite_86;
+import '../test/features/profiles/profile_catalog_test.dart' as suite_87;
+
 void main({bool includeHostChecks = true}) {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   // Navigator cancels active pointers through the framework's device queue.
@@ -434,4 +439,10 @@ void main({bool includeHostChecks = true}) {
   group('test/shared/widgets/sheet_presenter_test.dart', suite_82.main);
   group('test/shared/widgets/wing_empty_state_test.dart', suite_83.main);
   group('test/shared/widgets/wing_skeleton_test.dart', suite_84.main);
+  group('test/app/hermes_connect_intent_stream_test.dart', suite_85.main);
+  group(
+    'test/features/enrollment/hermes_enrollment_journey_test.dart',
+    suite_86.main,
+  );
+  group('test/features/profiles/profile_catalog_test.dart', suite_87.main);
 }

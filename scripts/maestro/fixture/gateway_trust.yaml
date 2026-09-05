@@ -13,6 +13,14 @@ appId: com.trebuchetdynamics.hermes.wing.qa
       SCREEN: Gateway fixture
 - scrollUntilVisible:
     element:
+      text: 'Identity & permissions.*'
+    direction: DOWN
+- tapOn: 'Identity & permissions.*'
+- assertVisible: Host fingerprint
+- takeScreenshot: gateway-trust-details
+- tapOn: 'Identity & permissions.*'
+- scrollUntilVisible:
+    element:
       text: Revoke this device
     direction: DOWN
 - tapOn: Revoke this device

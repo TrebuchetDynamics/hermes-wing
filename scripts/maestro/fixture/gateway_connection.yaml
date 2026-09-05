@@ -1,0 +1,59 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Settings fixture
+- tapOn: Gateway actions for Secondary fixture
+- tapOn: Rename
+- tapOn:
+    text: Gateway name
+    point: "95%,50%"
+- eraseText: 100
+- inputText: Renamed fixture
+- hideKeyboard
+- tapOn: '^Save$'
+- assertVisible: '(?s).*Renamed fixture.*'
+- tapOn: Gateway actions for Renamed fixture
+- tapOn: Update connection
+- tapOn:
+    text: '(?s).*Hermes gateway URL.*'
+    point: "95%,50%"
+- eraseText: 100
+- inputText: invalid
+- hideKeyboard
+- tapOn: Save and reconnect
+- assertVisible: Enter an HTTP or HTTPS gateway origin.
+- tapOn:
+    text: '(?s).*Hermes gateway URL.*'
+    point: "95%,50%"
+- eraseText: 100
+- inputText: https://updated.example
+- tapOn: 'New access token \(optional\)'
+- inputText: fixture-only-input
+- hideKeyboard
+- tapOn: Save and reconnect
+- assertNotVisible: Update gateway connection
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: 'Secondary updated: true'
+    direction: DOWN
+- assertVisible: 'Secondary credential present: true'
+- tapOn: Close controls
+- tapOn: Gateway actions for Renamed fixture
+- tapOn: '^Remove$'
+- assertVisible: '^Remove gateway[?]$'
+- tapOn: '^Cancel$'
+- assertVisible: '(?s).*Renamed fixture.*'
+- tapOn: Gateway actions for Renamed fixture
+- tapOn: '^Remove$'
+- tapOn: '^Remove$'
+- assertNotVisible: '(?s).*Renamed fixture.*'
+- assertVisible: '(?s).*Fixture gateway.*'

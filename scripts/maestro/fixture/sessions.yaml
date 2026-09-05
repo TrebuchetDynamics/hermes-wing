@@ -1,0 +1,39 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Enable session pagination
+- tapOn: More actions
+- tapOn: '^Sessions$'
+- assertVisible: '(?s).*Fixture first.*'
+- assertVisible: '(?s).*Fixture second.*'
+- tapOn: Load more sessions
+- assertNotVisible: Load more sessions
+- assertVisible: '(?s).*Fixture third.*'
+- tapOn: '^Select$'
+- tapOn: Select all
+- assertVisible: 3 selected
+- tapOn: Delete 3
+- assertVisible: '(?s).*Delete 3.*sessions.*'
+- tapOn: '^Delete$'
+- assertNotVisible: '(?s).*Fixture first.*'
+- assertNotVisible: '(?s).*Fixture second.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Deleted sessions: 3"
+    direction: DOWN
+- assertVisible: "Deleted sessions: 3"
+- tapOn: Close controls

@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/theme/wing_theme.dart';
@@ -83,31 +87,126 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
   ProfileLifecycleFixtureChannel(this._preferences)
     : super(
         capabilities: _profileCapabilities,
-        profiles: [
-          for (final id in _profileIds)
-            HermesProfile(
-              id: id,
-              displayName: _preferences.getString('profile-name-$id') ?? id,
-              revision: 'profile-rev-$id-1',
-              description: 'Authoritative fixture profile $id',
-              model: id == 'sdrhf-vigia' ? 'auto/best-coding' : 'gpt-5.6-sol',
-              gatewayRunning: id != 'default',
-            ),
-        ],
+        profiles: _preferences.getString('profile-fixture-snapshot') != null
+            ? [
+                for (final row
+                    in (jsonDecode(
+                              _preferences.getString(
+                                'profile-fixture-snapshot',
+                              )!,
+                            )
+                            as Map<String, dynamic>)['profiles']
+                        as List)
+                  HermesProfile.fromJson(Map<String, Object?>.from(row as Map)),
+              ]
+            : [
+                for (final id in _profileIds)
+                  HermesProfile(
+                    id: id,
+                    displayName:
+                        _preferences.getString('profile-name-$id') ?? id,
+                    revision: 'profile-rev-$id-1',
+                    description: 'Authoritative fixture profile $id',
+                    model: id == 'sdrhf-vigia'
+                        ? 'auto/best-coding'
+                        : 'gpt-5.6-sol',
+                    gatewayRunning: id != 'default',
+                  ),
+              ],
         selectedProfileId: 'default',
       );
 
   final SharedPreferences _preferences;
-  final Set<String> _knownProfileIds = {..._profileIds};
+  Set<String> get _knownProfileIds => state.profiles.map((p) => p.id).toSet();
+  final _history = <String, List<HermesChatTurn>>{};
+  int setupCalls = 0;
+  bool setupMatches = false;
 
   late final Map<String, HermesProfileSoul> _souls = {
-    for (final id in _profileIds)
-      id: HermesProfileSoul(
+    for (final profile in state.profiles)
+      profile.id: HermesProfileSoul(
         soul:
-            _preferences.getString('profile-soul-$id') ?? 'persona-initial-$id',
-        revision: 'soul-rev-$id-1',
+            _preferences.getString('profile-soul-${profile.id}') ??
+            'persona-initial-${profile.id}',
+        revision:
+            _preferences.getString('profile-soul-rev-${profile.id}') ??
+            'soul-rev-${profile.id}-1',
       ),
   };
+
+  Future<void> _persist() async {
+    await _preferences.setString(
+      'profile-fixture-snapshot',
+      jsonEncode({
+        'profiles': [
+          for (final p in state.profiles)
+            {
+              'id': p.id,
+              'name': p.displayName,
+              'revision': p.revision,
+              'description': p.description,
+              'model': p.model,
+              'gateway_running': p.gatewayRunning,
+            },
+        ],
+      }),
+    );
+    for (final entry in _souls.entries) {
+      await _preferences.setString(
+        'profile-soul-${entry.key}',
+        entry.value.soul,
+      );
+      await _preferences.setString(
+        'profile-soul-rev-${entry.key}',
+        entry.value.revision,
+      );
+    }
+  }
+
+  void _checkRevision(String id, String revision) {
+    if (!state.profiles.any((p) => p.id == id && p.revision == revision)) {
+      throw StateError('Hermes API returned HTTP 412');
+    }
+  }
+
+  Future<void> configuredCreate({
+    required String name,
+    String? cloneFrom,
+    String? description,
+    String? provider,
+    String? model,
+    String? providerApiKey,
+    String? idempotencyKey,
+  }) async {
+    setupCalls++;
+    if (providerApiKey != null) {
+      throw StateError('No credentials in this fixture');
+    }
+    setupMatches =
+        name == 'setup-qa' &&
+        cloneFrom == null &&
+        description == 'Fixture setup description' &&
+        provider == 'openrouter' &&
+        model == 'fixture-model';
+    if (!setupMatches) throw StateError('Unexpected fixture setup');
+    await createProfile(name: name, cloneFrom: cloneFrom);
+    replaceCapabilitiesAndProfiles(_profileCapabilities, [
+      for (final p in state.profiles)
+        if (p.id == name)
+          HermesProfile(
+            id: p.id,
+            displayName: p.displayName,
+            revision: p.revision,
+            description: description!,
+            model: model!,
+            gatewayRunning: true,
+          )
+        else
+          p,
+    ]);
+    await _preferences.setString('profile-provider-$name', provider!);
+    await _persist();
+  }
 
   @override
   Future<void> selectProfile(
@@ -117,18 +216,24 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     if (!_knownProfileIds.contains(profileId)) {
       throw StateError('unknown fixture profile $profileId');
     }
+    _history.addAll(state.messages);
     final sessionId = 'session-$profileId';
-    replaceSessions([
-      HermesSession(id: sessionId, source: 'fixture', title: profileId),
-    ], activeSessionId: sessionId);
+    replaceSessions(
+      [HermesSession(id: sessionId, source: 'fixture', title: profileId)],
+      activeSessionId: sessionId,
+      messages: _history,
+    );
     await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
   }
 
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) async {
-    await super.createProfile(name: name, cloneFrom: cloneFrom);
     final id = name.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
-    _knownProfileIds.add(id);
+    if (_knownProfileIds.contains(id) ||
+        cloneFrom != null && !_knownProfileIds.contains(cloneFrom)) {
+      throw StateError('Invalid fixture create');
+    }
+    await super.createProfile(name: name, cloneFrom: cloneFrom);
     final cloneSoul = _souls[cloneFrom];
     _souls[id] = HermesProfileSoul(
       soul: cloneSoul?.soul ?? 'persona-initial-$id',
@@ -141,13 +246,21 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
             id: id,
             displayName: profile.displayName,
             revision: profile.revision,
-            description: 'Cloned from ${cloneFrom ?? 'default'}',
-            model: cloneFrom == 'mineru' ? 'gpt-5.6-sol' : profile.model,
+            description: cloneFrom == null
+                ? 'Fresh fixture profile'
+                : 'Cloned from $cloneFrom',
+            model:
+                state.profiles
+                    .where((p) => p.id == cloneFrom)
+                    .firstOrNull
+                    ?.model ??
+                '',
             gatewayRunning: true,
           )
         else
           profile,
     ]);
+    await _persist();
   }
 
   @override
@@ -156,12 +269,27 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     required String name,
     required String revision,
   }) async {
+    _checkRevision(profileId, revision);
     await super.renameProfile(
       profileId: profileId,
       name: name,
       revision: revision,
     );
-    await _preferences.setString('profile-name-$profileId', name.trim());
+    replaceCapabilitiesAndProfiles(_profileCapabilities, [
+      for (final p in state.profiles)
+        if (p.id == profileId)
+          HermesProfile(
+            id: p.id,
+            displayName: p.displayName,
+            revision: '$revision-next',
+            description: p.description,
+            model: p.model,
+            gatewayRunning: p.gatewayRunning,
+          )
+        else
+          p,
+    ]);
+    await _persist();
   }
 
   @override
@@ -189,9 +317,9 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     });
     _souls[profileId] = HermesProfileSoul(
       soul: soul,
-      revision: 'soul-rev-$profileId-2',
+      revision: '${current.revision}-next',
     );
-    await _preferences.setString('profile-soul-$profileId', soul);
+    await _persist();
   }
 
   @override
@@ -199,15 +327,20 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     required String profileId,
     required String revision,
   }) async {
+    if (profileId == 'default') throw StateError('Default cannot be deleted');
+    _checkRevision(profileId, revision);
     final deletedSelection = state.selectedProfileId == profileId;
     await super.deleteProfile(profileId: profileId, revision: revision);
     if (deletedSelection && state.profiles.isNotEmpty) {
       await selectProfile(state.profiles.first.id);
     }
-    _knownProfileIds.remove(profileId);
     _souls.remove(profileId);
+    _history.remove('session-$profileId');
     await _preferences.remove('profile-name-$profileId');
     await _preferences.remove('profile-soul-$profileId');
+    await _preferences.remove('profile-soul-rev-$profileId');
+    await _preferences.remove('profile-provider-$profileId');
+    await _persist();
   }
 
   @override
@@ -219,9 +352,17 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
   }) async {
     final profileId = state.selectedProfileId ?? 'missing';
     final sessionId = state.activeSessionId ?? 'missing';
+    if (!_knownProfileIds.contains(profileId) ||
+        sessionId != 'session-$profileId') {
+      throw StateError('Fixture chat profile/session mismatch');
+    }
+    final provider = _preferences.getString('profile-provider-$profileId');
+    final model = state.profiles.firstWhere((p) => p.id == profileId).model;
     beginStreamingTurn(text);
     completeStreamingTurn(
-      text: 'PROFILE_RECEIPT::$profileId::$sessionId::$text::assistant',
+      text:
+          'PROFILE_RECEIPT::$profileId::$sessionId::$text::assistant'
+          '${provider == null ? '' : '\nMODEL_RECEIPT::$profileId::$provider::$model::$text::assistant'}',
     );
   }
 }
@@ -230,6 +371,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final preferences = await SharedPreferences.getInstance();
   final channel = ProfileLifecycleFixtureChannel(preferences);
+  await channel.selectProfile('default');
   runApp(
     ProviderScope(
       overrides: [hermesChannelProvider.overrideWithValue(channel)],
@@ -252,6 +394,35 @@ class _ProfileLifecycleFixtureApp extends ConsumerWidget {
       darkTheme: wingDarkTheme,
       themeMode: ThemeMode.light,
       routerConfig: router,
+      builder: (context, child) => Column(
+        children: [
+          Expanded(child: child!),
+          Material(
+            child: SafeArea(
+              top: false,
+              child: TextButton(
+                child: const Text('Fixture configured profile'),
+                onPressed: () async {
+                  final channel =
+                      ref.read(hermesChannelProvider)
+                          as ProfileLifecycleFixtureChannel;
+                  await showModalBottomSheet<void>(
+                    context: router.routerDelegate.navigatorKey.currentContext!,
+                    isScrollControlled: true,
+                    builder: (_) => ProfileEditorSheet(
+                      channel: channel,
+                      profiles: channel.state.profiles,
+                      stableNames: true,
+                      canConfigure: true,
+                      onCreate: channel.configuredCreate,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

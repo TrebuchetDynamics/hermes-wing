@@ -33,6 +33,9 @@ flows=(
   scripts/maestro/providers_models_unsupported_qa.yaml
   scripts/maestro/schedules_unsupported_qa.yaml
   scripts/maestro/office_workspace_qa.yaml
+  scripts/maestro/chat_concurrent_sessions_qa.yaml
+  scripts/maestro/chat_process_recovery_qa.yaml
+  scripts/maestro/chat_ux_qa.yaml
 )
 
 "$MAESTRO_BIN" "${device_args[@]}" test \

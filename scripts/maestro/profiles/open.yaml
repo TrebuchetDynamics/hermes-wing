@@ -1,0 +1,7 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- tapOn: '(?s)^More\n.*'
+- tapOn: '^Profiles$'
+- extendedWaitUntil:
+    visible: '^New Profile$'
+    timeout: 30000

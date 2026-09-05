@@ -1,0 +1,59 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Use large text
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Local setup fixture
+- assertVisible: '(?s).*Termux.*'
+- scrollUntilVisible:
+    element:
+      text: Termux is installed and opens
+    direction: DOWN
+- tapOn: Termux is installed and opens
+- scrollUntilVisible:
+    element:
+      text: Copy setup command
+    direction: DOWN
+- tapOn: Copy setup command
+- assertVisible: Setup command copied. Open Termux and run it without changes.
+- tapOn: Fixture home
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Use normal text
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Directories fixture
+- assertVisible: Approved folders
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible: Fixture root
+- tapOn: Fixture root
+- assertVisible: Fixture folder one
+- repeat:
+    times: 20
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              text: '^Back$'
+              focused: true
+          commands:
+            - pressKey: Tab
+- assertVisible:
+    text: '^Back$'
+    focused: true
+- pressKey: Enter
+- assertVisible: Fixture root
+- setOrientation: PORTRAIT

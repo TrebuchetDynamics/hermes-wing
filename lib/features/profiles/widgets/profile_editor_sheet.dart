@@ -30,7 +30,11 @@ typedef ProfileRenameCallback =
       required String revision,
     });
 typedef ProfileDeleteCallback =
-    Future<void> Function(String profileId, String revision);
+    Future<void> Function(
+      String profileId,
+      String revision, {
+      String? idempotencyKey,
+    });
 
 class ProfileEditorSheet extends StatefulWidget {
   const ProfileEditorSheet({
@@ -133,18 +137,30 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 
   Future<void> _deleteProfile() async {
     final profile = widget.profile;
-    if (profile == null || profile.id == 'default') return;
+    if (profile == null || profile.id == 'default' || _saving) return;
+    final pendingApproval = _pendingApproval;
+    if (pendingApproval != null && _approvalExpired(pendingApproval)) {
+      setState(() {
+        _clearPendingApproval();
+        _error = _editing
+            ? AppLocalizations.of(context).profileDeletionApprovalExpired
+            : AppLocalizations.of(context).profileApprovalExpired;
+      });
+      return;
+    }
     final strings = AppLocalizations.of(context);
     final expectedName = profile.displayName.isEmpty
         ? profile.id
         : profile.displayName;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => _DeleteConfirmationDialog(
-        expectedName: expectedName,
-        strings: strings,
-      ),
-    );
+    final confirmed = pendingApproval != null
+        ? true
+        : await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => _DeleteConfirmationDialog(
+              expectedName: expectedName,
+              strings: strings,
+            ),
+          );
     if (confirmed != true || !mounted) return;
 
     setState(() {
@@ -159,12 +175,29 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           revision: profile.revision,
         );
       } else {
-        await onDelete(profile.id, profile.revision);
+        await onDelete(
+          profile.id,
+          profile.revision,
+          idempotencyKey: pendingApproval?.idempotencyKey,
+        );
       }
+      _clearPendingApproval();
       if (mounted) await Navigator.of(context).maybePop();
+    } on WingLinkApprovalRequired catch (approval) {
+      if (!mounted) return;
+      setState(() {
+        if (pendingApproval != null &&
+            approval.idempotencyKey != pendingApproval.idempotencyKey) {
+          _clearPendingApproval();
+          _error = strings.profileOperationFailed;
+        } else {
+          _holdPendingApproval(approval);
+        }
+      });
     } catch (error) {
       if (!mounted) return;
       setState(() {
+        _clearPendingApproval();
         _error = _isProfileRevisionConflict(error)
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
@@ -201,7 +234,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       }
       setState(() {
         _clearPendingApproval();
-        _error = AppLocalizations.of(context).profileApprovalExpired;
+        _error = _editing
+            ? AppLocalizations.of(context).profileDeletionApprovalExpired
+            : AppLocalizations.of(context).profileApprovalExpired;
       });
     });
   }
@@ -213,11 +248,14 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 
   Future<void> _save() async {
     if (_loadingPersona || _saving) return;
+    if (_editing && _pendingApproval != null) return _deleteProfile();
     final pendingApproval = _pendingApproval;
     if (pendingApproval != null && _approvalExpired(pendingApproval)) {
       setState(() {
         _clearPendingApproval();
-        _error = AppLocalizations.of(context).profileApprovalExpired;
+        _error = _editing
+            ? AppLocalizations.of(context).profileDeletionApprovalExpired
+            : AppLocalizations.of(context).profileApprovalExpired;
       });
       return;
     }
@@ -570,7 +608,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     foregroundColor: Theme.of(context).colorScheme.error,
                     minimumSize: const Size(48, 48),
                   ),
-                  onPressed: _saving ? null : _deleteProfile,
+                  onPressed: _payloadFrozen ? null : _deleteProfile,
                   icon: const Icon(Icons.delete_outline),
                   label: Text(strings.deleteAgent),
                 ),
@@ -611,7 +649,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   TextButton(
                     onPressed: _saving ? null : _cancelEditor,
                     child: Text(
-                      _pendingApproval == null
+                      _pendingApproval == null || _editing
                           ? strings.cancelAction
                           : strings.profileCancelSetup,
                     ),
@@ -625,7 +663,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                           )
                         : Text(
                             _pendingApproval != null
-                                ? strings.profileRetryApprovedSetup
+                                ? (_editing
+                                      ? strings.profileRetryApprovedDeletion
+                                      : strings.profileRetryApprovedSetup)
                                 : profile == null
                                 ? strings.createAction
                                 : strings.saveAction,

@@ -1,0 +1,37 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- scrollUntilVisible:
+    element:
+      text: Revoke this device
+    direction: DOWN
+- tapOn: Revoke this device
+- assertVisible: '^Revoke this device[?]$'
+- tapOn: '^Cancel$'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Management revoked: false"
+    direction: DOWN
+- assertVisible: "Management revoked: false"
+- tapOn: Close controls
+- tapOn: Revoke this device
+- tapOn: Revoke this device
+- assertVisible: '(?s).*This device was revoked.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Management revoked: true"
+    direction: DOWN
+- assertVisible: "Management revoked: true"
+- tapOn: Close controls

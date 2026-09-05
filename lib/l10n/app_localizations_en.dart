@@ -1625,6 +1625,264 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get enrollIntro =>
+      'Choose where Hermes Agent will run. Wing will guide you through setup, pairing, and checking the connection.';
+
+  @override
+  String get enrollPairHeading => 'I have a QR code or pairing link';
+
+  @override
+  String get enrollPairHelp =>
+      'Use the connection string from wing-link pair. You’ll review the host before connecting. Links are single-use and expire after five minutes.';
+
+  @override
+  String get enrollSetupHeading => 'Set up a Hermes host';
+
+  @override
+  String get enrollPhoneHelp =>
+      'Install or reuse Hermes Agent in Termux, then return to pair.';
+
+  @override
+  String get enrollComputerAction => 'Use another computer';
+
+  @override
+  String get enrollComputerHelp =>
+      'Set up Wing Link on a Linux host and connect over your VPN.';
+
+  @override
+  String get enrollBackToOptions => 'Connection options';
+
+  @override
+  String get enrollComputerRequirements =>
+      'Run these steps on the computer that will host Hermes. This setup requires Linux with a systemd user session, Git, curl, and Go 1.26 or newer. Native Windows and macOS host setup is not yet qualified.';
+
+  @override
+  String get enrollComputerInstallTitle => 'Install or reuse Wing Link';
+
+  @override
+  String get enrollComputerInstallBody =>
+      'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host:';
+
+  @override
+  String get enrollComputerModelTitle => 'Configure a provider and model';
+
+  @override
+  String get enrollComputerModelBody =>
+      'Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:';
+
+  @override
+  String get enrollComputerPairTitle => 'Create the pairing handoff';
+
+  @override
+  String get enrollComputerPairBody =>
+      'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link detects the VPN address and prepares direct Agent access. Return to Wing to scan the QR or paste the connection string, compare the host fingerprint, and confirm.';
+
+  @override
+  String get enrollComputerReady => 'I’m ready to pair';
+
+  @override
+  String get enrollPairChoiceHelp =>
+      'Connect an existing host using its QR code or connection string.';
+
+  @override
+  String get enrollLinuxHelp =>
+      'Detect Hermes Agent on this Linux computer, then install or reuse it with Wing Link.';
+
+  @override
+  String enrollStepProgress(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get enrollComputerPrerequisites => 'Prepare the host and network';
+
+  @override
+  String get enrollComputerPrerequisitesHelp =>
+      'Keep the host terminal available. Connect both devices to the same trusted VPN before pairing. Setup and approval happen on the host; Wing will verify the connection after pairing.';
+
+  @override
+  String get enrollComputerPrerequisitesReady => 'My Linux host is ready';
+
+  @override
+  String get enrollComputerExisting =>
+      'Wing Link is already installed on this host';
+
+  @override
+  String get enrollComputerExistingHelp =>
+      'Inspect the existing installation first. Setup reuses a healthy Hermes Agent, installs it when needed, and prepares API access. Run these commands on the host:';
+
+  @override
+  String get enrollHostSetupFinished => 'Setup finished on the host';
+
+  @override
+  String get enrollModelSetupFinished => 'My provider and model are configured';
+
+  @override
+  String get enrollExternalStepNotice =>
+      'Continue after this step finishes on the host. This button does not verify or run the command remotely.';
+
+  @override
+  String get enrollPreviousStep => 'Previous step';
+
+  @override
+  String get enrollCopyCommand => 'Copy command';
+
+  @override
+  String get enrollCommandCopied =>
+      'Command copied. Run it on the Hermes host.';
+
+  @override
+  String get enrollEnterLink => 'Enter connection string instead';
+
+  @override
+  String get enrollConnectionString => 'Pairing connection string';
+
+  @override
+  String get enrollLinkInputHelp =>
+      'Paste the complete pairing link here. It is cleared when submitted.';
+
+  @override
+  String get enrollReviewLink => 'Review connection';
+
+  @override
+  String get enrollClipboardUnavailable =>
+      'Clipboard access failed. Use Enter connection string instead and paste into the field, or scan a QR.';
+
+  @override
+  String get enrollScannerUnavailable =>
+      'The scanner could not open. Try again, choose a QR image, or paste the pairing link.';
+
+  @override
+  String get enrollImageUnavailable =>
+      'The QR image could not be read. Try a clear image containing one pairing QR, or paste the link.';
+
+  @override
+  String get enrollCredentialsSaved => 'Pairing credentials securely saved';
+
+  @override
+  String get enrollAgentConnected => 'The selected Hermes profile is connected';
+
+  @override
+  String get enrollConnectingSaved => 'Connecting the saved profile…';
+
+  @override
+  String get enrollSavedNotConnected =>
+      'Profile saved; live connection is not confirmed';
+
+  @override
+  String get enrollModelConfigured =>
+      'Agent reports a configured model for this profile';
+
+  @override
+  String get enrollModelMissing =>
+      'Agent reports that a model needs configuration';
+
+  @override
+  String get enrollModelUnknown =>
+      'Model readiness is not reported for this profile';
+
+  @override
+  String get enrollReadinessHelp =>
+      'A configured model does not prove provider access or a successful reply. Configure the provider on the host if needed, then check again or open Chat to send your first message.';
+
+  @override
+  String get enrollCheckReadiness => 'Check connection and model again';
+
+  @override
+  String get enrollPhaseExchange => 'Exchanging the reviewed pairing code…';
+
+  @override
+  String get enrollPhaseManagement =>
+      'Verifying Wing Link identity and access…';
+
+  @override
+  String get enrollPhaseAgent => 'Verifying direct Hermes Agent access…';
+
+  @override
+  String get enrollPhaseSave => 'Saving credentials in secure storage…';
+
+  @override
+  String get enrollPhaseAcknowledge => 'Confirming this device with Wing Link…';
+
+  @override
+  String get enrollFailureNetwork =>
+      'The connection could not reach the host. Keep the pairing terminal open and check the VPN on both devices.';
+
+  @override
+  String get enrollFailureTimeout =>
+      'The host did not respond in time. Check that it is awake and reachable, then create a fresh pairing link.';
+
+  @override
+  String get enrollFailureTls =>
+      'The secure connection could not be verified. Compare the host identity locally and pair again. Browser clients require a normally trusted HTTPS certificate.';
+
+  @override
+  String get enrollFailureRejected =>
+      'The host rejected this handoff or credential. Create a fresh pairing link on the host and review its permissions.';
+
+  @override
+  String get enrollFailureUnsupported =>
+      'This host does not expose a compatible pairing operation. Update Wing Link on the host, or use manual Agent connection.';
+
+  @override
+  String get enrollFailureInvalid =>
+      'The host returned pairing details that did not match the reviewed connection. Verify the host locally and create a fresh pairing link.';
+
+  @override
+  String get enrollFailureStorage =>
+      'Wing could not finish saving the connection securely. Check device storage and secure-storage access before creating a fresh pairing link. Do not copy credentials into ordinary settings.';
+
+  @override
+  String get enrollFailureManagement =>
+      'Wing Link could not be verified. Check its service and host identity locally before creating a fresh pairing link.';
+
+  @override
+  String get enrollFailureAgent =>
+      'Wing Link responded, but direct Hermes Agent access failed. Check the Agent listener and VPN; Wing Link does not forward chat traffic.';
+
+  @override
+  String get enrollFailureAcknowledge =>
+      'Device registration could not be confirmed. Keep the host available and pair again. Any pending saved credentials remain protected for recovery.';
+
+  @override
+  String get enrollFreshPairingHelp =>
+      'Run wing-link pair on the host for a new handoff. On this phone, return to Termux. For another computer, use its terminal.';
+
+  @override
+  String get enrollBrowserPairingHelp =>
+      'In a browser, the host must use normally trusted HTTPS. For a self-signed Wing Link host, use the native Wing app to review and pin its identity.';
+
+  @override
+  String get termuxPrepareStep => 'Prepare Termux';
+
+  @override
+  String get termuxInstallStep => 'Install or detect Hermes';
+
+  @override
+  String get termuxPairStep => 'Return to Wing and pair';
+
+  @override
+  String get termuxPrerequisites =>
+      'Install Termux from its official installation guide, open it once, and keep internet access available. If you already use Termux, continue with that installation.';
+
+  @override
+  String get termuxReadyAction => 'Termux is installed and opens';
+
+  @override
+  String get termuxAdoptionHelp =>
+      'Already have Hermes Agent? Use this same setup command to detect and reuse a healthy installation. Wing cannot inspect Termux’s files directly. Leave Termux open until it displays the local pairing link.';
+
+  @override
+  String get termuxSetupFinished => 'Termux is showing the pairing link';
+
+  @override
+  String get termuxPairRecovery =>
+      'If the link expired or either service stopped, return to the setup step and rerun the same verified command. Do not paste an Agent API key as a pairing link.';
+
+  @override
+  String get termuxReturnToSetup => 'Return to the setup command';
+
+  @override
   String get enrollTitle => 'Connect to Hermes';
 
   @override
@@ -1632,7 +1890,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollInvalidLinkBody =>
-      'Paste another pairing link or scan a new QR code.';
+      'Use the complete connection string from wing-link pair. An Agent URL alone belongs in manual connection.';
 
   @override
   String get enrollClipboardEmpty =>
@@ -1650,7 +1908,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollContinueAction => 'Continue';
 
   @override
-  String get enrollScanPrompt => 'Choose how to connect this device.';
+  String get enrollScanPrompt => 'Where will Hermes run?';
 
   @override
   String get enrollVerifying => 'Verifying pairing code…';
@@ -1660,15 +1918,15 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count profiles connected',
-      one: '1 profile connected',
+      other: '$count profiles paired',
+      one: '1 profile paired',
     );
     return '$_temp0';
   }
 
   @override
   String get enrollConnectedBody =>
-      'Wing Link is ready for profile and gateway management.';
+      'Pairing is saved. Check the live connection and model status below before starting a conversation.';
 
   @override
   String get enrollViewProfilesAction => 'View profiles';
@@ -1680,18 +1938,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollFailed => 'Pairing failed.';
 
   @override
-  String get enrollInspectionFailedTitle => 'Pairing host couldn’t be reached';
+  String get enrollInspectionFailedTitle =>
+      'The pairing host could not be verified';
 
   @override
   String get enrollInspectionFailedBody =>
-      'Check that the host is online and this device is on the right network, then paste or scan a new pairing link.';
+      'Keep the pairing terminal open. Verify the host and network, then create a fresh pairing link.';
 
   @override
   String get enrollExchangeFailedTitle => 'Pairing couldn’t be completed';
 
   @override
   String get enrollExchangeFailedBody =>
-      'Wing did not report a completed connection. Any pending credentials remain available for safe recovery; paste or scan a new pairing link to try again.';
+      'The connection was not completed. Check the host and VPN, then run wing-link pair again. Wing will verify and securely save the new connection before reporting success.';
 
   @override
   String get enrollCloseAction => 'Close';
@@ -1733,7 +1992,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollManualConnectWarning =>
-      'This does not import Wing Link or other Hermes profiles.';
+      'Advanced: requires an Agent URL and credential. Connects one profile without Wing Link host management.';
 
   @override
   String enrollGrantQuestion(int count, String label) {
@@ -3630,11 +3889,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localSetupConsentAction => 'Run setup';
 
   @override
-  String get termuxSetupTitle => 'Install Hermes Agent on this phone';
+  String get termuxSetupTitle => 'Set up Hermes on this phone';
 
   @override
   String get termuxSetupBody =>
-      'Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.';
+      'Termux runs Hermes Agent and Wing Link on your phone. The setup command reuses a healthy existing installation or installs what is missing. You run it yourself in Termux.';
 
   @override
   String get termuxInstallAction => 'Install Termux';
@@ -3674,23 +3933,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termuxReturnStep =>
-      'Tap the local link shown by Termux, then return here to review the connection.';
+      'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. If Hermes needs a provider or model, run hermes setup in Termux before chatting.';
 
   @override
   String get termuxTierTwoNotice =>
-      'Android / Termux is Tier 2. Android may stop background processes; rerun the same command to recover.';
+      'Keep Termux available. Android can stop Hermes while it runs in the background. Rerun the same setup command to recover.';
 
   @override
-  String get enrollInstallOnPhoneAction => 'Install Hermes Agent on this phone';
+  String get enrollInstallOnPhoneAction => 'Use this phone';
 
   @override
   String get enrollConnectedLocalBody =>
-      'Hermes Agent is connected on this phone. To configure the existing default profile, run hermes setup in Termux. To configure more in Wing, create a new profile with its provider and model, approve the request in Termux, retry the unchanged request, then pair once more to enroll that profile.';
+      'Pairing is saved on this phone. Keep Termux running. To configure the existing profile, run hermes setup in Termux, then check the connection again.';
 
   @override
   String profileApprovalRequired(String approvalId) {
-    return 'Approve this request locally on the Wing Link host, then retry the unchanged setup. Run wing-link approvals list, then wing-link approvals approve $approvalId.';
+    return 'Approve this request locally on the Wing Link host, then retry the unchanged request. Run wing-link approvals list, then wing-link approvals approve $approvalId.';
   }
+
+  @override
+  String get profileDeletionApprovalExpired =>
+      'The local approval expired. Confirm deletion again to start a new request.';
+
+  @override
+  String get profileRetryApprovedDeletion => 'Retry approved deletion';
 
   @override
   String get profileRetryApprovedSetup => 'Retry approved setup';

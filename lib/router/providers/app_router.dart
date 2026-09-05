@@ -170,8 +170,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.enroll,
-        builder: (context, state) =>
-            _SelectableRoute(child: const HermesEnrollmentScreen()),
+        builder: (context, state) => _SelectableRoute(
+          child: HermesEnrollmentScreen(
+            startPairing: state.uri.queryParameters['step'] == 'pair',
+          ),
+        ),
       ),
     ],
     errorBuilder: (context, state) {

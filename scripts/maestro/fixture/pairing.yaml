@@ -1,0 +1,67 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Invalid pairing input
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Pairing fixture
+- tapOn: '(?s).*I have a QR code or pairing link.*'
+- tapOn: Scan QR from another screen
+- assertVisible: '(?s).*Pairing link couldn’t be opened.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Expired pairing input
+- tapOn: Scan QR from another screen
+- assertVisible: '(?s).*This pairing link expired.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Enrollment exchanges: 0"
+    direction: DOWN
+- assertVisible: "Enrollment exchanges: 0"
+- tapOn: Close controls
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Used pairing input
+- tapOn: Scan another QR
+- assertVisible: '(?s).*Fixture enrollment.*'
+- tapOn: Connect 1 profile
+- assertVisible: '(?s).*Pairing couldn’t be completed.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Enrollment exchanges: 1"
+    direction: DOWN
+- assertVisible: "Enrollment exchanges: 1"
+- tapOn: Close controls
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Valid pairing input
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Prepare fixture paste
+- tapOn: Paste another link
+- assertVisible: '(?s).*Fixture enrollment.*'
+- tapOn: Connect 1 profile
+- assertVisible: '(?s).*profile paired.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Enrollment exchanges: 2"
+    direction: DOWN
+- assertVisible: "Enrollment exchanges: 2"
+- tapOn: Close controls

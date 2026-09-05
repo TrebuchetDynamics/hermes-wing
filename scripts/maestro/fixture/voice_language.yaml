@@ -1,0 +1,58 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Advanced.*'
+    direction: DOWN
+- tapOn: '(?s).*Advanced.*'
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Automatic · device recognizer.*'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: '(?s).*Automatic · device recognizer.*'
+    point: '50%,85%'
+- tapOn:
+    text: '(?s).*Español.*'
+    point: '50%,85%'
+- stopApp
+- launchApp
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Advanced.*'
+    direction: DOWN
+- tapOn: '(?s).*Advanced.*'
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Español.*'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    text: '(?s).*Español.*'
+    point: '50%,85%'
+- tapOn:
+    text: '(?s).*English.*'
+    point: '50%,85%'
+- tapOn:
+    text: '(?s).*English.*'
+    point: '50%,85%'
+- tapOn:
+    text: '(?s).*Automatic · device recognizer.*'
+    point: '50%,85%'
+- assertVisible: '(?s).*Automatic · device recognizer.*'

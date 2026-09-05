@@ -1,0 +1,50 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Changed host identity
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*host fingerprint changed.*'
+    direction: DOWN
+- assertNotVisible: Revoke this device
+- tapOn: Fixture home
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Expired device credential
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*device credential is expired or revoked.*'
+    direction: DOWN
+- assertNotVisible: Revoke this device
+- tapOn: Fixture home
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Unsupported protocol
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*outside the supported compatibility window.*'
+    direction: DOWN
+- assertNotVisible: Revoke this device

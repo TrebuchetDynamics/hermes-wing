@@ -1,0 +1,53 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture first draft
+- hideKeyboard
+- tapOn: Attach image or text file
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select second session
+- assertNotVisible: '(?s).*Fixture first draft.*'
+- assertNotVisible: Remove attachment
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture second draft
+- hideKeyboard
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select first session
+- assertVisible: '(?s).*Fixture first draft.*'
+- assertVisible: '(?s).*fixture-note.txt.*'
+- assertNotVisible: '(?s).*Fixture second draft.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select draft profile
+- assertNotVisible: '(?s).*Fixture first draft.*'
+- assertNotVisible: Remove attachment
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture other profile
+- hideKeyboard
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select default profile
+- assertVisible: '(?s).*Fixture first draft.*'
+- assertVisible: '(?s).*fixture-note.txt.*'
+- assertNotVisible: '(?s).*Fixture other profile.*'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 0'

@@ -413,12 +413,13 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                                 }
                               : null,
                           onDelete: isWingLinkRow(profiles[index])
-                              ? (id, revision) async {
+                              ? (id, revision, {idempotencyKey}) async {
                                   await _runWingLinkMutation(
                                     directory,
                                     activeGatewayId!,
                                     () => _wingLinkClient!.deleteProfile(
                                       id: id,
+                                      idempotencyKey: idempotencyKey,
                                       revision:
                                           wingLinkRowsById[id]
                                               ?.deleteRevision ??
@@ -441,12 +442,13 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                               hasStableLocalName(profiles[index]),
                           canDelete: true,
                           onDelete: isWingLinkRow(profiles[index])
-                              ? (id, revision) async {
+                              ? (id, revision, {idempotencyKey}) async {
                                   await _runWingLinkMutation(
                                     directory,
                                     activeGatewayId!,
                                     () => _wingLinkClient!.deleteProfile(
                                       id: id,
+                                      idempotencyKey: idempotencyKey,
                                       revision:
                                           wingLinkRowsById[id]
                                               ?.deleteRevision ??

@@ -1,0 +1,42 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture export
+- hideKeyboard
+- tapOn: '^Send$'
+- tapOn: Approve once
+- tapOn: More actions
+- tapOn: Copy transcript
+- tapOn: Copy as text
+- hideKeyboard
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check transcript clipboard
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Text export matches: true'
+- tapOn: More actions
+- tapOn: Copy transcript
+- tapOn: Copy as Markdown
+- hideKeyboard
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check transcript clipboard
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Markdown export matches: true'

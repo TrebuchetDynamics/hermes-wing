@@ -1,0 +1,7 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- scrollUntilVisible:
+    element:
+      text: '${SCREEN}'
+    direction: DOWN
+- tapOn: '${SCREEN}'

@@ -129,18 +129,43 @@ Future<void> _showCommandWordSheet(
   String commandWord,
   ValueChanged<String> onSave,
 ) async {
-  final strings = AppLocalizations.of(context);
-  final controller = TextEditingController(text: commandWord);
   await showModalBottomSheet<void>(
     context: context,
-    builder: (context) => ValueListenableBuilder<TextEditingValue>(
+    builder: (_) => _CommandWordSheet(commandWord: commandWord, onSave: onSave),
+  );
+}
+
+class _CommandWordSheet extends StatefulWidget {
+  const _CommandWordSheet({required this.commandWord, required this.onSave});
+
+  final String commandWord;
+  final ValueChanged<String> onSave;
+
+  @override
+  State<_CommandWordSheet> createState() => _CommandWordSheetState();
+}
+
+class _CommandWordSheetState extends State<_CommandWordSheet> {
+  late final controller = TextEditingController(text: widget.commandWord);
+
+  @override
+  void dispose() {
+    // The route remains mounted during its dismissal animation.
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) {
         final normalized = value.text.trim();
         final canSave = normalized.isNotEmpty;
         void save() {
           if (!canSave) return;
-          onSave(normalized);
+          widget.onSave(normalized);
           Navigator.of(context).pop();
         }
 
@@ -193,7 +218,6 @@ Future<void> _showCommandWordSheet(
           ),
         );
       },
-    ),
-  );
-  controller.dispose();
+    );
+  }
 }

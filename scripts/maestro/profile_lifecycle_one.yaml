@@ -1,4 +1,4 @@
-appId: com.trebuchetdynamics.hermes.wing
+appId: com.trebuchetdynamics.hermes.wing.qa
 ---
 - scrollUntilVisible:
     element:

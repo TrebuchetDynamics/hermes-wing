@@ -1,0 +1,70 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: All chats
+- tapOn: New group
+- tapOn: Group name
+- inputText: Fixture group
+- hideKeyboard
+- tapOn: '^Save$'
+- assertVisible: Fixture group
+- tapOn:
+    text: Move to group
+    index: 0
+- tapOn: Fixture group
+- tapOn: Show menu
+- tapOn: Rename
+- tapOn:
+    text: Group name
+    point: '95%,50%'
+- eraseText: 100
+- inputText: Fixture renamed
+- hideKeyboard
+- tapOn: '^Save$'
+- assertVisible: Fixture renamed
+- stopApp
+- launchApp
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: All chats
+- assertVisible: Fixture renamed
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check persisted groups
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Group saved: true'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Group moved: true'
+- tapOn: Show menu
+- tapOn: '^Delete$'
+- assertNotVisible: Fixture renamed
+- assertVisible: '(?s).*Fixture gateway.*DEFAULT.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check persisted groups
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Group deleted: true'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 0'

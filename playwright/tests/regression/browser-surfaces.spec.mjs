@@ -29,12 +29,30 @@ test("Hermes empty state opens secure web enrollment", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Connect to Hermes" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: /I have a QR code or pairing link/ }).click();
   await expect(
     page.getByRole("button", { name: "Connect one profile manually" }),
   ).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(
     0,
   );
+});
+
+test("enrollment guides computer setup back to pairing", async ({ page }) => {
+  await open(page, "/enroll");
+  await page.getByRole("button", { name: /Use another computer/ }).click();
+  await expect(page.getByText("Prepare the host and network")).toBeVisible();
+  await page.getByRole("button", { name: "My Linux host is ready" }).click();
+  await expect(page.getByText("Install or reuse Wing Link")).toBeVisible();
+  const existing = page.getByRole("checkbox", { name: "Wing Link is already installed on this host" });
+  await existing.click();
+  await expect(existing).toBeChecked();
+  await expect(page.getByText("~/.local/bin/wing-link inspect\n~/.local/bin/wing-link setup", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Setup finished on the host" }).click();
+  await page.getByRole("button", { name: "My provider and model are configured" }).click();
+  await page.getByRole("button", { name: "I’m ready to pair" }).click();
+  await expect(page.getByRole("button", { name: "Paste pairing link" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(0);
 });
 
 test("unknown routes render a bounded not-found screen", async ({ page }) => {

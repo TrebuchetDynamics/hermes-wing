@@ -1,0 +1,119 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Providers fixture
+- scrollUntilVisible:
+    element:
+      text: Manage credential
+    direction: DOWN
+- tapOn: Manage credential
+- assertVisible: 'Hermes Wing can set this credential but never shows a stored key.'
+- tapOn: '^Set$'
+- assertVisible: Enter a value to set.
+- tapOn: New secret value
+- inputText: fixture-only-input
+- hideKeyboard
+- tapOn: '^Set$'
+- assertVisible: Configured
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Credential writes: 1"
+    direction: DOWN
+- assertVisible: "Credential writes: 1"
+- tapOn: Close controls
+- scrollUntilVisible:
+    element:
+      text: Manage credential
+    direction: DOWN
+- tapOn: Manage credential
+- tapOn: Validate
+- assertVisible: '(?s).*Credential accepted..*'
+- assertVisible: 2 models available
+- tapOn: '^Remove$'
+- assertVisible: Not configured
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Credential removals: 1"
+    direction: DOWN
+- assertVisible: "Credential removals: 1"
+- tapOn: Close controls
+- scrollUntilVisible:
+    element:
+      text: Choose model
+    direction: DOWN
+- tapOn: Choose model
+- tapOn: '(?s).*Model.*fixture-small.*'
+- tapOn: fixture-large
+- tapOn: '^Assign$'
+- assertVisible: '(?s).*fixture-large.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Model writes: 1"
+    direction: DOWN
+- assertVisible: "Model writes: 1"
+- tapOn: Close controls
+- scrollUntilVisible:
+    element:
+      text: Choose model
+    direction: DOWN
+- tapOn: Choose model
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Inject revision conflict
+- tapOn: '^Assign$'
+- assertVisible: '(?s).*The model selection changed elsewhere. Reopen the picker to try again..*'
+- tapOn: '^Assign$'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Model attempts: 3"
+    direction: DOWN
+- assertVisible: "Model attempts: 3"
+- tapOn: Close controls
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Model writes: 2"
+    direction: DOWN
+- assertVisible: "Model writes: 2"
+- tapOn: Close controls
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Providers fixture
+- scrollUntilVisible:
+    element:
+      text: Manage credential
+    direction: DOWN
+- tapOn: Manage credential
+- tapOn: New secret value
+- inputText: fixture-only-input
+- hideKeyboard
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Revoke write grants
+- tapOn: '^Set$'
+- assertVisible: '(?s).*The credential operation could not be completed..*'
+- tapOn: '^Cancel$'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Credential writes: 1"
+    direction: DOWN
+- assertVisible: "Credential writes: 1"
+- tapOn: Close controls

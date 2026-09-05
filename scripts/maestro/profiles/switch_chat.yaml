@@ -1,0 +1,32 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- runFlow: start.yaml
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: default
+      PROFILE_ID: default
+      DIRECTION: UP
+      MESSAGE: fixture-default-first
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: mineru
+      PROFILE_ID: mineru
+      DIRECTION: DOWN
+      MESSAGE: fixture-mineru-only
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: default
+      PROFILE_ID: default
+      DIRECTION: UP
+      MESSAGE: fixture-default-second
+- tapOn: Chat with default
+- assertVisible: '(?s).*fixture-default-first::assistant.*'
+- assertVisible: '(?s).*fixture-default-second::assistant.*'
+- assertNotVisible: '(?s).*fixture-mineru-only.*'
+- pressKey: Back
+- tapOn: Edit default
+- assertNotVisible: Delete profile
+- pressKey: Back

@@ -1,0 +1,58 @@
+# Conditional native capability: an unavailable platform is reported explicitly.
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: 'Native spellcheck: (true|false)'
+    direction: DOWN
+- runFlow:
+    when:
+      visible: 'Native spellcheck: true'
+    commands:
+      - tapOn: Close controls
+      - runFlow:
+          file: open.yaml
+          env:
+            SCREEN: Settings fixture
+      - scrollUntilVisible:
+          element:
+            text: '(?s).*Check spelling.*'
+          direction: DOWN
+      - assertVisible:
+          text: '(?s).*Check spelling.*'
+          checked: true
+      - tapOn: '(?s).*Check spelling.*'
+      - stopApp
+      - launchApp
+      - runFlow:
+          file: open.yaml
+          env:
+            SCREEN: Settings fixture
+      - scrollUntilVisible:
+          element:
+            text: '(?s).*Check spelling.*'
+          direction: DOWN
+      - assertVisible:
+          text: '(?s).*Check spelling.*'
+          checked: false
+- runFlow:
+    when:
+      visible: 'Native spellcheck: false'
+    commands:
+      - tapOn: Close controls
+      - runFlow:
+          file: open.yaml
+          env:
+            SCREEN: Settings fixture
+      - scrollUntilVisible:
+          element:
+            text: Appearance
+          direction: DOWN
+      - assertNotVisible: '(?s).*Check spelling.*'

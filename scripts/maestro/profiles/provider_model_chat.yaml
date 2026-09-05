@@ -1,0 +1,33 @@
+# Verify configured provider/model provenance, not merely a successful Send.
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- runFlow: configured_create.yaml
+- tapOn: Chat with setup-qa
+- assertVisible: '(?s).*MODEL_RECEIPT::setup-qa::openrouter::fixture-model::fixture-configured-profile::assistant.*'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: fixture-model-followup
+- hideKeyboard
+- tapOn: '^Send$'
+- extendedWaitUntil:
+    visible: '(?s).*MODEL_RECEIPT::setup-qa::openrouter::fixture-model::fixture-model-followup::assistant.*'
+    timeout: 30000
+- pressKey: Back
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: default
+      PROFILE_ID: default
+      DIRECTION: UP
+      MESSAGE: fixture-default-provider-check
+- tapOn: Chat with default
+- assertNotVisible: '(?s).*MODEL_RECEIPT::setup-qa::.*'
+- pressKey: Back
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: setup-qa
+      PROFILE_ID: setup-qa
+      DIRECTION: DOWN
+      MESSAGE: fixture-model-return
+- tapOn: Chat with setup-qa
+- assertVisible: '(?s).*MODEL_RECEIPT::setup-qa::openrouter::fixture-model::fixture-model-return::assistant.*'

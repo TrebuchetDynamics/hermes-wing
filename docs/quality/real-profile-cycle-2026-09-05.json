@@ -1,0 +1,40 @@
+{
+  "head": "92a3d418b425d6ef095eb304e1f2ba18cfcd0392",
+  "apk_sha256": "f8fee17fc400a9b07f31b9e8651751a31d444d14bc5a88d4f776843d2ae1f7b8",
+  "physical_device_model": "SM-S928B",
+  "real_profile_cycle": "passed",
+  "unrelated_worktree_changes_preserved": true,
+  "real_agent_health": true,
+  "real_wing_link_health": true,
+  "pairing_completed": true,
+  "real_profiles_mutated": 1,
+  "temporary_services_stopped": true,
+  "owned_adb_reversals_removed": true,
+  "created_profile": "cycle20260905",
+  "create_verified_by_real_hermes_cli": true,
+  "original_profile_inventory_unchanged": true,
+  "transport": "USB reverse to authenticated loopback Agent and Wing Link",
+  "provider_chat_tested": false,
+  "renamed_profile": "cycle20260905renamed",
+  "rename_verified_by_real_hermes_cli": true,
+  "paired_app_restart_verified": true,
+  "unapproved_retry_same_request": true,
+  "approval_consumed": true,
+  "deleted_profile_absent": true,
+  "phone_default_only_inventory": true,
+  "phone_pairing_removed": true,
+  "temporary_device_credential_revoked": true,
+  "full_flutter_tests_passed": 1545,
+  "date": "2026-09-05",
+  "flutter_analyze": "passed",
+  "dart_format": {
+    "files": 323,
+    "changes": 0
+  },
+  "npm_audit_vulnerabilities": 0,
+  "web_e2e": {
+    "status": "passed",
+    "tests": 45,
+    "includes_screenshot_checks": 2
+  }
+}

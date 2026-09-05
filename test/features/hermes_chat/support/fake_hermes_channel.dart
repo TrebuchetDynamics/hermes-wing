@@ -280,6 +280,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   void replaceSessions(
     List<HermesSession> sessions, {
     required String? activeSessionId,
+    Map<String, List<HermesChatTurn>>? messages,
   }) {
     _setState(
       _state.copyWith(
@@ -288,7 +289,9 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         clearActiveSessionId: activeSessionId == null,
         messages: {
           for (final session in sessions)
-            session.id: _state.messages[session.id] ?? const <HermesChatTurn>[],
+            session.id:
+                (messages ?? _state.messages)[session.id] ??
+                const <HermesChatTurn>[],
         },
       ),
     );

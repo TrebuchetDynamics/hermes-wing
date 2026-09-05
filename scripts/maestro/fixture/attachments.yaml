@@ -1,0 +1,83 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*fixture-note.txt.*'
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*Remove the current attachment before adding another.*'
+- tapOn: Remove attachment
+- assertNotVisible: '(?s).*fixture-note.txt.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick cancel fixture
+- tapOn: Attach image or text file
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick binary fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*Hermes accepts PNG.*'
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick oversize fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*Text files must be 256 KB or smaller.*'
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick invalid fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*Text attachments must contain valid UTF-8.*'
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick text fixture
+- tapOn: Attach image or text file
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture file send
+- hideKeyboard
+- tapOn: '^Send$'
+- tapOn: Approve once
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Text attachment sent: true'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick image fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*fixture-image.png.*'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture image send
+- hideKeyboard
+- tapOn: '^Send$'
+- tapOn: Approve once
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Image attachment sent: true'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 2'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Picker calls: 7'

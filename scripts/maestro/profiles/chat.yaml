@@ -1,0 +1,35 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- runFlow:
+    when:
+      true: ${DIRECTION == 'UP'}
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: 'Chat with ${PROFILE_NAME}'
+          direction: UP
+          centerElement: true
+- runFlow:
+    when:
+      true: ${DIRECTION == 'DOWN'}
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: 'Chat with ${PROFILE_NAME}'
+          direction: DOWN
+          centerElement: true
+- tapOn: 'Chat with ${PROFILE_NAME}'
+- extendedWaitUntil:
+    visible: '(?s).*Message Hermes.*'
+    timeout: 30000
+- assertNotVisible: '(?s).*PROFILE_RECEIPT::(?!${PROFILE_ID}::).*::assistant.*'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: '${MESSAGE}'
+- hideKeyboard
+- tapOn: '^Send$'
+- extendedWaitUntil:
+    visible: '(?s).*PROFILE_RECEIPT::${PROFILE_ID}::session-${PROFILE_ID}::${MESSAGE}::assistant.*'
+    timeout: 30000
+- assertNotVisible: '(?s).*PROFILE_RECEIPT::(?!${PROFILE_ID}::).*::assistant.*'
+- pressKey: Back
+- assertVisible: '^Profiles$'

@@ -1,6 +1,6 @@
 # Deterministic Android qualification of production profile/chat/editor screens.
 # This does not substitute for live Hermes credential and multiplexer evidence.
-appId: com.trebuchetdynamics.hermes.wing
+appId: com.trebuchetdynamics.hermes.wing.qa
 name: strict_profile_lifecycle_fixture
 ---
 - launchApp:
@@ -10,7 +10,7 @@ name: strict_profile_lifecycle_fixture
 - extendedWaitUntil:
     visible: "(?s).*Message Hermes….*"
     timeout: 60000
-- tapOn: "Open more destinations"
+- tapOn: '(?s)^More\n.*'
 - tapOn: "^Profiles$"
 - extendedWaitUntil:
     visible: "(?s).*New Profile.*"
@@ -126,7 +126,7 @@ name: strict_profile_lifecycle_fixture
 - extendedWaitUntil:
     visible: "(?s).*Message Hermes….*"
     timeout: 60000
-- tapOn: "Open more destinations"
+- tapOn: '(?s)^More\n.*'
 - tapOn: "^Profiles$"
 - scrollUntilVisible:
     element:
@@ -184,7 +184,7 @@ name: strict_profile_lifecycle_fixture
 - extendedWaitUntil:
     visible: "(?s).*Message Hermes….*"
     timeout: 60000
-- tapOn: "Open more destinations"
+- tapOn: '(?s)^More\n.*'
 - tapOn: "^Profiles$"
 - scrollUntilVisible:
     element:

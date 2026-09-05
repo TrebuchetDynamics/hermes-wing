@@ -13,6 +13,7 @@ name: Android native fixture regression
     visible: '(?s).*Add your first Hermes profile.*'
     timeout: 30000
 - tapOn: 'Add gateway or profile'
+- tapOn: '(?s).*I have a QR code or pairing link.*'
 - tapOn: '(?s).*Connect one profile manually.*'
 - assertVisible: 'This device'
 - back

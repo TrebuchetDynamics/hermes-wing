@@ -1,0 +1,63 @@
+# The production setup editor uses a typed fixture callback, not live Wing Link.
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- runFlow: start.yaml
+- tapOn: Fixture configured profile
+- tapOn: '(?s).*Profile name.*'
+- inputText: setup-qa
+- hideKeyboard
+- tapOn: '(?s)Clone from.*default'
+- tapOn: Start fresh
+- scrollUntilVisible:
+    element:
+      text: '^Create$'
+    direction: DOWN
+- tapOn: '^Create$'
+- scrollUntilVisible:
+    element:
+      text: Enter a provider.
+    direction: UP
+- assertVisible: Enter a model.
+- scrollUntilVisible:
+    element:
+      text: Description
+    direction: UP
+- tapOn: Description
+- inputText: Fixture setup description
+- hideKeyboard
+- tapOn: '(?s)^Provider(?:,.*)?$'
+- inputText: openrouter
+- hideKeyboard
+- tapOn: '(?s)^Model(?:,.*)?$'
+- inputText: fixture-model
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: '^Create$'
+    direction: DOWN
+- tapOn: '^Create$'
+- extendedWaitUntil:
+    notVisible: '^Create$'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: '(?s).*ID: setup-qa.*'
+    direction: DOWN
+    centerElement: true
+- assertVisible: '(?s).*fixture-model.*'
+- stopApp
+- launchApp
+- runFlow: open.yaml
+- scrollUntilVisible:
+    element:
+      text: '(?s).*ID: setup-qa.*'
+    direction: DOWN
+    centerElement: true
+- assertVisible: '(?s).*fixture-model.*'
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: setup-qa
+      PROFILE_ID: setup-qa
+      DIRECTION: DOWN
+      MESSAGE: fixture-configured-profile

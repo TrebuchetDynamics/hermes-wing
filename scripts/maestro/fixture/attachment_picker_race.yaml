@@ -1,0 +1,46 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick deferred fixture
+- tapOn: Attach image or text file
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select second session
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Complete fixture picker
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Select first session
+- assertNotVisible: Remove attachment
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 0'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Pick text fixture
+- tapOn: Attach image or text file
+- assertVisible: '(?s).*fixture-note.txt.*'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Picker calls: 2'

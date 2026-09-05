@@ -96,7 +96,10 @@ class _LocalHermesSetupScreenState
       case LocalHermesSetupStatus.detecting:
         return _progress(strings.localSetupDetecting);
       case LocalHermesSetupStatus.installing:
-        return _progress(strings.localSetupInstalling);
+        return _progress(
+          strings.localSetupInstalling,
+          percent: controller.progressPercent,
+        );
       case LocalHermesSetupStatus.missing:
         return _actionState(
           icon: Icons.download_outlined,
@@ -126,7 +129,13 @@ class _LocalHermesSetupScreenState
           body: strings.localSetupCompleteBody,
           action: FilledButton.icon(
             key: const ValueKey('local-hermes-setup-continue'),
-            onPressed: () => context.go(AppRoutes.enroll),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop(true);
+              } else {
+                context.go('${AppRoutes.enroll}?step=pair');
+              }
+            },
             icon: const Icon(Icons.link),
             label: Text(strings.localSetupContinueAction),
           ),
@@ -151,11 +160,14 @@ class _LocalHermesSetupScreenState
     }
   }
 
-  Widget _progress(String label) => Semantics(
+  Widget _progress(String label, {int? percent}) => Semantics(
     liveRegion: true,
     child: Column(
       children: [
-        const CircularProgressIndicator(),
+        LinearProgressIndicator(
+          value: percent == null ? null : percent / 100,
+          semanticsLabel: label,
+        ),
         const SizedBox(height: 16),
         Text(label, textAlign: TextAlign.center),
       ],

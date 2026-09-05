@@ -161,6 +161,12 @@ void main() {
     await tester.pump();
     expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
     expect(tester.widget<TextField>(field).maxLength, 64);
+    await tester.tap(save);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+    expect(find.text('wing'), findsOneWidget);
   });
 
   testWidgets('the Advanced heading renders once', (tester) async {

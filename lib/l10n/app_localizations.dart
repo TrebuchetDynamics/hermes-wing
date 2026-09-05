@@ -2859,6 +2859,438 @@ abstract class AppLocalizations {
   /// **'Remove {label} and its saved credential from this device?'**
   String settingsRemoveGatewayBody(String label);
 
+  /// No description provided for @enrollIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where Hermes Agent will run. Wing will guide you through setup, pairing, and checking the connection.'**
+  String get enrollIntro;
+
+  /// No description provided for @enrollPairHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'I have a QR code or pairing link'**
+  String get enrollPairHeading;
+
+  /// No description provided for @enrollPairHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the connection string from wing-link pair. You’ll review the host before connecting. Links are single-use and expire after five minutes.'**
+  String get enrollPairHelp;
+
+  /// No description provided for @enrollSetupHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a Hermes host'**
+  String get enrollSetupHeading;
+
+  /// No description provided for @enrollPhoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Install or reuse Hermes Agent in Termux, then return to pair.'**
+  String get enrollPhoneHelp;
+
+  /// No description provided for @enrollComputerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another computer'**
+  String get enrollComputerAction;
+
+  /// No description provided for @enrollComputerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up Wing Link on a Linux host and connect over your VPN.'**
+  String get enrollComputerHelp;
+
+  /// No description provided for @enrollBackToOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection options'**
+  String get enrollBackToOptions;
+
+  /// No description provided for @enrollComputerRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Run these steps on the computer that will host Hermes. This setup requires Linux with a systemd user session, Git, curl, and Go 1.26 or newer. Native Windows and macOS host setup is not yet qualified.'**
+  String get enrollComputerRequirements;
+
+  /// No description provided for @enrollComputerInstallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install or reuse Wing Link'**
+  String get enrollComputerInstallTitle;
+
+  /// No description provided for @enrollComputerInstallBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host:'**
+  String get enrollComputerInstallBody;
+
+  /// No description provided for @enrollComputerModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure a provider and model'**
+  String get enrollComputerModelTitle;
+
+  /// No description provided for @enrollComputerModelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:'**
+  String get enrollComputerModelBody;
+
+  /// No description provided for @enrollComputerPairTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create the pairing handoff'**
+  String get enrollComputerPairTitle;
+
+  /// No description provided for @enrollComputerPairBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link detects the VPN address and prepares direct Agent access. Return to Wing to scan the QR or paste the connection string, compare the host fingerprint, and confirm.'**
+  String get enrollComputerPairBody;
+
+  /// No description provided for @enrollComputerReady.
+  ///
+  /// In en, this message translates to:
+  /// **'I’m ready to pair'**
+  String get enrollComputerReady;
+
+  /// No description provided for @enrollPairChoiceHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect an existing host using its QR code or connection string.'**
+  String get enrollPairChoiceHelp;
+
+  /// No description provided for @enrollLinuxHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect Hermes Agent on this Linux computer, then install or reuse it with Wing Link.'**
+  String get enrollLinuxHelp;
+
+  /// No description provided for @enrollStepProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String enrollStepProgress(int step, int total);
+
+  /// No description provided for @enrollComputerPrerequisites.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare the host and network'**
+  String get enrollComputerPrerequisites;
+
+  /// No description provided for @enrollComputerPrerequisitesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the host terminal available. Connect both devices to the same trusted VPN before pairing. Setup and approval happen on the host; Wing will verify the connection after pairing.'**
+  String get enrollComputerPrerequisitesHelp;
+
+  /// No description provided for @enrollComputerPrerequisitesReady.
+  ///
+  /// In en, this message translates to:
+  /// **'My Linux host is ready'**
+  String get enrollComputerPrerequisitesReady;
+
+  /// No description provided for @enrollComputerExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link is already installed on this host'**
+  String get enrollComputerExisting;
+
+  /// No description provided for @enrollComputerExistingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect the existing installation first. Setup reuses a healthy Hermes Agent, installs it when needed, and prepares API access. Run these commands on the host:'**
+  String get enrollComputerExistingHelp;
+
+  /// No description provided for @enrollHostSetupFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup finished on the host'**
+  String get enrollHostSetupFinished;
+
+  /// No description provided for @enrollModelSetupFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'My provider and model are configured'**
+  String get enrollModelSetupFinished;
+
+  /// No description provided for @enrollExternalStepNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue after this step finishes on the host. This button does not verify or run the command remotely.'**
+  String get enrollExternalStepNotice;
+
+  /// No description provided for @enrollPreviousStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous step'**
+  String get enrollPreviousStep;
+
+  /// No description provided for @enrollCopyCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy command'**
+  String get enrollCopyCommand;
+
+  /// No description provided for @enrollCommandCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Command copied. Run it on the Hermes host.'**
+  String get enrollCommandCopied;
+
+  /// No description provided for @enrollEnterLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter connection string instead'**
+  String get enrollEnterLink;
+
+  /// No description provided for @enrollConnectionString.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing connection string'**
+  String get enrollConnectionString;
+
+  /// No description provided for @enrollLinkInputHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the complete pairing link here. It is cleared when submitted.'**
+  String get enrollLinkInputHelp;
+
+  /// No description provided for @enrollReviewLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Review connection'**
+  String get enrollReviewLink;
+
+  /// No description provided for @enrollClipboardUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Clipboard access failed. Use Enter connection string instead and paste into the field, or scan a QR.'**
+  String get enrollClipboardUnavailable;
+
+  /// No description provided for @enrollScannerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The scanner could not open. Try again, choose a QR image, or paste the pairing link.'**
+  String get enrollScannerUnavailable;
+
+  /// No description provided for @enrollImageUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR image could not be read. Try a clear image containing one pairing QR, or paste the link.'**
+  String get enrollImageUnavailable;
+
+  /// No description provided for @enrollCredentialsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing credentials securely saved'**
+  String get enrollCredentialsSaved;
+
+  /// No description provided for @enrollAgentConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected Hermes profile is connected'**
+  String get enrollAgentConnected;
+
+  /// No description provided for @enrollConnectingSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting the saved profile…'**
+  String get enrollConnectingSaved;
+
+  /// No description provided for @enrollSavedNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved; live connection is not confirmed'**
+  String get enrollSavedNotConnected;
+
+  /// No description provided for @enrollModelConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent reports a configured model for this profile'**
+  String get enrollModelConfigured;
+
+  /// No description provided for @enrollModelMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent reports that a model needs configuration'**
+  String get enrollModelMissing;
+
+  /// No description provided for @enrollModelUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Model readiness is not reported for this profile'**
+  String get enrollModelUnknown;
+
+  /// No description provided for @enrollReadinessHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A configured model does not prove provider access or a successful reply. Configure the provider on the host if needed, then check again or open Chat to send your first message.'**
+  String get enrollReadinessHelp;
+
+  /// No description provided for @enrollCheckReadiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Check connection and model again'**
+  String get enrollCheckReadiness;
+
+  /// No description provided for @enrollPhaseExchange.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchanging the reviewed pairing code…'**
+  String get enrollPhaseExchange;
+
+  /// No description provided for @enrollPhaseManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying Wing Link identity and access…'**
+  String get enrollPhaseManagement;
+
+  /// No description provided for @enrollPhaseAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying direct Hermes Agent access…'**
+  String get enrollPhaseAgent;
+
+  /// No description provided for @enrollPhaseSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving credentials in secure storage…'**
+  String get enrollPhaseSave;
+
+  /// No description provided for @enrollPhaseAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming this device with Wing Link…'**
+  String get enrollPhaseAcknowledge;
+
+  /// No description provided for @enrollFailureNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection could not reach the host. Keep the pairing terminal open and check the VPN on both devices.'**
+  String get enrollFailureNetwork;
+
+  /// No description provided for @enrollFailureTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The host did not respond in time. Check that it is awake and reachable, then create a fresh pairing link.'**
+  String get enrollFailureTimeout;
+
+  /// No description provided for @enrollFailureTls.
+  ///
+  /// In en, this message translates to:
+  /// **'The secure connection could not be verified. Compare the host identity locally and pair again. Browser clients require a normally trusted HTTPS certificate.'**
+  String get enrollFailureTls;
+
+  /// No description provided for @enrollFailureRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The host rejected this handoff or credential. Create a fresh pairing link on the host and review its permissions.'**
+  String get enrollFailureRejected;
+
+  /// No description provided for @enrollFailureUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This host does not expose a compatible pairing operation. Update Wing Link on the host, or use manual Agent connection.'**
+  String get enrollFailureUnsupported;
+
+  /// No description provided for @enrollFailureInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The host returned pairing details that did not match the reviewed connection. Verify the host locally and create a fresh pairing link.'**
+  String get enrollFailureInvalid;
+
+  /// No description provided for @enrollFailureStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing could not finish saving the connection securely. Check device storage and secure-storage access before creating a fresh pairing link. Do not copy credentials into ordinary settings.'**
+  String get enrollFailureStorage;
+
+  /// No description provided for @enrollFailureManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link could not be verified. Check its service and host identity locally before creating a fresh pairing link.'**
+  String get enrollFailureManagement;
+
+  /// No description provided for @enrollFailureAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link responded, but direct Hermes Agent access failed. Check the Agent listener and VPN; Wing Link does not forward chat traffic.'**
+  String get enrollFailureAgent;
+
+  /// No description provided for @enrollFailureAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Device registration could not be confirmed. Keep the host available and pair again. Any pending saved credentials remain protected for recovery.'**
+  String get enrollFailureAcknowledge;
+
+  /// No description provided for @enrollFreshPairingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Run wing-link pair on the host for a new handoff. On this phone, return to Termux. For another computer, use its terminal.'**
+  String get enrollFreshPairingHelp;
+
+  /// No description provided for @enrollBrowserPairingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'In a browser, the host must use normally trusted HTTPS. For a self-signed Wing Link host, use the native Wing app to review and pin its identity.'**
+  String get enrollBrowserPairingHelp;
+
+  /// No description provided for @termuxPrepareStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare Termux'**
+  String get termuxPrepareStep;
+
+  /// No description provided for @termuxInstallStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Install or detect Hermes'**
+  String get termuxInstallStep;
+
+  /// No description provided for @termuxPairStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to Wing and pair'**
+  String get termuxPairStep;
+
+  /// No description provided for @termuxPrerequisites.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Termux from its official installation guide, open it once, and keep internet access available. If you already use Termux, continue with that installation.'**
+  String get termuxPrerequisites;
+
+  /// No description provided for @termuxReadyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux is installed and opens'**
+  String get termuxReadyAction;
+
+  /// No description provided for @termuxAdoptionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have Hermes Agent? Use this same setup command to detect and reuse a healthy installation. Wing cannot inspect Termux’s files directly. Leave Termux open until it displays the local pairing link.'**
+  String get termuxAdoptionHelp;
+
+  /// No description provided for @termuxSetupFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux is showing the pairing link'**
+  String get termuxSetupFinished;
+
+  /// No description provided for @termuxPairRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'If the link expired or either service stopped, return to the setup step and rerun the same verified command. Do not paste an Agent API key as a pairing link.'**
+  String get termuxPairRecovery;
+
+  /// No description provided for @termuxReturnToSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to the setup command'**
+  String get termuxReturnToSetup;
+
   /// No description provided for @enrollTitle.
   ///
   /// In en, this message translates to:
@@ -2874,7 +3306,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollInvalidLinkBody.
   ///
   /// In en, this message translates to:
-  /// **'Paste another pairing link or scan a new QR code.'**
+  /// **'Use the complete connection string from wing-link pair. An Agent URL alone belongs in manual connection.'**
   String get enrollInvalidLinkBody;
 
   /// No description provided for @enrollClipboardEmpty.
@@ -2904,7 +3336,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollScanPrompt.
   ///
   /// In en, this message translates to:
-  /// **'Choose how to connect this device.'**
+  /// **'Where will Hermes run?'**
   String get enrollScanPrompt;
 
   /// No description provided for @enrollVerifying.
@@ -2916,13 +3348,13 @@ abstract class AppLocalizations {
   /// No description provided for @enrollConnectedProfiles.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 profile connected} other{{count} profiles connected}}'**
+  /// **'{count, plural, =1{1 profile paired} other{{count} profiles paired}}'**
   String enrollConnectedProfiles(int count);
 
   /// No description provided for @enrollConnectedBody.
   ///
   /// In en, this message translates to:
-  /// **'Wing Link is ready for profile and gateway management.'**
+  /// **'Pairing is saved. Check the live connection and model status below before starting a conversation.'**
   String get enrollConnectedBody;
 
   /// No description provided for @enrollViewProfilesAction.
@@ -2946,13 +3378,13 @@ abstract class AppLocalizations {
   /// No description provided for @enrollInspectionFailedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Pairing host couldn’t be reached'**
+  /// **'The pairing host could not be verified'**
   String get enrollInspectionFailedTitle;
 
   /// No description provided for @enrollInspectionFailedBody.
   ///
   /// In en, this message translates to:
-  /// **'Check that the host is online and this device is on the right network, then paste or scan a new pairing link.'**
+  /// **'Keep the pairing terminal open. Verify the host and network, then create a fresh pairing link.'**
   String get enrollInspectionFailedBody;
 
   /// No description provided for @enrollExchangeFailedTitle.
@@ -2964,7 +3396,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollExchangeFailedBody.
   ///
   /// In en, this message translates to:
-  /// **'Wing did not report a completed connection. Any pending credentials remain available for safe recovery; paste or scan a new pairing link to try again.'**
+  /// **'The connection was not completed. Check the host and VPN, then run wing-link pair again. Wing will verify and securely save the new connection before reporting success.'**
   String get enrollExchangeFailedBody;
 
   /// No description provided for @enrollCloseAction.
@@ -3042,7 +3474,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollManualConnectWarning.
   ///
   /// In en, this message translates to:
-  /// **'This does not import Wing Link or other Hermes profiles.'**
+  /// **'Advanced: requires an Agent URL and credential. Connects one profile without Wing Link host management.'**
   String get enrollManualConnectWarning;
 
   /// No description provided for @enrollGrantQuestion.
@@ -5998,13 +6430,13 @@ abstract class AppLocalizations {
   /// No description provided for @termuxSetupTitle.
   ///
   /// In en, this message translates to:
-  /// **'Install Hermes Agent on this phone'**
+  /// **'Set up Hermes on this phone'**
   String get termuxSetupTitle;
 
   /// No description provided for @termuxSetupBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes Wing uses Hermes Agent’s official verified installer in Termux. Wing never runs commands inside Termux.'**
+  /// **'Termux runs Hermes Agent and Wing Link on your phone. The setup command reuses a healthy existing installation or installs what is missing. You run it yourself in Termux.'**
   String get termuxSetupBody;
 
   /// No description provided for @termuxInstallAction.
@@ -6070,32 +6502,44 @@ abstract class AppLocalizations {
   /// No description provided for @termuxReturnStep.
   ///
   /// In en, this message translates to:
-  /// **'Tap the local link shown by Termux, then return here to review the connection.'**
+  /// **'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. If Hermes needs a provider or model, run hermes setup in Termux before chatting.'**
   String get termuxReturnStep;
 
   /// No description provided for @termuxTierTwoNotice.
   ///
   /// In en, this message translates to:
-  /// **'Android / Termux is Tier 2. Android may stop background processes; rerun the same command to recover.'**
+  /// **'Keep Termux available. Android can stop Hermes while it runs in the background. Rerun the same setup command to recover.'**
   String get termuxTierTwoNotice;
 
   /// No description provided for @enrollInstallOnPhoneAction.
   ///
   /// In en, this message translates to:
-  /// **'Install Hermes Agent on this phone'**
+  /// **'Use this phone'**
   String get enrollInstallOnPhoneAction;
 
   /// No description provided for @enrollConnectedLocalBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes Agent is connected on this phone. To configure the existing default profile, run hermes setup in Termux. To configure more in Wing, create a new profile with its provider and model, approve the request in Termux, retry the unchanged request, then pair once more to enroll that profile.'**
+  /// **'Pairing is saved on this phone. Keep Termux running. To configure the existing profile, run hermes setup in Termux, then check the connection again.'**
   String get enrollConnectedLocalBody;
 
   /// No description provided for @profileApprovalRequired.
   ///
   /// In en, this message translates to:
-  /// **'Approve this request locally on the Wing Link host, then retry the unchanged setup. Run wing-link approvals list, then wing-link approvals approve {approvalId}.'**
+  /// **'Approve this request locally on the Wing Link host, then retry the unchanged request. Run wing-link approvals list, then wing-link approvals approve {approvalId}.'**
   String profileApprovalRequired(String approvalId);
+
+  /// No description provided for @profileDeletionApprovalExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The local approval expired. Confirm deletion again to start a new request.'**
+  String get profileDeletionApprovalExpired;
+
+  /// No description provided for @profileRetryApprovedDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry approved deletion'**
+  String get profileRetryApprovedDeletion;
 
   /// No description provided for @profileRetryApprovedSetup.
   ///

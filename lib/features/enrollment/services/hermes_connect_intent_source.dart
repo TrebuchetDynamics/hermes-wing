@@ -35,12 +35,12 @@ abstract interface class HermesConnectIntentSource {
 /// counterpart, so both members return empty results rather than throwing.
 class MethodChannelHermesConnectIntentSource
     implements HermesConnectIntentSource {
-  const MethodChannelHermesConnectIntentSource({
+  MethodChannelHermesConnectIntentSource({
     MethodChannel methodChannel = _defaultMethodChannel,
     EventChannel eventChannel = _defaultEventChannel,
   }) : this._(methodChannel, eventChannel);
 
-  const MethodChannelHermesConnectIntentSource._(
+  MethodChannelHermesConnectIntentSource._(
     this._methodChannel,
     this._eventChannel,
   );
@@ -54,6 +54,11 @@ class MethodChannelHermesConnectIntentSource
 
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
+
+  // The shell and enrollment screen share one native subscription. Creating a
+  // second EventChannel stream replaces the handler, and closing that screen
+  // would otherwise cancel handoff delivery to the still-running shell.
+  late final Stream<String> _payloadEvents = _createPayloadEvents();
 
   bool get _supportsNativeChannel =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -116,7 +121,9 @@ class MethodChannelHermesConnectIntentSource
   }
 
   @override
-  Stream<String> payloadEvents() {
+  Stream<String> payloadEvents() => _payloadEvents;
+
+  Stream<String> _createPayloadEvents() {
     if (!_supportsNativeChannel) return const Stream<String>.empty();
     return _eventChannel
         .receiveBroadcastStream()

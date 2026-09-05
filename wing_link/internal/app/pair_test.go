@@ -1649,3 +1649,60 @@ func postPairBroker(t *testing.T, endpoint, origin, code string) pairBrokerRespo
 	}
 	return pairBrokerResponse{StatusCode: response.StatusCode, Body: responseBody}
 }
+
+func TestProfileTokenUsesConfiguredHomeContainment(t *testing.T) {
+	for _, kind := range []string{"configured", "outside", "prefix sibling", "default home", "symlink escape"} {
+		t.Run(kind, func(t *testing.T) {
+			root := t.TempDir()
+			home := filepath.Join(root, "configured")
+			native := filepath.Join(root, "native")
+			t.Setenv("HOME", native)
+			if err := os.MkdirAll(home, 0o700); err != nil {
+				t.Fatal(err)
+			}
+			envPath := filepath.Join(home, "profiles", "coder", ".env")
+			switch kind {
+			case "outside", "symlink escape":
+				envPath = filepath.Join(root, "outside", ".env")
+			case "prefix sibling":
+				envPath = filepath.Join(home+"-other", ".env")
+			case "default home":
+				envPath = filepath.Join(native, ".hermes", "profiles", "coder", ".env")
+			}
+			if err := os.MkdirAll(filepath.Dir(envPath), 0o700); err != nil {
+				t.Fatal(err)
+			}
+			const initial = "OTHER=value\n"
+			if err := os.WriteFile(envPath, []byte(initial), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			target := envPath
+			if kind == "symlink escape" {
+				linked := filepath.Join(home, "linked")
+				if err := os.Symlink(filepath.Dir(envPath), linked); err != nil {
+					t.Skip("symlinks unavailable")
+				}
+				envPath = filepath.Join(linked, ".env")
+			}
+			executable := filepath.Join(root, "hermes")
+			if err := os.WriteFile(executable, []byte("#!/bin/sh\nprintf '%s\\n' \"$FAKE_HERMES_ENV_PATH\"\n"), 0o700); err != nil {
+				t.Fatal(err)
+			}
+			t.Setenv("FAKE_HERMES_ENV_PATH", envPath)
+			token, err := hermesProfileToken(executable, home, "coder")
+			if kind == "configured" {
+				if err != nil || len(token) != 64 {
+					t.Fatalf("configured home rejected: %v", err)
+				}
+			} else {
+				if err == nil || token != "" {
+					t.Fatal("credential path escaped the configured home")
+				}
+				contents, readErr := os.ReadFile(target)
+				if readErr != nil || string(contents) != initial {
+					t.Fatal("rejected path was mutated")
+				}
+			}
+		})
+	}
+}

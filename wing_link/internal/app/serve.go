@@ -1089,7 +1089,15 @@ func (backend *profileBackend) configure(
 		ctx, "--profile", profile, "chat", "-Q", "--source", "tool", "-q",
 		"Reply with exactly: Hi",
 	)
-	if err != nil || !strings.EqualFold(strings.TrimSpace(string(response)), "Hi") {
+	output := strings.TrimSpace(string(response))
+	// HermesCLI._ensure_tirith_security prints this fixed notice on stdout even
+	// with -Q. Remove this exception when supported Hermes versions keep quiet
+	// stdout clean; arbitrary diagnostics and missing model replies still fail.
+	const scannerNotice = "⚠ tirith security scanner enabled but not available — command scanning will use pattern matching only"
+	if line, rest, ok := strings.Cut(output, "\n"); ok && strings.TrimSpace(line) == scannerNotice {
+		output = strings.TrimSpace(rest)
+	}
+	if err != nil || !strings.EqualFold(output, "Hi") {
 		return errProfilePostcondition
 	}
 	return nil

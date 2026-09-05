@@ -983,6 +983,41 @@ func TestProfileCreateRollsBackWhenReadinessDoesNotAnswerHi(t *testing.T) {
 	}
 }
 
+func TestProfileReadinessAllowsOnlyKnownStartupNotice(t *testing.T) {
+	notice := "  ⚠ tirith security scanner enabled but not available — command scanning will use pattern matching only"
+	for _, tc := range []struct {
+		name, output string
+		ready        bool
+	}{
+		{"known notice", notice + "\nHi\n", true},
+		{"notice alone", notice, false},
+		{"unknown notice", "Unexpected startup warning\nHi", false},
+		{"failure after notice", notice + "\nNo API key found", false},
+		{"extra output", notice + "\nHi\nOperation failed", false},
+		{"repeated notice", notice + "\n" + notice + "\nHi", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			harness := newProfileHarness(t)
+			harness.readinessResponse = tc.output
+			response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
+				"name": "readyqa", "provider": "openrouter", "model": "openai/gpt-5.2",
+			}, true, nil)
+			defer response.Body.Close()
+			want := http.StatusBadGateway
+			if tc.ready {
+				want = http.StatusCreated
+			}
+			if response.StatusCode != want {
+				t.Fatalf("status = %d, want %d", response.StatusCode, want)
+			}
+			_, exists := harness.profiles["readyqa"]
+			if exists != tc.ready {
+				t.Fatal("readiness and profile rollback disagree")
+			}
+		})
+	}
+}
+
 func TestProfileUpdateRejectsExistingConfigurationBeforeMutation(t *testing.T) {
 	harness := newProfileHarness(t)
 	listed := harness.request(t, http.MethodGet, "/v1/profiles", nil, true, nil)

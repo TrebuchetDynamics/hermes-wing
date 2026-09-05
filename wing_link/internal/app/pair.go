@@ -915,8 +915,7 @@ func hermesProfileToken(hermes, home, profileID string) (string, error) {
 		Env: []string{"HERMES_HOME=" + home}, Timeout: 30 * time.Second,
 	}, 4096)
 	path := strings.TrimSpace(string(output))
-	home, err := defaultHermesHome()
-	if result.Err != nil || err != nil || !filepath.IsAbs(path) ||
+	if result.Err != nil || !filepath.IsAbs(home) || !filepath.IsAbs(path) ||
 		strings.ContainsAny(path, "\r\n") || !pathWithin(home, path) ||
 		rejectSymlinkedAncestors(filepath.Dir(path)) != nil {
 		return "", errors.New("hermes profile credential path is unavailable")

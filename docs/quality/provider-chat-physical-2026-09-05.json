@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-05",
+  "platform": "physical Samsung SM-S928B, Android 16",
+  "entry_point": "lib/main.dart",
+  "artifact": "debug APK",
+  "apk_sha256": "d8baa2be39fe209d1686ead4dec0ec6011c729e6d7c97057c99664bc45825d3a",
+  "worktree_base": "92a3d418b425d6ef095eb304e1f2ba18cfcd0392",
+  "transport": "independent authenticated loopback Agent and Wing Link connections over USB reverse",
+  "new_profile_configured_on_phone": true,
+  "credential_entry": "existing authorized credential provisioned into isolated base via Hermes CLI stdin; Hermes clone; phone credential field blank",
+  "named_profile_enrollment": true,
+  "warm_handoff_after_enrollment_closed": true,
+  "chat": {
+    "real_provider": "openrouter",
+    "model": "openai/gpt-4.1-mini",
+    "same_session_user_turns": 3,
+    "same_session_assistant_replies": 3,
+    "context_followup": true,
+    "post_restart_reply": true,
+    "default_database_contains_named_markers": false,
+    "authoritative_model_config_persisted": true,
+    "model_usage_matches": true
+  },
+  "cleanup": {
+    "test_profile_deleted": true,
+    "deletion_approval_consumed": true,
+    "saved_phone_gateways_empty": true,
+    "test_link_credentials_revoked": 2,
+    "owned_reverse_mappings_removed": 6,
+    "isolated_services_stopped": true,
+    "isolated_credential_home_removed": true
+  },
+  "original_profiles_unchanged": true,
+  "validation": {
+    "flutter_analyze": "passed",
+    "flutter_tests": 1551,
+    "focused_enrollment_tests": 94,
+    "go_test_all": "passed",
+    "format_files": 324,
+    "format_changes": 0,
+    "web_tests": 46,
+    "npm_vulnerabilities": 0,
+    "android_debug_build": "passed",
+    "web_release_e2e_build": "passed"
+  },
+  "not_qualified": [
+    "remote TLS",
+    "physical audio",
+    "Android provider-secret entry",
+    "OmniRoute authentication",
+    "existing-profile provider mutation",
+    "concurrent changes after validation"
+  ]
+}

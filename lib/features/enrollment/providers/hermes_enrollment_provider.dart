@@ -8,10 +8,13 @@ import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/wing_link/wing_link_client.dart';
+import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/wing_link/wing_link_transport.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../services/hermes_connect_intent_source.dart';
+import '../services/enrollment_transport_failure_stub.dart'
+    if (dart.library.io) '../services/enrollment_transport_failure_io.dart';
 
 /// Reads the pending Hermes Wing connect pairing payload from the platform's
 /// intent ingress; see [HermesConnectIntentSource].
@@ -94,6 +97,11 @@ final hermesEnrollmentControllerProvider =
           final directory = ref.read(hermesGatewayDirectoryProvider);
           await directory.reload();
           await directory.activateGateway(gatewayId);
+          final state = ref.read(hermesChannelProvider).state;
+          if (!state.isConnected ||
+              directory.activeGatewayConfig?.id != gatewayId) {
+            throw StateError('The saved gateway could not be activated.');
+          }
         },
       );
     });
@@ -159,6 +167,56 @@ enum HermesEnrollmentStatus {
   expired,
   inspectionFailed,
   exchangeFailed,
+}
+
+enum HermesEnrollmentPhase {
+  inspect,
+  exchange,
+  verifyManagement,
+  verifyAgent,
+  save,
+  acknowledge,
+}
+
+enum HermesEnrollmentFailure {
+  unknown,
+  network,
+  timeout,
+  tls,
+  rejected,
+  expired,
+  unsupported,
+  invalidResponse,
+}
+
+enum HermesEnrollmentConnection { unchecked, connecting, connected, failed }
+
+HermesEnrollmentFailure _classifyEnrollmentFailure(Object error) {
+  if (error is TimeoutException) return HermesEnrollmentFailure.timeout;
+  final transportKind = error is HermesApiTransportException
+      ? error.kind
+      : enrollmentTransportFailure(error);
+  if (transportKind != null) {
+    return switch (transportKind) {
+      HermesApiTransportFailureKind.network => HermesEnrollmentFailure.network,
+      HermesApiTransportFailureKind.tls => HermesEnrollmentFailure.tls,
+      HermesApiTransportFailureKind.timeout => HermesEnrollmentFailure.timeout,
+    };
+  }
+  final status = error is HermesApiStatusException
+      ? error.statusCode
+      : error is WingLinkHttpException
+      ? error.statusCode
+      : null;
+  return switch (status) {
+    401 || 403 => HermesEnrollmentFailure.rejected,
+    410 => HermesEnrollmentFailure.expired,
+    404 || 426 => HermesEnrollmentFailure.unsupported,
+    _ =>
+      error is FormatException
+          ? HermesEnrollmentFailure.invalidResponse
+          : HermesEnrollmentFailure.unknown,
+  };
 }
 
 bool _sameEndpointAuthority(String baseUrl, Uri authority) {
@@ -261,6 +319,20 @@ class HermesEnrollmentController extends ChangeNotifier {
   Timer? _expiryTimer;
 
   bool _disposed = false;
+  HermesEnrollmentPhase _phase = HermesEnrollmentPhase.inspect;
+  HermesEnrollmentFailure _failure = HermesEnrollmentFailure.unknown;
+  HermesEnrollmentConnection _connection = HermesEnrollmentConnection.unchecked;
+  String? _connectedGatewayId;
+
+  HermesEnrollmentPhase get phase => _phase;
+  HermesEnrollmentFailure get failure => _failure;
+  HermesEnrollmentConnection get connection => _connection;
+  String? get connectedGatewayId => _connectedGatewayId;
+
+  void _setPhase(HermesEnrollmentPhase phase) {
+    _phase = phase;
+    _notify();
+  }
 
   HermesEnrollmentStatus get status => _status;
   HermesEnrollmentPreview? get preview => _preview;
@@ -321,6 +393,10 @@ class HermesEnrollmentController extends ChangeNotifier {
   Future<void> inspect(HermesEnrollmentPayload payload) async {
     if (_status == HermesEnrollmentStatus.confirming) return;
     final generation = ++_generation;
+    _phase = HermesEnrollmentPhase.inspect;
+    _failure = HermesEnrollmentFailure.unknown;
+    _connection = HermesEnrollmentConnection.unchecked;
+    _connectedGatewayId = null;
     _origin = payload.origin;
     _exchangeOrigin = payload.brokerOrigin ?? payload.origin;
     _wingLinkOrigin = payload.wingLinkOrigin;
@@ -369,9 +445,15 @@ class HermesEnrollmentController extends ChangeNotifier {
       } else {
         _setStatus(HermesEnrollmentStatus.ready);
       }
-    } catch (_) {
+    } catch (error) {
       if (generation != _generation) return;
-      _setStatus(HermesEnrollmentStatus.inspectionFailed);
+      _failure = _classifyEnrollmentFailure(error);
+      _code = null;
+      _setStatus(
+        _failure == HermesEnrollmentFailure.expired
+            ? HermesEnrollmentStatus.expired
+            : HermesEnrollmentStatus.inspectionFailed,
+      );
       _errorMessage = null;
     }
     _notify();
@@ -408,7 +490,7 @@ class HermesEnrollmentController extends ChangeNotifier {
     final generation = ++_generation;
     _setStatus(HermesEnrollmentStatus.confirming);
     _notify();
-    late final String importedGatewayId;
+    _setPhase(HermesEnrollmentPhase.exchange);
     try {
       final pinnedExchange = _exchangePinned;
       final issued = wingLinkHostFingerprint != null && pinnedExchange != null
@@ -504,12 +586,14 @@ class HermesEnrollmentController extends ChangeNotifier {
         );
       }
       if (wingLinkOrigin != null) {
+        _setPhase(HermesEnrollmentPhase.verifyManagement);
         await _verifyWingLinkIdentity(
           origin: wingLinkOrigin,
           token: issued.wingLinkToken,
           hostFingerprint: wingLinkHostFingerprint,
         );
         if (generation != _generation) return;
+        _setPhase(HermesEnrollmentPhase.verifyAgent);
         for (var index = 0; index < connections.length; index++) {
           await _verifyEnrollment(
             hermesOrigin: Uri.parse(connections[index].origin),
@@ -520,6 +604,7 @@ class HermesEnrollmentController extends ChangeNotifier {
           if (generation != _generation) return;
         }
       }
+      _setPhase(HermesEnrollmentPhase.save);
       final existingConfigs = await _store.loadProfiles();
       if (generation != _generation) return;
       final committedIds = configs.map((config) => config.id).toSet();
@@ -540,6 +625,7 @@ class HermesEnrollmentController extends ChangeNotifier {
         return;
       }
       if (wingLinkOrigin != null) {
+        _setPhase(HermesEnrollmentPhase.acknowledge);
         await _acknowledgeWingLinkCredential(
           origin: wingLinkOrigin,
           token: issued.wingLinkToken,
@@ -550,6 +636,7 @@ class HermesEnrollmentController extends ChangeNotifier {
         // if the screen was dismissed while the request was in flight. The
         // control credential may already be active server-side, so returning
         // here would strand a locally pending record and mislead recovery.
+        _setPhase(HermesEnrollmentPhase.save);
         await _store.saveAll([
           for (final profile in committedProfiles)
             committedIds.contains(profile.id)
@@ -576,11 +663,13 @@ class HermesEnrollmentController extends ChangeNotifier {
       _wingLinkOrigin = null;
       _wingLinkHostFingerprint = null;
       _code = null;
+      _connectedGatewayId = configs.first.id!;
       _setStatus(HermesEnrollmentStatus.confirmed);
       _notify();
-      importedGatewayId = configs.first.id!;
-    } catch (_) {
+    } catch (error) {
       if (generation != _generation) return;
+      _failure = _classifyEnrollmentFailure(error);
+      _code = null;
       _connectedProfileCount = null;
       _setStatus(HermesEnrollmentStatus.exchangeFailed);
       _errorMessage = null;
@@ -588,17 +677,38 @@ class HermesEnrollmentController extends ChangeNotifier {
       return;
     }
 
-    try {
-      await _connectSavedEndpoint?.call(importedGatewayId);
-    } catch (_) {
-      // Persistence and Wing Link acknowledgment are already committed.
-      // Activating the imported endpoint is a best-effort follow-up.
+    await connectSaved();
+  }
+
+  /// Reconnects saved credentials. Never exchanges a code or rewrites enrollment.
+  Future<void> connectSaved() async {
+    final gatewayId = _connectedGatewayId;
+    final connect = _connectSavedEndpoint;
+    if (_status != HermesEnrollmentStatus.confirmed ||
+        gatewayId == null ||
+        connect == null ||
+        _connection == HermesEnrollmentConnection.connecting) {
+      return;
     }
+    final generation = _generation;
+    _connection = HermesEnrollmentConnection.connecting;
+    _notify();
+    try {
+      await connect(gatewayId);
+      if (generation != _generation) return;
+      _connection = HermesEnrollmentConnection.connected;
+    } catch (_) {
+      if (generation != _generation) return;
+      _connection = HermesEnrollmentConnection.failed;
+    }
+    _notify();
   }
 
   /// Discards the pending code without contacting the exchange endpoint.
   void cancel() {
     _generation++;
+    _connectedGatewayId = null;
+    _connection = HermesEnrollmentConnection.unchecked;
     _origin = null;
     _exchangeOrigin = null;
     _wingLinkOrigin = null;

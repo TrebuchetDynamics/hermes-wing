@@ -1,0 +1,46 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- tapOn: Emoji
+- tapOn: '(?s).*Insert 😀.*'
+- assertVisible: '(?s).*😀.*'
+- tapOn: '^Send$'
+- tapOn: Approve once
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 1'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: /sessions
+- hideKeyboard
+- tapOn: '^Send$'
+- assertVisible: Hermes sessions
+- back
+- hideKeyboard
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 1'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: /settings
+- hideKeyboard
+- tapOn: '^Send$'
+- assertVisible: Settings
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Submitted turns: 1'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Emoji submitted: true'

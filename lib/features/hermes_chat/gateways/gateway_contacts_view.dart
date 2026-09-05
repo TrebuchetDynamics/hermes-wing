@@ -459,35 +459,39 @@ class _GroupedContactTile extends StatelessWidget {
       key: ValueKey(
         'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
       ),
-      excludeSemantics: true,
+      container: true,
       label: '${_contactTitle(contact)}, $contactStatus',
       child: ListTile(
         key: const ValueKey('gateway-contact-row'),
-        leading: _ContactAvatar(contact: contact),
-        title: Text(
-          _profileTitle(contact),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        leading: ExcludeSemantics(child: _ContactAvatar(contact: contact)),
+        title: ExcludeSemantics(
+          child: Text(
+            _profileTitle(contact),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (contact.gatewayLabel.trim().isNotEmpty &&
-                contact.gatewayLabel.trim().toLowerCase() !=
-                    contact.profileName.trim().toLowerCase())
-              Text(
-                contact.gatewayLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            if (!contact.chatAvailable)
-              Text(AppLocalizations.of(context).profileChatUnavailable),
-            if (contact.latestSession?.preview case final preview?)
-              Text(preview, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ],
+        subtitle: ExcludeSemantics(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (contact.gatewayLabel.trim().isNotEmpty &&
+                  contact.gatewayLabel.trim().toLowerCase() !=
+                      contact.profileName.trim().toLowerCase())
+                Text(
+                  contact.gatewayLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              if (!contact.chatAvailable)
+                Text(AppLocalizations.of(context).profileChatUnavailable),
+              if (contact.latestSession?.preview case final preview?)
+                Text(preview, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -500,7 +504,7 @@ class _GroupedContactTile extends StatelessWidget {
               onPressed: onMove,
               icon: const Icon(Icons.drive_file_move_outline),
             ),
-            _ContactStatus(contact: contact),
+            ExcludeSemantics(child: _ContactStatus(contact: contact)),
           ],
         ),
         onTap: contact.chatAvailable ? () => onOpen(contact.id) : null,

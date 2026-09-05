@@ -66,6 +66,13 @@ Widget _packagedApp() => MaterialApp(
   home: const TermuxHermesSetupScreen(),
 );
 
+Future<void> _showCommand(WidgetTester tester) async {
+  final ready = find.byKey(const ValueKey('termux-ready'));
+  await tester.ensureVisible(ready);
+  await tester.tap(ready);
+  await tester.pump();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -86,6 +93,7 @@ void main() {
     );
     await tester.pump();
 
+    await _showCommand(tester);
     final loading = find.byKey(const ValueKey('termux-command-loading'));
     expect(loading, findsOneWidget);
     await tester.ensureVisible(loading);
@@ -145,9 +153,13 @@ void main() {
     await tester.pumpWidget(_testApp(metadata));
     await tester.pumpAndSettle();
 
-    expect(find.text('Install Hermes Agent on this phone'), findsOneWidget);
-    expect(find.textContaining('official verified installer'), findsOneWidget);
+    expect(find.text('Set up Hermes on this phone'), findsOneWidget);
+    expect(
+      find.textContaining('reuses a healthy existing installation'),
+      findsOneWidget,
+    );
     expect(clipboardText, isNull);
+    await _showCommand(tester);
 
     await tester.tap(find.byKey(const ValueKey('termux-copy-command')));
     await tester.pump();
@@ -189,6 +201,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(_validMetadata()));
     await tester.pumpAndSettle();
+    await _showCommand(tester);
     final copy = find.byKey(const ValueKey('termux-copy-command'));
     await tester.tap(copy);
     await tester.pump();
@@ -224,6 +237,7 @@ void main() {
 
     await tester.pumpWidget(_testApp(_validMetadata()));
     await tester.pumpAndSettle();
+    await _showCommand(tester);
     await tester.tap(find.byKey(const ValueKey('termux-copy-command')));
     await tester.pump();
 
@@ -236,6 +250,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_packagedApp());
     await tester.pumpAndSettle();
+    await _showCommand(tester);
 
     // Native asset I/O can finish after the last scheduled animation frame.
     for (var attempt = 0; attempt < 50; attempt++) {
@@ -266,6 +281,7 @@ void main() {
   testWidgets('unqualified build disables command copy', (tester) async {
     await tester.pumpWidget(_testApp({'available': false}));
     await tester.pumpAndSettle();
+    await _showCommand(tester);
 
     final button = tester.widget<FilledButton>(
       find.byKey(const ValueKey('termux-copy-command')),
@@ -281,7 +297,7 @@ void main() {
     await tester.pumpWidget(_testApp(_validMetadata()));
     await tester.pumpAndSettle();
 
-    final button = tester.widget<FilledButton>(
+    final button = tester.widget<OutlinedButton>(
       find.byKey(const ValueKey('termux-install')),
     );
     expect(button.onPressed, isNotNull);
@@ -306,38 +322,34 @@ void main() {
         attempt < 8 && installButton.evaluate().isEmpty;
         attempt++
       ) {
-        await tester.drag(find.byType(ListView), const Offset(0, -150));
+        await tester.drag(
+          find.byType(SingleChildScrollView).first,
+          const Offset(0, -150),
+        );
         await tester.pump();
       }
       expect(installButton, findsOneWidget);
       expect(tester.getSize(installButton).height, greaterThanOrEqualTo(48));
-      expect(tester.widget<FilledButton>(installButton).onPressed, isNotNull);
+      expect(tester.widget<OutlinedButton>(installButton).onPressed, isNotNull);
       expect(find.bySemanticsLabel('Install Termux'), findsOneWidget);
 
+      await _showCommand(tester);
       final copyButton = find.byKey(const ValueKey('termux-copy-command'));
-      await tester.scrollUntilVisible(
-        copyButton,
-        100,
-        scrollable: find
-            .descendant(
-              of: find.byType(ListView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+      await tester.ensureVisible(copyButton);
       expect(copyButton, findsOneWidget);
       expect(tester.getSize(copyButton).height, greaterThanOrEqualTo(48));
       expect(tester.widget<FilledButton>(copyButton).onPressed, isNotNull);
       expect(find.bySemanticsLabel('Copy setup command'), findsOneWidget);
-      final tierNotice = find.textContaining(
-        'Android may stop background processes',
-      );
+      final tierNotice = find.textContaining('Android can stop Hermes');
       for (
         var attempt = 0;
         attempt < 12 && tierNotice.evaluate().isEmpty;
         attempt++
       ) {
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(
+          find.byType(SingleChildScrollView).first,
+          const Offset(0, -300),
+        );
         await tester.pump();
       }
       expect(tierNotice, findsOneWidget);

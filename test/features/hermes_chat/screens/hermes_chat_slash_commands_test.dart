@@ -86,6 +86,27 @@ Widget _routerTestApp(FakeHermesChannel channel) {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets(
+    'Android hardware Tab leaves the composer without editing the draft',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      final field = find.byKey(const ValueKey('hermes-composer-field'));
+      await tester.enterText(field, 'Fixture keyboard draft');
+      await tester.pump();
+      final input = tester.widget<TextField>(field);
+      expect(input.focusNode!.hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(input.focusNode!.hasFocus, isFalse);
+      expect(input.controller!.text, 'Fixture keyboard draft');
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
+
   testWidgets('composer model chip opens the profile model picker', (
     tester,
   ) async {

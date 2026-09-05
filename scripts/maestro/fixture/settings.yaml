@@ -1,0 +1,105 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Settings fixture
+- scrollUntilVisible:
+    element:
+      text: '^Dark$'
+    direction: DOWN
+- tapOn: '^Dark$'
+- tapOn: Forest
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Speak replies aloud.*'
+    direction: DOWN
+- tapOn: '(?s).*Speak replies aloud.*'
+- stopApp
+- launchApp
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Settings fixture
+- scrollUntilVisible:
+    element:
+      text: '^Dark$'
+    direction: DOWN
+- assertVisible:
+    text: '^Dark$'
+    selected: true
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Speak replies aloud.*'
+    direction: DOWN
+- assertVisible:
+    text: '(?s).*Speak replies aloud.*'
+    checked: true
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Advanced.*'
+    direction: DOWN
+- tapOn: '(?s).*Advanced.*'
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Command word.*'
+    direction: DOWN
+- tapOn: '(?s).*Command word.*'
+- tapOn:
+    text: '(?s).*navi.*'
+    point: "95%,50%"
+- eraseText: 100
+- inputText: fixturepause
+- hideKeyboard
+- tapOn: '^Save$'
+- assertVisible: '(?s).*fixturepause.*'
+- stopApp
+- launchApp
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Advanced.*'
+    direction: DOWN
+- tapOn: '(?s).*Advanced.*'
+- scrollUntilVisible:
+    element:
+      text: '(?s).*fixturepause.*'
+    direction: DOWN
+- assertVisible: '(?s).*fixturepause.*'
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Diagnostics fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Copy diagnostics.*'
+    direction: DOWN
+    centerElement: true
+- tapOn: '(?s).*Copy diagnostics.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check diagnostics clipboard
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: 'Diagnostics clipboard safe: true'
+    direction: DOWN
+- assertVisible: 'Diagnostics clipboard safe: true'
+- tapOn: Close controls

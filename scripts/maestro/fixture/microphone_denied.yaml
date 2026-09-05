@@ -1,0 +1,51 @@
+# Native Android denial only; this never grants recording permission or records.
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+    permissions:
+      android.permission.RECORD_AUDIO: deny
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- longPressOn: Hands-free voice
+- extendedWaitUntil:
+    visible:
+      id: '.*:id/permission_deny.*button'
+    timeout: 30000
+- tapOn:
+    id: '.*:id/permission_deny.*button'
+# Speech initialization can also request nearby-device access on Android.
+- runFlow:
+    when:
+      visible:
+        id: '.*:id/permission_deny.*button'
+    commands:
+      - tapOn:
+          id: '.*:id/permission_deny.*button'
+# Android permission dialogs cancel capture through the lifecycle pause path.
+- assertVisible: '(?s).*Continuous voice paused while Hermes Wing is not in the foreground.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Check microphone permission
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: 'Microphone permission granted: false'
+    direction: DOWN
+- assertVisible: 'Microphone permission granted: false'
+- tapOn: Close controls
+- assertVisible: '(?s).*Message Hermes.*'
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: Fixture text fallback
+- hideKeyboard
+- tapOn: '^Send$'
+- assertVisible: '(?s).*Fixture approval 1.*'
+- tapOn: Approve once
+- assertVisible: '(?s).*Fixture decision once.*'

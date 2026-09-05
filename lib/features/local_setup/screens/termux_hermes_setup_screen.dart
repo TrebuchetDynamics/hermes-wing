@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import '../../../router/routes/app_routes.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../models/termux_bootstrap_command.dart';
@@ -21,6 +23,7 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
   );
 
   Future<TermuxBootstrapCommand?>? _command;
+  int _step = 0;
   bool _copying = false;
   bool _openingGuide = false;
 
@@ -95,154 +98,182 @@ class _TermuxHermesSetupScreenState extends State<TermuxHermesSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.termuxSetupTitle)),
-      body: SafeArea(
-        child: FutureBuilder<TermuxBootstrapCommand?>(
-          future: _command,
-          builder: (context, snapshot) {
-            final loading = snapshot.connectionState != ConnectionState.done;
-            final command = snapshot.data;
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              children: [
-                Text(strings.termuxSetupBody),
-                const SizedBox(height: 24),
-                _SetupStep(
-                  number: 1,
-                  child: FilledButton.icon(
-                    key: const ValueKey('termux-install'),
-                    style: const ButtonStyle(
-                      minimumSize: WidgetStatePropertyAll(Size.fromHeight(48)),
-                    ),
-                    onPressed: _actionPending ? null : _openTermuxInstallGuide,
-                    icon: _openingGuide
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              semanticsLabel: strings.termuxOpeningInstallGuide,
-                            ),
-                          )
-                        : const Icon(Icons.open_in_new),
-                    label: Text(strings.termuxInstallAction),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _SetupStep(
-                  number: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      FilledButton.tonalIcon(
-                        key: const ValueKey('termux-copy-command'),
-                        style: const ButtonStyle(
-                          minimumSize: WidgetStatePropertyAll(
-                            Size.fromHeight(48),
-                          ),
-                        ),
-                        onPressed: loading || command == null || _actionPending
-                            ? null
-                            : () => _copy(command),
-                        icon: _copying
-                            ? SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  semanticsLabel: strings.termuxCopyingCommand,
-                                ),
-                              )
-                            : const Icon(Icons.copy_outlined),
-                        label: Text(strings.termuxCopyAction),
-                      ),
-                      if (loading) ...[
-                        const SizedBox(height: 12),
-                        Semantics(
-                          key: const ValueKey('termux-command-loading'),
-                          liveRegion: true,
-                          label: strings.termuxPreparingCommand,
-                          excludeSemantics: true,
-                          child: Row(
-                            children: [
-                              const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(strings.termuxPreparingCommand),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else if (command != null) ...[
-                        const SizedBox(height: 12),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SelectableText(
-                                command.command,
-                                maxLines: 1,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(fontFamily: 'monospace'),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ] else if (!loading) ...[
-                        const SizedBox(height: 8),
-                        Semantics(
-                          liveRegion: true,
-                          child: Text(strings.termuxMetadataUnavailable),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _SetupStep(number: 3, child: Text(strings.termuxRunStep)),
-                const SizedBox(height: 16),
-                _SetupStep(number: 4, child: Text(strings.termuxReturnStep)),
-                const SizedBox(height: 24),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    final titles = [
+      strings.termuxPrepareStep,
+      strings.termuxInstallStep,
+      strings.termuxPairStep,
+    ];
+    return PopScope<Object?>(
+      canPop: _step == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _step > 0) setState(() => _step--);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(strings.termuxSetupTitle),
+          leading: _step > 0
+              ? BackButton(onPressed: () => setState(() => _step--))
+              : null,
+        ),
+        body: SafeArea(
+          child: FutureBuilder<TermuxBootstrapCommand?>(
+            future: _command,
+            builder: (context, snapshot) {
+              final loading = snapshot.connectionState != ConnectionState.done;
+              final command = snapshot.data;
+              return SingleChildScrollView(
+                key: ValueKey(_step),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(Icons.info_outline),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(strings.termuxTierTwoNotice)),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(strings.enrollStepProgress(_step + 1, 3)),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: (_step + 1) / 3,
+                          semanticsLabel: strings.enrollStepProgress(
+                            _step + 1,
+                            3,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          titles[_step],
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 12),
+                        if (_step == 0) ...[
+                          Text(strings.termuxSetupBody),
+                          const SizedBox(height: 16),
+                          Text(strings.termuxPrerequisites),
+                          const SizedBox(height: 20),
+                          OutlinedButton.icon(
+                            key: const ValueKey('termux-install'),
+                            onPressed: _actionPending
+                                ? null
+                                : _openTermuxInstallGuide,
+                            icon: _openingGuide
+                                ? _spinner(strings.termuxOpeningInstallGuide)
+                                : const Icon(Icons.open_in_new),
+                            label: Text(strings.termuxInstallAction),
+                          ),
+                          const SizedBox(height: 12),
+                          FilledButton(
+                            key: const ValueKey('termux-ready'),
+                            onPressed: _actionPending
+                                ? null
+                                : () => setState(() => _step = 1),
+                            child: Text(strings.termuxReadyAction),
+                          ),
+                        ] else if (_step == 1) ...[
+                          Text(strings.termuxRunStep),
+                          const SizedBox(height: 16),
+                          if (loading)
+                            Semantics(
+                              key: const ValueKey('termux-command-loading'),
+                              liveRegion: true,
+                              child: Row(
+                                children: [
+                                  _spinner(strings.termuxPreparingCommand),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(strings.termuxPreparingCommand),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (command == null)
+                            Semantics(
+                              liveRegion: true,
+                              child: Text(strings.termuxMetadataUnavailable),
+                            )
+                          else
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: SelectableText(
+                                    command.command,
+                                    maxLines: 1,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(fontFamily: 'monospace'),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 16),
+                          FilledButton.tonalIcon(
+                            key: const ValueKey('termux-copy-command'),
+                            style: const ButtonStyle(
+                              minimumSize: WidgetStatePropertyAll(
+                                Size.fromHeight(48),
+                              ),
+                            ),
+                            onPressed:
+                                loading || command == null || _actionPending
+                                ? null
+                                : () => _copy(command),
+                            icon: _copying
+                                ? _spinner(strings.termuxCopyingCommand)
+                                : const Icon(Icons.copy_outlined),
+                            label: Text(strings.termuxCopyAction),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(strings.termuxAdoptionHelp),
+                          const SizedBox(height: 12),
+                          FilledButton(
+                            key: const ValueKey('termux-setup-finished'),
+                            onPressed: () => setState(() => _step = 2),
+                            child: Text(strings.termuxSetupFinished),
+                          ),
+                        ] else ...[
+                          Text(strings.termuxReturnStep),
+                          const SizedBox(height: 16),
+                          Text(strings.termuxPairRecovery),
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            key: const ValueKey('termux-open-pairing'),
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop(true);
+                              } else {
+                                context.go('${AppRoutes.enroll}?step=pair');
+                              }
+                            },
+                            icon: const Icon(Icons.link),
+                            label: Text(strings.enrollComputerReady),
+                          ),
+                          TextButton(
+                            onPressed: () => setState(() => _step = 1),
+                            child: Text(strings.termuxReturnToSetup),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        Text(
+                          strings.termuxTierTwoNotice,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
   }
-}
 
-class _SetupStep extends StatelessWidget {
-  const _SetupStep({required this.number, required this.child});
-
-  final int number;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      CircleAvatar(radius: 16, child: Text('$number')),
-      const SizedBox(width: 12),
-      Expanded(child: child),
-    ],
+  Widget _spinner(String label) => SizedBox.square(
+    dimension: 18,
+    child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: label),
   );
 }

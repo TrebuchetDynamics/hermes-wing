@@ -1,0 +1,83 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: SOUL fixture
+- assertVisible: Fixture initial persona
+- tapOn:
+    text: Fixture initial persona
+    point: "95%,50%"
+- eraseText: 100
+- inputText: Fixture revised persona
+- hideKeyboard
+- tapOn: '^Save$'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Persona writes: 1"
+    direction: DOWN
+- assertVisible: "Persona writes: 1"
+- tapOn: Close controls
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: SOUL fixture
+- assertVisible: Fixture revised persona
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Inject revision conflict
+- tapOn:
+    text: Fixture revised persona
+    point: "95%,50%"
+- eraseText: 100
+- inputText: Fixture stale persona
+- hideKeyboard
+- tapOn: '^Save$'
+- assertVisible: '(?s).*This profile changed elsewhere.*'
+- assertVisible: Fixture concurrent persona
+- assertNotVisible: Fixture stale persona
+- tapOn: '^Cancel$'
+- tapOn: Fixture controls
+- assertVisible: 'Persona writes: 1'
+- tapOn: Close controls
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Directories fixture
+- tapOn: Fixture root
+- assertVisible: Fixture folder one
+- tapOn: Load more
+- assertVisible: Fixture folder two
+- tapOn: Fixture folder one
+- assertVisible: No approved folders
+- tapOn:
+    text: '^Back$'
+    above: Fixture controls
+- assertVisible: Fixture folder two
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Revoke directory grant
+- tapOn: Fixture folder two
+- assertVisible: No approved folders
+- assertNotVisible: Fixture folder one
+- assertNotVisible: Fixture folder two
+- assertVisible: '(?s).*Project creation remains unavailable.*'
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: "Directory pages: 3"
+    direction: DOWN
+- assertVisible: "Directory pages: 3"
+- tapOn: Close controls

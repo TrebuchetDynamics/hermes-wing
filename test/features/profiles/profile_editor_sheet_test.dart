@@ -57,6 +57,61 @@ void main() {
     ]);
   });
 
+  testWidgets('delete retains host approval for an explicit retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    final requests = <(String, String, String?)>[];
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          profile: const HermesProfile(
+            id: 'cycle',
+            displayName: 'cycle',
+            revision: 'rev-1',
+          ),
+          canDelete: true,
+          onDelete: (id, revision, {idempotencyKey}) async {
+            requests.add((id, revision, idempotencyKey));
+            if (requests.length > 1) return;
+            throw WingLinkApprovalRequired(
+              approvalId: 'appr_delete_cycle',
+              operationId: 'op_delete_cycle',
+              idempotencyKey: 'delete-cycle-key',
+              expiresAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 300,
+            );
+          },
+        ),
+      ),
+    );
+    await tester.tap(find.text('Delete profile'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'cycle');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('wing-link approvals approve appr_delete_cycle'),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<TextFormField>(find.byType(TextFormField).first).enabled,
+      isFalse,
+    );
+    await tester.ensureVisible(find.text('Retry approved deletion'));
+    await tester.tap(find.text('Retry approved deletion'));
+    await tester.pumpAndSettle();
+    expect(requests, [
+      ('cycle', 'rev-1', null),
+      ('cycle', 'rev-1', 'delete-cycle-key'),
+    ]);
+    expect(channel.deleteProfileCalls, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('create validates a name and clones from the selected agent', (
     tester,
   ) async {

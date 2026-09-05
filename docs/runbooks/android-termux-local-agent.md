@@ -26,7 +26,7 @@ host](android-hermes-setup.md).
 
 ## Install and pair
 
-1. In Wing enrollment choose **Install Hermes Agent on this phone**.
+1. In Wing enrollment choose **Use this phone**. Confirm that Termux opens, then continue to the verified setup command.
 2. Copy the verified setup command, open Termux, paste it, and keep Termux in
    the foreground while installation runs. Development builds install Termux's
    `golang` package and compile the pinned Wing Link source, so their first run

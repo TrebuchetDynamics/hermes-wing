@@ -1,3 +1,5 @@
+# Requires WING_QA_GATEWAY_LABEL and WING_QA_PROFILE_LABEL; supplied by
+# scripts/run_android_maestro_regression.sh.
 # Static validation: maestro check-syntax scripts/maestro/chat_concurrent_sessions_qa.yaml
 # Physical-device receipt for session-owned concurrent runs. Prompts are bounded,
 # synthetic, and explicitly forbid tool use or external actions.
@@ -12,8 +14,8 @@ name: chat_concurrent_sessions_qa
       visible: "(?s).*All chats.*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
-- tapOn: "(?s).*Default profile.*"
+- assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*online.*"
     timeout: 60000

@@ -1,3 +1,5 @@
+# Requires WING_QA_GATEWAY_LABEL and WING_QA_PROFILE_LABEL; supplied by
+# scripts/run_android_maestro_regression.sh.
 # Static validation: maestro check-syntax scripts/maestro/chat_process_recovery_qa.yaml
 # Physical-device receipt for secure detached-run recovery after process death.
 # Uses a bounded synthetic prompt, preserves app data, and never retries the turn.
@@ -11,7 +13,7 @@ name: chat_process_recovery_qa
     when:
       visible: "^Profiles$"
     commands:
-      - tapOn: "(?s).*Default profile.*"
+      - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*online.*"
     timeout: 60000
@@ -35,7 +37,7 @@ name: chat_process_recovery_qa
     when:
       visible: "^Profiles$"
     commands:
-      - tapOn: "(?s).*Default profile.*"
+      - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - extendedWaitUntil:
     visible: "(?s).*Hermes run is still active.*"
     timeout: 60000

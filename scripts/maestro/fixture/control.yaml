@@ -1,0 +1,8 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: '${ACTION}'
+    direction: DOWN
+- tapOn: '${ACTION}'

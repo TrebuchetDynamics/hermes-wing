@@ -1,3 +1,5 @@
+# Requires WING_QA_GATEWAY_LABEL and WING_QA_PROFILE_LABEL; supplied by
+# scripts/run_android_maestro_regression.sh.
 # Static validation: maestro check-syntax scripts/maestro/chat_ux_qa.yaml
 # Keep selectors and prompts synthetic. Screenshot output belongs only in the
 # ignored test-results tree or an external temporary directory.
@@ -11,9 +13,9 @@ name: chat_ux_qa
       visible: "(?s).*All chats.*"
     commands:
       - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - assertVisible: "Open more destinations"
-- tapOn: "(?s).*Default profile.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - assertVisible: "(?s).*online.*"
 - assertVisible: "(?s).*Message Hermes….*"
 - assertNotVisible: "Open more destinations"
@@ -77,7 +79,7 @@ name: chat_ux_qa
     when:
       visible: "Open more destinations"
     commands:
-      - tapOn: "(?s).*Default profile.*"
+      - tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
       - assertVisible: "(?s).*Message Hermes….*"
 - assertNotVisible: "Open more destinations"
 - assertVisible: "(?s)^white.*"
@@ -107,13 +109,13 @@ name: chat_ux_qa
 
 # Verify navigation does not lose the completed live turn.
 - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - assertVisible: "Open more destinations"
-- tapOn: "(?s).*Default profile.*"
+- tapOn: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - assertNotVisible: "Open more destinations"
 - assertVisible: "(?s)^white.*"
 - assertVisible: "(?s).*Token usage:.*total.*"
 - takeScreenshot: 05_reopened_chat_retains_turn
 - tapOn: "(?s).*All chats.*"
-- assertVisible: "(?s).*Default profile.*"
+- assertVisible: "(?s).*${WING_QA_GATEWAY_LABEL}.*${WING_QA_PROFILE_LABEL}.*"
 - assertVisible: "Open more destinations"

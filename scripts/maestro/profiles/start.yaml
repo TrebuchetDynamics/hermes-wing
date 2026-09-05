@@ -1,0 +1,10 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: '(?s).*Message Hermes.*'
+    timeout: 30000
+- runFlow: open.yaml

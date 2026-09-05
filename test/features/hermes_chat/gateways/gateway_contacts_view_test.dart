@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,6 +100,16 @@ void main() {
     );
 
     expect(find.text('Hermes Wing'), findsOneWidget);
+    final semantics = tester.ensureSemantics();
+    await tester.pump();
+    final move = tester
+        .getSemantics(
+          find.byKey(const ValueKey('gateway-contact-groups-host-designer')),
+        )
+        .getSemanticsData();
+    expect(move.tooltip, 'Move to group');
+    expect(move.hasAction(SemanticsAction.tap), isTrue);
+    semantics.dispose();
     expect(find.text('Ungrouped'), findsOneWidget);
     await tester.tap(
       find.byKey(const ValueKey('gateway-contact-groups-host-designer')),

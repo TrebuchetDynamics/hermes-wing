@@ -1,6 +1,6 @@
 # Deterministic create/clone/edit/chat/delete coverage against the fixture.
 # This proves production UI behavior, not live provider authentication.
-appId: com.trebuchetdynamics.hermes.wing
+appId: com.trebuchetdynamics.hermes.wing.qa
 ---
 - scrollUntilVisible:
     element:

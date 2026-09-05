@@ -199,7 +199,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           const SizedBox(height: 16),
                           OutlinedButton.icon(
                             key: const ValueKey('hermes-open-qr-scanner'),
-                            onPressed: () => context.push(AppRoutes.enroll),
+                            onPressed: () =>
+                                context.push('${AppRoutes.enroll}?step=pair'),
                             icon: const Icon(Icons.qr_code_scanner),
                             label: Text(strings.chatLayoutScanQrAction),
                           ),
@@ -209,7 +210,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           const SizedBox(height: 16),
                           FilledButton.tonalIcon(
                             key: const ValueKey('hermes-open-local-setup'),
-                            onPressed: () => context.push(AppRoutes.localSetup),
+                            onPressed: () async {
+                              final pair = await context.push<bool>(
+                                AppRoutes.localSetup,
+                              );
+                              if (context.mounted && pair == true) {
+                                unawaited(
+                                  context.push('${AppRoutes.enroll}?step=pair'),
+                                );
+                              }
+                            },
                             icon: const Icon(Icons.computer_outlined),
                             label: Text(strings.localSetupAction),
                           ),

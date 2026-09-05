@@ -1,0 +1,10 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- tapOn: Fixture controls
+- scrollUntilVisible:
+    element:
+      text: '${RECEIPT}'
+    direction: DOWN
+    centerElement: true
+- assertVisible: '${RECEIPT}'
+- tapOn: Close controls

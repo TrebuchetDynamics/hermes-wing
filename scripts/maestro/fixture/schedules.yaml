@@ -1,0 +1,43 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Schedules fixture
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Fixture daily check.*'
+    direction: DOWN
+- assertVisible: '(?s).*Fixture daily check.*'
+- assertNotVisible: '^Create$'
+- assertNotVisible: '^Delete$'
+- tapOn: Refresh schedules
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Fixture daily check.*'
+    direction: DOWN
+- assertVisible: '(?s).*Fixture daily check.*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Fail schedule refresh
+- tapOn: Refresh schedules
+- assertVisible: '(?s).*Schedules could not be loaded from Hermes..*'
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Restore schedule refresh
+- tapOn: Refresh schedules
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Fixture daily check.*'
+    direction: DOWN
+- assertVisible: '(?s).*Fixture daily check.*'
+- assertNotVisible: '(?s).*Schedules could not be loaded from Hermes..*'

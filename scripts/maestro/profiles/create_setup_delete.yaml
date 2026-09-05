@@ -1,0 +1,111 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- runFlow: start.yaml
+- tapOn: '^New Profile$'
+- tapOn: '^Create$'
+- assertVisible: Enter a profile name.
+- tapOn: '(?s).*Profile name.*'
+- inputText: cancelled-qa
+- hideKeyboard
+- pressKey: Back
+- assertNotVisible: Edit cancelled-qa
+- tapOn: '^New Profile$'
+- tapOn: '(?s).*Profile name.*'
+- inputText: lifecycle-qa
+- hideKeyboard
+- tapOn: '(?s)Clone from.*default'
+- tapOn: mineru
+- tapOn: '^Create$'
+- extendedWaitUntil:
+    notVisible: '^Create$'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: Edit lifecycle-qa
+    direction: DOWN
+    centerElement: true
+- tapOn: Edit lifecycle-qa
+- assertVisible: '(?s).*persona-initial-mineru.*'
+- tapOn:
+    text: '(?s).*Profile name.*'
+    point: '95%,50%'
+- eraseText: 80
+- inputText: lifecycle-qualified
+- tapOn:
+    text: '(?s).*Persona.*'
+    point: '95%,50%'
+- eraseText: 200
+- inputText: persona-lifecycle-qualified
+- hideKeyboard
+- tapOn: '^Save$'
+- extendedWaitUntil:
+    notVisible: '^Save$'
+    timeout: 30000
+- stopApp
+- launchApp
+- runFlow: open.yaml
+- scrollUntilVisible:
+    element:
+      text: Edit lifecycle-qualified
+    direction: DOWN
+    centerElement: true
+- tapOn: Edit lifecycle-qualified
+- assertVisible: '(?s).*ID: lifecycle-qa.*'
+- assertVisible: '(?s).*persona-lifecycle-qualified.*'
+- pressKey: Back
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: lifecycle-qualified
+      PROFILE_ID: lifecycle-qa
+      DIRECTION: DOWN
+      MESSAGE: fixture-created-profile
+- scrollUntilVisible:
+    element:
+      text: Edit lifecycle-qualified
+    direction: DOWN
+    centerElement: true
+- tapOn: Edit lifecycle-qualified
+- tapOn: Delete profile
+- tapOn: '(?s).*Profile name.*'
+- inputText: wrong-profile
+- hideKeyboard
+- assertVisible:
+    text: '^Delete profile$'
+    enabled: false
+- tapOn: Cancel
+- assertVisible: '(?s).*ID: lifecycle-qa.*'
+- tapOn: Delete profile
+- tapOn: '(?s).*Profile name.*'
+- inputText: lifecycle-qualified
+- hideKeyboard
+- tapOn: '^Delete profile$'
+- extendedWaitUntil:
+    notVisible: '^Delete profile$'
+    timeout: 30000
+- assertNotVisible: Edit lifecycle-qualified
+- stopApp
+- launchApp
+- runFlow: open.yaml
+- scrollUntilVisible:
+    element:
+      text: Edit yunobo
+    direction: DOWN
+    centerElement: true
+- assertNotVisible: Edit lifecycle-qualified
+- scrollUntilVisible:
+    element:
+      text: Edit mineru
+    direction: UP
+    centerElement: true
+- tapOn: Edit mineru
+- assertVisible: '(?s).*persona-initial-mineru.*'
+- assertNotVisible: '(?s).*persona-lifecycle-qualified.*'
+- pressKey: Back
+- runFlow:
+    file: chat.yaml
+    env:
+      PROFILE_NAME: default
+      PROFILE_ID: default
+      DIRECTION: UP
+      MESSAGE: fixture-after-delete

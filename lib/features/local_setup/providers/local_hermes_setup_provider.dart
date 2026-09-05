@@ -35,6 +35,8 @@ class LocalHermesSetupController extends ChangeNotifier {
   String? _errorMessage;
   int _generation = 0;
   bool _disposed = false;
+  int? _progressPercent;
+  int? get progressPercent => _progressPercent;
 
   LocalHermesSetupStatus get status => _status;
   LocalHermesInspection? get inspection => _inspection;
@@ -76,11 +78,18 @@ class LocalHermesSetupController extends ChangeNotifier {
       return;
     }
     final generation = ++_generation;
+    _progressPercent = null;
     _status = LocalHermesSetupStatus.installing;
     _errorMessage = null;
     _notify();
     try {
-      final result = await _host.setup();
+      final result = await _host.setup(
+        onProgress: (progress) {
+          if (generation != _generation) return;
+          _progressPercent = progress.percent.clamp(0, 100);
+          _notify();
+        },
+      );
       if (generation != _generation) return;
       if (!result.hermesInstalled || !result.gatewayStarted) {
         throw const LocalWingLinkException(

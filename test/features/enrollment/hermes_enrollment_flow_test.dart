@@ -1667,6 +1667,7 @@ void main() {
       required HermesEnrollmentController controller,
       required _FakeConnectIntentSource source,
       required FakeHermesEndpointStore store,
+      bool chooser = false,
     }) {
       final container = ProviderContainer(
         overrides: [
@@ -1680,7 +1681,7 @@ void main() {
       );
       addTearDown(container.dispose);
       final router = container.read(routerProvider);
-      router.go(AppRoutes.enroll);
+      router.go(chooser ? AppRoutes.enroll : '${AppRoutes.enroll}?step=pair');
       return UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
@@ -1781,59 +1782,190 @@ void main() {
       );
     });
 
+    testWidgets('Android pairing actions are ordered, full width, and bounded', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async => _preview,
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+
+      await tester.pumpWidget(
+        buildApp(controller: controller, source: source, store: store),
+      );
+      await tester.pumpAndSettle();
+
+      final paste = find.byKey(const ValueKey('hermes-enrollment-paste-link'));
+      final scan = find.byKey(const ValueKey('hermes-enrollment-scan-qr'));
+      final manual = find.byKey(
+        const ValueKey('hermes-enrollment-manual-connect'),
+      );
+      expect(find.text('Paste pairing link'), findsOneWidget);
+      expect(find.text('Scan QR from another screen'), findsOneWidget);
+      expect(find.text('Connect one profile manually'), findsOneWidget);
+      expect(
+        find.text(
+          'If the link is on this phone, tap it or share it to Hermes Wing.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Advanced: requires an Agent URL and credential. Connects one profile without Wing Link host management.',
+        ),
+        findsOneWidget,
+      );
+      expect(tester.getTopLeft(paste).dy, lessThan(tester.getTopLeft(scan).dy));
+      expect(
+        tester.getTopLeft(scan).dy,
+        lessThan(tester.getTopLeft(manual).dy),
+      );
+      for (final action in [paste, scan, manual]) {
+        expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+        expect(tester.getSize(action).width, greaterThan(300));
+      }
+      debugDefaultTargetPlatformOverride = null;
+    });
+
     testWidgets(
-      'Android chooser actions are ordered, full width, and bounded',
+      'computer setup returns to pairing and accepts a live handoff',
       (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         final store = FakeHermesEndpointStore();
         final source = _FakeConnectIntentSource();
         addTearDown(source.dispose);
+        var inspections = 0;
         final controller = HermesEnrollmentController(
-          inspectEnrollment: ({required origin, required code}) async =>
-              _preview,
+          inspectEnrollment: ({required origin, required code}) async {
+            inspections++;
+            return _preview;
+          },
           exchangeEnrollment: ({required origin, required code}) async =>
               _issued,
           endpointStore: store,
         );
+        await tester.pumpWidget(
+          buildApp(
+            controller: controller,
+            source: source,
+            store: store,
+            chooser: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final computer = find.byKey(
+          const ValueKey('hermes-enrollment-computer-setup'),
+        );
+        await tester.ensureVisible(computer);
+        await tester.tap(computer);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
+          findsOneWidget,
+        );
+        expect(inspections, 0);
+        for (var step = 0; step < 3; step++) {
+          final next = find.byKey(const ValueKey('computer-next-step'));
+          await tester.ensureVisible(next);
+          await tester.tap(next);
+          await tester.pumpAndSettle();
+        }
+        final ready = find.byKey(
+          const ValueKey('hermes-enrollment-computer-ready'),
+        );
+        await tester.ensureVisible(ready);
+        await tester.tap(ready);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          findsOneWidget,
+        );
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(computer);
+        await tester.tap(computer);
+        await tester.pumpAndSettle();
+        source.emit(_validPayload);
+        await tester.pumpAndSettle();
+        expect(controller.status, HermesEnrollmentStatus.ready);
+        expect(inspections, 1);
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
+          findsNothing,
+        );
+        expect(store.saveCalls, isEmpty);
+        expect(tester.takeException(), isNull);
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
 
+    testWidgets(
+      'typed handoff recovers from clipboard failure and is cleared before review',
+      (tester) async {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+              if (call.method == 'Clipboard.getData') {
+                throw PlatformException(code: 'unavailable');
+              }
+              return null;
+            });
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(SystemChannels.platform, null),
+        );
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        var inspections = 0;
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async {
+            inspections++;
+            return _preview;
+          },
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
         await tester.pumpWidget(
           buildApp(controller: controller, source: source, store: store),
         );
         await tester.pumpAndSettle();
-
-        final paste = find.byKey(
-          const ValueKey('hermes-enrollment-paste-link'),
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         );
-        final scan = find.byKey(const ValueKey('hermes-enrollment-scan-qr'));
-        final manual = find.byKey(
-          const ValueKey('hermes-enrollment-manual-connect'),
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Clipboard access failed'), findsOneWidget);
+        final type = find.byKey(const ValueKey('hermes-enrollment-type-link'));
+        await tester.ensureVisible(type);
+        await tester.tap(type);
+        await tester.pumpAndSettle();
+        final input = find.byKey(
+          const ValueKey('hermes-enrollment-link-field'),
         );
-        expect(find.text('Paste pairing link'), findsOneWidget);
-        expect(find.text('Scan QR from another screen'), findsOneWidget);
-        expect(find.text('Connect one profile manually'), findsOneWidget);
-        expect(
-          find.text(
-            'If the link is on this phone, tap it or share it to Hermes Wing.',
-          ),
-          findsOneWidget,
-        );
-        expect(
-          find.text('This does not import Wing Link or other Hermes profiles.'),
-          findsOneWidget,
-        );
-        expect(
-          tester.getTopLeft(paste).dy,
-          lessThan(tester.getTopLeft(scan).dy),
-        );
-        expect(
-          tester.getTopLeft(scan).dy,
-          lessThan(tester.getTopLeft(manual).dy),
-        );
-        for (final action in [paste, scan, manual]) {
-          expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
-          expect(tester.getSize(action).width, greaterThan(300));
-        }
-        debugDefaultTargetPlatformOverride = null;
+        await tester.ensureVisible(input);
+        await tester.enterText(input, _validPayload);
+        final textController = tester.widget<TextField>(input).controller!;
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(inspections, 1);
+        expect(controller.status, HermesEnrollmentStatus.ready);
+        expect(textController.text, isEmpty);
+        expect(store.saveCalls, isEmpty);
+        expect(anyTextContains(tester, 'one-time'), isFalse);
       },
     );
 
@@ -2080,7 +2212,12 @@ void main() {
         );
 
         await tester.pumpWidget(
-          buildApp(controller: controller, source: source, store: store),
+          buildApp(
+            controller: controller,
+            source: source,
+            store: store,
+            chooser: true,
+          ),
         );
         await tester.pumpAndSettle();
 
@@ -2089,11 +2226,11 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+          find.byKey(const ValueKey('hermes-enrollment-computer-setup')),
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
           findsOneWidget,
         );
         debugDefaultTargetPlatformOverride = null;
@@ -2136,11 +2273,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.tap(
-          find.byKey(const ValueKey('hermes-enrollment-paste-another')),
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Paste another link'), findsOneWidget);
+        expect(find.text('Paste pairing link'), findsOneWidget);
         expect(
           find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
           findsOneWidget,
@@ -2177,10 +2314,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
-        findsOneWidget,
-      );
+      expect(find.text('Connection options'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsOneWidget,
@@ -2284,11 +2418,6 @@ void main() {
         buildApp(controller: controller, source: source, store: store),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
-        findsOneWidget,
-      );
-      expect(find.text('Install Hermes Agent on this phone'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('hermes-enrollment-scan-qr')));
       await tester.pumpAndSettle();
 
@@ -2384,12 +2513,17 @@ void main() {
       );
       expect(find.text('Pairing link couldn’t be opened'), findsOneWidget);
       expect(
-        find.text('Paste another pairing link or scan a new QR code.'),
+        find.text(
+          'Use the complete connection string from wing-link pair. An Agent URL alone belongs in manual connection.',
+        ),
         findsOneWidget,
       );
       expect(
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
         findsOneWidget,
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
       );
       await tester.tap(
         find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
@@ -2559,9 +2693,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(exchangeCalls, 1);
-        expect(find.text('9 profiles connected'), findsOneWidget);
+        expect(find.text('9 profiles paired'), findsOneWidget);
         expect(
-          find.text('Wing Link is ready for profile and gateway management.'),
+          find.text(
+            'Pairing is saved. Check the live connection and model status below before starting a conversation.',
+          ),
           findsOneWidget,
         );
         expect(find.text('View profiles'), findsOneWidget);
@@ -2632,11 +2768,11 @@ void main() {
 
       expect(controller.confirmedLoopback, isTrue);
       expect(find.textContaining('run hermes setup in Termux'), findsOneWidget);
+      expect(find.textContaining('Keep Termux running'), findsOneWidget);
       expect(
-        find.textContaining('retry the unchanged request'),
+        find.textContaining('then check the connection again'),
         findsOneWidget,
       );
-      expect(find.textContaining('pair once more'), findsOneWidget);
       expect(anyTextContainsToken(tester), isFalse);
       debugDefaultTargetPlatformOverride = null;
     });
@@ -2680,7 +2816,9 @@ void main() {
       expect(controller.confirmedLoopback, isTrue);
       expect(find.textContaining('run hermes setup in Termux'), findsNothing);
       expect(
-        find.text('Wing Link is ready for profile and gateway management.'),
+        find.text(
+          'Pairing is saved. Check the live connection and model status below before starting a conversation.',
+        ),
         findsOneWidget,
       );
       debugDefaultTargetPlatformOverride = null;
@@ -2710,7 +2848,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('hermes-enrollment-confirm')));
       await tester.pumpAndSettle();
 
-      expect(find.text('1 profile connected'), findsOneWidget);
+      expect(find.text('1 profile paired'), findsOneWidget);
       expect(find.text('1 profiles connected'), findsNothing);
       final router = GoRouter.of(
         tester.element(

@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/core/wing_link/local_wing_link_host.dart';
+import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
@@ -46,6 +48,10 @@ void main() {
       await tester.pumpAndSettle();
       unawaited(router.push(AppRoutes.enroll));
       await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
+      );
+      await tester.pumpAndSettle();
       final manual = find.byKey(
         const ValueKey('hermes-enrollment-manual-connect'),
       );
@@ -61,6 +67,8 @@ void main() {
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('Connect to Hermes'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       router.pop();
       await tester.pumpAndSettle();
       expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
@@ -70,6 +78,121 @@ void main() {
       TargetPlatform.android,
       TargetPlatform.linux,
     }),
+  );
+
+  testWidgets(
+    'phone setup returns to the pairing step of the existing chooser',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
+      router.go(AppRoutes.enroll);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsNothing,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+      );
+      await tester.pumpAndSettle();
+      for (final key in [
+        'termux-ready',
+        'termux-setup-finished',
+        'termux-open-pairing',
+      ]) {
+        final action = find.byKey(ValueKey(key));
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+      }
+      expect(find.byType(TermuxHermesSetupScreen), findsNothing);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsOneWidget,
+      );
+      expect(router.routeInformationProvider.value.uri.path, AppRoutes.enroll);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
+    'Linux setup opened from manual connection continues into pairing',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final host = LocalWingLinkHost(
+        executablePath: '/opt/fixture/wing',
+        runner: (_, args) async => LocalWingLinkProcessResult(
+          exitCode: 0,
+          stdout: args.first == 'setup'
+              ? '{"protocol_version":2,"result":{"hermes_installed":true,"hermes_adopted":true,"gateway_started":true}}'
+              : '{"protocol_version":2,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"setup_available":true}',
+        ),
+      );
+      final store = FakeHermesEndpointStore();
+      final container = ProviderContainer(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(store),
+          localWingLinkHostProvider.overrideWithValue(host),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
+      router.go(AppRoutes.addHermes);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final key in [
+        'hermes-open-local-setup',
+        'local-hermes-setup-action',
+        'local-hermes-setup-confirm',
+        'local-hermes-setup-continue',
+      ]) {
+        final action = find.byKey(ValueKey(key));
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+      }
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsOneWidget,
+      );
+      expect(store.saveCalls, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
 
   test('every shell destination builds a transition page', () {

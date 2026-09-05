@@ -16,7 +16,7 @@ import '../services/hermes_connect_intent_source.dart';
 /// Reads the pending Hermes Wing connect pairing payload from the platform's
 /// intent ingress; see [HermesConnectIntentSource].
 final hermesConnectIntentSourceProvider = Provider<HermesConnectIntentSource>(
-  (ref) => const MethodChannelHermesConnectIntentSource(),
+  (ref) => MethodChannelHermesConnectIntentSource(),
 );
 
 /// Owns the `HermesEnrollmentController` for the current `/enroll` visit.

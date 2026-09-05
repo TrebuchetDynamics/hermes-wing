@@ -140,7 +140,11 @@ jobs:
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-1.0, AGPL-3.0
           # Dart package metadata is not normalized to SPDX by dependency review;
           # these exact versions are verified BSD-3-Clause packages.
+          # Pierre publishes lowercase apache-2.0; verified Apache-2.0 evidence
+          # for these exact versions is in docs/quality/omniroute-install-review.md.
           allow-dependencies-licenses: >-
+            pkg:npm/%40pierre/diffs@1.2.12,
+            pkg:npm/%40pierre/theming@0.0.2,
             pkg:pub/cupertino_ui@1.0.1,
             pkg:pub/flutter_secure_storage@11.0.0,
             pkg:pub/go_router@17.5.0,

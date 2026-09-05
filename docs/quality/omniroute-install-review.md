@@ -18,6 +18,14 @@ The regenerated lock reports zero known vulnerabilities. npm lifecycle scripts
 remain disabled. The normal Go test checks the locked versions and integrity
 fields; future dependency changes must repeat the audit.
 
+Dependency review rejects the lowercase `apache-2.0` metadata published by
+`@pierre/diffs` 1.2.12 and `@pierre/theming` 0.0.2. Both package manifests declare
+that license; the diffs tarball includes the Apache 2.0 text, and the
+[upstream monorepo license](https://github.com/pierrecomputer/pierre/blob/4f60f29f3b9caf95945ea505bd0cc8b97acb8850/LICENSE.md)
+also supplies Apache 2.0. CI allows only these exact package/version license
+metadata exceptions. Vulnerability checks and the denied-license list remain
+enforced.
+
 ## Compatibility and qualification
 
 A fresh locked installation was tested on Linux with Node 24.19.0. OmniRoute's

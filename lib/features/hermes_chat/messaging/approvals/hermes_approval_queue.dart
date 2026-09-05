@@ -129,6 +129,33 @@ class HermesApprovalQueue extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Drops local prompts invalidated by stopping this exact owned turn.
+  /// This does not answer an approval or claim the server has finished stopping.
+  void dismissStoppedTurn(HermesTurnInterruptionTarget target) {
+    if (_disposed ||
+        !identical(target.owner, _channel()) ||
+        target.runId == null) {
+      return;
+    }
+    final removed = <String>{};
+    _pending.removeWhere((request) {
+      final matches =
+          request.connectionGeneration == target.connectionGeneration &&
+          request.profileId == target.profileId &&
+          request.sessionId == target.sessionId &&
+          request.runId == target.runId;
+      if (matches) removed.add(_requestKey(request));
+      return matches;
+    });
+    if (removed.isEmpty) return;
+    if (removed.contains(_answeringId)) {
+      // An answer already in flight no longer owns visible queue state.
+      _generation++;
+      _answeringId = null;
+    }
+    notifyListeners();
+  }
+
   /// Drops every queued approval and any in-flight answer.
   void reset() {
     _generation++;

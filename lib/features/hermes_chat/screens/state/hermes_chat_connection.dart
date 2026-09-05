@@ -2,7 +2,9 @@ part of '../hermes_chat_screen.dart';
 
 extension _HermesChatScreenConnection on _HermesChatScreenState {
   void _stopActiveTurn(HermesChannel channel) {
+    final target = channel.activeTurnInterruptionTarget;
     channel.stopActiveTurn();
+    if (target != null) _approvals.dismissStoppedTurn(target);
     _voiceInputController.pause();
   }
 

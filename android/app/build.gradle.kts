@@ -78,6 +78,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Device regressions must not replace a user's paired installation.
+            if (providers.environmentVariable("WING_ISOLATED_DEVICE_TEST").orNull == "1") {
+                applicationIdSuffix = ".qa"
+            }
+        }
         release {
             // A keystore-backed release signing config is selected when all
             // wing.release.* local properties or WING_RELEASE_* environment

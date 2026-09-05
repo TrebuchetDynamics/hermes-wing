@@ -1,6 +1,9 @@
 // Runs the complete feature, app, routing, and shared UI regression inventory
-// inside the Linux engine. Service and credential seams remain deterministic;
-// this does not qualify live Agent APIs, keyring persistence, or physical audio.
+// inside a native engine; the Android adapter reuses this inventory. Service
+// and credential seams remain deterministic. This does not qualify live Agent
+// APIs, secure-storage persistence, native IME input, or physical audio.
+import 'dart:ui' show GestureSettings;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -147,7 +150,7 @@ import '../test/shared/widgets/sheet_presenter_test.dart' as suite_82;
 import '../test/shared/widgets/wing_empty_state_test.dart' as suite_83;
 import '../test/shared/widgets/wing_skeleton_test.dart' as suite_84;
 
-void main() {
+void main({bool includeHostChecks = true}) {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   // Navigator cancels active pointers through the framework's device queue.
   // Dropping those cancellations leaves recognizers stuck after a popup opens.
@@ -160,8 +163,19 @@ void main() {
     final view = binding.platformDispatcher.implicitView!;
     view.physicalSize = const Size(800, 600);
     view.devicePixelRatio = 1;
+    // Physical status bars must not be reinterpreted at the synthetic test DPR.
+    view.padding = FakeViewPadding.zero;
+    view.viewPadding = FakeViewPadding.zero;
+    view.viewInsets = FakeViewPadding.zero;
+    view.systemGestureInsets = FakeViewPadding.zero;
+    // WidgetTester's drag splits at 20 logical pixels. A phone's physical
+    // touch slop belongs to its real DPR, not this synthetic viewport.
+    view.gestureSettings = const GestureSettings();
   });
-  group('test/app/desktop_host_command_listener_test.dart', suite_0.main);
+  group(
+    'test/app/desktop_host_command_listener_test.dart',
+    () => suite_0.main(includeHostChecks: includeHostChecks),
+  );
   group('test/app/wing_app_connect_intent_test.dart', suite_1.main);
   group(
     'test/features/enrollment/hermes_enrollment_flow_test.dart',
@@ -342,7 +356,7 @@ void main() {
   );
   group(
     'test/features/local_setup/termux_bootstrap_command_test.dart',
-    suite_47.main,
+    () => suite_47.main(includeHostChecks: includeHostChecks),
   );
   group(
     'test/features/local_setup/termux_hermes_setup_test.dart',

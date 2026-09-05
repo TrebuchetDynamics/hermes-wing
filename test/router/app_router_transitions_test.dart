@@ -1,14 +1,77 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
 
+import '../features/hermes_chat/support/fake_hermes_channel.dart';
+import '../features/hermes_chat/support/fake_hermes_endpoint_store.dart';
+
 void main() {
+  testWidgets(
+    'manual enrollment returns to the shell without duplicate pages',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(profiles: const []),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      unawaited(router.push(AppRoutes.enroll));
+      await tester.pumpAndSettle();
+      final manual = find.byKey(
+        const ValueKey('hermes-enrollment-manual-connect'),
+      );
+      await tester.ensureVisible(manual);
+      await tester.tap(manual);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey('hermes-connection-mode-local')),
+        findsOneWidget,
+      );
+      expect(router.canPop(), isTrue);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Connect to Hermes'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.linux,
+    }),
+  );
+
   test('every shell destination builds a transition page', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

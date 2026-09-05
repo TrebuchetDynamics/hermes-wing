@@ -44,7 +44,7 @@ Map<String, Object?> _metadata({
   'asset_size': assetSize,
 };
 
-void main() {
+void main({bool includeHostChecks = true}) {
   test('renders only the fixed verified command shape', () {
     final command = TermuxBootstrapCommand.fromJson(_metadata()).command;
 
@@ -94,22 +94,26 @@ void main() {
     );
     expect(command, contains('--skip-setup --non-interactive'));
     expect(command, contains('--build --setup'));
-    expect(Process.runSync('bash', ['-n', '-c', command]).exitCode, 0);
+    if (includeHostChecks) {
+      expect(Process.runSync('bash', ['-n', '-c', command]).exitCode, 0);
+    }
     expect(command, isNot(contains('code=')));
     expect(command, isNot(contains('token')));
   });
 
-  test('packaged metadata is unavailable or a valid release command', () {
-    final source = File(
-      'assets/config/termux_bootstrap.json',
-    ).readAsStringSync();
-    final metadata = jsonDecode(source) as Map<String, Object?>;
-    if (metadata['available'] == false) {
-      expect(metadata, {'available': false});
-    } else {
-      expect(TermuxBootstrapCommand.fromJson(metadata).command, isNotEmpty);
-    }
-  });
+  if (includeHostChecks) {
+    test('packaged metadata is unavailable or a valid release command', () {
+      final source = File(
+        'assets/config/termux_bootstrap.json',
+      ).readAsStringSync();
+      final metadata = jsonDecode(source) as Map<String, Object?>;
+      if (metadata['available'] == false) {
+        expect(metadata, {'available': false});
+      } else {
+        expect(TermuxBootstrapCommand.fromJson(metadata).command, isNotEmpty);
+      }
+    });
+  }
 
   test('rejects unavailable, malformed, and unbounded metadata', () {
     final invalid = <Map<String, Object?>>[

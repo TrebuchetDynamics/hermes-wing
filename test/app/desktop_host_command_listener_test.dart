@@ -11,7 +11,7 @@ import 'package:wing/app/desktop_host_command_listener.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
 
-void main() {
+void main({bool includeHostChecks = true}) {
   testWidgets('WingApp installs the native listener and opens Settings', (
     tester,
   ) async {
@@ -141,6 +141,8 @@ void main() {
     expect(router.routeInformationProvider.value.uri.path, AppRoutes.settings);
   });
 
+  // Source contracts run on the host checkout, which Android does not contain.
+  if (!includeHostChecks) return;
   test(
     'desktop hosts retain canonical Hermes Wing identity and menu wiring',
     () {

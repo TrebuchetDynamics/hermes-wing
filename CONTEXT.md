@@ -116,3 +116,12 @@ Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
 bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
 text, command arguments, and ordinary preferences. Recognized speech remains
 secret, and diagnostics must redact credentials, host paths, and content.
+
+## Setup catalog
+
+Provider/model setup autocomplete uses Wing Link's typed, profile-scoped
+`model-options` read backed by Hermes Agent's advertised inventory. This approved
+setup exception returns display fields only, including unconfigured providers,
+without caching domain state or expanding provider mutation permissions. Chat,
+sessions, runs, tools, and approvals continue to use Agent directly. See
+[API and state](docs/adr/api-and-state.md#provider-model-setup-catalog).

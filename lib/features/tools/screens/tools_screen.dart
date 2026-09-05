@@ -272,12 +272,12 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
           children: [
             Row(
               children: [
-                const Icon(Icons.extension_outlined),
+                const Icon(Icons.extension_outlined, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     widget.strings.installedSkillsTitle,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
               ],
@@ -419,14 +419,14 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
           children: [
             Row(
               children: [
-                const Icon(Icons.build_outlined),
+                const Icon(Icons.build_outlined, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     details.isEmpty
                         ? widget.strings.enabledToolsetsTitle
                         : widget.strings.toolsetsTitle,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
               ],

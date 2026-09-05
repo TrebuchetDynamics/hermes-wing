@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import 'catalog_autocomplete_field.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -46,6 +47,8 @@ class ProfileEditorSheet extends StatefulWidget {
     this.stableNames = false,
     this.canConfigure = false,
     this.soulOnly = false,
+    this.loadModelOptions,
+    this.discoverOmniRoute,
     this.onCreate,
     this.onRename,
     this.onDelete,
@@ -60,6 +63,8 @@ class ProfileEditorSheet extends StatefulWidget {
   final bool stableNames;
   final bool canConfigure;
   final bool soulOnly;
+  final Future<HermesModelOptions> Function(String profileId)? loadModelOptions;
+  final Future<String> Function()? discoverOmniRoute;
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
@@ -80,6 +85,12 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   String? _personaRevision;
   String _originalPersona = '';
   String? _error;
+  HermesModelOptions? _modelOptions;
+  String? _omniRouteStatus;
+  bool _loadingOmniRoute = false;
+  bool _loadingModels = false;
+  bool _catalogFailed = false;
+  int _catalogGeneration = 0;
   bool _saving = false;
   bool _loadingPersona = false;
   _PendingProfileApproval? _pendingApproval;
@@ -104,6 +115,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     } else if (widget.canEditSoul) {
       _loadPersona();
     }
+    if (widget.canConfigure) {
+      unawaited(_loadCatalog());
+      unawaited(_discoverOmniRoute());
+    }
   }
 
   @override
@@ -118,6 +133,115 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     _credentialController.dispose();
     super.dispose();
   }
+
+  Future<void> _discoverOmniRoute() async {
+    final discover = widget.discoverOmniRoute;
+    if (discover == null) return;
+    setState(() => _loadingOmniRoute = true);
+    String status;
+    try {
+      status = await discover();
+    } catch (_) {
+      status = 'unknown';
+    }
+    if (!mounted) return;
+    setState(() {
+      _omniRouteStatus = status;
+      _loadingOmniRoute = false;
+    });
+  }
+
+  Future<void> _loadCatalog() async {
+    final loader = widget.loadModelOptions;
+    if (loader == null) return;
+    final generation = ++_catalogGeneration;
+    setState(() {
+      _loadingModels = true;
+      _catalogFailed = false;
+      _modelOptions = null;
+    });
+    final profile =
+        widget.profile?.id ??
+        _cloneFrom ??
+        (widget.profiles.any((row) => row.id == 'default')
+            ? 'default'
+            : widget.profiles.firstOrNull?.id);
+    try {
+      if (profile == null) throw StateError('No profile available');
+      final options = await loader(profile);
+      if (!mounted || generation != _catalogGeneration) return;
+      setState(() => _modelOptions = options);
+    } catch (_) {
+      if (!mounted || generation != _catalogGeneration) return;
+      setState(() => _catalogFailed = true);
+    } finally {
+      if (mounted && generation == _catalogGeneration) {
+        setState(() => _loadingModels = false);
+      }
+    }
+  }
+
+  List<String> get _providerOptions =>
+      _modelOptions?.providers.map((row) => row.slug).toList() ?? const [];
+
+  List<String> get _modelSuggestions =>
+      _modelOptions?.providers
+          .where((row) => row.slug == _providerController.text.trim())
+          .expand((row) => row.models)
+          .toSet()
+          .toList() ??
+      const [];
+
+  void _providerChanged(String _) {
+    _modelController.clear();
+    setState(() {});
+  }
+
+  List<Widget> _catalogStatus(AppLocalizations strings) => [
+    if (widget.discoverOmniRoute != null) ...[
+      Text(switch (_omniRouteStatus) {
+        'serving' => strings.profileOmniRouteServing,
+        'authentication_required' => strings.profileOmniRouteAuthentication,
+        'starting' => strings.profileOmniRouteStarting,
+        'unrecognized' => strings.profileOmniRouteUnrecognized,
+        'unavailable' => strings.profileOmniRouteUnavailable,
+        _ => strings.profileOmniRouteUnknown,
+      }),
+      Wrap(
+        spacing: 8,
+        children: [
+          if (_omniRouteStatus == 'serving')
+            TextButton(
+              onPressed: _payloadFrozen
+                  ? null
+                  : () {
+                      _providerController.text = 'omniroute';
+                      _providerChanged('omniroute');
+                    },
+              child: Text(strings.profileOmniRouteUse),
+            ),
+          TextButton(
+            onPressed: _payloadFrozen || _loadingOmniRoute
+                ? null
+                : _discoverOmniRoute,
+            child: Text(strings.profileOmniRouteCheck),
+          ),
+        ],
+      ),
+    ],
+    if (_loadingModels) ...[
+      const LinearProgressIndicator(),
+      Text(strings.profileCatalogLoading),
+      const SizedBox(height: 12),
+    ],
+    if (_catalogFailed) ...[
+      Text(strings.profileCatalogUnavailable),
+      TextButton(
+        onPressed: _payloadFrozen ? null : _loadCatalog,
+        child: Text(strings.profileCatalogRetry),
+      ),
+    ],
+  ];
 
   Future<void> _loadPersona() async {
     setState(() => _loadingPersona = true);
@@ -437,7 +561,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   ],
                   onChanged: _payloadFrozen
                       ? null
-                      : (value) => setState(() => _cloneFrom = value),
+                      : (value) {
+                          setState(() => _cloneFrom = value);
+                          unawaited(_loadCatalog());
+                        },
                 ),
                 if (widget.canConfigure) ...[
                   const SizedBox(height: 16),
@@ -452,14 +579,19 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  ..._catalogStatus(strings),
+                  CatalogAutocompleteField(
                     controller: _providerController,
                     enabled: !_payloadFrozen,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: strings.profileProviderLabel,
-                      border: const OutlineInputBorder(),
-                    ),
+                    options: _providerOptions,
+                    searchLabels: {
+                      for (final row
+                          in _modelOptions?.providers ??
+                              <HermesModelOptionProvider>[])
+                        row.slug: row.label,
+                    },
+                    label: strings.profileProviderLabel,
+                    onChanged: _providerChanged,
                     validator: (value) {
                       final provider = value?.trim() ?? '';
                       final needsExplicitConfiguration =
@@ -473,14 +605,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  CatalogAutocompleteField(
                     controller: _modelController,
                     enabled: !_payloadFrozen,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: strings.profileModelLabel,
-                      border: const OutlineInputBorder(),
-                    ),
+                    options: _modelSuggestions,
+                    label: strings.profileModelLabel,
                     validator: (value) {
                       final model = value?.trim() ?? '';
                       final needsExplicitConfiguration =
@@ -506,6 +635,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     decoration: InputDecoration(
                       labelText: strings.profileCredentialLabel,
                       helperText: strings.profileCredentialHint,
+                      helperMaxLines: 4,
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -524,14 +654,19 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ..._catalogStatus(strings),
+                CatalogAutocompleteField(
                   controller: _providerController,
                   enabled: !_payloadFrozen,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: strings.profileProviderLabel,
-                    border: const OutlineInputBorder(),
-                  ),
+                  options: _providerOptions,
+                  searchLabels: {
+                    for (final row
+                        in _modelOptions?.providers ??
+                            <HermesModelOptionProvider>[])
+                      row.slug: row.label,
+                  },
+                  label: strings.profileProviderLabel,
+                  onChanged: _providerChanged,
                   validator: (value) {
                     final provider = value?.trim() ?? '';
                     if (provider.isEmpty &&
@@ -542,14 +677,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                CatalogAutocompleteField(
                   controller: _modelController,
                   enabled: !_payloadFrozen,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: strings.profileModelLabel,
-                    border: const OutlineInputBorder(),
-                  ),
+                  options: _modelSuggestions,
+                  label: strings.profileModelLabel,
                   validator: (value) {
                     final model = value?.trim() ?? '';
                     if (model.isEmpty &&
@@ -572,6 +704,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                   decoration: InputDecoration(
                     labelText: strings.profileCredentialLabel,
                     helperText: strings.profileCredentialHint,
+                    helperMaxLines: 4,
                     border: const OutlineInputBorder(),
                   ),
                 ),

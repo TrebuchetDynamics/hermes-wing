@@ -37,7 +37,7 @@ void _usePhoneSize(WidgetTester tester) {
 
 void main() {
   testWidgets(
-    'mobile shell keeps Chat, Settings, and More in bottom navigation',
+    'mobile shell keeps Chat, Profiles, Settings, and More in bottom navigation',
     (tester) async {
       _usePhoneSize(tester);
 
@@ -59,6 +59,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Hermes'), findsOneWidget);
+      expect(find.text('Profiles'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('More'), findsOneWidget);
       expect(find.byKey(const ValueKey('app-shell-menu-button')), findsNothing);
@@ -69,6 +70,58 @@ void main() {
       expect(find.widgetWithText(ListTile, 'Hermes'), findsNothing);
     },
   );
+
+  testWidgets('bottom tabs navigate to Profiles and retain selection', (
+    tester,
+  ) async {
+    _usePhoneSize(tester);
+    final router = GoRouter(
+      initialLocation: AppRoutes.hermes,
+      routes: [
+        for (final path in [
+          AppRoutes.hermes,
+          AppRoutes.profiles,
+          AppRoutes.settings,
+        ])
+          GoRoute(
+            path: path,
+            builder: (_, _) => AppShell(
+              location: path,
+              child: Scaffold(body: Text('Page $path')),
+            ),
+          ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(
+            FakeHermesChannel.disconnected(),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.tap(find.text('Profiles'));
+    await tester.pumpAndSettle();
+    expect(find.text('Page ${AppRoutes.profiles}'), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
+    );
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Page ${AppRoutes.settings}'), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+  });
 
   testWidgets('header menu exposes every app destination', (tester) async {
     _usePhoneSize(tester);

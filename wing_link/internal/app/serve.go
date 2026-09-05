@@ -82,6 +82,7 @@ type profileRow struct {
 }
 
 type profileBackend struct {
+	readModelOptions   func(context.Context, string) (modelOptionsCatalog, error)
 	runHermes          func(context.Context, ...string) error
 	runHermesSecret    func(context.Context, []byte, ...string) error
 	readHermes         func(context.Context, ...string) ([]byte, error)
@@ -123,6 +124,7 @@ func serveCommand(stdout, stderr io.Writer, args []string) int {
 		runHermesSecret: bootstrap.RunHermesSecret,
 		readHermes:      bootstrap.ReadHermes,
 	}
+	backend.readModelOptions = newModelOptionsReader(options.Home, options.HermesOrigin, bootstrap.ReadHermes)
 	backend.revisionSalt, err = randomSecret(16, "")
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "serve: could not initialize profile revision authority")
@@ -447,12 +449,12 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 	writer.Header().Set("Cache-Control", "no-store")
 	writer.Header().Set("Wing-Protocol", strconv.Itoa(ProtocolVersion))
 	if request.URL.Path == "/meta" && request.Method == http.MethodGet {
-		additionalCapabilities := []string(nil)
+		additionalCapabilities := []string{omniRouteDiscoveryCapability}
 		if server.directories != nil {
-			additionalCapabilities = []string{
-				"directories.children.read",
-				"directories.roots.read",
-			}
+			additionalCapabilities = append(additionalCapabilities, "directories.children.read", "directories.roots.read")
+		}
+		if server.profiles.readModelOptions != nil {
+			additionalCapabilities = append(additionalCapabilities, modelOptionsCapability)
 		}
 		writeJSON(
 			writer,
@@ -472,6 +474,10 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 			"minimum_protocol_generation": MinimumProtocolGeneration,
 			"protocol_generation":         ProtocolVersion,
 		})
+		return
+	}
+	if request.URL.Path == "/v1/host/omniroute" {
+		server.serveOmniRouteDiscovery(writer, request)
 		return
 	}
 	if request.URL.Path == "/healthz" && request.Method == http.MethodGet {
@@ -548,6 +554,12 @@ func (server *wingLinkServer) ServeHTTP(writer http.ResponseWriter, request *htt
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 		}
 		return
+	}
+	if strings.HasSuffix(request.URL.Path, "/model-options") {
+		if id, ok := profileRoute(strings.TrimSuffix(request.URL.Path, "/model-options")); ok {
+			server.serveModelOptions(writer, request, id)
+			return
+		}
 	}
 	if wingLinkProfileCompatibilityEnabled && request.URL.Path == "/v1/profiles" {
 		switch request.Method {

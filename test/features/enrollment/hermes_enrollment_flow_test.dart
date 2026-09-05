@@ -1733,13 +1733,7 @@ void main() {
       expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
       expect(find.textContaining('private Android'), findsNothing);
       expect(
-        find.byKey(
-          ValueKey(
-            defaultTargetPlatform == TargetPlatform.android
-                ? 'hermes-enrollment-paste-link'
-                : 'hermes-enrollment-paste-another',
-          ),
-        ),
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         findsOneWidget,
       );
       expect(inspectCalls, 0);
@@ -1771,13 +1765,7 @@ void main() {
       );
       expect(find.textContaining('private intent'), findsNothing);
       expect(
-        find.byKey(
-          ValueKey(
-            defaultTargetPlatform == TargetPlatform.android
-                ? 'hermes-enrollment-paste-link'
-                : 'hermes-enrollment-paste-another',
-          ),
-        ),
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         findsOneWidget,
       );
     });

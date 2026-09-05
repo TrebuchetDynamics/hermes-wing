@@ -10,7 +10,8 @@ include Wing Link, but never embed Hermes Agent or create a second domain backen
 Wing Link is the authenticated remote management plane on the Hermes host. It
 owns installation/adoption, pairing, lifecycle, health, diagnostics, host
 integration, and explicitly approved directory grants. Wing talks directly to
-Hermes Agent for chat and all supported Agent APIs.
+Hermes Agent for chat and supported Agent APIs, except the explicitly scoped
+[setup catalog read](api-and-state.md#provider-model-setup-catalog) through Wing Link.
 
 When a supported Agent lacks a required remote contract, Wing Link may delegate a
 reviewed **typed compatibility operation** to the installed Hermes CLI. Each
@@ -58,3 +59,12 @@ version on failure. An empty production release-key set makes updating unavailab
 it never enables unsigned installation. Production service qualification is Linux
 systemd-user first and requires restart, state-permission, activation, health, and
 rollback evidence on Linux. A cross-compiled binary is not a qualified service.
+
+Wing Link may perform a credential-free, read-only OmniRoute discovery at its
+fixed host-loopback endpoint. The advertised `host.omniroute.discover` operation
+requires acknowledged `health.read` authorization, uses a three-second deadline
+and 64 KiB per-response bound, and follows no redirects or proxies. It returns
+only a status enum; it never exposes discovered endpoints, credentials, provider
+inventory, or arbitrary upstream bodies. Public identity and liveness checks do
+not establish trust in the service or prove inference readiness. Remove this
+compatibility discovery when Hermes Agent advertises equivalent host discovery.

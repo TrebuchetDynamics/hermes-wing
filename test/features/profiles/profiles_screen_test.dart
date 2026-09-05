@@ -856,7 +856,10 @@ void main() {
             }) => WingLinkClient(
               origin: origin,
               token: token,
-              get: (_, _) async {
+              get: (uri, _) async {
+                if (uri.path != '/v1/profiles') {
+                  throw StateError('capability unavailable');
+                }
                 gets++;
                 if (gets == 1) return '{"profiles":[]}';
                 throw StateError('response lost');
@@ -1643,6 +1646,10 @@ void main() {
   });
 
   testWidgets('retains content and actions at 200% text scale', (tester) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final channel = FakeHermesChannel(
       capabilities: _profileCapabilities(const [
         'profiles:read',
@@ -1651,7 +1658,7 @@ void main() {
       profiles: const [
         HermesProfile(
           id: 'coder',
-          displayName: 'Coding Agent',
+          displayName: 'Coding Agent with a longer profile name',
           revision: 'c',
           skillsCount: 4,
         ),
@@ -1664,7 +1671,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Coding Agent'), findsOneWidget);
+    expect(
+      find.text('Coding Agent with a longer profile name'),
+      findsOneWidget,
+    );
     expect(find.text('New Profile'), findsOneWidget);
     expect(find.text('Chat'), findsOneWidget);
   });

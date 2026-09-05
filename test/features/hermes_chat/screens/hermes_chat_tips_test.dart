@@ -21,6 +21,38 @@ Widget _app(FakeHermesChannel channel) => ProviderScope(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('empty chat suggestions remain reachable on a narrow screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_app(channel));
+    await tester.pumpAndSettle();
+
+    final title = find.byKey(const ValueKey('hermes-empty-state-title'));
+    final strings = AppLocalizations.of(tester.element(title));
+    for (final prompt in [
+      strings.chatRailPromptSummarizeHelpLabel,
+      strings.chatRailPromptListSkillsLabel,
+      strings.chatRailPromptPlanTaskLabel,
+      strings.chatRailPromptExplainSessionLabel,
+    ]) {
+      final chip = find.byKey(ValueKey('hermes-empty-prompt-$prompt'));
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      expect(chip.hitTestable(), findsOneWidget);
+      final bounds = tester.getRect(chip);
+      expect(bounds.left, greaterThanOrEqualTo(0));
+      expect(bounds.right, lessThanOrEqualTo(320));
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a connected chat shows the voice tip once', (tester) async {
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);

@@ -155,7 +155,7 @@ void main() {
 
     expect(find.text('Set up Hermes on this phone'), findsOneWidget);
     expect(
-      find.textContaining('reuses a healthy existing installation'),
+      find.textContaining('reuses a healthy installation'),
       findsOneWidget,
     );
     expect(clipboardText, isNull);
@@ -340,7 +340,7 @@ void main() {
       expect(tester.getSize(copyButton).height, greaterThanOrEqualTo(48));
       expect(tester.widget<FilledButton>(copyButton).onPressed, isNotNull);
       expect(find.bySemanticsLabel('Copy setup command'), findsOneWidget);
-      final tierNotice = find.textContaining('Android can stop Hermes');
+      final tierNotice = find.textContaining('If Android stops Hermes');
       for (
         var attempt = 0;
         attempt < 12 && tierNotice.evaluate().isEmpty;

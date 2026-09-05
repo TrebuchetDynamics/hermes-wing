@@ -279,12 +279,14 @@ void main() {
 
     expect(channel.loadProvidersCalls, greaterThanOrEqualTo(1));
     expect(channel.loadModelsCalls, greaterThanOrEqualTo(1));
+    await tester.scrollUntilVisible(find.text('OpenAI'), 160);
     expect(find.text('OpenAI'), findsOneWidget);
-    expect(find.text('Anthropic'), findsOneWidget);
     // Presence badge from `configured`.
     expect(find.text('Configured'), findsWidgets);
     // Masked hint (never a full key).
     expect(find.textContaining('····ab12'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Anthropic'), 160);
+    expect(find.text('Anthropic'), findsOneWidget);
   });
 
   testWidgets('configured providers are presented before setup candidates', (
@@ -621,6 +623,11 @@ void main() {
     await tester.pumpWidget(_testApp(channel, textScale: 2));
     await tester.pumpAndSettle();
 
+    expect(tester.takeException(), isNull);
+    await tester.scrollUntilVisible(
+      find.text('Long subscription provider account'),
+      160,
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('Long subscription provider account'), findsOneWidget);
   });

@@ -8,6 +8,7 @@ import '../../../core/hermes/models/hermes_job.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
+import '../../../shared/widgets/wing_metadata.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -219,21 +220,20 @@ class _SchedulesBody extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 16),
-        Card(
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.visibility_outlined),
-                const SizedBox(width: 12),
-                Expanded(child: Text(strings.schedulesReadOnlyNote)),
-              ],
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.visibility_outlined, size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                strings.schedulesReadOnlyNote,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ),
-          ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         if (jobs.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -272,7 +272,7 @@ class _ScheduleCard extends StatelessWidget {
       _safePreview(job.displayName, 120),
       style: Theme.of(context).textTheme.titleMedium,
     );
-    final status = Chip(label: Text(stateLabel));
+    final status = WingMetadata(label: Text(stateLabel));
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -283,7 +283,7 @@ class _ScheduleCard extends StatelessWidget {
               builder: (context, constraints) {
                 final largeText =
                     MediaQuery.textScalerOf(context).scale(1) > 1.3;
-                if (constraints.maxWidth < 400 || largeText) {
+                if (constraints.maxWidth < 280 || largeText) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [title, const SizedBox(height: 10), status],

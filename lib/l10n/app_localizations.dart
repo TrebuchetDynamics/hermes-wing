@@ -94,6 +94,24 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @profileCatalogLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading providers and models from Hermes Agent…'**
+  String get profileCatalogLoading;
+
+  /// No description provided for @profileCatalogUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The Agent catalog could not be loaded. Retry, or enter a provider and model manually.'**
+  String get profileCatalogUnavailable;
+
+  /// No description provided for @profileCatalogRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry catalog'**
+  String get profileCatalogRetry;
+
   /// No description provided for @transcriptLargeMessageScroll.
   ///
   /// In en, this message translates to:
@@ -181,7 +199,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose how Hermes works for each profile.'**
+  /// **'Profiles for your different tasks.'**
   String get agentsSubtitle;
 
   /// No description provided for @newAgent.
@@ -667,7 +685,7 @@ abstract class AppLocalizations {
   /// No description provided for @toolsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Installed skills and resolved toolsets advertised by this gateway.'**
+  /// **'Skills and toolsets available on this gateway.'**
   String get toolsSubtitle;
 
   /// No description provided for @toolsConnectionRequiredBody.
@@ -817,7 +835,7 @@ abstract class AppLocalizations {
   /// No description provided for @officeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'An accessible 2D workspace for profiles advertised by your saved Hermes gateways.'**
+  /// **'Pick a profile to continue working.'**
   String get officeSubtitle;
 
   /// No description provided for @officeAgentCount.
@@ -1069,7 +1087,7 @@ abstract class AppLocalizations {
   /// No description provided for @schedulesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Scheduled jobs advertised by the selected gateway and profile.'**
+  /// **'Scheduled work for this profile.'**
   String get schedulesSubtitle;
 
   /// No description provided for @schedulesGatewayHelp.
@@ -1117,7 +1135,7 @@ abstract class AppLocalizations {
   /// No description provided for @schedulesReadOnlyNote.
   ///
   /// In en, this message translates to:
-  /// **'Read-only schedule inventory. Create, pause, trigger, and delete remain hidden until this gateway advertises exact scoped administration contracts.'**
+  /// **'Read-only schedule inventory. Manage scheduled work on the host.'**
   String get schedulesReadOnlyNote;
 
   /// No description provided for @schedulesRefreshTooltip.
@@ -1309,7 +1327,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayStatusSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Bounded health status advertised by the selected Hermes gateway.'**
+  /// **'Host connection and service health.'**
   String get gatewayStatusSubtitle;
 
   /// No description provided for @gatewayStatusHelp.
@@ -1357,7 +1375,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayStatusReadOnlyNote.
   ///
   /// In en, this message translates to:
-  /// **'Read-only gateway status. Lifecycle, logs, and messaging-platform administration remain hidden until exact scoped contracts are advertised.'**
+  /// **'Read-only gateway status. Manage services, logs, and messaging platforms on the host.'**
   String get gatewayStatusReadOnlyNote;
 
   /// No description provided for @gatewayStatusRefreshTooltip.
@@ -1535,7 +1553,7 @@ abstract class AppLocalizations {
   /// No description provided for @providersSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Set provider credentials and choose models for this profile.'**
+  /// **'Choose a model and manage provider access.'**
   String get providersSubtitle;
 
   /// No description provided for @providersGatewayHelp.
@@ -2616,7 +2634,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceContinuousSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Allow on-device STT transcripts to be sent to Hermes'**
+  /// **'Send recognized speech to Hermes automatically.'**
   String get voiceContinuousSubtitle;
 
   /// No description provided for @voiceSpeakRepliesTitle.
@@ -2628,7 +2646,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceSpeakRepliesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off'**
+  /// **'Read replies aloud when hands-free voice is on.'**
   String get voiceSpeakRepliesSubtitle;
 
   /// No description provided for @voiceCompletionSoundTitle.
@@ -2640,7 +2658,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceCompletionSoundSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Play a device alert when a Hermes reply finishes'**
+  /// **'Play a sound when a reply finishes.'**
   String get voiceCompletionSoundSubtitle;
 
   /// No description provided for @voiceAdvancedSection.
@@ -3258,7 +3276,7 @@ abstract class AppLocalizations {
   /// No description provided for @termuxPrerequisites.
   ///
   /// In en, this message translates to:
-  /// **'Install Termux from its official installation guide, open it once, and keep internet access available. If you already use Termux, continue with that installation.'**
+  /// **'Install Termux from the official guide and open it once. Already installed? Continue below. Keep internet access available.'**
   String get termuxPrerequisites;
 
   /// No description provided for @termuxReadyAction.
@@ -5896,37 +5914,37 @@ abstract class AppLocalizations {
   /// No description provided for @chatRailEmptyStateTitle.
   ///
   /// In en, this message translates to:
-  /// **'How can Hermes help today?'**
+  /// **'What are we working on?'**
   String get chatRailEmptyStateTitle;
 
   /// No description provided for @chatRailEmptyStateBody.
   ///
   /// In en, this message translates to:
-  /// **'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.'**
+  /// **'Ask Hermes a question, or start with one of these.'**
   String get chatRailEmptyStateBody;
 
   /// No description provided for @chatRailPromptSummarizeHelpLabel.
   ///
   /// In en, this message translates to:
-  /// **'Summarize what you can help me do.'**
+  /// **'What can you help me do?'**
   String get chatRailPromptSummarizeHelpLabel;
 
   /// No description provided for @chatRailPromptListSkillsLabel.
   ///
   /// In en, this message translates to:
-  /// **'List my available Hermes skills.'**
+  /// **'Show my available skills'**
   String get chatRailPromptListSkillsLabel;
 
   /// No description provided for @chatRailPromptPlanTaskLabel.
   ///
   /// In en, this message translates to:
-  /// **'Plan my next coding task.'**
+  /// **'Plan my next coding task'**
   String get chatRailPromptPlanTaskLabel;
 
   /// No description provided for @chatRailPromptExplainSessionLabel.
   ///
   /// In en, this message translates to:
-  /// **'Explain the current session state.'**
+  /// **'Catch me up on this session'**
   String get chatRailPromptExplainSessionLabel;
 
   /// No description provided for @chatRailStopAction.
@@ -6256,7 +6274,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipVoice.
   ///
   /// In en, this message translates to:
-  /// **'Tap the microphone for hands-free voice. Long-press to dictate for review. Wing reports listening and playback separately.'**
+  /// **'Tap the microphone to talk. Hold it to dictate and review before sending.'**
   String get tipVoice;
 
   /// No description provided for @tipApprovals.
@@ -6436,7 +6454,7 @@ abstract class AppLocalizations {
   /// No description provided for @termuxSetupBody.
   ///
   /// In en, this message translates to:
-  /// **'Termux runs Hermes Agent and Wing Link on your phone. The setup command reuses a healthy existing installation or installs what is missing. You run it yourself in Termux.'**
+  /// **'Run Hermes Agent and Wing Link on your phone using Termux. You run the setup command yourself; it installs missing components or reuses a healthy installation.'**
   String get termuxSetupBody;
 
   /// No description provided for @termuxInstallAction.
@@ -6508,7 +6526,7 @@ abstract class AppLocalizations {
   /// No description provided for @termuxTierTwoNotice.
   ///
   /// In en, this message translates to:
-  /// **'Keep Termux available. Android can stop Hermes while it runs in the background. Rerun the same setup command to recover.'**
+  /// **'Keep Termux running. If Android stops Hermes in the background, rerun the setup command to recover.'**
   String get termuxTierTwoNotice;
 
   /// No description provided for @enrollInstallOnPhoneAction.
@@ -6558,6 +6576,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The local approval expired. Enter the credential again to start a new request.'**
   String get profileApprovalExpired;
+
+  /// No description provided for @profileOmniRouteServing.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniRoute is serving on the paired computer. Model access still depends on its provider setup.'**
+  String get profileOmniRouteServing;
+
+  /// No description provided for @profileOmniRouteAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniRoute is serving on the paired computer and requires authentication. Credential setup is not yet supported here.'**
+  String get profileOmniRouteAuthentication;
+
+  /// No description provided for @profileOmniRouteStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniRoute was found but is not ready yet.'**
+  String get profileOmniRouteStarting;
+
+  /// No description provided for @profileOmniRouteUnrecognized.
+  ///
+  /// In en, this message translates to:
+  /// **'Another or unrecognized service is using the local OmniRoute endpoint.'**
+  String get profileOmniRouteUnrecognized;
+
+  /// No description provided for @profileOmniRouteUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No OmniRoute service was found at the default endpoint on the paired computer.'**
+  String get profileOmniRouteUnavailable;
+
+  /// No description provided for @profileOmniRouteUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'OmniRoute discovery has not completed. Check again or update Wing Link.'**
+  String get profileOmniRouteUnknown;
+
+  /// No description provided for @profileOmniRouteUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use OmniRoute'**
+  String get profileOmniRouteUse;
+
+  /// No description provided for @profileOmniRouteCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for OmniRoute'**
+  String get profileOmniRouteCheck;
 }
 
 class _AppLocalizationsDelegate

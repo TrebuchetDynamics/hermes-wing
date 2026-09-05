@@ -713,58 +713,55 @@ class _HermesEmptyState extends StatelessWidget {
       strings.chatRailPromptPlanTaskLabel,
       strings.chatRailPromptExplainSessionLabel,
     ];
+    const icons = [
+      Icons.chat_bubble_outline,
+      Icons.extension_outlined,
+      Icons.code,
+      Icons.history,
+    ];
     return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 42,
-              backgroundColor: theme.colorScheme.primary,
-              child: Text(
-                'H',
-                style: theme.textTheme.displaySmall?.copyWith(
-                  color: theme.colorScheme.onPrimary,
-                  fontWeight: FontWeight.w900,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.waving_hand_outlined,
+                size: 28,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                strings.chatRailEmptyStateTitle,
+                key: const ValueKey('hermes-empty-state-title'),
+                style: theme.textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                strings.chatRailEmptyStateBody,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              strings.chatRailEmptyStateTitle,
-              key: const ValueKey('hermes-empty-state-title'),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              strings.chatRailEmptyStateBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final prompt in prompts)
-                  ActionChip(
-                    key: ValueKey('hermes-empty-prompt-$prompt'),
-                    avatar: const Icon(Icons.auto_awesome, size: 18),
-                    label: Text(prompt),
-                    onPressed: canSendTurns
-                        ? () => onPromptSelected(prompt)
-                        : null,
-                  ),
+              const SizedBox(height: 24),
+              for (var index = 0; index < prompts.length; index++) ...[
+                ListTile(
+                  key: ValueKey('hermes-empty-prompt-${prompts[index]}'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(icons[index], size: 20),
+                  trailing: const Icon(Icons.north_east, size: 16),
+                  title: Text(prompts[index]),
+                  onTap: canSendTurns
+                      ? () => onPromptSelected(prompts[index])
+                      : null,
+                ),
+                if (index < prompts.length - 1) const Divider(height: 1),
               ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

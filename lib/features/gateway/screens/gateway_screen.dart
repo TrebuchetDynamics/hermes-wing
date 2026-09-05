@@ -506,11 +506,13 @@ class _GatewayBody extends StatelessWidget {
       key: const ValueKey('gateway-body-list'),
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        Text(
-          strings.gatewayStatusTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 6),
+        if (MediaQuery.sizeOf(context).width >= 600) ...[
+          Text(
+            strings.gatewayStatusTitle,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 6),
+        ],
         Text(strings.gatewayStatusSubtitle),
         const SizedBox(height: 16),
         Card(
@@ -552,7 +554,6 @@ class _GatewayBody extends StatelessWidget {
             ),
           ),
         ),
-        if (trust case final trust?) ...[trust, const SizedBox(height: 16)],
         _HealthCard(
           health: health,
           strings: strings,
@@ -567,6 +568,7 @@ class _GatewayBody extends StatelessWidget {
           const SizedBox(height: 16),
           _PlatformsCard(platforms: health.platforms, strings: strings),
         ],
+        if (trust case final trust?) ...[const SizedBox(height: 16), trust],
       ],
     );
   }

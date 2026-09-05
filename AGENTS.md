@@ -123,6 +123,17 @@ enable profile multiplexing, and restart the active gateway before verifying
 provider/config mutation, general configuration, sessions, messages, tools,
 schedules, or arbitrary CLI.
 
+Provider/model setup has one explicit read exception:
+`GET /v1/profiles/{id}/model-options` on Wing Link reads the installed Agent's
+advertised `/p/{id}/api/model/options` catalog. Require an acknowledged device's
+`profiles:read` grant, current profile identity, and the exact Agent capability.
+Resolve an existing profile credential through fixed `config env-path` arguments;
+never create a key during a read. Return only bounded provider names/slugs and
+model IDs, including unconfigured providers. No caller-selected upstream URLs,
+redirects, credential forwarding to clients, shadow catalog, or extra mutation
+rights are permitted. Chat, sessions, runs, tools, and approvals remain direct.
+See [the setup catalog decision](docs/adr/api-and-state.md#provider-model-setup-catalog).
+
 Wing Link supports only the current and immediately previous protocol generation.
 Lifecycle and update work must preserve transactional activation, local health
 checks, digest/signature verification, and rollback behavior.

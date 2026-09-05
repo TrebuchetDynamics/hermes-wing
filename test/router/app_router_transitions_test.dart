@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,20 @@ import '../features/hermes_chat/support/fake_hermes_channel.dart';
 import '../features/hermes_chat/support/fake_hermes_endpoint_store.dart';
 
 void main() {
+  // Android layout variants run in the Linux engine too. Routing tests do not
+  // exercise Android intents; supply an empty native event channel explicitly.
+  const intentEvents = MethodChannel(
+    'com.trebuchetdynamics.hermes.wing/connect_intents/events',
+  );
+  setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(intentEvents, (_) async => null);
+  });
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(intentEvents, null);
+  });
+
   testWidgets(
     'manual enrollment returns to the shell without duplicate pages',
     (tester) async {

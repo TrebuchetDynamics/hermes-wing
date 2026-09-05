@@ -23,7 +23,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - inputText: fixture-only-input
 - hideKeyboard
 - tapOn: '^Set$'
-- assertVisible: Configured
+- assertVisible: '(?s)^Fixture provider.*\bConfigured$'
 - tapOn: Fixture controls
 - scrollUntilVisible:
     element:
@@ -40,7 +40,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - assertVisible: '(?s).*Credential accepted..*'
 - assertVisible: 2 models available
 - tapOn: '^Remove$'
-- assertVisible: Not configured
+- assertVisible: '(?s)^Fixture provider.*\bNot configured$'
 - tapOn: Fixture controls
 - scrollUntilVisible:
     element:
@@ -51,7 +51,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - scrollUntilVisible:
     element:
       text: Choose model
-    direction: DOWN
+    direction: UP
 - tapOn: Choose model
 - tapOn: '(?s).*Model.*fixture-small.*'
 - tapOn: fixture-large
@@ -67,7 +67,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - scrollUntilVisible:
     element:
       text: Choose model
-    direction: DOWN
+    direction: UP
 - tapOn: Choose model
 - runFlow:
     file: control.yaml

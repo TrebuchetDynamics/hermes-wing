@@ -21,7 +21,7 @@ name: chat_process_recovery_qa
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
-    visible: "(?s).*How can Hermes help today?.*"
+    visible: "(?s).*What are we working on?.*"
     timeout: 30000
 - tapOn:
     point: "50%,90%"

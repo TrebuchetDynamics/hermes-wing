@@ -838,6 +838,17 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final label = selected == null || selected.displayName.isEmpty
         ? (selectedId ?? strings.switchAgent)
         : selected.displayName;
+    if (MediaQuery.sizeOf(context).width < 480) {
+      return IconButton(
+        key: const ValueKey('hermes-profile-switcher'),
+        tooltip:
+            '${strings.switchAgent}: ${_safeHermesUiPreview(label, maxLength: 24)}',
+        onPressed: _profileSwitchPending
+            ? null
+            : () => _showProfileSwitcher(context, channel, state),
+        icon: const Icon(Icons.support_agent_outlined),
+      );
+    }
     return TextButton.icon(
       key: const ValueKey('hermes-profile-switcher'),
       onPressed: _profileSwitchPending
@@ -1239,51 +1250,55 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                       ),
                     ),
                     const SizedBox(width: 9),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: compactAppBar ? 140 : 240,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _contactProfileTitle(activeContact),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                size: 8,
-                                color:
-                                    activeContact.availability ==
-                                        GatewayAvailability.online
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                              const SizedBox(width: 5),
-                              Flexible(
-                                child: Text(
-                                  activeContact.gatewayLabel,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                    Flexible(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: compactAppBar ? 140 : 240,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _contactProfileTitle(activeContact),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  size: 8,
+                                  color:
+                                      activeContact.availability ==
+                                          GatewayAvailability.online
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    activeContact.gatewayLabel,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

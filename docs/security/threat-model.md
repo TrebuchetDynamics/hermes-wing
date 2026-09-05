@@ -76,6 +76,17 @@ Status: alpha baseline; not an independent security assessment
 
 ### Providers and configuration
 
+- Setup catalog reads cross Wing Link through one typed, profile-scoped endpoint.
+  An acknowledged device needs `profiles:read`; the host uses a separate existing
+  Agent credential and verifies Agent's exact catalog capability and required
+  scopes. Only provider slugs/names and model IDs are returned, including
+  unconfigured providers; visibility does not authorize mutation.
+- Catalog requests accept no upstream URL, arbitrary route, command, or config
+  key. Upstream redirects and proxies are disabled; HTTP is loopback-only and
+  HTTPS requires normal certificate validation and TLS 1.3. Credential paths are
+  checked for containment and symlinks. Reads never create keys or restart Agent.
+- Invalid or oversized catalogs fail without partial output. Audit records contain
+  only the allowlisted operation/outcome, not catalog content or credentials.
 - Provider/config fields are allowlisted and typed; arbitrary keys are rejected.
 - Provider credentials are write-only and never returned or logged.
 - Secret mutation must not place values in process arguments or edit `.env`

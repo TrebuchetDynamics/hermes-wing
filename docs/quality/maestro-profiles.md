@@ -11,7 +11,12 @@ with a deterministic channel, and installs only
 `com.trebuchetdynamics.hermes.wing.qa`. Each scenario clears that package;
 restart steps retain its fixture data. It never creates or deletes real Hermes
 profiles. `WING_QA_OUTPUT_DIR` selects the artifact directory and the runner
-isolates Maestro's log cache from other jobs.
+isolates Maestro's log cache from other jobs. Run device jobs sequentially on
+the same workstation; concurrent phone/emulator jobs produced launch failures
+and screenshots from the wrong target during the layout review.
+The flows save synthetic-data screenshots of empty chat, the profile list, the
+setup editor, configured model read-back, and provider/model chat under the
+artifact directory's `screenshots/` folder.
 
 | Scenario | Assertions |
 | --- | --- |
@@ -110,3 +115,43 @@ and complete `provider_model_chat.yaml` run. The extended profile/fixture suite
 passed 59 tests, analysis found no issues, and formatting, shell syntax, and diff
 checks passed. This qualifies deterministic setup-to-chat UI behavior only;
 no real provider authentication or network completion was exercised.
+
+## Layout review — 2026-09-05
+
+Screenshots on the physical Samsung SM-S928B (Android 16) exposed a repeated
+mobile Profiles heading, an oversized chat introduction, and truncated
+credential guidance. The mobile heading is now shown once, chat has a smaller
+avatar and concise introduction within a bounded reading width, and credential
+guidance wraps. Selected-profile status wraps with the metadata instead of
+squeezing the name.
+
+A 320-pixel-wide widget test with 200% text and a long selected profile name
+reproduced an 85-pixel horizontal overflow before the status-row change and
+passed afterward. A narrow-chat check verifies all four suggestions remain
+reachable. The focused command passed 60 tests:
+
+```bash
+flutter test test/features/profiles \
+  test/features/hermes_chat/screens/hermes_chat_tips_test.dart
+```
+
+`flutter analyze`, changed-Dart formatting, and `npm run readme:assets` passed.
+The asset generator also built the deterministic web target and exercised its
+browser capture checks. The Android QA build passed with existing SDK/Kotlin
+toolchain warnings; this review does not qualify a release build.
+
+Before/after screenshots remain local under `test-results/phone-layout-baseline`
+and `test-results/phone-layout-after`. Initial concurrent phone/emulator jobs
+failed to launch correctly; sequential phone execution resolved that failure.
+A subsequent baseline attempt passed switching and lifecycle but lost the USB
+transport during provider setup. These interrupted attempts are not passing
+suite receipts.
+
+The final updated-APK invocation passed all three flows together in 9m 55s:
+switching/chat (1m 30s), create/edit/delete (4m 30s), and provider/model chat
+(3m 55s). It ran through `scripts/run_android_maestro_profiles.sh` with the
+physical Samsung selected and `WING_QA_OUTPUT_DIR` set to
+`test-results/phone-layout-after`. All five screenshot checkpoints were saved
+and the chat, profile list, setup editor, and configured chat were visually
+reviewed. The production package and real Agent profiles were not modified.
+These are deterministic UI receipts, not evidence of live provider inference.

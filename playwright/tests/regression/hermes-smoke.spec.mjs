@@ -190,10 +190,10 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
     page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),
   ).toBeVisible();
   await expect(
-    page.getByText("How can Hermes help today?").first(),
+    page.getByText("What are we working on?").first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("checkbox", { name: "Summarize what you can help me do." }),
+    page.getByText("What can you help me do?", { exact: true }),
   ).toBeVisible();
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("new session browser"),

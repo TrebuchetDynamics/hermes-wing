@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/wing_metadata.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -239,22 +240,10 @@ class _OfficeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: colors.primaryContainer,
-              child: Icon(Icons.apartment_outlined, color: colors.primary),
-            ),
-            const SizedBox(width: 16),
-            Expanded(child: Text(subtitle)),
-          ],
-        ),
+    return Text(
+      subtitle,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -288,6 +277,11 @@ class _OfficeAgentCard extends StatelessWidget {
       GatewayAvailability.authenticationFailed => Icons.lock_outline,
       GatewayAvailability.offline => Icons.cloud_off_outlined,
     };
+    final actionLabel = !contact.chatAvailable
+        ? strings.officeProfileManagementOnly
+        : current
+        ? strings.officeReturnToChat
+        : strings.officeOpenChat;
     return Semantics(
       label:
           '$name, $gateway, $status, ${strings.officeSessionCount(contact.sessionCount)}',
@@ -295,99 +289,82 @@ class _OfficeAgentCard extends StatelessWidget {
         key: ValueKey(
           'office-agent-${contact.id.gatewayId}-${contact.id.profileId}',
         ),
+        margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    backgroundColor: colors.secondaryContainer,
-                    foregroundColor: colors.onSecondaryContainer,
-                    child: Text(_initial(name)),
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _initial(name),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colors.onPrimaryContainer,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: Theme.of(context).textTheme.titleMedium),
+                    Text(gateway, style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
                       children: [
-                        Text(
-                          name,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                        WingMetadata(
+                          avatar: Icon(
+                            statusIcon,
+                            size: 14,
+                            color: online
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                          ),
+                          label: Text(status),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          gateway,
-                          style: TextStyle(color: colors.onSurfaceVariant),
+                        WingMetadata(
+                          label: Text(
+                            strings.officeSessionCount(contact.sessionCount),
+                          ),
                         ),
+                        if (contact.isFallbackProfile)
+                          WingMetadata(
+                            label: Text(strings.officeGatewayDefault),
+                          ),
+                        if (!contact.chatAvailable)
+                          WingMetadata(
+                            label: Text(strings.officeProfileManagementOnly),
+                          ),
+                        if (current)
+                          WingMetadata(label: Text(strings.officeCurrentChat)),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  Chip(
-                    avatar: Icon(
-                      statusIcon,
-                      size: 18,
-                      color: online ? colors.primary : colors.onSurfaceVariant,
-                    ),
-                    label: Text(status),
-                  ),
-                  Chip(
-                    avatar: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: Text(
-                      strings.officeSessionCount(contact.sessionCount),
-                    ),
-                  ),
-                  if (contact.isFallbackProfile)
-                    Chip(label: Text(strings.officeGatewayDefault)),
-                  if (!contact.chatAvailable)
-                    Chip(label: Text(strings.officeProfileManagementOnly)),
-                ],
-              ),
-              const SizedBox(height: 14),
-              FilledButton.tonalIcon(
+              IconButton.filledTonal(
                 key: ValueKey(
                   'office-open-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
+                tooltip: actionLabel,
                 onPressed: opening || !contact.chatAvailable ? null : onOpen,
                 icon: opening
                     ? const SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Icon(
-                        current
-                            ? Icons.arrow_forward
-                            : Icons.chat_bubble_outline,
-                      ),
-                label: Text(
-                  !contact.chatAvailable
-                      ? strings.officeProfileManagementOnly
-                      : current
-                      ? strings.officeReturnToChat
-                      : strings.officeOpenChat,
-                ),
+                    : const Icon(Icons.arrow_forward, size: 20),
               ),
-              if (current) ...[
-                const SizedBox(height: 8),
-                Text(
-                  strings.officeCurrentChat,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
             ],
           ),
         ),

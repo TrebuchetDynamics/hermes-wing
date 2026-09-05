@@ -38,6 +38,7 @@ HermesCapabilityDocument featureCapabilities({
   },
   'endpoints': {
     for (final entry in <String, (String, String, String)>{
+      'profiles': ('GET', '/api/profiles', 'profiles:read'),
       'providers': ('GET', '/api/providers', 'providers:read'),
       'provider_credential_set': (
         'PUT',

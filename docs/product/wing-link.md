@@ -177,3 +177,51 @@ Wing Link will not provide:
 See the [implementation plan](../plans/wing-link-remote-management.md),
 [runtime decision](../adr/runtime-and-delivery.md), and
 [security decision](../adr/security-and-privacy.md).
+
+## Provider/model autocomplete
+
+Profile setup loads providers and models through the advertised Wing Link
+`profiles.model-options.read` capability and
+`GET /v1/profiles/{profile-id}/model-options`. It includes unconfigured providers
+from Hermes Agent's `/api/model/options` inventory. Search matches provider display names or IDs. Choosing a provider narrows
+model suggestions; changing providers clears the previous model. Typing and
+keyboard selection work without a pointer. A failed read offers retry and manual
+entry, with no local fallback catalog.
+
+The read requires a Wing Link `profiles:read` grant and an existing profile.
+Agent must advertise the exact catalog endpoint and authorize the separate Agent
+credential. The host chooses the Agent origin at service startup: loopback HTTP
+or trusted HTTPS (TLS 1.3); redirects and environment proxies are disabled.
+Credential resolution uses only fixed profile `config env-path` arguments,
+revalidates home containment and symlinks, and reads an existing credential.
+No credential is created or returned. Catalog output is limited to 1 MiB,
+128 providers, and 16,384 total model IDs; oversized or malformed responses fail
+rather than presenting a partial catalog. The catalog request has a 20-second
+timeout following bounded profile inventory validation.
+
+This endpoint is a typed read for setup, not a general Agent traffic tunnel.
+Provider/configuration mutation retains the existing authorization and
+compatibility restrictions. Old Wing Link versions without this capability
+continue to allow manual form entry and report catalog unavailability.
+
+### Discover an existing OmniRoute service
+
+New-profile setup checks for OmniRoute on the paired computer through the exact
+`host.omniroute.discover` capability and authenticated
+`GET /v1/host/omniroute` operation. The server requires an acknowledged device
+with `health.read`, accepts no query parameters or endpoint input, and checks
+only its fixed loopback service. It never scans the client's computer or LAN.
+
+The bounded check reads OmniRoute's public agent card, liveness, and model-list
+routes without credentials, redirects, proxies, or inference. Only an enum
+crosses Wing Link: unavailable, unrecognized, starting, serving, or authentication
+required. A matching public card identifies the product; it is not a trust or
+inference-readiness guarantee. Responses are not cached.
+
+Wing offers **Use OmniRoute** for a serving service and **Check for OmniRoute**
+for retry. It uses the existing transactional new-profile operation; Hermes Agent
+still owns configuration and readiness. An authenticated service is reported but
+its credential setup remains unsupported. Installation, starting a service, and
+custom-endpoint registration are not yet available in this UI. The product
+direction is to complete setup from Wing through typed operations and any required
+host approval; these missing operations must not be represented as supported.

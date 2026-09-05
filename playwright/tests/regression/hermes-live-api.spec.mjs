@@ -34,7 +34,7 @@ test("Hermes route connects to a live installed Hermes Agent API server", async 
     timeout: 30000,
   });
   await expect(
-    page.getByText("How can Hermes help today?").first(),
+    page.getByText("What are we working on?").first(),
   ).toBeVisible();
   await expect(
     page

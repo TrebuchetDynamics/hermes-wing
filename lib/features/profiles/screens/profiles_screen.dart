@@ -12,6 +12,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
+import '../../../shared/widgets/wing_metadata.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -663,6 +664,12 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         canDelete: canDelete,
         stableNames: stableNames,
         canConfigure: canConfigure,
+        discoverOmniRoute: stableNames
+            ? _wingLinkClient?.discoverOmniRoute
+            : null,
+        loadModelOptions: stableNames
+            ? _wingLinkClient?.getProfileModelOptions
+            : null,
         onCreate: onCreate,
         onRename: onRename,
         onDelete: onDelete,
@@ -797,12 +804,14 @@ class _ProfilesHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 6),
+              if (MediaQuery.sizeOf(context).width >= 600) ...[
+                Text(title, style: theme.textTheme.headlineSmall),
+                const SizedBox(height: 6),
+              ],
               Text(subtitle, style: theme.textTheme.bodyLarge),
               if (readOnly) ...[
                 const SizedBox(height: 10),
-                Chip(
+                WingMetadata(
                   avatar: const Icon(Icons.visibility_outlined, size: 18),
                   label: Text(readOnlyLabel),
                 ),
@@ -860,6 +869,30 @@ class _ProfileCard extends StatelessWidget {
       if (profile.id == 'default') strings.defaultAgent,
     ].join(', ');
 
+    final inlineChat =
+        MediaQuery.sizeOf(context).width >= 360 &&
+        MediaQuery.textScalerOf(context).scale(1) <= 1.3;
+    final chatAction = Semantics(
+      button: true,
+      label: strings.chatWithNamedAgent(displayName),
+      onTap: onChat,
+      child: ExcludeSemantics(
+        child: FilledButton.tonalIcon(
+          key: ValueKey('agent-chat-${profile.id}'),
+          onPressed: onChat,
+          icon: switching
+              ? const SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.chat_bubble_outline),
+          label: Text(
+            switching ? strings.switchingAgent : strings.chatWithAgent,
+          ),
+        ),
+      ),
+    );
+
     return Semantics(
       container: true,
       selected: selected,
@@ -894,27 +927,28 @@ class _ProfileCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (selected)
-                    Chip(
-                      avatar: const Icon(Icons.check_circle_outline, size: 18),
-                      label: Text(strings.selectedAgent),
-                    ),
+                  if (inlineChat) ...[const SizedBox(width: 12), chatAction],
                 ],
               ),
               const SizedBox(height: 10),
               Wrap(
-                spacing: 6,
-                runSpacing: 4,
+                spacing: 12,
+                runSpacing: 6,
                 children: [
+                  if (selected)
+                    WingMetadata(
+                      avatar: const Icon(Icons.check_circle_outline, size: 18),
+                      label: Text(strings.selectedAgent),
+                    ),
                   if (profile.id == 'default')
-                    Chip(label: Text(strings.defaultAgent)),
+                    WingMetadata(label: Text(strings.defaultAgent)),
                   if (managedByWingLink)
-                    Chip(
+                    WingMetadata(
                       avatar: const Icon(Icons.link_outlined, size: 18),
                       label: Text(strings.managedByWingLink),
                     ),
                   if (enrolled case final enrolled?)
-                    Chip(
+                    WingMetadata(
                       avatar: Icon(
                         enrolled
                             ? Icons.verified_user_outlined
@@ -927,7 +961,7 @@ class _ProfileCard extends StatelessWidget {
                             : strings.profileNotEnrolled,
                       ),
                     ),
-                  Chip(
+                  WingMetadata(
                     avatar: const Icon(Icons.psychology_outlined, size: 18),
                     label: Text(
                       profile.model.isEmpty
@@ -935,11 +969,11 @@ class _ProfileCard extends StatelessWidget {
                           : profile.model,
                     ),
                   ),
-                  Chip(
+                  WingMetadata(
                     avatar: const Icon(Icons.extension_outlined, size: 18),
                     label: Text(strings.agentSkillsCount(profile.skillsCount)),
                   ),
-                  Chip(
+                  WingMetadata(
                     avatar: Icon(
                       gatewayStateUnknown
                           ? Icons.help_outline
@@ -963,30 +997,7 @@ class _ProfileCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 4,
                 children: [
-                  Semantics(
-                    button: true,
-                    label: strings.chatWithNamedAgent(displayName),
-                    onTap: onChat,
-                    child: ExcludeSemantics(
-                      child: FilledButton.tonalIcon(
-                        key: ValueKey('agent-chat-${profile.id}'),
-                        onPressed: onChat,
-                        icon: switching
-                            ? const SizedBox.square(
-                                dimension: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.chat_bubble_outline),
-                        label: Text(
-                          switching
-                              ? strings.switchingAgent
-                              : strings.chatWithAgent,
-                        ),
-                      ),
-                    ),
-                  ),
+                  if (!inlineChat) chatAction,
                   if (onBrowseDirectories != null)
                     OutlinedButton.icon(
                       key: ValueKey('agent-browse-folders-${profile.id}'),

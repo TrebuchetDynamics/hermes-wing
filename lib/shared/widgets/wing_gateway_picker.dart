@@ -24,7 +24,7 @@ class WingGatewayPicker extends StatelessWidget {
   final Key fieldKey;
   final HermesGatewayDirectory directory;
 
-  /// Surface-specific line under the picker explaining what the scope means.
+  /// Scope explanation exposed to assistive technology and through a tooltip.
   final String helpText;
 
   /// Called only for a gateway that is not already selected.
@@ -48,33 +48,42 @@ class WingGatewayPicker extends StatelessWidget {
         .firstOrNull
         ?.id;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DropdownButtonFormField<String>(
-            key: fieldKey,
-            initialValue: selected,
-            decoration: InputDecoration(
-              labelText: strings.gatewayLabel,
-              border: const OutlineInputBorder(),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: Semantics(
+        label: strings.gatewayLabel,
+        hint: helpText,
+        child: DropdownButtonFormField<String>(
+          key: fieldKey,
+          isExpanded: true,
+          style: Theme.of(context).textTheme.bodyMedium,
+          initialValue: selected,
+          decoration: InputDecoration(
+            prefixIcon: Tooltip(
+              message: helpText,
+              child: const Icon(Icons.dns_outlined, size: 18),
             ),
-            hint: Text(hint ?? strings.selectGatewayHint),
-            items: [
-              for (final host in hosts)
-                DropdownMenuItem(value: host.id, child: Text(host.label)),
-            ],
-            onChanged: enabled
-                ? (gatewayId) {
-                    if (gatewayId != null && gatewayId != selected) {
-                      onSelected(gatewayId);
-                    }
-                  }
-                : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+            isDense: true,
           ),
-          const SizedBox(height: 6),
-          Text(helpText),
-        ],
+          hint: Text(hint ?? strings.selectGatewayHint),
+          items: [
+            for (final host in hosts)
+              DropdownMenuItem(
+                value: host.id,
+                child: Text(host.label, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: enabled
+              ? (gatewayId) {
+                  if (gatewayId != null && gatewayId != selected) {
+                    onSelected(gatewayId);
+                  }
+                }
+              : null,
+        ),
       ),
     );
   }

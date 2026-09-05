@@ -58,8 +58,15 @@ func (writer *auditResponseWriter) Write(payload []byte) (int, error) {
 
 func auditOperationForRequest(request *http.Request) string {
 	switch {
+	case request.Method == http.MethodGet && request.URL.Path == "/v1/host/omniroute":
+		return "omniroute.discover"
 	case request.Method == http.MethodGet && request.URL.Path == "/v1/status":
 		return "status.read"
+	case request.Method == http.MethodGet && strings.HasSuffix(request.URL.Path, "/model-options"):
+		if _, ok := profileRoute(strings.TrimSuffix(request.URL.Path, "/model-options")); ok {
+			return "profile.model-options.read"
+		}
+		return ""
 	case request.Method == http.MethodGet && request.URL.Path == "/v1/profiles":
 		return "profile.list"
 	case request.Method == http.MethodGet && request.URL.Path == "/v1/update/status":

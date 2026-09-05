@@ -1,0 +1,186 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Use light theme
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Profiles fixture
+- takeScreenshot: light-profiles
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Tools fixture
+- takeScreenshot: light-tools
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Office fixture
+- takeScreenshot: light-office
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Providers fixture
+- takeScreenshot: light-providers
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: SOUL fixture
+- takeScreenshot: light-soul
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- takeScreenshot: light-gateway
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Settings fixture
+- takeScreenshot: light-settings
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- takeScreenshot: light-voice-settings
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Diagnostics fixture
+- takeScreenshot: light-diagnostics
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Schedules fixture
+- takeScreenshot: light-schedules
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- takeScreenshot: light-chat
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Pairing fixture
+- takeScreenshot: light-pairing
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Local setup fixture
+- takeScreenshot: light-local-setup
+- tapOn: Fixture home
+- runFlow:
+    file: control.yaml
+    env:
+      ACTION: Use dark theme
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Profiles fixture
+- takeScreenshot: dark-profiles
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Tools fixture
+- takeScreenshot: dark-tools
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Office fixture
+- takeScreenshot: dark-office
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Providers fixture
+- takeScreenshot: dark-providers
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: SOUL fixture
+- takeScreenshot: dark-soul
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- takeScreenshot: dark-gateway
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Settings fixture
+- takeScreenshot: dark-settings
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Voice settings fixture
+- takeScreenshot: dark-voice-settings
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Diagnostics fixture
+- takeScreenshot: dark-diagnostics
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Schedules fixture
+- takeScreenshot: dark-schedules
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Chat fixture
+- takeScreenshot: dark-chat
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Pairing fixture
+- takeScreenshot: dark-pairing
+- tapOn: Fixture home
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Local setup fixture
+- takeScreenshot: dark-local-setup
+- tapOn: Fixture home
+- tapOn: Fixture controls
+- assertVisible: 'Layout overflows: 0'
+- tapOn: Close controls

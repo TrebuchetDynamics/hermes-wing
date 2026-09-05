@@ -128,23 +128,22 @@ void _showInfoActionSheet(
     isScrollControlled: true,
     showDragHandle: true,
     builder: (context) => SafeArea(
-      child: DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.64,
-        minChildSize: 0.24,
-        maxChildSize: 0.90,
-        builder: (context, scrollController) => ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            _buildInfoGrid(context, infoRows),
-            const SizedBox(height: 8),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            for (final action in actions) _buildActionRow(context, action),
-          ],
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.85,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 12),
+              for (final action in actions) _buildActionRow(context, action),
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              _buildInfoGrid(context, infoRows),
+            ],
+          ),
         ),
       ),
     ),

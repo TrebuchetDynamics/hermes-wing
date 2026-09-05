@@ -96,7 +96,7 @@ class _MobileShell extends StatelessWidget {
                 key: const ValueKey('mobile-shell-navigation-bar'),
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: (index) {
-                  if (index == 2) {
+                  if (index == 3) {
                     _showMoreDestinations(
                       context,
                       title: AppLocalizations.of(context).moreDestinations,
@@ -107,13 +107,23 @@ class _MobileShell extends StatelessWidget {
                     return;
                   }
                   context.go(
-                    index == 0 ? AppRoutes.hermes : AppRoutes.settings,
+                    [
+                      AppRoutes.hermes,
+                      AppRoutes.profiles,
+                      AppRoutes.settings,
+                    ][index],
                   );
                 },
                 destinations: [
                   NavigationDestination(
-                    icon: const Icon(Icons.auto_awesome_outlined),
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    selectedIcon: const Icon(Icons.chat_bubble),
                     label: AppLocalizations.of(context).hermesDestination,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.people_outline),
+                    selectedIcon: const Icon(Icons.people),
+                    label: AppLocalizations.of(context).agentsDestination,
                   ),
                   NavigationDestination(
                     icon: const Icon(Icons.settings_outlined),
@@ -137,8 +147,14 @@ class _MobileShell extends StatelessWidget {
     )) {
       return 0;
     }
-    if (AppRoutes.isSettingsLocation(location)) return 1;
-    return 2;
+    if (AppRoutes.isNavigationDestinationLocation(
+      location: location,
+      destinationPath: AppRoutes.profiles,
+    )) {
+      return 1;
+    }
+    if (AppRoutes.isSettingsLocation(location)) return 2;
+    return 3;
   }
 }
 

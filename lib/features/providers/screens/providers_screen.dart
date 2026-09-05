@@ -242,6 +242,12 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
           readOnlyLabel: strings.readOnlyAccess,
         ),
         const SizedBox(height: 20),
+        _ModelSection(
+          strings: strings,
+          state: state,
+          onChoose: () => _openModelPicker(channel, state),
+        ),
+        const SizedBox(height: 24),
         if (providers.isEmpty)
           WingEmptyState(
             icon: Icons.key_off_outlined,
@@ -271,12 +277,6 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
             ),
           ],
         ],
-        const SizedBox(height: 28),
-        _ModelSection(
-          strings: strings,
-          state: state,
-          onChoose: () => _openModelPicker(channel, state),
-        ),
       ],
     );
   }
@@ -330,7 +330,7 @@ class _ProvidersHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(subtitle, style: theme.textTheme.bodyLarge),
+          Text(subtitle, style: theme.textTheme.bodySmall),
           if (readOnly) ...[
             const SizedBox(height: 10),
             Chip(
@@ -378,14 +378,19 @@ class _ProviderCard extends StatelessWidget {
         Text(authLabel, style: theme.textTheme.bodySmall),
       ],
     );
-    final status = Chip(
-      avatar: Icon(
-        provider.configured
-            ? Icons.check_circle_outline
-            : Icons.remove_circle_outline,
-        size: 18,
-      ),
-      label: Text(statusLabel),
+    final status = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          provider.configured
+              ? Icons.check_circle_outline
+              : Icons.remove_circle_outline,
+          size: 16,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 6),
+        Flexible(child: Text(statusLabel, style: theme.textTheme.bodySmall)),
+      ],
     );
 
     return Semantics(
@@ -401,7 +406,7 @@ class _ProviderCard extends StatelessWidget {
                 builder: (context, constraints) {
                   final largeText =
                       MediaQuery.textScalerOf(context).scale(1) > 1.3;
-                  if (constraints.maxWidth < 400 || largeText) {
+                  if (constraints.maxWidth < 300 || largeText) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [identity, const SizedBox(height: 10), status],

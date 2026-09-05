@@ -20,7 +20,7 @@ appId: com.trebuchetdynamics.hermes.wing
 - assertVisible: "(?s).*Sessions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
-    visible: "(?s).*How can Hermes help today?.*"
+    visible: "(?s).*What are we working on?.*"
     timeout: 30000
 - takeScreenshot: gateway_chat
 - tapOn: "(?s).*All chats.*"

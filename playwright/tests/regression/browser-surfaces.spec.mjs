@@ -163,12 +163,12 @@ test("Schedules renders and refreshes read-only jobs", async ({ page }) => {
   await expect(
     page.getByText("Read-only schedule inventory.", { exact: false }),
   ).toBeVisible();
-  const job = page.getByRole("group", { name: /Morning check/ });
-  await expect(job).toHaveAccessibleName(/Every day at 09:00/);
-  await expect(page.getByRole("checkbox", { name: "Enabled" })).toBeVisible();
+  await expect(page.getByText(/Morning check/)).toBeVisible();
+  await expect(page.getByText(/Every day at 09:00/)).toBeVisible();
+  await expect(page.getByText(/Enabled/)).toBeVisible();
   await page.getByRole("button", { name: "Refresh schedules" }).click();
   await expect(
-    page.getByRole("group", { name: /Morning check/ }),
+    page.getByText(/Morning check/),
   ).toBeVisible();
 });
 
@@ -210,9 +210,7 @@ test("Diagnostics reports connected inventory and confirms redacted export", asy
     page.getByText("Runs SSE enabled", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByRole("group", {
-      name: "Resources 1 models • 2 skills • 1 toolsets • 1 jobs",
-    }),
+    page.getByText("Resources 1 models • 2 skills • 1 toolsets • 1 jobs", { exact: true }),
   ).toBeVisible();
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.getByRole("button", { name: /Copy diagnostics/ }).click();

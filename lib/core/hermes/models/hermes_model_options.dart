@@ -1,7 +1,7 @@
 import '../../protocol/wing_json.dart';
 
-const _maxModelOptionProviders = 64;
-const _maxModelOptionModels = 256;
+const _maxModelOptionProviders = 128;
+const _maxModelOptionModels = 16384;
 
 /// A selectable provider/model row from Hermes Agent's authoritative
 /// `GET /api/model/options` picker inventory.
@@ -18,9 +18,10 @@ class HermesModelOptionProvider {
 
   factory HermesModelOptionProvider.fromJson(Map<String, Object?> json) {
     final models = <String>[];
+    final seen = <String>{};
     for (final value in wingStringListFromJson(json['models'])) {
       final model = _bounded(value, 200);
-      if (model.isNotEmpty && !models.contains(model)) {
+      if (model.isNotEmpty && seen.add(model)) {
         models.add(model);
       }
       if (models.length == _maxModelOptionModels) break;
@@ -72,7 +73,7 @@ class HermesModelOptions {
     final providers = <HermesModelOptionProvider>[];
     for (final value in wingMapListFromJson(json['providers'])) {
       final provider = HermesModelOptionProvider.fromJson(value);
-      if (provider.slug.isEmpty || provider.models.isEmpty) continue;
+      if (provider.slug.isEmpty) continue;
       providers.add(provider);
       if (providers.length == _maxModelOptionProviders) break;
     }
@@ -94,7 +95,7 @@ class HermesModelOptions {
   final String currentModel;
 
   List<HermesModelOptionProvider> get selectableProviders => providers
-      .where((provider) => provider.selectable)
+      .where((provider) => provider.selectable && provider.models.isNotEmpty)
       .toList(growable: false);
 }
 

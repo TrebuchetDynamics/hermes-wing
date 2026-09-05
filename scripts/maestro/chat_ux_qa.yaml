@@ -36,7 +36,7 @@ name: chat_ux_qa
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
-    visible: "(?s).*How can Hermes help today?.*"
+    visible: "(?s).*What are we working on?.*"
     timeout: 30000
 - takeScreenshot: 01_empty_chat
 

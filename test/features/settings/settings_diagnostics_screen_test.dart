@@ -112,6 +112,7 @@ void main() {
 
     final copy = find.byKey(const ValueKey('settings-copy-diagnostics'));
     await tester.scrollUntilVisible(copy, 300);
+    await tester.pumpAndSettle();
     await tester.tap(copy);
     await tester.pump();
 
@@ -155,6 +156,7 @@ void main() {
     await tester.pumpAndSettle();
     final copy = find.byKey(const ValueKey('settings-copy-diagnostics'));
     await tester.scrollUntilVisible(copy, 300);
+    await tester.pumpAndSettle();
     await tester.tap(copy);
     await tester.pump();
 
@@ -200,6 +202,7 @@ void main() {
 
     final copy = find.byKey(const ValueKey('settings-copy-diagnostics'));
     await tester.scrollUntilVisible(copy, 300);
+    await tester.pumpAndSettle();
     await tester.tap(copy);
     await tester.pump();
 

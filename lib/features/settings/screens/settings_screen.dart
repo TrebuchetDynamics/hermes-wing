@@ -152,6 +152,7 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
           child: SegmentedButton<ThemeMode>(
             key: const ValueKey('settings-theme-mode'),
+            showSelectedIcon: false,
             segments: [
               ButtonSegment(
                 value: ThemeMode.system,
@@ -649,50 +650,37 @@ class _SettingsSectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      clipBehavior: Clip.antiAlias,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Semantics(
             container: true,
             headingLevel: 2,
-            child: Container(
-              color: colors.surfaceContainerLow,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
               child: Row(
                 children: [
                   ExcludeSemantics(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(icon, color: colors.onPrimaryContainer),
-                      ),
-                    ),
+                    child: Icon(icon, size: 16, color: colors.onSurfaceVariant),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                    child: Text(title, style: theme.textTheme.labelLarge),
                   ),
                 ],
               ),
             ),
           ),
-          const Divider(height: 1),
-          for (var index = 0; index < children.length; index++) ...[
-            children[index],
-            if (index < children.length - 1) const Divider(height: 1),
-          ],
+          Card(
+            margin: EdgeInsets.zero,
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          ),
         ],
       ),
     );

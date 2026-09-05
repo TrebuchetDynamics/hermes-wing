@@ -7,4 +7,6 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - extendedWaitUntil:
     visible: '(?s).*Message Hermes.*'
     timeout: 30000
+- takeScreenshot: chat-empty
 - runFlow: open.yaml
+- takeScreenshot: profiles-overview

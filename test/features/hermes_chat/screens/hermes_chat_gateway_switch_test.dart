@@ -23,6 +23,44 @@ import '../support/fake_hermes_endpoint_store.dart';
 import '../support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  testWidgets('phone header keeps long profile names and switching usable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final harness = await _pumpGatewayChat(
+      tester,
+      profileIds: const ['a-long-profile-name-for-testing'],
+    );
+    harness.channel.replaceCapabilitiesAndProfiles(
+      HermesCapabilityDocument.fromJson(const {
+        'schema_version': 1,
+        'auth': {'type': 'none', 'required': false},
+        'endpoints': <String, Object?>{},
+      }),
+      const [
+        HermesProfile(
+          id: 'a-long-profile-name-for-testing',
+          displayName: 'A long profile name for testing',
+          revision: 'r-long',
+        ),
+      ],
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    final switcher = find.byKey(const ValueKey('hermes-profile-switcher'));
+    expect(switcher.hitTestable(), findsOneWidget);
+    await tester.tap(switcher);
+    await tester.pumpAndSettle();
+    expect(find.text('A long profile name for testing'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hermes-contact-header')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('hermes-sessions-panel')), findsOneWidget);
+  });
   testWidgets('active header shows agent and gateway and opens sessions', (
     tester,
   ) async {
@@ -1853,7 +1891,7 @@ _pumpGatewayChat(
   );
   await directory.refresh();
   await directory.activate(
-    const GatewayContactId(gatewayId: 'a', profileId: 'agent-a'),
+    GatewayContactId(gatewayId: 'a', profileId: profileIds.first),
   );
   await tester.pumpWidget(
     ProviderScope(

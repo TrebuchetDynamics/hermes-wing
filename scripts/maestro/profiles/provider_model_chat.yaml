@@ -11,6 +11,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - extendedWaitUntil:
     visible: '(?s).*MODEL_RECEIPT::setup-qa::openrouter::fixture-model::fixture-model-followup::assistant.*'
     timeout: 30000
+- takeScreenshot: provider-model-chat
 - pressKey: Back
 - runFlow:
     file: chat.yaml

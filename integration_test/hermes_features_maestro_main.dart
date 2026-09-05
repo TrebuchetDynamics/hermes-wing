@@ -16,9 +16,13 @@ import 'package:wing/features/gateway/screens/gateway_screen.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/shared/widgets/app_shell.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/features/profiles/widgets/profile_directory_browser_sheet.dart';
 import 'package:wing/features/providers/screens/providers_screen.dart';
+import 'package:wing/features/profiles/screens/profiles_screen.dart';
+import 'package:wing/features/tools/screens/tools_screen.dart';
+import 'package:wing/features/office/screens/office_screen.dart';
 import 'package:wing/features/schedules/screens/schedules_screen.dart';
 import 'package:wing/features/settings/providers/theme_settings_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
@@ -62,9 +66,17 @@ class _FixtureIntents implements HermesConnectIntentSource {
 }
 
 const _fingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+int _layoutOverflows = 0;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final previousErrorHandler = FlutterError.onError;
+  FlutterError.onError = (details) {
+    if (details.exceptionAsString().contains('overflowed by')) {
+      _layoutOverflows++;
+    }
+    previousErrorHandler?.call(details);
+  };
   final fixture = FeatureFixture();
   await fixture.initialize();
   runApp(
@@ -137,6 +149,9 @@ class FeatureFixture {
       routes: [
         GoRoute(path: '/qa', builder: (context, state) => _hub(context)),
         for (final route in <String, Widget>{
+          '/profiles': const ProfilesScreen(),
+          '/tools': const ToolsScreen(),
+          '/office': const OfficeScreen(),
           '/providers': const ProvidersScreen(),
           '/soul': const SoulScreen(),
           '/settings': const SettingsScreen(),
@@ -147,11 +162,19 @@ class FeatureFixture {
           '/enroll': const HermesEnrollmentScreen(),
           '/setup/local': const TermuxHermesSetupScreen(),
         }.entries)
-          GoRoute(path: route.key, builder: (_, _) => route.value),
+          GoRoute(
+            path: route.key,
+            builder: (_, _) =>
+                route.key == '/enroll' || route.key == '/setup/local'
+                ? route.value
+                : AppShell(location: route.key, child: route.value),
+          ),
         GoRoute(
           path: '/gateway',
-          builder: (_, _) =>
-              GatewayScreen(wingLinkClientBuilder: (_) => trustClient()),
+          builder: (_, _) => AppShell(
+            location: '/gateway',
+            child: GatewayScreen(wingLinkClientBuilder: (_) => trustClient()),
+          ),
         ),
       ],
     );
@@ -248,6 +271,9 @@ class FeatureFixture {
     body: ListView(
       children: [
         for (final entry in const <String, String>{
+          'Profiles fixture': '/profiles',
+          'Tools fixture': '/tools',
+          'Office fixture': '/office',
           'Providers fixture': '/providers',
           'SOUL fixture': '/soul',
           'Gateway fixture': '/gateway',
@@ -285,6 +311,7 @@ class FeatureFixture {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Text('Layout overflows: $_layoutOverflows'),
                 Text(
                   'Credential writes: ${channel.setProviderCredentialCalls.length}',
                 ),
@@ -369,6 +396,12 @@ class FeatureFixture {
                     channel.earlierAvailable = true;
                     channel.notifyListeners();
                   },
+                  'Use light theme': () => ProviderScope.containerOf(context)
+                      .read(wingThemeSettingsProvider.notifier)
+                      .setMode(ThemeMode.light),
+                  'Use dark theme': () => ProviderScope.containerOf(context)
+                      .read(wingThemeSettingsProvider.notifier)
+                      .setMode(ThemeMode.dark),
                   'Use large text': () => scale.value = 2,
                   'Use normal text': () => scale.value = 1,
                   'Changed host identity': () => trustMode = 'changed',
@@ -433,6 +466,7 @@ class _FixtureApp extends ConsumerWidget {
     final appearance = ref.watch(wingThemeSettingsProvider);
     return MaterialApp.router(
       title: 'Hermes Wing Maestro fixture',
+      debugShowCheckedModeBanner: false,
       routerConfig: fixture.router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -448,7 +482,13 @@ class _FixtureApp extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              Expanded(child: child!),
+              Expanded(
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: true,
+                  child: child!,
+                ),
+              ),
               SafeArea(
                 top: false,
                 child: Material(

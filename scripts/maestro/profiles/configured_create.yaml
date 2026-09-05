@@ -3,6 +3,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 ---
 - runFlow: start.yaml
 - tapOn: Fixture configured profile
+- takeScreenshot: profile-setup-editor
 - tapOn: '(?s).*Profile name.*'
 - inputText: setup-qa
 - hideKeyboard
@@ -45,6 +46,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     direction: DOWN
     centerElement: true
 - assertVisible: '(?s).*fixture-model.*'
+- takeScreenshot: profile-model-configured
 - stopApp
 - launchApp
 - runFlow: open.yaml

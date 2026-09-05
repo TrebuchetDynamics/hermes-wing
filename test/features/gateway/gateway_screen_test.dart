@@ -606,6 +606,10 @@ void main() {
       const Offset(0, -500),
     );
     await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('gateway-trust-revoke')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('gateway-trust-revoke')));
     await tester.pumpAndSettle();
     await tester.tap(
@@ -682,6 +686,10 @@ void main() {
     await tester.drag(
       find.byKey(const ValueKey('gateway-body-list')),
       const Offset(0, -450),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('gateway-trust-revoke')),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('gateway-trust-revoke')));

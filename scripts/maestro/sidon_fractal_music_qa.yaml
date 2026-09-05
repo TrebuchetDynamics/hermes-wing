@@ -26,7 +26,7 @@ name: sidon_fractal_music_qa
 - tapOn: "(?s).*More actions.*"
 - tapOn: "(?s).*New session.*"
 - extendedWaitUntil:
-    visible: "(?s).*How can Hermes help today?.*"
+    visible: "(?s).*What are we working on?.*"
     timeout: 30000
 - tapOn: "(?s).*Message Hermes….*"
 - inputText: "Continue working on the fractal music stuff. Finish with the uppercase form of sidon underscore fractal underscore continued."

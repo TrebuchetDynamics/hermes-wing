@@ -5,6 +5,23 @@ import 'package:wing/app.dart';
 import 'package:wing/theme/wing_theme.dart';
 
 void main() {
+  test('primary button labels retain readable contrast in every palette', () {
+    for (final palette in WingThemePalette.values) {
+      for (final brightness in Brightness.values) {
+        final colors = wingThemeFor(palette, brightness).colorScheme;
+        final a = colors.primary.computeLuminance();
+        final b = colors.onPrimary.computeLuminance();
+        final contrast = a > b
+            ? (a + 0.05) / (b + 0.05)
+            : (b + 0.05) / (a + 0.05);
+        expect(
+          contrast,
+          greaterThanOrEqualTo(4.5),
+          reason: '$palette $brightness',
+        );
+      }
+    }
+  });
   test(
     'Hermes Wing themes provide Telegram Light and Hermes Dark palettes',
     () {
@@ -59,9 +76,9 @@ void main() {
         expect(listTileTheme.textColor, colorScheme.onSurface);
         expect(
           listTileTheme.contentPadding,
-          const EdgeInsets.symmetric(horizontal: 24),
+          const EdgeInsets.symmetric(horizontal: 16),
         );
-        expect(listTileTheme.horizontalTitleGap, 20);
+        expect(listTileTheme.horizontalTitleGap, 12);
         expect(listTileTheme.minLeadingWidth, 24);
       }
     },
@@ -97,28 +114,24 @@ void main() {
     }
   });
 
-  test(
-    'Hermes Wing themes keep cards flat with subtle Telegram-like outlines',
-    () {
-      for (final theme in [wingLightTheme, wingDarkTheme]) {
-        final colorScheme = theme.colorScheme;
-        final cardTheme = theme.cardTheme;
-        final cardShape = cardTheme.shape as RoundedRectangleBorder?;
+  test('Hermes Wing themes use compact cards with subtle boundaries', () {
+    for (final theme in [wingLightTheme, wingDarkTheme]) {
+      final colorScheme = theme.colorScheme;
+      final cardTheme = theme.cardTheme;
+      final cardShape = cardTheme.shape as RoundedRectangleBorder?;
 
-        expect(
-          cardTheme.color,
-          theme.colorScheme.brightness == Brightness.dark
-              ? colorScheme.surfaceContainer
-              : colorScheme.surface,
-        );
-        expect(cardTheme.surfaceTintColor, Colors.transparent);
-        expect(cardTheme.elevation, 0);
-        expect(cardShape?.borderRadius, BorderRadius.circular(16));
-        expect(cardShape?.side.color, colorScheme.outlineVariant.withAlpha(96));
-        expect(cardShape?.side.width, 1);
-      }
-    },
-  );
+      expect(
+        cardTheme.color,
+        theme.colorScheme.brightness == Brightness.dark
+            ? colorScheme.surfaceContainer
+            : colorScheme.surfaceContainerLowest,
+      );
+      expect(cardTheme.surfaceTintColor, Colors.transparent);
+      expect(cardTheme.elevation, 0);
+      expect(cardShape?.borderRadius, BorderRadius.circular(10));
+      expect(cardShape?.side.color, colorScheme.outlineVariant.withAlpha(150));
+    }
+  });
 
   test('every palette provides Material 3 themes in both brightnesses', () {
     expect(WingThemePalette.values, hasLength(5));

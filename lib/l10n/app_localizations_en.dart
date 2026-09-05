@@ -9,6 +9,17 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get profileCatalogLoading =>
+      'Loading providers and models from Hermes Agent…';
+
+  @override
+  String get profileCatalogUnavailable =>
+      'The Agent catalog could not be loaded. Retry, or enter a provider and model manually.';
+
+  @override
+  String get profileCatalogRetry => 'Retry catalog';
+
+  @override
   String get transcriptLargeMessageScroll =>
       'Large message. Scroll to read all content.';
 
@@ -53,7 +64,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentsTitle => 'Profiles';
 
   @override
-  String get agentsSubtitle => 'Choose how Hermes works for each profile.';
+  String get agentsSubtitle => 'Profiles for your different tasks.';
 
   @override
   String get newAgent => 'New Profile';
@@ -335,8 +346,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolsRefreshFailed => 'Tool inventory could not be refreshed.';
 
   @override
-  String get toolsSubtitle =>
-      'Installed skills and resolved toolsets advertised by this gateway.';
+  String get toolsSubtitle => 'Skills and toolsets available on this gateway.';
 
   @override
   String get toolsConnectionRequiredBody =>
@@ -434,8 +444,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get officeTitle => 'Office';
 
   @override
-  String get officeSubtitle =>
-      'An accessible 2D workspace for profiles advertised by your saved Hermes gateways.';
+  String get officeSubtitle => 'Pick a profile to continue working.';
 
   @override
   String officeAgentCount(int count) {
@@ -593,8 +602,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get schedulesTitle => 'Schedules';
 
   @override
-  String get schedulesSubtitle =>
-      'Scheduled jobs advertised by the selected gateway and profile.';
+  String get schedulesSubtitle => 'Scheduled work for this profile.';
 
   @override
   String get schedulesGatewayHelp =>
@@ -625,7 +633,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesReadOnlyNote =>
-      'Read-only schedule inventory. Create, pause, trigger, and delete remain hidden until this gateway advertises exact scoped administration contracts.';
+      'Read-only schedule inventory. Manage scheduled work on the host.';
 
   @override
   String get schedulesRefreshTooltip => 'Refresh schedules';
@@ -730,8 +738,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Host confirmation is pending. Run wing-link approvals list on the host, review the request, then retry with the same operation.';
 
   @override
-  String get gatewayStatusSubtitle =>
-      'Bounded health status advertised by the selected Hermes gateway.';
+  String get gatewayStatusSubtitle => 'Host connection and service health.';
 
   @override
   String get gatewayStatusHelp => 'View status from the selected gateway.';
@@ -762,7 +769,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gatewayStatusReadOnlyNote =>
-      'Read-only gateway status. Lifecycle, logs, and messaging-platform administration remain hidden until exact scoped contracts are advertised.';
+      'Read-only gateway status. Manage services, logs, and messaging platforms on the host.';
 
   @override
   String get gatewayStatusRefreshTooltip => 'Refresh gateway status';
@@ -859,8 +866,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providersTitle => 'Providers';
 
   @override
-  String get providersSubtitle =>
-      'Set provider credentials and choose models for this profile.';
+  String get providersSubtitle => 'Choose a model and manage provider access.';
 
   @override
   String get providersGatewayHelp =>
@@ -1486,21 +1492,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceContinuousSubtitle =>
-      'Allow on-device STT transcripts to be sent to Hermes';
+      'Send recognized speech to Hermes automatically.';
 
   @override
   String get voiceSpeakRepliesTitle => 'Speak replies aloud';
 
   @override
   String get voiceSpeakRepliesSubtitle =>
-      'Allow hands-free voice to speak Hermes replies aloud; the chat\'s hands-free switch turns this on and off';
+      'Read replies aloud when hands-free voice is on.';
 
   @override
   String get voiceCompletionSoundTitle => 'Response completion sound';
 
   @override
   String get voiceCompletionSoundSubtitle =>
-      'Play a device alert when a Hermes reply finishes';
+      'Play a sound when a reply finishes.';
 
   @override
   String get voiceAdvancedSection => 'Advanced';
@@ -1863,7 +1869,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termuxPrerequisites =>
-      'Install Termux from its official installation guide, open it once, and keep internet access available. If you already use Termux, continue with that installation.';
+      'Install Termux from the official guide and open it once. Already installed? Continue below. Keep internet access available.';
 
   @override
   String get termuxReadyAction => 'Termux is installed and opens';
@@ -3551,26 +3557,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get chatRailEmptyStateTitle => 'How can Hermes help today?';
+  String get chatRailEmptyStateTitle => 'What are we working on?';
 
   @override
   String get chatRailEmptyStateBody =>
-      'Start a session with text or local voice. Hermes Wing keeps the mobile chat flow Telegram-fast while Hermes handles runs, tools, and approvals.';
+      'Ask Hermes a question, or start with one of these.';
 
   @override
-  String get chatRailPromptSummarizeHelpLabel =>
-      'Summarize what you can help me do.';
+  String get chatRailPromptSummarizeHelpLabel => 'What can you help me do?';
 
   @override
-  String get chatRailPromptListSkillsLabel =>
-      'List my available Hermes skills.';
+  String get chatRailPromptListSkillsLabel => 'Show my available skills';
 
   @override
-  String get chatRailPromptPlanTaskLabel => 'Plan my next coding task.';
+  String get chatRailPromptPlanTaskLabel => 'Plan my next coding task';
 
   @override
-  String get chatRailPromptExplainSessionLabel =>
-      'Explain the current session state.';
+  String get chatRailPromptExplainSessionLabel => 'Catch me up on this session';
 
   @override
   String get chatRailStopAction => 'Stop';
@@ -3793,7 +3796,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipVoice =>
-      'Tap the microphone for hands-free voice. Long-press to dictate for review. Wing reports listening and playback separately.';
+      'Tap the microphone to talk. Hold it to dictate and review before sending.';
 
   @override
   String get tipApprovals =>
@@ -3893,7 +3896,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termuxSetupBody =>
-      'Termux runs Hermes Agent and Wing Link on your phone. The setup command reuses a healthy existing installation or installs what is missing. You run it yourself in Termux.';
+      'Run Hermes Agent and Wing Link on your phone using Termux. You run the setup command yourself; it installs missing components or reuses a healthy installation.';
 
   @override
   String get termuxInstallAction => 'Install Termux';
@@ -3937,7 +3940,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termuxTierTwoNotice =>
-      'Keep Termux available. Android can stop Hermes while it runs in the background. Rerun the same setup command to recover.';
+      'Keep Termux running. If Android stops Hermes in the background, rerun the setup command to recover.';
 
   @override
   String get enrollInstallOnPhoneAction => 'Use this phone';
@@ -3967,4 +3970,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileApprovalExpired =>
       'The local approval expired. Enter the credential again to start a new request.';
+
+  @override
+  String get profileOmniRouteServing =>
+      'OmniRoute is serving on the paired computer. Model access still depends on its provider setup.';
+
+  @override
+  String get profileOmniRouteAuthentication =>
+      'OmniRoute is serving on the paired computer and requires authentication. Credential setup is not yet supported here.';
+
+  @override
+  String get profileOmniRouteStarting =>
+      'OmniRoute was found but is not ready yet.';
+
+  @override
+  String get profileOmniRouteUnrecognized =>
+      'Another or unrecognized service is using the local OmniRoute endpoint.';
+
+  @override
+  String get profileOmniRouteUnavailable =>
+      'No OmniRoute service was found at the default endpoint on the paired computer.';
+
+  @override
+  String get profileOmniRouteUnknown =>
+      'OmniRoute discovery has not completed. Check again or update Wing Link.';
+
+  @override
+  String get profileOmniRouteUse => 'Use OmniRoute';
+
+  @override
+  String get profileOmniRouteCheck => 'Check for OmniRoute';
 }

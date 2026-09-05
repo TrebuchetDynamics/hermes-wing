@@ -67,7 +67,8 @@ async function main() {
   const start = Date.now();
   await mkdir('build/receipts', { recursive: true });
   const log = createWriteStream('build/flutter-ci-test.log', { flags: 'w', mode: 0o600 });
-  const child = spawn('flutter', ['test', '--machine', '--coverage', '--concurrency=1'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  // CI installs dependencies first; pub chatter would corrupt the JSON stream.
+  const child = spawn('flutter', ['test', '--no-pub', '--machine', '--coverage', '--concurrency=1'], { stdio: ['ignore', 'pipe', 'pipe'] });
   child.stdout.pipe(log, { end: false });
   child.stderr.pipe(log, { end: false });
   let timedOut = false;

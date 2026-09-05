@@ -97,3 +97,17 @@ synthetic transcripts remain outside the repository. This report contains only
 redacted qualification facts. Deterministic provider/model fixture work in the concurrent `hw2` session is
 separate from this real-provider receipt. Concurrent enrollment changes made
 after these validation runs are not qualified by this report.
+
+## PR CI follow-up
+
+The first PR workflow completed all 124 Flutter suites but its strict machine
+result parser rejected dependency-resolution chatter printed by Flutter before
+the JSON events. The CI test command now uses `--no-pub`; the preceding explicit
+`flutter pub get` remains responsible for dependency installation. No parser
+validation was relaxed.
+
+An isolated checkout of the PR source plus this command fix passed the actual
+`node scripts/ci_test_receipt.mjs` command with coverage: 124/124 suites and
+1,663 completed results (including suite-loading events). All 47 Node tooling
+tests passed. These results are separate from the earlier shared-worktree and
+physical-device receipts.

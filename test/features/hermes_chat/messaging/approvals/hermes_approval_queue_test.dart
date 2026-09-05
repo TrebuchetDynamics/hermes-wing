@@ -39,6 +39,93 @@ void main() {
     addTearDown(queue.dispose);
   }
 
+  test('stopped-turn dismissal preserves other approval owners', () {
+    build();
+    final matching = _request(
+      id: 'match',
+      runId: 'run',
+      sessionId: 'session',
+      profileId: 'profile',
+      connectionGeneration: 1,
+    );
+    final others = [
+      _request(
+        id: 'other-run',
+        runId: 'other',
+        sessionId: 'session',
+        profileId: 'profile',
+        connectionGeneration: 1,
+      ),
+      _request(
+        id: 'other-session',
+        runId: 'run',
+        sessionId: 'other',
+        profileId: 'profile',
+        connectionGeneration: 1,
+      ),
+      _request(
+        id: 'other-profile',
+        runId: 'run',
+        sessionId: 'session',
+        profileId: 'other',
+        connectionGeneration: 1,
+      ),
+      _request(
+        id: 'other-connection',
+        runId: 'run',
+        sessionId: 'session',
+        profileId: 'profile',
+        connectionGeneration: 2,
+      ),
+    ];
+    for (final request in [matching, ...others]) {
+      queue.add(request);
+    }
+    HermesTurnInterruptionTarget target(Object owner) =>
+        HermesTurnInterruptionTarget(
+          owner: owner,
+          connectionGeneration: 1,
+          profileId: 'profile',
+          sessionId: 'session',
+          streamGeneration: 1,
+          runId: 'run',
+        );
+    queue.dismissStoppedTurn(target(Object()));
+    expect(queue.pending.length, 5);
+    queue.dismissStoppedTurn(target(channel));
+    expect(queue.pending, others);
+    expect(channel.respondToApprovalCalls, isEmpty);
+  });
+
+  test('stopping an answered run ignores its late failure', () async {
+    final gate = Completer<void>();
+    build(
+      withChannel: FakeHermesChannel(approvalResponseGate: () => gate.future),
+    );
+    final request = _request(
+      runId: 'run',
+      sessionId: 'session',
+      connectionGeneration: 1,
+    );
+    queue.add(request);
+    final answer = queue.resolve(HermesApprovalDecision.once, request);
+    queue.dismissStoppedTurn(
+      HermesTurnInterruptionTarget(
+        owner: channel,
+        connectionGeneration: 1,
+        profileId: null,
+        sessionId: 'session',
+        streamGeneration: 1,
+        runId: 'run',
+      ),
+    );
+    gate.completeError(StateError('stopped response'));
+    await answer;
+    expect(queue.pending, isEmpty);
+    expect(queue.answeringId, isNull);
+    expect(errors, isEmpty);
+  });
+
   test('queues distinct approvals and reports outstanding work', () {
     build();
     expect(queue.hasPendingWork, isFalse);

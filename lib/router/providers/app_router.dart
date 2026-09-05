@@ -63,13 +63,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
-            path: AppRoutes.addHermes,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: const HermesAddScreen(),
-            ),
-          ),
-          GoRoute(
             path: AppRoutes.office,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
@@ -140,6 +133,20 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      // Enrollment is above the shell. Manual setup needs its own root page
+      // so pushing it preserves Back without pushing a second shell instance.
+      GoRoute(
+        path: AppRoutes.addHermes,
+        pageBuilder: (context, state) => wingFadeThroughPage(
+          key: state.pageKey,
+          child: _SelectableRoute(
+            child: AppShell(
+              location: state.matchedLocation,
+              child: const HermesAddScreen(),
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: AppRoutes.legacyAgents,

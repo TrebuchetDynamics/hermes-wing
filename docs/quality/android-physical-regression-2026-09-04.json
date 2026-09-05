@@ -1,0 +1,123 @@
+{
+  "date": "2026-09-04",
+  "device": {
+    "class": "Samsung SM-S928B",
+    "android_api": 36,
+    "architecture": "arm64",
+    "physical_usb_device": true
+  },
+  "application_id": "com.trebuchetdynamics.hermes.wing.qa",
+  "build_mode": "debug",
+  "feature_inventory": {
+    "passed": 979,
+    "failed": 0,
+    "duration_seconds": 471,
+    "suite_count": 85,
+    "artifact": {
+      "target": "integration_test/android_feature_regression_test.dart",
+      "sha256": "c4d49b4f164f002a5d6c7c208526d71f9bfd664080353917491a632bdd09c403",
+      "source_base": "32c98a42d3526e2e95f8882e6eb7c1ba7c2e9582",
+      "device_class": "Samsung SM-S928B",
+      "android_api": 36,
+      "physical_usb_device": true,
+      "package": "com.trebuchetdynamics.hermes.wing.qa",
+      "includes_manual_route_fix": true,
+      "includes_stopped_approval_fix": true
+    }
+  },
+  "unit_widget_suite": {
+    "passed": 1538,
+    "failed": 0,
+    "duration_seconds": 211
+  },
+  "native_ui": {
+    "passed": true,
+    "artifact": {
+      "target": "lib/main.dart",
+      "sha256": "1c76d3a58e5ff2ec0c4e1ad1bfb8eca5db1d283609afcd38d9a2b6f87969f252",
+      "package": "com.trebuchetdynamics.hermes.wing.qa",
+      "mode": "debug",
+      "includes_manual_route_fix": true,
+      "includes_stopped_approval_fix": true
+    },
+    "fixture": {
+      "run-count": {
+        "runCount": 4
+      },
+      "stop-count": {
+        "stopCount": 1
+      },
+      "decisions": {
+        "decisions": [
+          "once",
+          "once",
+          "once"
+        ]
+      }
+    }
+  },
+  "secure_storage": [
+    {
+      "phase": "write",
+      "exit_code": 0,
+      "sha256": "1a0c225826e96cdce06e63d7ec2602bcb831e00a5a38019c4e0dfc3266b4dbd3"
+    },
+    {
+      "phase": "rotate",
+      "exit_code": 0,
+      "sha256": "9fa8bdfa838f6fd39e3efe8753fee423cd9f4afd1e03ef429a5e16dc957b3520"
+    },
+    {
+      "phase": "verify",
+      "exit_code": 0,
+      "sha256": "19cb82a89dbf756384bf6178b9e06ea22368dae39a445eb486b88cbc40d43f3f"
+    }
+  ],
+  "voice_readiness": {
+    "on_device_recognition_available": true,
+    "denied_granted_revoked_checked": true,
+    "tts_languages_enumerated": true,
+    "microphone_capture_observed": false,
+    "audible_playback_observed": false
+  },
+  "browser": {
+    "passed": 35,
+    "failed": 0,
+    "retries": 0,
+    "suites": [
+      {
+        "suite": "browser-surfaces",
+        "exit_code": 0
+      },
+      {
+        "suite": "browser-cors-streams",
+        "exit_code": 0
+      },
+      {
+        "suite": "chat-approval-confirmations",
+        "exit_code": 0
+      },
+      {
+        "suite": "chat-tts",
+        "exit_code": 0
+      },
+      {
+        "suite": "hermes-lifecycle",
+        "exit_code": 0
+      }
+    ]
+  },
+  "limits": [
+    "deterministic Agent fixture, not a live provider",
+    "debug QA package, not signed release qualification",
+    "no observed physical speech or audible playback",
+    "no Bluetooth or remote-network qualification"
+  ],
+  "cleanup": {
+    "tested_qa_artifact_matched": true,
+    "qa_package_removed": true,
+    "original_package_still_installed": true,
+    "owned_reverse_removed": true,
+    "owned_device_dump_removed": true
+  }
+}

@@ -41,6 +41,46 @@ Future<void> _openReview(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('stopping a turn removes its approval before the next run', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    channel.beginStreamingTurn('First request');
+    await tester.pumpWidget(_app(channel));
+    await tester.pump(const Duration(milliseconds: 300));
+    HermesApprovalRequest approval(String id) {
+      final target = channel.activeTurnInterruptionTarget!;
+      return HermesApprovalRequest(
+        id: id,
+        toolCallId: id,
+        prompt: id,
+        choices: {HermesApprovalDecision.once, HermesApprovalDecision.deny},
+        runId: target.runId,
+        sessionId: target.sessionId,
+        profileId: target.profileId,
+        connectionGeneration: target.connectionGeneration,
+      );
+    }
+
+    channel.emitApprovalRequest(approval('Stopped run approval'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Stopped run approval'), findsOneWidget);
+    await tester.tap(find.text('Stop'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Stopped run approval'), findsNothing);
+    channel.beginStreamingTurn('Next request');
+    channel.emitApprovalRequest(approval('Next run approval'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Approve once'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      channel.respondToApprovalCalls.single['approvalId'],
+      'Next run approval',
+    );
+    expect(find.text('Next run approval'), findsNothing);
+  });
+
   testWidgets('a secret in a tool prompt is redacted in the review sheet', (
     tester,
   ) async {

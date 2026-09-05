@@ -1,0 +1,104 @@
+# Production Android UI and native IME over USB to the deterministic HTTP/SSE
+# fixture. Start serve_web.mjs with HERMES_E2E_PORT=18768 and adb reverse that
+# port. Install lib/main.dart with WING_ISOLATED_DEVICE_TEST=1 first.
+# This qualifies device interaction and transport, not a live Agent/provider.
+appId: com.trebuchetdynamics.hermes.wing.qa
+name: Android native fixture regression
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: '(?s).*Add your first Hermes profile.*'
+    timeout: 30000
+- tapOn: 'Add gateway or profile'
+- tapOn: '(?s).*Connect one profile manually.*'
+- assertVisible: 'This device'
+- back
+- assertVisible: 'Connect to Hermes'
+- tapOn: '(?s).*Connect one profile manually.*'
+- tapOn: 'This device'
+- longPressOn: '(?s).*Hermes Agent URL.*'
+- runFlow:
+    when:
+      visible: 'Select all'
+    commands:
+      - tapOn: 'Select all'
+- inputText: '${WING_QA_FIXTURE_ORIGIN}'
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: 'Connection name \(optional\)'
+    direction: DOWN
+- tapOn: 'Connection name \(optional\)'
+- inputText: 'Android fixture'
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: 'Add Hermes'
+      index: 1
+    direction: DOWN
+- tapOn:
+    text: 'Add Hermes'
+    index: 1
+- extendedWaitUntil:
+    visible: '(?s).*Endpoint contact.*'
+    timeout: 30000
+- tapOn: '(?s).*Android fixture.*'
+- extendedWaitUntil:
+    visible: '(?s).*Message Hermes.*'
+    timeout: 30000
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: 'ANDROID NATIVE FIRST'
+- hideKeyboard
+- tapOn: 'Send'
+- extendedWaitUntil:
+    visible: 'Approve once'
+    timeout: 30000
+- tapOn: 'Approve once'
+- extendedWaitUntil:
+    visible: '(?s).*Hermes echo: ANDROID NATIVE FIRST.*'
+    timeout: 30000
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: 'ANDROID NATIVE SECOND'
+- hideKeyboard
+- tapOn: 'Send'
+- extendedWaitUntil:
+    visible: 'Approve once'
+    timeout: 30000
+- tapOn: 'Approve once'
+- extendedWaitUntil:
+    visible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'
+    timeout: 30000
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'
+    timeout: 30000
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'
+- setOrientation: PORTRAIT
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: 'ANDROID NATIVE STOP'
+- hideKeyboard
+- tapOn: 'Send'
+- extendedWaitUntil:
+    visible: 'Approve once'
+    timeout: 30000
+- tapOn: 'Stop'
+- extendedWaitUntil:
+    notVisible: 'Stop'
+    timeout: 30000
+- tapOn: '(?s).*Message Hermes.*'
+- inputText: 'ANDROID NATIVE RECOVERED'
+- hideKeyboard
+- tapOn: 'Send'
+- extendedWaitUntil:
+    visible: 'Approve once'
+    timeout: 30000
+- tapOn: 'Approve once'
+- extendedWaitUntil:
+    visible: '(?s).*Hermes echo: ANDROID NATIVE RECOVERED.*'
+    timeout: 30000
+- assertNotVisible: '(?s).*HttpException.*'

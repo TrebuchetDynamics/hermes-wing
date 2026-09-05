@@ -300,6 +300,7 @@ void main() {
 
     await tester.enterText(composer, 'prompt only for the first chat');
     await tester.showKeyboard(composer);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(composer).controller!.text, isEmpty);
@@ -308,10 +309,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(composer, 'prompt only for the second chat');
     await tester.showKeyboard(composer);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(composer).controller!.text, isEmpty);
     await tester.showKeyboard(composer);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pump();
     expect(
@@ -327,6 +330,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(composer, '');
     await tester.showKeyboard(composer);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pump();
 

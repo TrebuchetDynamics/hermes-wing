@@ -9,6 +9,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get transcriptLargeMessageScroll =>
+      'Large message. Scroll to read all content.';
+
+  @override
   String get chatAttachmentDraftEvicted =>
       'The attachment was released to save memory. Attach it again before sending.';
 

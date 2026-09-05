@@ -53,78 +53,82 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('mobile composer uses Telegram-style contextual actions', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(360, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'mobile composer uses Telegram-style contextual actions',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: HermesChatScreen(),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('hermes-composer-strip')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('hermes-composer-menu-button')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('hermes-emoji-button')), findsOneWidget);
-    expect(find.bySemanticsLabel(RegExp(r'^Message Hermes')), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('hermes-attachment-button')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
-    expect(find.byKey(const ValueKey('hermes-send-button')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('hermes-continuous-voice-switch')),
-      findsNothing,
-    );
+      expect(find.byKey(const ValueKey('hermes-composer-strip')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('hermes-composer-menu-button')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('hermes-emoji-button')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'^Message Hermes')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-attachment-button')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
+      expect(find.byKey(const ValueKey('hermes-send-button')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('hermes-continuous-voice-switch')),
+        findsNothing,
+      );
 
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-composer-field')),
-      'Hello',
-    );
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
-    expect(find.byKey(const ValueKey('hermes-mic-button')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('hermes-attachment-button')),
-      findsOneWidget,
-    );
+      await tester.enterText(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        'Hello',
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
+      expect(find.byKey(const ValueKey('hermes-mic-button')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('hermes-attachment-button')),
+        findsOneWidget,
+      );
 
-    await tester.enterText(
-      find.byKey(const ValueKey('hermes-composer-field')),
-      '',
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('hermes-emoji-button')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('hermes-emoji-0')));
-    await tester.pumpAndSettle();
-    final composer = tester.widget<TextField>(
-      find.byKey(const ValueKey('hermes-composer-field')),
-    );
-    expect(composer.controller!.text, '😀');
+      await tester.enterText(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        '',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('hermes-emoji-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('hermes-emoji-0')));
+      await tester.pumpAndSettle();
+      final composer = tester.widget<TextField>(
+        find.byKey(const ValueKey('hermes-composer-field')),
+      );
+      expect(composer.controller!.text, '😀');
 
-    await tester.tap(find.byKey(const ValueKey('hermes-composer-menu-button')));
-    await tester.pumpAndSettle();
-    expect(find.text('Sessions'), findsOneWidget);
-    expect(find.text('Hands-free voice'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-menu-button')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Sessions'), findsOneWidget);
+      expect(find.text('Hands-free voice'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
 
   testWidgets(
     'late attachment picker result stays with its original composer identity',
@@ -990,9 +994,13 @@ void main() {
     await tester.pump();
 
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
-
+    // A suspended native engine cannot produce a frame. Check cancellation
+    // before resuming, then verify the rendered state and late-result handling.
     expect(capture.cancelCalls, 1);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
     expect(
       tester
           .widget<Switch>(
@@ -1005,10 +1013,6 @@ void main() {
     capture.complete('also discarded');
     await tester.pumpAndSettle();
     expect(channel.sentVoiceTranscripts, isEmpty);
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
   });
 
   testWidgets('command word stop pauses the loop without sending to Hermes', (

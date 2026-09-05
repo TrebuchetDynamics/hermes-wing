@@ -10,6 +10,9 @@ import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 
+import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
+import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
+
 import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
 
@@ -224,6 +227,15 @@ void main() {
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
+          // Exercise direct-channel recovery without saved-directory routing.
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => HermesGatewayDirectory(
+              store: FakeHermesEndpointStore(),
+              cache: GatewayContactCache(),
+              loader: const HermesApiGatewaySummaryLoader(),
+              activeChannel: channel,
+            ),
+          ),
           hermesEndpointStoreProvider.overrideWithValue(store),
         ],
         child: const MaterialApp(
@@ -279,6 +291,15 @@ void main() {
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
+          // Exercise direct-channel recovery without saved-directory routing.
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => HermesGatewayDirectory(
+              store: FakeHermesEndpointStore(),
+              cache: GatewayContactCache(),
+              loader: const HermesApiGatewaySummaryLoader(),
+              activeChannel: channel,
+            ),
+          ),
           hermesEndpointStoreProvider.overrideWithValue(store),
         ],
         child: const MaterialApp(
@@ -315,6 +336,15 @@ void main() {
       ProviderScope(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
+          // Exercise direct-channel recovery without saved-directory routing.
+          hermesGatewayDirectoryProvider.overrideWith(
+            (ref) => HermesGatewayDirectory(
+              store: FakeHermesEndpointStore(),
+              cache: GatewayContactCache(),
+              loader: const HermesApiGatewaySummaryLoader(),
+              activeChannel: channel,
+            ),
+          ),
           hermesEndpointStoreProvider.overrideWithValue(store),
         ],
         child: const MaterialApp(

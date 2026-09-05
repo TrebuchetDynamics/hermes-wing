@@ -124,9 +124,10 @@ void main() {
     () async {
       final engine = _GenerationBoundFinalSpeechToTextEngine();
       final service = SpeechToTextVoiceCaptureService(engine: engine);
+      // This case checks callback ownership; short deadlines have separate tests.
 
       final capture = await service.capture(
-        timeout: const Duration(seconds: 1),
+        timeout: const Duration(seconds: 10),
       );
 
       expect(capture.transcript, 'first transcript');
@@ -602,19 +603,20 @@ void main() {
     () async {
       final engine = _DuplicateTerminalSpeechToTextEngine();
       final service = SpeechToTextVoiceCaptureService(engine: engine);
+      // This case checks callback ownership; short deadlines have separate tests.
 
-      final first = service.capture(timeout: const Duration(seconds: 1));
+      final first = service.capture(timeout: const Duration(seconds: 10));
       await pumpEventQueue();
       unawaited(service.cancel());
       await expectLater(first, throwsA(isA<SpeechToTextCaptureFailure>()));
       engine.emitTerminal(actualEnd: true);
 
-      final second = service.capture(timeout: const Duration(seconds: 1));
+      final second = service.capture(timeout: const Duration(seconds: 10));
       await engine.secondListening.future;
       engine.emitTerminal(actualEnd: false);
       await expectLater(second, throwsA(isA<SpeechToTextCaptureFailure>()));
 
-      final third = service.capture(timeout: const Duration(seconds: 1));
+      final third = service.capture(timeout: const Duration(seconds: 10));
       await pumpEventQueue();
       expect(engine.overlappingListens, 0);
       unawaited(service.cancel());

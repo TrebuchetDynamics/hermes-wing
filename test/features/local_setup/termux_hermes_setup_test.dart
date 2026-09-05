@@ -47,6 +47,7 @@ Widget _testApp(Map<String, Object?> metadata, {double textScale = 1}) =>
     DefaultAssetBundle(
       bundle: _MemoryAssetBundle(metadata),
       child: MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.android),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
@@ -236,6 +237,21 @@ void main() {
     await tester.pumpWidget(_packagedApp());
     await tester.pumpAndSettle();
 
+    // Native asset I/O can finish after the last scheduled animation frame.
+    for (var attempt = 0; attempt < 50; attempt++) {
+      final action = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('termux-copy-command')),
+      );
+      if (action.onPressed != null ||
+          find
+              .text('This build cannot install the matching Wing Link release.')
+              .evaluate()
+              .isNotEmpty) {
+        break;
+      }
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
     final button = tester.widget<FilledButton>(
       find.byKey(const ValueKey('termux-copy-command')),
     );
@@ -271,52 +287,63 @@ void main() {
     expect(button.onPressed, isNotNull);
   });
 
-  testWidgets('actions remain reachable at 320dp and 200 percent text', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 640);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'actions remain reachable at 320dp and 200 percent text',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_testApp(_validMetadata(), textScale: 2));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_testApp(_validMetadata(), textScale: 2));
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    final semantics = tester.ensureSemantics();
-    final installButton = find.byKey(const ValueKey('termux-install'));
-    for (
-      var attempt = 0;
-      attempt < 8 && installButton.evaluate().isEmpty;
-      attempt++
-    ) {
-      await tester.drag(find.byType(ListView), const Offset(0, -150));
-      await tester.pump();
-    }
-    expect(installButton, findsOneWidget);
-    expect(tester.getSize(installButton).height, greaterThanOrEqualTo(48));
-    expect(tester.widget<FilledButton>(installButton).onPressed, isNotNull);
-    expect(find.bySemanticsLabel('Install Termux'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      final semantics = tester.ensureSemantics();
+      final installButton = find.byKey(const ValueKey('termux-install'));
+      for (
+        var attempt = 0;
+        attempt < 8 && installButton.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(find.byType(ListView), const Offset(0, -150));
+        await tester.pump();
+      }
+      expect(installButton, findsOneWidget);
+      expect(tester.getSize(installButton).height, greaterThanOrEqualTo(48));
+      expect(tester.widget<FilledButton>(installButton).onPressed, isNotNull);
+      expect(find.bySemanticsLabel('Install Termux'), findsOneWidget);
 
-    final copyButton = find.byKey(const ValueKey('termux-copy-command'));
-    await tester.scrollUntilVisible(copyButton, 100);
-    expect(copyButton, findsOneWidget);
-    expect(tester.getSize(copyButton).height, greaterThanOrEqualTo(48));
-    expect(tester.widget<FilledButton>(copyButton).onPressed, isNotNull);
-    expect(find.bySemanticsLabel('Copy setup command'), findsOneWidget);
-    final tierNotice = find.textContaining(
-      'Android may stop background processes',
-    );
-    for (
-      var attempt = 0;
-      attempt < 12 && tierNotice.evaluate().isEmpty;
-      attempt++
-    ) {
-      await tester.drag(find.byType(ListView), const Offset(0, -300));
-      await tester.pump();
-    }
-    expect(tierNotice, findsOneWidget);
-    expect(tester.takeException(), isNull);
-    semantics.dispose();
-  });
+      final copyButton = find.byKey(const ValueKey('termux-copy-command'));
+      await tester.scrollUntilVisible(
+        copyButton,
+        100,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(copyButton, findsOneWidget);
+      expect(tester.getSize(copyButton).height, greaterThanOrEqualTo(48));
+      expect(tester.widget<FilledButton>(copyButton).onPressed, isNotNull);
+      expect(find.bySemanticsLabel('Copy setup command'), findsOneWidget);
+      final tierNotice = find.textContaining(
+        'Android may stop background processes',
+      );
+      for (
+        var attempt = 0;
+        attempt < 12 && tierNotice.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pump();
+      }
+      expect(tierNotice, findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
 }

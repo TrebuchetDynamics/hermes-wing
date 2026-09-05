@@ -1,7 +1,13 @@
 # Transcript performance evidence
 
-Status: benchmark harness implemented; native measurements blocked. No rendering
-optimization or device performance claim is supported by this receipt.
+Status: Linux regression measurements and failures are preserved in the
+[full regression report](linux-full-regression-2026-09-04.md) and
+[artifact-bound receipt](linux-transcript-2026-09-04.json). The original run timed
+out on 100 KB code. After parser and selection changes, 1 MB code exposed a
+Flutter accessibility-ID allocation loop. Bounded block rendering prevents that
+mounting failure, but the 1 MB code streaming/long-jump workload still exceeded
+ten minutes. Six bounded-view cases have complete measurements; the remaining
+four lack complete receipts. Completion is distinct from responsiveness qualification.
 
 ## Reproducible workload
 
@@ -10,7 +16,8 @@ generates exactly 100,000 and 1,000,000 ASCII bytes for paragraphs, fenced code,
 a giant line, eight-column tables, and an unclosed fence. It never reads real
 transcripts or downloads images. Each case mounts twice for warmup and ten times
 for measurement, then appends twenty 1 KiB tails with a requested 50 ms cadence
-while alternating scroll position.
+while alternating scroll position. For large messages the benchmark scrolls the
+bounded inner block list, rather than only its outer transcript container.
 
 The report records mount wall time, frame build/raster p95, post-close RSS and
 process maximum RSS. Mount time includes test pumping and layout; it is not
@@ -62,9 +69,17 @@ Investigate p95 frame work above 32 ms on a named 60 Hz target, interaction stal
 above 100 ms, or memory that fails to settle after five open/close cycles. These
 are investigation thresholds, not results or absolute memory budgets.
 
-Still required: successful native runs of all cases; isolated parser profiling;
-true interaction-latency/stop-control measurements; cold-process samples;
-200% text and reduced-motion correctness; a deeper/wider table matrix; and
-artifact-bound before/after comparisons if an optimization becomes necessary.
-Only then select less rebuilding, immutable completed blocks, or an accessible
-bounded preview. Copy/export must retain full text and safe link/image policies.
+Remaining performance qualification includes true interaction-latency/stop-control
+measurements, cold-process samples, a deeper/wider table matrix, and isolated-host
+before/after comparisons. The Linux regression includes 200% text and reduced
+motion; it is not physical mobile qualification. A diagnostic parser probe is
+recorded separately from native rendering measurements.
+
+The current renderer retains complete source and uses a scrollable block list
+above 32,768 characters. It preserves code and message copy/export and safe
+link/image policies. Markdown parsing still processes the whole message, and
+jumping across many variable-height blocks can create and discard substantial
+intermediate widget work. CPU samples during the 1 MB code stream phase showed
+widget teardown and selection-listener removal. This remains a performance
+investigation; a completed functional run does not mean 20 Hz updates or 60 Hz
+frames were achieved.

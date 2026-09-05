@@ -128,6 +128,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   GatewayContactId? _activeContactId;
   bool _refreshing = false;
   bool _started = false;
+  bool _disposed = false;
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
   Future<void> _profileSelectionTail = Future.value();
@@ -259,15 +260,19 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   Future<void> start() async {
-    if (_started) return;
+    if (_started || _disposed) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
     _activeChannel.addListener(_onActiveChannelChanged);
     _observingActiveChannel = true;
     final rememberedSelection = await _cache.loadSelection();
-    _contacts = await _cache.load();
+    if (_disposed) return;
+    final cachedContacts = await _cache.load();
+    if (_disposed) return;
+    _contacts = cachedContacts;
     notifyListeners();
     await refresh();
+    if (_disposed) return;
     if (rememberedSelection != null &&
         _contacts.any(
           (contact) =>
@@ -289,6 +294,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   Future<void> refresh() async {
+    if (_disposed) return;
     final generation = ++_refreshGeneration;
     _refreshing = true;
     notifyListeners();
@@ -337,7 +343,7 @@ class HermesGatewayDirectory extends ChangeNotifier
 
     var nextIndex = 0;
     Future<void> worker() async {
-      while (nextIndex < configs.length) {
+      while (generation == _refreshGeneration && nextIndex < configs.length) {
         final index = nextIndex++;
         await _refreshGateway(configs[index], generation);
       }
@@ -349,6 +355,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (generation != _refreshGeneration) return;
     _refreshing = false;
     await _saveContacts();
+    if (generation != _refreshGeneration) return;
     notifyListeners();
   }
 
@@ -1006,7 +1013,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   void _startForegroundRefresh() {
-    if (_foregroundTimer != null) return;
+    if (_disposed || _foregroundTimer != null) return;
     _foregroundTimer = _periodicTimer(
       const Duration(seconds: 60),
       (_) => unawaited(refresh()),
@@ -1015,6 +1022,9 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   @override
   void dispose() {
+    _disposed = true;
+    _refreshGeneration++;
+    _activationGeneration++;
     _foregroundTimer?.cancel();
     if (_observingActiveChannel) {
       _activeChannel.removeListener(_onActiveChannelChanged);

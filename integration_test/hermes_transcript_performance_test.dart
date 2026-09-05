@@ -50,6 +50,7 @@ void main() {
             ),
           );
           for (var repetition = 0; repetition < 12; repetition++) {
+            debugPrint('TRANSCRIPT_STAGE $kind $bytes mount $repetition');
             final elapsed = Stopwatch()..start();
             await tester.pumpWidget(app());
             await tester.pumpAndSettle();
@@ -65,13 +66,24 @@ void main() {
           final updateDurations = <int>[];
           // 20 Hz target; measured work may exceed that cadence on slow cases.
           for (var update = 0; update < 20; update++) {
+            debugPrint('TRANSCRIPT_STAGE $kind $bytes update $update');
             final elapsed = Stopwatch()..start();
             live.value = '${live.value}${'x' * 1024}';
-            if (scroll.hasClients) {
-              scroll.jumpTo(
-                update.isEven ? scroll.position.maxScrollExtent : 0,
-              );
-            }
+            final inner = tester
+                .stateList<ScrollableState>(
+                  find.descendant(
+                    of: find.byType(HermesRichText),
+                    matching: find.byType(Scrollable),
+                  ),
+                )
+                .where(
+                  (state) =>
+                      axisDirectionToAxis(state.axisDirection) == Axis.vertical,
+                );
+            final position = inner.isEmpty
+                ? scroll.position
+                : inner.first.position;
+            position.jumpTo(update.isEven ? position.maxScrollExtent : 0);
             await tester.pump(const Duration(milliseconds: 50));
             elapsed.stop();
             updateDurations.add(elapsed.elapsedMicroseconds);

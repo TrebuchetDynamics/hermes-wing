@@ -1,4 +1,5 @@
 {
+  "transcriptLargeMessageScroll": "Large message. Scroll to read all content.",
   "chatAttachmentDraftEvicted": "The attachment was released to save memory. Attach it again before sending.",
   "chatTranscriptLatestAction": "Latest activity",
   "chatVoiceMuteOutputAction": "Mute speech",

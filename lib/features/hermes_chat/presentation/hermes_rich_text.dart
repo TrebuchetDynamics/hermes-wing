@@ -12,11 +12,12 @@ import 'inline_transcript_image_safety.dart';
 typedef HermesUriLauncher = Future<bool> Function(Uri uri);
 
 /// Safe GitHub-flavored Markdown used for user and Hermes transcript text.
-class HermesRichText extends StatelessWidget {
+class HermesRichText extends StatefulWidget {
   const HermesRichText(
     this.data, {
     this.launchUri,
     this.selectable = true,
+    this.showSelectionToolbar = true,
     this.inlineImagePixelBudget = maxInlineTranscriptAggregatePixels,
     super.key,
   });
@@ -24,10 +25,29 @@ class HermesRichText extends StatelessWidget {
   final String data;
   final HermesUriLauncher? launchUri;
   final bool selectable;
+
+  /// Disable when the enclosing message supplies its own context menu.
+  final bool showSelectionToolbar;
   final int inlineImagePixelBudget;
 
   @override
+  State<HermesRichText> createState() => _HermesRichTextState();
+}
+
+class _HermesRichTextState extends State<HermesRichText> {
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final data = widget.data;
+    final selectable = widget.selectable;
+    final large = data.length > 32768;
     final strings = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final markdownStyle = MarkdownStyleSheet.fromTheme(theme).copyWith(
@@ -56,12 +76,17 @@ class HermesRichText extends StatelessWidget {
       blockSpacing: 12,
       listIndent: 22,
     );
-    var remainingImagePixels = inlineImagePixelBudget;
-    final content = MarkdownBody(
+    var remainingImagePixels = widget.inlineImagePixelBudget;
+    final markdown = _TranscriptMarkdown(
+      scrollController: large ? _scroll : null,
       data: data,
+      // The parser's whitespace-only plain-text shortcut otherwise retries
+      // every suffix of an unbroken trailing word. Consume that word once;
+      // punctuation still goes through the normal GFM link/markup syntaxes.
+      inlineSyntaxes: [md.TextSyntax(r'[A-Za-z0-9]+$')],
       styleSheet: markdownStyle,
       shrinkWrap: true,
-      builders: {'pre': _HermesCodeBlockBuilder()},
+      builders: {'pre': _HermesCodeBlockBuilder(outerSelection: selectable)},
       imageBuilder: (uri, title, alt) => _buildTranscriptImage(
         strings: strings,
         uri: uri,
@@ -78,10 +103,110 @@ class HermesRichText extends StatelessWidget {
             !_safeLinkSchemes.contains(uri.scheme.toLowerCase())) {
           return;
         }
-        unawaited((launchUri ?? _launchUri)(uri));
+        unawaited((widget.launchUri ?? _launchUri)(uri));
       },
     );
-    return selectable ? SelectionArea(child: content) : content;
+    final content = large
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                strings.transcriptLargeMessageScroll,
+                style: theme.textTheme.labelSmall,
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: (MediaQuery.sizeOf(context).height * .6).clamp(
+                    160.0,
+                    560.0,
+                  ),
+                ),
+                child: Scrollbar(
+                  controller: _scroll,
+                  thumbVisibility: true,
+                  child: markdown,
+                ),
+              ),
+            ],
+          )
+        : markdown;
+    final selected = selectable
+        ? SelectionArea(
+            contextMenuBuilder: (context, region) {
+              if (!widget.showSelectionToolbar) {
+                return const SizedBox.shrink();
+              }
+              return AdaptiveTextSelectionToolbar.selectableRegion(
+                selectableRegionState: region,
+              );
+            },
+            child: content,
+          )
+        : content;
+    return large
+        ? Actions(
+            actions: {
+              ScrollIntent: CallbackAction<ScrollIntent>(
+                onInvoke: (intent) {
+                  if (axisDirectionToAxis(intent.direction) != Axis.vertical) {
+                    ScrollAction().invoke(
+                      intent,
+                      FocusManager.instance.primaryFocus?.context,
+                    );
+                    return null;
+                  }
+                  if (!_scroll.hasClients) return null;
+                  final position = _scroll.position;
+                  final distance = intent.type == ScrollIncrementType.page
+                      ? position.viewportDimension * .8
+                      : 50.0;
+                  _scroll.jumpTo(
+                    (position.pixels +
+                            (intent.direction == AxisDirection.down
+                                ? distance
+                                : -distance))
+                        .clamp(
+                          position.minScrollExtent,
+                          position.maxScrollExtent,
+                        ),
+                  );
+                  return null;
+                },
+              ),
+            },
+            child: selected,
+          )
+        : selected;
+  }
+}
+
+/// Keep only visible blocks mounted. Eagerly mounting a large transcript can
+/// exhaust the framework's finite set of live accessibility node identifiers.
+/// Parsing still receives the complete source, including code-copy contents.
+class _TranscriptMarkdown extends MarkdownBody {
+  const _TranscriptMarkdown({
+    required super.data,
+    required super.inlineSyntaxes,
+    required super.styleSheet,
+    required super.shrinkWrap,
+    required super.builders,
+    required super.imageBuilder,
+    required super.onTapLink,
+    required this.scrollController,
+  });
+
+  final ScrollController? scrollController;
+
+  @override
+  Widget build(BuildContext context, List<Widget>? children) {
+    if (scrollController == null) return super.build(context, children);
+    return ListView(
+      controller: scrollController,
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      children: children!,
+    );
   }
 }
 
@@ -165,6 +290,9 @@ class _SafeInlineTranscriptImage {
 Future<bool> _launchUri(Uri uri) => launchUrl(uri);
 
 class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
+  _HermesCodeBlockBuilder({required this.outerSelection});
+
+  final bool outerSelection;
   @override
   Widget? visitElementAfterWithContext(
     BuildContext context,
@@ -194,15 +322,20 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (final (index, line) in code.split('\n').indexed)
-                  SelectableText(
+                  Text(
                     line.isEmpty ? '\u00a0' : line,
                     key: ValueKey('hermes-diff-line-$index'),
                     style: _diffLineStyle(preferredStyle, line, colors),
                   ),
               ],
             )
-          : SelectableText(code, style: preferredStyle),
+          : Text(code, style: preferredStyle),
     );
+    // Reuse the transcript selection region instead of mounting a read-only
+    // editable input for every code block (or every line of a diff).
+    final selectableCode = outerSelection
+        ? codeContent
+        : SelectionArea(child: codeContent);
     return DecoratedBox(
       key: const ValueKey('hermes-code-block'),
       decoration: BoxDecoration(
@@ -248,10 +381,10 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
             _CollapsibleCodeContent(
               showMoreLabel: strings.showMoreAction,
               showLessLabel: strings.showLessAction,
-              child: codeContent,
+              child: selectableCode,
             )
           else
-            codeContent,
+            selectableCode,
         ],
       ),
     );

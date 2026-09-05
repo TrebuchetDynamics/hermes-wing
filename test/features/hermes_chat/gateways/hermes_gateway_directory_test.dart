@@ -83,8 +83,64 @@ class _TelegramSessionChannel extends FakeHermesChannel {
   }
 }
 
+class _DeferredStartupCache extends FakeGatewayContactCache {
+  final loaded = Completer<List<GatewayContact>>();
+  final started = Completer<void>();
+
+  @override
+  Future<List<GatewayContact>> load() {
+    started.complete();
+    return loaded.future;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('disposal during startup does not begin gateway refresh', () async {
+    final cache = _DeferredStartupCache();
+    final loader = FakeGatewaySummaryLoader(const {});
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(profiles: const []),
+      cache: cache,
+      loader: loader,
+      activeChannel: channel,
+    );
+    final start = directory.start();
+    await cache.started.future;
+    directory.dispose();
+    cache.loaded.complete([]);
+    await expectLater(start, completes);
+    expect(loader.calls, isEmpty);
+    expect(directory.refreshing, isFalse);
+  });
+  test('disposal invalidates an in-flight gateway refresh', () async {
+    final gate = Completer<void>();
+    final loader = FakeGatewaySummaryLoader({
+      'alpha': gatewaySummary(['default']),
+    }, gate: gate);
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: FakeHermesEndpointStore(
+        profiles: const [
+          HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+        ],
+      ),
+      cache: FakeGatewayContactCache(),
+      loader: loader,
+      activeChannel: channel,
+    );
+    final refresh = directory.refresh();
+    while (loader.calls.isEmpty) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    directory.dispose();
+    gate.complete();
+    await expectLater(refresh, completes);
+    expect(directory.contacts, isEmpty);
+  });
   test(
     'refresh resumes a securely stored pending Wing Link acknowledgment',
     () async {

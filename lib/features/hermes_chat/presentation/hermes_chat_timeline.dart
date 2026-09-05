@@ -681,7 +681,11 @@ class _MessageContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (displayText.isNotEmpty)
-          HermesRichText(displayText, selectable: selectable),
+          HermesRichText(
+            displayText,
+            selectable: selectable,
+            showSelectionToolbar: false,
+          ),
         if (displayText.isNotEmpty &&
             (undeliveredLocalArtifact != null || safeAttachment != null))
           const SizedBox(height: 8),

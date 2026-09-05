@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
@@ -23,10 +24,25 @@ import '../support/fake_hermes_channel.dart';
 Widget _localizedApp(Widget home) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
+  theme: ThemeData(platform: defaultTargetPlatform),
   home: home,
 );
 
+void testAndroid(String description, WidgetTesterCallback callback) {
+  testWidgets(
+    description,
+    callback,
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+}
+
 void main() {
+  setUp(() {
+    // First-run tips have their own suite; keep transcript geometry stable.
+    SharedPreferences.setMockInitialValues({
+      'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
+    });
+  });
   testWidgets('unsupported Agent schema blocks unsafe Chat controls', (
     tester,
   ) async {
@@ -194,12 +210,15 @@ void main() {
     final after = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
     expect(after, greaterThan(before));
 
-    final shrinkFirst = await tester.startGesture(center - const Offset(70, 0));
-    final shrinkSecond = await tester.startGesture(
-      center + const Offset(70, 0),
+    final shrinkCenter = tester.getCenter(transcript);
+    final shrinkFirst = await tester.startGesture(
+      shrinkCenter - const Offset(70, 0),
     );
-    await shrinkFirst.moveTo(center - const Offset(2, 0));
-    await shrinkSecond.moveTo(center + const Offset(2, 0));
+    final shrinkSecond = await tester.startGesture(
+      shrinkCenter + const Offset(70, 0),
+    );
+    await shrinkFirst.moveTo(shrinkCenter - const Offset(2, 0));
+    await shrinkSecond.moveTo(shrinkCenter + const Offset(2, 0));
     await tester.pump();
     await shrinkFirst.up();
     await shrinkSecond.up();
@@ -210,7 +229,7 @@ void main() {
     expect(smallest, moreOrLessEquals(8));
   });
 
-  testWidgets('user Markdown renders richly and copies its original source', (
+  testAndroid('user Markdown renders richly and copies its original source', (
     tester,
   ) async {
     const source = '**Review** `this()` from /tmp/example.md';
@@ -408,7 +427,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     },
   );
 
-  testWidgets('leaked tool payload stays out of message and clipboard', (
+  testAndroid('leaked tool payload stays out of message and clipboard', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -893,7 +912,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
   });
 
-  testWidgets('short conversations stay anchored above the composer', (
+  testAndroid('short conversations stay anchored above the composer', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -1034,7 +1053,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(timestamp, findsOneWidget);
     final semantics = tester.getSemantics(timestamp);
     expect(semantics.label, contains('2024'));
-    expect(semantics.label, contains('3:04 PM'));
+    final uses24HourClock = MediaQuery.alwaysUse24HourFormatOf(
+      tester.element(timestamp),
+    );
+    expect(semantics.label, contains(uses24HourClock ? '15:04' : '3:04 PM'));
     final tooltip = tester.widget<Tooltip>(
       find.descendant(of: timestamp, matching: find.byType(Tooltip)),
     );
@@ -1077,7 +1099,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(tooltip.message, semantics.label);
   });
 
-  testWidgets('long press offers copy and reply actions', (tester) async {
+  testAndroid('long press offers copy and reply actions', (tester) async {
     final channel = FakeHermesChannel();
     channel.beginStreamingTurn('Question');
     channel.completeStreamingTurn(text: 'Answer to reuse');
@@ -1108,7 +1130,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     await tester.pumpAndSettle();
 
     final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pumpAndSettle();
     expect(find.text('Copy'), findsOneWidget);
     expect(find.text('Reply'), findsOneWidget);
@@ -1117,8 +1139,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     await tester.tap(find.text('Copy'));
     await tester.pumpAndSettle();
     expect(copiedText, 'Answer to reuse');
+    ScaffoldMessenger.of(tester.element(bubble)).removeCurrentSnackBar();
+    await tester.pumpAndSettle();
 
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Reply'));
     await tester.pumpAndSettle();
@@ -1129,7 +1153,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(composer.controller?.text, '> Answer to reuse\n\n');
   });
 
-  testWidgets('reply waits until the assistant turn is complete', (
+  testAndroid('reply waits until the assistant turn is complete', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -1146,7 +1170,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     await tester.pump();
 
     final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Copy'), findsNothing);
     expect(find.text('Reply'), findsNothing);
@@ -1155,13 +1179,13 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
 
     channel.completeStreamingTurn(text: 'Complete answer');
     await tester.pumpAndSettle();
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pumpAndSettle();
 
     expect(find.text('Reply'), findsOneWidget);
   });
 
-  testWidgets('read aloud waits until the assistant reply is complete', (
+  testAndroid('read aloud waits until the assistant reply is complete', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -1182,20 +1206,20 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     await tester.pump();
 
     final bubble = find.byKey(ValueKey('hermes-turn-$assistantId'));
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Read aloud'), findsNothing);
     expect(find.text('Copy'), findsNothing);
 
     channel.completeStreamingTurn(text: 'Complete answer');
     await tester.pumpAndSettle();
-    await tester.longPress(bubble);
+    await tester.longPressAt(tester.getTopLeft(bubble) + const Offset(24, 12));
     await tester.pumpAndSettle();
 
     expect(find.text('Read aloud'), findsOneWidget);
   });
 
-  testWidgets('assistant actions read a reply aloud when TTS is available', (
+  testAndroid('assistant actions read a reply aloud when TTS is available', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -1226,7 +1250,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(channel.state.voiceRuns, isEmpty);
   });
 
-  testWidgets('read-aloud reply shows and operates its stop control', (
+  testAndroid('read-aloud reply shows and operates its stop control', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -1473,6 +1497,8 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
       copiedText,
       '## You\n\nQuestion\n\n## Hermes\n\nAnswer with **Markdown**.',
     );
+    ScaffoldMessenger.of(tester.element(bubble)).removeCurrentSnackBar();
+    await tester.pumpAndSettle();
 
     await tester.tapAt(
       tester.getCenter(bubble),
@@ -2217,6 +2243,147 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(copiedText, 'final answer = 42;');
   });
 
+  testWidgets(
+    'message-owned menus preserve keyboard copy of selected text',
+    (tester) async {
+      String? copied;
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      await tester.pumpWidget(
+        _localizedApp(
+          const Scaffold(
+            body: HermesRichText(
+              'Selected excerpt stays copyable',
+              showSelectionToolbar: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final text = find.text(
+        'Selected excerpt stays copyable',
+        findRichText: true,
+      );
+      final point = tester.getTopLeft(text) + const Offset(20, 10);
+      await tester.tapAt(point, kind: PointerDeviceKind.mouse);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tapAt(point, kind: PointerDeviceKind.mouse);
+      await tester.pumpAndSettle();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pump();
+      expect(copied, 'Selected');
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets('long unbroken transcript text remains complete and selectable', (
+    tester,
+  ) async {
+    final text = 'x' * 100000;
+    await tester.pumpWidget(
+      _localizedApp(
+        Scaffold(body: SingleChildScrollView(child: HermesRichText(text))),
+      ),
+    );
+    expect(find.text(text, findRichText: true), findsOneWidget);
+    expect(find.byType(SelectionArea), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'large transcripts bound mounted blocks and preserve final code copy',
+    (tester) async {
+      String? copied;
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      final source =
+          '${'```text\nsynthetic code sample\n```\n\n' * 2000}```text\nFinal complete block\n```';
+      await tester.pumpWidget(
+        _localizedApp(
+          Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(2),
+                disableAnimations: true,
+              ),
+              child: Scaffold(
+                body: SingleChildScrollView(child: HermesRichText(source)),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-code-block')).evaluate().length,
+        lessThan(30),
+      );
+      expect(
+        find.text('Large message. Scroll to read all content.'),
+        findsOneWidget,
+      );
+      final vertical = tester
+          .stateList<ScrollableState>(
+            find.descendant(
+              of: find.byType(HermesRichText),
+              matching: find.byType(Scrollable),
+            ),
+          )
+          .firstWhere(
+            (state) =>
+                axisDirectionToAxis(state.axisDirection) == Axis.vertical,
+          );
+      await tester.tap(find.text('synthetic code sample').first);
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+      expect(vertical.position.pixels, greaterThan(0));
+      for (var attempt = 0; attempt < 10; attempt++) {
+        vertical.position.jumpTo(vertical.position.maxScrollExtent);
+        await tester.pumpAndSettle();
+        if (find.text('Final complete block').evaluate().isNotEmpty) break;
+      }
+      expect(find.text('Final complete block'), findsOneWidget);
+      final lastBlock = find.ancestor(
+        of: find.text('Final complete block'),
+        matching: find.byKey(const ValueKey('hermes-code-block')),
+      );
+      await tester.tap(
+        find.descendant(
+          of: lastBlock,
+          matching: find.byKey(const ValueKey('hermes-code-copy')),
+        ),
+      );
+      await tester.pump();
+      expect(copied, 'Final complete block');
+      expect(
+        find.byKey(const ValueKey('hermes-code-block')).evaluate().length,
+        lessThan(30),
+      );
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
   testWidgets('long code blocks start collapsed and can be expanded', (
     tester,
   ) async {
@@ -2255,27 +2422,21 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.text('diff'), findsOneWidget);
     expect(
       tester
-          .widget<SelectableText>(
-            find.byKey(const ValueKey('hermes-diff-line-0')),
-          )
+          .widget<Text>(find.byKey(const ValueKey('hermes-diff-line-0')))
           .style
           ?.color,
       colors.onTertiaryContainer,
     );
     expect(
       tester
-          .widget<SelectableText>(
-            find.byKey(const ValueKey('hermes-diff-line-1')),
-          )
+          .widget<Text>(find.byKey(const ValueKey('hermes-diff-line-1')))
           .style
           ?.color,
       colors.onErrorContainer,
     );
     expect(
       tester
-          .widget<SelectableText>(
-            find.byKey(const ValueKey('hermes-diff-line-2')),
-          )
+          .widget<Text>(find.byKey(const ValueKey('hermes-diff-line-2')))
           .style
           ?.color,
       colors.onSecondaryContainer,

@@ -94,6 +94,12 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @transcriptLargeMessageScroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Large message. Scroll to read all content.'**
+  String get transcriptLargeMessageScroll;
+
   /// No description provided for @chatAttachmentDraftEvicted.
   ///
   /// In en, this message translates to:

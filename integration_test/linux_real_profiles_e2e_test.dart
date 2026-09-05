@@ -111,8 +111,8 @@ void main() {
             (turn) => turn.author == HermesTurnAuthor.assistant,
           );
           expect(
-            assistant.text.trim(),
-            'HI',
+            assistant.text.trim() == 'HI',
+            isTrue,
             reason: 'Profile ${index + 1} returned an unexpected reply.',
           );
         } finally {
@@ -128,6 +128,101 @@ void main() {
         }
       },
       timeout: const Timeout(Duration(minutes: 5)),
+    );
+    testWidgets(
+      'native Linux profile ${index + 1} reconciles session CRUD, fork, and inventories',
+      (tester) async {
+        final channel = HermesApiChannel();
+        final created = <String>{};
+        try {
+          await channel.connect(baseUrl: profile.origin, apiKey: profile.token);
+          expect(channel.state.isConnected, isTrue);
+          await channel.loadDetailedHealth();
+          expect(channel.state.detailedHealth != null, isTrue);
+          await channel.loadToolInventory();
+          expect(channel.state.optionalResourceErrors.isEmpty, isTrue);
+          await channel.loadModelOptions();
+          expect(channel.state.modelOptions != null, isTrue);
+
+          await channel.createSession(title: 'Wing Linux lifecycle test');
+          final original = channel.state.activeSessionId!;
+          created.add(original);
+          await channel.renameSession(
+            sessionId: original,
+            title: 'Wing Linux renamed',
+          );
+          expect(channel.state.activeSession?.title, 'Wing Linux renamed');
+          await channel.forkSession(original, title: 'Wing Linux fork');
+          final fork = channel.state.activeSessionId!;
+          expect(fork != original, isTrue);
+          created.add(fork);
+          await channel.selectSession(original);
+          expect(channel.state.activeSessionId == original, isTrue);
+          await channel.disconnect();
+          expect(channel.state.isConnected, isFalse);
+          await channel.connect(baseUrl: profile.origin, apiKey: profile.token);
+          await channel.selectSession(original);
+          await channel.reconcileActiveSession();
+          expect(channel.state.activeSession?.title, 'Wing Linux renamed');
+          await channel.deleteSession(fork);
+          created.remove(fork);
+          expect(channel.state.sessions.any((s) => s.id == fork), isFalse);
+          await channel.deleteSession(original);
+          created.remove(original);
+          expect(channel.state.sessions.any((s) => s.id == original), isFalse);
+        } finally {
+          for (final id in created) {
+            await channel.deleteSession(id);
+          }
+          channel.dispose();
+        }
+      },
+      timeout: const Timeout(Duration(minutes: 3)),
+    );
+    testWidgets(
+      'native Linux profile ${index + 1} steers and stops an accepted run without replay',
+      (tester) async {
+        final channel = HermesApiChannel();
+        String? session;
+        try {
+          await channel.connect(baseUrl: profile.origin, apiKey: profile.token);
+          expect(channel.state.isConnected, isTrue);
+          await channel.createSession(title: 'Wing Linux cancellation test');
+          session = channel.state.activeSessionId!;
+          final sending = channel.sendText(
+            'Wing Linux stop test: respond slowly with a long list.',
+          );
+          await _waitUntil(
+            tester,
+            () => channel.activeTurnInterruptionTarget?.runId != null,
+            timeout: const Duration(seconds: 30),
+          );
+          expect(channel.canSteerActiveTurn, isTrue);
+          await channel.steerActiveTurn('Keep the response bounded.');
+          final target = channel.activeTurnInterruptionTarget!;
+          expect(await channel.stopTurn(target), isTrue);
+          await sending;
+          await channel.disconnect();
+          await channel.connect(baseUrl: profile.origin, apiKey: profile.token);
+          await channel.selectSession(session);
+          await channel.reconcileActiveSession();
+          expect(channel.state.isSessionStreaming(session), isFalse);
+          expect(
+            channel.state.activeMessages
+                .where(
+                  (t) =>
+                      t.author == HermesTurnAuthor.user &&
+                      t.text.contains('Wing Linux stop test'),
+                )
+                .length,
+            1,
+          );
+        } finally {
+          if (session != null) await channel.deleteSession(session);
+          channel.dispose();
+        }
+      },
+      timeout: const Timeout(Duration(minutes: 3)),
     );
   }
 }

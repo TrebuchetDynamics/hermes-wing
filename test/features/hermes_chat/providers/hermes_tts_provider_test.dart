@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
@@ -12,6 +11,12 @@ import 'package:wing/shared/async/fire_and_forget.dart';
 import 'package:wing/shared/voice/text_to_speech_service.dart';
 
 import '../support/fake_hermes_channel.dart';
+
+// Linux has no device TTS implementation; only advertised Agent speech works.
+Matcher get _deviceSpeechFallback =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.linux
+    ? isNull
+    : isA<PlatformTextToSpeechService>();
 
 void main() {
   test('chat replies use Hermes Agent TTS', () async {
@@ -68,25 +73,28 @@ void main() {
 
     expect(
       container.read(hermesTextToSpeechServiceProvider),
-      isA<PlatformTextToSpeechService>(),
+      _deviceSpeechFallback,
     );
   });
 
-  test('chat TTS falls back to device speech without Agent audio', () {
-    final channel = FakeHermesChannel(
-      capabilities: _capabilities(audioSpeak: true),
-    );
-    final container = ProviderContainer(
-      overrides: [hermesChannelProvider.overrideWithValue(channel)],
-    );
-    addTearDown(channel.dispose);
-    addTearDown(container.dispose);
+  test(
+    'chat TTS uses only a supported device fallback without Agent audio',
+    () {
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(audioSpeak: true),
+      );
+      final container = ProviderContainer(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+      );
+      addTearDown(channel.dispose);
+      addTearDown(container.dispose);
 
-    expect(
-      container.read(hermesTextToSpeechServiceProvider),
-      isA<PlatformTextToSpeechService>(),
-    );
-  });
+      expect(
+        container.read(hermesTextToSpeechServiceProvider),
+        _deviceSpeechFallback,
+      );
+    },
+  );
 
   test('chat TTS requires every declared endpoint scope', () {
     final channel = _AudioFakeHermesChannel(
@@ -108,7 +116,7 @@ void main() {
 
     expect(
       container.read(hermesTextToSpeechServiceProvider),
-      isA<PlatformTextToSpeechService>(),
+      _deviceSpeechFallback,
     );
   });
 
@@ -124,7 +132,7 @@ void main() {
 
     expect(
       container.read(hermesTextToSpeechServiceProvider),
-      isA<PlatformTextToSpeechService>(),
+      _deviceSpeechFallback,
     );
   });
 
@@ -148,7 +156,7 @@ void main() {
     addTearDown(channel.dispose);
     addTearDown(container.dispose);
 
-    expect(subscription.read(), isA<PlatformTextToSpeechService>());
+    expect(subscription.read(), _deviceSpeechFallback);
 
     channel.replaceCapabilitiesAndProfiles(
       _capabilities(audioSpeak: true),
@@ -187,7 +195,7 @@ void main() {
     );
     await Future<void>.delayed(Duration.zero);
 
-    expect(subscription.read(), isA<PlatformTextToSpeechService>());
+    expect(subscription.read(), _deviceSpeechFallback);
     expect(agent.disposeCalls, 1);
   });
 

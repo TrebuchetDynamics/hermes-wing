@@ -125,10 +125,11 @@ void main() {
     final retry = find.byKey(const ValueKey('hermes-endpoints-retry'));
     await tester.ensureVisible(retry);
     await tester.pumpAndSettle();
+    final loadsBeforeRetry = store.loadProfilesCalls;
     await tester.tap(retry);
     await tester.pumpAndSettle();
 
-    expect(store.loadProfilesCalls, 2);
+    expect(store.loadProfilesCalls, loadsBeforeRetry + 1);
     expect(
       find.byKey(const ValueKey('hermes-endpoint-profile-lab')),
       findsOneWidget,

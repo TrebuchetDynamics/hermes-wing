@@ -1731,7 +1731,16 @@ void main() {
       expect(error, findsOneWidget);
       expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
       expect(find.textContaining('private Android'), findsNothing);
-      expect(find.text('Paste pairing link'), findsOneWidget);
+      expect(
+        find.byKey(
+          ValueKey(
+            defaultTargetPlatform == TargetPlatform.android
+                ? 'hermes-enrollment-paste-link'
+                : 'hermes-enrollment-paste-another',
+          ),
+        ),
+        findsOneWidget,
+      );
       expect(inspectCalls, 0);
       semantics.dispose();
     });
@@ -1760,7 +1769,16 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('private intent'), findsNothing);
-      expect(find.text('Paste pairing link'), findsOneWidget);
+      expect(
+        find.byKey(
+          ValueKey(
+            defaultTargetPlatform == TargetPlatform.android
+                ? 'hermes-enrollment-paste-link'
+                : 'hermes-enrollment-paste-another',
+          ),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets(

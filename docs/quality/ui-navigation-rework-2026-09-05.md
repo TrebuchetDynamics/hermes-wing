@@ -59,3 +59,5 @@ npx playwright test --config=playwright.config.mjs \
 checked 333 files with no changes. `git diff --check` passed. The regular debug
 app was installed with `adb install -r` and opened on the Samsung; no application
 data was cleared. Go validation was not rerun for this presentation-only change.
+
+The complete `flutter test --concurrency=1` run passed all 1,578 tests in 4m 18s.

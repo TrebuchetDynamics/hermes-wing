@@ -508,18 +508,11 @@ class _HermesActiveSessionBar extends StatelessWidget {
             ),
           ),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            Widget titleChip() => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.42),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: colors.primary.withValues(alpha: 0.36),
-                ),
-              ),
+            Widget titleChip() => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
                 children: [
                   Icon(
@@ -538,7 +531,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: colors.onSurface,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -600,13 +593,10 @@ class _HermesActiveSessionBar extends StatelessWidget {
               );
             }
 
-            final activeLabel = Text(
-              strings.chatRailActiveLabel,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            );
+            final showStatus =
+                isTurnActive || hasUnreconciledRun || !canSendTurns;
+            final showModel =
+                modelLabel != strings.chatLayoutModelFallbackLabel;
             final statusChip = _HermesTopBarChip(
               icon: statusIcon,
               label: statusLabel,
@@ -629,24 +619,19 @@ class _HermesActiveSessionBar extends StatelessWidget {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  activeLabel,
                   SizedBox(width: titleWidth, child: sessionSwitcher()),
-                  statusChip,
-                  modelChip,
+                  if (showStatus) statusChip,
+                  if (showModel) modelChip,
                   count,
                 ],
               );
             }
             return Row(
               children: [
-                activeLabel,
-                const SizedBox(width: 10),
                 Flexible(flex: 3, child: sessionSwitcher()),
                 const SizedBox(width: 10),
-                statusChip,
-                const SizedBox(width: 8),
-                modelChip,
-                const SizedBox(width: 8),
+                if (showStatus) ...[statusChip, const SizedBox(width: 8)],
+                if (showModel) ...[modelChip, const SizedBox(width: 8)],
                 count,
                 const Spacer(),
               ],
@@ -668,12 +653,8 @@ class _HermesTopBarChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.74),
-        borderRadius: BorderRadius.circular(999),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -685,7 +666,7 @@ class _HermesTopBarChip extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -771,7 +752,6 @@ class _HermesEmptyState extends StatelessWidget {
 class _HermesComposerStrip extends StatelessWidget {
   const _HermesComposerStrip({
     required this.modelLabel,
-    required this.voiceLabel,
     required this.isTurnActive,
     required this.canSendTurns,
     required this.hasUnreconciledRun,
@@ -782,7 +762,6 @@ class _HermesComposerStrip extends StatelessWidget {
   });
 
   final String modelLabel;
-  final String voiceLabel;
   final bool isTurnActive;
   final bool canSendTurns;
   final bool hasUnreconciledRun;
@@ -823,9 +802,7 @@ class _HermesComposerStrip extends StatelessWidget {
               onPressed: onSelectModel,
             ),
           ),
-          const SizedBox(width: 8),
-          _ComposerChip(icon: Icons.keyboard_voice_outlined, label: voiceLabel),
-          if (!isTurnActive) ...[
+          if (!isTurnActive && (hasUnreconciledRun || !canSendTurns)) ...[
             const SizedBox(width: 8),
             _ComposerChip(
               icon: hasUnreconciledRun

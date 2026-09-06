@@ -43,7 +43,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Hermes Wing';
 
   @override
-  String get hermesDestination => 'Hermes';
+  String get hermesDestination => 'Chat';
 
   @override
   String get agentsDestination => 'Profiles';

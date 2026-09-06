@@ -157,7 +157,7 @@ abstract class AppLocalizations {
   /// No description provided for @hermesDestination.
   ///
   /// In en, this message translates to:
-  /// **'Hermes'**
+  /// **'Chat'**
   String get hermesDestination;
 
   /// No description provided for @agentsDestination.

@@ -13,6 +13,43 @@ import '../support/fake_hermes_channel.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('desktop composer keeps actions without idle status badges', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('hermes-composer-model-chip')),
+      findsOneWidget,
+    );
+    expect(find.text('Voice ready'), findsNothing);
+    expect(find.text('Ready'), findsNothing);
+    channel.beginStreamingTurn('Check the run controls.');
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-composer-stop-chip')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+    channel.completeStreamingTurn(text: 'Done.');
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('desktop composer takes focus on initial chat entry', (
     tester,
   ) async {

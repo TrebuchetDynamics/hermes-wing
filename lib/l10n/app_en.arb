@@ -10,7 +10,7 @@
   "chatVoicePauseMicrophoneAction": "Pause microphone",
   "@@locale": "en",
   "appTitle": "Hermes Wing",
-  "hermesDestination": "Hermes",
+  "hermesDestination": "Chat",
   "agentsDestination": "Profiles",
   "officeDestination": "Office",
   "settingsDestination": "Settings",

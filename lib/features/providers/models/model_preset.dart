@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../core/protocol/serialization/wing_json.dart';
+import '../../../core/hermes/models/hermes_metadata_text.dart';
 
 /// A saved model+slot+provider combination that the user can recall later.
 ///
@@ -16,13 +17,22 @@ class ModelPreset {
 
   factory ModelPreset.fromJson(Map<String, Object?> json) {
     return ModelPreset(
-      name: _bounded(wingStringFromJson(json['name'], fallback: ''), 80),
-      slot: _bounded(wingStringFromJson(json['slot'], fallback: 'main'), 40),
-      provider: _bounded(
+      name: boundedHermesMetadataText(
+        wingStringFromJson(json['name'], fallback: ''),
+        80,
+      ),
+      slot: boundedHermesMetadataText(
+        wingStringFromJson(json['slot'], fallback: 'main'),
+        40,
+      ),
+      provider: boundedHermesMetadataText(
         wingStringFromJson(json['provider'], fallback: ''),
         120,
       ),
-      model: _bounded(wingStringFromJson(json['model'], fallback: ''), 120),
+      model: boundedHermesMetadataText(
+        wingStringFromJson(json['model'], fallback: ''),
+        120,
+      ),
     );
   }
 
@@ -59,13 +69,4 @@ class ModelPreset {
 
   @override
   int get hashCode => Object.hash(name, slot, provider, model);
-}
-
-String _bounded(String value, int limit) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= limit) return normalized;
-  return '${normalized.substring(0, limit - 1)}…';
 }

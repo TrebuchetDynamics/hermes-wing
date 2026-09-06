@@ -22,17 +22,24 @@ Usage:
 
 By default, builds and installs the local Go wing_link package, then installs or
 adopts Hermes Agent and starts its gateway only if needed. An already-running
-gateway is left undisturbed. Provider/model configuration remains a separate
-interactive `hermes setup` step. Release mode downloads an alpha Wing
+gateway is left undisturbed. Pair next, then set up a new profile's provider and
+model in Hermes Wing. Release mode downloads an alpha Wing
 Link binary and verifies it against its published checksum. Supplying immutable
 release metadata verifies both the expected SHA-256 and exact byte size
-out-of-band. The binary is always validated and atomically installed.
+out-of-band. Source builds reuse Go’s build cache and leave an identical installed
+binary untouched; changed binaries are validated and atomically installed.
 
   --build       Build and install the local Go wing_link package
   --release     Download and install the most recent alpha release
   --setup       Install/adopt Hermes Agent, prepare API access, and start its gateway if needed
   --system      With --build, install in /usr/local/bin (uses sudo when needed)
   --prefix DIR  Install in a custom directory
+
+Pairing options:
+  Android with NetBird or Tailscale: wing-link pair
+  Same computer: wing-link pair --local
+  Other VPNs: bind the Hermes API to its trusted address and set WING_HERMES_URL.
+  Guide: docs/runbooks/android-hermes-setup.md
 EOF
 }
 
@@ -97,8 +104,8 @@ fi
 run_quick_setup() {
   local binary="$1"
   [[ "$quick_setup" == true ]] || return 0
-  printf '\n[4/4] Installing or adopting Hermes Agent and starting its gateway if needed...\n'
-  if ! "$binary" setup; then
+  printf 'Preparing Hermes Agent...\n'
+  if ! "$binary" setup --json >/dev/null; then
     echo "Host setup failed. Wing Link remains installed so you can inspect and retry." >&2
     echo "Retry: $binary setup" >&2
     return 1
@@ -137,14 +144,14 @@ run_quick_setup() {
     WING_LINK_SERVICE=external "$binary" pair --local --same-device
     return
   fi
-  printf '\nHermes Agent gateway is running.\n'
-  printf 'Required next step (unless already configured): hermes setup\n'
-  printf 'Choose a provider and model in that Hermes wizard before pairing.\n'
-  printf 'Same host: wing-link pair --local\n'
-  printf 'Android with NetBird or Tailscale: wing-link pair\n'
-  printf 'Other VPNs: bind the Hermes API to its trusted address and set WING_HERMES_URL.\n'
-  printf 'Pairing stays in the foreground until Wing confirms; leave that terminal open.\n'
-  printf 'Guide: docs/runbooks/android-hermes-setup.md\n'
+  printf '\nReady. Connect your phone:\n'
+  if [[ ":$PATH:" == *":$install_dir:"* ]]; then
+    printf '  wing-link pair\n'
+  else
+    printf '  %q pair\n' "$binary"
+  fi
+  printf 'Then set up a profile in Hermes Wing.\n'
+
 }
 
 run_version_probe() {
@@ -186,17 +193,15 @@ if [[ "$build" == true ]]; then
   }
   revision="unknown"
   dirty_suffix=""
-  if command -v git >/dev/null 2>&1 && revision="$(git -C "$script_dir" rev-parse --short=8 HEAD 2>/dev/null)"; then
+  if command -v git >/dev/null 2>&1 && git_revision="$(git -C "$script_dir" rev-parse --short=8 HEAD 2>/dev/null)"; then
+    revision="$git_revision"
     if [[ -n "$(git -C "$script_dir" status --porcelain 2>/dev/null)" ]]; then
       dirty_suffix=".dirty"
     fi
   fi
   build_version="${app_version}-dev+${revision}${dirty_suffix}"
 
-  printf 'Wing Link source build\n'
-  printf '  Source:      %s\n' "$source_dir"
-  printf '  Destination: %s\n' "$destination"
-  printf '  Version:     %s\n\n' "$build_version"
+  printf 'Checking Wing Link build...\n'
 
   tmp_bin="$(mktemp)"
   trap 'rm -f "$tmp_bin"' EXIT
@@ -204,12 +209,24 @@ if [[ "$build" == true ]]; then
   if [[ "$termux" == true ]]; then
     build_args+=(-buildmode=pie)
   fi
-  printf '[1/3] Building Go package...\n'
   (cd "$source_dir" && go build "${build_args[@]}" .)
 
-  printf '[2/3] Validating and installing binary...\n'
   run_version_probe "$tmp_bin"
   installed_version="$build_version"
+  # Compare bytes, not version labels: dirty builds can share a version.
+  if [[ -f "$destination" && ! -L "$destination" && ! -L "$install_dir" && -x "$destination" ]] &&
+      cmp -s "$tmp_bin" "$destination"; then
+    run_version_probe "$destination"
+    rm -f "$tmp_bin"
+    trap - EXIT
+    printf 'Wing Link is already up to date.\n'
+    if [[ "$quick_setup" == true ]]; then
+      run_quick_setup "$destination"
+    else
+      printf 'Next: %q inspect\n' "$destination"
+    fi
+    exit 0
+  fi
   privileged=()
   if [[ "$use_sudo" == true && $EUID -ne 0 ]]; then
     command -v sudo >/dev/null 2>&1 || {
@@ -264,13 +281,11 @@ if [[ "$build" == true ]]; then
   fi
   "${privileged[@]}" mv "$candidate" "$destination"
 
-  printf '[3/3] Verifying executable...\n'
   run_version_probe "$destination"
   trap - EXIT INT TERM
   rm -f "$tmp_bin"
   "${privileged[@]}" rm -f "$backup"
-  printf '\nInstalled: %s\n' "$destination"
-  printf 'Version:   %s\n' "$installed_version"
+  printf 'Installed Wing Link %s\n' "$installed_version"
   if [[ "$quick_setup" == true ]]; then
     run_quick_setup "$destination"
   elif [[ ":$PATH:" == *":$install_dir:"* ]]; then
@@ -278,10 +293,6 @@ if [[ "$build" == true ]]; then
   else
     printf 'Next:      %s inspect\n' "$destination"
   fi
-  if [[ ":$PATH:" != *":$install_dir:"* ]]; then
-    printf 'PATH:      Add %s to run wing-link from any directory.\n' "$install_dir"
-  fi
-  printf 'Help:      %s help\n' "$destination"
   exit 0
 fi
 

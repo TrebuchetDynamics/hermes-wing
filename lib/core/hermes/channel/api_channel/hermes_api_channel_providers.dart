@@ -12,7 +12,7 @@ part of '../hermes_api_channel.dart';
 extension _ProvidersExtension on HermesApiChannel {
   Future<void> _loadProviders() async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'providers',
       'GET',
       '/api/providers',
@@ -42,7 +42,7 @@ extension _ProvidersExtension on HermesApiChannel {
     required String value,
   }) async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'provider_credential_set',
       'PUT',
       '/api/providers/{slug}/credential',
@@ -77,7 +77,7 @@ extension _ProvidersExtension on HermesApiChannel {
     required String envVar,
   }) async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'provider_credential_delete',
       'DELETE',
       '/api/providers/{slug}/credential',
@@ -109,7 +109,7 @@ extension _ProvidersExtension on HermesApiChannel {
     required String slug,
   }) async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'provider_credential_validate',
       'POST',
       '/api/providers/{slug}/credential/validate',
@@ -123,7 +123,7 @@ extension _ProvidersExtension on HermesApiChannel {
 
   Future<void> _loadModels() async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'models',
       'GET',
       '/api/models',
@@ -231,7 +231,7 @@ extension _ProvidersExtension on HermesApiChannel {
 
   Future<void> _refreshModels() async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'models_refresh',
       'POST',
       '/api/models/refresh',
@@ -262,7 +262,7 @@ extension _ProvidersExtension on HermesApiChannel {
     required String revision,
   }) async {
     final client = _requireConnectedClient();
-    _requireProviderModelCapability(
+    _requireScopedEndpoint(
       'models_assignment',
       'PUT',
       '/api/models/assignment',
@@ -358,30 +358,6 @@ extension _ProvidersExtension on HermesApiChannel {
       _isCurrentConnection(connectionGeneration, client) &&
       _profileSelectionGeneration == profileGeneration &&
       (profile == null || _state.selectedProfileId == profile);
-
-  /// Requires the endpoint to be advertised AND the connected token to hold
-  /// every scope declared by it, failing before any network I/O when either is
-  /// missing.
-  void _requireProviderModelCapability(
-    String name,
-    String method,
-    String path,
-    String scope,
-    String action,
-  ) {
-    final capabilities = _state.capabilities;
-    final endpoint = capabilities?.endpoints[name];
-    if (capabilities == null ||
-        !capabilities.supportsSchema ||
-        endpoint == null ||
-        !capabilities.advertisesScopedEndpoint(name, method, path, scope)) {
-      throw StateError('Hermes did not advertise support to $action.');
-    }
-    if (!capabilities.auth.allows(scope) ||
-        !endpoint.requiredScopes.every(capabilities.auth.allows)) {
-      throw StateError('This device is not authorized to $action.');
-    }
-  }
 
   /// Provider/model operations are profile-owned and reject an implicit scope:
   /// a profile must be selected before they touch the wire.

@@ -512,6 +512,65 @@ void main() {
           );
           await dismiss();
         }
+        await visit('/enroll');
+        expect(
+          await click(
+            find.byKey(const ValueKey('hermes-enrollment-computer-setup')),
+          ),
+          isTrue,
+        );
+        await capture(
+          'computer-setup-prerequisites',
+          'Computer setup requirements',
+        );
+        expect(
+          await click(find.byKey(const ValueKey('computer-next-step'))),
+          isTrue,
+        );
+        await capture(
+          'computer-setup-install',
+          'Reviewed host installation instructions',
+        );
+        expect(
+          await click(
+            find.byKey(const ValueKey('computer-wing-link-installed')),
+          ),
+          isTrue,
+        );
+        await capture(
+          'computer-setup-existing-host',
+          'Existing host inspection and setup instructions',
+        );
+        expect(
+          await click(find.byKey(const ValueKey('computer-next-step'))),
+          isTrue,
+        );
+        await capture(
+          'computer-setup-pair',
+          'Pairing before provider setup; instructions only',
+        );
+        expect(
+          await click(find.byKey(const ValueKey('computer-previous-step'))),
+          isTrue,
+        );
+        expect(
+          find.byKey(const ValueKey('computer-wing-link-installed')),
+          findsOneWidget,
+        );
+        expect(
+          await click(find.byKey(const ValueKey('computer-next-step'))),
+          isTrue,
+        );
+        expect(
+          await click(
+            find.byKey(const ValueKey('hermes-enrollment-computer-ready')),
+          ),
+          isTrue,
+        );
+        await capture(
+          'computer-setup-pairing-entry',
+          'Computer tutorial reaches pairing entry',
+        );
         await visit('/enroll?step=pair');
         await capture(
           'pairing-entry',

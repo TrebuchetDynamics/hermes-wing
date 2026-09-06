@@ -48,6 +48,8 @@ void main() {
 
     final advanced = find.byKey(const ValueKey('voice-advanced-expansion'));
     await tester.scrollUntilVisible(advanced, 300);
+    await tester.pumpAndSettle();
+    expect(advanced.hitTestable(), findsOneWidget);
     await tester.tap(advanced);
     await tester.pumpAndSettle();
     final commandWord = find.byKey(const ValueKey('settings-command-word'));
@@ -132,19 +134,11 @@ void main() {
     expect(find.byKey(const ValueKey('settings-open-hermes')), findsNothing);
     final voiceLink = find.byKey(const ValueKey('settings-voice-link'));
     await tester.scrollUntilVisible(voiceLink, 300);
+    expect(find.byType(SwitchListTile), findsNothing);
     expect(
-      find.byKey(const ValueKey('voice-continuous-enabled')),
+      find.text('Voice input, spoken replies, and sounds'),
       findsOneWidget,
     );
-    expect(
-      find.byKey(const ValueKey('voice-speak-replies-enabled')),
-      findsOneWidget,
-    );
-    final completionSound = find.byKey(
-      const ValueKey('voice-completion-sound-enabled'),
-    );
-    expect(completionSound, findsOneWidget);
-    expect(tester.widget<SwitchListTile>(completionSound).value, isFalse);
     expect(voiceLink, findsOneWidget);
     expect(
       find.text('Credentials stay in secure storage; values hidden'),

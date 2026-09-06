@@ -118,6 +118,13 @@ class HermesChannelState {
   final bool connectedWithApiKey;
   final bool hasUnreconciledRun;
 
+  /// Invalidates inventory refreshes when their connection or authority changes.
+  bool refreshContextChangedFrom(HermesChannelState? previous) =>
+      previous?.connectedBaseUrl != connectedBaseUrl ||
+      previous?.selectedProfileId != selectedProfileId ||
+      previous?.status != status ||
+      !identical(previous?.capabilities, capabilities);
+
   /// Scope-gating visibility hooks. These mirror the milestone-1 pattern
   /// (`supportsSchema` + advertised endpoint + granted scope) so surfaces can
   /// hide read/write affordances the connected token cannot use.

@@ -11,82 +11,159 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - assertVisible: '1 / 26'
 - assertVisible: '^Profiles$'
 - takeScreenshot: light-profiles
-- tapOn: Next screen
+# The fixture advances synchronously; retrying can skip a screen.
+# Each destination is still asserted before its screenshot.
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Tools$'
 - takeScreenshot: light-tools
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Office$'
 - takeScreenshot: light-office
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Providers$'
 - takeScreenshot: light-providers
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Persona$'
 - takeScreenshot: light-soul
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Gateway$'
 - takeScreenshot: light-gateway
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Settings$'
 - takeScreenshot: light-settings
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Voice & speech$'
 - takeScreenshot: light-voice-settings
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Diagnostics$'
 - assertVisible: '(?s).*Model.*Not reported.*'
 - takeScreenshot: light-diagnostics
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Schedules$'
 - takeScreenshot: light-schedules
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^What are we working on\?$'
 - takeScreenshot: light-chat
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Connect to Hermes$'
 - takeScreenshot: light-pairing
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Set up Hermes on this phone$'
 - takeScreenshot: light-local-setup
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '14 / 26'
 - assertVisible: '^Profiles$'
 - takeScreenshot: dark-profiles
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Tools$'
 - takeScreenshot: dark-tools
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Office$'
 - takeScreenshot: dark-office
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Providers$'
 - takeScreenshot: dark-providers
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Persona$'
 - takeScreenshot: dark-soul
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Gateway$'
 - takeScreenshot: dark-gateway
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Settings$'
 - takeScreenshot: dark-settings
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Voice & speech$'
 - takeScreenshot: dark-voice-settings
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Diagnostics$'
 - assertVisible: '(?s).*Model.*Not reported.*'
 - takeScreenshot: dark-diagnostics
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Schedules$'
 - takeScreenshot: dark-schedules
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^What are we working on\?$'
 - takeScreenshot: dark-chat
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '^Connect to Hermes$'
 - takeScreenshot: dark-pairing
-- tapOn: Next screen
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
 - assertVisible: '26 / 26'
 - assertVisible: '^Set up Hermes on this phone$'
 - takeScreenshot: dark-local-setup

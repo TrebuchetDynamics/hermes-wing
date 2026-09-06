@@ -1,4 +1,5 @@
 import '../../protocol/wing_json.dart';
+import 'hermes_metadata_text.dart';
 
 /// Bounded public metadata from one advertised `/v1/toolsets` entry.
 ///
@@ -18,7 +19,7 @@ class HermesToolset {
     final tools =
         wingListFromJson(json['tools'])
             .whereType<String>()
-            .map((tool) => _bounded(tool, 120))
+            .map((tool) => boundedHermesMetadataText(tool, 120))
             .where((tool) => tool.isNotEmpty)
             .toSet()
             .toList()
@@ -26,9 +27,15 @@ class HermesToolset {
             (left, right) => left.toLowerCase().compareTo(right.toLowerCase()),
           );
     return HermesToolset(
-      name: _bounded(wingStringFromJson(json['name'], fallback: ''), 120),
-      label: _bounded(wingStringFromJson(json['label'], fallback: ''), 160),
-      description: _bounded(
+      name: boundedHermesMetadataText(
+        wingStringFromJson(json['name'], fallback: ''),
+        120,
+      ),
+      label: boundedHermesMetadataText(
+        wingStringFromJson(json['label'], fallback: ''),
+        160,
+      ),
+      description: boundedHermesMetadataText(
         wingStringFromJson(json['description'], fallback: ''),
         1000,
       ),
@@ -46,13 +53,4 @@ class HermesToolset {
   final List<String> tools;
 
   String get displayName => label.isEmpty ? name : label;
-}
-
-String _bounded(String value, int limit) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= limit) return normalized;
-  return '${normalized.substring(0, limit - 1)}…';
 }

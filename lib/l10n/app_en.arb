@@ -767,6 +767,7 @@
   "settingsConnectAnotherGateway": "Connect another gateway",
   "settingsScanPairingQr": "Scan a Hermes pairing QR code",
   "settingsCredentialsNote": "Credentials stay in secure storage; values hidden",
+  "settingsVoiceSummary": "Voice input, spoken replies, and sounds",
   "settingsVoiceSection": "Voice",
   "settingsGatewayActionsTooltip": "Gateway actions for {label}",
   "@settingsGatewayActionsTooltip": {
@@ -816,11 +817,11 @@
   "enrollBackToOptions": "Connection options",
   "enrollComputerRequirements": "Run these steps on the computer that will host Hermes. This setup requires Linux with a systemd user session, Git, curl, and Go 1.26 or newer. Native Windows and macOS host setup is not yet qualified.",
   "enrollComputerInstallTitle": "Install or reuse Wing Link",
-  "enrollComputerInstallBody": "Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host:",
+  "enrollComputerInstallBody": "Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host. You can choose a provider and model in Wing after pairing:",
   "enrollComputerModelTitle": "Configure a provider and model",
   "enrollComputerModelBody": "Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:",
   "enrollComputerPairTitle": "Create the pairing handoff",
-  "enrollComputerPairBody": "Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link detects the VPN address and prepares direct Agent access. Return to Wing to scan the QR or paste the connection string, compare the host fingerprint, and confirm.",
+  "enrollComputerPairBody": "Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link prepares direct Agent access. Scan the QR or paste the connection string into Wing, review the host fingerprint, and confirm. Then choose Set up a profile to configure a provider and model in Wing.",
   "enrollComputerReady": "I’m ready to pair",
   "enrollPairChoiceHelp": "Connect an existing host using its QR code or connection string.",
   "enrollLinuxHelp": "Detect Hermes Agent on this Linux computer, then install or reuse it with Wing Link.",
@@ -903,6 +904,7 @@
       }
     }
   },
+  "enrollConnectedWingLinkBody": "Your pairing is saved. Choose Set up a profile to create a new profile with a provider, model, and credential through Wing Link. Sensitive changes still require approval on the host. Existing profiles remain available in Profiles.",
   "enrollConnectedBody": "Pairing is saved. Check the live connection and model status below before starting a conversation.",
   "enrollViewProfilesAction": "View profiles",
   "enrollOpenChatAction": "Open chat",
@@ -2138,9 +2140,11 @@
   "termuxCopyFailedMessage": "The setup command could not be copied. Select the command and copy it manually.",
   "termuxMetadataUnavailable": "This build cannot install the matching Wing Link release.",
   "termuxRunStep": "Open Termux and run the copied command. Keep Termux in the foreground while setup finishes.",
-  "termuxReturnStep": "Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. If Hermes needs a provider or model, run hermes setup in Termux before chatting.",
+  "termuxReturnStep": "Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. Choose Set up a profile in Wing to configure a new profile with a provider and model through Wing Link.",
   "termuxTierTwoNotice": "Keep Termux running. If Android stops Hermes in the background, rerun the setup command to recover.",
   "enrollInstallOnPhoneAction": "Use this phone",
+  "enrollSetupProfileAction": "Set up a profile",
+  "enrollConnectedWingLinkLocalBody": "Pairing is saved on this phone. Keep Termux running. Choose Set up a profile to configure a new profile in Wing through Wing Link; approve sensitive changes locally in Termux.",
   "enrollConnectedLocalBody": "Pairing is saved on this phone. Keep Termux running. To configure the existing profile, run hermes setup in Termux, then check the connection again.",
   "profileApprovalRequired": "Approve this request locally on the Wing Link host, then retry the unchanged request. Run wing-link approvals list, then wing-link approvals approve {approvalId}.",
   "@profileApprovalRequired": {

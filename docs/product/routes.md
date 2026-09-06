@@ -19,3 +19,17 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/settings`    | Settings          | Saved gateway management, appearance, supported spellcheck, voice, and redacted diagnostics; also selected by Ctrl/Command+, and bounded Linux/Windows/macOS native Settings menu commands.                                                                                                        | implemented |
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
+
+Computer enrollment now completes host installation and pairing before provider
+configuration. A confirmed Wing Link pairing offers **Set up a profile**, opening
+`/profiles?setup=new` and the transactional new-profile editor after the selected
+host's authenticated profile inventory loads. The editor collects provider,
+model, and a write-only credential; any required approval remains on the host.
+Opening or cancelling it does not create a profile. Existing-profile compatibility
+configuration remains unavailable; advertised Agent configuration APIs retain
+priority. Wing Link profile management is independent of the Agent chat
+connection, while chat still requires a separately enrolled Agent endpoint.
+
+Settings keeps voice configuration on `/settings/voice`, reached through the
+**Voice & speech** row. The overview contains gateway management, appearance,
+and links to voice and diagnostics; it does not duplicate the voice switches.

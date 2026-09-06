@@ -10,10 +10,52 @@ import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/theme/wing_theme.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
 void main() {
+  for (final brightness in Brightness.values) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets(
+        'diagnostics keeps export reachable at $scale in $brightness',
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 720);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final channel = FakeHermesChannel(models: const ['fixture-model']);
+          addTearDown(channel.dispose);
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [hermesChannelProvider.overrideWithValue(channel)],
+              child: MaterialApp(
+                theme: wingThemeFor(WingThemePalette.wing, brightness),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.linear(scale)),
+                  child: child!,
+                ),
+                home: const DiagnosticsSettingsScreen(),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final copy = find.byKey(const ValueKey('settings-copy-diagnostics'));
+          if (scale > 1) {
+            await tester.scrollUntilVisible(copy, 200);
+            await tester.pumpAndSettle();
+          }
+          expect(copy.hitTestable(), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   test('inventory counts distinguish singular and plural resources', () async {
     final strings = await AppLocalizations.delegate.load(const Locale('en'));
     expect(

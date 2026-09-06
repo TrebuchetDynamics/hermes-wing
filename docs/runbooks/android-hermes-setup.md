@@ -23,12 +23,19 @@ cd hermes-wing
    export PATH="$HOME/.local/bin:$PATH"
    ```
 
-2. Complete Hermes configuration. Wing Link has installed or adopted the runtime
-   and prepared API access; Hermes owns provider, model, tools, and messaging setup:
+2. Continue to pairing. After pairing, use **Set up a profile** in Hermes Wing
+   to choose a new profile's provider and model. To configure an existing profile
+   locally instead, use `hermes setup` on the host.
 
-   ```bash
-   hermes setup
-   ```
+   The installer shows a short result and one next command. Advanced pairing
+   options are available through `./install-wing-link.sh --help`; setup failures
+   still show their error and retry command. Rerunning uses Go's build cache and
+   keeps an identical installed binary untouched. An authenticated healthy Hermes
+   gateway keeps its credentials and endpoint configuration and is not restarted.
+   If health verification fails, setup follows its normal repair path.
+
+   Reuse the existing checkout when updating; cloning inside it creates another
+   nested copy and does not update the original installation source.
 
 3. `wing-link setup` initially binds the Hermes Agent API to `127.0.0.1`. Wing
    Link's remote listener does not forward the Agent API. With NetBird or

@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -34,10 +35,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     ref.listen(hermesChannelStateProvider, (previous, next) {
-      if (previous?.connectedBaseUrl != next.connectedBaseUrl ||
-          previous?.selectedProfileId != next.selectedProfileId ||
-          previous?.status != next.status ||
-          !identical(previous?.capabilities, next.capabilities)) {
+      if (next.refreshContextChangedFrom(previous)) {
         setState(() {
           _refreshGeneration++;
           _refreshing = false;
@@ -140,13 +138,14 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
       _refreshing = false;
       _actionError = null;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 }
 
@@ -183,7 +182,7 @@ class _ToolsBody extends StatelessWidget {
     final toolsetsAdvertised = state.canReadToolsets;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       // Both inventory sections change height while filtering. Lay them out
       // together so the route selection delegate never sees unlaid-out text.
       child: Column(

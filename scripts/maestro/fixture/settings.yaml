@@ -22,6 +22,11 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - tapOn: Forest
 - scrollUntilVisible:
     element:
+      text: '(?s).*Voice & speech.*'
+    direction: DOWN
+- tapOn: '(?s).*Voice & speech.*'
+- scrollUntilVisible:
+    element:
       text: '(?s).*Speak replies aloud.*'
     direction: DOWN
 - tapOn: '(?s).*Speak replies aloud.*'
@@ -40,6 +45,11 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     selected: true
 - assertVisible: '(?s).*Forest.*'
 - takeScreenshot: settings-persisted
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Voice & speech.*'
+    direction: DOWN
+- tapOn: '(?s).*Voice & speech.*'
 - scrollUntilVisible:
     element:
       text: '(?s).*Speak replies aloud.*'

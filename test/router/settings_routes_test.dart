@@ -56,11 +56,26 @@ void main() {
     await tester.tap(voice);
     await tester.pumpAndSettle();
     expect(find.text('Voice & speech'), findsWidgets);
+    final speak = find.byKey(const ValueKey('voice-speak-replies-enabled'));
+    await tester.ensureVisible(speak);
+    await tester.tap(speak);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(speak).value, isTrue);
     expect(find.text('Settings'), findsWidgets);
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('voice-speak-replies-enabled')),
+      findsNothing,
+    );
+    await tester.ensureVisible(voice);
+    await tester.tap(voice);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(speak).value, isTrue);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
 
     final diagnostics = find.byKey(const ValueKey('settings-diagnostics-link'));
     await Scrollable.ensureVisible(tester.element(diagnostics), alignment: 0.5);

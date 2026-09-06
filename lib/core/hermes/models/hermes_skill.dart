@@ -1,4 +1,5 @@
 import '../../protocol/wing_json.dart';
+import 'hermes_metadata_text.dart';
 
 /// Bounded public metadata from one installed `/v1/skills` entry.
 class HermesSkill {
@@ -10,12 +11,15 @@ class HermesSkill {
 
   factory HermesSkill.fromJson(Map<String, Object?> json) {
     return HermesSkill(
-      name: _bounded(wingStringFromJson(json['name'], fallback: ''), 120),
-      description: _bounded(
+      name: boundedHermesMetadataText(
+        wingStringFromJson(json['name'], fallback: ''),
+        120,
+      ),
+      description: boundedHermesMetadataText(
         wingStringFromJson(json['description'], fallback: ''),
         1000,
       ),
-      category: _bounded(
+      category: boundedHermesMetadataText(
         wingStringFromJson(json['category'], fallback: ''),
         80,
       ),
@@ -25,13 +29,4 @@ class HermesSkill {
   final String name;
   final String description;
   final String category;
-}
-
-String _bounded(String value, int limit) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= limit) return normalized;
-  return '${normalized.substring(0, limit - 1)}…';
 }

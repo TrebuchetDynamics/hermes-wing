@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_job.dart';
+import '../../../core/hermes/models/hermes_metadata_text.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_metadata.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -35,10 +37,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     ref.listen(hermesChannelStateProvider, (previous, next) {
-      if (previous?.connectedBaseUrl != next.connectedBaseUrl ||
-          previous?.selectedProfileId != next.selectedProfileId ||
-          previous?.status != next.status ||
-          !identical(previous?.capabilities, next.capabilities)) {
+      if (next.refreshContextChangedFrom(previous)) {
         setState(() {
           _refreshGeneration++;
           _refreshing = false;
@@ -130,13 +129,14 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
       _actionError = null;
       _refreshFailed = false;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 
   Future<void> _refresh(HermesChannel channel) async {
@@ -269,7 +269,7 @@ class _ScheduleCard extends StatelessWidget {
     final lastRun = _formatTimestamp(context, job.lastRunAt);
     final hasError = job.lastError?.trim().isNotEmpty ?? false;
     final title = Text(
-      _safePreview(job.displayName, 120),
+      boundedHermesMetadataText(job.displayName, 120),
       style: Theme.of(context).textTheme.titleMedium,
     );
     final status = WingMetadata(label: Text(stateLabel));
@@ -303,7 +303,7 @@ class _ScheduleCard extends StatelessWidget {
               const SizedBox(height: 10),
               _ScheduleDetail(
                 label: strings.scheduleExpressionLabel,
-                value: _safePreview(schedule, 160),
+                value: boundedHermesMetadataText(schedule, 160),
               ),
             ],
             if (nextRun != null) ...[
@@ -397,7 +397,7 @@ String _jobState(HermesJob job, AppLocalizations strings) {
 String? _formatTimestamp(BuildContext context, String? source) {
   if (source == null || source.trim().isEmpty) return null;
   final parsed = DateTime.tryParse(source);
-  if (parsed == null) return _safePreview(source, 96);
+  if (parsed == null) return boundedHermesMetadataText(source, 96);
   final local = parsed.toLocal();
   final material = MaterialLocalizations.of(context);
   final date = material.formatMediumDate(local);
@@ -406,13 +406,4 @@ String? _formatTimestamp(BuildContext context, String? source) {
     alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
   );
   return '$date, $time';
-}
-
-String _safePreview(String value, int maxLength) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= maxLength) return normalized;
-  return '${normalized.substring(0, maxLength - 1)}…';
 }

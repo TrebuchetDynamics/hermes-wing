@@ -1,0 +1,29 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Pairing fixture
+- tapOn: '(?s).*Use another computer.*'
+- assertVisible: Step 1 of 3
+- scrollUntilVisible:
+    element:
+      text: My Linux host is ready
+    direction: DOWN
+- tapOn: My Linux host is ready
+- assertVisible: Step 2 of 3
+- scrollUntilVisible:
+    element:
+      text: Setup finished on the host
+    direction: DOWN
+- tapOn: Setup finished on the host
+- assertVisible: Step 3 of 3
+- assertVisible: Create the pairing handoff
+- assertNotVisible: hermes setup
+- takeScreenshot: computer-pair-before-provider-setup

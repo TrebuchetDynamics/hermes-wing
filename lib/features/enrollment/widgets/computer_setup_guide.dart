@@ -52,7 +52,6 @@ class _ComputerSetupGuideState extends State<ComputerSetupGuide> {
     final titles = [
       s.enrollComputerPrerequisites,
       s.enrollComputerInstallTitle,
-      s.enrollComputerModelTitle,
       s.enrollComputerPairTitle,
     ];
     final command = switch (_step) {
@@ -60,8 +59,7 @@ class _ComputerSetupGuideState extends State<ComputerSetupGuide> {
         _existing
             ? '~/.local/bin/wing-link inspect\n~/.local/bin/wing-link setup'
             : 'git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git\ncd hermes-wing\n./install-wing-link.sh',
-      2 => 'hermes setup',
-      3 => '~/.local/bin/wing-link pair',
+      2 => '~/.local/bin/wing-link pair',
       _ => null,
     };
     return Column(
@@ -91,7 +89,6 @@ class _ComputerSetupGuideState extends State<ComputerSetupGuide> {
             _existing
                 ? s.enrollComputerExistingHelp
                 : s.enrollComputerInstallBody,
-          2 => s.enrollComputerModelBody,
           _ => s.enrollComputerPairBody,
         }),
         if (_step == 0) ...[
@@ -138,17 +135,16 @@ class _ComputerSetupGuideState extends State<ComputerSetupGuide> {
         const SizedBox(height: 24),
         FilledButton(
           key: ValueKey(
-            _step == 3
+            _step == 2
                 ? 'hermes-enrollment-computer-ready'
                 : 'computer-next-step',
           ),
-          onPressed: _step == 3
+          onPressed: _step == 2
               ? widget.onPair
               : () => widget.onStepChanged(_step + 1),
           child: Text(switch (_step) {
             0 => s.enrollComputerPrerequisitesReady,
             1 => s.enrollHostSetupFinished,
-            2 => s.enrollModelSetupFinished,
             _ => s.enrollComputerReady,
           }),
         ),

@@ -6,12 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/hermes/models/hermes_health.dart';
+import '../../../core/hermes/models/hermes_metadata_text.dart';
 import '../../../core/wing_link/models/wing_link_device.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -316,13 +318,14 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       _actionError = null;
       _refreshFailed = false;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 
   Future<void> _renameGateway(
@@ -783,13 +786,13 @@ class _HealthCard extends StatelessWidget {
             const SizedBox(height: 16),
             _StatusRow(
               label: strings.gatewayPlatformLabel,
-              value: _safePreview(health.platform, 80),
+              value: boundedHermesMetadataText(health.platform, 80),
             ),
             if (health.version?.trim().isNotEmpty ?? false) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayVersionLabel,
-                value: _safePreview(health.version!, 80),
+                value: boundedHermesMetadataText(health.version!, 80),
               ),
             ],
             if (showDetailedFields &&
@@ -797,7 +800,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayRuntimeStateLabel,
-                value: _safePreview(health.gatewayState!, 80),
+                value: boundedHermesMetadataText(health.gatewayState!, 80),
               ),
             ],
             if (showDetailedFields) ...[
@@ -828,7 +831,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayUpdatedLabel,
-                value: _safePreview(updatedAt, 80),
+                value: boundedHermesMetadataText(updatedAt, 80),
               ),
             ],
             if (health.pid case final pid? when showDetailedFields) ...[
@@ -843,7 +846,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayExitReasonLabel,
-                value: _safePreview(exitReason, 160),
+                value: boundedHermesMetadataText(exitReason, 160),
               ),
             ],
           ],
@@ -905,8 +908,8 @@ class _PlatformsCard extends StatelessWidget {
           for (var index = 0; index < platforms.length; index++) ...[
             if (index > 0) const SizedBox(height: 10),
             _StatusRow(
-              label: _safePreview(platforms[index].name, 80),
-              value: _safePreview(platforms[index].status, 80),
+              label: boundedHermesMetadataText(platforms[index].name, 80),
+              value: boundedHermesMetadataText(platforms[index].status, 80),
             ),
           ],
         ],
@@ -947,7 +950,7 @@ String _readinessLabel(String id, AppLocalizations strings) => switch (id) {
   'disk' => strings.gatewayDiskReadinessLabel,
   'gateway' => strings.gatewayRuntimeReadinessLabel,
   'background_queues' => strings.gatewayBackgroundQueuesLabel,
-  _ => _safePreview(id, 80),
+  _ => boundedHermesMetadataText(id, 80),
 };
 
 String _readinessValue(
@@ -958,10 +961,11 @@ String _readinessValue(
     check.status.toLowerCase() == 'ok'
         ? strings.gatewayHealthy
         : strings.gatewayNeedsAttention,
-    if (check.detail case final detail?) _safePreview(detail, 160),
+    if (check.detail case final detail?) boundedHermesMetadataText(detail, 160),
     if (check.usedPercent case final usedPercent?)
       strings.gatewayReadinessDiskUsage(usedPercent.toStringAsFixed(1)),
-    if (check.runtimeState case final state?) _safePreview(state, 80),
+    if (check.runtimeState case final state?)
+      boundedHermesMetadataText(state, 80),
     if (check.connectedPlatforms case final connected?
         when check.configuredPlatforms != null)
       strings.gatewayReadinessPlatformCounts(
@@ -983,12 +987,3 @@ String _readinessValue(
 bool _detailedHealthAdvertised(HermesChannelState state) =>
     state.status == HermesConnectionStatus.connected &&
     state.canReadDetailedHealth;
-
-String _safePreview(String value, int maxLength) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= maxLength) return normalized;
-  return '${normalized.substring(0, maxLength - 1)}…';
-}

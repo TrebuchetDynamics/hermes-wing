@@ -206,6 +206,9 @@ if [[ "$build" == true ]]; then
   tmp_bin="$(mktemp)"
   trap 'rm -f "$tmp_bin"' EXIT
   build_args=(-trimpath -ldflags "-X main.version=$build_version" -o "$tmp_bin")
+  if [[ "$revision" == unknown ]]; then
+    build_args+=(-buildvcs=false)
+  fi
   if [[ "$termux" == true ]]; then
     build_args+=(-buildmode=pie)
   fi

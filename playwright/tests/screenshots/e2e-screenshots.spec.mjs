@@ -27,7 +27,7 @@ test("Hermes connect screen screenshot", async ({ page }, testInfo) => {
 
 test("settings screen screenshot", async ({ page }, testInfo) => {
   await open(page, "#/settings");
-  await expect(page.getByText("Connect another gateway").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Connect another gateway/ })).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("settings.png"),
     fullPage: true,

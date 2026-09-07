@@ -291,7 +291,7 @@ class _OfficeAgentCard extends StatelessWidget {
         ),
         margin: EdgeInsets.zero,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -300,13 +300,17 @@ class _OfficeAgentCard extends StatelessWidget {
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: current
+                      ? colors.primaryContainer
+                      : colors.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   _initial(name),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colors.onPrimaryContainer,
+                    color: current
+                        ? colors.onPrimaryContainer
+                        : colors.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -352,7 +356,7 @@ class _OfficeAgentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton.filledTonal(
+              IconButton(
                 key: ValueKey(
                   'office-open-${contact.id.gatewayId}-${contact.id.profileId}',
                 ),
@@ -363,7 +367,7 @@ class _OfficeAgentCard extends StatelessWidget {
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.arrow_forward, size: 20),
+                    : const Icon(Icons.chevron_right, size: 20),
               ),
             ],
           ),

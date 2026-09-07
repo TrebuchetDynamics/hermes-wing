@@ -7,180 +7,166 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - extendedWaitUntil:
     visible: Maestro fixture
     timeout: 30000
-- runFlow:
-    file: control.yaml
-    env:
-      ACTION: Use light theme
-- stopApp
-- launchApp
-- extendedWaitUntil:
-    visible: Maestro fixture
-    timeout: 30000
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Profiles fixture
+- tapOn: Start visual review
+- assertVisible: '1 / 26'
+- assertVisible: '^Profiles$'
 - takeScreenshot: light-profiles
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Tools fixture
+# The fixture advances synchronously; retrying can skip a screen.
+# Each destination is still asserted before its screenshot.
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Tools$'
 - takeScreenshot: light-tools
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Office fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Office$'
 - takeScreenshot: light-office
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Providers fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Providers$'
 - takeScreenshot: light-providers
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: SOUL fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Persona$'
 - takeScreenshot: light-soul
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Gateway fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Gateway$'
 - takeScreenshot: light-gateway
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Settings fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Settings$'
 - takeScreenshot: light-settings
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Voice settings fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Voice & speech$'
 - takeScreenshot: light-voice-settings
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Diagnostics fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Diagnostics$'
+- assertVisible: '(?s).*Model.*Not reported.*'
 - takeScreenshot: light-diagnostics
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Schedules fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Schedules$'
 - takeScreenshot: light-schedules
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Chat fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^What are we working on\?$'
 - takeScreenshot: light-chat
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Pairing fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Connect to Hermes$'
 - takeScreenshot: light-pairing
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Local setup fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Set up Hermes on this phone$'
 - takeScreenshot: light-local-setup
-- tapOn: Fixture home
-- runFlow:
-    file: control.yaml
-    env:
-      ACTION: Use dark theme
-- stopApp
-- launchApp
-- extendedWaitUntil:
-    visible: Maestro fixture
-    timeout: 30000
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Profiles fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '14 / 26'
+- assertVisible: '^Profiles$'
 - takeScreenshot: dark-profiles
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Tools fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Tools$'
 - takeScreenshot: dark-tools
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Office fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Office$'
 - takeScreenshot: dark-office
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Providers fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Providers$'
 - takeScreenshot: dark-providers
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: SOUL fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Persona$'
 - takeScreenshot: dark-soul
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Gateway fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Gateway$'
 - takeScreenshot: dark-gateway
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Settings fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Settings$'
 - takeScreenshot: dark-settings
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Voice settings fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Voice & speech$'
 - takeScreenshot: dark-voice-settings
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Diagnostics fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Diagnostics$'
+- assertVisible: '(?s).*Model.*Not reported.*'
 - takeScreenshot: dark-diagnostics
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Schedules fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Schedules$'
 - takeScreenshot: dark-schedules
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Chat fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^What are we working on\?$'
 - takeScreenshot: dark-chat
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Pairing fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '^Connect to Hermes$'
 - takeScreenshot: dark-pairing
-- tapOn: Fixture home
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Local setup fixture
+- tapOn:
+    text: Next screen
+    retryTapIfNoChange: false
+    waitToSettleTimeoutMs: 0
+- assertVisible: '26 / 26'
+- assertVisible: '^Set up Hermes on this phone$'
 - takeScreenshot: dark-local-setup
-- tapOn: Fixture home
 - tapOn: Fixture controls
 - assertVisible: 'Layout overflows: 0'
 - tapOn: Close controls

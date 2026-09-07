@@ -16,6 +16,9 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
         animation: channel,
         builder: (context, _) {
           final state = channel.state;
+          final reportedModel = state.models.isEmpty
+              ? state.capabilities?.model
+              : state.models.first;
           final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
           return ListView(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
@@ -42,10 +45,9 @@ class DiagnosticsSettingsScreen extends ConsumerWidget {
                   _StatusTile(
                     icon: Icons.memory_outlined,
                     title: strings.diagnosticsModelLabel,
-                    value: state.models.isEmpty
-                        ? state.capabilities?.model ??
-                              strings.diagnosticsModelNotReported
-                        : state.models.first,
+                    value: reportedModel == null || reportedModel.trim().isEmpty
+                        ? strings.diagnosticsModelNotReported
+                        : reportedModel,
                   ),
                   _StatusTile(
                     icon: Icons.account_tree_outlined,

@@ -63,50 +63,10 @@ extension _ConnectionExtension on HermesApiChannel {
         load: client.healthDetailed,
         errors: optionalResourceErrors,
       );
-      final modelsFuture = _loadOptional<List<HermesRuntimeModel>>(
-        advertised: _capabilityEndpointAuthorized(
-          capabilities,
-          'models',
-          'GET',
-          '/v1/models',
-        ),
-        resource: HermesOptionalResource.models,
-        load: () => client!.listRuntimeModels(profile: initialProfileId),
-        errors: optionalResourceErrors,
-      );
-      final skillsFuture = _loadOptional<List<HermesSkill>>(
-        advertised: _capabilityEndpointAuthorized(
-          capabilities,
-          'skills',
-          'GET',
-          '/v1/skills',
-        ),
-        resource: HermesOptionalResource.skills,
-        load: () => client!.listSkillDetails(profile: initialProfileId),
-        errors: optionalResourceErrors,
-      );
-      final toolsetsFuture = _loadOptional<List<HermesToolset>>(
-        advertised: _capabilityEndpointAuthorized(
-          capabilities,
-          'toolsets',
-          'GET',
-          '/v1/toolsets',
-        ),
-        resource: HermesOptionalResource.toolsets,
-        load: () => client!.listToolsets(profile: initialProfileId),
-        errors: optionalResourceErrors,
-      );
-      final jobsFuture = _loadOptional<List<HermesJob>>(
-        advertised:
-            capabilities.auth.allows('tasks:read') &&
-            capabilities.advertisesScopedEndpoint(
-              'jobs',
-              'GET',
-              '/api/jobs',
-              'tasks:read',
-            ),
-        resource: HermesOptionalResource.jobs,
-        load: () => client!.listJobs(profile: initialProfileId),
+      final inventoryFuture = _loadOptionalInventory(
+        client: client,
+        capabilities: capabilities,
+        profileId: initialProfileId,
         errors: optionalResourceErrors,
       );
       final sessionsPage = await client.listSessionsPage(
@@ -144,20 +104,7 @@ extension _ConnectionExtension on HermesApiChannel {
       }
       if (!_isCurrentConnection(generation, client)) return;
       final detailedHealth = await detailedHealthFuture;
-      final runtimeModels = await modelsFuture ?? const <HermesRuntimeModel>[];
-      final models = runtimeModels
-          .map((model) => model.id)
-          .toList(growable: false);
-      final skillDetails = await skillsFuture ?? const <HermesSkill>[];
-      final skills = skillDetails
-          .map((skill) => skill.name)
-          .toList(growable: false);
-      final toolsets = await toolsetsFuture ?? const <HermesToolset>[];
-      final enabledToolsets = toolsets
-          .where((toolset) => toolset.enabled)
-          .map((toolset) => toolset.name)
-          .toList(growable: false);
-      final jobs = await jobsFuture ?? const [];
+      final inventory = await inventoryFuture;
       if (!_isCurrentConnection(generation, client)) return;
       _setState(
         _state.copyWith(
@@ -165,13 +112,13 @@ extension _ConnectionExtension on HermesApiChannel {
           capabilities: capabilities,
           basicHealth: basicHealth,
           detailedHealth: detailedHealth,
-          models: models,
-          runtimeModels: runtimeModels,
-          skills: skills,
-          skillDetails: skillDetails,
-          toolsets: toolsets,
-          enabledToolsets: enabledToolsets,
-          jobs: jobs,
+          models: inventory.models,
+          runtimeModels: inventory.runtimeModels,
+          skills: inventory.skills,
+          skillDetails: inventory.skillDetails,
+          toolsets: inventory.toolsets,
+          enabledToolsets: inventory.enabledToolsets,
+          jobs: inventory.jobs,
           optionalResourceErrors: optionalResourceErrors,
           sessions: sessions,
           sessionsNextOffset: sessionsPage.nextOffset,

@@ -24,18 +24,75 @@ host](android-hermes-setup.md).
 - Android may suspend or kill both processes. There is no managed service,
   boot persistence, battery-exemption request, or unattended reliability claim.
 
+## Install from this repository
+
+The standalone [Termux installer](../../install-termux.sh) keeps the package
+installation, pinned downloads, exact-size and SHA-256 verification, and cleanup
+inside the script. From a checkout, run:
+
+```bash
+bash install-termux.sh
+```
+
+To download just the entrypoint in Termux after it is published on `main`:
+
+```bash
+pkg install -y curl
+curl -fL https://raw.githubusercontent.com/TrebuchetDynamics/hermes-wing/main/install-termux.sh -o install-termux.sh && bash install-termux.sh
+```
+
+This downloads the repository's current script to a file before executing it;
+you can inspect that file first. The script itself contains immutable reviewed
+Agent and Wing Link pins and verifies every runtime download before invoking
+either installer. It stops on failed downloads or mismatched checksums. Keep
+Termux in the foreground; the final setup step prints the local pairing link.
+
+Normal reruns reuse an existing Hermes installation after a bounded version
+check. To run the official installer for the script's reviewed Agent revision,
+including when Hermes is already installed, use:
+
+```bash
+bash install-termux.sh --update-hermes
+```
+
+This selects the revision pinned inside the script, not an unchecked latest
+version. After installation, a direct Go launch probe must pass before Wing Link
+setup starts. If the launcher just installed fails that probe, the script builds
+a native launcher for the fixed Hermes venv and entrypoint, verifies it, and
+activates it atomically. This handles Android argument routing failures that a
+shell-only check misses. An existing installation adopted without an update is
+never rewritten by this repair. A failed final probe stops setup before Wing
+Link can trigger another installation.
+
+The [physical entrypoint test](../quality/termux-entrypoint-physical-2026-09-05.md)
+records successful adoption and explicit-update runs through pairing on a
+Samsung phone. A fresh, empty Termux installation remains unqualified.
+
+`bash install-termux.sh --help` describes the entrypoint.
+`bash install-termux.sh --verify-only` checks the real pinned artifacts without
+installing packages, running either installer, or starting services. This check
+can also run on Linux with curl, coreutils, and tar installed. Maintainers must
+update the embedded pins together with `assets/config/termux_bootstrap.json`;
+`node --test test/tooling/termux_installer_test.mjs` checks that they match.
+
 ## Install and pair
 
-1. In Wing enrollment choose **Use this phone**. Confirm that Termux opens, then continue to the verified setup command.
-2. Copy the verified setup command, open Termux, paste it, and keep Termux in
-   the foreground while installation runs. Development builds install Termux's
-   `golang` package and compile the pinned Wing Link source, so their first run
-   takes longer than a signed release installation.
-3. The installer adopts or installs Hermes Agent, starts both loopback services,
-   and prints a code-free `http://127.0.0.1:<port>/open` link.
-4. Tap the link, choose **Open Hermes Wing**, review the host and requested
-   access, then confirm. The underlying pairing code remains five-minute,
-   single-use, and absent from the copied bootstrap command.
+1. Open Wing and choose **Use this phone**. Install Termux from the official
+   guide and open it once.
+2. In Termux, run the [repository installer](#install-from-this-repository).
+   It installs the required packages and verifies the pinned artifacts before
+   running them. Keep Termux in the foreground while it builds Wing Link.
+3. Wait for setup to finish and display the code-free
+   `http://127.0.0.1:<port>/open` link. Tap it on this same phone.
+4. Choose **Open Hermes Wing**, review the host and requested access, and
+   confirm. The underlying pairing code lasts five minutes and can be used once.
+5. [Configure a provider and model](#hermes-profile-configuration), then open
+   that profile in Wing and send a short message. Confirm that an assistant
+   reply appears before treating setup as complete.
+
+If you use Wing's **Copy setup command** instead, run the command supplied by
+that build. Existing builds can still show the longer verified command; the
+standalone repository script is the shorter manual installation path.
 
 ## Configure a model
 
@@ -104,8 +161,9 @@ Run `wing-link` for a short first-run guide, or `wing-link help pair` and
 `wing-link setup --help` for focused examples. Help commands never start setup.
 See the [Wing Link CLI guide](wing-link-cli.md) for output and exit-code details.
 
-If Wing reports both local services disconnected, return to Termux and rerun the
-same verified setup command. A healthy existing Hermes Agent, Wing Link process,
+If Wing reports both local services disconnected, return to the folder where
+you downloaded the script in Termux and run `bash install-termux.sh` again. If you
+installed with Wing's copied command, rerun that same verified setup command. A healthy existing Hermes Agent, Wing Link process,
 and Wing Link identity are adopted rather than duplicated or rotated. Server
 state wins after reconnect; Wing does not silently replay queued mutations.
 

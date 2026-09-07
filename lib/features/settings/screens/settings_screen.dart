@@ -49,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
           return ListView(
             padding: EdgeInsets.fromLTRB(
               horizontalPadding,
-              wide ? 28 : 16,
+              wide ? 28 : 8,
               horizontalPadding,
               32,
             ),
@@ -117,13 +117,15 @@ class _GatewaySettingsSection extends StatelessWidget {
             _GatewaySettingsTile(group: group, directory: directory),
         ListTile(
           key: const ValueKey('settings-connect-another-gateway'),
+          minTileHeight: 56,
+          minVerticalPadding: 8,
           leading: const Icon(Icons.add_link),
           title: Text(strings.settingsConnectAnotherGateway),
           subtitle: Text(strings.settingsScanPairingQr),
           onTap: () => context.push(AppRoutes.enroll),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Text(
             strings.settingsCredentialsNote,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -149,10 +151,15 @@ class _AppearanceSettingsSection extends ConsumerWidget {
       icon: Icons.palette_outlined,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: SegmentedButton<ThemeMode>(
             key: const ValueKey('settings-theme-mode'),
             showSelectedIcon: false,
+            style: SegmentedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             segments: [
               ButtonSegment(
                 value: ThemeMode.system,
@@ -173,23 +180,53 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              for (final palette in WingThemePalette.values)
-                ChoiceChip(
-                  key: ValueKey('settings-palette-${palette.name}'),
-                  avatar: CircleAvatar(
-                    backgroundColor: palette.seed,
-                    radius: 8,
-                  ),
-                  label: Text(_paletteLabel(strings, palette)),
-                  selected: appearance.palette == palette,
-                  onSelected: (_) => unawaited(controller.setPalette(palette)),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Semantics(
+            container: true,
+            identifier: 'settings-palette-picker',
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: strings.themePaletteLabel,
+                filled: false,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<WingThemePalette>(
+                  key: const ValueKey('settings-palette-picker'),
+                  value: appearance.palette,
+                  isExpanded: true,
+                  isDense: true,
+                  itemHeight: null,
+                  items: [
+                    for (final palette in WingThemePalette.values)
+                      DropdownMenuItem(
+                        value: palette,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: palette.seed,
+                              radius: 8,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(_paletteLabel(strings, palette)),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                  onChanged: (palette) {
+                    if (palette != null) {
+                      unawaited(controller.setPalette(palette));
+                    }
+                  },
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ],
@@ -221,48 +258,24 @@ class _ChatSettingsSection extends ConsumerWidget {
   }
 }
 
-class _VoiceSettingsSection extends ConsumerWidget {
+class _VoiceSettingsSection extends StatelessWidget {
   const _VoiceSettingsSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final settings = ref.watch(wingVoiceSettingsProvider);
-    final controller = ref.read(wingVoiceSettingsProvider.notifier);
-    return _SettingsSectionCard(
-      title: strings.settingsVoiceSection,
-      icon: Icons.keyboard_voice_outlined,
-      children: [
-        SwitchListTile(
-          key: const ValueKey('voice-continuous-enabled'),
-          title: Text(strings.voiceContinuousTitle),
-          subtitle: Text(strings.voiceContinuousSubtitle),
-          value: settings.continuousVoiceEnabled,
-          onChanged: controller.setContinuousVoiceEnabled,
-        ),
-        SwitchListTile(
-          key: const ValueKey('voice-speak-replies-enabled'),
-          title: Text(strings.voiceSpeakRepliesTitle),
-          subtitle: Text(strings.voiceSpeakRepliesSubtitle),
-          value: settings.speakRepliesEnabled,
-          onChanged: controller.setSpeakRepliesEnabled,
-        ),
-        SwitchListTile(
-          key: const ValueKey('voice-completion-sound-enabled'),
-          title: Text(strings.voiceCompletionSoundTitle),
-          subtitle: Text(strings.voiceCompletionSoundSubtitle),
-          value: settings.completionSoundEnabled,
-          onChanged: controller.setCompletionSoundEnabled,
-        ),
-        ListTile(
-          key: const ValueKey('settings-voice-link'),
-          leading: const Icon(Icons.graphic_eq),
-          title: Text(strings.voiceSettingsTitle),
-          subtitle: Text(strings.voiceSpeakRepliesSubtitle),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push(AppRoutes.settingsVoice),
-        ),
-      ],
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: ListTile(
+        key: const ValueKey('settings-voice-link'),
+        minTileHeight: 56,
+        minVerticalPadding: 8,
+        leading: const Icon(Icons.graphic_eq),
+        title: Text(strings.voiceSettingsTitle),
+        subtitle: Text(strings.settingsVoiceSummary),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.push(AppRoutes.settingsVoice),
+      ),
     );
   }
 }
@@ -277,21 +290,19 @@ class _DiagnosticsSettingsLink extends ConsumerWidget {
       animation: channel,
       builder: (context, _) {
         final strings = AppLocalizations.of(context);
-        return _SettingsSectionCard(
-          title: strings.diagnosticsTitle,
-          icon: Icons.monitor_heart_outlined,
-          children: [
-            ListTile(
-              key: const ValueKey('settings-diagnostics-link'),
-              leading: const Icon(Icons.monitor_heart_outlined),
-              title: Text(strings.chatConnectionDiagnosticsTitle),
-              subtitle: Text(
-                _connectionStatusLabel(strings, channel.state.status),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(AppRoutes.settingsDiagnostics),
+        return Card(
+          child: ListTile(
+            key: const ValueKey('settings-diagnostics-link'),
+            minTileHeight: 56,
+            minVerticalPadding: 8,
+            leading: const Icon(Icons.monitor_heart_outlined),
+            title: Text(strings.chatConnectionDiagnosticsTitle),
+            subtitle: Text(
+              _connectionStatusLabel(strings, channel.state.status),
             ),
-          ],
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.settingsDiagnostics),
+          ),
         );
       },
     );
@@ -323,6 +334,8 @@ class _GatewaySettingsTile extends StatelessWidget {
       (gateway) => gateway.id == group.id,
     );
     return ListTile(
+      minTileHeight: 56,
+      minVerticalPadding: 8,
       leading: Icon(
         group.availability == GatewayAvailability.online
             ? Icons.cloud_done_outlined
@@ -651,7 +664,7 @@ class _SettingsSectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -659,7 +672,7 @@ class _SettingsSectionCard extends StatelessWidget {
             container: true,
             headingLevel: 2,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
               child: Row(
                 children: [
                   ExcludeSemantics(
@@ -702,11 +715,46 @@ class _StatusTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title),
-      subtitle: Text(value),
-      dense: true,
+    final theme = Theme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 340 ||
+            MediaQuery.textScalerOf(context).scale(14) > 18) {
+          return ListTile(
+            leading: Icon(icon, size: 18, color: iconColor),
+            title: Text(title),
+            subtitle: Text(value),
+            dense: true,
+          );
+        }
+        return MergeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: iconColor ?? theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 92,
+                  child: Text(
+                    title,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

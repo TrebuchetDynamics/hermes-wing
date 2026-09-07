@@ -173,8 +173,12 @@ cat > "\$output" <<'SCRIPT'
 case "\${1:-}" in
   version) echo 0.1.0-dev+test ;;
   setup)
-    printf '%s\\n' setup >> "\$WING_LINK_TEST_CALLS"
-    [ "\${WING_LINK_TEST_FAIL_SETUP:-}" != 1 ]
+    printf '%s\\n' "\$*" >> "\$WING_LINK_TEST_CALLS"
+    echo '{"result":"setup-detail"}'
+    if [ "\${WING_LINK_TEST_FAIL_SETUP:-}" = 1 ]; then
+      echo 'setup failed: fixture reason' >&2
+      exit 1
+    fi
     ;;
   *) exit 2 ;;
 esac
@@ -194,11 +198,15 @@ chmod +x "\$output"
     ], environment: environment);
 
     expect(install.exitCode, 0, reason: install.stderr as String);
-    expect(calls.readAsStringSync(), 'setup\n');
-    expect(install.stdout, contains('Hermes Agent gateway is running'));
+    expect(calls.readAsStringSync(), 'setup --json\n');
+    expect(install.stdout, contains('Ready. Connect your phone:'));
+    expect(install.stdout, contains('Then set up a profile in Hermes Wing.'));
+    expect(install.stdout, isNot(contains('hermes setup')));
+    expect(install.stdout, isNot(contains('setup-detail')));
+    expect(install.stdout, isNot(contains('[4/4]')));
     expect(
-      install.stdout,
-      contains('Required next step (unless already configured): hermes setup'),
+      (install.stdout as String).trim().split('\n').length,
+      lessThanOrEqualTo(7),
     );
 
     final failedInstallDir = Directory('${temp.path}/failed-install');
@@ -214,6 +222,24 @@ chmod +x "\$output"
       reason: 'a setup failure must preserve the diagnostic and retry tool',
     );
     expect(failedSetup.stderr, contains('Wing Link remains installed'));
+    expect(failedSetup.stderr, contains('setup failed: fixture reason'));
+    expect(failedSetup.stdout, isNot(contains('Ready.')));
+  });
+
+  test('source archive keeps a usable version without Git metadata', () async {
+    final temp = await Directory.systemTemp.createTemp('wing-link-archive-');
+    addTearDown(() => temp.delete(recursive: true));
+    final fakeBin = Directory('${temp.path}/bin')..createSync();
+    final git = File('${fakeBin.path}/git')
+      ..writeAsStringSync('#!/bin/sh\nexit 128\n');
+    await Process.run('chmod', ['+x', git.path]);
+    final install = await Process.run(
+      './install-wing-link.sh',
+      ['--build', '--prefix', '${temp.path}/installed'],
+      environment: {'PATH': '${fakeBin.path}:${Platform.environment['PATH']}'},
+    );
+    expect(install.exitCode, 0, reason: install.stderr as String);
+    expect(install.stdout, contains('-dev+unknown'));
   });
 
   test('source build reports progress, result, and next step', () async {
@@ -228,21 +254,38 @@ chmod +x "\$output"
 
     expect(install.exitCode, 0, reason: install.stderr as String);
     for (final message in [
-      'Wing Link source build',
-      '[1/3] Building',
-      '[2/3] Validating and installing',
-      '[3/3] Verifying',
-      'Installed:',
-      'Version:',
+      'Checking Wing Link build...',
+      'Installed Wing Link',
       'Next:',
     ]) {
       expect(install.stdout, contains(message));
     }
     expect(
       install.stdout,
-      matches(RegExp(r'Version:\s+\d+\.\d+\.\d+-dev\+[a-z0-9.]+')),
+      matches(RegExp(r'Installed Wing Link \d+\.\d+\.\d+-dev\+[a-z0-9.]+')),
     );
-    expect(install.stdout, isNot(contains('Version:   dev')));
+    expect((install.stdout as String).trim().split('\n').length, 3);
+    final binary = File('${temp.path}/wing-link');
+    final before = binary.statSync().modified;
+    final second = await Process.run('./install-wing-link.sh', [
+      '--build',
+      '--prefix',
+      temp.path,
+    ]);
+    expect(second.exitCode, 0, reason: second.stderr as String);
+    expect(second.stdout, contains('already up to date'));
+    expect(binary.statSync().modified, before);
+    final stale = File('${temp.path}/stale')
+      ..writeAsStringSync('#!/bin/sh\necho stale\n');
+    stale.renameSync(binary.path);
+    final repair = await Process.run('./install-wing-link.sh', [
+      '--build',
+      '--prefix',
+      temp.path,
+    ]);
+    expect(repair.exitCode, 0, reason: repair.stderr as String);
+    expect(repair.stdout, contains('Installed Wing Link'));
+    expect(binary.readAsBytesSync().take(4), [127, 69, 76, 70]);
   });
 
   test('source build probe failure preserves an existing Wing Link', () async {

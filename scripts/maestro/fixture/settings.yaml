@@ -16,7 +16,15 @@ appId: com.trebuchetdynamics.hermes.wing.qa
       text: '^Dark$'
     direction: DOWN
 - tapOn: '^Dark$'
+- tapOn:
+    id: settings-palette-picker
+- takeScreenshot: settings-palette-menu
 - tapOn: Forest
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Voice & speech.*'
+    direction: DOWN
+- tapOn: '(?s).*Voice & speech.*'
 - scrollUntilVisible:
     element:
       text: '(?s).*Speak replies aloud.*'
@@ -35,6 +43,13 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - assertVisible:
     text: '^Dark$'
     selected: true
+- assertVisible: '(?s).*Forest.*'
+- takeScreenshot: settings-persisted
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Voice & speech.*'
+    direction: DOWN
+- tapOn: '(?s).*Voice & speech.*'
 - scrollUntilVisible:
     element:
       text: '(?s).*Speak replies aloud.*'

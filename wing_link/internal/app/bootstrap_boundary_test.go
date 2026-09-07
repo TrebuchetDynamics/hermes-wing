@@ -49,6 +49,14 @@ func TestBootstrapAdoptsHealthyGatewayWithoutRestart(t *testing.T) {
 		EnsureHermes: func(context.Context, func(OperationEvent)) (HermesInspection, error) {
 			return HermesInspection{Executable: "/safe/hermes", Adopted: true}, nil
 		},
+		EnsureAPIKey: func(context.Context) error {
+			t.Fatal("healthy authenticated gateway credentials were rewritten")
+			return nil
+		},
+		EnsureAPIEndpoint: func(context.Context) error {
+			t.Fatal("healthy gateway endpoint was rewritten")
+			return nil
+		},
 		GatewayHealthy: func(context.Context) bool { return true },
 		StartGateway: func(context.Context) error {
 			t.Fatal("healthy gateway was restarted")

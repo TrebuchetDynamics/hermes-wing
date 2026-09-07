@@ -43,7 +43,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Hermes Wing';
 
   @override
-  String get hermesDestination => 'Hermes';
+  String get hermesDestination => 'Chat';
 
   @override
   String get agentsDestination => 'Profiles';
@@ -676,6 +676,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gatewayStatusTitle => 'Gateway';
+
+  @override
+  String get gatewayTrustDetails => 'Identity & permissions';
 
   @override
   String get gatewayTrustTitle => 'Wing Link trust';
@@ -1421,7 +1424,31 @@ class AppLocalizationsEn extends AppLocalizations {
     int toolsets,
     int jobs,
   ) {
-    return '$models models • $skills skills • $toolsets toolsets • $jobs jobs';
+    String _temp0 = intl.Intl.pluralLogic(
+      models,
+      locale: localeName,
+      other: '$models models',
+      one: '1 model',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skills,
+      locale: localeName,
+      other: '$skills skills',
+      one: '1 skill',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      toolsets,
+      locale: localeName,
+      other: '$toolsets toolsets',
+      one: '1 toolset',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      jobs,
+      locale: localeName,
+      other: '$jobs jobs',
+      one: '1 job',
+    );
+    return '$_temp0 • $_temp1 • $_temp2 • $_temp3';
   }
 
   @override
@@ -1543,6 +1570,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsCredentialsNote =>
       'Credentials stay in secure storage; values hidden';
+
+  @override
+  String get settingsVoiceSummary => 'Voice input, spoken replies, and sounds';
 
   @override
   String get settingsVoiceSection => 'Voice';
@@ -1667,7 +1697,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollComputerInstallBody =>
-      'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host:';
+      'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host. You can choose a provider and model in Wing after pairing:';
 
   @override
   String get enrollComputerModelTitle => 'Configure a provider and model';
@@ -1681,7 +1711,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollComputerPairBody =>
-      'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link detects the VPN address and prepares direct Agent access. Return to Wing to scan the QR or paste the connection string, compare the host fingerprint, and confirm.';
+      'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link prepares direct Agent access. Scan the QR or paste the connection string into Wing, review the host fingerprint, and confirm. Then choose Set up a profile to configure a provider and model in Wing.';
 
   @override
   String get enrollComputerReady => 'I’m ready to pair';
@@ -1929,6 +1959,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get enrollConnectedWingLinkBody =>
+      'Your pairing is saved. Choose Set up a profile to create a new profile with a provider, model, and credential through Wing Link. Sensitive changes still require approval on the host. Existing profiles remain available in Profiles.';
 
   @override
   String get enrollConnectedBody =>
@@ -3776,6 +3810,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeModeDark => 'Dark';
 
   @override
+  String get themePaletteLabel => 'Accent color';
+
+  @override
   String get themePaletteWing => 'Wing';
 
   @override
@@ -3936,7 +3973,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termuxReturnStep =>
-      'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. If Hermes needs a provider or model, run hermes setup in Termux before chatting.';
+      'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. Choose Set up a profile in Wing to configure a new profile with a provider and model through Wing Link.';
 
   @override
   String get termuxTierTwoNotice =>
@@ -3944,6 +3981,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollInstallOnPhoneAction => 'Use this phone';
+
+  @override
+  String get enrollSetupProfileAction => 'Set up a profile';
+
+  @override
+  String get enrollConnectedWingLinkLocalBody =>
+      'Pairing is saved on this phone. Keep Termux running. Choose Set up a profile to configure a new profile in Wing through Wing Link; approve sensitive changes locally in Termux.';
 
   @override
   String get enrollConnectedLocalBody =>

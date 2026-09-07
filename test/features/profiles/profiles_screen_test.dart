@@ -11,6 +11,7 @@ import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
+import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -94,6 +95,7 @@ class _GatedProfileSelectionChannel extends FakeHermesChannel {
 Widget _profilesTestApp(
   FakeHermesChannel channel, {
   double textScale = 1.0,
+  bool startSetup = false,
   HermesGatewayDirectory? directory,
   WingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
@@ -120,11 +122,80 @@ Widget _profilesTestApp(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
-    home: const ProfilesScreen(),
+    home: ProfilesScreen(startSetup: startSetup),
   ),
 );
 
 void main() {
+  testWidgets(
+    'paired setup opens a new configured profile without an Agent connection',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'setup-host',
+            label: 'Setup host',
+            baseUrl: 'https://setup.example',
+            wingLinkOrigin: 'https://setup.example:8654',
+            wingLinkToken: 'fixture-only',
+            wingLinkHostFingerprint:
+                'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'setup-host': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('setup-host');
+      await channel.disconnect();
+      var writes = 0;
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          startSetup: true,
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
+                origin: origin,
+                token: token,
+                hostFingerprint: hostFingerprint,
+                get: (uri, _) async {
+                  if (uri.path == '/v1/profiles') {
+                    return '{"profiles":[{"id":"default","name":"Default","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}';
+                  }
+                  throw StateError('catalog unavailable');
+                },
+                post: (uri, headers, body) async {
+                  writes++;
+                  return '{}';
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final editor = tester.widget<ProfileEditorSheet>(
+        find.byType(ProfileEditorSheet),
+      );
+      expect(editor.canConfigure, isTrue);
+      expect(editor.profile, isNull);
+      expect(writes, 0);
+      await tester.tap(find.text('Cancel').last);
+      await tester.pumpAndSettle();
+      directory.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(find.byType(ProfileEditorSheet), findsNothing);
+      expect(writes, 0);
+    },
+  );
+
   testWidgets(
     'profile lifecycle creates, uses, edits persona, renames, and removes an agent',
     (tester) async {

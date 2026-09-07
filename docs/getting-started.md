@@ -45,9 +45,12 @@ tools may need to help with the initial installation.
 
 ### 1. Get Wing ready
 
-For the Android path, build and open Wing using the instructions below. On its
-first screen, choose **Use another computer**. The app walks through computer
-setup and returns you to pairing afterward.
+For the Android path, build and open Wing using the instructions below. Then
+choose where the assistant will run:
+
+- **Use another computer:** follow steps 2–4 below for a Linux computer.
+- **Use this phone:** follow the [phone-only tutorial](#same-phone-android--termux)
+  using Termux and the repository's setup script.
 
 <a id="build-the-alpha-from-source"></a>
 
@@ -170,11 +173,44 @@ the phone to use the assistant. Closing Wing does not move Hermes onto the phone
 
 ### Can everything run on the phone instead?
 
-There is an experimental **Use this phone** option through **Termux**, an Android
-app that provides a Linux-like terminal environment. Follow the
-[Termux guide](runbooks/android-termux-local-agent.md).
-Android can stop background processes, and the unmodified bootstrap and persistent
-hosting are not qualified. Wing does not execute commands inside Termux for you.
+Yes, experimentally, on an ARM64 Android phone with **Termux**, a terminal app.
+Hermes Agent does the assistant's work; Wing Link prepares its local connection;
+Wing is where you chat. You run the installer in Termux yourself.
+
+1. Open Wing and choose **Use this phone**. Install Termux using the linked
+   official installation guide, then open it once.
+2. Follow the [script download steps](runbooks/android-termux-local-agent.md#install-from-this-repository).
+   If you already have this repository checked out inside Termux, open its
+   `hermes-wing` folder and run:
+
+   ```bash
+   bash install-termux.sh
+   ```
+
+   The script installs required packages, downloads and verifies the pinned
+   installers, and prepares Hermes Agent and Wing Link. Keep Termux in the
+   foreground. The first run builds Wing Link and can take a while.
+3. When setup prints its local `/open` link, tap it, choose **Open Hermes Wing**,
+   review the host and requested access, and confirm pairing.
+4. Configure a provider and model. For the existing Default profile, run
+   `hermes setup` in Termux. To configure a new profile in Wing, follow the
+   [profile setup steps](runbooks/android-termux-local-agent.md#hermes-profile-configuration),
+   including local approval and pairing again for that profile when required.
+5. Open the configured profile in Wing and send a short message. An assistant
+   reply confirms that model access works; a saved pairing alone does not.
+
+Keep Termux running while you use the assistant. If Android stops it, return to
+Termux and rerun `bash install-termux.sh` from the folder containing the script.
+If setup fails, read the error before retrying; do not remove the integrity checks.
+See [Termux recovery](runbooks/android-termux-local-agent.md#recovery).
+To install the script’s reviewed Hermes revision again, run
+`bash install-termux.sh --update-hermes` in Termux. Ordinary reruns reuse a healthy
+Hermes installation.
+The script was tested on a physical Samsung phone with an existing Hermes
+installation: both normal setup and `--update-hermes` completed through pairing
+without changing configuration. See the [physical test report](quality/termux-entrypoint-physical-2026-09-05.md).
+Installation into an empty Termux environment and persistent background hosting
+remain unverified.
 
 ### Can I use the same computer for Wing and Hermes?
 

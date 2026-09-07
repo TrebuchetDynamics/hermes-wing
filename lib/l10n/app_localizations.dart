@@ -157,7 +157,7 @@ abstract class AppLocalizations {
   /// No description provided for @hermesDestination.
   ///
   /// In en, this message translates to:
-  /// **'Hermes'**
+  /// **'Chat'**
   String get hermesDestination;
 
   /// No description provided for @agentsDestination.
@@ -1221,6 +1221,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gateway'**
   String get gatewayStatusTitle;
+
+  /// No description provided for @gatewayTrustDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity & permissions'**
+  String get gatewayTrustDetails;
 
   /// No description provided for @gatewayTrustTitle.
   ///
@@ -2503,7 +2509,7 @@ abstract class AppLocalizations {
   /// No description provided for @diagnosticsResourcesSummary.
   ///
   /// In en, this message translates to:
-  /// **'{models} models • {skills} skills • {toolsets} toolsets • {jobs} jobs'**
+  /// **'{models, plural, one{1 model} other{{models} models}} • {skills, plural, one{1 skill} other{{skills} skills}} • {toolsets, plural, one{1 toolset} other{{toolsets} toolsets}} • {jobs, plural, one{1 job} other{{jobs} jobs}}'**
   String diagnosticsResourcesSummary(
     int models,
     int skills,
@@ -2727,6 +2733,12 @@ abstract class AppLocalizations {
   /// **'Credentials stay in secure storage; values hidden'**
   String get settingsCredentialsNote;
 
+  /// No description provided for @settingsVoiceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input, spoken replies, and sounds'**
+  String get settingsVoiceSummary;
+
   /// No description provided for @settingsVoiceSection.
   ///
   /// In en, this message translates to:
@@ -2940,7 +2952,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollComputerInstallBody.
   ///
   /// In en, this message translates to:
-  /// **'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host:'**
+  /// **'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host. You can choose a provider and model in Wing after pairing:'**
   String get enrollComputerInstallBody;
 
   /// No description provided for @enrollComputerModelTitle.
@@ -2964,7 +2976,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollComputerPairBody.
   ///
   /// In en, this message translates to:
-  /// **'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link detects the VPN address and prepares direct Agent access. Return to Wing to scan the QR or paste the connection string, compare the host fingerprint, and confirm.'**
+  /// **'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link prepares direct Agent access. Scan the QR or paste the connection string into Wing, review the host fingerprint, and confirm. Then choose Set up a profile to configure a provider and model in Wing.'**
   String get enrollComputerPairBody;
 
   /// No description provided for @enrollComputerReady.
@@ -3368,6 +3380,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 profile paired} other{{count} profiles paired}}'**
   String enrollConnectedProfiles(int count);
+
+  /// No description provided for @enrollConnectedWingLinkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your pairing is saved. Choose Set up a profile to create a new profile with a provider, model, and credential through Wing Link. Sensitive changes still require approval on the host. Existing profiles remain available in Profiles.'**
+  String get enrollConnectedWingLinkBody;
 
   /// No description provided for @enrollConnectedBody.
   ///
@@ -6235,6 +6253,12 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get themeModeDark;
 
+  /// No description provided for @themePaletteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get themePaletteLabel;
+
   /// No description provided for @themePaletteWing.
   ///
   /// In en, this message translates to:
@@ -6520,7 +6544,7 @@ abstract class AppLocalizations {
   /// No description provided for @termuxReturnStep.
   ///
   /// In en, this message translates to:
-  /// **'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. If Hermes needs a provider or model, run hermes setup in Termux before chatting.'**
+  /// **'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. Choose Set up a profile in Wing to configure a new profile with a provider and model through Wing Link.'**
   String get termuxReturnStep;
 
   /// No description provided for @termuxTierTwoNotice.
@@ -6534,6 +6558,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use this phone'**
   String get enrollInstallOnPhoneAction;
+
+  /// No description provided for @enrollSetupProfileAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a profile'**
+  String get enrollSetupProfileAction;
+
+  /// No description provided for @enrollConnectedWingLinkLocalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing is saved on this phone. Keep Termux running. Choose Set up a profile to configure a new profile in Wing through Wing Link; approve sensitive changes locally in Termux.'**
+  String get enrollConnectedWingLinkLocalBody;
 
   /// No description provided for @enrollConnectedLocalBody.
   ///

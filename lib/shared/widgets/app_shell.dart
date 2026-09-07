@@ -359,7 +359,8 @@ class _DesktopShell extends StatelessWidget {
                   selectedIndex: selectedIndex,
                   onDestinationSelected: onSelected,
                   extended: true,
-                  minExtendedWidth: 256,
+                  scrollable: true,
+                  minExtendedWidth: 208,
                   leading: const _HermesDesktopBrand(),
                   destinations: [
                     for (final d in destinations)
@@ -408,12 +409,12 @@ class _DesktopStatusBar extends StatelessWidget {
     return Container(
       key: const ValueKey('app-shell-status-bar'),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
+        color: theme.colorScheme.surface,
         border: Border(
           top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
           for (var index = 0; index < rows.length; index++) ...[
@@ -421,23 +422,23 @@ class _DesktopStatusBar extends StatelessWidget {
             Expanded(
               child: Tooltip(
                 message: '${rows[index].label}: ${rows[index].value}',
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      rows[index].label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                    Icon(
+                      rows[index].icon,
+                      size: 14,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
-                    Text(
-                      rows[index].value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelMedium,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        rows[index].value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -458,17 +459,17 @@ class _HermesDesktopBrand extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: SizedBox(
-        width: 224,
+        width: 176,
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: colorScheme.primary.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: colorScheme.primary.withValues(alpha: 0.36),
                 ),
@@ -476,7 +477,7 @@ class _HermesDesktopBrand extends StatelessWidget {
               child: Icon(
                 Icons.auto_awesome,
                 color: colorScheme.primary,
-                size: 24,
+                size: 20,
               ),
             ),
             const SizedBox(width: 12),
@@ -486,12 +487,12 @@ class _HermesDesktopBrand extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'HERMES WING',
+                    'Hermes Wing',
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.1,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const SizedBox(height: 2),

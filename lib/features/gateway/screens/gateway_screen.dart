@@ -6,12 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/hermes/models/hermes_health.dart';
+import '../../../core/hermes/models/hermes_metadata_text.dart';
 import '../../../core/wing_link/models/wing_link_device.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -97,6 +99,27 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                         )
                       : const Icon(Icons.edit_outlined),
                 ),
+              if (channel.state.isConnected && activeGatewayId != null)
+                IconButton(
+                  key: const ValueKey('gateway-disconnect-button'),
+                  tooltip: strings.chatConnectionDisconnectAction,
+                  onPressed: _disconnecting
+                      ? null
+                      : () => unawaited(
+                          _confirmDisconnect(
+                            directory,
+                            activeGatewayId,
+                            activeGateway?.label ?? activeGatewayId,
+                            strings,
+                          ),
+                        ),
+                  icon: _disconnecting
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.link_off),
+                ),
               if (canRefresh)
                 IconButton(
                   key: const ValueKey('gateway-refresh-button'),
@@ -127,33 +150,6 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                       !_renaming,
                   onSelected: (id) =>
                       unawaited(_selectGateway(directory, id, strings)),
-                ),
-              if (channel.state.isConnected && activeGatewayId != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('gateway-disconnect-button'),
-                      onPressed: _disconnecting
-                          ? null
-                          : () => unawaited(
-                              _confirmDisconnect(
-                                directory,
-                                activeGatewayId,
-                                activeGateway?.label ?? activeGatewayId,
-                                strings,
-                              ),
-                            ),
-                      icon: _disconnecting
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.link_off),
-                      label: Text(strings.chatConnectionDisconnectAction),
-                    ),
-                  ),
                 ),
               if (_actionError != null)
                 MaterialBanner(
@@ -322,13 +318,14 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       _actionError = null;
       _refreshFailed = false;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 
   Future<void> _renameGateway(
@@ -506,19 +503,18 @@ class _GatewayBody extends StatelessWidget {
       key: const ValueKey('gateway-body-list'),
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
-        if (MediaQuery.sizeOf(context).width >= 600) ...[
-          Text(
-            strings.gatewayStatusTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 6),
-        ],
         Text(strings.gatewayStatusSubtitle),
         const SizedBox(height: 16),
+        _HealthCard(
+          health: health,
+          strings: strings,
+          showDetailedFields: fallbackNotice == null,
+        ),
+        const SizedBox(height: 8),
         Card(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -529,11 +525,15 @@ class _GatewayBody extends StatelessWidget {
                       fallbackNotice == null
                           ? Icons.visibility_outlined
                           : Icons.info_outline,
+                      size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         fallbackNotice ?? strings.gatewayStatusReadOnlyNote,
+                        style: fallbackNotice == null
+                            ? Theme.of(context).textTheme.bodySmall
+                            : null,
                       ),
                     ),
                   ],
@@ -553,11 +553,6 @@ class _GatewayBody extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        _HealthCard(
-          health: health,
-          strings: strings,
-          showDetailedFields: fallbackNotice == null,
         ),
         if (health.readiness case final readiness?
             when !readiness.isAbsent && readiness.checks.isNotEmpty) ...[
@@ -672,28 +667,40 @@ class _WingLinkTrustCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
-              _StatusRow(
-                label: strings.gatewayTrustFingerprint,
-                value: metadata.hostFingerprint,
+              _StatusRow(label: strings.gatewayTrustDevice, value: device.name),
+              ExpansionTile(
+                key: const PageStorageKey('gateway-trust-details'),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(bottom: 12),
+                shape: const Border(),
+                collapsedShape: const Border(),
+                title: Text(strings.gatewayTrustDetails),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StatusRow(
+                    label: strings.gatewayTrustFingerprint,
+                    value: metadata.hostFingerprint,
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustProtocol,
+                    value:
+                        'v${metadata.protocolGeneration} · ${metadata.supportedProtocolGenerations.join(', ')}',
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustDevice,
+                    value: '${device.name} · ${device.id}',
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusRow(
+                    label: strings.gatewayTrustScopes,
+                    value: device.scopes.join(', '),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.gatewayTrustHostInstructions),
+                ],
               ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustProtocol,
-                value:
-                    'v${metadata.protocolGeneration} · ${metadata.supportedProtocolGenerations.join(', ')}',
-              ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustDevice,
-                value: '${device.name} · ${device.id}',
-              ),
-              const SizedBox(height: 10),
-              _StatusRow(
-                label: strings.gatewayTrustScopes,
-                value: device.scopes.join(', '),
-              ),
-              const SizedBox(height: 12),
-              Text(strings.gatewayTrustHostInstructions),
               const SizedBox(height: 12),
               if (approvalPending)
                 Semantics(
@@ -779,13 +786,13 @@ class _HealthCard extends StatelessWidget {
             const SizedBox(height: 16),
             _StatusRow(
               label: strings.gatewayPlatformLabel,
-              value: _safePreview(health.platform, 80),
+              value: boundedHermesMetadataText(health.platform, 80),
             ),
             if (health.version?.trim().isNotEmpty ?? false) ...[
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayVersionLabel,
-                value: _safePreview(health.version!, 80),
+                value: boundedHermesMetadataText(health.version!, 80),
               ),
             ],
             if (showDetailedFields &&
@@ -793,7 +800,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayRuntimeStateLabel,
-                value: _safePreview(health.gatewayState!, 80),
+                value: boundedHermesMetadataText(health.gatewayState!, 80),
               ),
             ],
             if (showDetailedFields) ...[
@@ -824,7 +831,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayUpdatedLabel,
-                value: _safePreview(updatedAt, 80),
+                value: boundedHermesMetadataText(updatedAt, 80),
               ),
             ],
             if (health.pid case final pid? when showDetailedFields) ...[
@@ -839,7 +846,7 @@ class _HealthCard extends StatelessWidget {
               const SizedBox(height: 10),
               _StatusRow(
                 label: strings.gatewayExitReasonLabel,
-                value: _safePreview(exitReason, 160),
+                value: boundedHermesMetadataText(exitReason, 160),
               ),
             ],
           ],
@@ -901,8 +908,8 @@ class _PlatformsCard extends StatelessWidget {
           for (var index = 0; index < platforms.length; index++) ...[
             if (index > 0) const SizedBox(height: 10),
             _StatusRow(
-              label: _safePreview(platforms[index].name, 80),
-              value: _safePreview(platforms[index].status, 80),
+              label: boundedHermesMetadataText(platforms[index].name, 80),
+              value: boundedHermesMetadataText(platforms[index].status, 80),
             ),
           ],
         ],
@@ -943,7 +950,7 @@ String _readinessLabel(String id, AppLocalizations strings) => switch (id) {
   'disk' => strings.gatewayDiskReadinessLabel,
   'gateway' => strings.gatewayRuntimeReadinessLabel,
   'background_queues' => strings.gatewayBackgroundQueuesLabel,
-  _ => _safePreview(id, 80),
+  _ => boundedHermesMetadataText(id, 80),
 };
 
 String _readinessValue(
@@ -954,10 +961,11 @@ String _readinessValue(
     check.status.toLowerCase() == 'ok'
         ? strings.gatewayHealthy
         : strings.gatewayNeedsAttention,
-    if (check.detail case final detail?) _safePreview(detail, 160),
+    if (check.detail case final detail?) boundedHermesMetadataText(detail, 160),
     if (check.usedPercent case final usedPercent?)
       strings.gatewayReadinessDiskUsage(usedPercent.toStringAsFixed(1)),
-    if (check.runtimeState case final state?) _safePreview(state, 80),
+    if (check.runtimeState case final state?)
+      boundedHermesMetadataText(state, 80),
     if (check.connectedPlatforms case final connected?
         when check.configuredPlatforms != null)
       strings.gatewayReadinessPlatformCounts(
@@ -979,12 +987,3 @@ String _readinessValue(
 bool _detailedHealthAdvertised(HermesChannelState state) =>
     state.status == HermesConnectionStatus.connected &&
     state.canReadDetailedHealth;
-
-String _safePreview(String value, int maxLength) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= maxLength) return normalized;
-  return '${normalized.substring(0, maxLength - 1)}…';
-}

@@ -62,15 +62,15 @@ final wingDarkTheme = wingHermesDarkTheme;
 
 ThemeData _buildTelegramLightTheme() => _buildWingTheme(
   ColorScheme.fromSeed(seedColor: wingTelegramBlue).copyWith(
-    surface: const Color(0xfffafbfc),
+    surface: const Color(0xfff7f7f5),
     surfaceContainerLowest: Colors.white,
-    surfaceContainerLow: const Color(0xfff0f2f5),
-    surfaceContainer: const Color(0xffe9edf2),
-    surfaceContainerHigh: const Color(0xffe2e7ee),
-    surfaceContainerHighest: const Color(0xffdce2ea),
-    onSurface: const Color(0xff1b2533),
-    onSurfaceVariant: const Color(0xff526071),
-    outlineVariant: const Color(0xffd7dee7),
+    surfaceContainerLow: const Color(0xffefefec),
+    surfaceContainer: const Color(0xffe9eae7),
+    surfaceContainerHigh: const Color(0xffe2e4e0),
+    surfaceContainerHighest: const Color(0xffdcdfda),
+    onSurface: const Color(0xff252927),
+    onSurfaceVariant: const Color(0xff5d655f),
+    outlineVariant: const Color(0xffd9ddd7),
   ),
   selectedTileAlpha: 24,
   dividerAlpha: 96,
@@ -113,6 +113,8 @@ ThemeData _buildWingTheme(
   return ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
+    fontFamily: 'sans-serif',
+    fontFamilyFallback: const ['Helvetica Neue', 'Arial', 'DejaVu Sans'],
     scaffoldBackgroundColor: colorScheme.surface,
     textTheme: const TextTheme(
       headlineLarge: TextStyle(
@@ -134,7 +136,7 @@ ThemeData _buildWingTheme(
         letterSpacing: -0.4,
       ),
       titleLarge: TextStyle(
-        fontSize: 20,
+        fontSize: 18,
         height: 1.3,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.3,
@@ -187,12 +189,11 @@ ThemeData _buildWingTheme(
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      height: 64,
+      height: 60,
       elevation: 0,
-      backgroundColor: isDark
-          ? colorScheme.surfaceContainerLow
-          : colorScheme.surfaceContainerLowest,
+      backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
+      iconTheme: WidgetStatePropertyAll(IconThemeData(size: 22)),
       indicatorColor: selectedColor,
       indicatorShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -215,7 +216,7 @@ ThemeData _buildWingTheme(
           : colorScheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
     ),
     dialogTheme: DialogThemeData(
@@ -223,10 +224,12 @@ ThemeData _buildWingTheme(
           ? colorScheme.surfaceContainer
           : colorScheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     appBarTheme: AppBarTheme(
       centerTitle: false,
+      toolbarHeight: 52,
+      titleSpacing: 16,
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: colorScheme.surface,
@@ -250,6 +253,7 @@ ThemeData _buildWingTheme(
       space: 1,
     ),
     cardTheme: CardThemeData(
+      margin: EdgeInsets.zero,
       color: isDark
           ? colorScheme.surfaceContainer
           : colorScheme.surfaceContainerLowest,
@@ -257,7 +261,7 @@ ThemeData _buildWingTheme(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: colorScheme.outlineVariant.withAlpha(150)),
+        side: BorderSide.none,
       ),
     ),
     chipTheme: ChipThemeData(
@@ -319,6 +323,9 @@ ThemeData _buildWingTheme(
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: colorScheme.surface,
       indicatorColor: selectedColor,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
       selectedIconTheme: IconThemeData(color: colorScheme.primary),
       selectedLabelTextStyle: TextStyle(
         color: colorScheme.primary,

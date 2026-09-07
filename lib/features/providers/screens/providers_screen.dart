@@ -11,6 +11,7 @@ import '../../../router/routes/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../profiles/providers/profile_selection_provider.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -143,13 +144,14 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       _switchingGatewayId = gatewayId;
       _actionError = null;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 
   Widget _buildBody(
@@ -189,7 +191,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         );
       }
       return ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
           _ProvidersHeader(
             subtitle: strings.providersSubtitle,
@@ -234,7 +236,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     final canWriteProviders = state.canWriteProviders;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
         _ProvidersHeader(
           subtitle: strings.providersSubtitle,
@@ -398,7 +400,7 @@ class _ProviderCard extends StatelessWidget {
       label: semanticsLabel,
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -439,10 +441,10 @@ class _ProviderCard extends StatelessWidget {
                 Text(strings.providerOAuthHostRequired),
               ],
               if (canManage && provider.acceptsWriteOnlyCredential) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
+                  child: TextButton.icon(
                     onPressed: onManage,
                     icon: const Icon(Icons.key_outlined),
                     label: Text(strings.manageCredentialAction),
@@ -482,7 +484,7 @@ class _ModelSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(strings.modelSelectionTitle, style: theme.textTheme.titleLarge),
+        Text(strings.modelSelectionTitle, style: theme.textTheme.titleSmall),
         const SizedBox(height: 12),
         if (!state.canReadModels && state.canReadRuntimeModels)
           _RuntimeModelsCard(
@@ -495,7 +497,7 @@ class _ModelSection extends StatelessWidget {
         else ...[
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -523,7 +525,7 @@ class _ModelSection extends StatelessWidget {
                       ),
                   ],
                   if (state.canWriteModels) ...[
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: FilledButton.tonalIcon(
@@ -565,7 +567,7 @@ class _RuntimeModelsCard extends StatelessWidget {
           ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

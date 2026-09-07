@@ -30,7 +30,7 @@ global active profile or project as a side effect.
 Use revisions or another authoritative concurrency check where edits can collide.
 Report reload/restart requirements separately from persistence success.
 
-## Provider/model setup catalog
+## Provider model setup catalog
 
 Provider/model autocomplete in profile setup reads Hermes Agent's full advertised
 inventory through Wing Link's typed `GET /v1/profiles/{id}/model-options` API.
@@ -50,3 +50,142 @@ authorize a provider write: existing secret, profile setup, and capability gates
 remain in force. Chat's model picker retains its configured-provider policy.
 If the catalog is unavailable, setup reports the error and offers retry or manual
 entry; it never substitutes a Wing-maintained list of providers or models.
+
+## Existing-profile provider compatibility direction
+
+Status: provider-first design direction accepted on 2026-09-07; not implemented
+or advertised. This records the next bounded compatibility slice, not shipping
+support or permission to modify personal runtime state.
+
+Extend Wing Link's reviewed compatibility operations to existing-profile provider
+management only where a supported Hermes CLI or Agent API contract has been
+verified. Hermes Agent remains authoritative. Direct writes to Agent-owned files
+or databases, Persona and schedule adapters, arbitrary config keys, and generic
+command execution are outside this accepted slice.
+
+The implementation must satisfy these conditions before an operation is exposed:
+
+- Advertise each verified Wing Link operation independently. A setup catalog read
+  or new-profile setup capability does not grant existing-profile write access.
+  Wing must select the correct management adapter without advertising synthetic
+  Agent capabilities or routing Agent chat traffic through Wing Link.
+- Bind authorization, local sensitive-write approval and idempotency to the exact
+  device, profile identity, operation, resource revision and payload digest. Keep
+  request bodies and credentials out of journals and audit records.
+- Use fixed executable/argument shapes and bounded inputs, output and duration.
+  Credentials remain write-only and use stdin, never argv or environment values.
+  Verify add, replace, remove and validation semantics separately; command names
+  alone do not prove the intended credential-store behavior.
+- Keep saving, remote credential validation/inference, and gateway reload/restart
+  as separate explicit actions with separate outcomes. Saving must not silently
+  incur an inference request or restart a gateway.
+- Verify concurrency against Agent/CLI edits as well as other Wing Link calls.
+  A Wing Link mutex alone is not authoritative concurrency protection. Establish
+  the supported transaction or conflict-checking mechanism before offering a
+  combined provider/model mutation; report uncertain or partial outcomes honestly
+  and reconcile authoritative state without automatic mutation replay.
+
+Do not reuse the current new-profile transaction unchanged. Its
+[setup implementation](../../wing_link/internal/app/serve.go) writes provider and
+model settings sequentially, then performs an inference readiness probe; its
+caller can roll back by deleting the newly created profile. Deleting an existing
+profile is not a valid rollback. The existing
+[setup tests](../../wing_link/internal/app/serve_test.go) prove only the current
+new-profile contract, not safe existing-profile replacement.
+
+Before implementation, trace each candidate through the installed Agent
+source and nearest upstream tests, then add adapter-boundary tests for stale
+revisions, external edits, revoked grants, approval replay, command failure and
+secret redaction. Only verified operations may proceed to isolated live Linux UI
+qualification. Record the supported Agent release window and removal trigger when
+the equivalent authoritative Agent API becomes available. Until these checks are
+met, the existing unavailable-state UI remains correct.
+
+### Required Agent-owned mutation contract
+
+Status: capability acceptance criteria, specified on 2026-09-07; not an upstream
+implementation plan and not shipped support. The
+[hard Agent immutability boundary](runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent)
+prohibits modifying Agent to satisfy these criteria. Evaluate only contracts
+provided by unmodified upstream releases.
+
+The source review of reference `4f22543509` and installed `24f5a60ed1` found
+that `auth add` appends a pool entry and clears source suppressions; it does not
+replace a selected credential. `auth remove` removes an entry and can perform
+source-specific cleanup. `auth status` is not remote credential validation.
+Auth-store writes have cross-process locking and merge protection, but these do
+not expose an expected-revision transaction. Config read/modify/write and atomic
+file replacement do not provide equivalent cross-process conflict protection.
+These are source-review findings, not executed runtime qualification.
+
+An eligible authoritative contract must distinguish these outcomes:
+
+| Operation | Required semantics |
+| --- | --- |
+| Read edit state | Return bounded provider/model metadata, opaque credential IDs, supported actions and an opaque revision; never secrets, secret hashes, source paths or provider URLs. |
+| Add credential | Create one explicitly selected provider credential; preserve existing entries, selection and source suppressions. Return its opaque ID and new revision. |
+| Replace credential | Replace only the selected credential ID at the expected revision. Preserve its identity and unrelated entries; never implement as an exposed add-then-remove sequence. |
+| Remove credential | Remove only the selected credential ID. State whether other credentials remain; do not claim provider-wide logout or remote provider-key revocation. Reject sources whose cleanup cannot meet these guarantees. |
+| Assign provider/model | Commit the validated provider/model pair together, or commit neither. No credential change, fallback provider selection, inference or restart. |
+| Validate credential | Explicit, separately authorized bounded remote check for the selected credential and revision. Distinguish accepted, rejected, unavailable and inconclusive; never treat stored presence as validation. |
+
+The first contract covers Agent-managed API-key entries only. Borrowed environment
+keys, external credential stores and OAuth sources remain unsupported for mutation
+unless individually specified and qualified. No implicit unsuppression, credential
+import, provider-wide logout or external credential revocation is permitted.
+Validation must disclose any network or billing effect before consent; saving
+alone must never trigger it. A validation result applies only to the tested
+credential revision and does not prove model inference readiness.
+
+Every mutation carries explicit profile identity including its incarnation,
+provider identity, operation, expected revision and idempotency key; credential
+replacement/removal additionally carries the credential ID. Credential bytes are
+write-only input. A local compatibility command must accept a bounded structured
+stdin payload, emit bounded secret-free structured output and run without a shell
+or interactive prompt. Wire names, size/deadline limits and protocol schemas must
+be verified against a supported unmodified Agent contract before adapter
+implementation; these are requirements, not invented callable routes or flags.
+
+Agent must check revision and identity inside the same authoritative transaction
+that commits the mutation. Relevant CLI, API and runtime credential/config writers
+must participate in that concurrency mechanism. Deleting/recreating a profile or
+credential invalidates prior requests. A Wing Link mutex, a preflight read or a
+post-write readback is not a substitute. Combined credential and model saves are
+not part of the initial contract; the UI must report their separate outcomes.
+
+Idempotency must survive a crash between commit and response: the same authorized
+request returns its original secret-free receipt, while changed-payload replay
+fails. Durable deduplication metadata must not contain request bodies or raw
+secrets; any secret-dependent binding must resist offline guessing. Agent owns
+commit reconciliation, and Wing Link retains only bounded operation metadata,
+not a second provider store. Unknown outcomes require status reconciliation, not
+automatic execution with a new key. Revoked callers cannot obtain receipts or
+execute retries. Expired deduplication records must not permit an old request to
+execute again silently.
+
+Receipts distinguish committed state and resulting revision from runtime
+activation: no reload requested, reload required, or separately verified reload
+outcome. Errors distinguish unsupported operation/source, invalid input, denied
+authorization, stale identity/revision, conflict, not found and unknown outcome.
+Errors and audit events contain only allowlisted metadata, never upstream raw
+output, credentials or private paths. Local approval remains bound to requester,
+operation, resource, expected revision and payload; changes require fresh approval.
+
+Prefer direct advertised Agent administration with its own authorization. Only a
+verified fixed local CLI contract may justify the Wing Link compatibility adapter;
+Wing Link must not proxy an available Agent administration API. Each compatibility
+operation needs a qualified release window and is removed when the equivalent
+authoritative advertised API provides these guarantees.
+
+Acceptance requires behavioral tests for concurrent CLI/API edits, stale revisions,
+profile delete/recreate, exact-ID replacement/removal, preserved sibling credentials
+and suppressions, all-or-nothing provider/model assignment, crash/timeout replay,
+changed-payload replay, revoked authorization, stdin/output redaction and zero
+implicit inference/restart. Then qualify the supported operations through live
+Linux UI journeys using isolated Agent state; fixtures alone are insufficient.
+
+The proposed upstream implementation checkpoint is withdrawn. Further work is
+limited to Wing/Wing Link changes over verified, unmodified Agent contracts.
+Until a supported authoritative contract meets these criteria, keep the affected
+existing-profile provider operations unavailable. Never modify Hermes Agent or
+implement a direct-file fallback to enable them.

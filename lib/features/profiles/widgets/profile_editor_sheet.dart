@@ -490,323 +490,367 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     final profile = widget.profile;
 
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          20,
-          20,
-          20 + MediaQuery.viewInsetsOf(context).bottom,
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                profile == null
-                    ? strings.createAgentTitle
-                    : widget.soulOnly
-                    ? strings.profilePersonaTitle(profile.displayName)
-                    : strings.editAgent,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              if (profile != null) ...[
-                const SizedBox(height: 6),
-                Text(strings.agentStableId(profile.id)),
-              ],
-              if (!widget.soulOnly) ...[
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _nameController,
-                  enabled: !_payloadFrozen,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: strings.agentDisplayName,
-                    border: const OutlineInputBorder(),
+        child: LayoutBuilder(
+          builder: (context, constraints) => ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: constraints.hasBoundedHeight
+                  ? constraints.maxHeight
+                  : MediaQuery.sizeOf(context).height * 0.9,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        profile == null
+                            ? strings.createAgentTitle
+                            : widget.soulOnly
+                            ? strings.profilePersonaTitle(profile.displayName)
+                            : strings.editAgent,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      if (profile != null) ...[
+                        const SizedBox(height: 6),
+                        Text(strings.agentStableId(profile.id)),
+                      ],
+                    ],
                   ),
-                  validator: (value) {
-                    final name = value?.trim() ?? '';
-                    if (name.isEmpty) return strings.agentNameRequired;
-                    if (widget.stableNames &&
-                        !RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(name)) {
-                      return strings.profileStableNameHint;
-                    }
-                    return null;
-                  },
                 ),
-              ],
-              if (profile == null) ...[
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String?>(
-                  initialValue: _cloneFrom,
-                  decoration: InputDecoration(
-                    labelText: strings.cloneFromAgent,
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: [
-                    DropdownMenuItem<String?>(
-                      value: null,
-                      child: Text(strings.startFresh),
+                const Divider(),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!widget.soulOnly) ...[
+                            const SizedBox(height: 20),
+                            TextFormField(
+                              controller: _nameController,
+                              enabled: !_payloadFrozen,
+                              textInputAction: TextInputAction.next,
+                              decoration: InputDecoration(
+                                labelText: strings.agentDisplayName,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                final name = value?.trim() ?? '';
+                                if (name.isEmpty) {
+                                  return strings.agentNameRequired;
+                                }
+                                if (widget.stableNames &&
+                                    !RegExp(
+                                      r'^[a-z0-9][a-z0-9_-]{0,63}$',
+                                    ).hasMatch(name)) {
+                                  return strings.profileStableNameHint;
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                          if (profile == null) ...[
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<String?>(
+                              initialValue: _cloneFrom,
+                              decoration: InputDecoration(
+                                labelText: strings.cloneFromAgent,
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: [
+                                DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text(strings.startFresh),
+                                ),
+                                for (final candidate in widget.profiles)
+                                  DropdownMenuItem<String?>(
+                                    value: candidate.id,
+                                    child: Text(
+                                      candidate.displayName.isEmpty
+                                          ? candidate.id
+                                          : candidate.displayName,
+                                    ),
+                                  ),
+                              ],
+                              onChanged: _payloadFrozen
+                                  ? null
+                                  : (value) {
+                                      setState(() => _cloneFrom = value);
+                                      unawaited(_loadCatalog());
+                                    },
+                            ),
+                            if (widget.canConfigure) ...[
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _descriptionController,
+                                enabled: !_payloadFrozen,
+                                minLines: 2,
+                                maxLines: 4,
+                                decoration: InputDecoration(
+                                  labelText: strings.profileDescriptionLabel,
+                                  border: const OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ..._catalogStatus(strings),
+                              CatalogAutocompleteField(
+                                controller: _providerController,
+                                enabled: !_payloadFrozen,
+                                options: _providerOptions,
+                                searchLabels: {
+                                  for (final row
+                                      in _modelOptions?.providers ??
+                                          <HermesModelOptionProvider>[])
+                                    row.slug: row.label,
+                                },
+                                label: strings.profileProviderLabel,
+                                onChanged: _providerChanged,
+                                validator: (value) {
+                                  final provider = value?.trim() ?? '';
+                                  final needsExplicitConfiguration =
+                                      _cloneFrom == null ||
+                                      _modelController.text.trim().isNotEmpty ||
+                                      _credentialController.text.isNotEmpty;
+                                  if (provider.isEmpty &&
+                                      needsExplicitConfiguration) {
+                                    return strings.profileProviderRequired;
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              CatalogAutocompleteField(
+                                controller: _modelController,
+                                enabled: !_payloadFrozen,
+                                options: _modelSuggestions,
+                                label: strings.profileModelLabel,
+                                validator: (value) {
+                                  final model = value?.trim() ?? '';
+                                  final needsExplicitConfiguration =
+                                      _cloneFrom == null ||
+                                      _providerController.text
+                                          .trim()
+                                          .isNotEmpty ||
+                                      _credentialController.text.isNotEmpty;
+                                  if (model.isEmpty &&
+                                      needsExplicitConfiguration) {
+                                    return strings.profileModelRequired;
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              Text(strings.profileReadinessNotice),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _credentialController,
+                                enabled: !_payloadFrozen,
+                                obscureText: true,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                autofillHints: const <String>[],
+                                decoration: InputDecoration(
+                                  labelText: strings.profileCredentialLabel,
+                                  helperText: strings.profileCredentialHint,
+                                  helperMaxLines: 4,
+                                  border: const OutlineInputBorder(),
+                                ),
+                              ),
+                            ],
+                          ],
+                          if (profile != null && widget.canConfigure) ...[
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _descriptionController,
+                              enabled: !_payloadFrozen,
+                              minLines: 2,
+                              maxLines: 4,
+                              decoration: InputDecoration(
+                                labelText: strings.profileDescriptionLabel,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ..._catalogStatus(strings),
+                            CatalogAutocompleteField(
+                              controller: _providerController,
+                              enabled: !_payloadFrozen,
+                              options: _providerOptions,
+                              searchLabels: {
+                                for (final row
+                                    in _modelOptions?.providers ??
+                                        <HermesModelOptionProvider>[])
+                                  row.slug: row.label,
+                              },
+                              label: strings.profileProviderLabel,
+                              onChanged: _providerChanged,
+                              validator: (value) {
+                                final provider = value?.trim() ?? '';
+                                if (provider.isEmpty &&
+                                    _modelController.text.trim().isNotEmpty) {
+                                  return strings.profileProviderRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            CatalogAutocompleteField(
+                              controller: _modelController,
+                              enabled: !_payloadFrozen,
+                              options: _modelSuggestions,
+                              label: strings.profileModelLabel,
+                              validator: (value) {
+                                final model = value?.trim() ?? '';
+                                if (model.isEmpty &&
+                                    _providerController.text
+                                        .trim()
+                                        .isNotEmpty) {
+                                  return strings.profileModelRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Text(strings.profileReadinessNotice),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _credentialController,
+                              enabled: !_payloadFrozen,
+                              obscureText: true,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              autofillHints: const <String>[],
+                              decoration: InputDecoration(
+                                labelText: strings.profileCredentialLabel,
+                                helperText: strings.profileCredentialHint,
+                                helperMaxLines: 4,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          ],
+                          if (profile != null && widget.canEditSoul) ...[
+                            const SizedBox(height: 16),
+                            if (_loadingPersona)
+                              Semantics(
+                                liveRegion: true,
+                                label: strings.personaLoading,
+                                child: const LinearProgressIndicator(),
+                              )
+                            else
+                              TextFormField(
+                                controller: _personaController,
+                                minLines: 5,
+                                maxLines: 12,
+                                decoration: InputDecoration(
+                                  labelText: strings.personaLabel,
+                                  helperText: strings.personaHint,
+                                  alignLabelWithHint: true,
+                                  border: const OutlineInputBorder(),
+                                ),
+                              ),
+                          ],
+                          if (profile != null &&
+                              widget.canDelete &&
+                              profile.id != 'default') ...[
+                            const SizedBox(height: 24),
+                            const Divider(),
+                            const SizedBox(height: 12),
+                            TextButton.icon(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
+                                minimumSize: const Size(48, 48),
+                              ),
+                              onPressed: _payloadFrozen ? null : _deleteProfile,
+                              icon: const Icon(Icons.delete_outline),
+                              label: Text(strings.deleteAgent),
+                            ),
+                          ],
+                          if (profile != null && profile.id == 'default') ...[
+                            const SizedBox(height: 16),
+                            Text(strings.defaultAgentCannotDelete),
+                          ],
+                          if (_pendingApproval != null) ...[
+                            const SizedBox(height: 16),
+                            Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                strings.profileApprovalRequired(
+                                  _pendingApproval!.approvalId,
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (_error != null) ...[
+                            const SizedBox(height: 12),
+                            Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                _error!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                    for (final candidate in widget.profiles)
-                      DropdownMenuItem<String?>(
-                        value: candidate.id,
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: _saving ? null : _cancelEditor,
                         child: Text(
-                          candidate.displayName.isEmpty
-                              ? candidate.id
-                              : candidate.displayName,
+                          _pendingApproval == null || _editing
+                              ? strings.cancelAction
+                              : strings.profileCancelSetup,
                         ),
                       ),
-                  ],
-                  onChanged: _payloadFrozen
-                      ? null
-                      : (value) {
-                          setState(() => _cloneFrom = value);
-                          unawaited(_loadCatalog());
-                        },
-                ),
-                if (widget.canConfigure) ...[
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _descriptionController,
-                    enabled: !_payloadFrozen,
-                    minLines: 2,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: strings.profileDescriptionLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ..._catalogStatus(strings),
-                  CatalogAutocompleteField(
-                    controller: _providerController,
-                    enabled: !_payloadFrozen,
-                    options: _providerOptions,
-                    searchLabels: {
-                      for (final row
-                          in _modelOptions?.providers ??
-                              <HermesModelOptionProvider>[])
-                        row.slug: row.label,
-                    },
-                    label: strings.profileProviderLabel,
-                    onChanged: _providerChanged,
-                    validator: (value) {
-                      final provider = value?.trim() ?? '';
-                      final needsExplicitConfiguration =
-                          _cloneFrom == null ||
-                          _modelController.text.trim().isNotEmpty ||
-                          _credentialController.text.isNotEmpty;
-                      if (provider.isEmpty && needsExplicitConfiguration) {
-                        return strings.profileProviderRequired;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CatalogAutocompleteField(
-                    controller: _modelController,
-                    enabled: !_payloadFrozen,
-                    options: _modelSuggestions,
-                    label: strings.profileModelLabel,
-                    validator: (value) {
-                      final model = value?.trim() ?? '';
-                      final needsExplicitConfiguration =
-                          _cloneFrom == null ||
-                          _providerController.text.trim().isNotEmpty ||
-                          _credentialController.text.isNotEmpty;
-                      if (model.isEmpty && needsExplicitConfiguration) {
-                        return strings.profileModelRequired;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Text(strings.profileReadinessNotice),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _credentialController,
-                    enabled: !_payloadFrozen,
-                    obscureText: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    autofillHints: const <String>[],
-                    decoration: InputDecoration(
-                      labelText: strings.profileCredentialLabel,
-                      helperText: strings.profileCredentialHint,
-                      helperMaxLines: 4,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ],
-              ],
-              if (profile != null && widget.canConfigure) ...[
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descriptionController,
-                  enabled: !_payloadFrozen,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    labelText: strings.profileDescriptionLabel,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ..._catalogStatus(strings),
-                CatalogAutocompleteField(
-                  controller: _providerController,
-                  enabled: !_payloadFrozen,
-                  options: _providerOptions,
-                  searchLabels: {
-                    for (final row
-                        in _modelOptions?.providers ??
-                            <HermesModelOptionProvider>[])
-                      row.slug: row.label,
-                  },
-                  label: strings.profileProviderLabel,
-                  onChanged: _providerChanged,
-                  validator: (value) {
-                    final provider = value?.trim() ?? '';
-                    if (provider.isEmpty &&
-                        _modelController.text.trim().isNotEmpty) {
-                      return strings.profileProviderRequired;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CatalogAutocompleteField(
-                  controller: _modelController,
-                  enabled: !_payloadFrozen,
-                  options: _modelSuggestions,
-                  label: strings.profileModelLabel,
-                  validator: (value) {
-                    final model = value?.trim() ?? '';
-                    if (model.isEmpty &&
-                        _providerController.text.trim().isNotEmpty) {
-                      return strings.profileModelRequired;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                Text(strings.profileReadinessNotice),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _credentialController,
-                  enabled: !_payloadFrozen,
-                  obscureText: true,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  autofillHints: const <String>[],
-                  decoration: InputDecoration(
-                    labelText: strings.profileCredentialLabel,
-                    helperText: strings.profileCredentialHint,
-                    helperMaxLines: 4,
-                    border: const OutlineInputBorder(),
+                      FilledButton(
+                        onPressed: _saving || _loadingPersona ? null : _save,
+                        child: _saving
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                _pendingApproval != null
+                                    ? (_editing
+                                          ? strings.profileRetryApprovedDeletion
+                                          : strings.profileRetryApprovedSetup)
+                                    : profile == null
+                                    ? strings.createAction
+                                    : strings.saveAction,
+                              ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-              if (profile != null && widget.canEditSoul) ...[
-                const SizedBox(height: 16),
-                if (_loadingPersona)
-                  Semantics(
-                    liveRegion: true,
-                    label: strings.personaLoading,
-                    child: const LinearProgressIndicator(),
-                  )
-                else
-                  TextFormField(
-                    controller: _personaController,
-                    minLines: 5,
-                    maxLines: 12,
-                    decoration: InputDecoration(
-                      labelText: strings.personaLabel,
-                      helperText: strings.personaHint,
-                      alignLabelWithHint: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-              ],
-              if (profile != null &&
-                  widget.canDelete &&
-                  profile.id != 'default') ...[
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 12),
-                TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
-                    minimumSize: const Size(48, 48),
-                  ),
-                  onPressed: _payloadFrozen ? null : _deleteProfile,
-                  icon: const Icon(Icons.delete_outline),
-                  label: Text(strings.deleteAgent),
-                ),
-              ],
-              if (profile != null && profile.id == 'default') ...[
-                const SizedBox(height: 16),
-                Text(strings.defaultAgentCannotDelete),
-              ],
-              if (_pendingApproval != null) ...[
-                const SizedBox(height: 16),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    strings.profileApprovalRequired(
-                      _pendingApproval!.approvalId,
-                    ),
-                  ),
-                ),
-              ],
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    _error!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 20),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  TextButton(
-                    onPressed: _saving ? null : _cancelEditor,
-                    child: Text(
-                      _pendingApproval == null || _editing
-                          ? strings.cancelAction
-                          : strings.profileCancelSetup,
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _saving || _loadingPersona ? null : _save,
-                    child: _saving
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            _pendingApproval != null
-                                ? (_editing
-                                      ? strings.profileRetryApprovedDeletion
-                                      : strings.profileRetryApprovedSetup)
-                                : profile == null
-                                ? strings.createAction
-                                : strings.saveAction,
-                          ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -7,6 +7,34 @@ Status: current decision
 Hermes Agent remains an external authoritative runtime. Hermes Wing packages may
 include Wing Link, but never embed Hermes Agent or create a second domain backend.
 
+### Hard boundary: never modify Hermes Agent
+
+Decision: accepted on 2026-09-07; non-negotiable for all Hermes Wing work.
+
+Hermes Agent itself must never be modified for Wing. This applies to the
+`hermes-agent/` reference checkout, installed runtimes, and any copied or forked
+Agent source or distribution. No source/test edits, patches, monkey-patches,
+injected replacement internals, or Wing-specific Agent builds are permitted.
+Missing APIs, bugs, test failures and user-interface parity are not exceptions;
+do not ask for an upstream-edit exception as a way to unblock Wing work.
+
+Implement changes in Hermes Wing or Wing Link, using only supported, unmodified
+Agent contracts and the reviewed compatibility boundaries. If those contracts
+cannot safely provide an operation, keep it unavailable and explain the missing
+capability. Do not bypass this rule with direct Agent-file/database edits or
+shadow domain state. Reference source and tests may be inspected read-only.
+
+This does not prohibit explicitly authorized installation/update of unmodified
+upstream releases or normal Agent-owned state changes through supported APIs and
+reviewed fixed CLI operations. Existing security, approval and validation gates
+still apply; runtime state is not permission to alter Agent implementation.
+
+This decision supersedes the earlier proposed upstream implementation checkpoint
+in the provider design. Future upstream capabilities may be evaluated when
+available; implementing them in Hermes Agent is not Wing's work.
+
+### Management and compatibility
+
 Wing Link is the authenticated remote management plane on the Hermes host. It
 owns installation/adoption, pairing, lifecycle, health, diagnostics, host
 integration, and explicitly approved directory grants. Wing talks directly to
@@ -22,6 +50,11 @@ description, allowlisted provider and bounded model string setup, stdin-only
 provider credential input, and a bounded readiness probe. Existing-profile configuration, Hermes
 Project, and general provider operations remain blocked; arbitrary commands,
 config keys, and paths remain prohibited.
+
+The accepted next slice is the
+[existing-profile provider compatibility direction](api-and-state.md#existing-profile-provider-compatibility-direction).
+It is a design checkpoint, not an enabled compatibility operation; the conditions
+there must be verified before expanding the current advertised capability set.
 
 A profile's repository is represented as an Agent-owned per-profile Hermes
 Project. Wing Link may translate an approved opaque directory handle into a path

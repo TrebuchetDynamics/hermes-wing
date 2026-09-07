@@ -49,7 +49,9 @@ test("enrollment guides computer setup back to pairing", async ({ page }) => {
   await expect(existing).toBeChecked();
   await expect(page.getByText("~/.local/bin/wing-link inspect\n~/.local/bin/wing-link setup", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Setup finished on the host" }).click();
-  await page.getByRole("button", { name: "My provider and model are configured" }).click();
+  await expect(page.locator("flt-semantics").getByText("Step 3 of 3", { exact: true })).toBeVisible();
+  await expect(page.getByText("Create the pairing handoff", { exact: true })).toBeVisible();
+  await expect(page.getByText("hermes setup", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "I’m ready to pair" }).click();
   await expect(page.getByRole("button", { name: "Paste pairing link" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(0);
@@ -210,7 +212,7 @@ test("Diagnostics reports connected inventory and confirms redacted export", asy
     page.getByText("Runs SSE enabled", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByText("Resources 1 models • 2 skills • 1 toolsets • 1 jobs", { exact: true }),
+    page.getByText("Resources 1 model • 2 skills • 1 toolset • 1 job", { exact: true }),
   ).toBeVisible();
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.getByRole("button", { name: /Copy diagnostics/ }).click();

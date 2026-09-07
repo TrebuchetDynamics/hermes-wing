@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
+import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
@@ -34,10 +35,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     ref.listen(hermesChannelStateProvider, (previous, next) {
-      if (previous?.connectedBaseUrl != next.connectedBaseUrl ||
-          previous?.selectedProfileId != next.selectedProfileId ||
-          previous?.status != next.status ||
-          !identical(previous?.capabilities, next.capabilities)) {
+      if (next.refreshContextChangedFrom(previous)) {
         setState(() {
           _refreshGeneration++;
           _refreshing = false;
@@ -140,13 +138,14 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
       _refreshing = false;
       _actionError = null;
     });
-    try {
-      await directory.activateGateway(gatewayId);
-    } catch (_) {
-      if (mounted) setState(() => _actionError = strings.gatewayConnectFailed);
-    } finally {
-      if (mounted) setState(() => _switchingGatewayId = null);
-    }
+    await completeWingGatewaySwitch(
+      context: context,
+      directory: directory,
+      gatewayId: gatewayId,
+      onFailure: () =>
+          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFinished: () => setState(() => _switchingGatewayId = null),
+    );
   }
 }
 
@@ -182,29 +181,34 @@ class _ToolsBody extends StatelessWidget {
     final skillsAdvertised = state.canReadSkills;
     final toolsetsAdvertised = state.canReadToolsets;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-      children: [
-        _SkillsInventorySection(
-          advertised: skillsAdvertised,
-          loadFailed: state.optionalResourceErrors.containsKey(
-            HermesOptionalResource.skills,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      // Both inventory sections change height while filtering. Lay them out
+      // together so the route selection delegate never sees unlaid-out text.
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SkillsInventorySection(
+            advertised: skillsAdvertised,
+            loadFailed: state.optionalResourceErrors.containsKey(
+              HermesOptionalResource.skills,
+            ),
+            details: state.skillDetails,
+            fallbackNames: state.skills,
+            strings: strings,
           ),
-          details: state.skillDetails,
-          fallbackNames: state.skills,
-          strings: strings,
-        ),
-        const SizedBox(height: 16),
-        _ToolsetsInventorySection(
-          advertised: toolsetsAdvertised,
-          loadFailed: state.optionalResourceErrors.containsKey(
-            HermesOptionalResource.toolsets,
+          const SizedBox(height: 16),
+          _ToolsetsInventorySection(
+            advertised: toolsetsAdvertised,
+            loadFailed: state.optionalResourceErrors.containsKey(
+              HermesOptionalResource.toolsets,
+            ),
+            details: state.toolsets,
+            fallbackNames: state.enabledToolsets,
+            strings: strings,
           ),
-          details: state.toolsets,
-          fallbackNames: state.enabledToolsets,
-          strings: strings,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -266,7 +270,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -282,7 +286,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             if (message != null)
               Text(
                 message,
@@ -413,7 +417,7 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -431,7 +435,7 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             if (message != null)
               Text(
                 message,

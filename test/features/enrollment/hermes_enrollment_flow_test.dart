@@ -1864,7 +1864,8 @@ void main() {
           findsOneWidget,
         );
         expect(inspections, 0);
-        for (var step = 0; step < 3; step++) {
+        expect(find.text('hermes setup'), findsNothing);
+        for (var step = 0; step < 2; step++) {
           final next = find.byKey(const ValueKey('computer-next-step'));
           await tester.ensureVisible(next);
           await tester.tap(next);
@@ -2610,6 +2611,10 @@ void main() {
         findsOneWidget,
       );
       expect(
+        find.byKey(const ValueKey('hermes-enrollment-setup-profile')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(const ValueKey('hermes-enrollment-open-chat')),
         findsOneWidget,
       );
@@ -2682,12 +2687,7 @@ void main() {
 
         expect(exchangeCalls, 1);
         expect(find.text('9 profiles paired'), findsOneWidget);
-        expect(
-          find.text(
-            'Pairing is saved. Check the live connection and model status below before starting a conversation.',
-          ),
-          findsOneWidget,
-        );
+        expect(find.textContaining('Choose Set up a profile'), findsOneWidget);
         expect(find.text('View profiles'), findsOneWidget);
         expect(find.text('Open chat'), findsOneWidget);
         expect(
@@ -2706,15 +2706,24 @@ void main() {
           router.routeInformationProvider.value.uri.path,
           AppRoutes.enroll,
         );
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('hermes-enrollment-setup-profile')),
+        );
+        await tester.pumpAndSettle();
         await tester.tap(
-          find.byKey(const ValueKey('hermes-enrollment-view-profiles')),
+          find.byKey(const ValueKey('hermes-enrollment-setup-profile')),
         );
         await tester.pump();
         expect(
           router.routeInformationProvider.value.uri.path,
           AppRoutes.profiles,
         );
+        expect(
+          router.routeInformationProvider.value.uri.queryParameters['setup'],
+          'new',
+        );
         expect(controller.connectedProfileCount, isNull);
+        expect(controller.confirmedWingLink, isFalse);
       },
     );
 

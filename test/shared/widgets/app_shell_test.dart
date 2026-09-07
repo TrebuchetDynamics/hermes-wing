@@ -36,6 +36,22 @@ void _usePhoneSize(WidgetTester tester) {
 }
 
 void main() {
+  testWidgets('desktop navigation reaches Settings in a short window', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 360);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      _testApp(const AppShell(location: AppRoutes.hermes, child: SizedBox())),
+    );
+    await tester.ensureVisible(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Settings').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'mobile shell keeps Chat, Profiles, Settings, and More in bottom navigation',
     (tester) async {
@@ -58,7 +74,7 @@ void main() {
         find.byKey(const ValueKey('mobile-shell-navigation-bar')),
         findsOneWidget,
       );
-      expect(find.text('Hermes'), findsOneWidget);
+      expect(find.text('Chat'), findsOneWidget);
       expect(find.text('Profiles'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('More'), findsOneWidget);
@@ -67,7 +83,7 @@ void main() {
       await tester.tap(find.text('More').hitTestable());
       await tester.pumpAndSettle();
       expect(find.widgetWithText(ListTile, 'Office'), findsOneWidget);
-      expect(find.widgetWithText(ListTile, 'Hermes'), findsNothing);
+      expect(find.widgetWithText(ListTile, 'Chat'), findsNothing);
     },
   );
 
@@ -134,7 +150,7 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final label in [
-      'Hermes',
+      'Chat',
       'Office',
       'Profiles',
       'Providers',
@@ -188,7 +204,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(ListTile, 'Settings'), findsNothing);
-    expect(find.widgetWithText(ListTile, 'Hermes'), findsOneWidget);
+    expect(find.widgetWithText(ListTile, 'Chat'), findsOneWidget);
   });
 
   testWidgets('mobile menu prioritizes destinations over status summary', (
@@ -203,7 +219,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
     await tester.pumpAndSettle();
 
-    for (final label in ['Hermes', 'Office', 'Profiles', 'Providers']) {
+    for (final label in ['Chat', 'Office', 'Profiles', 'Providers']) {
       expect(find.text(label).hitTestable(), findsOneWidget, reason: label);
     }
   });
@@ -480,8 +496,8 @@ void main() {
       ),
     );
 
-    expect(find.text('HERMES WING'), findsOneWidget);
-    expect(find.text('Hermes'), findsWidgets);
+    expect(find.text('Hermes Wing'), findsOneWidget);
+    expect(find.text('Chat'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });
 

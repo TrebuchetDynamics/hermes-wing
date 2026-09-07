@@ -1109,16 +1109,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         : assignedModel != null && assignedModel.isNotEmpty
         ? assignedModel
         : strings.chatLayoutModelFallbackLabel;
-    final voiceLabel = _voiceInputController.continuousEnabled
-        ? strings.chatLayoutVoiceLoopOnLabel
-        : strings.chatLayoutVoiceReadyLabel;
     final canRetry =
         canSendTurns &&
         !isTurnActive &&
         _retryableFailedUserText(state) != null;
     final strip = _HermesComposerStrip(
       modelLabel: modelLabel,
-      voiceLabel: voiceLabel,
       isTurnActive: isTurnActive,
       canSendTurns: canSendTurns,
       hasUnreconciledRun: state.hasUnreconciledRun,
@@ -1745,7 +1741,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           key: const ValueKey('hermes-composer-surface'),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(26),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: colorScheme.outlineVariant.withValues(alpha: 0.72),
             ),
@@ -1926,11 +1922,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     return Container(
       key: const ValueKey('hermes-desktop-command-bar'),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(24),
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
-      padding: const EdgeInsets.fromLTRB(14, 10, 10, 8),
+      padding: const EdgeInsets.fromLTRB(12, 8, 8, 6),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

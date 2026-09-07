@@ -531,7 +531,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final subscribed = _subscribed;
     _subscribed = null;
     subscribed?.removeListener(_onChannelChanged);
-    appShellNavigationVisible.value = true;
+    // Shell listeners cannot rebuild while this route is being unmounted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      appShellNavigationVisible.value = true;
+    });
     WidgetsBinding.instance.removeObserver(this);
     _channelProviderSubscription.close();
     _completionSoundSubscription.close();

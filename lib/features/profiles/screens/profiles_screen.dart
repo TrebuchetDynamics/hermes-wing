@@ -39,13 +39,16 @@ final wingLinkClientBuilderProvider = Provider<WingLinkClientBuilder>(
 );
 
 class ProfilesScreen extends ConsumerStatefulWidget {
-  const ProfilesScreen({super.key});
+  const ProfilesScreen({super.key, this.startSetup = false});
+
+  final bool startSetup;
 
   @override
   ConsumerState<ProfilesScreen> createState() => _ProfilesScreenState();
 }
 
 class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
+  bool _setupOpened = false;
   String? _actionError;
   String? _switchingGatewayId;
   String? _switchingProfileId;
@@ -127,11 +130,11 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         _wingLinkClient != null &&
         _wingLinkGatewayId == activeGatewayId;
 
-    if (state.status == HermesConnectionStatus.connecting ||
+    if (!usingWingLink && state.status == HermesConnectionStatus.connecting ||
         usingWingLink && _wingLinkProfiles == null) {
       return WingSkeletonList(semanticLabel: strings.agentsLoading);
     }
-    if (state.status == HermesConnectionStatus.error) {
+    if (!usingWingLink && state.status == HermesConnectionStatus.error) {
       return WingEmptyState(
         icon: Icons.cloud_off_outlined,
         liveRegion: true,
@@ -141,7 +144,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         onAction: () => context.go(AppRoutes.hermes),
       );
     }
-    if (state.status != HermesConnectionStatus.connected) {
+    if (!usingWingLink && state.status != HermesConnectionStatus.connected) {
       return WingEmptyState(
         icon: Icons.hub_outlined,
         title: strings.gatewaySelectPromptTitle,
@@ -219,8 +222,52 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       );
     }
 
+    final creationClient = createViaWingLink ? _wingLinkClient : null;
+    Future<void> openCreate() => _openEditor(
+      channel: channel,
+      profiles: profiles,
+      stableNames: createViaWingLink,
+      canConfigure: createViaWingLink,
+      onCreate: createViaWingLink
+          ? ({
+              required name,
+              cloneFrom,
+              description,
+              provider,
+              model,
+              providerApiKey,
+              idempotencyKey,
+            }) async {
+              await creationClient!.createProfile(
+                name: name,
+                cloneFrom: cloneFrom,
+                description: description,
+                provider: provider,
+                model: model,
+                providerApiKey: providerApiKey,
+                idempotencyKey: idempotencyKey,
+              );
+              await _reloadWingLinkProfilesAfterCreate(
+                directory,
+                activeGatewayId!,
+              );
+            }
+          : null,
+    );
+    if (widget.startSetup && !_setupOpened && createViaWingLink) {
+      _setupOpened = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            directory.activeContactId?.gatewayId != activeGatewayId ||
+            _wingLinkClient != creationClient) {
+          return;
+        }
+        unawaited(openCreate());
+      });
+    }
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
         _ProfilesHeader(
           title: strings.agentsTitle,
@@ -231,37 +278,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           readOnlyLabel: strings.readOnlyAccess,
           action: canCreate
               ? FilledButton.icon(
-                  onPressed: () => _openEditor(
-                    channel: channel,
-                    profiles: profiles,
-                    stableNames: createViaWingLink,
-                    canConfigure: createViaWingLink,
-                    onCreate: createViaWingLink
-                        ? ({
-                            required name,
-                            cloneFrom,
-                            description,
-                            provider,
-                            model,
-                            providerApiKey,
-                            idempotencyKey,
-                          }) async {
-                            await _wingLinkClient!.createProfile(
-                              name: name,
-                              cloneFrom: cloneFrom,
-                              description: description,
-                              provider: provider,
-                              model: model,
-                              providerApiKey: providerApiKey,
-                              idempotencyKey: idempotencyKey,
-                            );
-                            await _reloadWingLinkProfilesAfterCreate(
-                              directory,
-                              activeGatewayId!,
-                            );
-                          }
-                        : null,
-                  ),
+                  onPressed: openCreate,
                   icon: const Icon(Icons.add),
                   label: Text(strings.newAgent),
                 )
@@ -804,11 +821,12 @@ class _ProfilesHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (MediaQuery.sizeOf(context).width >= 600) ...[
-                Text(title, style: theme.textTheme.headlineSmall),
-                const SizedBox(height: 6),
-              ],
-              Text(subtitle, style: theme.textTheme.bodyLarge),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
               if (readOnly) ...[
                 const SizedBox(height: 10),
                 WingMetadata(
@@ -962,7 +980,7 @@ class _ProfileCard extends StatelessWidget {
                       ),
                     ),
                   WingMetadata(
-                    avatar: const Icon(Icons.psychology_outlined, size: 18),
+                    avatar: const Icon(Icons.psychology_outlined, size: 14),
                     label: Text(
                       profile.model.isEmpty
                           ? strings.agentNoModel
@@ -970,7 +988,7 @@ class _ProfileCard extends StatelessWidget {
                     ),
                   ),
                   WingMetadata(
-                    avatar: const Icon(Icons.extension_outlined, size: 18),
+                    avatar: const Icon(Icons.extension_outlined, size: 14),
                     label: Text(strings.agentSkillsCount(profile.skillsCount)),
                   ),
                   WingMetadata(

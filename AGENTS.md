@@ -40,10 +40,13 @@ Use these clones before guessing Hermes contracts or Desktop behavior:
 - Inspect `hermes-desktop/` for interaction patterns, terminology, and parity
   research. Reproduce user outcomes with Flutter and platform-native Wing
   patterns; do not port Electron internals line-for-line.
-- Read each reference repository's own `AGENTS.md` before inspecting it deeply or
-  proposing changes within it.
-- Treat both directories as read-only reference material unless the user
-  explicitly requests an upstream change. Do not include them in Wing formatting,
+- Read each reference repository's own `AGENTS.md` before inspecting it deeply.
+- Hermes Agent must never be modified: its reference checkout, installed runtime,
+  copies and forks are not implementation targets. No patches, monkey-patches or
+  Wing-specific Agent builds; do not request an upstream-edit exception to unblock
+  missing capabilities. See the
+  [hard ADR](docs/adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
+- Treat both directories as read-only reference material. Do not include them in Wing formatting,
   tests, staging, commits, searches intended only for Wing, or dependency graphs.
 - Their current checkout is evidence of that checkout only. Hermes Agent remains
   authoritative at runtime, and advertised API capabilities remain more reliable

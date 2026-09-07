@@ -26,7 +26,7 @@ class AppShellPresentation {
 
   AppShellDestination get _hermesDestination => AppShellDestination(
     path: AppRoutes.hermes,
-    icon: Icons.auto_awesome_outlined,
+    icon: Icons.chat_bubble_outline_rounded,
     label: localizations.hermesDestination,
   );
 

@@ -679,8 +679,14 @@ void main() {
       const Offset(0, -900),
     );
     await tester.pumpAndSettle();
+    expect(find.text(_testFingerprint), findsNothing);
+    final details = find.byKey(const PageStorageKey('gateway-trust-details'));
+    await tester.ensureVisible(details);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Identity & permissions'));
+    await tester.pumpAndSettle();
     expect(find.text(_testFingerprint), findsOneWidget);
-    expect(find.textContaining('Pixel'), findsOneWidget);
+    expect(find.textContaining('Pixel'), findsNWidgets(2));
     expect(find.textContaining('health.read'), findsOneWidget);
     expect(find.textContaining('wing-link approvals list'), findsOneWidget);
     await tester.drag(

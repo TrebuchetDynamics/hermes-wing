@@ -48,7 +48,7 @@ class WingGatewayPicker extends StatelessWidget {
         .firstOrNull
         ?.id;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Semantics(
         label: strings.gatewayLabel,
         hint: helpText,
@@ -58,12 +58,18 @@ class WingGatewayPicker extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
           initialValue: selected,
           decoration: InputDecoration(
+            filled: false,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            constraints: const BoxConstraints(minHeight: 48),
+            prefixIconConstraints: const BoxConstraints(minWidth: 32),
             prefixIcon: Tooltip(
               message: helpText,
               child: const Icon(Icons.dns_outlined, size: 18),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
+              horizontal: 0,
               vertical: 10,
             ),
             isDense: true,

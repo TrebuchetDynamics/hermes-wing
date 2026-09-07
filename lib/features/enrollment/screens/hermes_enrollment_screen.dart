@@ -404,7 +404,11 @@ class _HermesEnrollmentScreenState
                 controller.confirmedLoopback &&
                         !kIsWeb &&
                         defaultTargetPlatform == TargetPlatform.android
-                    ? strings.enrollConnectedLocalBody
+                    ? controller.confirmedWingLink
+                          ? strings.enrollConnectedWingLinkLocalBody
+                          : strings.enrollConnectedLocalBody
+                    : controller.confirmedWingLink
+                    ? strings.enrollConnectedWingLinkBody
                     : strings.enrollConnectedBody,
                 textAlign: TextAlign.center,
               ),
@@ -416,7 +420,17 @@ class _HermesEnrollmentScreenState
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  FilledButton(
+                  if (controller.confirmedWingLink)
+                    FilledButton.icon(
+                      key: const ValueKey('hermes-enrollment-setup-profile'),
+                      onPressed: () => _leaveConfirmed(
+                        controller,
+                        '${AppRoutes.profiles}?setup=new',
+                      ),
+                      icon: const Icon(Icons.tune),
+                      label: Text(strings.enrollSetupProfileAction),
+                    ),
+                  FilledButton.tonal(
                     key: const ValueKey('hermes-enrollment-view-profiles'),
                     onPressed: () =>
                         _leaveConfirmed(controller, AppRoutes.profiles),

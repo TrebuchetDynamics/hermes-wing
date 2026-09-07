@@ -543,6 +543,55 @@ void main() {
     expect(find.text('Branch'), findsNothing);
   });
 
+  for (final wide in [false, true]) {
+    testWidgets(
+      '${wide ? 'wide' : 'compact'} session selection reconciles live updates',
+      (tester) async {
+        tester.view.physicalSize = wide
+            ? const Size(1200, 800)
+            : const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final harness = await _pumpGatewayChat(tester);
+        harness.channel.replaceSessions(const [
+          HermesSession(id: 'active', source: 'chat', title: 'Active chat'),
+          HermesSession(id: 'other', source: 'chat', title: 'Other chat'),
+        ], activeSessionId: 'active');
+        await tester.pumpAndSettle();
+        if (!wide) {
+          await tester.tap(find.byKey(const ValueKey('hermes-contact-header')));
+          await tester.pumpAndSettle();
+        }
+        final prefix = wide ? 'hermes-session-rail' : 'hermes-sessions';
+        await tester.tap(find.byKey(ValueKey('$prefix-select')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(ValueKey('$prefix-select-all')));
+        await tester.pumpAndSettle();
+        expect(find.text('2 selected'), findsOneWidget);
+
+        harness.channel.beginStreamingTurn('background work');
+        await tester.pump();
+        expect(find.text('1 selected'), findsOneWidget);
+        final activeCheckbox = find.descendant(
+          of: find.byKey(const ValueKey('hermes-session-row-active')),
+          matching: find.byType(Checkbox),
+        );
+        expect(tester.widget<Checkbox>(activeCheckbox).value, isFalse);
+        expect(tester.widget<Checkbox>(activeCheckbox).onChanged, isNull);
+
+        harness.channel.replaceSessions(const [
+          HermesSession(id: 'active', source: 'chat', title: 'Active chat'),
+        ], activeSessionId: 'active');
+        await tester.pump();
+        expect(find.byKey(ValueKey('$prefix-select')), findsOneWidget);
+        expect(find.byKey(ValueKey('$prefix-delete-selected')), findsNothing);
+        expect(harness.channel.deleteSessionCalls, isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('bulk selection remains usable at 200% text scale', (
     tester,
   ) async {

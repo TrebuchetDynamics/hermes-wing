@@ -38,6 +38,10 @@ is reconciled on return.
 
 ## Authority rules
 
+- Never modify Hermes Agent itself, including reference clones, installed runtimes
+  or forks. Missing contracts must be handled within Wing/Wing Link's supported
+  boundaries or left unavailable; see the
+  [hard ADR](docs/adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
 - Prefer the advertised Hermes Agent API.
 - Use Wing Link only for host work or a reviewed typed compatibility operation
   missing from the Agent API.

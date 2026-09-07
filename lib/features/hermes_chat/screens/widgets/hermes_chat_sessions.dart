@@ -1,5 +1,144 @@
 part of '../hermes_chat_screen.dart';
 
+// Presentation state only; session authority remains with the channel.
+class _HermesSessionListState {
+  final selectedIds = <String>{};
+  String query = '';
+  String? selectedSource;
+  bool selecting = false;
+
+  void reconcile(HermesChannelState state) {
+    if (selectedSource != null &&
+        !state.sessions.any((session) => session.source == selectedSource)) {
+      selectSource(null);
+    }
+    if (!state.canDeleteSessions) {
+      cancelSelection();
+      return;
+    }
+    final hadSelection = selectedIds.isNotEmpty;
+    final selectableIds = {
+      for (final session in state.sessions)
+        if (!state.isSessionStreaming(session.id)) session.id,
+    };
+    selectedIds.removeWhere((id) => !selectableIds.contains(id));
+    if (hadSelection && selectedIds.isEmpty) selecting = false;
+  }
+
+  void selectSource(String? source) {
+    selectedSource = source;
+    selectedIds.clear();
+  }
+
+  void selectAll(List<HermesSession> sessions, HermesChannelState state) {
+    selectedIds
+      ..clear()
+      ..addAll(
+        sessions
+            .where((session) => !state.isSessionStreaming(session.id))
+            .map((session) => session.id),
+      );
+  }
+
+  void cancelSelection() {
+    selecting = false;
+    selectedIds.clear();
+  }
+
+  void setSelected(String id, bool selected) {
+    if (selected) {
+      selectedIds.add(id);
+    } else {
+      selectedIds.remove(id);
+    }
+  }
+
+  List<HermesSession> selectedSessions(List<HermesSession> sessions) => [
+    for (final session in sessions)
+      if (selectedIds.contains(session.id)) session,
+  ];
+}
+
+({String? selectedSource, List<HermesSession> sessions}) _filterHermesSessions(
+  List<HermesSession> sessions, {
+  required List<String> sourceOptions,
+  required String? selectedSource,
+  required String query,
+  required String? activeSessionId,
+}) {
+  final source = sourceOptions.contains(selectedSource) ? selectedSource : null;
+  final sourceSessions = source == null
+      ? sessions
+      : sessions
+            .where((session) => session.source == source)
+            .toList(growable: false);
+  final normalizedQuery = query.trim().toLowerCase();
+  return (
+    selectedSource: source,
+    sessions: normalizedQuery.isEmpty
+        ? sourceSessions
+        : sourceSessions
+              .where(
+                (session) => _sessionMatchesQuery(
+                  session,
+                  normalizedQuery,
+                  activeSessionId,
+                ),
+              )
+              .toList(growable: false),
+  );
+}
+
+class _HermesSessionSourceFilter extends StatelessWidget {
+  const _HermesSessionSourceFilter({
+    required this.keyPrefix,
+    required this.sources,
+    required this.selectedSource,
+    required this.onChanged,
+  });
+
+  final String keyPrefix;
+  final List<String> sources;
+  final String? selectedSource;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = _hermesStrings(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: strings.chatRailSourceFilterLabel,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String?>(
+            key: ValueKey('$keyPrefix-source-filter'),
+            value: selectedSource,
+            isExpanded: true,
+            items: [
+              DropdownMenuItem<String?>(
+                key: ValueKey('$keyPrefix-source-all'),
+                value: null,
+                child: Text(strings.chatRailAllSourcesLabel),
+              ),
+              for (final (index, source) in sources.indexed)
+                DropdownMenuItem<String?>(
+                  key: ValueKey('$keyPrefix-source-option-$index'),
+                  value: source,
+                  child: Text(_sessionSourceLabel(context, source)),
+                ),
+            ],
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _HermesSessionLoadMoreButton extends StatelessWidget {
   const _HermesSessionLoadMoreButton({
     required this.state,
@@ -73,33 +212,12 @@ class _HermesSessionRail extends StatefulWidget {
 
 class _HermesSessionRailState extends State<_HermesSessionRail> {
   final _searchController = TextEditingController();
-  final _selectedSessionIds = <String>{};
-  String _query = '';
-  String? _selectedSource;
-  var _selecting = false;
+  final _listState = _HermesSessionListState();
 
   @override
   void didUpdateWidget(covariant _HermesSessionRail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_selectedSource != null &&
-        !widget.state.sessions.any(
-          (session) => session.source == _selectedSource,
-        )) {
-      _selectedSource = null;
-      _selectedSessionIds.clear();
-    }
-    if (!widget.state.canDeleteSessions) {
-      _selectedSessionIds.clear();
-      _selecting = false;
-      return;
-    }
-    final hadSelection = _selectedSessionIds.isNotEmpty;
-    final selectableIds = {
-      for (final session in widget.state.sessions)
-        if (!widget.state.isSessionStreaming(session.id)) session.id,
-    };
-    _selectedSessionIds.removeWhere((id) => !selectableIds.contains(id));
-    if (hadSelection && _selectedSessionIds.isEmpty) _selecting = false;
+    _listState.reconcile(widget.state);
   }
 
   @override
@@ -120,29 +238,18 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
     final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
     final sortedSourceOptions = _sortedSessionSources(context, allSessions);
-    final selectedSource = sortedSourceOptions.contains(_selectedSource)
-        ? _selectedSource
-        : null;
-    final sourceSessions = selectedSource == null
-        ? allSessions
-        : allSessions
-              .where((session) => session.source == selectedSource)
-              .toList(growable: false);
-    final query = _query.trim().toLowerCase();
-    final sessions = query.isEmpty
-        ? sourceSessions
-        : sourceSessions
-              .where(
-                (session) => _sessionMatchesQuery(
-                  session,
-                  query,
-                  widget.state.activeSessionId,
-                ),
-              )
-              .toList(growable: false);
+    final filtered = _filterHermesSessions(
+      allSessions,
+      sourceOptions: sortedSourceOptions,
+      selectedSource: _listState.selectedSource,
+      query: _listState.query,
+      activeSessionId: widget.state.activeSessionId,
+    );
+    final selectedSource = filtered.selectedSource;
+    final sessions = filtered.sessions;
     return SizedBox(
       key: const ValueKey('hermes-session-rail'),
-      width: 320,
+      width: 280,
       child: Material(
         color: theme.colorScheme.surfaceContainerLow,
         child: SafeArea(
@@ -162,7 +269,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                         ),
                       ),
                     ),
-                    if (!_selecting)
+                    if (!_listState.selecting)
                       FilledButton.icon(
                         key: const ValueKey('hermes-session-rail-new'),
                         onPressed: widget.canCreate ? widget.onCreate : null,
@@ -175,13 +282,13 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
               if (_canDelete && allSessions.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: _selecting
+                  child: _listState.selecting
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
                               strings.chatRailSelectedCountLabel(
-                                _selectedSessionIds.length,
+                                _listState.selectedIds.length,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -196,18 +303,10 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                   ),
                                   onPressed: () {
                                     setState(() {
-                                      _selectedSessionIds
-                                        ..clear()
-                                        ..addAll(
-                                          sessions
-                                              .where(
-                                                (session) => !widget.state
-                                                    .isSessionStreaming(
-                                                      session.id,
-                                                    ),
-                                              )
-                                              .map((session) => session.id),
-                                        );
+                                      _listState.selectAll(
+                                        sessions,
+                                        widget.state,
+                                      );
                                     });
                                   },
                                   child: Text(strings.chatRailSelectAllAction),
@@ -215,8 +314,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                 TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      _selecting = false;
-                                      _selectedSessionIds.clear();
+                                      _listState.cancelSelection();
                                     });
                                   },
                                   child: Text(strings.cancelAction),
@@ -225,19 +323,17 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                                   key: const ValueKey(
                                     'hermes-session-rail-delete-selected',
                                   ),
-                                  onPressed: _selectedSessionIds.isEmpty
+                                  onPressed: _listState.selectedIds.isEmpty
                                       ? null
-                                      : () => widget.onDeleteSelected([
-                                          for (final session in allSessions)
-                                            if (_selectedSessionIds.contains(
-                                              session.id,
-                                            ))
-                                              session,
-                                        ]),
+                                      : () => widget.onDeleteSelected(
+                                          _listState.selectedSessions(
+                                            allSessions,
+                                          ),
+                                        ),
                                   icon: const Icon(Icons.delete_outline),
                                   label: Text(
                                     strings.chatRailDeleteCountAction(
-                                      _selectedSessionIds.length,
+                                      _listState.selectedIds.length,
                                     ),
                                   ),
                                 ),
@@ -249,7 +345,8 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                           alignment: Alignment.centerRight,
                           child: OutlinedButton.icon(
                             key: const ValueKey('hermes-session-rail-select'),
-                            onPressed: () => setState(() => _selecting = true),
+                            onPressed: () =>
+                                setState(() => _listState.selecting = true),
                             icon: const Icon(Icons.checklist_outlined),
                             label: Text(strings.chatRailSelectAction),
                           ),
@@ -264,7 +361,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                     decoration: InputDecoration(
                       labelText: strings.chatRailSearchSessionsLabel,
                       prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _query.isEmpty
+                      suffixIcon: _listState.query.isEmpty
                           ? null
                           : IconButton(
                               key: const ValueKey(
@@ -274,58 +371,21 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 _searchController.clear();
-                                setState(() => _query = '');
+                                setState(() => _listState.query = '');
                               },
                             ),
                     ),
-                    onChanged: (value) => setState(() => _query = value),
+                    onChanged: (value) =>
+                        setState(() => _listState.query = value),
                   ),
                 ),
                 if (sortedSourceOptions.length > 1)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: strings.chatRailSourceFilterLabel,
-                        border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String?>(
-                          key: const ValueKey(
-                            'hermes-session-rail-source-filter',
-                          ),
-                          value: selectedSource,
-                          isExpanded: true,
-                          items: [
-                            DropdownMenuItem<String?>(
-                              key: const ValueKey(
-                                'hermes-session-rail-source-all',
-                              ),
-                              value: null,
-                              child: Text(strings.chatRailAllSourcesLabel),
-                            ),
-                            for (final (index, source)
-                                in sortedSourceOptions.indexed)
-                              DropdownMenuItem<String?>(
-                                key: ValueKey(
-                                  'hermes-session-rail-source-option-$index',
-                                ),
-                                value: source,
-                                child: Text(
-                                  _sessionSourceLabel(context, source),
-                                ),
-                              ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedSource = value;
-                              _selectedSessionIds.clear();
-                            });
-                          },
-                        ),
-                      ),
-                    ),
+                  _HermesSessionSourceFilter(
+                    keyPrefix: 'hermes-session-rail',
+                    sources: sortedSourceOptions,
+                    selectedSource: selectedSource,
+                    onChanged: (source) =>
+                        setState(() => _listState.selectSource(source)),
                   ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -334,7 +394,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                       strings: strings,
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
-                      query: _query,
+                      query: _listState.query,
                       filtered: selectedSource != null,
                     ),
                     key: const ValueKey('hermes-session-rail-count-summary'),
@@ -363,7 +423,10 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         strings.chatRailNoSessionsMatchBody(
-                          _safeHermesUiPreview(_query.trim(), maxLength: 64),
+                          _safeHermesUiPreview(
+                            _listState.query.trim(),
+                            maxLength: 64,
+                          ),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -410,18 +473,16 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                             canDelete:
                                 _canDelete &&
                                 !widget.state.isSessionStreaming(session.id),
-                            selectionMode: _selecting,
-                            selected: _selectedSessionIds.contains(session.id),
+                            selectionMode: _listState.selecting,
+                            selected: _listState.selectedIds.contains(
+                              session.id,
+                            ),
                             selectable: !widget.state.isSessionStreaming(
                               session.id,
                             ),
                             onSelectionChanged: (selected) {
                               setState(() {
-                                if (selected) {
-                                  _selectedSessionIds.add(session.id);
-                                } else {
-                                  _selectedSessionIds.remove(session.id);
-                                }
+                                _listState.setSelected(session.id, selected);
                               });
                             },
                             onSelect: widget.onSelect,
@@ -432,7 +493,7 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                               session.id,
                             ),
                             onTogglePinned: widget.onTogglePinned,
-                            highlightQuery: _query,
+                            highlightQuery: _listState.query,
                           ),
                       ],
                     ],
@@ -508,18 +569,11 @@ class _HermesActiveSessionBar extends StatelessWidget {
             ),
           ),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            Widget titleChip() => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.42),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: colors.primary.withValues(alpha: 0.36),
-                ),
-              ),
+            Widget titleChip() => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
                 children: [
                   Icon(
@@ -538,7 +592,7 @@ class _HermesActiveSessionBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: colors.onSurface,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -600,13 +654,10 @@ class _HermesActiveSessionBar extends StatelessWidget {
               );
             }
 
-            final activeLabel = Text(
-              strings.chatRailActiveLabel,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            );
+            final showStatus =
+                isTurnActive || hasUnreconciledRun || !canSendTurns;
+            final showModel =
+                modelLabel != strings.chatLayoutModelFallbackLabel;
             final statusChip = _HermesTopBarChip(
               icon: statusIcon,
               label: statusLabel,
@@ -629,24 +680,19 @@ class _HermesActiveSessionBar extends StatelessWidget {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  activeLabel,
                   SizedBox(width: titleWidth, child: sessionSwitcher()),
-                  statusChip,
-                  modelChip,
+                  if (showStatus) statusChip,
+                  if (showModel) modelChip,
                   count,
                 ],
               );
             }
             return Row(
               children: [
-                activeLabel,
-                const SizedBox(width: 10),
                 Flexible(flex: 3, child: sessionSwitcher()),
                 const SizedBox(width: 10),
-                statusChip,
-                const SizedBox(width: 8),
-                modelChip,
-                const SizedBox(width: 8),
+                if (showStatus) ...[statusChip, const SizedBox(width: 8)],
+                if (showModel) ...[modelChip, const SizedBox(width: 8)],
                 count,
                 const Spacer(),
               ],
@@ -668,12 +714,8 @@ class _HermesTopBarChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.74),
-        borderRadius: BorderRadius.circular(999),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -685,7 +727,7 @@ class _HermesTopBarChip extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.onSurface,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -771,7 +813,6 @@ class _HermesEmptyState extends StatelessWidget {
 class _HermesComposerStrip extends StatelessWidget {
   const _HermesComposerStrip({
     required this.modelLabel,
-    required this.voiceLabel,
     required this.isTurnActive,
     required this.canSendTurns,
     required this.hasUnreconciledRun,
@@ -782,7 +823,6 @@ class _HermesComposerStrip extends StatelessWidget {
   });
 
   final String modelLabel;
-  final String voiceLabel;
   final bool isTurnActive;
   final bool canSendTurns;
   final bool hasUnreconciledRun;
@@ -823,9 +863,7 @@ class _HermesComposerStrip extends StatelessWidget {
               onPressed: onSelectModel,
             ),
           ),
-          const SizedBox(width: 8),
-          _ComposerChip(icon: Icons.keyboard_voice_outlined, label: voiceLabel),
-          if (!isTurnActive) ...[
+          if (!isTurnActive && (hasUnreconciledRun || !canSendTurns)) ...[
             const SizedBox(width: 8),
             _ComposerChip(
               icon: hasUnreconciledRun
@@ -897,33 +935,12 @@ class _HermesSessionsPanel extends StatefulWidget {
 
 class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
   final _searchController = TextEditingController();
-  final _selectedSessionIds = <String>{};
-  var _query = '';
-  String? _selectedSource;
-  var _selecting = false;
+  final _listState = _HermesSessionListState();
 
   @override
   void didUpdateWidget(covariant _HermesSessionsPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_selectedSource != null &&
-        !widget.state.sessions.any(
-          (session) => session.source == _selectedSource,
-        )) {
-      _selectedSource = null;
-      _selectedSessionIds.clear();
-    }
-    if (!widget.state.canDeleteSessions) {
-      _selectedSessionIds.clear();
-      _selecting = false;
-      return;
-    }
-    final hadSelection = _selectedSessionIds.isNotEmpty;
-    final selectableIds = {
-      for (final session in widget.state.sessions)
-        if (!widget.state.isSessionStreaming(session.id)) session.id,
-    };
-    _selectedSessionIds.removeWhere((id) => !selectableIds.contains(id));
-    if (hadSelection && _selectedSessionIds.isEmpty) _selecting = false;
+    _listState.reconcile(widget.state);
   }
 
   @override
@@ -943,26 +960,15 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
     final strings = _hermesStrings(context);
     final allSessions = widget.state.sessions;
     final sortedSourceOptions = _sortedSessionSources(context, allSessions);
-    final selectedSource = sortedSourceOptions.contains(_selectedSource)
-        ? _selectedSource
-        : null;
-    final sourceSessions = selectedSource == null
-        ? allSessions
-        : allSessions
-              .where((session) => session.source == selectedSource)
-              .toList(growable: false);
-    final query = _query.trim().toLowerCase();
-    final sessions = query.isEmpty
-        ? sourceSessions
-        : sourceSessions
-              .where(
-                (session) => _sessionMatchesQuery(
-                  session,
-                  query,
-                  widget.state.activeSessionId,
-                ),
-              )
-              .toList(growable: false);
+    final filtered = _filterHermesSessions(
+      allSessions,
+      sourceOptions: sortedSourceOptions,
+      selectedSource: _listState.selectedSource,
+      query: _listState.query,
+      activeSessionId: widget.state.activeSessionId,
+    );
+    final selectedSource = filtered.selectedSource;
+    final sessions = filtered.sessions;
     return SafeArea(
       key: const ValueKey('hermes-sessions-panel'),
       child: SizedBox(
@@ -974,7 +980,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                 strings.chatRailHermesSessionsTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              trailing: widget.canCreate && !_selecting
+              trailing: widget.canCreate && !_listState.selecting
                   ? FilledButton.icon(
                       key: const ValueKey('hermes-sessions-new'),
                       onPressed: widget.onCreate,
@@ -986,7 +992,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
             if (_canDelete && allSessions.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _selecting
+                child: _listState.selecting
                     ? Wrap(
                         alignment: WrapAlignment.end,
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -995,23 +1001,14 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                         children: [
                           Text(
                             strings.chatRailSelectedCountLabel(
-                              _selectedSessionIds.length,
+                              _listState.selectedIds.length,
                             ),
                           ),
                           TextButton(
                             key: const ValueKey('hermes-sessions-select-all'),
                             onPressed: () {
                               setState(() {
-                                _selectedSessionIds
-                                  ..clear()
-                                  ..addAll(
-                                    sessions
-                                        .where(
-                                          (session) => !widget.state
-                                              .isSessionStreaming(session.id),
-                                        )
-                                        .map((session) => session.id),
-                                  );
+                                _listState.selectAll(sessions, widget.state);
                               });
                             },
                             child: Text(strings.chatRailSelectAllAction),
@@ -1019,8 +1016,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                           TextButton(
                             onPressed: () {
                               setState(() {
-                                _selecting = false;
-                                _selectedSessionIds.clear();
+                                _listState.cancelSelection();
                               });
                             },
                             child: Text(strings.cancelAction),
@@ -1029,19 +1025,15 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                             key: const ValueKey(
                               'hermes-sessions-delete-selected',
                             ),
-                            onPressed: _selectedSessionIds.isEmpty
+                            onPressed: _listState.selectedIds.isEmpty
                                 ? null
-                                : () => widget.onDeleteSelected([
-                                    for (final session in allSessions)
-                                      if (_selectedSessionIds.contains(
-                                        session.id,
-                                      ))
-                                        session,
-                                  ]),
+                                : () => widget.onDeleteSelected(
+                                    _listState.selectedSessions(allSessions),
+                                  ),
                             icon: const Icon(Icons.delete_outline),
                             label: Text(
                               strings.chatRailDeleteCountAction(
-                                _selectedSessionIds.length,
+                                _listState.selectedIds.length,
                               ),
                             ),
                           ),
@@ -1051,7 +1043,8 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                         alignment: Alignment.centerRight,
                         child: OutlinedButton.icon(
                           key: const ValueKey('hermes-sessions-select'),
-                          onPressed: () => setState(() => _selecting = true),
+                          onPressed: () =>
+                              setState(() => _listState.selecting = true),
                           icon: const Icon(Icons.checklist_outlined),
                           label: Text(strings.chatRailSelectAction),
                         ),
@@ -1066,7 +1059,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                   decoration: InputDecoration(
                     labelText: strings.chatRailSearchSessionsLabel,
                     prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _query.isEmpty
+                    suffixIcon: _listState.query.isEmpty
                         ? null
                         : IconButton(
                             key: const ValueKey('hermes-session-search-clear'),
@@ -1074,52 +1067,21 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               _searchController.clear();
-                              setState(() => _query = '');
+                              setState(() => _listState.query = '');
                             },
                           ),
                   ),
-                  onChanged: (value) => setState(() => _query = value),
+                  onChanged: (value) =>
+                      setState(() => _listState.query = value),
                 ),
               ),
               if (sortedSourceOptions.length > 1)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: strings.chatRailSourceFilterLabel,
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String?>(
-                        key: const ValueKey('hermes-session-source-filter'),
-                        value: selectedSource,
-                        isExpanded: true,
-                        items: [
-                          DropdownMenuItem<String?>(
-                            key: const ValueKey('hermes-session-source-all'),
-                            value: null,
-                            child: Text(strings.chatRailAllSourcesLabel),
-                          ),
-                          for (final (index, source)
-                              in sortedSourceOptions.indexed)
-                            DropdownMenuItem<String?>(
-                              key: ValueKey(
-                                'hermes-session-source-option-$index',
-                              ),
-                              value: source,
-                              child: Text(_sessionSourceLabel(context, source)),
-                            ),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedSource = value;
-                            _selectedSessionIds.clear();
-                          });
-                        },
-                      ),
-                    ),
-                  ),
+                _HermesSessionSourceFilter(
+                  keyPrefix: 'hermes-session',
+                  sources: sortedSourceOptions,
+                  selectedSource: selectedSource,
+                  onChanged: (source) =>
+                      setState(() => _listState.selectSource(source)),
                 ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -1130,7 +1092,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                       strings: strings,
                       visibleCount: sessions.length,
                       totalCount: allSessions.length,
-                      query: _query,
+                      query: _listState.query,
                       filtered: selectedSource != null,
                     ),
                     key: const ValueKey('hermes-session-count-summary'),
@@ -1150,7 +1112,10 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                 child: Center(
                   child: Text(
                     strings.chatRailNoHermesSessionsMatchBody(
-                      _safeHermesUiPreview(_query.trim(), maxLength: 64),
+                      _safeHermesUiPreview(
+                        _listState.query.trim(),
+                        maxLength: 64,
+                      ),
                     ),
                   ),
                 ),
@@ -1191,18 +1156,14 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                           canDelete:
                               _canDelete &&
                               !widget.state.isSessionStreaming(session.id),
-                          selectionMode: _selecting,
-                          selected: _selectedSessionIds.contains(session.id),
+                          selectionMode: _listState.selecting,
+                          selected: _listState.selectedIds.contains(session.id),
                           selectable: !widget.state.isSessionStreaming(
                             session.id,
                           ),
                           onSelectionChanged: (selected) {
                             setState(() {
-                              if (selected) {
-                                _selectedSessionIds.add(session.id);
-                              } else {
-                                _selectedSessionIds.remove(session.id);
-                              }
+                              _listState.setSelected(session.id, selected);
                             });
                           },
                           onSelect: widget.onSelect,
@@ -1211,7 +1172,7 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
                           onDelete: widget.onDelete,
                           pinned: widget.pinnedSessionIds.contains(session.id),
                           onTogglePinned: widget.onTogglePinned,
-                          highlightQuery: _query,
+                          highlightQuery: _listState.query,
                         ),
                     ],
                   ],

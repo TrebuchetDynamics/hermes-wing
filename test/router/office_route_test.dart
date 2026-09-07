@@ -5,6 +5,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 import 'package:wing/router/app_routes.dart';
+import 'package:wing/shared/widgets/app_shell.dart';
 
 import '../features/hermes_chat/support/fake_hermes_channel.dart';
 import '../features/hermes_chat/support/fake_hermes_gateway_directory.dart';
@@ -44,6 +45,6 @@ void main() {
 
     expect(find.text('Office'), findsWidgets);
     expect(find.text('No Hermes profiles available'), findsOneWidget);
-    expect(find.text('HERMES WING'), findsOneWidget);
+    expect(find.byType(AppShell), findsOneWidget);
   });
 }

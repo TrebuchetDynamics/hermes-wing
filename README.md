@@ -114,6 +114,10 @@ Windows, macOS, and iOS have build evidence but limited runtime qualification.
 Voice and [phone-only hosting with Termux](docs/runbooks/android-termux-local-agent.md)
 are experimental. There are no signed app packages or automatic updates yet.
 
+For phone-only setup from a repository checkout, run `bash install-termux.sh`
+in Termux. The [standalone installer guide](docs/runbooks/android-termux-local-agent.md#install-from-this-repository)
+includes the download command and handles the pinned downloads and checks for you.
+
 See [feature availability](docs/product/routes.md) and
 [real Android chat test evidence](docs/quality/provider-chat-physical-2026-09-05.md)
 for the tested scope.

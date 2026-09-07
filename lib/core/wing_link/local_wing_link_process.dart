@@ -38,7 +38,23 @@ class LocalWingLinkProgress {
 }
 
 abstract class LocalWingLinkSetupOperation {
+  const LocalWingLinkSetupOperation();
+
+  const factory LocalWingLinkSetupOperation.unavailable() =
+      _UnavailableSetupOperation;
+
   Future<LocalWingLinkProcessResult> get result;
 
   Future<void> cancel();
+}
+
+class _UnavailableSetupOperation implements LocalWingLinkSetupOperation {
+  const _UnavailableSetupOperation();
+
+  @override
+  Future<LocalWingLinkProcessResult> get result async =>
+      const LocalWingLinkProcessResult(exitCode: 126);
+
+  @override
+  Future<void> cancel() async {}
 }

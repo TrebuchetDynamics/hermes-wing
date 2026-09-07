@@ -47,11 +47,46 @@ Widget _testApp(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
-    home: const ToolsScreen(),
+    home: const SelectionArea(child: ToolsScreen()),
   ),
 );
 
 void main() {
+  testWidgets('filtering a long selectable inventory preserves layout', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skillDetails: List.generate(
+        60,
+        (i) => HermesSkill(name: 'review-skill-$i'),
+      ),
+      toolsets: List.generate(
+        15,
+        (i) => HermesToolset(name: 'review-toolset-$i'),
+      ),
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    final skills = find.byKey(const ValueKey('installed-skills-search'));
+    await tester.enterText(skills, 'no-match');
+    await tester.pumpAndSettle();
+    await tester.enterText(skills, '');
+    await tester.pumpAndSettle();
+    final toolsets = find.byKey(const ValueKey('toolsets-search'));
+    await tester.scrollUntilVisible(
+      toolsets,
+      500,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(toolsets, 'no-match');
+    await tester.pumpAndSettle();
+    await tester.enterText(toolsets, '');
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('old refresh cannot report failure after gateway roundtrip', (
     tester,
   ) async {
@@ -318,9 +353,9 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('browser-use'), findsOneWidget);
     expect(find.text('Automate an approved browser session.'), findsOneWidget);
-    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('Web Tools'), findsOneWidget);

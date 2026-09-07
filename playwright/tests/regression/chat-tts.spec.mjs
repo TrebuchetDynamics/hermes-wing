@@ -225,7 +225,7 @@ test("chat replies stay silent when Speak replies aloud is disabled", async ({
   );
 });
 
-test("unadvertised Agent audio never falls back to browser speech", async ({
+test("enabled speech uses platform output when Agent audio is unadvertised", async ({
   page,
 }, testInfo) => {
   await installSpeechSynthesisRecorder(page);
@@ -238,10 +238,14 @@ test("unadvertised Agent audio never falls back to browser speech", async ({
 
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2ESpeech.utterances.length))
-    .toBe(0);
-  await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
-    0,
-  );
+    .toBe(1);
+  expect(await page.evaluate(() => globalThis.wingE2ESpeech.utterances[0].text))
+    .toContain("Hermes echo: unsupported agent audio browser turn");
+  const audioState = await page.request.get(`${APP}e2e/hermes/audio`);
+  expect((await audioState.json()).spokenTexts).toHaveLength(0);
+  await page.getByRole("button", { name: "Stop speaking" }).click();
+  await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(0);
+  expect(await page.evaluate(() => globalThis.wingE2ESpeech.cancelCount)).toBeGreaterThan(0);
   await expect(page.getByText("Could not speak Hermes reply.")).toHaveCount(0);
 });
 
@@ -401,9 +405,10 @@ test("Agent speech failure is bounded and recoverable", async ({
     testInfo,
     screenshotPrefix: "tts-failure",
   });
-  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText(/The reply is available as text/).last(),
+    page.getByRole("group", {
+      name: /^Voice output unavailable.*The reply is available as text/,
+    }),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
@@ -807,9 +812,10 @@ test("asynchronous Agent playback errors recover", async ({
   ).toBeVisible();
 
   await page.evaluate(() => globalThis.wingE2EAgentAudio.fail());
-  await expect(page.getByText("Voice output unavailable").last()).toBeVisible();
   await expect(
-    page.getByText(/The reply is available as text/).last(),
+    page.getByRole("group", {
+      name: /^Voice output unavailable.*The reply is available as text/,
+    }),
   ).toBeVisible();
   await expectVoiceInputAvailable(page);
   await screenshot(page, testInfo, "async-speech-failure-notice");

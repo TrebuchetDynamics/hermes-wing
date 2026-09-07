@@ -2,6 +2,38 @@ part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelConnectionTests() {
   test(
+    'connect does not load jobs from an unsupported capability schema',
+    () async {
+      final requestedPaths = <String>[];
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            requestedPaths.add(uri.path);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _jobsCapabilitiesFixture.replaceFirst(
+                '{',
+                '{"schema_version": 2,',
+              ),
+              '/api/sessions' => '{"sessions":[]}',
+              '/api/jobs' => _jobsFixture,
+              _ => throw StateError('unexpected request'),
+            };
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      expect(channel.state.status, HermesConnectionStatus.connected);
+      expect(requestedPaths, isNot(contains('/api/jobs')));
+      expect(channel.state.jobs, isEmpty);
+    },
+  );
+
+  test(
     'connect selects the first existing session and loads its messages',
     () async {
       final channel = HermesApiChannel(

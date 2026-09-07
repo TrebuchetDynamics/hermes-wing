@@ -1,4 +1,5 @@
 import '../../protocol/wing_json.dart';
+import 'hermes_metadata_text.dart';
 
 /// Bounded public metadata from one advertised `/v1/models` entry.
 ///
@@ -16,8 +17,14 @@ class HermesRuntimeModel {
     final id = _firstBounded(json, const ['id', 'root', 'model', 'name']);
     return HermesRuntimeModel(
       id: id,
-      root: _bounded(wingStringFromJson(json['root'], fallback: id), 120),
-      parent: _bounded(wingStringFromJson(json['parent'], fallback: ''), 120),
+      root: boundedHermesMetadataText(
+        wingStringFromJson(json['root'], fallback: id),
+        120,
+      ),
+      parent: boundedHermesMetadataText(
+        wingStringFromJson(json['parent'], fallback: ''),
+        120,
+      ),
     );
   }
 
@@ -32,17 +39,8 @@ String _firstBounded(Map<String, Object?> json, List<String> fields) {
   for (final field in fields) {
     final value = wingOptionalStringFromJson(json[field]);
     if (value != null && value.trim().isNotEmpty) {
-      return _bounded(value, 120);
+      return boundedHermesMetadataText(value, 120);
     }
   }
   return '';
-}
-
-String _bounded(String value, int limit) {
-  final normalized = value
-      .replaceAll(RegExp(r'[\u0000-\u001f\u007f]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (normalized.length <= limit) return normalized;
-  return '${normalized.substring(0, limit - 1)}…';
 }

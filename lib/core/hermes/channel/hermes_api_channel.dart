@@ -27,6 +27,8 @@ import 'hermes_channel.dart';
 import 'hermes_detached_run_store.dart';
 
 part 'api_channel/hermes_api_channel_connection.dart';
+part 'api_channel/hermes_api_channel_inventory.dart';
+part 'api_channel/hermes_api_channel_capabilities.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
 part 'api_channel/hermes_api_channel_profiles.dart';
 part 'api_channel/hermes_api_channel_providers.dart';

@@ -50,7 +50,7 @@ Future<LocalWingLinkSetupOperation> startLocalWingLinkSetup(
   LocalWingLinkProgressCallback onProgress, {
   Duration timeout = _defaultSetupTimeout,
 }) async {
-  if (!Platform.isLinux) return _UnavailableSetupOperation();
+  if (!Platform.isLinux) return const LocalWingLinkSetupOperation.unavailable();
   final process = await Process.start(
     executable,
     const ['setup', '--json-lines'],
@@ -58,15 +58,6 @@ Future<LocalWingLinkSetupOperation> startLocalWingLinkSetup(
     mode: ProcessStartMode.normal,
   );
   return _IOSetupOperation(process, onProgress, timeout);
-}
-
-class _UnavailableSetupOperation implements LocalWingLinkSetupOperation {
-  @override
-  Future<LocalWingLinkProcessResult> get result async =>
-      const LocalWingLinkProcessResult(exitCode: 126);
-
-  @override
-  Future<void> cancel() async {}
 }
 
 class _IOSetupOperation implements LocalWingLinkSetupOperation {

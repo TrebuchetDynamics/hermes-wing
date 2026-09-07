@@ -73,7 +73,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.profiles,
             pageBuilder: (context, state) => wingFadeThroughPage(
               key: state.pageKey,
-              child: const ProfilesScreen(),
+              child: ProfilesScreen(
+                startSetup: state.uri.queryParameters['setup'] == 'new',
+              ),
             ),
           ),
           GoRoute(

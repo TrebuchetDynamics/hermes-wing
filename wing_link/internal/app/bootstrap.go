@@ -144,19 +144,23 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 		return BootstrapResult{}, err
 	}
 	result := BootstrapResult{HermesInstalled: true, HermesAdopted: inspection.Adopted, HermesVersion: inspection.Version}
-	if manager.EnsureAPIKey != nil {
-		emitBootstrap(emit, "authentication", "Securing Hermes API access", 92)
-		if err := manager.EnsureAPIKey(ctx); err != nil {
-			return BootstrapResult{}, fmt.Errorf("%w: API authentication", ErrHermesInstall)
-		}
-	}
-	if manager.EnsureAPIEndpoint != nil {
-		emitBootstrap(emit, "api_endpoint", "Configuring local Hermes API endpoint", 94)
-		if err := manager.EnsureAPIEndpoint(ctx); err != nil {
-			return BootstrapResult{}, fmt.Errorf("%w: API endpoint", ErrHermesInstall)
-		}
-	}
+	// Probe with the existing credential before touching endpoint configuration.
+	// A rerun must not replace a healthy gateway’s established bind settings.
 	gatewayReady := manager.GatewayHealthy != nil && manager.GatewayHealthy(ctx)
+	if !gatewayReady {
+		if manager.EnsureAPIKey != nil {
+			emitBootstrap(emit, "authentication", "Securing Hermes API access", 92)
+			if err := manager.EnsureAPIKey(ctx); err != nil {
+				return BootstrapResult{}, fmt.Errorf("%w: API authentication", ErrHermesInstall)
+			}
+		}
+		if manager.EnsureAPIEndpoint != nil {
+			emitBootstrap(emit, "api_endpoint", "Configuring local Hermes API endpoint", 94)
+			if err := manager.EnsureAPIEndpoint(ctx); err != nil {
+				return BootstrapResult{}, fmt.Errorf("%w: API endpoint", ErrHermesInstall)
+			}
+		}
+	}
 	if gatewayReady {
 		emitBootstrap(emit, "gateway", "Hermes gateway already healthy", 96)
 	} else if manager.StartGateway != nil {

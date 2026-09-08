@@ -31,6 +31,30 @@ func TestExternalServiceHealthUsesLoopbackHTTPForRemoteTLSOrigin(t *testing.T) {
 	}
 }
 
+func TestEnsureManagedWingLinkServiceReusesHealthyService(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path != "/healthz" {
+			t.Fatalf("path=%q", request.URL.Path)
+		}
+		writer.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+	origin, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	setupCalled := false
+	if err := ensureManagedWingLinkService(origin, true, func() error {
+		setupCalled = true
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if setupCalled {
+		t.Fatal("healthy Wing Link service was reinstalled or restarted")
+	}
+}
+
 func TestWingLinkSystemdUnitPersistsExactServiceBoundaries(t *testing.T) {
 	unit := wingLinkSystemdUnit(
 		"/home/user/.local/lib/hermes-wing/releases/current",

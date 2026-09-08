@@ -18,26 +18,31 @@ func ensureExternalWingLinkService(controlOrigin *url.URL) error {
 }
 
 func verifyWingLinkHealth(origin *url.URL) error {
+	for attempt := 0; attempt < 20; attempt++ {
+		if wingLinkHealthReady(origin, 2*time.Second) {
+			return nil
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	return errors.New("wing link service did not become healthy")
+}
+
+func wingLinkHealthReady(origin *url.URL, timeout time.Duration) bool {
 	client := &http.Client{
-		Timeout: 2 * time.Second,
+		Timeout: timeout,
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
 	endpoint := origin.ResolveReference(&url.URL{Path: "/healthz"})
-	for attempt := 0; attempt < 20; attempt++ {
-		request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, endpoint.String(), nil)
-		if err != nil {
-			return errors.New("invalid Wing Link health endpoint")
-		}
-		response, err := client.Do(request)
-		if err == nil {
-			_ = response.Body.Close()
-			if response.StatusCode == http.StatusOK {
-				return nil
-			}
-		}
-		time.Sleep(250 * time.Millisecond)
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, endpoint.String(), nil)
+	if err != nil {
+		return false
 	}
-	return errors.New("wing link service did not become healthy")
+	response, err := client.Do(request)
+	if err != nil {
+		return false
+	}
+	_ = response.Body.Close()
+	return response.StatusCode == http.StatusOK
 }

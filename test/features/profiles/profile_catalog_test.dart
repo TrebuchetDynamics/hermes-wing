@@ -13,6 +13,40 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
 void main() {
+  testWidgets('catalog suggestions stay reachable near the bottom edge', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 420);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: CatalogAutocompleteField(
+              controller: controller,
+              options: const ['example-one', 'example-two'],
+              label: 'Model',
+              enabled: true,
+              validator: (_) => null,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextFormField), 'example');
+    await tester.pumpAndSettle();
+    final option = find.widgetWithText(InkWell, 'example-two');
+    expect(option.hitTestable(), findsOneWidget);
+    await tester.tap(option);
+    await tester.pumpAndSettle();
+    expect(controller.text, 'example-two');
+  });
+
   testWidgets('profile editor keeps actions visible while fields scroll', (
     tester,
   ) async {
@@ -192,6 +226,7 @@ void main() {
       final channel = FakeHermesChannel();
       addTearDown(channel.dispose);
       var attempts = 0;
+      final requestedProfiles = <String>[];
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -208,7 +243,7 @@ void main() {
                 ),
               ],
               loadModelOptions: (profile) async {
-                expect(profile, 'default');
+                requestedProfiles.add(profile);
                 if (++attempts == 1) throw StateError('fixture failure');
                 return HermesModelOptions.fromJson({
                   'providers': [
@@ -230,8 +265,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Retry catalog'), findsOneWidget);
+      expect(requestedProfiles, ['default']);
       await tester.tap(find.text('Retry catalog'));
       await tester.pumpAndSettle();
+      expect(requestedProfiles, ['default', 'default']);
+      expect(attempts, 2);
       final fields = find.byType(CatalogAutocompleteField);
       final provider = find.descendant(
         of: fields.at(0),

@@ -124,6 +124,15 @@ void main() {
           receipts.add(receipt);
           binding.reportData = {'transcript_performance': receipts};
           debugPrint('TRANSCRIPT_PERFORMANCE ${jsonEncode(receipt)}');
+          if (Platform.isLinux &&
+              kProfileMode &&
+              kind == 'line' &&
+              bytes == 1000000) {
+            // Guard against shaping the entire megabyte as one RenderParagraph.
+            // These are responsiveness bounds, not a 60-fps qualification.
+            expect(_percentile(durations, .95), lessThan(2000000));
+            expect(_percentile(updateDurations, .95), lessThan(500000));
+          }
         },
         timeout: const Timeout(Duration(minutes: 10)),
       );

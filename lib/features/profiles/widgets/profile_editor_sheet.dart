@@ -517,7 +517,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             : widget.soulOnly
                             ? strings.profilePersonaTitle(profile.displayName)
                             : strings.editAgent,
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: widget.soulOnly
+                            ? Theme.of(context).textTheme.titleMedium
+                            : Theme.of(context).textTheme.headlineSmall,
                       ),
                       if (profile != null) ...[
                         const SizedBox(height: 6),
@@ -756,6 +758,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                                 decoration: InputDecoration(
                                   labelText: strings.personaLabel,
                                   helperText: strings.personaHint,
+                                  helperMaxLines: 3,
                                   alignLabelWithHint: true,
                                   border: const OutlineInputBorder(),
                                 ),
@@ -779,7 +782,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                               label: Text(strings.deleteAgent),
                             ),
                           ],
-                          if (profile != null && profile.id == 'default') ...[
+                          if (!widget.soulOnly &&
+                              profile != null &&
+                              profile.id == 'default') ...[
                             const SizedBox(height: 16),
                             Text(strings.defaultAgentCannotDelete),
                           ],

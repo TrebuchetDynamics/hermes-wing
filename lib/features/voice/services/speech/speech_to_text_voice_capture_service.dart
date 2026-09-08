@@ -490,6 +490,15 @@ class SpeechToTextVoiceCaptureService
             log('status=$status');
             final normalizedStatus = status.trim().toLowerCase();
             if (normalizedStatus == 'listening') recognitionStarted = true;
+            // The microphone can stop before the recognizer delivers its final
+            // result. speech_to_text emits done after result delivery; treating
+            // notListening as completion cancels that pending result.
+            if (normalizedStatus == 'notlistening' &&
+                !recognitionStopAttempted &&
+                !recognitionCancellationAttempted &&
+                !cancellation.isCompleted) {
+              return;
+            }
             final terminal = isTerminalSpeechToTextStatus(status);
             if (identical(_activeRecognitionEnded, recognitionEnded) &&
                 terminal &&
@@ -500,7 +509,13 @@ class SpeechToTextVoiceCaptureService
                   generationEngine is SpeechToTextGenerationBoundEngine &&
                   (generationEngine as SpeechToTextGenerationBoundEngine)
                       .hasGenerationBoundCallbacks;
+              final Object stateEngine = _engine;
+              final finalizedAndStopped =
+                  (transcript == null || transcript.finalResult) &&
+                  stateEngine is SpeechToTextListeningStateEngine &&
+                  !stateEngine.isListening;
               if (!generationBound &&
+                  !finalizedAndStopped &&
                   !ambiguousTerminalPending &&
                   !recognitionStopAttempted &&
                   !recognitionCancellationAttempted &&

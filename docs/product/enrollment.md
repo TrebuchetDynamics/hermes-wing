@@ -35,15 +35,17 @@ remote execution surface was introduced.
 
 ### Another computer
 
-Four steps cover prerequisites, installation/adoption, provider/model setup, and
-VPN pairing. An existing Wing Link installation selects inspect/setup commands;
-otherwise the guide uses the established repository installer. Public commands
-can be copied explicitly. The guide never reads a clipboard in the background.
+One screen combines the host/VPN prerequisites with the setup-and-pair command.
+An existing Wing Link installation runs its idempotent setup followed by
+`wing-link pair`; otherwise the guide uses the established repository installer
+and then starts pairing. The pairing command is visible before the user leaves
+the guide, and the copy action copies the complete sequence. The guide never
+reads a clipboard in the background.
 
-Advancing a step acknowledges work performed on the host. It neither runs a
-remote command nor marks that host verified. Previous-step navigation preserves
-the installation choice, and back returns through the guide. The last step enters
-pairing. A live handoff can interrupt the guide and open review immediately.
+The action does not run a remote command or mark the host verified. Back returns
+to the connection choices. The final action opens pairing while the host terminal
+remains active. A live handoff can interrupt the guide and open review
+immediately.
 
 See the [computer setup runbook](../runbooks/android-hermes-setup.md) and
 [phone setup runbook](../runbooks/android-termux-local-agent.md).

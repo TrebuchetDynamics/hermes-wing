@@ -53,7 +53,6 @@ class _HermesEnrollmentScreenState
       : _EnrollmentPage.choose;
   final _linkInput = TextEditingController();
   bool _typingLink = false;
-  int _computerStep = 0;
   final _scrollController = ScrollController();
 
   bool get _inputBusy => _scanning || _pasting;
@@ -246,16 +245,7 @@ class _HermesEnrollmentScreenState
   void _cancel() => _showPairing();
 
   void _back() {
-    if (_page == _EnrollmentPage.computer && _computerStep > 0) {
-      _setComputerStep(_computerStep - 1);
-    } else {
-      _showChooser();
-    }
-  }
-
-  void _setComputerStep(int value) {
-    setState(() => _computerStep = value);
-    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+    _showChooser();
   }
 
   Future<void> _openLocalSetup() async {
@@ -349,11 +339,7 @@ class _HermesEnrollmentScreenState
     switch (controller.status) {
       case HermesEnrollmentStatus.idle:
         if (_page == _EnrollmentPage.computer) {
-          return ComputerSetupGuide(
-            onPair: _showPairing,
-            step: _computerStep,
-            onStepChanged: _setComputerStep,
-          );
+          return ComputerSetupGuide(onPair: _showPairing);
         }
         if (_page == _EnrollmentPage.pair) return _entryActions();
         return Column(
@@ -574,7 +560,6 @@ class _HermesEnrollmentScreenState
       _payloadError = null;
       _page = _EnrollmentPage.choose;
       _typingLink = false;
-      _computerStep = 0;
     });
   }
 

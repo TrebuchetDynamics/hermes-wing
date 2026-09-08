@@ -27,7 +27,9 @@ cd hermes-wing
    to choose a new profile's provider and model. To configure an existing profile
    locally instead, use `hermes setup` on the host.
 
-   The installer shows a short result and one next command. Advanced pairing
+   The installer uses aligned CHECK/OK/READY labels and a separate NEXT command.
+   Interactive terminals get subtle color; redirected output, `TERM=dumb`, and
+   `NO_COLOR` remain plain text. Advanced pairing
    options are available through `./install-wing-link.sh --help`; setup failures
    still show their error and retry command. Rerunning uses Go's build cache and
    keeps an identical installed binary untouched. An authenticated healthy Hermes

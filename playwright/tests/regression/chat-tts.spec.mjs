@@ -675,7 +675,13 @@ test("Agent speech stops when starting a new session", async ({
     () => globalThis.wingE2EAgentAudio.pauseCount,
   );
 
-  await page.getByRole("button", { name: "New session" }).click();
+  const newSession = page.getByRole("button", { name: "New session" });
+  if (await newSession.isVisible()) {
+    await newSession.click();
+  } else {
+    await page.getByRole("button", { name: "More actions" }).click();
+    await page.getByRole("menuitem", { name: "New session" }).click();
+  }
   await expect(
     page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),
   ).toBeVisible();
@@ -686,7 +692,7 @@ test("Agent speech stops when starting a new session", async ({
     0,
   );
   await expect(
-    page.getByText("Hermes session changed. Spoken reply stopped."),
+    page.locator("flt-semantics").getByText("Hermes session changed. Spoken reply stopped.", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByText("Hermes session changed. Continuous voice paused."),

@@ -41,18 +41,22 @@ test("Hermes empty state opens secure web enrollment", async ({ page }) => {
 test("enrollment guides computer setup back to pairing", async ({ page }) => {
   await open(page, "/enroll");
   await page.getByRole("button", { name: /Use another computer/ }).click();
-  await expect(page.getByText("Prepare the host and network")).toBeVisible();
-  await page.getByRole("button", { name: "My Linux host is ready" }).click();
-  await expect(page.getByText("Install or reuse Wing Link")).toBeVisible();
-  const existing = page.getByRole("checkbox", { name: "Wing Link is already installed on this host" });
+  await expect(page.getByText("Set up Wing Link and pair")).toBeVisible();
+  const installCommand = page.getByText(
+    "git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git\ncd hermes-wing\n./install-wing-link.sh &&\n~/.local/bin/wing-link pair",
+    { exact: true },
+  );
+  await expect(installCommand).toBeVisible();
+  const existing = page.getByRole("checkbox", { name: "Wing Link already installed" });
   await existing.click();
   await expect(existing).toBeChecked();
-  await expect(page.getByText("~/.local/bin/wing-link inspect\n~/.local/bin/wing-link setup", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Setup finished on the host" }).click();
-  await expect(page.locator("flt-semantics").getByText("Step 3 of 3", { exact: true })).toBeVisible();
-  await expect(page.getByText("Create the pairing handoff", { exact: true })).toBeVisible();
+  await expect(page.getByText("~/.local/bin/wing-link setup &&\n~/.local/bin/wing-link pair", { exact: true })).toBeVisible();
+  await expect(installCommand).toHaveCount(0);
+  await existing.click();
+  await expect(existing).not.toBeChecked();
+  await expect(installCommand).toBeVisible();
   await expect(page.getByText("hermes setup", { exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "I’m ready to pair" }).click();
+  await page.getByRole("button", { name: "Open pairing in Wing" }).click();
   await expect(page.getByRole("button", { name: "Paste pairing link" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(0);
 });

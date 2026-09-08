@@ -2940,19 +2940,19 @@ abstract class AppLocalizations {
   /// No description provided for @enrollComputerRequirements.
   ///
   /// In en, this message translates to:
-  /// **'Run these steps on the computer that will host Hermes. This setup requires Linux with a systemd user session, Git, curl, and Go 1.26 or newer. Native Windows and macOS host setup is not yet qualified.'**
+  /// **'On the Linux host, connect to the same NetBird or Tailscale network. You’ll need Git, curl, Go 1.26+, and a systemd user session.'**
   String get enrollComputerRequirements;
 
   /// No description provided for @enrollComputerInstallTitle.
   ///
   /// In en, this message translates to:
-  /// **'Install or reuse Wing Link'**
+  /// **'Set up Wing Link and pair'**
   String get enrollComputerInstallTitle;
 
   /// No description provided for @enrollComputerInstallBody.
   ///
   /// In en, this message translates to:
-  /// **'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host. You can choose a provider and model in Wing after pairing:'**
+  /// **'New host: install Wing Link and Hermes Agent, then start pairing.'**
   String get enrollComputerInstallBody;
 
   /// No description provided for @enrollComputerModelTitle.
@@ -2967,22 +2967,10 @@ abstract class AppLocalizations {
   /// **'Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:'**
   String get enrollComputerModelBody;
 
-  /// No description provided for @enrollComputerPairTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Create the pairing handoff'**
-  String get enrollComputerPairTitle;
-
-  /// No description provided for @enrollComputerPairBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link prepares direct Agent access. Scan the QR or paste the connection string into Wing, review the host fingerprint, and confirm. Then choose Set up a profile to configure a provider and model in Wing.'**
-  String get enrollComputerPairBody;
-
   /// No description provided for @enrollComputerReady.
   ///
   /// In en, this message translates to:
-  /// **'I’m ready to pair'**
+  /// **'Open pairing in Wing'**
   String get enrollComputerReady;
 
   /// No description provided for @enrollPairChoiceHelp.
@@ -3003,41 +2991,17 @@ abstract class AppLocalizations {
   /// **'Step {step} of {total}'**
   String enrollStepProgress(int step, int total);
 
-  /// No description provided for @enrollComputerPrerequisites.
-  ///
-  /// In en, this message translates to:
-  /// **'Prepare the host and network'**
-  String get enrollComputerPrerequisites;
-
-  /// No description provided for @enrollComputerPrerequisitesHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep the host terminal available. Connect both devices to the same trusted VPN before pairing. Setup and approval happen on the host; Wing will verify the connection after pairing.'**
-  String get enrollComputerPrerequisitesHelp;
-
-  /// No description provided for @enrollComputerPrerequisitesReady.
-  ///
-  /// In en, this message translates to:
-  /// **'My Linux host is ready'**
-  String get enrollComputerPrerequisitesReady;
-
   /// No description provided for @enrollComputerExisting.
   ///
   /// In en, this message translates to:
-  /// **'Wing Link is already installed on this host'**
+  /// **'Wing Link already installed'**
   String get enrollComputerExisting;
 
   /// No description provided for @enrollComputerExistingHelp.
   ///
   /// In en, this message translates to:
-  /// **'Inspect the existing installation first. Setup reuses a healthy Hermes Agent, installs it when needed, and prepares API access. Run these commands on the host:'**
+  /// **'Installed host: refresh setup, then start pairing.'**
   String get enrollComputerExistingHelp;
-
-  /// No description provided for @enrollHostSetupFinished.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup finished on the host'**
-  String get enrollHostSetupFinished;
 
   /// No description provided for @enrollModelSetupFinished.
   ///
@@ -3048,14 +3012,8 @@ abstract class AppLocalizations {
   /// No description provided for @enrollExternalStepNotice.
   ///
   /// In en, this message translates to:
-  /// **'Continue after this step finishes on the host. This button does not verify or run the command remotely.'**
+  /// **'When the pairing code appears, leave the terminal open and continue here.'**
   String get enrollExternalStepNotice;
-
-  /// No description provided for @enrollPreviousStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous step'**
-  String get enrollPreviousStep;
 
   /// No description provided for @enrollCopyCommand.
   ///

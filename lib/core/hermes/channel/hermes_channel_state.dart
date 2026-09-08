@@ -49,6 +49,7 @@ class HermesChannelState {
     this.activeSessionId,
     this.profiles = const [],
     this.selectedProfileId,
+    this.isSelectingProfile = false,
     this.providers = const [],
     this.modelInventory,
     this.modelOptions,
@@ -97,6 +98,7 @@ class HermesChannelState {
   /// The client-selected profile. This is Hermes Wing-local state only: selecting
   /// a profile never mutates the Hermes CLI's active profile.
   final String? selectedProfileId;
+  final bool isSelectingProfile;
 
   /// Providers and their write-only credential presence for the selected
   /// profile. Loaded on demand (never carries a raw key). Empty until the
@@ -129,8 +131,9 @@ class HermesChannelState {
   /// (`supportsSchema` + advertised endpoint + granted scope) so surfaces can
   /// hide read/write affordances the connected token cannot use.
   bool get canCreateSessions =>
-      capabilities == null ||
-      _authorizesEndpoint('session_create', 'POST', '/api/sessions');
+      !isSelectingProfile &&
+      (capabilities == null ||
+          _authorizesEndpoint('session_create', 'POST', '/api/sessions'));
 
   bool get canUpdateSessions =>
       capabilities == null ||
@@ -337,6 +340,7 @@ class HermesChannelState {
     bool clearActiveSessionId = false,
     List<HermesProfile>? profiles,
     String? selectedProfileId,
+    bool? isSelectingProfile,
     bool clearSelectedProfileId = false,
     List<HermesProvider>? providers,
     HermesModelInventory? modelInventory,
@@ -411,6 +415,7 @@ class HermesChannelState {
           ? null
           : activeSessionId ?? this.activeSessionId,
       profiles: profiles ?? this.profiles,
+      isSelectingProfile: isSelectingProfile ?? this.isSelectingProfile,
       selectedProfileId: clearSelectedProfileId
           ? null
           : selectedProfileId ?? this.selectedProfileId,

@@ -131,20 +131,12 @@ extension _ProvidersExtension on HermesApiChannel {
       'list models',
     );
     final profile = _requireSelectedProfile('list models');
-    final requestGeneration = ++_modelsRequestGeneration;
-    final generation = _connectionGeneration;
-    final profileGeneration = _profileSelectionGeneration;
-    final inventory = await client.getModelInventory(profile: profile);
-    if (requestGeneration != _modelsRequestGeneration) return;
-    if (!_isCurrentProviderModelRequest(
-      generation,
-      profileGeneration,
+    await _refreshModelInventory(
       client,
       profile,
-    )) {
-      return;
-    }
-    _setState(_state.copyWith(modelInventory: inventory));
+      _connectionGeneration,
+      _profileSelectionGeneration,
+    );
   }
 
   Future<void> _loadModelOptions({bool refresh = false}) async {
@@ -241,7 +233,9 @@ extension _ProvidersExtension on HermesApiChannel {
     final profile = _requireSelectedProfile('refresh the model catalog');
     final generation = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
+    final catalogGeneration = ++_modelCatalogRequestGeneration;
     final catalog = await client.refreshModelCatalog(profile: profile);
+    if (catalogGeneration != _modelCatalogRequestGeneration) return;
     if (!_isCurrentProviderModelRequest(
       generation,
       profileGeneration,
@@ -326,7 +320,11 @@ extension _ProvidersExtension on HermesApiChannel {
     int generation,
     int profileGeneration,
   ) async {
+    // Conflict recovery and explicit reads publish the same inventory.
+    final requestGeneration = ++_modelsRequestGeneration;
+    final catalogGeneration = ++_modelCatalogRequestGeneration;
     final inventory = await client.getModelInventory(profile: profile);
+    if (requestGeneration != _modelsRequestGeneration) return;
     if (!_isCurrentProviderModelRequest(
       generation,
       profileGeneration,
@@ -335,7 +333,15 @@ extension _ProvidersExtension on HermesApiChannel {
     )) {
       return;
     }
-    _setState(_state.copyWith(modelInventory: inventory));
+    // A later catalog-only refresh does not supersede assignment data.
+    final current = _state.modelInventory ?? const HermesModelInventory();
+    _setState(
+      _state.copyWith(
+        modelInventory: catalogGeneration == _modelCatalogRequestGeneration
+            ? inventory
+            : inventory.withCatalog(current.catalog),
+      ),
+    );
   }
 
   void _replaceProvider(HermesProvider updated) {

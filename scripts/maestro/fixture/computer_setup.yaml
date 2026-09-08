@@ -11,19 +11,14 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     env:
       SCREEN: Pairing fixture
 - tapOn: '(?s).*Use another computer.*'
-- assertVisible: Step 1 of 3
+- assertVisible: Set up Wing Link and pair
+- tapOn: Wing Link already installed
+- assertVisible: '.*wing-link pair.*'
 - scrollUntilVisible:
     element:
-      text: My Linux host is ready
+      text: Open pairing in Wing
     direction: DOWN
-- tapOn: My Linux host is ready
-- assertVisible: Step 2 of 3
-- scrollUntilVisible:
-    element:
-      text: Setup finished on the host
-    direction: DOWN
-- tapOn: Setup finished on the host
-- assertVisible: Step 3 of 3
-- assertVisible: Create the pairing handoff
+- takeScreenshot: computer-setup-and-pair
 - assertNotVisible: hermes setup
-- takeScreenshot: computer-pair-before-provider-setup
+- tapOn: Open pairing in Wing
+- assertVisible: Enter connection string instead

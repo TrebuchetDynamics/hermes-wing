@@ -520,16 +520,8 @@ void main() {
           isTrue,
         );
         await capture(
-          'computer-setup-prerequisites',
-          'Computer setup requirements',
-        );
-        expect(
-          await click(find.byKey(const ValueKey('computer-next-step'))),
-          isTrue,
-        );
-        await capture(
           'computer-setup-install',
-          'Reviewed host installation instructions',
+          'One-screen host setup and pairing instructions',
         );
         expect(
           await click(
@@ -539,28 +531,9 @@ void main() {
         );
         await capture(
           'computer-setup-existing-host',
-          'Existing host inspection and setup instructions',
+          'Existing host setup and pairing command',
         );
-        expect(
-          await click(find.byKey(const ValueKey('computer-next-step'))),
-          isTrue,
-        );
-        await capture(
-          'computer-setup-pair',
-          'Pairing before provider setup; instructions only',
-        );
-        expect(
-          await click(find.byKey(const ValueKey('computer-previous-step'))),
-          isTrue,
-        );
-        expect(
-          find.byKey(const ValueKey('computer-wing-link-installed')),
-          findsOneWidget,
-        );
-        expect(
-          await click(find.byKey(const ValueKey('computer-next-step'))),
-          isTrue,
-        );
+        expect(find.textContaining('wing-link pair'), findsWidgets);
         expect(
           await click(
             find.byKey(const ValueKey('hermes-enrollment-computer-ready')),

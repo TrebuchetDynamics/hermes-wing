@@ -56,19 +56,31 @@ func EnsureWingLinkService(controlOrigin, hermesOrigin *url.URL) error {
 		hermesHome,
 	)
 	unitPath := filepath.Join(unitDir, wingLinkServiceName)
-	if err := writeOwnerOnlyFile(unitPath, []byte(unit)); err != nil {
-		return errors.New("could not install the Wing Link user service")
+	existingUnit, readErr := os.ReadFile(unitPath)
+	ownerOnly, ownerErr := statePathOwnerOnly(unitPath, false)
+	configurationMatches := readErr == nil && ownerErr == nil && ownerOnly && string(existingUnit) == unit
+	return ensureManagedWingLinkService(controlOrigin, configurationMatches, func() error {
+		if err := writeOwnerOnlyFile(unitPath, []byte(unit)); err != nil {
+			return errors.New("could not install the Wing Link user service")
+		}
+		if err := runSystemctl(systemctl, "daemon-reload"); err != nil {
+			return err
+		}
+		if err := runSystemctl(systemctl, "enable", "--now", wingLinkServiceName); err != nil {
+			return err
+		}
+		if err := runSystemctl(systemctl, "restart", wingLinkServiceName); err != nil {
+			return err
+		}
+		return verifyWingLinkHealth(loopbackControlOrigin(controlOrigin))
+	})
+}
+
+func ensureManagedWingLinkService(controlOrigin *url.URL, configurationMatches bool, setup func() error) error {
+	if configurationMatches && wingLinkHealthReady(loopbackControlOrigin(controlOrigin), 300*time.Millisecond) {
+		return nil
 	}
-	if err := runSystemctl(systemctl, "daemon-reload"); err != nil {
-		return err
-	}
-	if err := runSystemctl(systemctl, "enable", "--now", wingLinkServiceName); err != nil {
-		return err
-	}
-	if err := runSystemctl(systemctl, "restart", wingLinkServiceName); err != nil {
-		return err
-	}
-	return verifyWingLinkHealth(loopbackControlOrigin(controlOrigin))
+	return setup()
 }
 
 func WingLinkServiceCommand(command string, stdout io.Writer) error {

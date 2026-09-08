@@ -564,5 +564,14 @@ void main() {
       find.byKey(const ValueKey('settings-two-column-layout')),
       findsOneWidget,
     );
+    final voice = tester.getRect(
+      find.byKey(const ValueKey('settings-voice-link')),
+    );
+    final diagnostics = tester.getRect(
+      find.byKey(const ValueKey('settings-diagnostics-link')),
+    );
+    expect(diagnostics.left, voice.left);
+    expect(diagnostics.width, voice.width);
+    expect(diagnostics.top, greaterThanOrEqualTo(voice.bottom));
   });
 }

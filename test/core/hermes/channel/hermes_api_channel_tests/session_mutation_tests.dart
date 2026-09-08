@@ -1,6 +1,351 @@
 part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelSessionMutationTests() {
+  for (final completeTurn in [false, true]) {
+    test(
+      'history reconciliation preserves a newer ${completeTurn ? 'completed' : 'streaming'} turn',
+      () async {
+        final historyStarted = Completer<void>();
+        final pendingHistory = Completer<String>();
+        final stream = _ManualStringStream();
+        var reads = 0;
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              if (uri.path == '/api/sessions/sess_1/messages') {
+                if (++reads == 2) {
+                  historyStarted.complete();
+                  return pendingHistory.future;
+                }
+                return _messagesFixture;
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => _capabilitiesFixture,
+                '/api/sessions' => _sessionsFixture,
+                _ => throw StateError('unexpected GET $uri'),
+              };
+            },
+            postStream: (uri, headers, body) => stream,
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        final refresh = channel.reconcileActiveSession();
+        await historyStarted.future;
+        final send = channel.sendText('new question');
+        await pumpEventQueue();
+        stream.emit('event: assistant.delta\ndata: {"delta":"new reply"}\n\n');
+        await pumpEventQueue();
+        if (completeTurn) {
+          stream.emit('event: assistant.completed\ndata: {}\n\n');
+          await send;
+        }
+        final current = channel.state.activeMessages;
+        pendingHistory.complete(_messagesFixture);
+        await refresh;
+        expect(
+          channel.state.activeMessages.map((turn) => turn.text),
+          current.map((turn) => turn.text),
+        );
+        expect(
+          channel.state.activeMessages.last.status,
+          completeTurn
+              ? HermesTurnStatus.completed
+              : HermesTurnStatus.streaming,
+        );
+        if (!completeTurn) {
+          stream.emit('event: assistant.completed\ndata: {}\n\n');
+          await send;
+        }
+      },
+    );
+  }
+
+  test(
+    'obsolete history selection cannot replace pagination or run context',
+    () async {
+      final historyStarted = Completer<void>();
+      final pendingHistory = Completer<String>();
+      var reads = 0;
+      Map<String, Object?>? runRequest;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            if (uri.path == '/api/sessions/sess_1/messages') {
+              if (++reads == 2) {
+                historyStarted.complete();
+                return pendingHistory.future;
+              }
+              return _reconciledMessagesFixture;
+            }
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+              '/api/sessions' => _twoSessionsFixture,
+              '/api/sessions/sess_2/messages' => '{"data":[]}',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+          post: (uri, headers, body) async {
+            runRequest = jsonDecode(body) as Map<String, Object?>;
+            return '{"run_id":"run_1","session_id":"sess_1"}';
+          },
+          getStream: (uri, headers) => Stream.value(
+            'event: run.completed\ndata: {"run_id":"run_1","session_id":"sess_1","output":"answer"}\n\n',
+          ),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      final oldSelection = channel.selectSession('sess_1');
+      await historyStarted.future;
+      await channel.selectSession('sess_2');
+      await channel.selectSession('sess_1');
+      pendingHistory.complete(
+        '{"data":[{"id":"old","session_id":"sess_1","role":"user","content":"obsolete context"}],"pagination":{"offset":0,"limit":1,"order":"latest"}}',
+      );
+      await oldSelection;
+      // A later state publication exposes any pagination cache mutation.
+      await channel.sendText('use the current context');
+      expect(
+        channel.state.sessionsWithEarlierMessages,
+        isNot(contains('sess_1')),
+      );
+      expect(runRequest?['conversation_history'], [
+        {'role': 'user', 'content': 'Hello'},
+        {'role': 'assistant', 'content': 'Hi there'},
+      ]);
+    },
+  );
+
+  test('new chat supersedes an unfinished session fork', () async {
+    final pending = Completer<String>();
+    final started = Completer<void>();
+    var nextId = 0;
+    final channel = HermesApiChannel(
+      sessionIdFactory: () => 'new-${++nextId}',
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _capabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/api/sessions/new-1/messages' ||
+          '/api/sessions/new-2/messages' => '{"data":[]}',
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async {
+          if (uri.path.endsWith('/fork')) {
+            started.complete();
+            return pending.future;
+          }
+          return '{"session":{"id":"new-2","source":"api_server"}}';
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    final fork = channel.forkSession('sess_1');
+    await started.future;
+    await channel.createSession();
+    pending.complete('{"session":{"id":"new-1","source":"api_server"}}');
+    await fork;
+    expect(channel.state.activeSessionId, 'new-2');
+    expect(
+      channel.state.sessions.map((session) => session.id),
+      contains('new-1'),
+    );
+  });
+
+  for (final transition in ['failure', 'clear', 'profile roundtrip']) {
+    test('new chat completion respects $transition', () async {
+      final pending = Completer<String>();
+      final started = Completer<void>();
+      final channel = HermesApiChannel(
+        sessionIdFactory: () => 'new-chat',
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _profileCapabilitiesFixture,
+            '/api/profiles' => _profilesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/api/sessions/new-chat/messages' => '{"data":[]}',
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) {
+            expect(uri.queryParameters['profile'], 'default');
+            started.complete();
+            return pending.future;
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      final create = channel.createSession();
+      final completion = transition == 'failure'
+          ? expectLater(create, throwsStateError)
+          : create;
+      await started.future;
+      if (transition == 'profile roundtrip') {
+        await channel.selectProfile('coder');
+        await channel.selectProfile('default');
+      } else if (transition == 'clear') {
+        channel.clearActiveSession();
+      }
+      if (transition == 'failure') {
+        pending.completeError(StateError('creation rejected'));
+      } else {
+        pending.complete('{"session":{"id":"new-chat","source":"api_server"}}');
+      }
+      await completion;
+      expect(
+        channel.state.activeSessionId,
+        transition == 'clear' ? null : 'sess_1',
+      );
+      expect(
+        channel.state.sessions.any((session) => session.id == 'new-chat'),
+        transition == 'clear',
+      );
+    });
+  }
+
+  for (final stage in ['creation', 'history']) {
+    test(
+      'new chat blocks sending to the previous chat during $stage',
+      () async {
+        final pending = Completer<String>();
+        final started = Completer<void>();
+        final sentPaths = <String>[];
+        final channel = HermesApiChannel(
+          sessionIdFactory: () => 'new-chat',
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              if (uri.path == '/api/sessions/new-chat/messages') {
+                if (stage == 'history') {
+                  started.complete();
+                  return pending.future;
+                }
+                return '{"data":[]}';
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => _capabilitiesFixture,
+                '/api/sessions' => _sessionsFixture,
+                '/api/sessions/sess_1/messages' => _messagesFixture,
+                _ => throw StateError('unexpected GET $uri'),
+              };
+            },
+            post: (uri, headers, body) async {
+              if (stage == 'creation') {
+                started.complete();
+                return pending.future;
+              }
+              return '{"session":{"id":"new-chat","source":"api_server"}}';
+            },
+            postStream: (uri, headers, body) {
+              sentPaths.add(uri.path);
+              return Stream.value('event: assistant.completed\ndata: {}\n\n');
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        final create = channel.createSession();
+        await started.future;
+        final activeWhilePending = channel.state.activeSessionId;
+        Object? sendError;
+        try {
+          await channel.sendText('first message in the new chat');
+        } catch (error) {
+          sendError = error;
+        }
+        pending.complete(
+          stage == 'creation'
+              ? '{"session":{"id":"new-chat","source":"api_server"}}'
+              : '{"data":[]}',
+        );
+        await create;
+        expect(activeWhilePending, isNull);
+        expect(sendError, isStateError);
+        expect(sentPaths, isEmpty);
+        expect(channel.state.activeSessionId, 'new-chat');
+        await channel.sendText('first message in the new chat');
+        expect(sentPaths, ['/api/sessions/new-chat/chat/stream']);
+      },
+    );
+  }
+
+  for (final selectionFirst in [true, false]) {
+    test(
+      'new chat and session selection respect intent order ($selectionFirst)',
+      () async {
+        final pending = Completer<String>();
+        final started = Completer<void>();
+        final channel = HermesApiChannel(
+          sessionIdFactory: () => 'new-chat',
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              if (uri.path == '/api/sessions/sess_2/messages' &&
+                  selectionFirst) {
+                started.complete();
+                return pending.future;
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => _capabilitiesFixture,
+                '/api/sessions' => _twoSessionsFixture,
+                '/api/sessions/sess_1/messages' => _messagesFixture,
+                '/api/sessions/sess_2/messages' ||
+                '/api/sessions/new-chat/messages' => '{"data":[]}',
+                _ => throw StateError('unexpected GET $uri'),
+              };
+            },
+            post: (uri, headers, body) async {
+              if (!selectionFirst) {
+                started.complete();
+                return pending.future;
+              }
+              return '{"session":{"id":"new-chat","source":"api_server"}}';
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        final first = selectionFirst
+            ? channel.selectSession('sess_2')
+            : channel.createSession();
+        await started.future;
+        if (selectionFirst) {
+          await channel.createSession();
+        } else {
+          await channel.selectSession('sess_2');
+        }
+        pending.complete(
+          selectionFirst
+              ? '{"data":[]}'
+              : '{"session":{"id":"new-chat","source":"api_server"}}',
+        );
+        await first;
+        expect(
+          channel.state.activeSessionId,
+          selectionFirst ? 'new-chat' : 'sess_2',
+        );
+        expect(
+          channel.state.sessions.map((session) => session.id),
+          contains('new-chat'),
+        );
+      },
+    );
+  }
+
   test(
     'disconnect cancels an active stream and ignores stale deltas',
     () async {
@@ -589,6 +934,54 @@ void _hermesApiChannelSessionMutationTests() {
       expect(channel.state.sessions.map((s) => s.id), ['sess_2']);
       expect(channel.state.activeSessionId, 'sess_2');
       expect(channel.state.activeMessages.single.text, 'From two');
+    },
+  );
+
+  test(
+    'deleteSession preserves selection during replacement history loading',
+    () async {
+      final historyStarted = Completer<void>();
+      final historyGate = Completer<String>();
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            if (uri.path == '/api/sessions/sess_2/messages') {
+              historyStarted.complete();
+              return historyGate.future;
+            }
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _capabilitiesFixture,
+              '/api/sessions' =>
+                '{"object":"list","data":[{"id":"sess_1","source":"api_server"},{"id":"sess_2","source":"api_server"},{"id":"sess_3","source":"api_server"}]}',
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              '/api/sessions/sess_3/messages' =>
+                '{"object":"list","session_id":"sess_3","data":[{"id":"msg_3","session_id":"sess_3","role":"assistant","content":"Third response"}]}',
+              _ => throw StateError('unexpected GET $uri'),
+            };
+          },
+          delete: (uri, headers) async =>
+              '{"object":"hermes.session.deleted","id":"sess_1","deleted":true}',
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+
+      final deleting = channel.deleteSession('sess_1');
+      await historyStarted.future;
+      await channel.selectSession('sess_3');
+      expect(channel.state.activeSessionId, 'sess_3');
+      historyGate.complete('{"object":"list","session_id":"sess_2","data":[]}');
+      await deleting;
+
+      expect(channel.state.activeSessionId, 'sess_3');
+      expect(channel.state.activeMessages.single.text, 'Third response');
+      expect(channel.state.sessions.map((session) => session.id), [
+        'sess_2',
+        'sess_3',
+      ]);
+      expect(channel.state.messages.containsKey('sess_1'), isFalse);
     },
   );
 

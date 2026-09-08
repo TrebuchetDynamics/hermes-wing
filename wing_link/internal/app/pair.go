@@ -86,6 +86,7 @@ func (broker *pairingBroker) Close() {
 }
 
 func pairCommand(stdout, stderr io.Writer, args []string) int {
+	_, _ = fmt.Fprintln(stderr, "pair: Preparing secure pairing...")
 	options, err := parsePairOptions(args)
 	if err != nil {
 		_, _ = fmt.Fprintf(stderr, "pair: %v\n", err)
@@ -887,19 +888,21 @@ func compatibilityHermesEnrollment(origin *url.URL, token, label string) (issued
 		return issuedHermesEnrollment{}, err
 	}
 	sort.Slice(rows, func(left, right int) bool { return rows[left].ID < rows[right].ID })
+	if len(rows) > 100 {
+		return issuedHermesEnrollment{}, errors.New("compatibility pairing supports at most 100 profiles")
+	}
+	profileTokens, err := resolveHermesProfileTokens(rows, token, func(profileID string) (string, error) {
+		return hermesProfileToken(hermes, home, profileID)
+	})
+	if err != nil {
+		return issuedHermesEnrollment{}, err
+	}
 	connections := make([]issuedHermesConnection, 0, len(rows))
-	for _, row := range rows {
-		profileToken := token
-		if row.ID != "default" {
-			profileToken, err = hermesProfileToken(hermes, home, row.ID)
-			if err != nil {
-				return issuedHermesEnrollment{}, err
-			}
-		}
+	for index, row := range rows {
 		profileOrigin := *origin
 		profileOrigin.Path = "/p/" + row.ID
 		connections = append(connections, issuedHermesConnection{
-			ProfileID: row.ID, Origin: profileOrigin.String(), Token: profileToken,
+			ProfileID: row.ID, Origin: profileOrigin.String(), Token: profileTokens[index],
 			CredentialID: "api_server_key:" + row.ID,
 			Label:        label + " · " + row.ID,
 		})
@@ -907,6 +910,38 @@ func compatibilityHermesEnrollment(origin *url.URL, token, label string) (issued
 	return issuedHermesEnrollment{
 		Token: token, CredentialID: "api_server_key", Connections: connections,
 	}, nil
+}
+
+func resolveHermesProfileTokens(
+	rows []profileRow,
+	defaultToken string,
+	resolve func(string) (string, error),
+) ([]string, error) {
+	const maximumConcurrentLookups = 8
+	tokens := make([]string, len(rows))
+	errs := make([]error, len(rows))
+	semaphore := make(chan struct{}, maximumConcurrentLookups)
+	var wait sync.WaitGroup
+	for index, row := range rows {
+		if row.ID == "default" {
+			tokens[index] = defaultToken
+			continue
+		}
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+			tokens[index], errs[index] = resolve(row.ID)
+		}()
+	}
+	wait.Wait()
+	for _, err := range errs {
+		if err != nil {
+			return nil, err
+		}
+	}
+	return tokens, nil
 }
 
 func hermesProfileToken(hermes, home, profileID string) (string, error) {
@@ -1230,18 +1265,38 @@ func discoverMeshVPNAddressesWith(
 	capture func(context.Context, CommandSpec, int) ([]byte, ProcessResult),
 	isLocal func(net.IP) bool,
 ) ([]meshVPNAddress, error) {
-	addresses := make([]meshVPNAddress, 0, len(meshVPNProbes))
-	for _, probe := range meshVPNProbes {
+	type probeResult struct {
+		provider string
+		output   []byte
+		result   ProcessResult
+	}
+	results := make([]probeResult, len(meshVPNProbes))
+	var wait sync.WaitGroup
+	for index, probe := range meshVPNProbes {
 		executable, err := lookPath(probe.Executable)
 		if err != nil {
 			continue
 		}
-		output, result := capture(context.Background(), CommandSpec{
-			Path: executable, Args: probe.Arguments, Timeout: 3 * time.Second,
-		}, 256)
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			output, result := capture(context.Background(), CommandSpec{
+				Path: executable, Args: probe.Arguments, Timeout: 3 * time.Second,
+			}, 256)
+			results[index] = probeResult{provider: probe.Provider, output: output, result: result}
+		}()
+	}
+	wait.Wait()
+
+	addresses := make([]meshVPNAddress, 0, len(meshVPNProbes))
+	for _, probe := range results {
+		if probe.provider == "" {
+			continue
+		}
+		output, result := probe.output, probe.result
 		if result.Err != nil || result.ExitCode != 0 {
 			if errors.Is(result.Err, context.DeadlineExceeded) || len(output) > 0 {
-				return nil, fmt.Errorf("%s VPN address probe failed safely", probe.Provider)
+				return nil, fmt.Errorf("%s VPN address probe failed safely", probe.provider)
 			}
 			continue
 		}
@@ -1250,13 +1305,13 @@ func discoverMeshVPNAddressesWith(
 		}
 		fields := strings.Fields(string(output))
 		if len(fields) != 1 {
-			return nil, fmt.Errorf("%s returned an invalid VPN address", probe.Provider)
+			return nil, fmt.Errorf("%s returned an invalid VPN address", probe.provider)
 		}
 		ip := net.ParseIP(fields[0])
 		if ip == nil || !ip.IsGlobalUnicast() || !isTrustedControlPlaneIP(ip) || !isLocal(ip) {
-			return nil, fmt.Errorf("%s returned an untrusted or nonlocal VPN address", probe.Provider)
+			return nil, fmt.Errorf("%s returned an untrusted or nonlocal VPN address", probe.provider)
 		}
-		addresses = append(addresses, meshVPNAddress{Provider: probe.Provider, IP: ip})
+		addresses = append(addresses, meshVPNAddress{Provider: probe.provider, IP: ip})
 	}
 	return addresses, nil
 }

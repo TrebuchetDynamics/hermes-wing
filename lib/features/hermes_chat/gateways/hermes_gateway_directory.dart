@@ -614,6 +614,76 @@ class HermesGatewayDirectory extends ChangeNotifier
     }
   }
 
+  /// Applies the identity returned by a successful Wing Link rename to the
+  /// independently enrolled Agent endpoint on the same reviewed host.
+  Future<void> reconcileManagedProfileRename({
+    required String sourceGatewayId,
+    required String previousProfileId,
+    required String profileId,
+    required String displayName,
+  }) async {
+    if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(profileId)) {
+      throw StateError('The renamed profile identity is invalid.');
+    }
+    final gatewayId = enrolledGatewayIdForManagedProfile(
+      sourceGatewayId: sourceGatewayId,
+      profileId: previousProfileId,
+    );
+    if (gatewayId == null) {
+      await refresh();
+      return;
+    }
+    final config = _configsById[gatewayId]!;
+    final uri = Uri.parse(config.baseUrl);
+    final replacement = HermesEndpointConfig(
+      id: config.id,
+      label: config.label == previousProfileId ? displayName : config.label,
+      baseUrl: previousProfileId == profileId
+          ? config.baseUrl
+          : uri.replace(pathSegments: ['p', profileId]).toString(),
+      apiKey: config.apiKey,
+      wingLinkOrigin: config.wingLinkOrigin,
+      wingLinkToken: config.wingLinkToken,
+      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
+      wingLinkDeviceId: config.wingLinkDeviceId,
+    );
+    final wasActive = _activeContactId?.gatewayId == gatewayId;
+    if (wasActive) await showDirectory();
+    await _store.saveAll([
+      for (final entry in _configsById.entries)
+        entry.key == gatewayId ? replacement : entry.value,
+    ]);
+    _configsById[gatewayId] = replacement;
+    // Keep the confirmed identity visible even when Hermes stopped its gateway
+    // during rename. Never retain old sessions under the replacement route.
+    _replaceGatewayContacts(gatewayId, [
+      GatewayContact(
+        id: GatewayContactId(gatewayId: gatewayId, profileId: profileId),
+        gatewayLabel: replacement.displayLabel,
+        profileName: displayName,
+        sessionCount: 0,
+        availability: GatewayAvailability.refreshing,
+        isFallbackProfile: true,
+      ),
+    ]);
+    await refresh();
+    if (wasActive &&
+        _contacts.any(
+          (contact) =>
+              contact.id.gatewayId == gatewayId &&
+              contact.availability == GatewayAvailability.online,
+        )) {
+      try {
+        await activateGateway(gatewayId);
+      } catch (_) {
+        // The rename persisted even if reconnect fails. The directory retains
+        // the new identity and reports connection health independently.
+        await reconnectGateway(gatewayId);
+      }
+    }
+  }
+
   Future<void> renameGateway(String gatewayId, String? label) async {
     final config = _configsById[gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');

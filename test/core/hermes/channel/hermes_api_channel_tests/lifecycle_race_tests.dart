@@ -1,6 +1,242 @@
 part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelLifecycleRaceTests() {
+  for (final fails in [false, true]) {
+    test(
+      'profile transition blocks conversation writes (failure: $fails)',
+      () async {
+        final pending = Completer<String>();
+        final started = Completer<void>();
+        var defer = false;
+        final writes = <String>[];
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              if (defer && uri.path == '/api/profiles') {
+                defer = false;
+                started.complete();
+                return pending.future;
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => _profileCapabilitiesFixture,
+                '/api/profiles' => _profilesFixture,
+                '/api/sessions' => _sessionsFixture,
+                '/api/sessions/sess_1/messages' => _messagesFixture,
+                _ => throw StateError('unexpected GET $uri'),
+              };
+            },
+            post: (uri, headers, body) async {
+              writes.add(uri.path);
+              return '{"session":{"id":"unexpected"}}';
+            },
+            postStream: (uri, headers, body) {
+              writes.add(uri.path);
+              return Stream.value('event: assistant.completed\ndata: {}\n\n');
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        defer = true;
+        final selection = channel.selectProfile('coder');
+        final done = fails
+            ? expectLater(selection, throwsStateError)
+            : selection;
+        await started.future;
+        final canCreate = channel.state.canCreateSessions;
+        final errors = <Object>[];
+        for (final action in [
+          () => channel.sendText('belongs to the selected profile'),
+          () => channel.createSession(),
+        ]) {
+          try {
+            await action();
+          } catch (error) {
+            errors.add(error);
+          }
+        }
+        if (fails) {
+          pending.completeError(StateError('selection rejected'));
+        } else {
+          pending.complete(_profilesFixture);
+        }
+        await done;
+        expect(canCreate, isFalse);
+        expect(writes, isEmpty);
+        expect(errors, hasLength(2));
+        expect(errors, everyElement(isStateError));
+        expect(channel.state.selectedProfileId, fails ? 'default' : 'coder');
+        expect(channel.state.activeSessionId, 'sess_1');
+        expect(channel.state.canCreateSessions, isTrue);
+      },
+    );
+  }
+
+  for (final operation in ['rename', 'delete', 'overlapping rename']) {
+    test('session mutation ownership: $operation', () async {
+      final pending = Completer<String>();
+      final started = Completer<void>();
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _profileCapabilitiesFixture.replaceFirst(
+              '"session_create":',
+              '"session_delete":{"method":"DELETE","path":"/api/sessions/{session_id}"},"session_update":{"method":"PATCH","path":"/api/sessions/{session_id}"},"session_create":',
+            ),
+            '/api/profiles' => _profilesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          patch: (uri, headers, body) {
+            if (started.isCompleted) {
+              return Future.value(
+                '{"session":{"id":"sess_1","title":"Newest title"}}',
+              );
+            }
+            started.complete();
+            return pending.future;
+          },
+          delete: (uri, headers) {
+            started.complete();
+            return pending.future;
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      final mutation = operation == 'delete'
+          ? channel.deleteSession('sess_1')
+          : channel.renameSession(sessionId: 'sess_1', title: 'Older title');
+      await started.future;
+      if (operation == 'overlapping rename') {
+        await channel.renameSession(sessionId: 'sess_1', title: 'Newest title');
+      } else {
+        await channel.selectProfile('coder');
+        await channel.selectProfile('default');
+      }
+      final current = channel.state.sessions.single;
+      pending.complete(
+        operation == 'delete'
+            ? '{"id":"sess_1","deleted":true}'
+            : '{"session":{"id":"sess_1","title":"Older title"}}',
+      );
+      await mutation;
+      expect(identical(channel.state.sessions.single, current), isTrue);
+    });
+  }
+
+  for (final order in ['refresh-refresh', 'refresh-read', 'read-refresh']) {
+    test('catalog keeps newest response across $order', () async {
+      final started = Completer<void>();
+      final pending = Completer<String>();
+      var defer = false;
+      String inventory(String model) => jsonEncode({
+        'catalog': {
+          'providers': {
+            'synthetic': {
+              'models': [
+                {'id': model},
+              ],
+            },
+          },
+        },
+        'active': {'provider': 'synthetic', 'model': 'assigned-model'},
+        'revision': 'read-revision',
+      });
+      Future<String> response() async {
+        if (defer) {
+          defer = false;
+          started.complete();
+          return pending.future;
+        }
+        return inventory('current-model');
+      }
+
+      final channel = await _connectedProviderModelChannel(
+        capabilities: _providerModelCapabilitiesFixture,
+        get: (uri) async => uri.path == '/api/models' ? response() : null,
+        post: (uri, body) => response(),
+      );
+      await channel.loadModels();
+      defer = true;
+      final older = order.startsWith('read')
+          ? channel.loadModels()
+          : channel.refreshModels();
+      await started.future;
+      if (order.endsWith('read')) {
+        await channel.loadModels();
+      } else {
+        await channel.refreshModels();
+      }
+      final currentCatalog = channel.state.modelInventory!.catalog;
+      pending.complete(
+        inventory(
+          'obsolete-model',
+        ).replaceAll('read-revision', 'older-read-revision'),
+      );
+      await older;
+
+      expect(
+        identical(channel.state.modelInventory!.catalog, currentCatalog),
+        isTrue,
+      );
+      expect(
+        channel.state.modelInventory!.assignment.revision,
+        order == 'read-refresh' ? 'older-read-revision' : 'read-revision',
+      );
+    });
+  }
+  for (final conflictFirst in [true, false]) {
+    test(
+      'model conflict recovery shares read ordering ($conflictFirst)',
+      () async {
+        final firstReadStarted = Completer<void>();
+        final firstRead = Completer<String>();
+        var reads = 0;
+        final channel = await _connectedProviderModelChannel(
+          capabilities: _providerModelCapabilitiesFixture,
+          get: (uri) async {
+            if (uri.path != '/api/models') return null;
+            reads++;
+            if (reads == 1) {
+              firstReadStarted.complete();
+              return firstRead.future;
+            }
+            return _modelsInventoryBody.replaceAll('mrev-1', 'mrev-2');
+          },
+          put: (uri, body) async => throw const _TestHermesStatusException(412),
+        );
+        Future<void> recoverConflict() => expectLater(
+          channel.assignModel(
+            scope: 'main',
+            provider: 'openai',
+            model: 'synthetic-model',
+            revision: 'mrev-1',
+          ),
+          throwsA(isA<_TestHermesStatusException>()),
+        );
+
+        final older = conflictFirst ? recoverConflict() : channel.loadModels();
+        await firstReadStarted.future;
+        if (conflictFirst) {
+          await channel.loadModels();
+        } else {
+          await recoverConflict();
+        }
+        expect(channel.state.modelInventory!.assignment.revision, 'mrev-2');
+        firstRead.complete(_modelsInventoryBody);
+        await older;
+
+        expect(reads, 2);
+        expect(channel.state.modelInventory!.assignment.revision, 'mrev-2');
+      },
+    );
+  }
   for (final resource in ['providers', 'models', 'options', 'health']) {
     test('$resource newest overlapping read owns inventory', () async {
       final pending = Completer<String>();

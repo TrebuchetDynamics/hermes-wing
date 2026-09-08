@@ -8,6 +8,49 @@ import 'package:wing/shared/voice/voice_capture_service.dart';
 
 void main() {
   test(
+    'natural silence ends as no transcript instead of an ambiguous failure',
+    () async {
+      final engine = _NaturalCompletionSpeechToTextEngine();
+      final service = SpeechToTextVoiceCaptureService(engine: engine);
+      final capture = service.capture(timeout: const Duration(seconds: 1));
+      final result = expectLater(
+        capture,
+        throwsA(
+          isA<SpeechToTextCaptureFailure>().having(
+            (error) => error.toString(),
+            'reason',
+            contains('no transcript'),
+          ),
+        ),
+      );
+      await pumpEventQueue();
+      engine.emitTerminal(actualEnd: true);
+      await result;
+      await service.dispose();
+    },
+  );
+
+  test(
+    'notListening before final result preserves two consecutive captures',
+    () async {
+      final engine = _NaturalCompletionSpeechToTextEngine();
+      final service = SpeechToTextVoiceCaptureService(engine: engine);
+      for (var turn = 0; turn < 2; turn++) {
+        final capture = service.capture(timeout: const Duration(seconds: 1));
+        final result = expectLater(
+          capture.then((value) => value.transcript),
+          completion('synthetic final'),
+        );
+        await pumpEventQueue();
+        engine.finishNaturally();
+        await result;
+      }
+      expect(engine.cancelCalls, 0);
+      await service.dispose();
+    },
+  );
+
+  test(
     'dispose during readiness closes streams and prevents listening',
     () async {
       final engine = _StaleTerminalSpeechToTextEngine();
@@ -1581,5 +1624,22 @@ class _HangingSpeechToTextEngine implements SpeechToTextEngine {
   @override
   Future<void> cancel() async {
     cancelCalls += 1;
+  }
+}
+
+class _NaturalCompletionSpeechToTextEngine
+    extends _DuplicateTerminalSpeechToTextEngine {
+  int cancelCalls = 0;
+  void finishNaturally() {
+    _nativeActive = false;
+    _onStatus?.call('notListening');
+    emitFinal('synthetic final');
+    emitTerminal(actualEnd: true);
+  }
+
+  @override
+  Future<void> cancel() async {
+    cancelCalls++;
+    emitTerminal(actualEnd: true);
   }
 }

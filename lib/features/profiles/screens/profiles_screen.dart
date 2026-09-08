@@ -415,14 +415,24 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                                   await _runWingLinkMutation(
                                     directory,
                                     activeGatewayId!,
-                                    () => _wingLinkClient!.renameProfile(
-                                      id: profileId,
-                                      name: name,
-                                      revision:
-                                          wingLinkRowsById[profileId]
-                                              ?.renameRevision ??
-                                          revision,
-                                    ),
+                                    () async {
+                                      final renamed = await _wingLinkClient!
+                                          .renameProfile(
+                                            id: profileId,
+                                            name: name,
+                                            revision:
+                                                wingLinkRowsById[profileId]
+                                                    ?.renameRevision ??
+                                                revision,
+                                          );
+                                      await directory
+                                          .reconcileManagedProfileRename(
+                                            sourceGatewayId: activeGatewayId,
+                                            previousProfileId: profileId,
+                                            profileId: renamed.id,
+                                            displayName: renamed.name,
+                                          );
+                                    },
                                   );
                                   await _loadWingLinkProfiles(
                                     directory,
@@ -692,6 +702,9 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         onDelete: onDelete,
       ),
     );
+    if (mounted && !stableNames) {
+      await ref.read(hermesGatewayDirectoryProvider).refresh();
+    }
   }
 
   Future<void> _selectProfile(

@@ -94,11 +94,13 @@ class HermesApiChannel extends ChangeNotifier
   int _healthRequestGeneration = 0;
   int _providersRequestGeneration = 0;
   int _modelsRequestGeneration = 0;
+  int _modelCatalogRequestGeneration = 0;
   int _modelOptionsRequestGeneration = 0;
   String? _pendingProfileSelectionId;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
   final _deletingSessionOperations = <String, Object>{};
+  final _renamingSessionOperations = <String, Object>{};
   final _forkingSessionOperations = <String, Object>{};
 
   @override
@@ -139,6 +141,10 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   void _setState(HermesChannelState next) {
+    final selectingProfile = _pendingProfileSelectionId != null;
+    if (next.isSelectingProfile != selectingProfile) {
+      next = next.copyWith(isSelectingProfile: selectingProfile);
+    }
     if (next.activeSessionId != _state.activeSessionId ||
         next.selectedProfileId != _state.selectedProfileId ||
         next.status != _state.status) {
@@ -180,9 +186,32 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   int _beginProfileSelection(String profileId) {
-    _profileSelectionGeneration += 1;
+    final generation = ++_profileSelectionGeneration;
     _pendingProfileSelectionId = profileId;
-    return _profileSelectionGeneration;
+    _setState(_state);
+    return generation;
+  }
+
+  void _requireStableProfile() {
+    if (_pendingProfileSelectionId != null) {
+      throw StateError('Hermes profile selection is still in progress.');
+    }
+  }
+
+  bool Function() _profileRequestGuard(
+    HermesApiClient client,
+    String? profileId,
+  ) {
+    _requireStableProfile();
+    // Identity equality alone cannot distinguish selecting A from leaving A
+    // and returning to it while this request is in flight.
+    final connectionGeneration = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
+    return () =>
+        _pendingProfileSelectionId == null &&
+        connectionGeneration == _connectionGeneration &&
+        profileGeneration == _profileSelectionGeneration &&
+        _isConnectedProfile(client, profileId);
   }
 
   bool _isCurrentProfileSelection(
@@ -196,12 +225,14 @@ class HermesApiChannel extends ChangeNotifier
   void _finishProfileSelection(int selectionGeneration) {
     if (selectionGeneration == _profileSelectionGeneration) {
       _pendingProfileSelectionId = null;
+      _setState(_state);
     }
   }
 
   void _invalidateProfileSelection() {
     _profileSelectionGeneration += 1;
     _pendingProfileSelectionId = null;
+    _renamingSessionOperations.clear();
   }
 
   void _clearActiveRunTracking() {
@@ -226,8 +257,10 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> disconnect() => _disconnect();
 
   @override
-  void clearActiveSession() =>
-      _setState(_state.copyWith(clearActiveSessionId: true));
+  void clearActiveSession() {
+    _sessionSelectionGeneration += 1;
+    _setState(_state.copyWith(clearActiveSessionId: true));
+  }
 
   @override
   Future<void> selectSession(String sessionId) => _selectSession(sessionId);

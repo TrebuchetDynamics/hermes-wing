@@ -16,6 +16,19 @@ const _profiles = [
   HermesProfile(id: 'coder', displayName: 'Coding Agent', revision: 'c'),
 ];
 
+class _ProfileTransitionChannel extends FakeHermesChannel {
+  bool _selecting = false;
+
+  @override
+  HermesChannelState get state =>
+      super.state.copyWith(isSelectingProfile: _selecting);
+
+  void setSelecting(bool value) {
+    _selecting = value;
+    notifyListeners();
+  }
+}
+
 void _stageImageAttachment(WidgetTester tester) {
   final composer = tester.widget<TextField>(
     find.byKey(const ValueKey('hermes-composer-field')),
@@ -59,6 +72,30 @@ Future<void> _pumpChat(WidgetTester tester, FakeHermesChannel channel) async {
 }
 
 void main() {
+  testWidgets(
+    'pending profile selection disables Send and preserves the draft',
+    (tester) async {
+      final channel = _ProfileTransitionChannel();
+      addTearDown(channel.dispose);
+      await _pumpChat(tester, channel);
+      final composer = find.byKey(const ValueKey('hermes-composer-field'));
+      final send = find.byKey(const ValueKey('hermes-send-button'));
+      await tester.enterText(composer, 'draft for this conversation');
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(send).onPressed, isNotNull);
+      channel.setSelecting(true);
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(send).onPressed, isNull);
+      expect(
+        tester.widget<TextField>(composer).controller!.text,
+        'draft for this conversation',
+      );
+      channel.setSelecting(false);
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(send).onPressed, isNotNull);
+    },
+  );
+
   testWidgets('agent switch clears a staged attachment', (tester) async {
     final channel = FakeHermesChannel(profiles: _profiles);
     addTearDown(channel.dispose);

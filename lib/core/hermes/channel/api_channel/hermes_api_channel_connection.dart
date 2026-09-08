@@ -316,6 +316,7 @@ extension _ConnectionExtension on HermesApiChannel {
     HermesApiClient client,
     String sessionId, {
     String? profileId,
+    bool Function()? canAccept,
   }) async {
     final connectionGeneration = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
@@ -330,8 +331,11 @@ extension _ConnectionExtension on HermesApiChannel {
       sessionId,
       profile: requestProfile,
     );
+    // Caller ownership must be checked before accepting pagination or model
+    // history, not only before publishing the visible transcript.
     if (!_isCurrentConnection(connectionGeneration, client) ||
-        profileGeneration != _profileSelectionGeneration) {
+        profileGeneration != _profileSelectionGeneration ||
+        (canAccept != null && !canAccept())) {
       return const [];
     }
     if (page.offset != 0 || page.order != 'latest') {

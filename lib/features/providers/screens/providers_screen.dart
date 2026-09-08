@@ -484,8 +484,10 @@ class _ModelSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(strings.modelSelectionTitle, style: theme.textTheme.titleSmall),
-        const SizedBox(height: 12),
+        if (!state.canReadModels) ...[
+          Text(strings.modelSelectionTitle, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 12),
+        ],
         if (!state.canReadModels && state.canReadRuntimeModels)
           _RuntimeModelsCard(
             strings: strings,

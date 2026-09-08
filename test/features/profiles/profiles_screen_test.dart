@@ -968,6 +968,77 @@ void main() {
     expect(find.text('Could not load local profiles.'), findsOneWidget);
   });
 
+  testWidgets(
+    'Wing Link rename reconnects Chat using the returned profile identity',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'http://localhost:8642/p/link',
+            apiKey: 'synthetic-agent',
+            wingLinkOrigin: 'http://localhost:8654',
+            wingLinkToken: 'wlc-secret',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({'alpha': gatewaySummary([])}),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('alpha');
+      var listCalls = 0;
+      var currentId = 'link';
+
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
+                origin: origin,
+                token: token,
+                get: (_, _) async {
+                  listCalls++;
+                  return '''{"profiles":[{"id":"$currentId","name":"$currentId","topology_revision":"rev-$listCalls","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-$listCalls"},"delete":{"revision":"rev-$listCalls"}}}]}''';
+                },
+                patch: (_, _, _) async {
+                  currentId = 'link-renamed';
+                  return '{"profile":{"id":"link-renamed","name":"link-renamed","topology_revision":"rev-2","source":"cli","gateway_state":"running","actions":{}}}';
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final editButton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Edit').first,
+      );
+      editButton.onPressed!.call();
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'link-renamed');
+      final save = find.widgetWithText(FilledButton, 'Save');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      expect(
+        directory.configForGateway('alpha')!.baseUrl,
+        'http://localhost:8642/p/link-renamed',
+      );
+      expect(directory.contacts.single.id.profileId, 'link-renamed');
+      expect(directory.activeContactId?.profileId, 'link-renamed');
+      expect(find.text('link'), findsNothing);
+    },
+  );
+
   testWidgets('Wing Link stale mutation refreshes inventory before retry', (
     tester,
   ) async {

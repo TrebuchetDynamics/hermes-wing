@@ -263,6 +263,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canSendTurns(HermesChannelState state) {
+    if (state.isSelectingProfile) return false;
     if (state.activeSessionId == null || state.hasUnreconciledRun) return false;
     return _hasChatTransport(state);
   }

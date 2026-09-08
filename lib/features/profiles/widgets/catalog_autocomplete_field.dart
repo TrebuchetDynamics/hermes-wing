@@ -46,6 +46,7 @@ class _CatalogAutocompleteFieldState extends State<CatalogAutocompleteField> {
     textEditingController: widget.controller,
     focusNode: _focus,
     optionsMaxHeight: 240,
+    optionsViewOpenDirection: OptionsViewOpenDirection.mostSpace,
     optionsBuilder: (value) {
       if (!widget.enabled) return const <String>[];
       final query = value.text.trim().toLowerCase();

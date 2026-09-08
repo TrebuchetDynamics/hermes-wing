@@ -24,15 +24,21 @@ if ((${#missing_packages[@]})); then
 fi
 
 runner=()
+# Clipboard/paste targets always get an owned display, even when other native
+# tests can use an existing DISPLAY.
+if ! command -v xvfb-run >/dev/null 2>&1; then
+  echo 'xvfb-run is required for isolated native clipboard tests.' >&2
+  exit 2
+fi
 if [[ -z "${DISPLAY:-}" ]]; then
-  if ! command -v xvfb-run >/dev/null 2>&1; then
-    echo 'xvfb-run is required when DISPLAY is unset.' >&2
-    exit 2
-  fi
   runner=(xvfb-run -a)
 fi
 
-"${runner[@]}" flutter test \
-  -d linux \
-  integration_test/linux_fixture_e2e_test.dart \
-  --concurrency=1
+# Separate launches avoid native debugger attachment races between targets.
+for target in linux_fixture_e2e_test.dart linux_http_e2e_test.dart linux_transport_boundary_test.dart; do
+  "${runner[@]}" flutter test -d linux "integration_test/$target" --reporter expanded
+done
+xvfb-run -a flutter test -d linux integration_test/linux_maestro_flows_test.dart --reporter expanded
+xvfb-run -a flutter test -d linux integration_test/linux_large_reader_e2e_test.dart --reporter expanded
+bash scripts/run_linux_persistence_e2e.sh
+bash scripts/run_linux_native_input_e2e.sh

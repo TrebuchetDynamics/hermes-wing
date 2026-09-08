@@ -59,13 +59,19 @@ class SettingsScreen extends ConsumerWidget {
               if (wide)
                 _SettingsColumns(
                   key: const ValueKey('settings-two-column-layout'),
-                  children: [appearance, voice],
+                  children: [
+                    appearance,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [voice, const _DiagnosticsSettingsLink()],
+                    ),
+                  ],
                 )
               else ...[
                 appearance,
                 voice,
+                const _DiagnosticsSettingsLink(),
               ],
-              const _DiagnosticsSettingsLink(),
             ],
           );
         },
@@ -291,6 +297,7 @@ class _DiagnosticsSettingsLink extends ConsumerWidget {
       builder: (context, _) {
         final strings = AppLocalizations.of(context);
         return Card(
+          margin: const EdgeInsets.only(bottom: 16),
           child: ListTile(
             key: const ValueKey('settings-diagnostics-link'),
             minTileHeight: 56,

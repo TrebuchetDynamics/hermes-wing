@@ -96,6 +96,62 @@ class _DeferredStartupCache extends FakeGatewayContactCache {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  for (final offline in [false, true]) {
+    test(
+      'confirmed rename preserves enrollment with gateway offline=$offline',
+      () async {
+        final store = FakeHermesEndpointStore(
+          profiles: const [
+            HermesEndpointConfig(
+              id: 'saved',
+              label: 'old',
+              baseUrl: 'http://localhost:8080/p/old',
+              apiKey: 'synthetic-agent',
+              wingLinkOrigin: 'http://localhost:8787',
+              wingLinkToken: 'synthetic-link',
+              wingLinkDeviceId: 'device',
+            ),
+          ],
+        );
+        final channel = FakeHermesChannel.disconnected();
+        final loader = FakeGatewaySummaryLoader({'saved': gatewaySummary([])});
+        final cache = FakeGatewayContactCache();
+        final directory = HermesGatewayDirectory(
+          store: store,
+          cache: cache,
+          loader: loader,
+          activeChannel: channel,
+        );
+        addTearDown(directory.dispose);
+        addTearDown(channel.dispose);
+        await directory.refresh();
+        await directory.activateGateway('saved');
+        if (offline) loader.results['saved'] = StateError('gateway stopped');
+        await directory.reconcileManagedProfileRename(
+          sourceGatewayId: 'saved',
+          previousProfileId: 'old',
+          profileId: 'renamed',
+          displayName: 'renamed',
+        );
+        final config = (await store.loadProfiles()).single;
+        expect(config.baseUrl, 'http://localhost:8080/p/renamed');
+        expect(config.apiKey, 'synthetic-agent');
+        expect(config.wingLinkToken, 'synthetic-link');
+        expect(config.wingLinkDeviceId, 'device');
+        expect(config.label, 'renamed');
+        expect(directory.contacts.single.id.profileId, 'renamed');
+        expect(cache.stored.single.id.profileId, 'renamed');
+        expect(
+          directory.activeContactId?.profileId,
+          offline ? isNull : 'renamed',
+        );
+        expect(
+          directory.contacts.single.availability,
+          offline ? GatewayAvailability.offline : GatewayAvailability.online,
+        );
+      },
+    );
+  }
   test('disposal during startup does not begin gateway refresh', () async {
     final cache = _DeferredStartupCache();
     final loader = FakeGatewaySummaryLoader(const {});

@@ -13,6 +13,7 @@ extension _SessionsExtension on HermesApiChannel {
   }
 
   Future<void> _selectSession(String sessionId) async {
+    _requireStableProfile();
     final client = _client;
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
@@ -39,16 +40,25 @@ extension _SessionsExtension on HermesApiChannel {
           )
         : false;
     if (!isCurrentSelection()) return;
+    final transcriptAtStart = _state.messages[sessionId];
+    bool canAcceptHistory() =>
+        isCurrentSelection() &&
+        identical(_state.messages[sessionId], transcriptAtStart);
     final List<HermesChatTurn> turns;
     try {
       turns = _state.isSessionStreaming(sessionId)
           ? List<HermesChatTurn>.from(_state.messages[sessionId] ?? const [])
-          : await _fetchTurns(client, sessionId, profileId: profileId);
+          : await _fetchTurns(
+              client,
+              sessionId,
+              profileId: profileId,
+              canAccept: canAcceptHistory,
+            );
     } catch (_) {
-      if (!isCurrentSelection()) return;
+      if (!canAcceptHistory()) return;
       rethrow;
     }
-    if (!isCurrentSelection()) return;
+    if (!canAcceptHistory()) return;
     _setState(
       _state.copyWith(
         activeSessionId: sessionId,
@@ -241,44 +251,64 @@ extension _SessionsExtension on HermesApiChannel {
       '/api/sessions',
       'create sessions',
     );
-    final created = await client.createSession(
-      id: _sessionIdFactory(),
-      title: title,
-      profile: profileId,
-    );
-    if (!_isConnectedProfile(client, profileId)) return;
-    _setState(
-      _state.copyWith(
-        sessions: [..._state.sessions, created],
-        activeSessionId: created.id,
-        hasUnreconciledRun: _sessionHasDetachedRun(
-          sessionId: created.id,
-          profileId: profileId,
-        ),
-        clearErrorMessage: true,
-        messages: {..._state.messages, created.id: const []},
-      ),
-    );
-    final List<HermesChatTurn> turns;
+    final requestedId = _sessionIdFactory();
+    final previousSessionId = _state.activeSessionId;
+    final isCurrentContext = _profileRequestGuard(client, profileId);
+    // New-chat intent ends the previous send target immediately. Keep the new
+    // target unavailable until its initial history is ready for submission.
+    clearActiveSession();
+    final selectionGeneration = _sessionSelectionGeneration;
+    bool isCurrentSelection() =>
+        isCurrentContext() &&
+        selectionGeneration == _sessionSelectionGeneration;
+    final HermesSession created;
     try {
-      turns = await _fetchTurns(client, created.id, profileId: profileId);
-    } catch (error) {
-      if (_isConnectedProfile(client, profileId)) {
-        _setState(
-          _state.copyWith(
-            errorMessage:
-                'Hermes session was created, but its history could not be loaded: '
-                '${_safeHermesError(error)}',
-          ),
-        );
+      created = await client.createSession(
+        id: requestedId,
+        title: title,
+        profile: profileId,
+      );
+    } catch (_) {
+      if (isCurrentSelection() &&
+          _state.sessions.any((session) => session.id == previousSessionId)) {
+        _setState(_state.copyWith(activeSessionId: previousSessionId));
       }
-      return;
+      rethrow;
     }
-    if (!_isConnectedProfile(client, profileId)) return;
+    if (!isCurrentContext()) return;
+    var turns = const <HermesChatTurn>[];
+    String? historyError;
+    if (isCurrentSelection()) {
+      try {
+        turns = await _fetchTurns(client, created.id, profileId: profileId);
+      } catch (error) {
+        historyError =
+            'Hermes session was created, but its history could not be loaded: '
+            '${_safeHermesError(error)}';
+      }
+    }
+    if (!isCurrentContext()) return;
+    final selectCreated = isCurrentSelection();
     _setState(
       _state.copyWith(
-        clearErrorMessage: true,
-        messages: {..._state.messages, created.id: turns},
+        sessions: [
+          ..._state.sessions,
+          if (!_state.sessions.any((session) => session.id == created.id))
+            created,
+        ],
+        activeSessionId: selectCreated ? created.id : null,
+        hasUnreconciledRun: selectCreated
+            ? _sessionHasDetachedRun(
+                sessionId: created.id,
+                profileId: profileId,
+              )
+            : null,
+        errorMessage: selectCreated ? historyError : null,
+        clearErrorMessage: selectCreated && historyError == null,
+        messages: {
+          ..._state.messages,
+          if (!_state.messages.containsKey(created.id)) created.id: turns,
+        },
       ),
     );
   }
@@ -307,20 +337,32 @@ extension _SessionsExtension on HermesApiChannel {
       'rename sessions',
     );
     _requireKnownSession(sessionId);
-    final updated = await client.updateSessionTitle(
-      sessionId,
-      title: trimmed,
-      profile: profileId,
-    );
-    if (!_isConnectedProfile(client, profileId)) return;
-    _setState(
-      _state.copyWith(
-        sessions: [
-          for (final session in _state.sessions)
-            if (session.id == updated.id) updated else session,
-        ],
-      ),
-    );
+    final isCurrentContext = _profileRequestGuard(client, profileId);
+    final operation = Object();
+    _renamingSessionOperations[sessionId] = operation;
+    try {
+      final updated = await client.updateSessionTitle(
+        sessionId,
+        title: trimmed,
+        profile: profileId,
+      );
+      if (!isCurrentContext() ||
+          !identical(_renamingSessionOperations[sessionId], operation)) {
+        return;
+      }
+      _setState(
+        _state.copyWith(
+          sessions: [
+            for (final session in _state.sessions)
+              if (session.id == updated.id) updated else session,
+          ],
+        ),
+      );
+    } finally {
+      if (identical(_renamingSessionOperations[sessionId], operation)) {
+        _renamingSessionOperations.remove(sessionId);
+      }
+    }
   }
 
   Future<void> _deleteSession(String sessionId) async {
@@ -336,6 +378,7 @@ extension _SessionsExtension on HermesApiChannel {
       'delete sessions',
     );
     _requireKnownSession(sessionId);
+    final isCurrentContext = _profileRequestGuard(client, profileId);
     if (_deletingSessionOperations.containsKey(sessionId)) {
       throw StateError('Hermes session delete is already in progress.');
     }
@@ -344,7 +387,7 @@ extension _SessionsExtension on HermesApiChannel {
     _finishSessionTurnLocally(sessionId);
     try {
       await client.deleteSession(sessionId, profile: profileId);
-      if (!_isConnectedProfile(client, profileId)) return;
+      if (!isCurrentContext()) return;
       final remaining = [
         for (final session in _state.sessions)
           if (session.id != sessionId) session,
@@ -355,20 +398,12 @@ extension _SessionsExtension on HermesApiChannel {
           : _state.activeSessionId;
       final messages = Map<String, List<HermesChatTurn>>.from(_state.messages)
         ..remove(sessionId);
-      if (deletingCurrentSession &&
+      final needsHistory =
+          deletingCurrentSession &&
           nextActiveId != null &&
-          !messages.containsKey(nextActiveId)) {
-        try {
-          messages[nextActiveId] = await _fetchTurns(
-            client,
-            nextActiveId,
-            profileId: profileId,
-          );
-        } catch (_) {
-          messages[nextActiveId] = const [];
-        }
-      }
-      if (!_isConnectedProfile(client, profileId)) return;
+          !messages.containsKey(nextActiveId);
+      final selectionGeneration = _sessionSelectionGeneration;
+      final profileSelectionGeneration = _profileSelectionGeneration;
       _setState(
         _state.copyWith(
           sessions: remaining,
@@ -381,6 +416,27 @@ extension _SessionsExtension on HermesApiChannel {
           messages: messages,
         ),
       );
+      if (needsHistory) {
+        List<HermesChatTurn> turns;
+        try {
+          turns = await _fetchTurns(client, nextActiveId, profileId: profileId);
+        } catch (_) {
+          turns = const [];
+        }
+        // Deletion is already authoritative; delayed history must not restore
+        // a snapshot over a newer selection, mutation, or streamed response.
+        if (!_isConnectedProfile(client, profileId) ||
+            profileSelectionGeneration != _profileSelectionGeneration ||
+            selectionGeneration != _sessionSelectionGeneration ||
+            _state.activeSessionId != nextActiveId ||
+            !_state.sessions.any((session) => session.id == nextActiveId) ||
+            _state.messages.containsKey(nextActiveId)) {
+          return;
+        }
+        _setState(
+          _state.copyWith(messages: {..._state.messages, nextActiveId: turns}),
+        );
+      }
     } finally {
       if (identical(_deletingSessionOperations[sessionId], operation)) {
         _deletingSessionOperations.remove(sessionId);
@@ -409,6 +465,8 @@ extension _SessionsExtension on HermesApiChannel {
     if (_forkingSessionOperations.containsKey(sessionId)) {
       throw StateError('Hermes session branching is already in progress.');
     }
+    final isCurrentContext = _profileRequestGuard(client, profileId);
+    final selectionGeneration = ++_sessionSelectionGeneration;
     final operation = Object();
     _forkingSessionOperations[sessionId] = operation;
     try {
@@ -421,7 +479,7 @@ extension _SessionsExtension on HermesApiChannel {
         title: title,
         profile: profileId,
       );
-      if (!_isConnectedProfile(client, profileId)) return;
+      if (!isCurrentContext()) return;
       List<HermesChatTurn> turns;
       try {
         turns = await _fetchTurns(client, fork.id, profileId: profileId);
@@ -431,16 +489,16 @@ extension _SessionsExtension on HermesApiChannel {
         // than reporting a failure that could prompt a duplicate retry.
         turns = inheritedTurns;
       }
-      if (!_isConnectedProfile(client, profileId)) return;
+      if (!isCurrentContext()) return;
+      final selectFork = selectionGeneration == _sessionSelectionGeneration;
       _setState(
         _state.copyWith(
           sessions: [..._state.sessions, fork],
-          activeSessionId: fork.id,
-          hasUnreconciledRun: _sessionHasDetachedRun(
-            sessionId: fork.id,
-            profileId: profileId,
-          ),
-          clearErrorMessage: true,
+          activeSessionId: selectFork ? fork.id : null,
+          hasUnreconciledRun: selectFork
+              ? _sessionHasDetachedRun(sessionId: fork.id, profileId: profileId)
+              : null,
+          clearErrorMessage: selectFork,
           messages: {..._state.messages, fork.id: turns},
         ),
       );

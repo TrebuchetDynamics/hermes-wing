@@ -1820,85 +1820,100 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets(
-      'computer setup returns to pairing and accepts a live handoff',
-      (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        addTearDown(() => debugDefaultTargetPlatformOverride = null);
-        tester.view.physicalSize = const Size(360, 640);
-        tester.view.devicePixelRatio = 1;
-        tester.platformDispatcher.textScaleFactorTestValue = 2;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        final store = FakeHermesEndpointStore();
-        final source = _FakeConnectIntentSource();
-        addTearDown(source.dispose);
-        var inspections = 0;
-        final controller = HermesEnrollmentController(
-          inspectEnrollment: ({required origin, required code}) async {
-            inspections++;
-            return _preview;
-          },
-          exchangeEnrollment: ({required origin, required code}) async =>
-              _issued,
-          endpointStore: store,
-        );
-        await tester.pumpWidget(
-          buildApp(
-            controller: controller,
-            source: source,
-            store: store,
-            chooser: true,
-          ),
-        );
-        await tester.pumpAndSettle();
-        final computer = find.byKey(
-          const ValueKey('hermes-enrollment-computer-setup'),
-        );
-        await tester.ensureVisible(computer);
-        await tester.tap(computer);
-        await tester.pumpAndSettle();
-        expect(
-          find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
-          findsOneWidget,
-        );
-        expect(inspections, 0);
-        expect(find.text('hermes setup'), findsNothing);
-        for (var step = 0; step < 2; step++) {
-          final next = find.byKey(const ValueKey('computer-next-step'));
-          await tester.ensureVisible(next);
-          await tester.tap(next);
-          await tester.pumpAndSettle();
-        }
-        final ready = find.byKey(
-          const ValueKey('hermes-enrollment-computer-ready'),
-        );
-        await tester.ensureVisible(ready);
-        await tester.tap(ready);
-        await tester.pumpAndSettle();
-        expect(
-          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-          findsOneWidget,
-        );
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(computer);
-        await tester.tap(computer);
-        await tester.pumpAndSettle();
-        source.emit(_validPayload);
-        await tester.pumpAndSettle();
-        expect(controller.status, HermesEnrollmentStatus.ready);
-        expect(inspections, 1);
-        expect(
-          find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
-          findsNothing,
-        );
-        expect(store.saveCalls, isEmpty);
-        expect(tester.takeException(), isNull);
-        debugDefaultTargetPlatformOverride = null;
-      },
-    );
+    testWidgets('computer setup returns to pairing and accepts a live handoff', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final store = FakeHermesEndpointStore();
+      final source = _FakeConnectIntentSource();
+      addTearDown(source.dispose);
+      var inspections = 0;
+      final controller = HermesEnrollmentController(
+        inspectEnrollment: ({required origin, required code}) async {
+          inspections++;
+          return _preview;
+        },
+        exchangeEnrollment: ({required origin, required code}) async => _issued,
+        endpointStore: store,
+      );
+      await tester.pumpWidget(
+        buildApp(
+          controller: controller,
+          source: source,
+          store: store,
+          chooser: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final computer = find.byKey(
+        const ValueKey('hermes-enrollment-computer-setup'),
+      );
+      await tester.ensureVisible(computer);
+      await tester.tap(computer);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
+        findsOneWidget,
+      );
+      expect(inspections, 0);
+      expect(find.text('hermes setup'), findsNothing);
+      expect(find.textContaining('wing-link pair'), findsWidgets);
+      expect(
+        find.text(
+          'git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git\n'
+          'cd hermes-wing\n'
+          './install-wing-link.sh &&\n'
+          '~/.local/bin/wing-link pair',
+        ),
+        findsOneWidget,
+      );
+      final installed = find.byKey(
+        const ValueKey('computer-wing-link-installed'),
+      );
+      await tester.ensureVisible(installed);
+      await tester.tap(installed);
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          '~/.local/bin/wing-link setup &&\n~/.local/bin/wing-link pair',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('wing-link inspect'), findsNothing);
+      final ready = find.byKey(
+        const ValueKey('hermes-enrollment-computer-ready'),
+      );
+      await tester.ensureVisible(ready);
+      await tester.tap(ready);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsOneWidget,
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(computer);
+      await tester.tap(computer);
+      await tester.pumpAndSettle();
+      source.emit(_validPayload);
+      await tester.pumpAndSettle();
+      expect(controller.status, HermesEnrollmentStatus.ready);
+      expect(inspections, 1);
+      expect(
+        find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
+        findsNothing,
+      );
+      expect(store.saveCalls, isEmpty);
+      expect(tester.takeException(), isNull);
+      debugDefaultTargetPlatformOverride = null;
+    });
 
     testWidgets(
       'typed handoff recovers from clipboard failure and is cleared before review',

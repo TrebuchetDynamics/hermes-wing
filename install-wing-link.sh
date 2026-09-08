@@ -12,6 +12,36 @@ quick_setup=false
 use_sudo=false
 custom_prefix=false
 
+# Keep redirected logs and NO_COLOR terminals free of escape sequences.
+heading_style=''
+label_style=''
+reset_style=''
+if [[ -t 1 && "${TERM:-dumb}" != dumb && -z "${NO_COLOR+x}" ]]; then
+  heading_style=$'\033[1m'
+  label_style=$'\033[36m'
+  reset_style=$'\033[0m'
+fi
+
+status_line() {
+  local label_color='' reset_color=''
+  if [[ -t 1 ]]; then
+    label_color="$label_style"
+    reset_color="$reset_style"
+  fi
+  printf '  %s%-6s%s %s\n' "$label_color" "$1" "$reset_color" "$2"
+}
+
+next_step() {
+  local label="$1" binary="$2" action="$3"
+  printf '\n'
+  status_line NEXT "$label"
+  if [[ ":$PATH:" == *":$install_dir:"* ]]; then
+    printf '         wing-link %s\n' "$action"
+  else
+    printf '         %q %s\n' "$binary" "$action"
+  fi
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -104,10 +134,10 @@ fi
 run_quick_setup() {
   local binary="$1"
   [[ "$quick_setup" == true ]] || return 0
-  printf 'Preparing Hermes Agent...\n'
+  status_line CHECK 'Hermes Agent'
   if ! "$binary" setup --json >/dev/null; then
-    echo "Host setup failed. Wing Link remains installed so you can inspect and retry." >&2
-    echo "Retry: $binary setup" >&2
+    status_line ERROR 'Host setup failed. Wing Link remains installed.' >&2
+    printf '  Retry: %q setup\n' "$binary" >&2
     return 1
   fi
   if [[ "$termux" == true ]]; then
@@ -140,17 +170,13 @@ run_quick_setup() {
       echo "Wing Link did not become healthy on loopback." >&2
       return 1
     }
-    printf '\nHermes and Wing Link are ready on this phone.\n'
+    status_line READY 'Hermes and Wing Link are ready on this phone.'
     WING_LINK_SERVICE=external "$binary" pair --local --same-device
     return
   fi
-  printf '\nReady. Connect your phone:\n'
-  if [[ ":$PATH:" == *":$install_dir:"* ]]; then
-    printf '  wing-link pair\n'
-  else
-    printf '  %q pair\n' "$binary"
-  fi
-  printf 'Then set up a profile in Hermes Wing.\n'
+  status_line READY 'Hermes Agent is running'
+  next_step 'Connect your phone' "$binary" pair
+  printf '\n  In Hermes Wing, choose Set up a profile.\n'
 
 }
 
@@ -171,6 +197,8 @@ run_version_probe() {
   wait "$watchdog_pid" 2>/dev/null || true
   return "$status"
 }
+
+printf '\n%sHermes Wing / Host setup%s\n\n' "$heading_style" "$reset_style"
 
 if [[ "$build" == true ]]; then
   script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -201,7 +229,7 @@ if [[ "$build" == true ]]; then
   fi
   build_version="${app_version}-dev+${revision}${dirty_suffix}"
 
-  printf 'Checking Wing Link build...\n'
+  status_line CHECK 'Wing Link build'
 
   tmp_bin="$(mktemp)"
   trap 'rm -f "$tmp_bin"' EXIT
@@ -222,11 +250,11 @@ if [[ "$build" == true ]]; then
     run_version_probe "$destination"
     rm -f "$tmp_bin"
     trap - EXIT
-    printf 'Wing Link is already up to date.\n'
+    status_line OK 'Wing Link is already up to date'
     if [[ "$quick_setup" == true ]]; then
       run_quick_setup "$destination"
     else
-      printf 'Next: %q inspect\n' "$destination"
+      next_step 'Inspect this host' "$destination" inspect
     fi
     exit 0
   fi
@@ -288,13 +316,11 @@ if [[ "$build" == true ]]; then
   trap - EXIT INT TERM
   rm -f "$tmp_bin"
   "${privileged[@]}" rm -f "$backup"
-  printf 'Installed Wing Link %s\n' "$installed_version"
+  status_line OK "Wing Link installed ($installed_version)"
   if [[ "$quick_setup" == true ]]; then
     run_quick_setup "$destination"
-  elif [[ ":$PATH:" == *":$install_dir:"* ]]; then
-    printf 'Next:      wing-link inspect\n'
   else
-    printf 'Next:      %s inspect\n' "$destination"
+    next_step 'Inspect this host' "$destination" inspect
   fi
   exit 0
 fi
@@ -336,7 +362,7 @@ if [[ "$auto_release" == true ]]; then
     echo "No alpha Wing Link release was found." >&2
     exit 1
   }
-  printf 'Using latest alpha release %s.\n' "$tag"
+  status_line CHECK "Wing Link release $tag"
 fi
 
 [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]] || {
@@ -448,7 +474,7 @@ fi
 mv "$candidate" "$destination"
 run_version_probe "$destination"
 
-printf 'Installed verified %s to %s\n' "$asset" "$destination"
+status_line OK "Wing Link installed ($tag)"
 trap - EXIT INT TERM
 rm -f "$backup"
 rm -rf "$work_dir"

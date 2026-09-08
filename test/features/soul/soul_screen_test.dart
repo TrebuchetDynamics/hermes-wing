@@ -69,6 +69,47 @@ class _DeferredSoulChannel extends FakeHermesChannel {
 }
 
 void main() {
+  testWidgets('default persona stays readable in a narrow large-text view', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      capabilities: _personaCapabilities(),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Default', revision: 'rev-1'),
+      ],
+      selectedProfileId: 'default',
+      profileSoul: const HermesProfileSoul(soul: '', revision: 'soul-rev-1'),
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(1.5)),
+            child: child!,
+          ),
+          home: const SoulScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('The default profile cannot be deleted.'), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Save').hitTestable(),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('disconnected state points back to chat', (tester) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);

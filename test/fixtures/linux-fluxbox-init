@@ -1,0 +1,4 @@
+session.menuFile: /dev/null
+session.keyFile: /dev/null
+session.appsFile: /dev/null
+session.screen0.toolbar.visible: false

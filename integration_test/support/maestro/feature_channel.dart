@@ -302,6 +302,8 @@ class MaestroFeatureChannel extends FakeHermesChannel {
     if (conflictNext) {
       conflictNext = false;
       concurrentModelRevision = 'concurrent-revision';
+      // Match the API channel's published inventory refresh on a conflict.
+      notifyListeners();
       throw const FixtureStatusException(412);
     }
     if (revision != state.modelInventory!.assignment.revision) {

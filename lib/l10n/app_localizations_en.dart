@@ -1690,14 +1690,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollComputerRequirements =>
-      'Run these steps on the computer that will host Hermes. This setup requires Linux with a systemd user session, Git, curl, and Go 1.26 or newer. Native Windows and macOS host setup is not yet qualified.';
+      'On the Linux host, connect to the same NetBird or Tailscale network. You’ll need Git, curl, Go 1.26+, and a systemd user session.';
 
   @override
-  String get enrollComputerInstallTitle => 'Install or reuse Wing Link';
+  String get enrollComputerInstallTitle => 'Set up Wing Link and pair';
 
   @override
   String get enrollComputerInstallBody =>
-      'Wing Link detects and reuses a healthy Hermes Agent installation, or installs it if needed. Run setup locally on the host. You can choose a provider and model in Wing after pairing:';
+      'New host: install Wing Link and Hermes Agent, then start pairing.';
 
   @override
   String get enrollComputerModelTitle => 'Configure a provider and model';
@@ -1707,14 +1707,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:';
 
   @override
-  String get enrollComputerPairTitle => 'Create the pairing handoff';
-
-  @override
-  String get enrollComputerPairBody =>
-      'Connect both devices to the same trusted NetBird or Tailscale network. Run the command below and leave the terminal open. Wing Link prepares direct Agent access. Scan the QR or paste the connection string into Wing, review the host fingerprint, and confirm. Then choose Set up a profile to configure a provider and model in Wing.';
-
-  @override
-  String get enrollComputerReady => 'I’m ready to pair';
+  String get enrollComputerReady => 'Open pairing in Wing';
 
   @override
   String get enrollPairChoiceHelp =>
@@ -1730,35 +1723,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get enrollComputerPrerequisites => 'Prepare the host and network';
-
-  @override
-  String get enrollComputerPrerequisitesHelp =>
-      'Keep the host terminal available. Connect both devices to the same trusted VPN before pairing. Setup and approval happen on the host; Wing will verify the connection after pairing.';
-
-  @override
-  String get enrollComputerPrerequisitesReady => 'My Linux host is ready';
-
-  @override
-  String get enrollComputerExisting =>
-      'Wing Link is already installed on this host';
+  String get enrollComputerExisting => 'Wing Link already installed';
 
   @override
   String get enrollComputerExistingHelp =>
-      'Inspect the existing installation first. Setup reuses a healthy Hermes Agent, installs it when needed, and prepares API access. Run these commands on the host:';
-
-  @override
-  String get enrollHostSetupFinished => 'Setup finished on the host';
+      'Installed host: refresh setup, then start pairing.';
 
   @override
   String get enrollModelSetupFinished => 'My provider and model are configured';
 
   @override
   String get enrollExternalStepNotice =>
-      'Continue after this step finishes on the host. This button does not verify or run the command remotely.';
-
-  @override
-  String get enrollPreviousStep => 'Previous step';
+      'When the pairing code appears, leave the terminal open and continue here.';
 
   @override
   String get enrollCopyCommand => 'Copy command';

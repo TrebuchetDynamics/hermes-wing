@@ -199,14 +199,17 @@ chmod +x "\$output"
 
     expect(install.exitCode, 0, reason: install.stderr as String);
     expect(calls.readAsStringSync(), 'setup --json\n');
-    expect(install.stdout, contains('Ready. Connect your phone:'));
-    expect(install.stdout, contains('Then set up a profile in Hermes Wing.'));
+    expect(install.stdout, contains('NEXT   Connect your phone'));
+    expect(
+      install.stdout,
+      contains('In Hermes Wing, choose Set up a profile.'),
+    );
     expect(install.stdout, isNot(contains('hermes setup')));
     expect(install.stdout, isNot(contains('setup-detail')));
     expect(install.stdout, isNot(contains('[4/4]')));
     expect(
       (install.stdout as String).trim().split('\n').length,
-      lessThanOrEqualTo(7),
+      lessThanOrEqualTo(11),
     );
 
     final failedInstallDir = Directory('${temp.path}/failed-install');
@@ -223,7 +226,7 @@ chmod +x "\$output"
     );
     expect(failedSetup.stderr, contains('Wing Link remains installed'));
     expect(failedSetup.stderr, contains('setup failed: fixture reason'));
-    expect(failedSetup.stdout, isNot(contains('Ready.')));
+    expect(failedSetup.stdout, isNot(contains('READY')));
   });
 
   test('source archive keeps a usable version without Git metadata', () async {
@@ -254,17 +257,19 @@ chmod +x "\$output"
 
     expect(install.exitCode, 0, reason: install.stderr as String);
     for (final message in [
-      'Checking Wing Link build...',
-      'Installed Wing Link',
-      'Next:',
+      'CHECK  Wing Link build',
+      'Wing Link installed',
+      'NEXT',
     ]) {
       expect(install.stdout, contains(message));
     }
     expect(
       install.stdout,
-      matches(RegExp(r'Installed Wing Link \d+\.\d+\.\d+-dev\+[a-z0-9.]+')),
+      matches(RegExp(r'Wing Link installed \(\d+\.\d+\.\d+-dev\+[a-z0-9.]+\)')),
     );
-    expect((install.stdout as String).trim().split('\n').length, 3);
+    expect((install.stdout as String).trim().split('\n').length, 7);
+    expect(install.stdout, isNot(contains('\x1b[')));
+    expect(install.stdout, contains('Hermes Wing / Host setup'));
     final binary = File('${temp.path}/wing-link');
     final before = binary.statSync().modified;
     final second = await Process.run('./install-wing-link.sh', [
@@ -284,7 +289,7 @@ chmod +x "\$output"
       temp.path,
     ]);
     expect(repair.exitCode, 0, reason: repair.stderr as String);
-    expect(repair.stdout, contains('Installed Wing Link'));
+    expect(repair.stdout, contains('Wing Link installed'));
     expect(binary.readAsBytesSync().take(4), [127, 69, 76, 70]);
   });
 

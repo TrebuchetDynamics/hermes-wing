@@ -20,6 +20,27 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Oversized single-line plain paragraphs use a lazily rendered, grapheme-safe
+reader. Selection operates on mounted chunks; use its **Copy as text** action
+for an exact full-source copy without chunk boundaries. Markdown-rich messages
+keep their existing rendering. This does not qualify arbitrary large Markdown
+or 60-fps streaming; see the
+[Linux large-text validation report](../quality/linux-e2e-2026-09-06.md#plain-line-performance-fix).
+
+While a profile switch is pending, Send and New Chat are disabled and the current
+draft is retained. Conversation operations reject writes during that transition;
+late responses from a previous profile selection cannot overwrite the new one.
+
+New Chat stops targeting the previous session as soon as creation starts. Sending
+is unavailable until the new session's initial history request finishes. Delayed
+creation or session-selection responses must respect a later selection; a created
+session remains discoverable in history without taking over the current chat.
+
+Session history refreshes preserve turns that arrive while a read is pending.
+Superseded selection responses are rejected before updating transcript, pagination,
+or run-history caches, so an invisible stale read cannot change the next prompt's
+loaded context.
+
 Computer enrollment now completes host installation and pairing before provider
 configuration. A confirmed Wing Link pairing offers **Set up a profile**, opening
 `/profiles?setup=new` and the transactional new-profile editor after the selected
@@ -33,3 +54,6 @@ connection, while chat still requires a separately enrolled Agent endpoint.
 Settings keeps voice configuration on `/settings/voice`, reached through the
 **Voice & speech** row. The overview contains gateway management, appearance,
 and links to voice and diagnostics; it does not duplicate the voice switches.
+At desktop widths, voice and diagnostics share the column beside appearance.
+Profile setup suggestions open toward the available space so options remain
+reachable near the bottom of a window or keyboard viewport.

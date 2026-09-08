@@ -2290,16 +2290,106 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
   testWidgets('long unbroken transcript text remains complete and selectable', (
     tester,
   ) async {
-    final text = 'x' * 100000;
+    final text = '${'x' * 100000}END';
+    String? copied;
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') {
+        copied = (call.arguments as Map)['text'] as String;
+      }
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
     await tester.pumpWidget(
       _localizedApp(
         Scaffold(body: SingleChildScrollView(child: HermesRichText(text))),
       ),
     );
-    expect(find.text(text, findRichText: true), findsOneWidget);
+    final rendered = tester.widgetList<RichText>(
+      find.descendant(
+        of: find.byType(HermesRichText),
+        matching: find.byType(RichText),
+      ),
+    );
+    expect(
+      rendered.every((widget) => widget.text.toPlainText().length <= 4096),
+      isTrue,
+    );
+    expect(rendered.length, lessThan(30));
     expect(find.byType(SelectionArea), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('hermes-large-text-copy')));
+    await tester.pump();
+    expect(copied, text);
+    final scroll = tester
+        .stateList<ScrollableState>(
+          find.descendant(
+            of: find.byType(HermesRichText),
+            matching: find.byType(Scrollable),
+          ),
+        )
+        .single;
+    for (var attempt = 0; attempt < 10; attempt++) {
+      scroll.position.jumpTo(scroll.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      if (find.textContaining('END').evaluate().isNotEmpty) break;
+    }
+    expect(find.textContaining('END'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'plain transcript chunks preserve graphemes and streaming suffixes',
+    (tester) async {
+      var text = '${'x' * 2047}👩🏽‍💻${'y' * 35000}';
+      Future<void> mount() => tester.pumpWidget(
+        _localizedApp(
+          Scaffold(body: SingleChildScrollView(child: HermesRichText(text))),
+        ),
+      );
+      await mount();
+      List<String> chunks() {
+        final finder = find.descendant(
+          of: find.byType(HermesRichText),
+          matching: find.byType(ListView),
+        );
+        final list = tester.widget<ListView>(finder);
+        final delegate = list.childrenDelegate as SliverChildBuilderDelegate;
+        return List.generate(
+          delegate.childCount!,
+          (index) =>
+              (delegate.builder(tester.element(finder), index) as Text).data!,
+        );
+      }
+
+      expect(chunks().join(), text);
+      expect(chunks().first.endsWith('👩🏽‍💻'), isTrue);
+      text += 'TAIL';
+      await mount();
+      expect(chunks().join(), text);
+      expect(chunks().last.endsWith('TAIL'), isTrue);
+      text = '${'word ' * 7000}**bold**';
+      await mount();
+      expect(
+        find.byKey(const ValueKey('hermes-large-text-copy')),
+        findsNothing,
+      );
+      expect(
+        find.text('${'word ' * 7000}bold', findRichText: true),
+        findsOneWidget,
+      );
+      text = 'short';
+      await mount();
+      expect(
+        find.byKey(const ValueKey('hermes-large-text-copy')),
+        findsNothing,
+      );
+      expect(find.text('short'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'large transcripts bound mounted blocks and preserve final code copy',

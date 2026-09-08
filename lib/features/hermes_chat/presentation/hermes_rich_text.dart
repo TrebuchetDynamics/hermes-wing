@@ -36,6 +36,48 @@ class HermesRichText extends StatefulWidget {
 
 class _HermesRichTextState extends State<HermesRichText> {
   final _scroll = ScrollController();
+  List<String>? _plainChunks;
+
+  @override
+  void initState() {
+    super.initState();
+    _updatePlainChunks();
+  }
+
+  @override
+  void didUpdateWidget(HermesRichText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.data != widget.data) _updatePlainChunks();
+  }
+
+  void _updatePlainChunks() {
+    _plainChunks = null;
+    final data = widget.data;
+    if (data.length <= 32768 || data.contains('\n') || data.contains('\r')) {
+      return;
+    }
+    // Only plain paragraphs take this path. Links, emphasis and other Markdown
+    // retain their renderer; syntax is never split across independent parsers.
+    final nodes = md.Document(
+      extensionSet: md.ExtensionSet.gitHubFlavored,
+      inlineSyntaxes: [md.TextSyntax(r'[A-Za-z0-9]+$')],
+      encodeHtml: false,
+    ).parseLines([data]);
+    if (nodes.length != 1 || nodes.single is! md.Element) return;
+    final paragraph = nodes.single as md.Element;
+    if (paragraph.tag != 'p' ||
+        paragraph.children == null ||
+        paragraph.children!.any((node) => node is! md.Text)) {
+      return;
+    }
+    final range = CharacterRange(paragraph.textContent);
+    final chunks = <String>[];
+    while (range.stringAfterLength > 0) {
+      range.moveNext(2048);
+      chunks.add(range.current);
+    }
+    _plainChunks = chunks;
+  }
 
   @override
   void dispose() {
@@ -77,43 +119,70 @@ class _HermesRichTextState extends State<HermesRichText> {
       listIndent: 22,
     );
     var remainingImagePixels = widget.inlineImagePixelBudget;
-    final markdown = _TranscriptMarkdown(
-      scrollController: large ? _scroll : null,
-      data: data,
-      // The parser's whitespace-only plain-text shortcut otherwise retries
-      // every suffix of an unbroken trailing word. Consume that word once;
-      // punctuation still goes through the normal GFM link/markup syntaxes.
-      inlineSyntaxes: [md.TextSyntax(r'[A-Za-z0-9]+$')],
-      styleSheet: markdownStyle,
-      shrinkWrap: true,
-      builders: {'pre': _HermesCodeBlockBuilder(outerSelection: selectable)},
-      imageBuilder: (uri, title, alt) => _buildTranscriptImage(
-        strings: strings,
-        uri: uri,
-        alt: alt,
-        reservePixels: (pixels) {
-          if (pixels > remainingImagePixels) return false;
-          remainingImagePixels -= pixels;
-          return true;
-        },
-      ),
-      onTapLink: (text, href, title) {
-        final uri = href == null ? null : Uri.tryParse(href);
-        if (uri == null ||
-            !_safeLinkSchemes.contains(uri.scheme.toLowerCase())) {
-          return;
-        }
-        unawaited((widget.launchUri ?? _launchUri)(uri));
-      },
-    );
+    final chunks = _plainChunks;
+    final markdown = chunks != null
+        ? ListView.builder(
+            controller: _scroll,
+            padding: EdgeInsets.zero,
+            itemCount: chunks.length,
+            itemBuilder: (context, index) =>
+                Text(chunks[index], style: markdownStyle.p),
+          )
+        : _TranscriptMarkdown(
+            scrollController: large ? _scroll : null,
+            data: data,
+            // The parser's whitespace-only plain-text shortcut otherwise retries
+            // every suffix of an unbroken trailing word. Consume that word once;
+            // punctuation still goes through the normal GFM link/markup syntaxes.
+            inlineSyntaxes: [md.TextSyntax(r'[A-Za-z0-9]+$')],
+            styleSheet: markdownStyle,
+            shrinkWrap: true,
+            builders: {
+              'pre': _HermesCodeBlockBuilder(outerSelection: selectable),
+            },
+            imageBuilder: (uri, title, alt) => _buildTranscriptImage(
+              strings: strings,
+              uri: uri,
+              alt: alt,
+              reservePixels: (pixels) {
+                if (pixels > remainingImagePixels) return false;
+                remainingImagePixels -= pixels;
+                return true;
+              },
+            ),
+            onTapLink: (text, href, title) {
+              final uri = href == null ? null : Uri.tryParse(href);
+              if (uri == null ||
+                  !_safeLinkSchemes.contains(uri.scheme.toLowerCase())) {
+                return;
+              }
+              unawaited((widget.launchUri ?? _launchUri)(uri));
+            },
+          );
     final content = large
         ? Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                strings.transcriptLargeMessageScroll,
-                style: theme.textTheme.labelSmall,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      strings.transcriptLargeMessageScroll,
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ),
+                  if (chunks != null)
+                    IconButton(
+                      key: const ValueKey('hermes-large-text-copy'),
+                      tooltip: strings.copyAsTextAction,
+                      icon: const Icon(Icons.copy_outlined, size: 18),
+                      // Selection covers mounted chunks. Exact full-source copy
+                      // must not depend on viewport or artificial chunk breaks.
+                      onPressed: () =>
+                          Clipboard.setData(ClipboardData(text: data)),
+                    ),
+                ],
               ),
               ConstrainedBox(
                 constraints: BoxConstraints(

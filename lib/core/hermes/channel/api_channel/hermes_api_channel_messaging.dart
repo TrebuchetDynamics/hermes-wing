@@ -72,7 +72,9 @@ extension _MessagingExtension on HermesApiChannel {
     if (client == null || sessionId == null) {
       throw StateError('Hermes channel is not connected to a session.');
     }
+    final isCurrentProfile = _profileRequestGuard(client, profileId);
     await _ensureDetachedRunsLoaded();
+    if (!isCurrentProfile() || _state.activeSessionId != sessionId) return;
     if (isSubmissionCurrent != null && !isSubmissionCurrent()) {
       throw StateError('Hermes voice conversation changed.');
     }
@@ -90,10 +92,6 @@ extension _MessagingExtension on HermesApiChannel {
           'Wing could not verify a previous Hermes run. Reconnect before sending.';
       _setState(_state.copyWith(errorMessage: message));
       throw StateError(message);
-    }
-    if (!_isConnectedProfile(client, profileId) ||
-        _state.activeSessionId != sessionId) {
-      return;
     }
     final connectedBaseUrl = _state.connectedBaseUrl;
     if (connectedBaseUrl != null &&
@@ -873,6 +871,7 @@ extension _MessagingExtension on HermesApiChannel {
           client,
           sessionId,
           profileId: profileId,
+          canAccept: isCurrentStream,
         );
         if (!identical(_client, client) ||
             _state.status != HermesConnectionStatus.connected ||
@@ -899,6 +898,7 @@ extension _MessagingExtension on HermesApiChannel {
           client,
           sessionId,
           profileId: profileId,
+          canAccept: isCurrentStream,
         );
         if (!identical(_client, client) ||
             _state.status != HermesConnectionStatus.connected ||
@@ -1997,6 +1997,7 @@ extension _MessagingExtension on HermesApiChannel {
         client,
         sessionId,
         profileId: profileId,
+        canAccept: isCurrentStream,
       );
       if (!isCurrentStream()) return;
       _setTurns(

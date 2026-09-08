@@ -23,6 +23,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -944,6 +945,40 @@ exit 1
 	}
 }
 
+func TestResolveHermesProfileTokensRunsIndependentProfilesConcurrently(t *testing.T) {
+	rows := []profileRow{{ID: "alpha"}, {ID: "default"}, {ID: "zeta"}}
+	started := make(chan string, 2)
+	release := make(chan struct{})
+	type result struct {
+		tokens []string
+		err    error
+	}
+	done := make(chan result, 1)
+	go func() {
+		tokens, err := resolveHermesProfileTokens(rows, "default-token", func(profileID string) (string, error) {
+			started <- profileID
+			<-release
+			return profileID + "-token", nil
+		})
+		done <- result{tokens: tokens, err: err}
+	}()
+
+	for range 2 {
+		select {
+		case <-started:
+		case <-time.After(250 * time.Millisecond):
+			close(release)
+			<-done
+			t.Fatal("profile credential lookups did not start concurrently")
+		}
+	}
+	close(release)
+	got := <-done
+	if got.err != nil || !slices.Equal(got.tokens, []string{"alpha-token", "default-token", "zeta-token"}) {
+		t.Fatalf("tokens = %#v, err = %v", got.tokens, got.err)
+	}
+}
+
 func TestScopedHermesExchangeRelaysAuthoritativeConnectionBundle(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path != "/v1/operator/enrollments/exchange" {
@@ -1099,10 +1134,13 @@ func TestDiscoverMeshVPNAddressesSupportsNetBirdIPv4OnlyWithBoundedFixedProbes(t
 		maximum int
 	}
 	var calls []call
+	var callsMu sync.Mutex
 	addresses, err := discoverMeshVPNAddressesWith(
 		func(name string) (string, error) { return "/usr/bin/" + name, nil },
 		func(_ context.Context, spec CommandSpec, maximum int) ([]byte, ProcessResult) {
+			callsMu.Lock()
 			calls = append(calls, call{spec: spec, maximum: maximum})
+			callsMu.Unlock()
 			if strings.HasSuffix(spec.Path, "/netbird") {
 				if slices.Equal(spec.Args, []string{"status", "--ipv4"}) {
 					return []byte("10.80.1.7\n"), ProcessResult{}
@@ -1119,10 +1157,51 @@ func TestDiscoverMeshVPNAddressesSupportsNetBirdIPv4OnlyWithBoundedFixedProbes(t
 	if len(addresses) != 1 || addresses[0].Provider != "NetBird" || addresses[0].IP.String() != "10.80.1.7" {
 		t.Fatalf("addresses = %#v", addresses)
 	}
-	if len(calls) != 3 || !slices.Equal(calls[0].spec.Args, []string{"status", "--ipv4"}) ||
-		!slices.Equal(calls[1].spec.Args, []string{"status", "--ipv6"}) ||
-		calls[0].spec.Timeout != 3*time.Second || calls[0].maximum != 256 {
+	if len(calls) != 3 || !slices.ContainsFunc(calls, func(call call) bool {
+		return slices.Equal(call.spec.Args, []string{"status", "--ipv4"}) &&
+			call.spec.Timeout == 3*time.Second && call.maximum == 256
+	}) || !slices.ContainsFunc(calls, func(call call) bool {
+		return slices.Equal(call.spec.Args, []string{"status", "--ipv6"}) &&
+			call.spec.Timeout == 3*time.Second && call.maximum == 256
+	}) {
 		t.Fatalf("calls = %#v", calls)
+	}
+}
+
+func TestDiscoverMeshVPNAddressesRunsIndependentProbesConcurrently(t *testing.T) {
+	started := make(chan struct{}, len(meshVPNProbes))
+	release := make(chan struct{})
+	type result struct {
+		addresses []meshVPNAddress
+		err       error
+	}
+	done := make(chan result, 1)
+	go func() {
+		addresses, err := discoverMeshVPNAddressesWith(
+			func(name string) (string, error) { return "/usr/bin/" + name, nil },
+			func(_ context.Context, _ CommandSpec, _ int) ([]byte, ProcessResult) {
+				started <- struct{}{}
+				<-release
+				return nil, ProcessResult{ExitCode: 1, Err: errors.New("not connected")}
+			},
+			func(net.IP) bool { return true },
+		)
+		done <- result{addresses: addresses, err: err}
+	}()
+
+	for range meshVPNProbes {
+		select {
+		case <-started:
+		case <-time.After(250 * time.Millisecond):
+			close(release)
+			<-done
+			t.Fatal("VPN probes did not start concurrently")
+		}
+	}
+	close(release)
+	got := <-done
+	if got.err != nil || len(got.addresses) != 0 {
+		t.Fatalf("addresses = %#v, err = %v", got.addresses, got.err)
 	}
 }
 
@@ -1470,6 +1549,9 @@ func TestPairOperationalErrorIsActionableWithoutGlobalHelp(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "local Hermes API key") || strings.Contains(stderr.String(), "usage: wing-link") {
 		t.Fatalf("stderr = %q", stderr.String())
+	}
+	if !strings.HasPrefix(stderr.String(), "pair: Preparing secure pairing...\n") {
+		t.Fatalf("pair command did not report startup work immediately: %q", stderr.String())
 	}
 }
 

@@ -48,6 +48,12 @@ class ProfilesScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
+  late final HermesGatewayDirectory _directory;
+  late final HermesChannel _channel;
+  ({String? gateway, String? origin, String? token, String? pin, bool native})?
+  _profileSource;
+  bool _sourceCheckScheduled = false;
+  bool _profileLoadFailed = false;
   bool _setupOpened = false;
   String? _actionError;
   String? _switchingGatewayId;
@@ -61,24 +67,74 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   @override
   void initState() {
     super.initState();
-    if (!wingLinkProfileCompatibilityEnabled) return;
+    _directory = ref.read(hermesGatewayDirectoryProvider);
+    _channel = ref.read(hermesChannelProvider);
+    _directory.addListener(_scheduleProfileSourceCheck);
+    _channel.addListener(_scheduleProfileSourceCheck);
+    _scheduleProfileSourceCheck();
+  }
+
+  @override
+  void dispose() {
+    _directory.removeListener(_scheduleProfileSourceCheck);
+    _channel.removeListener(_scheduleProfileSourceCheck);
+    super.dispose();
+  }
+
+  ({String? gateway, String? origin, String? token, String? pin, bool native})
+  get _currentProfileSource {
+    final gateway = _directory.managementGatewayId;
+    final config = gateway == null
+        ? null
+        : _directory.configForGateway(gateway);
+    return (
+      gateway: gateway,
+      origin: config?.wingLinkOrigin,
+      token: config?.wingLinkToken,
+      pin: config?.wingLinkHostFingerprint,
+      native:
+          _channel.state.isConnected &&
+          _directory.activeContactId?.gatewayId == gateway &&
+          _canReadProfiles(_channel.state.capabilities),
+    );
+  }
+
+  void _scheduleProfileSourceCheck() {
+    if (_sourceCheckScheduled) return;
+    _sourceCheckScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final directory = ref.read(hermesGatewayDirectoryProvider);
-      final gatewayId = directory.activeContactId?.gatewayId;
-      if (gatewayId != null) {
-        unawaited(
-          _loadWingLinkProfiles(directory, gatewayId).catchError((_) {
-            if (mounted) {
-              setState(
-                () => _actionError = AppLocalizations.of(
-                  context,
-                ).agentsLocalLoadError,
-              );
-            }
-          }),
-        );
-      }
+      _sourceCheckScheduled = false;
+      if (mounted) unawaited(_syncProfileSource());
     });
+  }
+
+  Future<void> _syncProfileSource({bool force = false}) async {
+    final source = _currentProfileSource;
+    if (!force && source == _profileSource) return;
+    setState(() {
+      _profileSource = source;
+      _profileLoadFailed = false;
+      _actionError = null;
+    });
+    final gatewayId = source.gateway;
+    if (gatewayId == null) {
+      ++_wingLinkLoadGeneration;
+      setState(() {
+        _wingLinkGatewayId = null;
+        _wingLinkClient = null;
+        _wingLinkProfiles = null;
+      });
+      return;
+    }
+    try {
+      await _loadWingLinkProfiles(_directory, gatewayId);
+    } catch (_) {
+      if (!mounted || source != _currentProfileSource) return;
+      setState(() {
+        _profileLoadFailed = true;
+        _actionError = AppLocalizations.of(context).agentsLocalLoadError;
+      });
+    }
   }
 
   @override
@@ -102,11 +158,31 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                 WingGatewayPicker(
                   fieldKey: const ValueKey('agents-gateway-picker'),
                   directory: directory,
+                  selectedGatewayId: directory.managementGatewayId,
                   helpText: AppLocalizations.of(
                     context,
                   ).agentsGatewayPickerHelp,
                   enabled: _switchingGatewayId == null,
                   onSelected: (id) => unawaited(_selectGateway(directory, id)),
+                ),
+              if (_actionError != null)
+                MaterialBanner(
+                  content: Semantics(
+                    liveRegion: true,
+                    child: Text(_actionError!),
+                  ),
+                  actions: [
+                    if (_profileLoadFailed)
+                      TextButton(
+                        onPressed: () =>
+                            unawaited(_syncProfileSource(force: true)),
+                        child: Text(strings.retryAction),
+                      ),
+                    TextButton(
+                      onPressed: () => setState(() => _actionError = null),
+                      child: Text(strings.doneAction),
+                    ),
+                  ],
                 ),
               Expanded(child: _buildBody(context, channel, directory, strings)),
             ],
@@ -123,18 +199,25 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     AppLocalizations strings,
   ) {
     final state = channel.state;
-    final capabilities = state.capabilities;
-    final activeGatewayId = directory.activeContactId?.gatewayId;
+    final activeGatewayId = directory.managementGatewayId;
+    final selectedAgent =
+        directory.activeContactId?.gatewayId == activeGatewayId;
+    final capabilities = selectedAgent ? state.capabilities : null;
     final usingWingLink =
         !_canReadProfiles(capabilities) &&
+        _profileSource == _currentProfileSource &&
         _wingLinkClient != null &&
         _wingLinkGatewayId == activeGatewayId;
 
-    if (!usingWingLink && state.status == HermesConnectionStatus.connecting ||
+    if (!usingWingLink &&
+            selectedAgent &&
+            state.status == HermesConnectionStatus.connecting ||
         usingWingLink && _wingLinkProfiles == null) {
       return WingSkeletonList(semanticLabel: strings.agentsLoading);
     }
-    if (!usingWingLink && state.status == HermesConnectionStatus.error) {
+    if (!usingWingLink &&
+        selectedAgent &&
+        state.status == HermesConnectionStatus.error) {
       return WingEmptyState(
         icon: Icons.cloud_off_outlined,
         liveRegion: true,
@@ -144,11 +227,18 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         onAction: () => context.go(AppRoutes.hermes),
       );
     }
-    if (!usingWingLink && state.status != HermesConnectionStatus.connected) {
+    if (!usingWingLink &&
+        (!selectedAgent || state.status != HermesConnectionStatus.connected)) {
       return WingEmptyState(
         icon: Icons.hub_outlined,
         title: strings.gatewaySelectPromptTitle,
         body: strings.agentsConnectionRequiredBody,
+        actionLabel: activeGatewayId == null
+            ? null
+            : strings.gatewayChatConnectAction,
+        onAction: activeGatewayId == null || _switchingGatewayId != null
+            ? null
+            : () => unawaited(_selectGateway(directory, activeGatewayId)),
       );
     }
     if (!_canReadProfiles(capabilities) && !usingWingLink) {
@@ -183,20 +273,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     bool canUseHermesProfileContext(HermesProfile profile) =>
         profile.id == 'default' ||
         capabilities?.profileContext.isSupportedQueryContext == true;
-    // Seed the displayed inventory too when Wing Link is the profile source;
-    // Agent profile state is empty on that compatibility path.
-    final selectedId = usingWingLink
-        ? (state.selectedProfileId != null &&
-                  profiles.any(
-                    (profile) => profile.id == state.selectedProfileId,
-                  )
-              ? state.selectedProfileId
-              : profiles.isEmpty
-              ? null
-              : profiles.any((profile) => profile.id == kDefaultProfileId)
-              ? kDefaultProfileId
-              : profiles.first.id)
-        : effectiveSelectedProfileId(state);
     final canCreateNatively = _canUseEndpoint(
       capabilities,
       scope: 'profiles:write',
@@ -214,6 +290,23 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
             profileId: profile.id,
           ),
     };
+    // Inventory order is not chat identity. A managed host can stay selected
+    // while chat is disconnected or connected to another enrolled endpoint.
+    final activeContact = directory.activeContactId;
+    final selectedId = state.status != HermesConnectionStatus.connected
+        ? null
+        : usingWingLink
+        ? profiles
+              .where(
+                (profile) =>
+                    activeContact != null &&
+                    profile.id == activeContact.profileId &&
+                    enrolledGatewayIdsByProfile[profile.id] ==
+                        activeContact.gatewayId,
+              )
+              .firstOrNull
+              ?.id
+        : effectiveSelectedProfileId(state);
     VoidCallback? wingLinkChatAction(HermesProfile profile) {
       final enrolledGatewayId = enrolledGatewayIdsByProfile[profile.id];
       if (enrolledGatewayId == null) return null;
@@ -258,7 +351,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       _setupOpened = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted ||
-            directory.activeContactId?.gatewayId != activeGatewayId ||
+            directory.managementGatewayId != activeGatewayId ||
             _wingLinkClient != creationClient) {
           return;
         }
@@ -270,7 +363,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
         _ProfilesHeader(
-          title: strings.agentsTitle,
           subtitle: strings.agentsSubtitle,
           readOnly:
               !createViaWingLink &&
@@ -284,18 +376,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                 )
               : null,
         ),
-        if (_actionError != null) ...[
-          const SizedBox(height: 16),
-          MaterialBanner(
-            content: Semantics(liveRegion: true, child: Text(_actionError!)),
-            actions: [
-              TextButton(
-                onPressed: () => setState(() => _actionError = null),
-                child: Text(strings.doneAction),
-              ),
-            ],
-          ),
-        ],
         const SizedBox(height: 16),
         if (profiles.isEmpty)
           WingEmptyState(
@@ -509,8 +589,13 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       _actionError = null;
     });
     try {
-      await directory.activateGateway(gatewayId);
-      await _loadWingLinkProfiles(directory, gatewayId);
+      directory.selectManagementGateway(gatewayId);
+      final config = directory.configForGateway(gatewayId);
+      if (!wingLinkProfileCompatibilityEnabled ||
+          config?.wingLinkToken == null) {
+        await directory.activateGateway(gatewayId);
+      }
+      await _syncProfileSource();
     } catch (_) {
       if (mounted) {
         setState(
@@ -531,7 +616,9 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final generation = ++_wingLinkLoadGeneration;
     final channel = ref.read(hermesChannelProvider);
     if (!wingLinkProfileCompatibilityEnabled ||
-        _canReadProfiles(channel.state.capabilities)) {
+        (channel.state.isConnected &&
+            directory.activeContactId?.gatewayId == gatewayId &&
+            _canReadProfiles(channel.state.capabilities))) {
       if (mounted) {
         setState(() {
           _wingLinkGatewayId = null;
@@ -574,7 +661,9 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           _wingLinkGatewayId != gatewayId) {
         return;
       }
-      if (_canReadProfiles(channel.state.capabilities)) {
+      if (channel.state.isConnected &&
+          directory.activeContactId?.gatewayId == gatewayId &&
+          _canReadProfiles(channel.state.capabilities)) {
         setState(() {
           _wingLinkGatewayId = null;
           _wingLinkClient = null;
@@ -606,7 +695,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     try {
       final profiles = await client.listProfiles();
       if (!mounted ||
-          directory.activeContactId?.gatewayId != gatewayId ||
+          directory.managementGatewayId != gatewayId ||
           _wingLinkGatewayId != gatewayId ||
           _wingLinkClient != client) {
         return;
@@ -755,6 +844,16 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     });
     try {
       await directory.activateGateway(gatewayId);
+      if (!mounted) return;
+      if (!_channel.state.isConnected ||
+          directory.activeContactId?.gatewayId != gatewayId) {
+        setState(
+          () => _actionError = AppLocalizations.of(
+            context,
+          ).agentsGatewayConnectError,
+        );
+        return;
+      }
       if (mounted) await _openChat();
     } catch (_) {
       if (mounted) {
@@ -807,14 +906,12 @@ bool _canUseEndpoint(
 
 class _ProfilesHeader extends StatelessWidget {
   const _ProfilesHeader({
-    required this.title,
     required this.subtitle,
     required this.readOnly,
     required this.readOnlyLabel,
     this.action,
   });
 
-  final String title;
   final String subtitle;
   final bool readOnly;
   final String readOnlyLabel;
@@ -896,7 +993,7 @@ class _ProfileCard extends StatelessWidget {
     final semanticsLabel = [
       displayName,
       strings.agentStableId(profile.id),
-      if (selected) strings.selectedAgent,
+      if (selected) strings.profileActiveChat,
       if (profile.id == 'default') strings.defaultAgent,
     ].join(', ');
 
@@ -969,7 +1066,7 @@ class _ProfileCard extends StatelessWidget {
                   if (selected)
                     WingMetadata(
                       avatar: const Icon(Icons.check_circle_outline, size: 18),
-                      label: Text(strings.selectedAgent),
+                      label: Text(strings.profileActiveChat),
                     ),
                   if (profile.id == 'default')
                     WingMetadata(label: Text(strings.defaultAgent)),

@@ -4,6 +4,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/local_wing_link_platform_io.dart' as io;
 
 void main() {
+  test('setup retains a terminal structured error after progress', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'wing-link-failure-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final executable = File('${directory.path}/wing-link')
+      ..writeAsStringSync(
+        '#!/usr/bin/python3\n'
+        'import json, sys\n'
+        'print(json.dumps({"protocol_version":2,"event":{"phase":"preflight","message":"Checking local gateway","percent":75}}), flush=True)\n'
+        'print(json.dumps({"protocol_version":2,"error":{"code":"gateway_port_in_use"}}), flush=True)\n'
+        'sys.exit(1)\n',
+      );
+    await Process.run('chmod', ['0755', executable.path]);
+    final phases = <String>[];
+    final operation = await io.startLocalWingLinkSetup(
+      executable.path,
+      (progress) => phases.add(progress.phase),
+    );
+    final result = await operation.result;
+    expect(phases, ['preflight']);
+    expect(result.exitCode, 1);
+    expect(result.stdout, contains('gateway_port_in_use'));
+  });
+
   test('bounded runner times out and confirms child exit', () async {
     final executable = await _sleepingExecutable();
     final stopwatch = Stopwatch()..start();

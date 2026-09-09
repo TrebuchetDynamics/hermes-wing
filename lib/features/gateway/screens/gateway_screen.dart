@@ -12,11 +12,11 @@ import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
-import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
+import '../widgets/saved_connections_section.dart';
 
 typedef GatewayWingLinkClientBuilder =
     WingLinkClient Function(HermesEndpointConfig config);
@@ -39,7 +39,6 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _refreshing = false;
   bool _refreshFailed = false;
   bool _disconnecting = false;
-  bool _renaming = false;
   bool _revokingDevice = false;
   bool _deviceRevoked = false;
   bool _approvalPending = false;
@@ -55,17 +54,25 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     return AnimatedBuilder(
       animation: Listenable.merge([channel, directory]),
       builder: (context, _) {
-        final canRefresh = _detailedHealthAdvertised(channel.state);
-        final activeGatewayId = directory.activeContactId?.gatewayId;
+        final activeGatewayId = directory.managementGatewayId;
+        final selectedHost = directory.hosts
+            .where((host) => host.containsGateway(activeGatewayId))
+            .firstOrNull;
+        final connectedGatewayId = directory.activeContactId?.gatewayId;
+        final selectedChat =
+            connectedGatewayId == activeGatewayId ||
+            selectedHost?.containsGateway(connectedGatewayId) == true;
+        final chatConnected = selectedChat && channel.state.isConnected;
+        final canRefresh =
+            chatConnected && _detailedHealthAdvertised(channel.state);
         final activeGateway = activeGatewayId == null
             ? null
             : directory.gateways
                   .where((gateway) => gateway.id == activeGatewayId)
                   .firstOrNull;
-        final activeHost = directory.hosts
-            .where((host) => host.containsGateway(activeGatewayId))
-            .firstOrNull;
-        final activeConfig = directory.activeGatewayConfig;
+        final activeConfig = activeGatewayId == null
+            ? null
+            : directory.configForGateway(activeGatewayId);
         final trustFuture =
             activeGatewayId == null ||
                 activeConfig == null ||
@@ -77,39 +84,17 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
           appBar: AppBar(
             title: Text(strings.gatewayStatusTitle),
             actions: [
-              if (activeGateway != null &&
-                  activeHost?.managedByWingLink != true)
-                IconButton(
-                  key: const ValueKey('gateway-rename-button'),
-                  tooltip: strings.settingsRenameGatewayTitle,
-                  onPressed: _renaming
-                      ? null
-                      : () => unawaited(
-                          _renameGateway(
-                            directory,
-                            activeGateway.id,
-                            activeGateway.label,
-                            strings,
-                          ),
-                        ),
-                  icon: _renaming
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.edit_outlined),
-                ),
-              if (channel.state.isConnected && activeGatewayId != null)
-                IconButton(
+              if (selectedChat && connectedGatewayId != null)
+                TextButton.icon(
                   key: const ValueKey('gateway-disconnect-button'),
-                  tooltip: strings.chatConnectionDisconnectAction,
+                  label: Text(strings.chatConnectionDisconnectAction),
                   onPressed: _disconnecting
                       ? null
                       : () => unawaited(
                           _confirmDisconnect(
                             directory,
-                            activeGatewayId,
-                            activeGateway?.label ?? activeGatewayId,
+                            connectedGatewayId,
+                            activeGateway?.label ?? connectedGatewayId,
                             strings,
                           ),
                         ),
@@ -139,18 +124,6 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
           ),
           body: Column(
             children: [
-              if (directory.gateways.isNotEmpty)
-                WingGatewayPicker(
-                  fieldKey: const ValueKey('gateway-status-picker'),
-                  directory: directory,
-                  helpText: strings.gatewayStatusHelp,
-                  enabled:
-                      _switchingGatewayId == null &&
-                      !_disconnecting &&
-                      !_renaming,
-                  onSelected: (id) =>
-                      unawaited(_selectGateway(directory, id, strings)),
-                ),
               if (_actionError != null)
                 MaterialBanner(
                   content: Semantics(
@@ -165,23 +138,77 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                   ],
                 ),
               Expanded(
-                child: _GatewayBody(
-                  state: channel.state,
-                  strings: strings,
-                  refreshFailed: _refreshFailed,
-                  onRetry: () => unawaited(_refresh(channel)),
-                  trust: trustFuture == null || activeConfig == null
-                      ? null
-                      : _WingLinkTrustCard(
-                          future: trustFuture,
-                          strings: strings,
-                          revoked: _deviceRevoked,
-                          approvalPending: _approvalPending,
-                          revoking: _revokingDevice,
-                          onRevoke: () => unawaited(
-                            _confirmSelfRevoke(activeConfig, strings),
+                child: ListView(
+                  key: const ValueKey('gateway-body-list'),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                  children: [
+                    SavedConnectionsSection(directory: directory),
+                    if (activeConfig != null)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                chatConnected
+                                    ? strings.gatewayChatConnected
+                                    : strings.gatewayChatDisconnected,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                trustFuture != null
+                                    ? strings.gatewayManagementIndependent
+                                    : strings.gatewaySavedConnectionHelp,
+                              ),
+                              if (!chatConnected) ...[
+                                const SizedBox(height: 12),
+                                FilledButton.icon(
+                                  key: const ValueKey(
+                                    'gateway-connect-chat-button',
+                                  ),
+                                  onPressed:
+                                      _switchingGatewayId != null ||
+                                          _disconnecting
+                                      ? null
+                                      : () => unawaited(
+                                          _selectGateway(
+                                            directory,
+                                            activeGatewayId!,
+                                            strings,
+                                          ),
+                                        ),
+                                  icon: const Icon(Icons.chat_bubble_outline),
+                                  label: Text(strings.gatewayChatConnectAction),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
+                      ),
+                    if (trustFuture != null && activeConfig != null)
+                      _WingLinkTrustCard(
+                        future: trustFuture,
+                        strings: strings,
+                        revoked: _deviceRevoked,
+                        approvalPending: _approvalPending,
+                        revoking: _revokingDevice,
+                        onRevoke: () => unawaited(
+                          _confirmSelfRevoke(activeConfig, strings),
+                        ),
+                      ),
+                    if (selectedChat &&
+                        channel.state.status !=
+                            HermesConnectionStatus.disconnected)
+                      _GatewayBody(
+                        state: channel.state,
+                        strings: strings,
+                        refreshFailed: _refreshFailed,
+                        onRetry: () => unawaited(_refresh(channel)),
+                        trust: null,
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -324,58 +351,13 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       gatewayId: gatewayId,
       onFailure: () =>
           setState(() => _actionError = strings.gatewayConnectFailed),
-      onFinished: () => setState(() => _switchingGatewayId = null),
+      onFinished: () => setState(() {
+        _switchingGatewayId = null;
+        if (directory.activeContactId?.gatewayId != gatewayId) {
+          _actionError = strings.gatewayConnectFailed;
+        }
+      }),
     );
-  }
-
-  Future<void> _renameGateway(
-    HermesGatewayDirectory directory,
-    String gatewayId,
-    String currentLabel,
-    AppLocalizations strings,
-  ) async {
-    var draftLabel = currentLabel;
-    final label = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(strings.settingsRenameGatewayTitle),
-        content: TextFormField(
-          key: const ValueKey('gateway-rename-field'),
-          initialValue: currentLabel,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: strings.settingsGatewayNameLabel,
-          ),
-          onChanged: (value) => draftLabel = value,
-          onFieldSubmitted: (value) => Navigator.pop(dialogContext, value),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(strings.cancelAction),
-          ),
-          FilledButton(
-            key: const ValueKey('gateway-rename-save'),
-            onPressed: () => Navigator.pop(dialogContext, draftLabel),
-            child: Text(strings.saveAction),
-          ),
-        ],
-      ),
-    );
-    if (label == null || !mounted) return;
-    setState(() {
-      _renaming = true;
-      _actionError = null;
-    });
-    try {
-      await directory.renameGateway(gatewayId, label);
-    } catch (_) {
-      if (mounted) {
-        setState(() => _actionError = strings.settingsRenameGatewayError);
-      }
-    } finally {
-      if (mounted) setState(() => _renaming = false);
-    }
   }
 
   Future<void> _confirmDisconnect(
@@ -387,8 +369,8 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(strings.settingsRemoveGatewayTitle),
-        content: Text(strings.settingsRemoveGatewayBody(gatewayLabel)),
+        title: Text(strings.chatConnectionDisconnectTitle),
+        content: Text(strings.chatConnectionDisconnectBody(gatewayLabel)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -397,7 +379,7 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
           FilledButton(
             key: const ValueKey('gateway-disconnect-confirm'),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(strings.voiceRemoveAction),
+            child: Text(strings.chatConnectionDisconnectAction),
           ),
         ],
       ),
@@ -408,10 +390,12 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       _actionError = null;
     });
     try {
-      await directory.removeGateway(gatewayId);
+      if (directory.activeContactId?.gatewayId == gatewayId) {
+        await directory.showDirectory();
+      }
     } catch (_) {
       if (mounted) {
-        setState(() => _actionError = strings.settingsRemoveGatewayError);
+        setState(() => _actionError = strings.gatewayChatDisconnectFailed);
       }
     } finally {
       if (mounted) setState(() => _disconnecting = false);
@@ -499,9 +483,8 @@ class _GatewayBody extends StatelessWidget {
         ? strings.gatewayStatusDetailedFallbackBody
         : null;
 
-    return ListView(
-      key: const ValueKey('gateway-body-list'),
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(strings.gatewayStatusSubtitle),
         const SizedBox(height: 16),

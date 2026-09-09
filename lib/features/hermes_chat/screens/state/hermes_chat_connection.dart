@@ -297,14 +297,11 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _disconnect(HermesChannel channel) async {
+    _voiceInputController.pause();
+    _followUps.clear();
+    _approvals.clearPending();
     final directory = ref.read(hermesGatewayDirectoryProvider);
-    final activeContact = directory.activeContact;
-    if (activeContact != null) {
-      await directory.removeGateway(activeContact.id.gatewayId);
-    } else {
-      await channel.disconnect();
-      await ref.read(hermesEndpointStoreProvider).clear();
-    }
+    await directory.showDirectory();
     _refreshEndpointProfiles();
   }
 

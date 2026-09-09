@@ -58,6 +58,10 @@ func TestBootstrapAdoptsHealthyGatewayWithoutRestart(t *testing.T) {
 			return nil
 		},
 		GatewayHealthy: func(context.Context) bool { return true },
+		CheckGatewayPort: func() error {
+			t.Fatal("healthy authenticated gateway was treated as a port conflict")
+			return nil
+		},
 		StartGateway: func(context.Context) error {
 			t.Fatal("healthy gateway was restarted")
 			return nil
@@ -74,7 +78,7 @@ func TestBootstrapAdoptsHealthyGatewayWithoutRestart(t *testing.T) {
 	if !result.GatewayStarted {
 		t.Fatalf("result = %#v", result)
 	}
-	if !reflect.DeepEqual(messages, []string{"Hermes gateway already healthy", "Verifying Hermes gateway health", "Hermes gateway is running"}) {
+	if !reflect.DeepEqual(messages, []string{"Checking the Hermes installation", "Checking the local gateway", "Hermes gateway already healthy", "Verifying Hermes gateway health", "Hermes gateway is running"}) {
 		t.Fatalf("messages = %#v", messages)
 	}
 }

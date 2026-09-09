@@ -1,6 +1,6 @@
 # Routes
 
-Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles, and Settings in the compact bottom bar and places working administrative slices in More; desktop layouts map the same routes to a navigation rail. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands.
+Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles, and Connections in the compact bottom bar and places working administrative slices in More; desktop layouts map the same routes to a navigation rail. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands.
 
 | Route          | Android placement | Purpose                                                                                                                                                                                                                                                                                            | State       |
 | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -15,10 +15,25 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/providers`   | More              | Capability-gated provider inventory, write-only API-key management, credential validation, runtime-model inventory, and model assignment through advertised Agent operations. OAuth providers are labeled as host sign-in rather than opening an API-key form; remote OAuth and multi-credential flows remain contract-gated.                                                            | partial     |
 | `/tools`       | More              | Gateway-scoped searchable installed-skill metadata and resolved toolsets with exact-scoped refresh; mutation, MCP administration, and discovery remain contract-gated.                                                                                                                             | partial     |
 | `/memory`      | More              | Memory entries, profile, capacity, and providers.                                                                                                                                                                                                                                                  | planned     |
-| `/gateway`     | More              | Gateway-selected bounded health, saved-connection rename/removal, and paired-device trust/revocation for the current device; lifecycle, logs, peer administration, and messaging-platform administration remain contract-gated.                                                                      | partial     |
-| `/settings`    | Settings          | Saved gateway management, appearance, supported spellcheck, voice, and redacted diagnostics; also selected by Ctrl/Command+, and bounded Linux/Windows/macOS native Settings menu commands.                                                                                                        | implemented |
+| `/gateway`     | Connections       | Saved hosts, explicit chat connect/disconnect, bounded Agent health, connection editing/removal, and independent Wing Link device trust/revocation; lifecycle, logs, peer administration, and messaging-platform administration remain contract-gated.                                                                      | partial     |
+| `/settings`    | More              | Link to Connections, appearance, supported spellcheck, voice, and redacted diagnostics; also selected by Ctrl/Command+, and bounded Linux/Windows/macOS native Settings menu commands.                                                                                                        | implemented |
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
+
+Profiles distinguishes the active Agent chat from the selected management host.
+New-profile setup explains inherited configuration and shows naming rules before
+submission. Chat labels the host and names the selected profile in the composer.
+The composer menu exposes **Dictate a draft** without requiring a long press.
+Hands-free voice shows simultaneous listening and playback with separate labeled
+controls. After interruption, **Resume hands-free** requires an explicit tap and
+waits for teardown; **Continue in text** dismisses the notice. See the
+[profile and voice UI regression report](../quality/profile-voice-ui-2026-09-08.md).
+
+Linux setup shows the reported stage and offers **Stop setup** while running.
+An unverified occupied gateway port stops setup before credential/endpoint
+configuration or gateway restart. **Check again** performs inspection only; it
+does not retry installation automatically. See the
+[Linux setup regression report](../quality/linux-setup-port-conflict-2026-09-08.md).
 
 Oversized single-line plain paragraphs use a lazily rendered, grapheme-safe
 reader. Selection operates on mounted chunks; use its **Copy as text** action
@@ -52,8 +67,23 @@ priority. Wing Link profile management is independent of the Agent chat
 connection, while chat still requires a separately enrolled Agent endpoint.
 
 Settings keeps voice configuration on `/settings/voice`, reached through the
-**Voice & speech** row. The overview contains gateway management, appearance,
+**Voice & speech** row. The overview links to Connections and contains appearance,
 and links to voice and diagnostics; it does not duplicate the voice switches.
 At desktop widths, voice and diagnostics share the column beside appearance.
 Profile setup suggestions open toward the available space so options remain
 reachable near the bottom of a window or keyboard viewport.
+
+Profiles follows the selected host as saved connections finish loading. Guided
+setup opens once after its authoritative inventory becomes available. Failed
+Wing Link inventory reads expose Retry without connecting chat or replaying a
+mutation. Enrollment changes invalidate displayed management controls, and a
+failed enrolled-profile connection leaves Profiles open with an error.
+
+Chat reconciles streamed assistant segments against the current user turn's
+canonical reply. Equivalent pre-tool text is replaced by its authoritative
+message, while distinct commentary, tool activity, and intentionally repeated
+answers in earlier turns remain visible. When canonical history contains both
+commentary and a final reply, streamed final text reconciles with the final
+assistant segment.
+
+Connections owns saved-host management. Selecting a host only changes the management target; **Connect chat** opens its Agent connection explicitly. **Disconnect** closes the local chat connection and clears automatic startup restoration, while preserving saved credentials. It does not stop Hermes Agent or Wing Link. **Remove** forgets saved access locally; **Revoke this device** revokes Wing Link access through the host. Wing Link trust and profile inventory remain available while Agent chat is disconnected. Chat traffic continues directly to Hermes Agent.

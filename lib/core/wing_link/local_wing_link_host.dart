@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'local_wing_link_platform_stub.dart'
@@ -65,6 +66,7 @@ class LocalWingLinkHost {
   final LocalWingLinkSetupStarter? _setupStarter;
   LocalWingLinkSetupOperation? _activeSetup;
   bool _setupStarting = false;
+  Completer<void>? _setupStarted;
 
   Future<LocalHermesInspection> inspect() async {
     final json = await _runJson(['inspect', '--json']);
@@ -103,12 +105,15 @@ class LocalWingLinkHost {
         );
       }
       _setupStarting = true;
+      final started = _setupStarted = Completer<void>();
       late final LocalWingLinkSetupOperation operation;
       try {
         operation = await starter(_wingLinkExecutable, onProgress ?? (_) {});
         _activeSetup = operation;
       } finally {
         _setupStarting = false;
+        _setupStarted = null;
+        started.complete();
       }
       try {
         json = _decodeProcessResult(await operation.result);
@@ -142,8 +147,13 @@ class LocalWingLinkHost {
   }
 
   Future<void> cancelSetup() async {
+    // Cancellation may arrive while Process.start is still pending.
+    await _setupStarted?.future;
     final operation = _activeSetup;
-    if (operation != null) await operation.cancel();
+    if (operation != null) {
+      await operation.cancel();
+      await operation.result;
+    }
   }
 
   Future<Map<String, Object?>> _runJson(List<String> arguments) async {
@@ -161,6 +171,27 @@ class LocalWingLinkHost {
 
   Map<String, Object?> _decodeProcessResult(LocalWingLinkProcessResult result) {
     if (result.exitCode != 0) {
+      if (result.exitCode == 124) {
+        throw const LocalWingLinkException(
+          'setup_timed_out',
+          'The local operation timed out.',
+        );
+      }
+      try {
+        final decoded = jsonDecode(result.stdout);
+        if (decoded is Map<String, Object?> &&
+            (decoded['protocol_version'] == 1 ||
+                decoded['protocol_version'] == 2) &&
+            decoded['error'] is Map &&
+            (decoded['error'] as Map)['code'] == 'gateway_port_in_use') {
+          throw const LocalWingLinkException(
+            'gateway_port_in_use',
+            'The local Hermes API port is already in use.',
+          );
+        }
+      } on FormatException {
+        // Legacy failures and raw process output remain private.
+      }
       throw const LocalWingLinkException(
         'host_operation_failed',
         'The local Wing Link operation failed. Review diagnostics and retry.',

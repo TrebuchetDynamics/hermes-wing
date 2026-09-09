@@ -17,6 +17,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/TrebuchetDynamics/hermes-wing/wing-link/internal/release"
@@ -36,6 +37,7 @@ var (
 	ErrArtifactVerification = errors.New("artifact verification failed")
 	ErrHermesInstall        = errors.New("hermes installation failed")
 	ErrBootstrapInvalid     = errors.New("bootstrap request is invalid")
+	ErrHermesPortInUse      = errors.New("the local Hermes API port is already in use by an unverified service")
 )
 
 type BootstrapRequest struct{}
@@ -125,6 +127,7 @@ type BootstrapManager struct {
 	EnsureAPIKey      func(context.Context) error
 	EnsureAPIEndpoint func(context.Context) error
 	GatewayHealthy    func(context.Context) bool
+	CheckGatewayPort  func() error
 	StartGateway      func(context.Context) error
 	VerifyGateway     func(context.Context) error
 	RunHermes         func(context.Context, ...string) error
@@ -139,6 +142,7 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 	if manager == nil || manager.EnsureHermes == nil {
 		return BootstrapResult{}, ErrHermesInstall
 	}
+	emitBootstrap(emit, "inspect", "Checking the Hermes installation", 5)
 	inspection, err := manager.EnsureHermes(ctx, emit)
 	if err != nil {
 		return BootstrapResult{}, err
@@ -146,8 +150,14 @@ func (manager *BootstrapManager) Bootstrap(ctx context.Context, request Bootstra
 	result := BootstrapResult{HermesInstalled: true, HermesAdopted: inspection.Adopted, HermesVersion: inspection.Version}
 	// Probe with the existing credential before touching endpoint configuration.
 	// A rerun must not replace a healthy gateway’s established bind settings.
+	emitBootstrap(emit, "preflight", "Checking the local gateway", 75)
 	gatewayReady := manager.GatewayHealthy != nil && manager.GatewayHealthy(ctx)
 	if !gatewayReady {
+		if manager.CheckGatewayPort != nil {
+			if err := manager.CheckGatewayPort(); err != nil {
+				return BootstrapResult{}, err
+			}
+		}
 		if manager.EnsureAPIKey != nil {
 			emitBootstrap(emit, "authentication", "Securing Hermes API access", 92)
 			if err := manager.EnsureAPIKey(ctx); err != nil {
@@ -248,6 +258,23 @@ func newProductionBootstrapManager(home, hermesHint string) *BootstrapManager {
 	}
 	return &BootstrapManager{
 		EnsureHermes: installer.Ensure,
+		CheckGatewayPort: func() error {
+			port, err := resolveHermesAPIPort()
+			if err != nil {
+				return err
+			}
+			// A failed health probe is not permission to reconfigure or restart
+			// Hermes over an occupied listener. The final health check still
+			// handles a listener that races this preflight.
+			listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+			if err != nil {
+				if errors.Is(err, syscall.EADDRINUSE) {
+					return ErrHermesPortInUse
+				}
+				return fmt.Errorf("%w: gateway port", ErrHermesInstall)
+			}
+			return listener.Close()
+		},
 		EnsureAPIKey: func(ctx context.Context) error {
 			output, err := readHermes(ctx, "config", "env-path")
 			path := strings.TrimSpace(string(output))

@@ -546,6 +546,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
                                 labelText: strings.agentDisplayName,
+                                helperText: widget.stableNames
+                                    ? strings.profileStableNameHint
+                                    : null,
+                                helperMaxLines: 3,
                                 border: const OutlineInputBorder(),
                               ),
                               validator: (value) {
@@ -567,8 +571,15 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             const SizedBox(height: 16),
                             DropdownButtonFormField<String?>(
                               initialValue: _cloneFrom,
+                              isExpanded: true,
                               decoration: InputDecoration(
                                 labelText: strings.cloneFromAgent,
+                                helperText: widget.canConfigure
+                                    ? _cloneFrom == null
+                                          ? strings.profileFreshSetupHint
+                                          : strings.profileCloneSetupHint
+                                    : null,
+                                helperMaxLines: 4,
                                 border: const OutlineInputBorder(),
                               ),
                               items: [
@@ -583,6 +594,8 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                                       candidate.displayName.isEmpty
                                           ? candidate.id
                                           : candidate.displayName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                               ],

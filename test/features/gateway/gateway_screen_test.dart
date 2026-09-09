@@ -188,7 +188,7 @@ void main() {
       await tester.pumpWidget(_testApp(channel));
       await tester.pumpAndSettle();
 
-      expect(find.text('Gateway'), findsWidgets);
+      expect(find.text('Connections'), findsWidgets);
       expect(find.text('Healthy'), findsOneWidget);
       expect(find.text('hermes-agent'), findsOneWidget);
       expect(find.text('0.18.0'), findsOneWidget);
@@ -375,42 +375,48 @@ void main() {
     expect(find.text('0.18.1'), findsOneWidget);
   });
 
-  testWidgets('gateway picker activates the selected saved gateway', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel.disconnected();
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://alpha',
-        ),
-        HermesEndpointConfig(
-          id: 'beta',
-          label: 'Beta',
-          baseUrl: 'https://beta',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['default']),
-        'beta': gatewaySummary(['default']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
+  testWidgets(
+    'host inspection does not connect chat until explicitly requested',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://alpha',
+          ),
+          HermesEndpointConfig(
+            id: 'beta',
+            label: 'Beta',
+            baseUrl: 'https://beta',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+          'beta': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
 
-    await tester.pumpWidget(_testApp(channel, directory: directory));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('gateway-status-picker')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Beta').last);
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_testApp(channel, directory: directory));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('connection-host-beta')));
+      await tester.pumpAndSettle();
 
-    expect(directory.activeContactId?.gatewayId, 'beta');
-    expect(channel.connectCalls.last.baseUrl, 'https://beta');
-  });
+      expect(directory.managementGatewayId, 'beta');
+      expect(directory.activeContactId, isNull);
+      expect(channel.connectCalls, isEmpty);
+      await tester.tap(
+        find.byKey(const ValueKey('gateway-connect-chat-button')),
+      );
+      await tester.pumpAndSettle();
+      expect(directory.activeContactId?.gatewayId, 'beta');
+      expect(channel.connectCalls.last.baseUrl, 'https://beta');
+    },
+  );
 
   testWidgets('renames the active saved gateway', (tester) async {
     final channel = FakeHermesChannel.disconnected();
@@ -433,17 +439,82 @@ void main() {
 
     await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('gateway-rename-button')));
+    await tester.tap(find.byKey(const ValueKey('settings-gateway-menu-alpha')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rename'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const ValueKey('gateway-rename-field')),
+      find.byKey(const ValueKey('settings-gateway-rename-field')),
       'Work',
     );
-    await tester.tap(find.byKey(const ValueKey('gateway-rename-save')));
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(directory.gateways.single.label, 'Work');
     expect(find.text('Work'), findsOneWidget);
+  });
+
+  testWidgets('host disconnect closes its active enrolled profile', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    final directory = directoryFor(
+      configs: [
+        for (final id in ['default', 'coder'])
+          HermesEndpointConfig(
+            id: id,
+            label: 'Host',
+            baseUrl: 'https://host.example/p/$id',
+            wingLinkOrigin: 'https://link.example',
+            wingLinkDeviceId: 'shared-device',
+          ),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        for (final id in ['default', 'coder']) id: gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(channel.dispose);
+    await directory.refresh();
+    await directory.activateGateway('coder');
+    directory.selectManagementGateway('default');
+    await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    expect(find.text('Chat connected'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-confirm')));
+    await tester.pumpAndSettle();
+    expect(channel.disconnectCalls, 1);
+    expect(directory.activeContactId, isNull);
+    expect(directory.gateways, hasLength(2));
+  });
+
+  testWidgets('Wing Link trust stays available after chat disconnects', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = await _activeTrustDirectory(channel);
+    await directory.showDirectory();
+    final connections = channel.connectCalls.length;
+    var trustLoads = 0;
+    await tester.pumpWidget(
+      _testApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: (_) {
+          trustLoads++;
+          return _trustClient();
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(trustLoads, 1);
+    expect(channel.connectCalls, hasLength(connections));
+    expect(directory.activeContactId, isNull);
+    expect(find.byKey(const ValueKey('gateway-trust-revoke')), findsOneWidget);
+    expect(find.text('Chat disconnected'), findsOneWidget);
   });
 
   testWidgets('trust reloads when the active gateway config is replaced', (
@@ -490,7 +561,9 @@ void main() {
     expect(trustLoads, 2);
   });
 
-  testWidgets('disconnect forgets the saved gateway', (tester) async {
+  testWidgets('disconnect preserves the saved gateway for reconnect', (
+    tester,
+  ) async {
     final channel = FakeHermesChannel.disconnected();
     addTearDown(channel.dispose);
     final directory = directoryFor(
@@ -518,7 +591,8 @@ void main() {
 
     expect(channel.disconnectCalls, 1);
     expect(directory.activeContactId, isNull);
-    expect(directory.gateways, isEmpty);
+    expect(directory.gateways.single.id, 'alpha');
+    expect(directory.configForGateway('alpha'), isNotNull);
   });
 
   testWidgets('shows changed identity, upgrade, and expired states at 100%', (

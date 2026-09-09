@@ -131,6 +131,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   bool _disposed = false;
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
+  Future<void>? _disconnectFuture;
   Future<void> _profileSelectionTail = Future.value();
   Future<void> _selectionPersistenceTail = Future.value();
   bool _observingActiveChannel = false;
@@ -180,6 +181,22 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   GatewayContactId? get activeContactId => _activeContactId;
+  String? _managementGatewayId;
+
+  /// Host inspection is independent of the active Agent chat connection.
+  String? get managementGatewayId {
+    if (_configsById.containsKey(_managementGatewayId)) {
+      return _managementGatewayId;
+    }
+    return _activeContactId?.gatewayId ?? _configsById.keys.firstOrNull;
+  }
+
+  void selectManagementGateway(String gatewayId) {
+    if (!_configsById.containsKey(gatewayId)) return;
+    _managementGatewayId = gatewayId;
+    notifyListeners();
+  }
+
   GatewayContact? get activeContact {
     final id = _activeContactId;
     if (id == null) return null;
@@ -262,6 +279,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   Future<void> start() async {
     if (_started || _disposed) return;
     _started = true;
+    final restoreGeneration = _activationGeneration;
     WidgetsBinding.instance.addObserver(this);
     _activeChannel.addListener(_onActiveChannelChanged);
     _observingActiveChannel = true;
@@ -273,7 +291,8 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
     await refresh();
     if (_disposed) return;
-    if (rememberedSelection != null &&
+    if (restoreGeneration == _activationGeneration &&
+        rememberedSelection != null &&
         _contacts.any(
           (contact) =>
               contact.id == rememberedSelection.contactId &&
@@ -796,18 +815,29 @@ class HermesGatewayDirectory extends ChangeNotifier
   Future<void> clearWingLinkEnrollment(String gatewayId) async {
     final config = _configsById[gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');
-    final replacement = HermesEndpointConfig(
-      id: config.id,
-      label: config.label,
-      baseUrl: config.baseUrl,
-      apiKey: config.apiKey,
-    );
+    bool sameEnrollment(HermesEndpointConfig candidate) =>
+        candidate.id == gatewayId ||
+        (config.wingLinkDeviceId?.isNotEmpty == true &&
+            candidate.wingLinkDeviceId == config.wingLinkDeviceId &&
+            candidate.wingLinkOrigin == config.wingLinkOrigin &&
+            candidate.wingLinkHostFingerprint ==
+                config.wingLinkHostFingerprint);
     final configs = [
       for (final entry in _configsById.entries)
-        entry.key == gatewayId ? replacement : entry.value,
+        if (sameEnrollment(entry.value))
+          HermesEndpointConfig(
+            id: entry.value.id,
+            label: entry.value.label,
+            baseUrl: entry.value.baseUrl,
+            apiKey: entry.value.apiKey,
+          )
+        else
+          entry.value,
     ];
     await _store.saveAll(configs);
-    _configsById[gatewayId] = replacement;
+    for (final replacement in configs) {
+      _configsById[replacement.id!] = replacement;
+    }
     notifyListeners();
   }
 
@@ -951,6 +981,8 @@ class HermesGatewayDirectory extends ChangeNotifier
     if (config == null) throw StateError('Gateway is no longer saved.');
     final generation = ++_activationGeneration;
 
+    await _disconnectFuture;
+    if (generation != _activationGeneration) return;
     if (_activeContactId != null) await _activeChannel.disconnect();
     if (generation != _activationGeneration) return;
     _activeContactId = id;
@@ -1026,10 +1058,18 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   Future<void> showDirectory() async {
     ++_activationGeneration;
-    await _activeChannel.disconnect();
     _activeContactId = null;
-    await _clearRememberedSelection();
+    final clearSelection = _clearRememberedSelection();
+    final disconnect =
+        _disconnectFuture ?? Future<void>.microtask(_activeChannel.disconnect);
+    _disconnectFuture = disconnect;
     notifyListeners();
+    try {
+      await disconnect;
+      await clearSelection;
+    } finally {
+      if (identical(_disconnectFuture, disconnect)) _disconnectFuture = null;
+    }
   }
 
   Future<void> _rememberActiveSelection() async {

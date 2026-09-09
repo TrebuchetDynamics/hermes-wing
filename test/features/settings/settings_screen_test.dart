@@ -6,6 +6,7 @@ import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
+import 'package:wing/features/gateway/screens/gateway_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
@@ -115,7 +116,7 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(),
+          home: GatewayScreen(),
         ),
       ),
     );
@@ -128,18 +129,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Hermes Agent dashboard'), findsNothing);
-    // ROADMAP 5.1 reintroduced Appearance as the theme picker; the legacy
-    // dashboard rows above must still stay gone.
-    expect(find.text('Appearance'), findsOneWidget);
-    expect(find.byKey(const ValueKey('settings-open-hermes')), findsNothing);
-    final voiceLink = find.byKey(const ValueKey('settings-voice-link'));
-    await tester.scrollUntilVisible(voiceLink, 300);
-    expect(find.byType(SwitchListTile), findsNothing);
-    expect(
-      find.text('Voice input, spoken replies, and sounds'),
-      findsOneWidget,
-    );
-    expect(voiceLink, findsOneWidget);
     expect(
       find.text('Credentials stay in secure storage; values hidden'),
       findsOneWidget,
@@ -168,7 +157,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(gatewayMenu);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Reconnect'));
+    await tester.tap(find.text('Refresh status'));
     await tester.pumpAndSettle();
     expect(loader.calls.where((id) => id == 'a'), hasLength(2));
     expect(loader.calls.where((id) => id == 'b'), hasLength(1));
@@ -190,10 +179,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Work'), findsNothing);
     expect(find.text('Beta'), findsOneWidget);
-
-    final diagnostics = find.byKey(const ValueKey('settings-diagnostics-link'));
-    await tester.scrollUntilVisible(diagnostics, 300);
-    expect(diagnostics, findsOneWidget);
   });
 
   testWidgets(
@@ -241,7 +226,7 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SettingsScreen(),
+            home: const GatewayScreen(),
           ),
         ),
       );
@@ -308,7 +293,7 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: SettingsScreen(),
+            home: GatewayScreen(),
           ),
         ),
       );
@@ -416,7 +401,7 @@ void main() {
             ).copyWith(textScaler: const TextScaler.linear(2)),
             child: child!,
           ),
-          home: const SettingsScreen(),
+          home: const GatewayScreen(),
         ),
       ),
     );

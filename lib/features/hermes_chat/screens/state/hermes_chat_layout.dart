@@ -733,13 +733,36 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         container: true,
                         liveRegion: true,
                         label: _voiceInputController.error!,
-                        child: ExcludeSemantics(
-                          child: Text(
-                            _voiceInputController.error!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
+                        child: MaterialBanner(
+                          leading: const Icon(Icons.mic_off_outlined),
+                          content: ExcludeSemantics(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  strings.chatVoicePausedTitle,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                Text(_voiceInputController.error!),
+                              ],
                             ),
                           ),
+                          actions: [
+                            TextButton(
+                              onPressed: _voiceInputController.dismissNotice,
+                              child: Text(
+                                strings.chatLayoutContinueInTextAction,
+                              ),
+                            ),
+                            if (canSendTurns &&
+                                ref
+                                    .watch(wingVoiceSettingsProvider)
+                                    .continuousVoiceEnabled)
+                              TextButton(
+                                onPressed: () => _setContinuousVoice(true),
+                                child: Text(strings.chatVoiceResumeAction),
+                              ),
+                          ],
                         ),
                       ),
               ),
@@ -1010,10 +1033,22 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     HermesChannelState state,
     bool canSendTurns,
   ) {
-    if (_voiceInputController.speaking) {
-      return strings.chatLayoutComposerSpeakingHint;
+    if (canSendTurns) {
+      final selectedId = effectiveSelectedProfileId(state);
+      final selected = state.profiles
+          .where((profile) => profile.id == selectedId)
+          .firstOrNull;
+      final name = selected == null
+          ? _gatewayDirectory.activeContact?.profileName
+          : selected.displayName.isEmpty
+          ? selected.id
+          : selected.displayName;
+      return name == null
+          ? strings.chatLayoutComposerHint
+          : strings.chatNamedComposerHint(
+              _safeHermesUiPreview(name, maxLength: 48),
+            );
     }
-    if (canSendTurns) return strings.chatLayoutComposerHint;
     if (state.hasUnreconciledRun) {
       return strings.chatLayoutComposerRunRecoveryHint;
     }
@@ -1806,94 +1841,118 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   Widget _buildVoiceModeSurface(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final strings = AppLocalizations.of(context);
-    final phase = _voiceInputController.capturing
-        ? strings.chatLayoutListeningLabel
-        : _voiceInputController.speaking
-        ? strings.chatLayoutSpeakingLabel
-        : strings.chatLayoutHandsFreeLabel;
-    final icon = _voiceInputController.capturing
-        ? Icons.mic_rounded
-        : _voiceInputController.speaking
-        ? Icons.volume_up_rounded
-        : Icons.record_voice_over_rounded;
+    final capturing = _voiceInputController.capturing;
+    final speaking = _voiceInputController.speaking;
+    final phase = capturing
+        ? speaking
+              ? strings.chatVoiceInterruptionLabel
+              : strings.chatLayoutListeningLabel
+        : speaking
+        ? strings.chatVoiceOutputLabel
+        : strings.chatVoiceWaitingLabel;
     final liveTranscript = _voiceInputController.liveTranscript;
-    return Semantics(
-      container: true,
-      liveRegion: true,
-      label: '${strings.chatLayoutHandsFreeVoiceLabel}: $phase',
-      child: Container(
-        key: const ValueKey('hermes-voice-mode-surface'),
-        decoration: BoxDecoration(
-          color: colors.primaryContainer,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: colors.primary.withValues(alpha: 0.38)),
-        ),
-        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
-        child: Row(
-          children: [
-            if (_voiceInputController.capturing &&
-                _voiceInputController.soundLevel?.isNaN == false)
-              _VoiceWaveform(level: _voiceInputController.soundLevel)
-            else
-              Icon(icon, color: colors.onPrimaryContainer),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    strings.chatLayoutHandsFreeVoiceLabel,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: colors.onPrimaryContainer,
+    return Container(
+      key: const ValueKey('hermes-voice-mode-surface'),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.38)),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (capturing && _voiceInputController.soundLevel?.isNaN == false)
+                _VoiceWaveform(level: _voiceInputController.soundLevel)
+              else
+                Icon(
+                  capturing
+                      ? Icons.mic_rounded
+                      : Icons.record_voice_over_rounded,
+                  color: colors.onPrimaryContainer,
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      strings.chatLayoutHandsFreeVoiceLabel,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimaryContainer,
+                      ),
                     ),
-                  ),
-                  Text(
-                    liveTranscript ?? phase,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onPrimaryContainer,
+                    Semantics(
+                      liveRegion: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(phase),
+                          if (capturing && speaking)
+                            Text(strings.chatVoiceOutputLabel),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    if (liveTranscript != null)
+                      Text(
+                        liveTranscript,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
               ),
-            ),
-            PopupMenuButton<String>(
-              key: const ValueKey('hermes-voice-controls'),
-              tooltip: strings.chatLayoutHandsFreeVoiceLabel,
-              onSelected: (action) {
-                if (action == 'microphone') {
-                  _voiceInputController.pauseMicrophone();
-                } else if (_voiceInputController.outputMuted) {
-                  _voiceInputController.unmuteOutput();
-                } else {
-                  unawaited(_voiceInputController.muteOutput());
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'output',
-                  child: Text(
+            ],
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            children: [
+              if (speaking)
+                TextButton.icon(
+                  key: const ValueKey('hermes-voice-stop-output'),
+                  label: Text(strings.chatVoiceStopOutputAction),
+                  icon: const Icon(Icons.stop_circle_outlined),
+                  onPressed: () =>
+                      unawaited(_voiceInputController.stopSpeaking()),
+                )
+              else
+                TextButton.icon(
+                  label: Text(
                     _voiceInputController.outputMuted
                         ? strings.chatVoiceUnmuteOutputAction
                         : strings.chatVoiceMuteOutputAction,
                   ),
+                  icon: Icon(
+                    _voiceInputController.outputMuted
+                        ? Icons.volume_off_outlined
+                        : Icons.volume_up_outlined,
+                  ),
+                  onPressed: () {
+                    if (_voiceInputController.outputMuted) {
+                      _voiceInputController.unmuteOutput();
+                    } else {
+                      unawaited(_voiceInputController.muteOutput());
+                    }
+                  },
                 ),
-                PopupMenuItem(
-                  value: 'microphone',
-                  child: Text(strings.chatVoicePauseMicrophoneAction),
-                ),
-              ],
-            ),
-            IconButton.filled(
-              key: const ValueKey('hermes-voice-mode-end-button'),
-              tooltip: strings.closeAction,
-              icon: const Icon(Icons.close_rounded),
-              onPressed: _voiceInputController.pause,
-            ),
-          ],
-        ),
+              TextButton.icon(
+                label: Text(strings.chatVoicePauseMicrophoneAction),
+                icon: const Icon(Icons.mic_off_outlined),
+                onPressed: _voiceInputController.pauseMicrophone,
+              ),
+              TextButton.icon(
+                key: const ValueKey('hermes-voice-mode-end-button'),
+                label: Text(strings.chatVoiceEndAction),
+                icon: const Icon(Icons.close_rounded),
+                onPressed: _voiceInputController.pause,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1994,6 +2053,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             _showSessionsPanel(context, channel);
           case _ComposerMenuAction.handsFree:
             _setContinuousVoice(!handsFreeActive);
+          case _ComposerMenuAction.dictate:
+            unawaited(_voiceInputController.captureDraft());
         }
       },
       itemBuilder: (_) => [
@@ -2010,6 +2071,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           enabled: handsFreeAvailable,
           checked: handsFreeActive,
           child: Text(strings.chatLayoutHandsFreeVoiceLabel),
+        ),
+        PopupMenuItem(
+          value: _ComposerMenuAction.dictate,
+          enabled: handsFreeAvailable && !_voiceInputController.capturing,
+          child: ListTile(
+            leading: const Icon(Icons.edit_note_outlined),
+            title: Text(strings.chatVoiceDictateAction),
+            subtitle: Text(strings.chatVoiceDictateHint),
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
       ],
     );
@@ -2231,7 +2302,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         key: const ValueKey('hermes-tts-stop-button'),
         tooltip: AppLocalizations.of(context).chatLayoutStopSpeakingTooltip,
         icon: const Icon(Icons.volume_up_rounded),
-        onPressed: _voiceInputController.pause,
+        onPressed: () => unawaited(_voiceInputController.stopSpeaking()),
       );
     }
     final voiceEnabled = ref.watch(

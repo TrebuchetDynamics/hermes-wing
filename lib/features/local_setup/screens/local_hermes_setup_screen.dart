@@ -96,9 +96,38 @@ class _LocalHermesSetupScreenState
       case LocalHermesSetupStatus.detecting:
         return _progress(strings.localSetupDetecting);
       case LocalHermesSetupStatus.installing:
-        return _progress(
-          strings.localSetupInstalling,
-          percent: controller.progressPercent,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _progress(
+              _stageLabel(strings, controller.progressPhase),
+              percent: controller.progressPercent,
+            ),
+            const SizedBox(height: 16),
+            Text(strings.localSetupProgressHint),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => unawaited(controller.cancel()),
+                icon: const Icon(Icons.stop_circle_outlined),
+                label: Text(strings.localSetupStopAction),
+              ),
+            ),
+          ],
+        );
+      case LocalHermesSetupStatus.cancelling:
+        return _progress(strings.localSetupStopping);
+      case LocalHermesSetupStatus.cancelled:
+        return _messageState(
+          icon: Icons.stop_circle_outlined,
+          title: strings.localSetupStoppedTitle,
+          body: strings.localSetupStoppedBody,
+          action: OutlinedButton.icon(
+            onPressed: () => unawaited(controller.inspect()),
+            icon: const Icon(Icons.refresh),
+            label: Text(strings.localSetupRetryAction),
+          ),
         );
       case LocalHermesSetupStatus.missing:
         return _actionState(
@@ -148,17 +177,45 @@ class _LocalHermesSetupScreenState
           child: _messageState(
             icon: Icons.error_outline,
             title: strings.localSetupFailedTitle,
-            body: controller.errorMessage ?? strings.localSetupFailedBody,
-            action: OutlinedButton.icon(
-              key: const ValueKey('local-hermes-setup-retry'),
-              onPressed: () => unawaited(controller.inspect()),
-              icon: const Icon(Icons.refresh),
-              label: Text(strings.localSetupRetryAction),
+            body: switch (controller.errorCode) {
+              'gateway_port_in_use' => strings.localSetupPortInUse,
+              'setup_timed_out' => strings.localSetupTimedOut,
+              _ => strings.localSetupFailedBody,
+            },
+            action: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  key: const ValueKey('local-hermes-setup-retry'),
+                  onPressed: () => unawaited(controller.inspect()),
+                  icon: const Icon(Icons.refresh),
+                  label: Text(strings.localSetupRetryAction),
+                ),
+                TextButton(
+                  onPressed: () => context.go(AppRoutes.enroll),
+                  child: Text(strings.localSetupConnectionOptions),
+                ),
+              ],
             ),
           ),
         );
     }
   }
+
+  String _stageLabel(AppLocalizations strings, String? phase) =>
+      switch (phase) {
+        'inspect' => strings.localSetupDetecting,
+        'download' => strings.localSetupStageDownload,
+        'install' => strings.localSetupStageInstall,
+        'verify' || 'complete' => strings.localSetupStageVerify,
+        'preflight' => strings.localSetupStagePreflight,
+        'authentication' => strings.localSetupStageAuthentication,
+        'api_endpoint' => strings.localSetupStageEndpoint,
+        'gateway' => strings.localSetupStageGateway,
+        'health' => strings.localSetupStageHealth,
+        _ => strings.localSetupInstalling,
+      };
 
   Widget _progress(String label, {int? percent}) => Semantics(
     liveRegion: true,
@@ -170,6 +227,7 @@ class _LocalHermesSetupScreenState
         ),
         const SizedBox(height: 16),
         Text(label, textAlign: TextAlign.center),
+        if (percent != null) ...[const SizedBox(height: 8), Text('$percent%')],
       ],
     ),
   );

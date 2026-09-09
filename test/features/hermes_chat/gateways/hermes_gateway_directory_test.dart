@@ -8,11 +8,24 @@ import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
+import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 
 import '../support/fake_hermes_channel.dart';
 import '../support/fake_hermes_endpoint_store.dart';
 import '../support/fake_hermes_gateway_directory.dart';
+
+class _DisconnectBarrierChannel extends FakeHermesChannel {
+  _DisconnectBarrierChannel()
+    : super(status: HermesConnectionStatus.disconnected);
+  final releaseDisconnect = Completer<void>();
+
+  @override
+  Future<void> disconnect() async {
+    await releaseDisconnect.future;
+    await super.disconnect();
+  }
+}
 
 class _QueuedProfileChannel extends FakeHermesChannel {
   _QueuedProfileChannel() : super(status: HermesConnectionStatus.disconnected);
@@ -1025,6 +1038,106 @@ void main() {
 
     expect(channel.createSessionCalls, [isNull]);
     expect(channel.state.activeSessionId, wingSessionId);
+  });
+
+  test(
+    'revoking a host device clears shared management enrollment only',
+    () async {
+      final channel = FakeHermesChannel.disconnected();
+      final configs = [
+        for (final id in ['default', 'coder', 'other'])
+          HermesEndpointConfig(
+            id: id,
+            baseUrl: 'https://agent.example/p/$id',
+            apiKey: 'agent-fixture',
+            wingLinkOrigin: 'https://link.example',
+            wingLinkToken: 'link-fixture',
+            wingLinkDeviceId: id == 'other' ? 'second-device' : 'shared-device',
+            wingLinkHostFingerprint: 'fixture-pin',
+          ),
+      ];
+      final directory = directoryFor(
+        configs: configs,
+        loader: FakeGatewaySummaryLoader({
+          for (final config in configs) config.id!: gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      addTearDown(channel.dispose);
+      await directory.refresh();
+      await directory.activateGateway('coder');
+      await directory.clearWingLinkEnrollment('default');
+      for (final id in ['default', 'coder']) {
+        expect(directory.configForGateway(id)!.wingLinkToken, isNull);
+        expect(directory.configForGateway(id)!.apiKey, 'agent-fixture');
+      }
+      expect(
+        directory.configForGateway('other')!.wingLinkToken,
+        'link-fixture',
+      );
+      expect(directory.activeContactId?.gatewayId, 'coder');
+      expect(channel.disconnectCalls, 0);
+    },
+  );
+
+  test('reconnect waits for the previous disconnect to finish', () async {
+    final channel = _DisconnectBarrierChannel();
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+    addTearDown(channel.dispose);
+    await directory.refresh();
+    await directory.activateGateway('alpha');
+    final disconnecting = directory.showDirectory();
+    final reconnecting = directory.activateGateway('alpha');
+    await Future<void>.delayed(Duration.zero);
+    expect(channel.connectCalls, hasLength(1));
+    channel.releaseDisconnect.complete();
+    await Future.wait([disconnecting, reconnecting]);
+    expect(channel.connectCalls, hasLength(2));
+    expect(channel.state.isConnected, isTrue);
+    expect(directory.activeContactId?.gatewayId, 'alpha');
+  });
+
+  test('explicit disconnect wins over pending startup restoration', () async {
+    final gate = Completer<void>();
+    final cache = FakeGatewayContactCache()
+      ..selection = const GatewayContactSelection(
+        contactId: GatewayContactId(gatewayId: 'alpha', profileId: 'default'),
+      );
+    final channel = FakeHermesChannel.disconnected();
+    final loader = FakeGatewaySummaryLoader({
+      'alpha': gatewaySummary(['default']),
+    }, gate: gate);
+    final directory = directoryFor(
+      configs: const [
+        HermesEndpointConfig(id: 'alpha', baseUrl: 'https://alpha.example'),
+      ],
+      loader: loader,
+      cache: cache,
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+    addTearDown(channel.dispose);
+    final starting = directory.start();
+    while (loader.calls.isEmpty) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    await directory.showDirectory();
+    gate.complete();
+    await starting;
+    expect(channel.connectCalls, isEmpty);
+    expect(directory.activeContactId, isNull);
+    expect(cache.selection, isNull);
+    expect(directory.gateways.single.id, 'alpha');
   });
 
   test('start restores the last active profile and session', () async {

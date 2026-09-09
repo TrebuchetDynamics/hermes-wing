@@ -929,6 +929,11 @@ extension _MessagingExtension on HermesApiChannel {
               _mergeRunDetailTurns(
                 reconciledServerTurns,
                 turns.skip(preSendTurnCount),
+                canonicalAssistantIndex: _currentAssistantReplyIndex(
+                  reconciledServerTurns,
+                  message,
+                  preSendTurnCount,
+                ),
               ),
               runUsage,
             ),
@@ -1024,19 +1029,20 @@ extension _MessagingExtension on HermesApiChannel {
   }
 
   int? _assistantReplyIndexAfter(List<HermesChatTurn> serverTurns, int index) {
+    int? replyIndex;
     for (
       var candidateIndex = index + 1;
       candidateIndex < serverTurns.length;
       candidateIndex++
     ) {
       final candidate = serverTurns[candidateIndex];
-      if (candidate.author == HermesTurnAuthor.user) return null;
+      if (candidate.author == HermesTurnAuthor.user) break;
       if (candidate.author == HermesTurnAuthor.assistant &&
           candidate.text.trim().isNotEmpty) {
-        return candidateIndex;
+        replyIndex = candidateIndex;
       }
     }
-    return null;
+    return replyIndex;
   }
 
   List<HermesChatTurn> _reconcileCurrentAssistantReply(
@@ -1069,28 +1075,44 @@ extension _MessagingExtension on HermesApiChannel {
 
   List<HermesChatTurn> _mergeRunDetailTurns(
     List<HermesChatTurn> serverTurns,
-    Iterable<HermesChatTurn> localRunTurns,
-  ) {
+    Iterable<HermesChatTurn> localRunTurns, {
+    required int? canonicalAssistantIndex,
+  }) {
     final local = localRunTurns.toList(growable: false);
     final finalAssistantIndex = local.lastIndexWhere(
       (turn) => turn.author == HermesTurnAuthor.assistant,
     );
+    final currentUserIndex = serverTurns
+        .take(canonicalAssistantIndex ?? 0)
+        .toList()
+        .lastIndexWhere((turn) => turn.author == HermesTurnAuthor.user);
+    // Only match within this submission's authoritative reply, never against
+    // identical text from an earlier user turn.
+    final canonicalReplyTexts = <String>{
+      for (final turn
+          in serverTurns
+              .skip(currentUserIndex + 1)
+              .take(
+                canonicalAssistantIndex == null
+                    ? 0
+                    : canonicalAssistantIndex - currentUserIndex,
+              ))
+        if (turn.author == HermesTurnAuthor.assistant &&
+            turn.kind == HermesTurnKind.text &&
+            turn.text.trim().isNotEmpty)
+          turn.text.trim(),
+    };
     final details = <HermesChatTurn>[
       for (var index = 0; index < local.length; index++)
         if (local[index].kind != HermesTurnKind.text ||
             (local[index].author == HermesTurnAuthor.assistant &&
-                index != finalAssistantIndex))
+                index != finalAssistantIndex &&
+                !canonicalReplyTexts.contains(local[index].text.trim())))
           local[index],
     ];
     if (details.isEmpty) return serverTurns;
     final merged = List<HermesChatTurn>.from(serverTurns);
-    final assistantIndex = merged.lastIndexWhere(
-      (turn) => turn.author == HermesTurnAuthor.assistant,
-    );
-    merged.insertAll(
-      assistantIndex < 0 ? merged.length : assistantIndex,
-      details,
-    );
+    merged.insertAll(canonicalAssistantIndex ?? merged.length, details);
     return merged;
   }
 

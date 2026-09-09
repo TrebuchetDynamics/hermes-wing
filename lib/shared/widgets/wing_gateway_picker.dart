@@ -17,6 +17,7 @@ class WingGatewayPicker extends StatelessWidget {
     required this.onSelected,
     this.hint,
     this.enabled = true,
+    this.selectedGatewayId,
   });
 
   /// Key applied to the dropdown itself, which is what tests and device flows
@@ -35,12 +36,14 @@ class WingGatewayPicker extends StatelessWidget {
 
   /// False while a switch is in flight, which disables the dropdown.
   final bool enabled;
+  final String? selectedGatewayId;
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final hosts = directory.hosts;
-    final activeGatewayId = directory.activeContactId?.gatewayId;
+    final activeGatewayId =
+        selectedGatewayId ?? directory.activeContactId?.gatewayId;
     // A profile-bound endpoint maps back to its paired host. A stale endpoint
     // must not be shown as a selection because the dropdown has no item for it.
     final selected = hosts

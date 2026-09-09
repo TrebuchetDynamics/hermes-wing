@@ -177,7 +177,7 @@ const _composerEmojis = [
   '🫡',
 ];
 
-enum _ComposerMenuAction { sessions, handsFree }
+enum _ComposerMenuAction { sessions, handsFree, dictate }
 
 enum _HermesConnectionMode { local, remote, vpn, ssh }
 
@@ -694,7 +694,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     } else {
       _transcriptViewport.capture();
       _voiceInputController.pause(
-        _hermesStrings(context).chatShellVoicePausedBackgroundBody,
+        _voiceInputController.continuousEnabled ||
+                _voiceInputController.capturing ||
+                _voiceInputController.speaking
+            ? _hermesStrings(context).chatShellVoicePausedBackgroundBody
+            : _voiceInputController.error,
+        _voiceInputController.playbackUnavailable,
       );
     }
   }
@@ -1284,7 +1289,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
-                                    activeContact.gatewayLabel,
+                                    strings.chatHostLabel(
+                                      activeContact.gatewayLabel,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: Theme.of(context)

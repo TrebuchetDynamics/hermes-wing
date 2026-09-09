@@ -9,6 +9,110 @@ import 'package:wing/features/local_setup/screens/local_hermes_setup_screen.dart
 import 'package:wing/l10n/app_localizations.dart';
 
 void main() {
+  testWidgets('port conflict offers specific recovery without raw host details', (
+    tester,
+  ) async {
+    var setups = 0;
+    final host = LocalWingLinkHost(
+      executablePath: '/opt/hermes-wing/wing',
+      runner: (_, args) async {
+        if (args.first == 'setup') {
+          setups++;
+          return const LocalWingLinkProcessResult(
+            exitCode: 1,
+            stdout:
+                '{"protocol_version":2,"error":{"code":"gateway_port_in_use","message":"private host detail"}}',
+          );
+        }
+        return const LocalWingLinkProcessResult(
+          exitCode: 0,
+          stdout:
+              '{"protocol_version":2,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"hermes_version":"Hermes Agent v1.2.3","setup_available":true}',
+        );
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [localWingLinkHostProvider.overrideWithValue(host)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: LocalHermesSetupScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('local-hermes-setup-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('local-hermes-setup-confirm')));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('local Hermes API port is already in use'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('private host detail'), findsNothing);
+    expect(find.text('Connection options'), findsOneWidget);
+    await tester.tap(find.text('Check again'));
+    await tester.pumpAndSettle();
+    expect(setups, 1);
+  });
+
+  testWidgets(
+    'setup shows its current stage and can be stopped without retrying',
+    (tester) async {
+      final operation = _PendingSetupOperation();
+      var setupCalls = 0;
+      final host = LocalWingLinkHost(
+        executablePath: '/opt/hermes-wing/wing',
+        runner: (_, _) async => const LocalWingLinkProcessResult(
+          exitCode: 0,
+          stdout:
+              '{"protocol_version":2,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"hermes_version":"Hermes Agent v1.2.3","setup_available":true}',
+        ),
+        setupStarter: (_, progress) async {
+          setupCalls++;
+          progress(
+            const LocalWingLinkProgress(
+              phase: 'gateway',
+              message: 'private process output',
+              percent: 96,
+            ),
+          );
+          return operation;
+        },
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [localWingLinkHostProvider.overrideWithValue(host)],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: LocalHermesSetupScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('local-hermes-setup-action')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('local-hermes-setup-confirm')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Starting the Hermes gateway'), findsOneWidget);
+      expect(find.textContaining('private process output'), findsNothing);
+      expect(find.text('96%'), findsOneWidget);
+      await tester.tap(find.text('Stop setup'));
+      await tester.pumpAndSettle();
+      expect(operation.cancelled, isTrue);
+      expect(find.text('Setup stopped'), findsOneWidget);
+      expect(setupCalls, 1);
+      await tester.tap(find.text('Check again'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hermes Agent is ready'), findsOneWidget);
+      expect(setupCalls, 1);
+    },
+  );
+
   testWidgets('installs missing Hermes only after explicit consent', (
     tester,
   ) async {
@@ -174,9 +278,11 @@ class _PendingSetupOperation implements LocalWingLinkSetupOperation {
   @override
   Future<void> cancel() async {
     cancelled = true;
+    completeCancelled();
   }
 
   void completeCancelled() {
+    if (_result.isCompleted) return;
     _result.complete(const LocalWingLinkProcessResult(exitCode: 130));
   }
 }

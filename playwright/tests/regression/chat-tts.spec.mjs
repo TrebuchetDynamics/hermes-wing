@@ -691,9 +691,13 @@ test("Agent speech stops when starting a new session", async ({
   await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
     0,
   );
-  await expect(
-    page.locator("flt-semantics").getByText("Hermes session changed. Spoken reply stopped.", { exact: true }),
-  ).toBeVisible();
+  const pausedVoice = page.getByRole("group", {
+    name: "Hermes session changed. Spoken reply stopped.",
+    exact: true,
+  });
+  await expect(pausedVoice).toBeVisible();
+  await expect(pausedVoice.getByRole("button", { name: "Continue in text" })).toBeVisible();
+  await expect(pausedVoice.getByRole("button", { name: "Resume hands-free" })).toBeVisible();
   await expect(
     page.getByText("Hermes session changed. Continuous voice paused."),
   ).toHaveCount(0);

@@ -67,7 +67,11 @@ void main() {
     await _pumpGatewayChat(tester);
 
     expect(find.text('AGENT-A'), findsOneWidget);
-    expect(find.textContaining('Alpha'), findsOneWidget);
+    expect(find.text('Host: Alpha'), findsOneWidget);
+    final composer = tester.widget<TextField>(
+      find.byKey(const ValueKey('hermes-composer-field')),
+    );
+    expect(composer.decoration?.hintText, 'Message AGENT-A…');
     await tester.tap(find.byKey(const ValueKey('hermes-contact-header')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('hermes-sessions-panel')), findsOneWidget);
@@ -1676,21 +1680,31 @@ void main() {
     );
   });
 
-  testWidgets('disconnect removes only the active gateway', (tester) async {
-    final harness = await _pumpGatewayChat(tester);
+  testWidgets(
+    'disconnect keeps saved gateways and stays disconnected on resume',
+    (tester) async {
+      final harness = await _pumpGatewayChat(tester);
 
-    await tester.tap(find.byKey(const ValueKey('hermes-disconnect-button')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Other saved Hermes gateways'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('hermes-disconnect-confirm')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('hermes-disconnect-button')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Your saved connection stays'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('hermes-disconnect-confirm')));
+      await tester.pumpAndSettle();
 
-    expect(harness.store.deleteProfileCalls, ['a']);
-    expect(find.text('AGENT-A'), findsNothing);
-    expect(find.text('Alpha'), findsNothing);
-    expect(find.text('AGENT-B'), findsOneWidget);
-    expect(find.text('Beta'), findsOneWidget);
-  });
+      expect(harness.store.deleteProfileCalls, isEmpty);
+      expect(harness.directory.activeContactId, isNull);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(harness.channel.connectCalls, hasLength(1));
+      expect(find.text('AGENT-A'), findsOneWidget);
+      expect(find.text('Alpha'), findsOneWidget);
+      expect(find.text('AGENT-B'), findsOneWidget);
+      expect(find.text('Beta'), findsOneWidget);
+    },
+  );
 
   testWidgets('resume keeps a healthy active contact connected', (
     tester,

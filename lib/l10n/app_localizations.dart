@@ -145,8 +145,92 @@ abstract class AppLocalizations {
   /// No description provided for @chatVoicePauseMicrophoneAction.
   ///
   /// In en, this message translates to:
-  /// **'Pause microphone'**
+  /// **'End hands-free listening'**
   String get chatVoicePauseMicrophoneAction;
+
+  /// No description provided for @chatVoiceEndAction.
+  ///
+  /// In en, this message translates to:
+  /// **'End voice session'**
+  String get chatVoiceEndAction;
+
+  /// No description provided for @chatVoiceStopOutputAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop reply'**
+  String get chatVoiceStopOutputAction;
+
+  /// No description provided for @chatVoiceWaitingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for reply'**
+  String get chatVoiceWaitingLabel;
+
+  /// No description provided for @chatVoiceDictateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Dictate a draft'**
+  String get chatVoiceDictateAction;
+
+  /// No description provided for @chatVoiceDictateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the text before sending'**
+  String get chatVoiceDictateHint;
+
+  /// No description provided for @chatVoicePausedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice paused'**
+  String get chatVoicePausedTitle;
+
+  /// No description provided for @chatVoiceResumeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume hands-free'**
+  String get chatVoiceResumeAction;
+
+  /// No description provided for @chatVoiceInterruptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening for interruption'**
+  String get chatVoiceInterruptionLabel;
+
+  /// No description provided for @chatVoiceOutputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing assistant reply'**
+  String get chatVoiceOutputLabel;
+
+  /// No description provided for @profileActiveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Active chat'**
+  String get profileActiveChat;
+
+  /// No description provided for @profileFreshSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a provider and model for this new profile.'**
+  String get profileFreshSetupHint;
+
+  /// No description provided for @profileCloneSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Copies this profile’s configuration. Leave provider and model blank to inherit them.'**
+  String get profileCloneSetupHint;
+
+  /// No description provided for @chatHostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Host: {host}'**
+  String chatHostLabel(String host);
+
+  /// No description provided for @chatNamedComposerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message {profile}…'**
+  String chatNamedComposerHint(String profile);
 
   /// No description provided for @appTitle.
   ///
@@ -199,7 +283,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Profiles for your different tasks.'**
+  /// **'Choose a profile to chat, or create one for a different task.'**
   String get agentsSubtitle;
 
   /// No description provided for @newAgent.
@@ -1213,14 +1297,50 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayDestination.
   ///
   /// In en, this message translates to:
-  /// **'Gateway'**
+  /// **'Connections'**
   String get gatewayDestination;
 
   /// No description provided for @gatewayStatusTitle.
   ///
   /// In en, this message translates to:
-  /// **'Gateway'**
+  /// **'Connections'**
   String get gatewayStatusTitle;
+
+  /// No description provided for @gatewayChatDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat disconnected'**
+  String get gatewayChatDisconnected;
+
+  /// No description provided for @gatewayChatDisconnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat could not disconnect. Try again.'**
+  String get gatewayChatDisconnectFailed;
+
+  /// No description provided for @gatewayChatConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat connected'**
+  String get gatewayChatConnected;
+
+  /// No description provided for @gatewayChatConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect chat'**
+  String get gatewayChatConnectAction;
+
+  /// No description provided for @gatewayManagementIndependent.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing Link manages this host independently of chat. Disconnecting chat keeps your saved connection and does not stop Hermes Agent.'**
+  String get gatewayManagementIndependent;
+
+  /// No description provided for @gatewaySavedConnectionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect chat to use this saved Agent connection. Disconnecting keeps it saved and does not stop Hermes Agent on the host.'**
+  String get gatewaySavedConnectionHelp;
 
   /// No description provided for @gatewayTrustDetails.
   ///
@@ -1345,7 +1465,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayStatusConnectionRequiredBody.
   ///
   /// In en, this message translates to:
-  /// **'Open a saved gateway chat before viewing gateway status.'**
+  /// **'Select a saved host and choose Connect chat to load Agent status. Wing Link management is available separately.'**
   String get gatewayStatusConnectionRequiredBody;
 
   /// No description provided for @gatewayStatusConnectionErrorBody.
@@ -2772,7 +2892,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsReconnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Reconnect'**
+  /// **'Refresh status'**
   String get settingsReconnectAction;
 
   /// No description provided for @settingsConnectGatewayError.
@@ -2784,7 +2904,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsReconnectGatewayError.
   ///
   /// In en, this message translates to:
-  /// **'Could not reconnect gateway.'**
+  /// **'Could not refresh host status.'**
   String get settingsReconnectGatewayError;
 
   /// No description provided for @settingsRenameGatewayError.
@@ -3858,7 +3978,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatConnectionDisconnectBody.
   ///
   /// In en, this message translates to:
-  /// **'Disconnect from {target} and remove this saved endpoint/API key from this device. Other saved Hermes gateways remain available.'**
+  /// **'Disconnect chat from {target}? Your saved connection stays on this device, so you can reconnect. Hermes Agent and Wing Link keep running on the host.'**
   String chatConnectionDisconnectBody(String target);
 
   /// No description provided for @chatConnectionDiagnosticsTitle.
@@ -5188,7 +5308,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatShellVoicePausedBackgroundBody.
   ///
   /// In en, this message translates to:
-  /// **'Continuous voice paused while Hermes Wing is not in the foreground.'**
+  /// **'Hermes Wing stopped voice when it left the foreground. The microphone is off. Resume when you’re ready.'**
   String get chatShellVoicePausedBackgroundBody;
 
   /// No description provided for @chatShellVoicePausedSwitchingAgentsBody.
@@ -6298,7 +6418,7 @@ abstract class AppLocalizations {
   /// No description provided for @localSetupBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Hermes remains authoritative for profiles, providers, tools, channels, and schedules; VPN software such as NetBird or Tailscale stays external.'**
+  /// **'Install or reuse Hermes Agent on this computer, then pair Hermes Wing to it.'**
   String get localSetupBody;
 
   /// No description provided for @localSetupDetecting.
@@ -6370,8 +6490,104 @@ abstract class AppLocalizations {
   /// No description provided for @localSetupInstalling.
   ///
   /// In en, this message translates to:
-  /// **'Installing or adopting Hermes Agent and starting its gateway…'**
+  /// **'Preparing setup…'**
   String get localSetupInstalling;
+
+  /// No description provided for @localSetupStageDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading the verified Hermes installer'**
+  String get localSetupStageDownload;
+
+  /// No description provided for @localSetupStageInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing Hermes Agent'**
+  String get localSetupStageInstall;
+
+  /// No description provided for @localSetupStageVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the installed Hermes Agent'**
+  String get localSetupStageVerify;
+
+  /// No description provided for @localSetupStagePreflight.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the local gateway'**
+  String get localSetupStagePreflight;
+
+  /// No description provided for @localSetupStageAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Securing gateway access'**
+  String get localSetupStageAuthentication;
+
+  /// No description provided for @localSetupStageEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuring the local gateway'**
+  String get localSetupStageEndpoint;
+
+  /// No description provided for @localSetupStageGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting the Hermes gateway'**
+  String get localSetupStageGateway;
+
+  /// No description provided for @localSetupStageHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the gateway to respond'**
+  String get localSetupStageHealth;
+
+  /// No description provided for @localSetupProgressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation can take several minutes. You can stop setup below; changes already made are kept.'**
+  String get localSetupProgressHint;
+
+  /// No description provided for @localSetupStopAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop setup'**
+  String get localSetupStopAction;
+
+  /// No description provided for @localSetupStopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping setup…'**
+  String get localSetupStopping;
+
+  /// No description provided for @localSetupStoppedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup stopped'**
+  String get localSetupStoppedTitle;
+
+  /// No description provided for @localSetupStoppedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes already made were kept. Check the installation before trying again.'**
+  String get localSetupStoppedBody;
+
+  /// No description provided for @localSetupPortInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'The local Hermes API port is already in use by a service that Wing could not verify as this gateway. Close the conflicting application, then check again. You can also return to connection options to pair an existing gateway.'**
+  String get localSetupPortInUse;
+
+  /// No description provided for @localSetupTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup took too long and was stopped. Check the installation before trying again; some changes may already have been applied.'**
+  String get localSetupTimedOut;
+
+  /// No description provided for @localSetupConnectionOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection options'**
+  String get localSetupConnectionOptions;
 
   /// No description provided for @localSetupCompleteTitle.
   ///
@@ -6406,7 +6622,7 @@ abstract class AppLocalizations {
   /// No description provided for @localSetupFailedBody.
   ///
   /// In en, this message translates to:
-  /// **'Hermes setup could not be checked. Review Diagnostics, then try again.'**
+  /// **'Setup did not finish. Some changes may already have been applied. Check again to inspect the installation, or return to connection options.'**
   String get localSetupFailedBody;
 
   /// No description provided for @localSetupConsentTitle.

@@ -37,7 +37,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatVoiceUnmuteOutputAction => 'Unmute speech';
 
   @override
-  String get chatVoicePauseMicrophoneAction => 'Pause microphone';
+  String get chatVoicePauseMicrophoneAction => 'End hands-free listening';
+
+  @override
+  String get chatVoiceEndAction => 'End voice session';
+
+  @override
+  String get chatVoiceStopOutputAction => 'Stop reply';
+
+  @override
+  String get chatVoiceWaitingLabel => 'Waiting for reply';
+
+  @override
+  String get chatVoiceDictateAction => 'Dictate a draft';
+
+  @override
+  String get chatVoiceDictateHint => 'Review the text before sending';
+
+  @override
+  String get chatVoicePausedTitle => 'Voice paused';
+
+  @override
+  String get chatVoiceResumeAction => 'Resume hands-free';
+
+  @override
+  String get chatVoiceInterruptionLabel => 'Listening for interruption';
+
+  @override
+  String get chatVoiceOutputLabel => 'Playing assistant reply';
+
+  @override
+  String get profileActiveChat => 'Active chat';
+
+  @override
+  String get profileFreshSetupHint =>
+      'Choose a provider and model for this new profile.';
+
+  @override
+  String get profileCloneSetupHint =>
+      'Copies this profile’s configuration. Leave provider and model blank to inherit them.';
+
+  @override
+  String chatHostLabel(String host) {
+    return 'Host: $host';
+  }
+
+  @override
+  String chatNamedComposerHint(String profile) {
+    return 'Message $profile…';
+  }
 
   @override
   String get appTitle => 'Hermes Wing';
@@ -64,7 +112,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentsTitle => 'Profiles';
 
   @override
-  String get agentsSubtitle => 'Profiles for your different tasks.';
+  String get agentsSubtitle =>
+      'Choose a profile to chat, or create one for a different task.';
 
   @override
   String get newAgent => 'New Profile';
@@ -672,10 +721,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleLastErrorNotice => 'Last run reported an error.';
 
   @override
-  String get gatewayDestination => 'Gateway';
+  String get gatewayDestination => 'Connections';
 
   @override
-  String get gatewayStatusTitle => 'Gateway';
+  String get gatewayStatusTitle => 'Connections';
+
+  @override
+  String get gatewayChatDisconnected => 'Chat disconnected';
+
+  @override
+  String get gatewayChatDisconnectFailed =>
+      'Chat could not disconnect. Try again.';
+
+  @override
+  String get gatewayChatConnected => 'Chat connected';
+
+  @override
+  String get gatewayChatConnectAction => 'Connect chat';
+
+  @override
+  String get gatewayManagementIndependent =>
+      'Wing Link manages this host independently of chat. Disconnecting chat keeps your saved connection and does not stop Hermes Agent.';
+
+  @override
+  String get gatewaySavedConnectionHelp =>
+      'Connect chat to use this saved Agent connection. Disconnecting keeps it saved and does not stop Hermes Agent on the host.';
 
   @override
   String get gatewayTrustDetails => 'Identity & permissions';
@@ -748,7 +818,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gatewayStatusConnectionRequiredBody =>
-      'Open a saved gateway chat before viewing gateway status.';
+      'Select a saved host and choose Connect chat to load Agent status. Wing Link management is available separately.';
 
   @override
   String get gatewayStatusConnectionErrorBody =>
@@ -1592,14 +1662,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsUpdateConnectionAction => 'Update connection';
 
   @override
-  String get settingsReconnectAction => 'Reconnect';
+  String get settingsReconnectAction => 'Refresh status';
 
   @override
   String get settingsConnectGatewayError =>
       'Could not connect to this gateway.';
 
   @override
-  String get settingsReconnectGatewayError => 'Could not reconnect gateway.';
+  String get settingsReconnectGatewayError => 'Could not refresh host status.';
 
   @override
   String get settingsRenameGatewayError => 'Could not rename gateway.';
@@ -2274,7 +2344,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatConnectionDisconnectBody(String target) {
-    return 'Disconnect from $target and remove this saved endpoint/API key from this device. Other saved Hermes gateways remain available.';
+    return 'Disconnect chat from $target? Your saved connection stays on this device, so you can reconnect. Hermes Agent and Wing Link keep running on the host.';
   }
 
   @override
@@ -3107,7 +3177,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatShellVoicePausedBackgroundBody =>
-      'Continuous voice paused while Hermes Wing is not in the foreground.';
+      'Hermes Wing stopped voice when it left the foreground. The microphone is off. Resume when you’re ready.';
 
   @override
   String get chatShellVoicePausedSwitchingAgentsBody =>
@@ -3832,7 +3902,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localSetupBody =>
-      'Hermes Wing can detect, install, or adopt Hermes Agent here. Installation changes are shown before they run. Hermes remains authoritative for profiles, providers, tools, channels, and schedules; VPN software such as NetBird or Tailscale stays external.';
+      'Install or reuse Hermes Agent on this computer, then pair Hermes Wing to it.';
 
   @override
   String get localSetupDetecting => 'Checking this computer for Hermes Agent…';
@@ -3871,8 +3941,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localSetupRepairAction => 'Repair Hermes Agent';
 
   @override
-  String get localSetupInstalling =>
-      'Installing or adopting Hermes Agent and starting its gateway…';
+  String get localSetupInstalling => 'Preparing setup…';
+
+  @override
+  String get localSetupStageDownload =>
+      'Downloading the verified Hermes installer';
+
+  @override
+  String get localSetupStageInstall => 'Installing Hermes Agent';
+
+  @override
+  String get localSetupStageVerify => 'Checking the installed Hermes Agent';
+
+  @override
+  String get localSetupStagePreflight => 'Checking the local gateway';
+
+  @override
+  String get localSetupStageAuthentication => 'Securing gateway access';
+
+  @override
+  String get localSetupStageEndpoint => 'Configuring the local gateway';
+
+  @override
+  String get localSetupStageGateway => 'Starting the Hermes gateway';
+
+  @override
+  String get localSetupStageHealth => 'Waiting for the gateway to respond';
+
+  @override
+  String get localSetupProgressHint =>
+      'Installation can take several minutes. You can stop setup below; changes already made are kept.';
+
+  @override
+  String get localSetupStopAction => 'Stop setup';
+
+  @override
+  String get localSetupStopping => 'Stopping setup…';
+
+  @override
+  String get localSetupStoppedTitle => 'Setup stopped';
+
+  @override
+  String get localSetupStoppedBody =>
+      'Changes already made were kept. Check the installation before trying again.';
+
+  @override
+  String get localSetupPortInUse =>
+      'The local Hermes API port is already in use by a service that Wing could not verify as this gateway. Close the conflicting application, then check again. You can also return to connection options to pair an existing gateway.';
+
+  @override
+  String get localSetupTimedOut =>
+      'Setup took too long and was stopped. Check the installation before trying again; some changes may already have been applied.';
+
+  @override
+  String get localSetupConnectionOptions => 'Connection options';
 
   @override
   String get localSetupCompleteTitle => 'Hermes gateway is ready';
@@ -3892,7 +4014,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localSetupFailedBody =>
-      'Hermes setup could not be checked. Review Diagnostics, then try again.';
+      'Setup did not finish. Some changes may already have been applied. Check again to inspect the installation, or return to connection options.';
 
   @override
   String get localSetupConsentTitle => 'Allow local Hermes setup?';

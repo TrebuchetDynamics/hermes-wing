@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-    'mobile shell keeps Chat, Profiles, Settings, and More in bottom navigation',
+    'mobile shell keeps Chat, Profiles, Connections, and More in bottom navigation',
     (tester) async {
       _usePhoneSize(tester);
 
@@ -76,7 +76,7 @@ void main() {
       );
       expect(find.text('Chat'), findsOneWidget);
       expect(find.text('Profiles'), findsOneWidget);
-      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Connections'), findsOneWidget);
       expect(find.text('More'), findsOneWidget);
       expect(find.byKey(const ValueKey('app-shell-menu-button')), findsNothing);
 
@@ -97,7 +97,7 @@ void main() {
         for (final path in [
           AppRoutes.hermes,
           AppRoutes.profiles,
-          AppRoutes.settings,
+          AppRoutes.gateway,
         ])
           GoRoute(
             path: path,
@@ -130,9 +130,9 @@ void main() {
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       1,
     );
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.text('Connections'));
     await tester.pumpAndSettle();
-    expect(find.text('Page ${AppRoutes.settings}'), findsOneWidget);
+    expect(find.text('Page ${AppRoutes.gateway}'), findsOneWidget);
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       2,
@@ -156,7 +156,7 @@ void main() {
       'Providers',
       'Tools',
       'Schedules',
-      'Gateway',
+      'Connections',
       'Settings',
     ]) {
       final destination = find.widgetWithText(ListTile, label);
@@ -311,7 +311,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Gateway'), findsWidgets);
+    expect(find.text('Connections'), findsWidgets);
     expect(find.text('Connected · fake-hermes:8642'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
     expect(find.text('Mineru'), findsOneWidget);

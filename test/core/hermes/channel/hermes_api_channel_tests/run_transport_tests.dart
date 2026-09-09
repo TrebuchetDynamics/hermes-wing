@@ -546,6 +546,136 @@ void _hermesApiChannelRunTransportTests() {
     expect(channel.state.activeMessages.last.text, 'Same answer');
   });
 
+  for (final hasEarlierReply in [false, true]) {
+    test(
+      'canonical answer replaces an identical pre-tool segment; earlier reply $hasEarlierReply',
+      () async {
+        var reads = 0;
+        final prior = <Map<String, Object?>>[
+          if (hasEarlierReply) ...[
+            {'id': 'old-user', 'role': 'user', 'content': 'Earlier request'},
+            {'id': 'old-answer', 'role': 'assistant', 'content': 'Same answer'},
+          ],
+        ];
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async => switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => jsonEncode({
+                'object': 'list',
+                'session_id': 'sess_1',
+                'data': [
+                  ...prior,
+                  if (reads++ > 0) ...[
+                    {
+                      'id': 'current-user',
+                      'role': 'user',
+                      'content': 'Current request',
+                    },
+                    {
+                      'id': 'current-answer',
+                      'role': 'assistant',
+                      'content': 'Same answer',
+                    },
+                  ],
+                ],
+              }),
+              _ => throw StateError('unexpected GET $uri'),
+            },
+            post: (uri, headers, body) async =>
+                '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+            getStream: (uri, headers) => Stream.fromIterable([
+              'data: {"event":"message.delta","delta":"Same answer"}\n\n',
+              'data: {"event":"tool.started","tool":"bash","tool_call_id":"call_1","preview":"inspect"}\n\n',
+              'data: {"event":"run.completed"}\n\n',
+            ]),
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        await channel.sendText('Current request');
+        final turns = channel.state.activeMessages;
+        expect(
+          turns.where(
+            (turn) =>
+                turn.author == HermesTurnAuthor.assistant &&
+                turn.text == 'Same answer',
+          ),
+          hasLength(hasEarlierReply ? 2 : 1),
+        );
+        expect(
+          turns.where((turn) => turn.kind == HermesTurnKind.toolCall),
+          hasLength(1),
+        );
+        expect(turns.last.id, 'current-answer');
+      },
+    );
+  }
+
+  test(
+    'canonical commentary and final reply reconcile with their own segments',
+    () async {
+      var reads = 0;
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' =>
+              reads++ == 0
+                  ? _messagesFixture
+                  : jsonEncode({
+                      'data': [
+                        {
+                          'id': 'current-user',
+                          'role': 'user',
+                          'content': 'Hello',
+                        },
+                        {
+                          'id': 'commentary',
+                          'role': 'assistant',
+                          'content': 'Checking first',
+                        },
+                        {
+                          'id': 'answer',
+                          'role': 'assistant',
+                          'content': 'Finished checking',
+                        },
+                      ],
+                    }),
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async =>
+              '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}',
+          getStream: (uri, headers) => Stream.fromIterable([
+            'data: {"event":"message.delta","delta":"Checking first"}\n\n',
+            'data: {"event":"tool.started","tool":"bash","tool_call_id":"call_1","preview":"inspect"}\n\n',
+            'data: {"event":"message.delta","delta":"Finished checking"}\n\n',
+            'data: {"event":"run.completed"}\n\n',
+          ]),
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      await channel.sendText('Hello');
+      final turns = channel.state.activeMessages;
+      expect(
+        turns
+            .where((turn) => turn.author == HermesTurnAuthor.assistant)
+            .map((turn) => turn.text),
+        ['Checking first', 'Finished checking'],
+      );
+      expect(turns[1].id, 'commentary');
+      expect(turns[2].kind, HermesTurnKind.toolCall);
+      expect(turns.last.id, 'answer');
+    },
+  );
+
   test('sendText bounds oversized reasoning event text', () async {
     final oversized = List.filled(20000, 'r').join();
     final channel = HermesApiChannel(

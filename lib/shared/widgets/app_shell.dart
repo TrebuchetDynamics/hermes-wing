@@ -100,7 +100,14 @@ class _MobileShell extends StatelessWidget {
                     _showMoreDestinations(
                       context,
                       title: AppLocalizations.of(context).moreDestinations,
-                      destinations: presentation.destinations,
+                      destinations: presentation.destinations
+                          .where(
+                            (destination) =>
+                                destination.path != AppRoutes.hermes &&
+                                destination.path != AppRoutes.profiles &&
+                                destination.path != AppRoutes.gateway,
+                          )
+                          .toList(),
                       status: status,
                       currentPath: location,
                     );
@@ -110,7 +117,7 @@ class _MobileShell extends StatelessWidget {
                     [
                       AppRoutes.hermes,
                       AppRoutes.profiles,
-                      AppRoutes.settings,
+                      AppRoutes.gateway,
                     ][index],
                   );
                 },
@@ -126,8 +133,8 @@ class _MobileShell extends StatelessWidget {
                     label: AppLocalizations.of(context).agentsDestination,
                   ),
                   NavigationDestination(
-                    icon: const Icon(Icons.settings_outlined),
-                    label: AppLocalizations.of(context).settingsDestination,
+                    icon: const Icon(Icons.dns_outlined),
+                    label: AppLocalizations.of(context).gatewayDestination,
                   ),
                   NavigationDestination(
                     icon: const Icon(Icons.more_horiz),
@@ -153,7 +160,7 @@ class _MobileShell extends StatelessWidget {
     )) {
       return 1;
     }
-    if (AppRoutes.isSettingsLocation(location)) return 2;
+    if (location == AppRoutes.gateway) return 2;
     return 3;
   }
 }

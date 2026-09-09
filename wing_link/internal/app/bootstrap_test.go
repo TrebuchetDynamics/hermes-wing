@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -40,6 +41,28 @@ func TestProductionBootstrapRejectsSymlinkedHermesEnvAncestor(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(outside, ".env")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("credential file escaped Hermes home: %v", err)
+	}
+}
+
+func TestBootstrapRejectsOccupiedPortBeforeChangingExistingHermes(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	t.Setenv("WING_HERMES_PORT", fmt.Sprint(listener.Addr().(*net.TCPAddr).Port))
+	manager := newProductionBootstrapManager(t.TempDir(), "")
+	manager.EnsureHermes = func(context.Context, func(OperationEvent)) (HermesInspection, error) {
+		return HermesInspection{Adopted: true}, nil
+	}
+	manager.GatewayHealthy = func(context.Context) bool { return false }
+	mutations := 0
+	mutate := func(context.Context) error { mutations++; return nil }
+	manager.EnsureAPIKey, manager.EnsureAPIEndpoint, manager.StartGateway = mutate, mutate, mutate
+	manager.VerifyGateway = func(context.Context) error { return nil }
+	_, err = manager.Bootstrap(context.Background(), BootstrapRequest{}, nil)
+	if err == nil || mutations != 0 {
+		t.Fatalf("occupied port: error=%v, mutations=%d", err, mutations)
 	}
 }
 

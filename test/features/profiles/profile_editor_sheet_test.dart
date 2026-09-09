@@ -24,6 +24,39 @@ final class _TestHermesStatusException implements HermesApiStatusException {
 }
 
 void main() {
+  testWidgets('clone selection fits a narrow screen with a long profile name', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [
+            HermesProfile(
+              id: 'default',
+              displayName:
+                  'A profile with a very long descriptive name for a specialized task',
+              revision: 'r',
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byType(DropdownButtonFormField<String?>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start fresh').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('delete requires typing the agent display name', (tester) async {
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
@@ -599,6 +632,14 @@ void main() {
       ),
     );
 
+    expect(
+      find.textContaining('Leave provider and model blank to inherit them'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Use 1–64 lowercase letters, numbers, _ or -.'),
+      findsOneWidget,
+    );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Profile name'),
       'device-wing-e2e',

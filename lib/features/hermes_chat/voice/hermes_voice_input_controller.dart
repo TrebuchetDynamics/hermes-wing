@@ -287,6 +287,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   Future<void> muteOutput() {
     _outputMuted = true;
     _speakNextReply = false;
+    if (!_speaking && !_disposed) notifyListeners();
     return _interruptActiveSpeech();
   }
 

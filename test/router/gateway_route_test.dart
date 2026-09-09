@@ -32,10 +32,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Gateway'), findsWidgets);
-    expect(
-      find.text('Open a saved gateway chat before viewing gateway status.'),
-      findsOneWidget,
-    );
+    expect(find.text('Connections'), findsWidgets);
+    expect(find.text('No saved Hermes gateways'), findsOneWidget);
   });
 }

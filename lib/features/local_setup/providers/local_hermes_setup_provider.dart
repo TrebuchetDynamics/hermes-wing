@@ -22,6 +22,8 @@ enum LocalHermesSetupStatus {
   ready,
   unhealthy,
   installing,
+  cancelling,
+  cancelled,
   complete,
   failed,
 }
@@ -32,20 +34,27 @@ class LocalHermesSetupController extends ChangeNotifier {
   final LocalWingLinkHost _host;
   LocalHermesSetupStatus _status = LocalHermesSetupStatus.idle;
   LocalHermesInspection? _inspection;
-  String? _errorMessage;
   int _generation = 0;
   bool _disposed = false;
   int? _progressPercent;
   int? get progressPercent => _progressPercent;
+  String? _progressPhase;
+  String? get progressPhase => _progressPhase;
+  String? _errorCode;
+  String? get errorCode => _errorCode;
 
   LocalHermesSetupStatus get status => _status;
   LocalHermesInspection? get inspection => _inspection;
-  String? get errorMessage => _errorMessage;
 
   Future<void> inspect() async {
+    if (_status == LocalHermesSetupStatus.installing ||
+        _status == LocalHermesSetupStatus.cancelling ||
+        _status == LocalHermesSetupStatus.detecting) {
+      return;
+    }
     final generation = ++_generation;
     _status = LocalHermesSetupStatus.detecting;
-    _errorMessage = null;
+    _errorCode = null;
     _notify();
     try {
       final inspection = await _host.inspect();
@@ -65,8 +74,6 @@ class LocalHermesSetupController extends ChangeNotifier {
     } catch (_) {
       if (generation != _generation) return;
       _status = LocalHermesSetupStatus.failed;
-      _errorMessage =
-          'Hermes Wing could not inspect this Linux host. Review Diagnostics and retry.';
     }
     _notify();
   }
@@ -79,14 +86,28 @@ class LocalHermesSetupController extends ChangeNotifier {
     }
     final generation = ++_generation;
     _progressPercent = null;
+    _progressPhase = null;
     _status = LocalHermesSetupStatus.installing;
-    _errorMessage = null;
+    _errorCode = null;
     _notify();
     try {
       final result = await _host.setup(
         onProgress: (progress) {
           if (generation != _generation) return;
           _progressPercent = progress.percent.clamp(0, 100);
+          _progressPhase = switch (progress.phase) {
+            'inspect' ||
+            'download' ||
+            'install' ||
+            'verify' ||
+            'preflight' ||
+            'authentication' ||
+            'api_endpoint' ||
+            'gateway' ||
+            'health' ||
+            'complete' => progress.phase,
+            _ => null,
+          };
           _notify();
         },
       );
@@ -97,6 +118,9 @@ class LocalHermesSetupController extends ChangeNotifier {
           'Hermes setup did not complete.',
         );
       }
+      _progressPhase = 'verify';
+      _progressPercent = null;
+      _notify();
       _inspection = await _host.inspect();
       if (generation != _generation) return;
       if (_inspection?.hermesHealthy != true) {
@@ -106,11 +130,24 @@ class LocalHermesSetupController extends ChangeNotifier {
         );
       }
       _status = LocalHermesSetupStatus.complete;
-    } catch (_) {
+    } catch (error) {
       if (generation != _generation) return;
       _status = LocalHermesSetupStatus.failed;
-      _errorMessage =
-          'Hermes setup did not complete. Some local changes may have been applied; review Diagnostics before retrying.';
+      _errorCode = error is LocalWingLinkException ? error.code : null;
+    }
+    _notify();
+  }
+
+  Future<void> cancel() async {
+    if (_status != LocalHermesSetupStatus.installing) return;
+    ++_generation;
+    _status = LocalHermesSetupStatus.cancelling;
+    _notify();
+    try {
+      await _host.cancelSetup();
+      _status = LocalHermesSetupStatus.cancelled;
+    } catch (_) {
+      _status = LocalHermesSetupStatus.failed;
     }
     _notify();
   }

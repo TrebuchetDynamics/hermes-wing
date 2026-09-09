@@ -79,6 +79,16 @@ func bootstrapCommand(stdout, stderr io.Writer, args []string) int {
 	}
 	result, err := manager.Bootstrap(context.Background(), options.Request, emit)
 	if err != nil {
+		if options.JSON || options.JSONLines {
+			code := "setup_failed"
+			if errors.Is(err, ErrHermesPortInUse) {
+				code = "gateway_port_in_use"
+			}
+			_ = encoder.Encode(map[string]any{
+				"protocol_version": ProtocolVersion,
+				"error":            map[string]string{"code": code},
+			})
+		}
 		_, _ = fmt.Fprintf(stderr, "setup: %v\n", err)
 		_, _ = fmt.Fprintln(stderr, "Run wing-link doctor to check the local installation before retrying.")
 		return 1

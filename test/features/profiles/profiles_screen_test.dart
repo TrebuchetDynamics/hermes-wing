@@ -128,7 +128,7 @@ Widget _profilesTestApp(
 
 void main() {
   testWidgets(
-    'paired setup opens a new configured profile without an Agent connection',
+    'paired setup opens after saved hosts finish loading without connecting chat',
     (tester) async {
       final channel = FakeHermesChannel();
       addTearDown(channel.dispose);
@@ -149,9 +149,6 @@ void main() {
         }),
         activeChannel: channel,
       );
-      await directory.refresh();
-      await directory.activateGateway('setup-host');
-      await channel.disconnect();
       var writes = 0;
       await tester.pumpWidget(
         _profilesTestApp(
@@ -181,6 +178,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await directory.refresh();
+      await tester.pumpAndSettle();
+      expect(channel.connectCalls, isEmpty);
       final editor = tester.widget<ProfileEditorSheet>(
         find.byType(ProfileEditorSheet),
       );
@@ -193,6 +193,68 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProfileEditorSheet), findsNothing);
       expect(writes, 0);
+    },
+  );
+
+  testWidgets(
+    'failed Wing Link inventory offers retry and clears revoked access',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'host',
+            baseUrl: 'https://agent.example',
+            wingLinkOrigin: 'https://link.example',
+            wingLinkToken: 'fixture-token',
+            wingLinkHostFingerprint:
+                'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'host': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      var loads = 0;
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          wingLinkClientBuilder:
+              ({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) => WingLinkClient(
+                origin: origin,
+                token: token,
+                hostFingerprint: hostFingerprint,
+                get: (uri, _) async {
+                  if (++loads == 1) throw StateError('private failure details');
+                  return '{"profiles":[{"id":"coder","name":"Coder","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{}}]}';
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Retry'), findsOneWidget);
+      expect(find.textContaining('private failure details'), findsNothing);
+      directory.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(loads, 1);
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+      expect(find.text('Coder'), findsOneWidget);
+      expect(loads, 2);
+      await directory.clearWingLinkEnrollment('host');
+      await tester.pumpAndSettle();
+      expect(find.text('Coder'), findsNothing);
+      expect(find.text('New Profile'), findsNothing);
+      expect(loads, 2);
+      expect(channel.connectCalls, isEmpty);
     },
   );
 
@@ -393,6 +455,11 @@ void main() {
 
     await tester.pumpWidget(_profilesTestApp(channel, directory: directory));
     await tester.pumpAndSettle();
+    expect(channel.connectCalls, isEmpty);
+    await tester.tap(find.text('Connect chat'));
+    await tester.pumpAndSettle();
+    expect(channel.connectCalls.single.baseUrl, 'https://a');
+    channel.connectCalls.clear();
     await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Beta').last);
@@ -403,7 +470,7 @@ void main() {
   });
 
   testWidgets(
-    'Wing Link profiles remain manageable when Agent omits profile endpoints',
+    'Wing Link profiles remain manageable without connecting Agent chat',
     (tester) async {
       tester.view.physicalSize = const Size(800, 900);
       tester.view.devicePixelRatio = 1;
@@ -430,7 +497,6 @@ void main() {
         activeChannel: channel,
       );
       await directory.refresh();
-      await directory.activateGateway('alpha');
       final wingLinkCalls = <String>[];
       var directoryCapabilities = const [
         'directories.roots.read',
@@ -480,17 +546,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(wingLinkCalls, ['/v1/profiles']);
+      expect(channel.connectCalls, isEmpty);
+      expect(directory.activeContactId, isNull);
       expect(find.text('Profiles unavailable'), findsNothing);
       expect(find.text('Link'), findsOneWidget);
-      expect(find.text('Selected'), findsOneWidget);
-      final selectedCard = find.ancestor(
-        of: find.text('Selected'),
-        matching: find.byType(Card),
-      );
-      expect(
-        find.descendant(of: selectedCard, matching: find.text('Link')),
-        findsOneWidget,
-      );
+      expect(find.text('Selected'), findsNothing);
+      expect(find.text('Active chat'), findsNothing);
       expect(find.text('New Profile'), findsOneWidget);
       expect(find.text('Browse folders'), findsOneWidget);
 
@@ -701,80 +762,107 @@ void main() {
         find.byKey(const ValueKey('agent-chat-newbie')),
       );
       expect(inventoryOnlyChat.onPressed, isNull);
-    },
-  );
-
-  testWidgets(
-    'Wing Link enrolled profile chat activates its saved scoped endpoint',
-    (tester) async {
-      final channel = FakeHermesChannel(
-        status: HermesConnectionStatus.disconnected,
-      );
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'default-endpoint',
-            label: 'Alpha · default',
-            baseUrl: 'https://a.example:8642/p/default',
-            apiKey: 'default-secret',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-          HermesEndpointConfig(
-            id: 'link-endpoint',
-            label: 'Alpha · link',
-            baseUrl: 'https://a.example:8642/p/link',
-            apiKey: 'link-secret',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'default-endpoint': gatewaySummary(['default']),
-          'link-endpoint': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('default-endpoint');
-      channel.connectCalls.clear();
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) async =>
-                    '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
-              ),
-        ),
-      );
+      expect(find.text('Active chat'), findsNothing);
+      await directory.activateGateway('link-endpoint');
       await tester.pumpAndSettle();
-      final chatButton = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('agent-chat-link')),
+      await tester.scrollUntilVisible(find.text('Link'), -500);
+      expect(find.text('Active chat'), findsOneWidget);
+      final activeCard = find.ancestor(
+        of: find.text('Active chat'),
+        matching: find.byType(Card),
       );
-      chatButton.onPressed!.call();
-      await tester.pumpAndSettle();
-
-      expect(channel.connectCalls, hasLength(1));
       expect(
-        channel.connectCalls.single.baseUrl,
-        'https://a.example:8642/p/link',
+        find.descendant(of: activeCard, matching: find.text('Link')),
+        findsOneWidget,
       );
-      expect(channel.connectCalls.single.apiKey, 'link-secret');
-      expect(directory.activeContactId?.gatewayId, 'link-endpoint');
+      await directory.showDirectory();
+      await tester.pumpAndSettle();
+      expect(find.text('Active chat'), findsNothing);
     },
   );
+
+  for (final fails in [false, true]) {
+    testWidgets(
+      'Wing Link enrolled profile chat reports connection outcome; failure $fails',
+      (tester) async {
+        final channel = FakeHermesChannel(
+          status: HermesConnectionStatus.disconnected,
+          connectErrorMessage: fails ? 'Unavailable' : null,
+        );
+        addTearDown(channel.dispose);
+        final directory = directoryFor(
+          configs: const [
+            HermesEndpointConfig(
+              id: 'default-endpoint',
+              label: 'Alpha · default',
+              baseUrl: 'https://a.example:8642/p/default',
+              apiKey: 'default-secret',
+              wingLinkOrigin: 'https://a.example:8654',
+              wingLinkToken: 'wlc-secret',
+              wingLinkHostFingerprint: 'sha256/reviewed-pin',
+            ),
+            HermesEndpointConfig(
+              id: 'link-endpoint',
+              label: 'Alpha · link',
+              baseUrl: 'https://a.example:8642/p/link',
+              apiKey: 'link-secret',
+              wingLinkOrigin: 'https://a.example:8654',
+              wingLinkToken: 'wlc-secret',
+              wingLinkHostFingerprint: 'sha256/reviewed-pin',
+            ),
+          ],
+          loader: FakeGatewaySummaryLoader({
+            'default-endpoint': gatewaySummary(['default']),
+            'link-endpoint': gatewaySummary(['default']),
+          }),
+          activeChannel: channel,
+        );
+        await directory.refresh();
+        await directory.activateGateway('default-endpoint');
+        channel.connectCalls.clear();
+
+        await tester.pumpWidget(
+          _profilesTestApp(
+            channel,
+            directory: directory,
+            wingLinkClientBuilder:
+                ({
+                  required origin,
+                  required token,
+                  required hostFingerprint,
+                }) => WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (_, _) async =>
+                      '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
+                ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final chatButton = tester.widget<FilledButton>(
+          find.byKey(const ValueKey('agent-chat-link')),
+        );
+        chatButton.onPressed!.call();
+        await tester.pumpAndSettle();
+
+        expect(channel.connectCalls, hasLength(1));
+        expect(
+          channel.connectCalls.single.baseUrl,
+          'https://a.example:8642/p/link',
+        );
+        expect(channel.connectCalls.single.apiKey, 'link-secret');
+        if (fails) {
+          expect(directory.activeContactId, isNull);
+          expect(
+            find.text('Could not connect to this gateway.'),
+            findsOneWidget,
+          );
+        } else {
+          expect(directory.activeContactId?.gatewayId, 'link-endpoint');
+        }
+      },
+    );
+  }
 
   testWidgets(
     'Wing Link profile approval retries the same body and idempotency key',
@@ -1273,7 +1361,7 @@ void main() {
 
     expect(find.text('Coding Agent'), findsOneWidget);
     expect(find.text('ID: coder'), findsOneWidget);
-    expect(find.text('Selected'), findsOneWidget);
+    expect(find.text('Active chat'), findsOneWidget);
     expect(find.text('New Profile'), findsNothing);
     expect(find.text('Delete profile'), findsNothing);
     expect(find.text('Edit'), findsNothing);
@@ -1401,9 +1489,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // Exactly one row is marked selected, and it is the default agent.
-    expect(find.text('Selected'), findsOneWidget);
+    expect(find.text('Active chat'), findsOneWidget);
     final selectedCard = find.ancestor(
-      of: find.text('Selected'),
+      of: find.text('Active chat'),
       matching: find.byType(Card),
     );
     expect(

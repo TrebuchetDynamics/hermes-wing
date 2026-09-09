@@ -4,6 +4,44 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/wing_link/local_wing_link_host.dart';
 
 void main() {
+  test('cancellation waits for a pending process start and stops it', () async {
+    final started = Completer<LocalWingLinkSetupOperation>();
+    final operation = _CancellableSetupOperation();
+    final host = LocalWingLinkHost(
+      executablePath: '/opt/hermes-wing/wing',
+      setupStarter: (_, _) => started.future,
+    );
+    final setup = host.setup();
+    final cancelledResult = expectLater(
+      setup,
+      throwsA(isA<LocalWingLinkException>()),
+    );
+    final cancel = host.cancelSetup();
+    started.complete(operation);
+    await cancel;
+    expect(operation.cancelled, isTrue);
+    await cancelledResult;
+  });
+
+  test('setup exposes only the allowlisted port-conflict code', () async {
+    final host = LocalWingLinkHost(
+      executablePath: '/opt/hermes-wing/wing',
+      runner: (_, _) async => const LocalWingLinkProcessResult(
+        exitCode: 1,
+        stdout:
+            '{"protocol_version":2,"error":{"code":"gateway_port_in_use","message":"private host detail"}}',
+      ),
+    );
+    await expectLater(
+      host.setup(),
+      throwsA(
+        isA<LocalWingLinkException>()
+            .having((e) => e.code, 'code', 'gateway_port_in_use')
+            .having((e) => e.message, 'message', isNot(contains('private'))),
+      ),
+    );
+  });
+
   test('inspects through only the Wing Link binary beside Wing', () async {
     final calls = <Object?>[];
     final host = LocalWingLinkHost(
@@ -106,4 +144,16 @@ class _FakeSetupOperation implements LocalWingLinkSetupOperation {
 
   @override
   Future<void> cancel() async {}
+}
+
+class _CancellableSetupOperation implements LocalWingLinkSetupOperation {
+  final _result = Completer<LocalWingLinkProcessResult>();
+  bool cancelled = false;
+  @override
+  Future<LocalWingLinkProcessResult> get result => _result.future;
+  @override
+  Future<void> cancel() async {
+    cancelled = true;
+    _result.complete(const LocalWingLinkProcessResult(exitCode: 130));
+  }
 }

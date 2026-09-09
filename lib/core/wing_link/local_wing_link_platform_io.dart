@@ -127,7 +127,9 @@ class _IOSetupOperation implements LocalWingLinkSetupOperation {
             ),
           );
         }
-        if (decoded['result'] is Map) terminalJson = line;
+        if (decoded['result'] is Map || decoded['error'] is Map) {
+          terminalJson = line;
+        }
       }
       final exitCode = await _process.exitCode;
       final stderr = await stderrFuture;

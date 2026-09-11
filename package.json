@@ -42,6 +42,6 @@
   "homepage": "https://github.com/TrebuchetDynamics/hermes-wing#readme",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "playwright": "^1.62.1"
+    "playwright": "^1.63.0"
   }
 }

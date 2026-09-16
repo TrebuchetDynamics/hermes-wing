@@ -42,6 +42,8 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _revokingDevice = false;
   bool _deviceRevoked = false;
   bool _approvalPending = false;
+  int _refreshGeneration = 0;
+  String? _refreshBaseUrl;
   String? _trustGatewayId;
   HermesEndpointConfig? _trustConfig;
   Future<_WingLinkTrustState>? _trustFuture;
@@ -65,6 +67,8 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
         final chatConnected = selectedChat && channel.state.isConnected;
         final canRefresh =
             chatConnected && _detailedHealthAdvertised(channel.state);
+        final refreshing =
+            _refreshing && channel.state.connectedBaseUrl == _refreshBaseUrl;
         final activeGateway = activeGatewayId == null
             ? null
             : directory.gateways
@@ -109,10 +113,10 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                 IconButton(
                   key: const ValueKey('gateway-refresh-button'),
                   tooltip: strings.gatewayStatusRefreshTooltip,
-                  onPressed: _refreshing
+                  onPressed: refreshing
                       ? null
                       : () => unawaited(_refresh(channel)),
-                  icon: _refreshing
+                  icon: refreshing
                       ? const SizedBox.square(
                           dimension: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
@@ -403,16 +407,29 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   }
 
   Future<void> _refresh(HermesChannel channel) async {
+    final generation = ++_refreshGeneration;
+    final connectedBaseUrl = channel.state.connectedBaseUrl;
+    bool isCurrent() =>
+        mounted &&
+        generation == _refreshGeneration &&
+        channel.state.isConnected &&
+        channel.state.connectedBaseUrl == connectedBaseUrl;
     setState(() {
       _refreshing = true;
+      _refreshBaseUrl = connectedBaseUrl;
       _refreshFailed = false;
     });
     try {
       await channel.loadDetailedHealth();
     } catch (_) {
-      if (mounted) setState(() => _refreshFailed = true);
+      if (isCurrent()) setState(() => _refreshFailed = true);
     } finally {
-      if (mounted) setState(() => _refreshing = false);
+      if (isCurrent()) {
+        setState(() {
+          _refreshing = false;
+          _refreshBaseUrl = null;
+        });
+      }
     }
   }
 }

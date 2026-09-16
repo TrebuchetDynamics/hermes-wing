@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -125,6 +126,31 @@ const _richHealth = HermesHealthStatus(
     ],
   ),
 );
+
+class _DeferredHealthChannel extends FakeHermesChannel {
+  _DeferredHealthChannel()
+    : super(
+        capabilities: _capabilities(),
+        basicHealth: _initialHealth,
+        detailedHealth: _initialHealth,
+        connectedBaseUrl: 'https://initial.example',
+      );
+
+  final pending = <Completer<void>>[];
+
+  Future<void> replaceConnection(String baseUrl) async {
+    await disconnect();
+    await connect(baseUrl: baseUrl);
+  }
+
+  @override
+  Future<void> loadDetailedHealth() {
+    loadDetailedHealthCalls += 1;
+    final completer = Completer<void>();
+    pending.add(completer);
+    return completer.future;
+  }
+}
 
 Widget _testApp(
   FakeHermesChannel channel, {
@@ -274,6 +300,39 @@ void main() {
     expect(channel.loadDetailedHealthCalls, 1);
     expect(find.text('0.18.1'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('stale health failure does not affect a replacement connection', (
+    tester,
+  ) async {
+    final channel = _DeferredHealthChannel();
+    addTearDown(channel.dispose);
+
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-refresh-button')));
+    await tester.pump();
+    expect(channel.loadDetailedHealthCalls, 1);
+
+    await channel.replaceConnection('https://replacement.example');
+    await tester.pump();
+    channel.pending.single.completeError(StateError('old gateway failed'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('gateway-status-inline-retry')),
+      findsNothing,
+    );
+    expect(find.text('Gateway status unavailable'), findsNothing);
+    expect(find.text('0.18.0'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.byKey(const ValueKey('gateway-refresh-button')),
+          )
+          .onPressed,
+      isNotNull,
+    );
   });
 
   testWidgets('unsupported detailed health falls back to basic health', (

@@ -17,7 +17,7 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^11.0.0
   web: ^1.1.1
-  speech_to_text: ^7.4.0
+  speech_to_text: ^7.5.0
   audioplayers: ^6.5.1
   flutter_tts: ^4.2.5
   flutter_markdown_plus: ^1.0.12

@@ -20,6 +20,11 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Schedules supports pull-to-refresh on its inventory, including short and empty
+lists, alongside the labeled refresh button. Refresh remains an exact-scoped
+Agent read; repeated input cannot start overlapping reads. See the
+[Hermes Mobile comparison](../research/hermes-mobile-lessons.md).
+
 Profiles distinguishes the active Agent chat from the selected management host.
 New-profile setup explains inherited configuration and shows naming rules before
 submission. Chat labels the host and names the selected profile in the composer.

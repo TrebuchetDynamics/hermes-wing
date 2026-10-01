@@ -106,7 +106,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                     state: channel.state,
                     strings: strings,
                     refreshFailed: _refreshFailed,
-                    onRetry: () => unawaited(_refresh(channel)),
+                    onRetry: () => _refresh(channel),
                   ),
                 ),
               ],
@@ -140,6 +140,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   }
 
   Future<void> _refresh(HermesChannel channel) async {
+    if (_refreshing || !_jobsAdvertised(channel.state)) return;
     final generation = ++_refreshGeneration;
     setState(() {
       _refreshing = true;
@@ -170,7 +171,7 @@ class _SchedulesBody extends StatelessWidget {
   final HermesChannelState state;
   final AppLocalizations strings;
   final bool refreshFailed;
-  final VoidCallback onRetry;
+  final Future<void> Function() onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -212,45 +213,50 @@ class _SchedulesBody extends StatelessWidget {
     }
 
     final jobs = [...state.jobs]..sort(_compareJobs);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-      children: [
-        Text(
-          strings.schedulesSubtitle,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.visibility_outlined, size: 16),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                strings.schedulesReadOnlyNote,
-                style: Theme.of(context).textTheme.bodySmall,
+    return RefreshIndicator(
+      onRefresh: onRetry,
+      semanticsLabel: strings.schedulesRefreshing,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        children: [
+          Text(
+            strings.schedulesSubtitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.visibility_outlined, size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  strings.schedulesReadOnlyNote,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        if (jobs.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: WingEmptyState(
-              icon: Icons.event_available_outlined,
-              title: strings.schedulesEmptyTitle,
-              body: strings.schedulesEmptyBody,
-              actionLabel: strings.schedulesRefreshTooltip,
-              onAction: onRetry,
-            ),
-          )
-        else
-          for (final job in jobs) ...[
-            _ScheduleCard(job: job, strings: strings),
-            const SizedBox(height: 12),
-          ],
-      ],
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (jobs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: WingEmptyState(
+                icon: Icons.event_available_outlined,
+                title: strings.schedulesEmptyTitle,
+                body: strings.schedulesEmptyBody,
+                actionLabel: strings.schedulesRefreshTooltip,
+                onAction: onRetry,
+              ),
+            )
+          else
+            for (final job in jobs) ...[
+              _ScheduleCard(job: job, strings: strings),
+              const SizedBox(height: 12),
+            ],
+        ],
+      ),
     );
   }
 }

@@ -98,6 +98,46 @@ class _DeferredJobsChannel extends FakeHermesChannel {
 }
 
 void main() {
+  for (final initiallyEmpty in [false, true]) {
+    testWidgets(
+      'pull refresh reloads ${initiallyEmpty ? "empty" : "short"} inventory',
+      (tester) async {
+        final channel = FakeHermesChannel(
+          capabilities: _capabilities(),
+          jobs: initiallyEmpty ? const [] : const [_morningJob],
+          refreshedJobs: const [_pausedJob],
+        );
+        addTearDown(channel.dispose);
+        await tester.pumpWidget(_testApp(channel));
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, 350));
+        await tester.pumpAndSettle();
+
+        expect(channel.loadJobsCalls, 1);
+        expect(find.text('Evening review'), findsOneWidget);
+        expect(find.text('Morning check'), findsNothing);
+      },
+    );
+  }
+
+  testWidgets('pull refresh cannot overlap a button refresh', (tester) async {
+    final channel = _RacingJobsChannel();
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('schedules-refresh-button')));
+    await tester.pump();
+    await tester.drag(find.byType(ListView), const Offset(0, 350));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(channel.gates, hasLength(1));
+    channel.gates.single.complete();
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('old refresh cannot report failure after gateway roundtrip', (
     tester,
   ) async {
@@ -283,6 +323,7 @@ void main() {
       findsNothing,
     );
     expect(channel.loadJobsCalls, 0);
+    expect(find.byType(RefreshIndicator), findsNothing);
   });
 
   testWidgets('load failure is distinct and does not expose raw errors', (

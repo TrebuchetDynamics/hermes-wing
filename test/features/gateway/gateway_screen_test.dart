@@ -15,6 +15,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
+import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 HermesCapabilityDocument _capabilities({
@@ -653,6 +654,178 @@ void main() {
     expect(directory.gateways.single.id, 'alpha');
     expect(directory.configForGateway('alpha'), isNotNull);
   });
+
+  testWidgets(
+    'removing a paired host deletes every enrolled profile and no other host',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final store = FakeHermesEndpointStore(
+        profiles: const [
+          HermesEndpointConfig(
+            id: 'default-endpoint',
+            label: 'Home · default',
+            baseUrl: 'https://home.example/p/default',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'home-device',
+          ),
+          HermesEndpointConfig(
+            id: 'coder-endpoint',
+            label: 'Home · coder',
+            baseUrl: 'https://home.example/p/coder',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'home-device',
+          ),
+          HermesEndpointConfig(
+            id: 'work-endpoint',
+            label: 'Work',
+            baseUrl: 'https://work.example',
+          ),
+          HermesEndpointConfig(
+            id: 'other-device-endpoint',
+            label: 'Other device',
+            baseUrl: 'https://other.example/p/default',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'other-device',
+          ),
+        ],
+      );
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'default-endpoint': gatewaySummary(['default']),
+          'coder-endpoint': gatewaySummary(['coder']),
+          'work-endpoint': gatewaySummary(['default']),
+          'other-device-endpoint': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('coder-endpoint');
+      directory.selectManagementGateway('default-endpoint');
+
+      await tester.pumpWidget(_testApp(channel, directory: directory));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('settings-gateway-menu-default-endpoint')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(directory.activeContactId?.gatewayId, 'coder-endpoint');
+      await tester.tap(
+        find.byKey(const ValueKey('settings-gateway-remove-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        store.deleteProfileCalls,
+        unorderedEquals(['default-endpoint', 'coder-endpoint']),
+      );
+      expect(channel.disconnectCalls, 1);
+      expect(directory.activeContactId, isNull);
+      expect(directory.hosts, hasLength(2));
+      expect(
+        directory.hosts.map((host) => host.id),
+        unorderedEquals(['work-endpoint', 'other-device-endpoint']),
+      );
+      expect(directory.configForGateway('default-endpoint'), isNull);
+      expect(directory.configForGateway('coder-endpoint'), isNull);
+      expect(
+        directory.configForGateway('work-endpoint')?.baseUrl,
+        'https://work.example',
+      );
+      expect(
+        directory.configForGateway('other-device-endpoint')?.wingLinkDeviceId,
+        'other-device',
+      );
+      expect(
+        (await store.loadProfiles()).map((config) => config.id),
+        unorderedEquals(['work-endpoint', 'other-device-endpoint']),
+      );
+      expect(find.text('Home'), findsNothing);
+      expect(find.text('Work'), findsOneWidget);
+      expect(find.text('Other device'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'refreshing a paired host checks every enrolled profile and no other host',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final loader = FakeGatewaySummaryLoader({
+        'default-endpoint': gatewaySummary(['default']),
+        'coder-endpoint': gatewaySummary(['coder']),
+        'work-endpoint': gatewaySummary(['default']),
+        'other-device-endpoint': gatewaySummary(['default']),
+      });
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'default-endpoint',
+            label: 'Home · default',
+            baseUrl: 'https://home.example/p/default',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'home-device',
+          ),
+          HermesEndpointConfig(
+            id: 'coder-endpoint',
+            label: 'Home · coder',
+            baseUrl: 'https://home.example/p/coder',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'home-device',
+          ),
+          HermesEndpointConfig(
+            id: 'work-endpoint',
+            label: 'Work',
+            baseUrl: 'https://work.example',
+          ),
+          HermesEndpointConfig(
+            id: 'other-device-endpoint',
+            label: 'Other device',
+            baseUrl: 'https://other.example/p/default',
+            wingLinkOrigin: 'https://link.example:8654',
+            wingLinkDeviceId: 'other-device',
+          ),
+        ],
+        loader: loader,
+        activeChannel: channel,
+      );
+      await directory.refresh();
+
+      await tester.pumpWidget(_testApp(channel, directory: directory));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('settings-gateway-menu-default-endpoint')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Refresh status'));
+      await tester.pumpAndSettle();
+
+      expect(
+        loader.calls.where((id) => id == 'default-endpoint'),
+        hasLength(2),
+      );
+      expect(loader.calls.where((id) => id == 'coder-endpoint'), hasLength(2));
+      expect(loader.calls.where((id) => id == 'work-endpoint'), hasLength(1));
+      expect(
+        loader.calls.where((id) => id == 'other-device-endpoint'),
+        hasLength(1),
+      );
+      expect(directory.hosts, hasLength(3));
+      expect(
+        directory.hosts
+            .firstWhere((host) => host.id == 'default-endpoint')
+            .profileCount,
+        2,
+      );
+      expect(channel.connectCalls, isEmpty);
+    },
+  );
 
   testWidgets('shows changed identity, upgrade, and expired states at 100%', (
     tester,

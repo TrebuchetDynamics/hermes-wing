@@ -68,3 +68,13 @@ test/tooling/failures/
 *.ipa
 *.dSYM/
 *.dSYM.zip
+
+# Agent task artifacts and local tooling (kept out of the product history)
+/hermes-conduit/
+.task-evidence/
+/tools/understand-anything/
+/tools/task-baselines/
+/tools/verification/2026-*/
+/docs/analysis/understand-anything/*.json
+/docs/analysis/understand-anything/*.zip
+/docs/analysis/understand-anything/tooling/

@@ -33,6 +33,23 @@ This decision supersedes the earlier proposed upstream implementation checkpoint
 in the provider design. Future upstream capabilities may be evaluated when
 available; implementing them in Hermes Agent is not Wing's work.
 
+### Read-only upstream references
+
+The four-repository study does not authorize changes to Hermes Agent, Hermes
+Desktop or Hermes Conduit. Keep their reference checkouts, source/tests, hooks
+(including `.ua/hooks`) and local tool configuration unmodified; preserve existing
+unrelated changes rather than repairing them. Desktop and Conduit provide
+interaction/recovery examples, not connected-Agent capability or authorization
+authority. Do not copy their privileged file/config/database access, relays or
+reconnect security-setting replay into Wing.
+
+Adopt the [study findings](../analysis/understand-anything/README.md) through the
+[follow-through plan](../plans/2026-10-03-study-follow-through.md) within existing
+Wing/Wing Link seams. Study graphs, scans and analysis-tool tests are source/tool
+evidence, not product, device, service or release qualification. Missing contracts
+defer only their individual operations; they do not justify upstream patches, a
+data-plane proxy, merged credentials or broad compatibility expansion.
+
 ### Management and compatibility
 
 Wing Link is the authenticated remote management plane on the Hermes host. It

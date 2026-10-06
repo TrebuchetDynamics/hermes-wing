@@ -14,9 +14,26 @@ Capability discovery determines which operations Wing offers. A broad version or
 `admin` flag is insufficient: mutations require the exact operation,
 authorization, and current resource identity.
 
+Readiness, status and diagnostics must report no stronger availability than the
+corresponding action gate. For each operation require the supported schema, exact
+method/path (or qualified native RPC), every required grant, supported profile
+context and current resource identity. A primary read grant or broad feature flag
+alone is insufficient; read availability never implies write permission. Use the
+existing authorization policy and cross-projection denial regressions rather than
+a second readiness authority. The [four-repository study](../analysis/understand-anything/README.md)
+identified jobs/health/Persona reporting drift at source level, not an executed
+authorization bypass; the [follow-through plan](../plans/2026-10-03-study-follow-through.md)
+scopes its correction.
+
 Server state wins after reconnect. Cached reads and drafts may remain visible,
 but Wing never silently replays a mutation. Destructive, secret, filesystem, and
-lifecycle operations require fresh intent or an idempotent contract.
+lifecycle operations require fresh intent or an idempotent contract. Reconnect is
+read/reconciliation, not permission to resend prompts, approvals or cached
+configuration/security preferences. Unknown submission outcomes remain unknown
+until authoritative recovery; do not retry through another transport or seed a
+replacement session from cached history. An explicit retry must satisfy the
+selected operation's verified idempotency and authorization contract; guarantees
+from run submission do not transfer to native RPC or administration.
 
 Host folder selection uses server-issued opaque handles rooted in locally approved
 directories. Results contain child folders only, never file entries. Clients

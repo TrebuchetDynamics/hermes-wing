@@ -1,8 +1,9 @@
 # Hermes Desktop UI Gap Audit
 
-Source reference: `https://github.com/fathah/hermes-desktop`, inspected from the ignored local `hermes-desktop/` reference checkout. The detailed study records the exact commit; refresh it before relying on newer checkout deltas.
+Source reference: `https://github.com/fathah/hermes-desktop`, inspected read-only
+from the local `hermes-desktop/` checkout. The verified pin and limits are below.
 
-Current Hermes Wing evidence:
+Historical Hermes Wing screenshot leads (not refreshed or exercised here):
 
 - `playwright/screenshots/hermes-connected-desktop-scaffold.png`
 - `playwright/screenshots/hermes-connected-mobile-scaffold.png`
@@ -10,78 +11,80 @@ Current Hermes Wing evidence:
 - `playwright/screenshots/settings.png`
 - `playwright/screenshots/hermes-active-session-bar.png`
 
-## Design target
+## Design target and current priority (2026-10-03)
 
-Hermes Wing is inspired by Hermes Desktop and adapted for Flutter. Pursue capability parity and preserve Hermes Desktop structure, hierarchy, status language, and Hermes Wing identity without translating Electron implementation details. Keep Telegram chat ergonomics on phones: a fast bottom composer, right-aligned user bubbles, low chrome, large touch targets, and simple session controls.
+The accepted goal is a **1:1 Hermes Desktop product port in Flutter**, not an
+inspired-by redesign or merely equivalent outcomes. Desktop feature coverage,
+navigation, terminology, interactions, state transitions and recovery define
+parity. Native implementation may differ; responsive adaptation is an explicit
+product deviation, not a substitute for Desktop fidelity. Existing phone layouts
+and Telegram-style bubbles are current differences to review, not a competing goal.
 
-## What is now close after the first scaffold slice
+The source pin is `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`, verified read-only
+from Desktop HEAD and its origin URL on 2026-10-03. The checkout retains five
+pre-existing `.claude` deletions; this pin is not an immutable snapshot of every
+working-tree file or a remote-latest claim. No upstream tooling was run or changed.
+The paths below exist locally; source inspection is not an exercised Desktop UI.
+Screenshots listed above and historical slices below are leads, not current-source
+parity, runtime or acceptance receipts.
 
-| Hermes Desktop aspect           | Hermes Wing current state                                                                                 | Status                      |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------- |
-| Chat-first main route           | `/hermes` is primary and routes directly into Hermes sessions.                                            | Close                       |
-| Persistent desktop session list | Desktop/tablet widths now show a 320px session rail next to the chat pane.                                | Close structurally          |
-| Mobile chat priority            | Mobile keeps a single-pane chat with bottom composer and bottom nav.                                      | Intentionally Telegram-like |
-| Empty chat hero                 | Empty sessions now show a centered Hermes mark, title, subtitle, and prompt chips.                        | Close structurally          |
-| Composer action affordances     | Composer now has model, voice, ready/stop, retry, and diagnostics chips above the Telegram-like text row. | Close structurally          |
-| Capability inventory placement  | Capability chip wall moved out of the main chat surface into Diagnostics.                                 | Better than before          |
+## Current source-backed gaps
 
-## Current gap audit after implemented desktop-parity slices
+Desktop references below are relative to `hermes-desktop/src/renderer/src/screens/`.
+Wing route support remains in [Routes](routes.md); operation gaps are in the
+[parity ledger](hermes-desktop-parity.md).
 
-### 1. Visual identity and dark product shell
+| Area | Desktop source reference | Wing difference / remaining gap |
+| --- | --- | --- |
+| Shell hierarchy | [Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx), `PINNED_NAV_ITEMS`, `FOOTER_NAV_ITEMS` | Desktop pins Discover/Office/Kanban/Schedules, puts Providers/Gateway/Tools/Memory in the footer and reaches profile management through the profile switcher. Wing's [presentation](../../lib/shared/widgets/app_shell_presentation.dart) now separates desktop Workflow (Chat/Office/Schedules) and Utilities (Providers/Connections/Tools/Profiles/Persona/Settings); see the [navigation runbook](../runbooks/desktop-navigation-groups.md) for bounded evidence. Profiles/Persona remain explicit utility routes rather than the Desktop footer editor. Discover/Memory/Kanban remain gaps; grouping is not full hierarchy parity. |
+| Collapse / expand | [Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx), `SIDEBAR_COLLAPSED_KEY`, `toggleSidebar` | Accessible local collapse/expand is implemented with bounded evidence in the [first-wave receipt](../quality/2026-10-03-desktop-port-first-wave.md), retaining current route and Chat ownership. Desktop persists the preference; Wing's relaunch persistence remains a separate gap. Local tests/source review do not establish native runtime or card acceptance. |
+| Profile footer and session access | [ProfileSwitcher](../../hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx), [SidebarRecentSessions](../../hermes-desktop/src/renderer/src/screens/Layout/SidebarRecentSessions.tsx), [Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx) | Wing's [global loaded-session section](../runbooks/global-session-access.md) provides exact Open/New Session from other feature routes in the expanded sidebar. It is completed and independently approved, but does not provide Desktop's grouped recents, profile footer or full session-modal access. Chat retains full session management. No direct DB/filesystem access or raw path grouping is implied. |
+| Active conversation tabs | [ActiveSessionsBar](../../hermes-desktop/src/renderer/src/screens/Layout/ActiveSessionsBar.tsx), [chatRuns](../../hermes-desktop/src/renderer/src/screens/Layout/chatRuns.ts) | Wing's current-session status bar is not switch/new/close multi-conversation parity. Qualify exact tuple ownership, concurrency, terminal Stop and reconnect before adding live-tab claims. Mobile omission is a recorded deviation, not silently accepted parity. |
+| Composer | [ChatInput](../../hermes-desktop/src/renderer/src/screens/Chat/ChatInput.tsx), [ModelPicker](../../hermes-desktop/src/renderer/src/screens/Chat/ModelPicker.tsx), [ReasoningEffortPicker](../../hermes-desktop/src/renderer/src/screens/Chat/ReasoningEffortPicker.tsx) | Wing has its own responsive command bar and conversation-only model picker. Density, ordering, context/folder, web/tool and reasoning controls need behavior-by-behavior comparison; each unavailable Agent operation stays explicitly gated. |
+| Transcript and recovery | [MessageList](../../hermes-desktop/src/renderer/src/screens/Chat/MessageList.tsx), [ApprovalCard](../../hermes-desktop/src/renderer/src/screens/Chat/ApprovalCard.tsx), [HistoryRow](../../hermes-desktop/src/renderer/src/screens/Chat/HistoryRow.tsx) | Existing Wing grouped tools/approvals/failures and bubble alignment do not establish exact reference ordering, disclosure or recovery parity. Preserve redaction, canonical reconciliation and exact request correlation; do not invent reasoning events. |
+| Settings and status | [StatusBar](../../hermes-desktop/src/renderer/src/screens/Layout/StatusBar.tsx), [Gateway](../../hermes-desktop/src/renderer/src/screens/Gateway/Gateway.tsx), [Providers](../../hermes-desktop/src/renderer/src/screens/Providers/Providers.tsx) | Wing's Settings route and Connections dashboard differ from Desktop's settings-modal/footer/status organization. Simplicity on phones does not waive parity; host trust and provider mutation remain separately gated. |
+| Remaining product screens | [Discover](../../hermes-desktop/src/renderer/src/screens/Discover/Discover.tsx), [Memory](../../hermes-desktop/src/renderer/src/screens/Memory/Memory.tsx), [Kanban](../../hermes-desktop/src/renderer/src/screens/Kanban/Kanban.tsx), [Office](../../hermes-desktop/src/renderer/src/screens/Office/Office.tsx) | Planned/unavailable Discovery, Memory and Kanban plus accessible 2D Office remain explicit gaps against Desktop feature coverage. 2D accessibility is required but does not prove 3D/representative/account parity. |
 
-**Desktop:** dark, high-contrast shell; strong Hermes Wing logo; selected nav rows on dark cards; muted borders; polished black/blue surfaces.
+## Current shell redesign evidence
 
-**Hermes Wing:** desktop/tablet now use Hermes Dark with near-black surfaces, blue selected states, dark cards/chips, and a stronger `HERMES WING` treatment. Mobile keeps the simpler Telegram-like flow.
+The [shell redesign receipt](../runbooks/desktop-shell-reference-fidelity.md)
+records a reference-matched 250/64 logical-pixel sidebar, scoped light/dark colors,
+a top collapse control and a 26px-minimum status strip. The branded header is
+removed. Workflow/Utilities groups remain semantic groups, without painted headings.
+Profiles/Persona remain labeled utility routes, not a real profile footer.
 
-**Remaining gap:** fine-grain Desktop polish: tighter hover/pressed states, more deliberate dividers, and richer desktop density tuning. The major dark-shell mismatch is now closed.
+The receipt records 57 focused widget passes and two compiled Chromium journeys.
+This documentation pass matched all four final source fingerprints and inspected
+the passing logs. It did not rerun those checks. Independent finish review and
+design-document output remain pending. Native/live, screen-reader, relaunch
+persistence and complete sidebar/session composition remain unqualified.
+The historical branded-shell notes below do not describe the current shell.
 
-### 2. Desktop shell/sidebar branding
+## Historical initial slice and verification boundary
 
-**Desktop:** left shell has large `HERMES WING` branding, pinned navigation, recent sessions, footer profile, collapse control.
+The [first-wave plan](../plans/2026-10-03-desktop-port-first-wave.md) scoped shell
+collapse/expand only, plus a failing-then-passing regression and parent review.
+The [first-wave receipt](../quality/2026-10-03-desktop-port-first-wave.md) records
+its bounded implementation/review, not runtime acceptance. Current ordering is
+the [daily workflow](../plans/2026-10-03-desktop-daily-workflow.md); the
+[parity ledger](hermes-desktop-parity.md) records the later navigation grouping
+and blocked integrated checkpoint.
+No new route, Agent API, Wing Link operation, credential, domain state or runtime
+mutation belongs to this slice. Persisted preference, footer navigation, recents,
+profile switcher, keyboard session switching and true tabs are separate next gaps.
 
-**Hermes Wing:** desktop/tablet now have a branded `HERMES WING` shell and persistent session rail. The app rail is intentionally minimal: Hermes + Settings.
+Desktop source/reference paths have been inspected; browser, native desktop,
+Android, screen-reader and live Agent execution for this new slice are **not
+observed in this documentation lane**. Card acceptance, integrated parity and
+release qualification are also not observed. Screenshots or a passing local shell
+regression alone cannot close those gaps.
 
-**Remaining gap:** footer/profile/collapse affordances and the approved parity navigation. On phones, adapt Office, Kanban, and Discover to task-focused navigation rather than copying the desktop rail.
+## Historical scaffold evidence (retained, not re-qualified)
 
-### 3. Composer shape and density
-
-**Desktop:** one large rounded command bar contains multiline text, attachments, mic, model picker, reasoning/auto mode, fast/action chip, folder/context, web toggle, and send.
-
-**Hermes Wing:** desktop/tablet now use a single rounded command bar with message field, voice toggle, model/voice/ready/retry/diagnostics chips, attachments, mic, and send. Mobile keeps the Telegram-like composer.
-
-**Remaining gap:** folder/context, web/tool toggles, and richer model/reasoning controls should wait for stable Hermes Agent support.
-
-### 4. Active sessions / tabs
-
-**Desktop:** active runs appear as tabs at the top of the chat area (`ActiveSessionsBar`), supporting multi-run switching.
-
-**Hermes Wing:** session rail shows active/forked/other sessions, and desktop/tablet now add a compact active-session bar above the chat pane with current session, status, model, and message count.
-
-**Remaining gap:** true multi-run tab switching like Desktop's `ActiveSessionsBar` still depends on Hermes exposing multiple simultaneous mobile-safe active runs. Skip on mobile.
-
-### 5. Tool, reasoning, and approval timeline
-
-**Desktop:** reasoning and tool calls are folded into dedicated rows (`ReasoningRow`, `ToolActivityGroup`), sharing one assistant avatar per turn and avoiding raw event spam.
-
-**Hermes Wing:** final chat bubbles remain Telegram-like, while tool calls, approvals, errors, and assistant turns now render as grouped/inline assistant-side timeline cards with desktop avatars.
-
-**Remaining gap:** optional `Thought`/reasoning rows when Hermes exposes stable reasoning events; otherwise avoid inventing fake reasoning UI.
-
-### 6. Settings/status dashboard
-
-**Desktop:** Settings and Gateway screens are card dashboards with connection, model/provider, health, diagnostics, and appearance controls.
-
-**Hermes Wing:** settings now use a Hermes Agent dashboard with status, connection, appearance, diagnostics, and local voice cards. It is simpler than Desktop's full Gateway/Providers screens, which is intentional for mobile.
-
-**Copy later:** add richer provider/tool details through capability-gated Hermes Agent endpoints; keep local host administration desktop-only.
-
-### 7. Session search and history polish
-
-**Desktop:** session history is first-class in the sidebar with richer recent-session affordances.
-
-**Hermes Wing:** rail groups active/forked/other sessions, supports actions, and now includes desktop/tablet search/filter with visible result counts. Richer history polish, recency metadata, and keyboard-first switching can still improve later.
-
-**Copy later:** add command-palette style session switching and richer recent-session metadata once the session list grows.
+The following original slice notes describe earlier implementation observations.
+Their symbols/screenshots may predate current refactors. They preserve history,
+not a current implementation audit or acceptance claim. References to Telegram-like
+mobile styling describe existing deviations; they no longer define the target.
 
 ## Completed implementation slice: Hermes Dark + branded desktop shell polish
 
@@ -163,35 +166,25 @@ Evidence:
 - The connect form hydrates from the saved endpoint profile when available, which keeps reopen/reconnect behavior aligned with the mobile-over-VPN use case.
 - Settings now prefers the live connected endpoint/auth state and still hides the API key value.
 
-## Recommended next implementation slice
+## Explicit deviations and non-copy boundaries
 
-The current direct-Agent parity slice now covers session model options/locking
-and plain-text steering for active runs. The highest-impact remaining UI gap is
-session-history polish from the refreshed Desktop reference.
+- Current phone single-pane layout, bottom navigation, sheets, bubble alignment
+  and composer density differ from Desktop. Review reachable actions, ordering,
+  recovery and keyboard/accessibility behavior against the reference; do not use
+  “mobile-simple” or “Telegram-like” as an exemption from the port target.
+- Flutter/OS window chrome replaces Electron chrome. Native APIs are implementation
+  choices, not evidence of qualified desktop install/update behavior.
+- Accessible 2D Office must remain operable without 3D. It is an accessible path,
+  not completion of Desktop's full Office surface.
+- Desktop host-local CLI, file/database/config access, SSH/worktree controls and
+  account integrations cannot be copied as authority. Use exact advertised Agent
+  operations or only already-reviewed fixed Wing Link compatibility boundaries.
+- Wing Link is current host management, not the product organizing principle;
+  dependencies have not been removed or made optional. Agent traffic remains
+  direct, credentials separate, directory grants folder-only, server state
+  authoritative and reconnect mutation replay forbidden.
 
-Suggested scope:
-
-1. Add presentation-only session type/source filters over the Agent-owned list,
-   with no local transcript or SQLite cache.
-2. Refresh screenshot artifacts for the model picker, active-session bar,
-   settings dashboard, assistant timeline, session search, and mobile composer.
-3. Add focused widget/E2E assertions for the new model picker and existing
-   desktop active-session/settings surfaces.
-4. Review every future Desktop-only surface against the explicit non-copy list
-   before adding it.
-
-## Keep from Telegram
-
-- Right-aligned user bubbles and left-aligned assistant bubbles.
-- Bottom composer with large touch targets.
-- Mobile single-pane flow.
-- Sessions and diagnostics as sheets/dialogs on phones.
-- Plain-language errors and retry near failed turns.
-
-## Port by capability, not literally
-
-- Replace Electron window chrome and traffic lights with Flutter's platform-native desktop shell.
-- Port install/update flows as desktop host capabilities; mobile and web use remote endpoints.
-- Preserve Office, Kanban, and Discover outcomes, adapting their navigation and interaction density per form factor.
-- Gate folder, worktree, process, SSH, and local-file controls to supported desktop hosts.
-- Do not claim parity from matching screenshots alone; each capability needs contract and behavior evidence.
+Next work follows the [roadmap](../../ROADMAP.md#now--next--later), with exact
+source/test/target receipts for each gap. Missing contracts defer only affected
+operations, not supported presentation. No implementation/runtime/card status is
+promoted by this audit refresh.

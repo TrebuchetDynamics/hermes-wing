@@ -1,8 +1,9 @@
 # Hermes Wing
 
-**Use an AI assistant running on your computer from your Android phone.**
+**A Flutter client for Hermes Agent on desktop, web and Android.**
 Chat, follow its work, and review requests for permission in a visual app.
-Web and desktop versions are available too, with different setup requirements.
+Development prioritizes Hermes Desktop capability parity on desktop and wide web,
+while preserving mobile usability. Full parity remains a target, not current support.
 
 > [!NOTE]
 > **Early alpha · technical setup required.** The main getting-started path needs
@@ -63,7 +64,9 @@ You can return to the conversation later.
 
 *Actual app screens with sample conversations and simulated responses.*
 
-## What do I need?
+<a id="what-do-i-need"></a>
+
+## What do I need for the Android setup guide?
 
 - **A Linux computer that stays on and reachable.** This is where Hermes runs.
 - **An Android phone and the tools to build Wing.** The guide explains the
@@ -84,7 +87,9 @@ not automatically keep every AI request local.
 <a id="pair-a-phone-or-another-computer"></a>
 <a id="choose-your-next-step"></a>
 
-## Your first chat
+<a id="your-first-chat"></a>
+
+## Your first chat on Android
 
 1. **Build and open Wing.** Choose **Use another computer**.
 2. **Prepare your Linux computer.** Install Wing Link, which can install Hermes
@@ -134,9 +139,11 @@ If you [report a problem](https://github.com/TrebuchetDynamics/hermes-wing/issue
 include your platform and what happened. Keep credentials, pairing links, and
 private conversations out of reports.
 
-[All documentation](docs/README.md) · [Contributing](CONTRIBUTING.md) ·
+[All documentation](docs/README.md) · [Technical design](docs/spec.md) ·
+[Test plan](docs/test-plan.md) · [Task handoff](TODO.md) ·
+[User-action blockers](BLOCKERS.md) · [Contributing](CONTRIBUTING.md) ·
 [Roadmap](ROADMAP.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
 Hermes Wing is independent of NousResearch. Thanks to
 [Hermes Agent](https://github.com/NousResearch/hermes-agent) for the runtime and
-[Hermes Desktop](https://github.com/fathah/hermes-desktop) for interaction and setup inspiration.
+[Hermes Desktop](https://github.com/fathah/hermes-desktop) as the behavioral reference for capability parity.

@@ -9,10 +9,18 @@ approved storage or delivery features. See the
 
 ## Product
 
-Hermes Wing is an independent Flutter client for Hermes Agent on mobile, web,
-and desktop. It lets a user continue sessions, follow long-running work, review
-tool activity, answer approvals, and administer a trusted Hermes host away from
-the desk.
+Hermes Wing is a Flutter client for Hermes Agent on desktop, web, and mobile.
+The accepted direction is a 1:1 Hermes Desktop product/behavior port, with Flutter
+desktop and wide web as the fidelity baseline while preserving mobile usability.
+Match feature coverage, navigation, terminology, interactions and recovery;
+platform-native implementation may differ, but product deviations must be explicit.
+See [product boundaries](../adr/product.md) and the
+[parity ledger](hermes-desktop-parity.md).
+
+Full local Desktop functionality is the target through separately designed,
+reviewed bounded native integration. Remote mode may expose a smaller exact-
+capability-gated subset; browser width grants no host-local authority. These are
+accepted requirements, not claims of shipped parity or approved native contracts.
 
 Hermes Agent remains authoritative for profiles, projects, providers, models,
 sessions, tools, schedules, memory, and gateway state.
@@ -30,7 +38,27 @@ Wing Link runs beside Hermes Agent. It is remote-capable on an explicitly
 configured private/VPN interface, but it is not a chat proxy, arbitrary shell,
 general file manager, or second Agent backend.
 
+## Leading acceptance outcome
+
+The next milestone is local connection → explicit profile/model/session selection
+→ actual Chat generation → correlated approval and authoritative Stop → leave and
+relaunch → restore exactly the same session without duplicate sends.
+
+Acceptance requires authoritative identity, model, history and terminal-outcome
+readback; one submission per deliberate send; and no sends, session creation or
+approval replay caused by restoration. Keyboard operation and compact/mobile
+usability must remain available. The
+[daily-workflow plan](../plans/2026-10-03-desktop-daily-workflow.md) owns the detailed
+verification matrix and evidence requirements. Fixture output and source/unit
+checks do not establish live generation, native execution or milestone acceptance.
+This integrated outcome remains unqualified; supporting shell polish does not
+substitute for it.
+
 ## Core journeys
+
+These journeys describe intended scope, not uniform current support. Their
+priority follows the leading outcome above; availability remains operation- and
+platform-specific.
 
 1. Install or connect to a trusted Hermes host and pair without placing bearer
    credentials in a QR code.

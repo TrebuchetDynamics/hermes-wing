@@ -7,6 +7,11 @@ Agent. Hermes Wing uses it for host operations that the Agent API cannot perform
 Chat, sessions, runs, tools, and approvals continue to use Hermes Agent directly;
 Wing Link is not a chat proxy or a second copy of Agent state.
 
+The [OpenAPI snapshot](../api/wing-link.openapi.yaml) documents the owned HTTP
+operations, parameters, responses and security requirements. Go handlers remain
+authoritative. The snapshot is manually maintained; structural/schema checks do
+not establish runtime conformance or expand advertised capabilities.
+
 ## How it connects
 
 ```text

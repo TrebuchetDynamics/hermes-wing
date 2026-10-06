@@ -23,6 +23,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _sendComposerText(HermesChannel channel) {
+    if (_sessionRestorationUnsettled) return;
     final composing = _composerController.value.composing;
     if (_composerCompositionActive ||
         composing.isValid && !composing.isCollapsed) {
@@ -100,6 +101,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _insertComposerContent(KeyboardInsertedContent content) {
+    if (_sessionRestorationUnsettled) return;
     if (_rejectAdditionalComposerAttachment()) return;
     _invalidateAttachmentPick();
     final generation = _attachmentPickGeneration;
@@ -176,6 +178,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   Future<void> _pickAttachment() async {
+    if (_sessionRestorationUnsettled) return;
     if (_pickingAttachment || _rejectAdditionalComposerAttachment()) return;
     final channel = ref.read(hermesChannelProvider);
     if (!channel.state.isConnected || channel.state.activeSessionId == null) {
@@ -263,6 +266,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canSendTurns(HermesChannelState state) {
+    if (_sessionRestorationUnsettled) return false;
     if (state.isSelectingProfile) return false;
     if (state.activeSessionId == null || state.hasUnreconciledRun) return false;
     return _hasChatTransport(state);
@@ -274,7 +278,8 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     return HermesTransportPolicy(capabilities).supportsRunApprovalResponse;
   }
 
-  bool _canCreateSession(HermesChannelState state) => state.canCreateSessions;
+  bool _canCreateSession(HermesChannelState state) =>
+      !_sessionRestorationUnsettled && state.canCreateSessions;
 
   Future<void> _steerActiveTurn(
     HermesChannel channel,
@@ -351,10 +356,15 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     final sessionId = _followUps.next?.sessionId;
     if (sessionId == null) return;
     final strings = AppLocalizations.of(context);
+    final ownerGeneration = _composerOwnerGeneration;
     try {
       await channel.selectSession(sessionId);
     } catch (error) {
-      if (!context.mounted) return;
+      if (!context.mounted ||
+          !channel.state.isConnected ||
+          ownerGeneration != _composerOwnerGeneration) {
+        return;
+      }
       _setState(() {
         _followUps.error = strings.chatQueuedOpenSessionError(
           _safeHermesUiError(error),
@@ -392,6 +402,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     String? attachmentName,
     HermesComposerSubmission? submission,
   }) {
+    if (_sessionRestorationUnsettled) return;
     final ownerGeneration = _composerOwnerGeneration;
     final sessionId = requeueSessionId ?? channel.state.activeSessionId;
     if (!requeueOnFailure) _failedDirectTurn = null;
@@ -521,14 +532,64 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
     return buffer.toString();
   }
 
-  Future<void> _manageQueuedFollowUps(BuildContext context) async {
+  Future<void> _withQueuedDialogIntent(
+    Future<void> Function(bool Function() isCurrent) action,
+  ) async {
+    final channel = ref.read(hermesChannelProvider);
+    final owner = channel.state;
+    final contact = _gatewayDirectory.activeContactId;
+    var invalidated = false;
+    bool isCurrent() =>
+        !invalidated &&
+        mounted &&
+        identical(ref.read(hermesChannelProvider), channel) &&
+        _gatewayDirectory.activeContactId == contact &&
+        !_sessionRestorationUnsettled &&
+        !_profileSwitchPending &&
+        channel.state.isConnected &&
+        !channel.state.isSelectingProfile &&
+        channel.state.connectedBaseUrl == owner.connectedBaseUrl &&
+        channel.state.selectedProfileId == owner.selectedProfileId &&
+        channel.state.activeSessionId == owner.activeSessionId;
+    void observe() {
+      // Latch synchronously: an A-B-A transition cannot revive old intent.
+      if (!isCurrent()) invalidated = true;
+    }
+
+    if (!isCurrent()) return;
+    channel.addListener(observe);
+    _gatewayDirectory.addListener(observe);
+    final subscription = ref.listenManual(
+      hermesChannelProvider,
+      (_, _) => observe(),
+    );
+    void disposeIntent() {
+      invalidated = true;
+      subscription.close();
+      channel.removeListener(observe);
+      _gatewayDirectory.removeListener(observe);
+      _queuedDialogDisposals.remove(disposeIntent);
+    }
+
+    _queuedDialogDisposals.add(disposeIntent);
+    try {
+      await action(isCurrent);
+    } finally {
+      if (_queuedDialogDisposals.contains(disposeIntent)) disposeIntent();
+    }
+  }
+
+  Future<void> _manageQueuedFollowUps(
+    BuildContext context,
+  ) => _withQueuedDialogIntent((isCurrent) async {
     if (_followUps.isEmpty) return;
     final strings = AppLocalizations.of(context);
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final pending = _followUps.pending;
+          // The row callback retains what was rendered, not a mutable view/index.
+          final pending = _followUps.pending.toList();
           return AlertDialog(
             key: const ValueKey('hermes-queued-follow-up-manage-dialog'),
             title: Text(strings.chatQueuedManageTitle(pending.length)),
@@ -555,7 +616,20 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
                         child: IconButton(
                           tooltip: strings.chatQueuedCancelOneAction,
                           onPressed: () {
-                            _setState(() => _followUps.removeAt(index));
+                            if (!isCurrent() ||
+                                !dialogContext.mounted ||
+                                ModalRoute.of(dialogContext)?.isCurrent !=
+                                    true) {
+                              return;
+                            }
+                            final currentIndex = _followUps.pending.indexWhere(
+                              (current) => identical(current, queued),
+                            );
+                            if (currentIndex >= 0) {
+                              _setState(
+                                () => _followUps.removeAt(currentIndex),
+                              );
+                            }
                             if (_followUps.isEmpty) {
                               Navigator.of(dialogContext).pop();
                               return;
@@ -580,44 +654,45 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
         },
       ),
     );
-  }
+  });
 
-  Future<void> _confirmClearQueuedFollowUps(BuildContext context) async {
-    if (_followUps.isEmpty) return;
-    final strings = AppLocalizations.of(context);
-    final count = _followUps.length;
-    final preview = _followUps.pending
-        .take(3)
-        .map((queued) => _safeHermesUiPreview(queued.text, maxLength: 80))
-        .join('\n');
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const ValueKey('hermes-queued-follow-up-clear-dialog'),
-        title: Text(strings.chatQueuedCancelTitle(count)),
-        content: Text(
-          '$preview'
-          '${count > 3 ? '\n${strings.chatQueuedMore(count - 3)}' : ''}'
-          '\n\n${strings.chatQueuedRedactedNote}',
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('hermes-queued-follow-up-clear-keep'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(strings.chatQueuedKeepAction),
+  Future<void> _confirmClearQueuedFollowUps(BuildContext context) =>
+      _withQueuedDialogIntent((isCurrent) async {
+        if (_followUps.isEmpty) return;
+        final strings = AppLocalizations.of(context);
+        final count = _followUps.length;
+        final preview = _followUps.pending
+            .take(3)
+            .map((queued) => _safeHermesUiPreview(queued.text, maxLength: 80))
+            .join('\n');
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            key: const ValueKey('hermes-queued-follow-up-clear-dialog'),
+            title: Text(strings.chatQueuedCancelTitle(count)),
+            content: Text(
+              '$preview'
+              '${count > 3 ? '\n${strings.chatQueuedMore(count - 3)}' : ''}'
+              '\n\n${strings.chatQueuedRedactedNote}',
+            ),
+            actions: [
+              TextButton(
+                key: const ValueKey('hermes-queued-follow-up-clear-keep'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(strings.chatQueuedKeepAction),
+              ),
+              FilledButton(
+                key: const ValueKey('hermes-queued-follow-up-clear-confirm'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(strings.chatQueuedCancelAllAction),
+              ),
+            ],
           ),
-          FilledButton(
-            key: const ValueKey('hermes-queued-follow-up-clear-confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(strings.chatQueuedCancelAllAction),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-    _setState(() {
-      _followUps.clear();
-      _followUps.error = null;
-    });
-  }
+        );
+        if (confirmed != true || !isCurrent()) return;
+        _setState(() {
+          _followUps.clear();
+          _followUps.error = null;
+        });
+      });
 }

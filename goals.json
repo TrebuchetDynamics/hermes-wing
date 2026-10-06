@@ -1,0 +1,2760 @@
+{
+  "goals": [
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed lib/features/hermes_chat/messaging/approvals/hermes_approval_queue.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub (run593)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --timeout 5s test/core/hermes/channel/hermes_approval_settlement_owner_test.dart --plain-name 'dispose retires delayed approval failure=false'",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart (run593: 34 pass; deterministic only, final review pending)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart (run593: exit124; inherited owner harness missing active session, current 44-test pass NOT established)",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check a0b60c6422446d111d70f845f8883f8ce3a3399f^ a0b60c6422446d111d70f845f8883f8ce3a3399f",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check a0b60c6422446d111d70f845f8883f8ce3a3399f^ a0b60c6422446d111d70f845f8883f8ce3a3399f (run593)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/product/prd.md#leading-acceptance-outcome",
+          "result": "pass"
+        }
+      ],
+      "id": "M1",
+      "priority": 1,
+      "source": "docs/product/prd.md#leading-acceptance-outcome",
+      "status": "partial",
+      "tasks": [
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "title": "Complete the integrated Desktop daily-use workflow"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/prd.md#product-rules",
+          "result": "pass"
+        }
+      ],
+      "id": "SECURITY",
+      "priority": 1,
+      "source": "docs/product/prd.md#product-rules",
+      "status": "partial",
+      "tasks": [
+        "DOC-SECURITY-CURRENT-BOUNDARY",
+        "DOC-SECURITY-REPLAY-EVIDENCE"
+      ],
+      "title": "Preserve exact authority, isolation, privacy and no replay"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+          "result": "pass"
+        }
+      ],
+      "id": "CHAT-FIDELITY",
+      "priority": 2,
+      "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+      "status": "partial",
+      "tasks": [
+        "DOC-CHAT-FIDELITY-REFERENCE",
+        "DOC-CHAT-TRANSCRIPT-DISCLOSURE"
+      ],
+      "title": "Match composer/transcript controls, order and recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-ui-gap.md#current-shell-redesign-evidence",
+          "result": "pass"
+        }
+      ],
+      "id": "PARITY",
+      "priority": 2,
+      "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+      "status": "partial",
+      "tasks": [
+        "DOC-PARITY-COVERAGE",
+        "DOC-PARITY-PLATFORM-DEVIATIONS"
+      ],
+      "title": "Match the remaining Desktop product outcomes explicitly"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+          "result": "pass"
+        }
+      ],
+      "id": "PARITY-COMPOSITION",
+      "priority": 2,
+      "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+      "status": "partial",
+      "tasks": [
+        "DOC-PARITY-COMPOSITION",
+        "DOC-PARITY-RECENTS-REFERENCE"
+      ],
+      "title": "Match profile footer, grouped recents and full session modal"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+          "result": "pass"
+        }
+      ],
+      "id": "PARITY-TABS",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+      "status": "unmet",
+      "tasks": [
+        "DOC-PARITY-TAB-CONTRACT",
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT"
+      ],
+      "title": "Provide owner-safe multi-conversation tabs and close/Stop behavior"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "SESSIONS",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unverified",
+      "tasks": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE"
+      ],
+      "title": "Qualify exact session search/resume/fork/rename/delete"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+          "result": "pass"
+        }
+      ],
+      "id": "SHELL-PERSISTENCE",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
+      "status": "unverified",
+      "tasks": [
+        "DOC-SHELL-COMPACT-RETURN-EVIDENCE",
+        "DOC-SHELL-PERSISTENCE-EVIDENCE"
+      ],
+      "title": "Qualify collapse/expand persistence across desktop relaunch"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "SLASH-CATALOG",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-SLASH-CATALOG-CONTRACT",
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "title": "Match supported full Desktop slash commands and completion"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "DESKTOP-DELIVERY",
+      "priority": 4,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-DESKTOP-DELIVERY-EVIDENCE",
+        "DOC-DESKTOP-UNINSTALL-EVIDENCE"
+      ],
+      "title": "Qualify desktop windows, install and signed update/recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace",
+          "result": "pass"
+        }
+      ],
+      "id": "M3",
+      "priority": 4,
+      "source": "ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace",
+      "status": "partial",
+      "tasks": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "title": "Qualify trusted enrollment, profile setup and explicit Chat"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/prd.md#core-journeys",
+          "result": "pass"
+        }
+      ],
+      "id": "M3-PROJECT",
+      "priority": 4,
+      "source": "docs/product/prd.md#core-journeys",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "title": "Create and assign an Agent-owned Project and enter scoped Chat"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/adr/api-and-state.md#required-agent-owned-mutation-contract",
+          "result": "pass"
+        }
+      ],
+      "id": "M3-PROVIDER",
+      "priority": 4,
+      "source": "docs/adr/api-and-state.md#required-agent-owned-mutation-contract",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M3-PROVIDER-CONTRACT",
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+      ],
+      "title": "Manage existing-profile provider credentials and atomic model assignment"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "ARTIFACTS",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "title": "Retrieve/preview/save supported artifacts without arbitrary paths"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
+          "result": "pass"
+        }
+      ],
+      "id": "M4",
+      "priority": 5,
+      "source": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
+      "status": "partial",
+      "tasks": [
+        "DOC-M4-INVENTORY-EVIDENCE",
+        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
+      ],
+      "title": "Qualify supported inventory and administration operation by operation"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-DISCOVER",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M4-CONTRACT-CHECKPOINT",
+        "DOC-M4-DISCOVERY-SELECTION-CONTRACT"
+      ],
+      "title": "Discover and install profile-targeted skills through exact contracts"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-KANBAN",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M4-KANBAN-CONTRACT",
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
+      ],
+      "title": "Inspect and manage Agent-owned Kanban cards and outcomes"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-MCP",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-M4-MCP-CONFIG-CONTRACT",
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "title": "Enable/disable toolsets and administer MCP safely"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-MEMORY",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+        "DOC-M4-MEMORY-CONTRACT"
+      ],
+      "title": "Read and manage Agent-owned memory entries/profile/capacity/providers"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-PLATFORMS",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "title": "Administer messaging gateways through typed per-platform operations"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "M4-SCHEDULES",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-M4-SCHEDULE-CONTRACT",
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+      ],
+      "title": "Create/edit/pause/resume/run/delete scheduled jobs and delivery targets"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction",
+          "result": "pass"
+        }
+      ],
+      "id": "M5",
+      "priority": 5,
+      "source": "ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction",
+      "status": "partial",
+      "tasks": [
+        "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "title": "Qualify native output and accessible interaction"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "DIAGNOSTICS-RECOVERY",
+      "priority": 6,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "title": "Provide safe backup/import, logs and config diagnosis/recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m6--deliver-an-integrated-qualified-alpha",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m6-artifact-evidence.md",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/release-alpha.md#local-artifact-verification",
+          "result": "pass"
+        }
+      ],
+      "id": "M6",
+      "priority": 6,
+      "source": "ROADMAP.md#m6--deliver-an-integrated-qualified-alpha",
+      "status": "unverified",
+      "tasks": [
+        "DOC-M6-ARTIFACT-EVIDENCE",
+        "DOC-M6-CANDIDATE-ADMISSION",
+        "DOC-M6-CHECKER-NODE22",
+        "DOC-M6-INTEGRATED-RECEIPT-GAP",
+        "DOC-M6-OFFLINE-CHECKER"
+      ],
+      "title": "Qualify exact artifacts, integrated install, upgrade and recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "OFFICE",
+      "priority": 6,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "title": "Match Office interactions with an accessible non-spatial path"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "PERSONA",
+      "priority": 6,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unverified",
+      "tasks": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE",
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "title": "Qualify standalone and embedded profile persona fidelity"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "ACCOUNT",
+      "priority": 7,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "title": "Qualify account/OAuth/pools/credits/wallet authority before exposure"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_f2b5c61e/check_discovery.py; receipt: .task-evidence/t_f2b5c61e/validation.json and docs/quality/2026-10-06-wing-link-api-conformance.md (GET /meta and GET /healthz only; all 20 source hashes match; full API conformance unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/api/wing-link.openapi.yaml",
+          "result": "pass"
+        }
+      ],
+      "id": "API-CONFORMANCE",
+      "priority": 7,
+      "source": "docs/api/wing-link.openapi.yaml",
+      "status": "unverified",
+      "tasks": [
+        "DOC-API-CONFORMANCE",
+        "DOC-API-DEVICE-SELF-CONFORMANCE",
+        "DOC-API-PROTOCOL-ERROR-EVIDENCE"
+      ],
+      "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/adr/client.md#decision",
+          "result": "pass"
+        }
+      ],
+      "id": "NATIVE-INTEGRATION",
+      "priority": 7,
+      "source": "docs/adr/client.md#decision",
+      "status": "unverified",
+      "tasks": [
+        "DOC-NATIVE-DESIGN-REVIEW",
+        "DOC-NATIVE-FAILURE-BOUNDARY"
+      ],
+      "title": "Review bounded host-local integration before privileged implementation"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "REMOTE-BACKENDS",
+      "priority": 7,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unmet",
+      "tasks": [
+        "DOC-BACKEND-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "title": "Provide typed SSH/Docker/WSL backend lifecycle outcomes"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/prd.md#core-journeys",
+          "result": "pass"
+        }
+      ],
+      "id": "VOICE",
+      "priority": 8,
+      "source": "docs/product/prd.md#core-journeys",
+      "status": "unverified",
+      "tasks": [
+        "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+        "DOC-VOICE-QUALIFICATION"
+      ],
+      "title": "Qualify actual physical capture, speech and acoustic behavior"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (build)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (build)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (nearest)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (nearest)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (widgets)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (widgets)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=.task-evidence/t_1c1e6f37/browser-verified-final; receipt: .task-evidence/t_1c1e6f37/verified-commands.json and global-browser-verified-final-results.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (browser)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (browser)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_1c1e6f37/final-hashes.json (current app_shell.dart differs; 19 other lib/test/playwright fingerprints match; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
+          "result": "fail"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_d06ef06d/source-inputs.json (later messaging, history parsing/models and channel regression edits differ from nine of 521 inputs; review-snapshot acceptance preserved; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
+          "result": "fail"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#evidence-and-exact-checks (four current source hashes match; 57-widget and two-browser passing logs inspected; remaining input attribution unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#independent-review-p1-correction (four final source hashes match; focus-fix logs record 57 widget and two Chromium passes; full input attribution and independent verdict remain unverified)",
+          "result": "pass"
+        }
+      ],
+      "id": "GLOBAL-LOADED-SESSIONS",
+      "priority": 10,
+      "source": "docs/runbooks/global-session-access.md#verification",
+      "status": "met",
+      "tasks": [
+        "DOC-GLOBAL-SESSIONS-CURRENT-CHECK",
+        "PARITY-GLOBAL-SESSIONS"
+      ],
+      "title": "Open/create loaded sessions from feature routes without incidental reads"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ran_at": "2026-10-06T03:00:51.218482+00:00",
+          "ref": ".task-evidence/t_2d1d55ab/commands.json (channel; exact argv, exit 0 and 23 passes)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ran_at": "2026-10-06T03:02:01.867001+00:00",
+          "ref": ".task-evidence/t_2d1d55ab/owner-command.json (owner; exact argv, exit 0 and 5 passes)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt: .task-evidence/t_e0af7ad4/format.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (format; compiled deterministic only, M2 remains unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/tooling/m2_receipt_admission_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format test/tooling/m2_receipt_admission_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub test/tooling/m2_receipt_admission_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze --no-pub; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (analyze; compiled deterministic only, M2 remains unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze; receipt: .task-evidence/t_e0af7ad4/analyze-verified.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (build; compiled deterministic only, M2 remains unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/hermes_api_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (nearest)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (focused)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/isolated-project; receipt: .task-evidence/t_3a5135a8/commands.json (green.log; 18 passes; three changed source/test hashes and all retained command-log hashes match; independent same-card approval, Android and live counts unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/review-398-project; receipt: .task-evidence/t_3a5135a8/review-398-validation.json (18 passes; five authored fingerprints and seven command logs match; final native approval, Android and live counts unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-callers.log)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-focused.log)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-nearest.log)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=expanded test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (callers)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 --reporter=json test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (focused; compiled deterministic only, M2 remains unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ran_at": "2026-10-06T03:00:54.422362+00:00",
+          "ref": "flutter test --no-pub test/core/hermes/setup/secure_hermes_detached_run_store_test.dart test/core/hermes/channel/hermes_detached_run_store_test.dart --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/oracle-verified.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/nearest-regressions.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/tooling/m2_receipt_admission_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test test/tooling/m2_bootstrap_test.dart",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-coordinator-admission-trace.md .task-evidence/t_06c58314",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (native review505; source-only integrity, not product acceptance)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-issuer-evidence-contract.md .task-evidence/t_620a6d33",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-receipt-handoff-contract.md .task-evidence/t_d6c8aa4f (offline proposed-contract checks only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475 TODO.md goals.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/quality/2026-10-06-m2-runtime-caller-closure.md .task-evidence/t_481b1474",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- docs/spec.md docs/test-plan.md docs/README.md docs/quality/repo-docs-goal-bootstrap.md TODO.md goals.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template scripts/check_m2_default_refusal.py docs/quality/2026-10-06-m2-default-refusal.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart .task-evidence/t_53f0d91e; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- test/tooling/m2_receipt_admission_test.dart .task-evidence/t_40dcd771",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/check_integrity.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations-initial.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-failed-1.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-initial.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch_sources.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_02e4e461/update_ledger.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/check_contract.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/checkout-before.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-before.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/selection-comparison.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/snapshot-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/source-snapshot.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-render-delta.patch",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-task-delta.patch",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/update_ledger.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/validation.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-before-ledger.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/check_integrity.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/ledger.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/snapshot-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot-initial.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/update_ledger.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/validation.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/verify-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/check_preflight.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/git-before.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/ledger-before.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/selection-comparison.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/snapshot-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/source-snapshot.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_c799c475/validation.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/check_integrity.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/citations.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch_citations.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/ledger.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/snapshot-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/source-snapshot.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/update_ledger.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/validation.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/verify-command.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-envelope-proof.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-issuer-evidence-contract.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-refusal-continuation-preflight.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-synthetic-isolation-contract.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --check --format=oneline 685b39e4cc161b1827ba7f52bc4d99d12ec82d9a",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --check --format=oneline ff45432a3ef1436cb87b799a2c69a696bc6a65e1",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --format= --check 3cd0896a1af03e0f33bb39ed4cf626de93610274 (native review505; source-only integrity, not product acceptance)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --format= --check ca76e700f60a184336f765e2b40350f4e25671d5",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npm run test -- --no-pub --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-npm.log)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx --no-install playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --retries=0 --output=browser-output; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (browser; compiled deterministic only, M2 remains unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python -c 'import runpy; r=runpy.run_path(\".task-evidence/t_ccec142b/check_admission.py\", run_name=\"repo_docs_readonly\")[\"verify\"](); print({k:r[k] for k in (\"result\", \"source_files\", \"citations\", \"links\", \"m2\")})'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python .task-evidence/t_53f0d91e/closure.py; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python .task-evidence/t_bd91fa65/check.py; receipt: .task-evidence/t_bd91fa65/validation.json (exit 0; offline-document-integrity-only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python /home/xel/.hermes/shared-skills/repo-docs/scripts/goals.py validate /home/xel/git/gormes/hermes-wing",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "python scripts/check_m2_default_refusal.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 -c \"import ast; from pathlib import Path; [ast.parse(Path('.task-evidence/t_909a35ba', name).read_text()) for name in ('check_preflight.py', 'update_ledger.py')]; print('Python syntax PASS')\"",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 -c 'import runpy; n=runpy.run_path('\"'\"'.task-evidence/t_8ce3dc30/check_integrity.py'\"'\"',run_name='\"'\"'review'\"'\"'); n['\"'\"'verify'\"'\"'].__globals__['\"'\"'save'\"'\"']=lambda *a: None; n['\"'\"'verify'\"'\"']()'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_02e4e461/check_integrity.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_02e4e461/check_integrity.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_02e4e461/fetch_sources.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_06c58314/check_trace.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_06c58314/check_trace.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_321431fe/check_review.py snapshot (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_321431fe/check_review.py verify (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_40dcd771/check.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_40dcd771/preserve_ceiling.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_481b1474/check_integrity.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_481b1474/check_integrity.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_481b1474/run_checks.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_620a6d33/check_contract.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_620a6d33/check_contract.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_7e4e424a/check_provenance.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_7e4e424a/check_provenance.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_8ce3dc30/check_integrity.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_8ce3dc30/check_integrity.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_8ce3dc30/check_integrity.py verify (initial attempt; verify-command.json runs[0])",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_909a35ba/check_preflight.py closure",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_909a35ba/check_preflight.py probe",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_909a35ba/check_preflight.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_909a35ba/check_preflight.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_bcab1f7e/check_contract.py negative",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_bcab1f7e/check_contract.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_bcab1f7e/check_contract.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_c799c475/check_preflight.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_c799c475/check_preflight.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_d2b9b4db/check_integrity.py snapshot",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_d2b9b4db/check_integrity.py verify",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_d2b9b4db/fetch_citations.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_d6c8aa4f/check_contract.py snapshot (offline proposed-contract checks only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python3 .task-evidence/t_d6c8aa4f/check_contract.py verify (offline proposed-contract checks only; M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 analyze: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/analyze.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 format-apply: cwd=/home/xel/git/gormes/hermes-wing; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-apply.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 format-verified: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-verified.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 native review 444: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/review-444-analyze.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 native review 444: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/review-444-tests.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 native review 444: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/review-444-format.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 native review 444: cwd=/home/xel/git/gormes/hermes-wing; python -c 'from pathlib import Path; p=Path('\"'\"'.task-evidence/t_15da6893/verify_scope.py'\"'\"'); exec(compile(p.read_text().replace('\"'\"'import-closure.json'\"'\"','\"'\"'review-444-import-closure.json'\"'\"'), str(p), '\"'\"'exec'\"'\"'))'; receipt=.task-evidence/t_15da6893/review-444-scope.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 native review 444: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_15da6893/review_444_verify.py; receipt=.task-evidence/t_15da6893/review-444-integrity-check.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 nearest: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/nearest.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 oracle-fixed: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle-fixed.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 oracle: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle.json/log",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_15da6893 scope: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_15da6893/verify_scope.py; receipt=.task-evidence/t_15da6893/scope.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba analyze: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter analyze --no-pub",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba channel-hydration: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'terminal hydration failure preserves durable retry across recreation' --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba channel-lease: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'active run lease is durable before its event stream finishes' --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba channel-process: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'process recreation' --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba format-verified: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba nearest: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba oracle-final: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_59ea67ba scope: cwd=/home/xel/git/gormes/hermes-wing; python3 .task-evidence/t_59ea67ba/verify_scope.py",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 analyze: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_b00feca2/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_b00feca2/analyze.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 format-apply: cwd=/home/xel/git/gormes/hermes-wing; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-apply.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 format-verified: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-verified.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 native review 440: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_b00feca2/mirror; argv=[\"flutter\", \"analyze\", \"--no-pub\"]; receipt=.task-evidence/t_b00feca2/review-440-analyze.json/log; deterministic only, Android/live qualification NOT_CHECKED",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 native review 440: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_b00feca2/mirror; argv=[\"flutter\", \"test\", \"--no-pub\", \"test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart\", \"test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart\", \"test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart\", \"test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart\", \"--concurrency=1\", \"--reporter\", \"expanded\"]; receipt=.task-evidence/t_b00feca2/review-440-tests.json/log; deterministic only, Android/live qualification NOT_CHECKED",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 native review 440: cwd=/home/xel/git/gormes/hermes-wing; argv=[\"dart\", \"format\", \"--output=none\", \"--set-exit-if-changed\", \"test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart\"]; receipt=.task-evidence/t_b00feca2/review-440-format.json/log; deterministic only, Android/live qualification NOT_CHECKED",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 native review 440: cwd=/home/xel/git/gormes/hermes-wing; argv=[\"python\", \"-c\", \"from pathlib import Path; p=Path('.task-evidence/t_b00feca2/verify_scope.py'); exec(compile(p.read_text().replace('import-closure.json','review-440-import-closure.json'), str(p), 'exec'))\"]; receipt=.task-evidence/t_b00feca2/review-440-scope.json/log; deterministic only, Android/live qualification NOT_CHECKED",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 nearest: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/nearest.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 oracle: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/oracle.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_b00feca2 scope: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_b00feca2/verify_scope.py; receipt=.task-evidence/t_b00feca2/scope.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 analyze: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/analyze.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 format-final: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-final.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 format-verified: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-verified.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 integrity: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/final_integrity.py; receipt=.task-evidence/t_df29f3c6/integrity.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 ledger-ceiling-check: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/restore_ceiling.py; receipt=.task-evidence/t_df29f3c6/ledger-ceiling-check.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 ledger: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/update_ledger.py; receipt=.task-evidence/t_df29f3c6/ledger.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-analyze: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/review-451-analyze.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-format: cwd=/home/xel/git/gormes/hermes-wing; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/review-451-format.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-integrity-final: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity-final.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-integrity: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-scope: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/review-451-scope.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 review-451-tests: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/review-451-tests.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 scope-final: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope-final.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 scope: cwd=/home/xel/git/gormes/hermes-wing; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "t_df29f3c6 tests: cwd=/home/xel/git/gormes/hermes-wing/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/tests.json/log",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_41606eec/validation.json (13 authored fingerprints match; retained 44 tooling passes, 60 negative and four positive consumers; source refusal only, independent approval and installed/Android/live M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_4e4a4f7d/review-414.json (approved bounded history-admission repair; matching combined log records 539 passes; read-only review_integrity.py verifies six selected files, 441 mirror Dart files and retained logs; Android, live counts and integrated M2 remain unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_53f0d91e/report.md#native-review-correction (c141d8d7; three authored branch blobs, 186 closure files and five packaging inputs match refreshed receipt; retained suite records 24 passes after six RED controls; independent final approval and Android/live qualification unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_ccec142b/reviewer-round-1.md (approved source-only delivery brief; 13 fingerprints, 30 citations, four links and eleven synthetic refusal controls rechecked; APK/storage/continuity and integrated M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m2--leave-and-return-without-losing-ownership",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-android-preflight.md",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-android-preflight.md#bounded-write-and-delivery-contract",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-continuity-baseline.md",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-coordinator-admission-trace.md; 25 refreshed source/report fingerprints match; source-only preparation; independent final approval unverified",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-counting-contract.md",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-forbidden-recovery-oracle.md (428 lib/test fingerprints match; retained oracle and nearest receipts record 3 and 60 passes; bootstrap-wide denial, independent final approval and Android/live counts unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-history-identity.md (15 production/test/runbook fingerprints and 25 command logs match; report fingerprint differs; 48 focused, 432 nearest and 63 caller passes retained; final approval and Android/live counts unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-issuer-evidence-contract.md (18 retained source fingerprints, document digest and local closure match; proposed F01-F10 unavailable, NOT_ADMITTED; source-only delivery, installed/Android/counting M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-manifest-assessment-contract.md (17 retained fingerprints match; document integrity only; F01/F02 and M2 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/2026-10-06-m2-recovery-read-admission.md (30 selected fingerprints and five log hashes match; 16 characterization and one recreation passes; three defects remain; same-card review and Android/live qualification unverified)",
+          "result": "pass"
+        }
+      ],
+      "id": "M2",
+      "priority": 90,
+      "source": "ROADMAP.md#m2--leave-and-return-without-losing-ownership",
+      "status": "unverified",
+      "tasks": [
+        "DOC-M2-AMBIGUOUS-404",
+        "DOC-M2-ANDROID-PREFLIGHT",
+        "DOC-M2-BOOTSTRAP-DENIAL-ORACLE",
+        "DOC-M2-BOOTSTRAP-FORBIDDEN-ORACLE",
+        "DOC-M2-CONTINUITY-BASELINE",
+        "DOC-M2-COORDINATOR-ADMISSION-TRACE",
+        "DOC-M2-COUNTING-CONTRACT",
+        "DOC-M2-CPU-ENFORCEMENT-FEASIBILITY",
+        "DOC-M2-CPU-ENVELOPE-PROOF",
+        "DOC-M2-CREDENTIAL-DENIAL-ORACLE",
+        "DOC-M2-CUSTODY-PROOF-REVIEW",
+        "DOC-M2-DEATH-COMPLETE-ORACLE",
+        "DOC-M2-FORBIDDEN-RECOVERY-ORACLE",
+        "DOC-M2-HISTORY-ADMISSION",
+        "DOC-M2-HISTORY-IDENTITY",
+        "DOC-M2-INODE-POLICY-EVIDENCE",
+        "DOC-M2-INSPECTOR-ISOLATION-PREFLIGHT",
+        "DOC-M2-ISSUER-EVIDENCE-CONTRACT",
+        "DOC-M2-MANIFEST-ASSESSMENT-CONTRACT",
+        "DOC-M2-OBSERVER-COMPOSITION",
+        "DOC-M2-PACKAGE-PROVENANCE",
+        "DOC-M2-POST-REPAIR-CALLERS",
+        "DOC-M2-QA-DELIVERY-ADMISSION",
+        "DOC-M2-RECEIPT-HANDOFF-CONTRACT",
+        "DOC-M2-RECOVERY-READ-ADMISSION",
+        "DOC-M2-REFUSAL-CONTINUATION",
+        "DOC-M2-RUNTIME-CALLER-CLOSURE",
+        "DOC-M2-SYNTHETIC-ISOLATION-CONTRACT",
+        "M2-DEVICE-QUALIFICATION",
+        "QA-M2-CUSTODY-ORDERING-ORACLE",
+        "QA-M2-DEFAULT-REFUSAL",
+        "QA-M2-STORE-STATE-OBSERVER"
+      ],
+      "title": "Recover Android owner/history after background and process death"
+    }
+  ],
+  "tasks": [
+    {
+      "depends_on": [],
+      "goal": "M1",
+      "id": "PARITY-NATIVE-RELAUNCH",
+      "section": "Now",
+      "status": "open",
+      "title": "Qualify the existing two-process native relaunch workflow"
+    },
+    {
+      "depends_on": [],
+      "goal": "M1",
+      "id": "PARITY-PAIR-READ",
+      "section": "Now",
+      "status": "open",
+      "title": "Establish the authoritative exact session provider/model read"
+    },
+    {
+      "depends_on": [],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one provider OAuth acquisition contract"
+    },
+    {
+      "depends_on": [
+        "DOC-ACCOUNT-CONTRACT"
+      ],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-REVOCATION-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map account expiry and logout separately from acquisition"
+    },
+    {
+      "depends_on": [
+        "DOC-API-CONFORMANCE"
+      ],
+      "goal": "API-CONFORMANCE",
+      "id": "DOC-API-DEVICE-SELF-CONFORMANCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Verify device-self read/revoke schema and authorization against handlers"
+    },
+    {
+      "depends_on": [
+        "DOC-API-DEVICE-SELF-CONFORMANCE"
+      ],
+      "goal": "API-CONFORMANCE",
+      "id": "DOC-API-PROTOCOL-ERROR-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map profile-list protocol error precedence"
+    },
+    {
+      "depends_on": [],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one bounded Agent artifact retrieval operation"
+    },
+    {
+      "depends_on": [
+        "DOC-ARTIFACT-CONTRACT"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map hostile-content rejection for one permitted artifact type"
+    },
+    {
+      "depends_on": [],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare one reference backend launch with allowed Wing boundaries"
+    },
+    {
+      "depends_on": [
+        "DOC-BACKEND-CONTRACT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-DISCONNECT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace bounded backend disconnect/recovery separately from launch"
+    },
+    {
+      "depends_on": [],
+      "goal": "CHAT-FIDELITY",
+      "id": "DOC-CHAT-FIDELITY-REFERENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare one composer control order and disclosure flow"
+    },
+    {
+      "depends_on": [
+        "DOC-CHAT-FIDELITY-REFERENCE"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "DOC-CHAT-TRANSCRIPT-DISCLOSURE",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare one reasoning/tool transcript disclosure interaction"
+    },
+    {
+      "depends_on": [],
+      "goal": "DESKTOP-DELIVERY",
+      "id": "DOC-DESKTOP-DELIVERY-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Inventory one Linux desktop install/update receipt gap"
+    },
+    {
+      "depends_on": [
+        "DOC-DESKTOP-DELIVERY-EVIDENCE"
+      ],
+      "goal": "DESKTOP-DELIVERY",
+      "id": "DOC-DESKTOP-UNINSTALL-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map one Linux uninstall and retained-state evidence gap"
+    },
+    {
+      "depends_on": [
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace atomic backup/import separately from diagnostics reads"
+    },
+    {
+      "depends_on": [],
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "DOC-DIAGNOSTICS-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one redacted log/diagnostic read"
+    },
+    {
+      "depends_on": [],
+      "goal": "M3",
+      "id": "DOC-M3-CONTRACT-CHECKPOINT",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify trusted enrollment, profile setup and explicit Chat"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace primary-folder assignment separately from creation"
+    },
+    {
+      "depends_on": [],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one authoritative Project creation operation"
+    },
+    {
+      "depends_on": [],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Recheck the existing-profile credential replacement contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROVIDER-CONTRACT"
+      ],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace credential removal separately from replacement"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-ROLLBACK-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute one failed new-profile setup rollback"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-DISCOVER",
+      "id": "DOC-M4-CONTRACT-CHECKPOINT",
+      "section": "Next",
+      "status": "open",
+      "title": "Discover and install profile-targeted skills through exact contracts"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M4-DISCOVER",
+      "id": "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace catalog selection separately from search"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute one Wing Link host-lifecycle approval boundary"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4",
+      "id": "DOC-M4-INVENTORY-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map one Tools inventory journey to current-source evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one bounded Project board read"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-KANBAN-CONTRACT"
+      ],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map stale-owner pagination for a board read"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONFIG-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one MCP configuration read separately from toolset toggling"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one toolset enable/disable contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MEMORY-CONTRACT"
+      ],
+      "goal": "M4-MEMORY",
+      "id": "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace memory capacity/provider reads separately from entry reads"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-MEMORY",
+      "id": "DOC-M4-MEMORY-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one bounded profile-memory read"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-PLATFORM-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one messaging-platform status/admin contract"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one schedule pause/resume operation"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-SCHEDULE-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace one schedule-delivery configuration operation"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-INVENTORY-EVIDENCE"
+      ],
+      "goal": "M4",
+      "id": "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute one scheduled-job inventory failure journey"
+    },
+    {
+      "depends_on": [],
+      "goal": "M5",
+      "id": "DOC-M5-ANDROID-FIXTURE",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify native output and accessible interaction"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-ANDROID-FIXTURE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-LARGE-TEXT-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute one 200-percent-text message-action journey"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-OFFLINE-CHECKER"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-CHECKER-NODE22",
+      "section": "Next",
+      "status": "open",
+      "title": "Run the offline candidate comparator checks on Node.js 22"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-CHECKER-NODE22"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-INTEGRATED-RECEIPT-GAP",
+      "section": "Next",
+      "status": "open",
+      "title": "Map one same-artifact install-to-recovery receipt gap"
+    },
+    {
+      "depends_on": [],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-DESIGN-REVIEW",
+      "section": "Next",
+      "status": "open",
+      "title": "Review bounded host-local integration before privileged implementation"
+    },
+    {
+      "depends_on": [
+        "DOC-NATIVE-DESIGN-REVIEW"
+      ],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-FAILURE-BOUNDARY",
+      "section": "Next",
+      "status": "open",
+      "title": "Review failure containment for the first bounded native operation"
+    },
+    {
+      "depends_on": [
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "goal": "OFFICE",
+      "id": "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+      "section": "Next",
+      "status": "open",
+      "title": "Map keyboard focus for existing 2D Office activation"
+    },
+    {
+      "depends_on": [],
+      "goal": "OFFICE",
+      "id": "DOC-OFFICE-REFERENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare one Office contact/session activation interaction"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY-COMPOSITION",
+      "id": "DOC-PARITY-COMPOSITION",
+      "section": "Next",
+      "status": "open",
+      "title": "Match profile footer, grouped recents and full session modal"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "DOC-PARITY-COVERAGE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map the next uncovered Desktop outcome to a bounded port slice"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-COVERAGE"
+      ],
+      "goal": "PARITY",
+      "id": "DOC-PARITY-PLATFORM-DEVIATIONS",
+      "section": "Next",
+      "status": "open",
+      "title": "Index one compact adaptation against its Desktop outcome"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-COMPOSITION"
+      ],
+      "goal": "PARITY-COMPOSITION",
+      "id": "DOC-PARITY-RECENTS-REFERENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare grouped-recents ownership separately from profile-footer composition"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace exact tab switching and close/Stop ownership"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-RECONNECT-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Trace reconnect for two distinct session-owned tab runs"
+    },
+    {
+      "depends_on": [
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-CONFLICT-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute persona conflict recovery separately from whitespace fidelity"
+    },
+    {
+      "depends_on": [],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Verify persona whitespace and completion receipts"
+    },
+    {
+      "depends_on": [],
+      "goal": "SECURITY",
+      "id": "DOC-SECURITY-CURRENT-BOUNDARY",
+      "section": "Next",
+      "status": "open",
+      "title": "Preserve exact authority, isolation, privacy and no replay"
+    },
+    {
+      "depends_on": [
+        "DOC-SECURITY-CURRENT-BOUNDARY"
+      ],
+      "goal": "SECURITY",
+      "id": "DOC-SECURITY-REPLAY-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map one changed-payload replay rejection"
+    },
+    {
+      "depends_on": [],
+      "goal": "SESSIONS",
+      "id": "DOC-SESSION-ACTIONS-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Prove one owner-bound session rename journey"
+    },
+    {
+      "depends_on": [
+        "DOC-SESSION-ACTIONS-EVIDENCE"
+      ],
+      "goal": "SESSIONS",
+      "id": "DOC-SESSION-DELETE-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Attribute one owner-bound session-delete confirmation journey"
+    },
+    {
+      "depends_on": [
+        "DOC-SHELL-PERSISTENCE-EVIDENCE"
+      ],
+      "goal": "SHELL-PERSISTENCE",
+      "id": "DOC-SHELL-COMPACT-RETURN-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map wide-to-compact-to-wide preference preservation"
+    },
+    {
+      "depends_on": [],
+      "goal": "SHELL-PERSISTENCE",
+      "id": "DOC-SHELL-PERSISTENCE-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Prove sidebar preference restoration after app relaunch"
+    },
+    {
+      "depends_on": [],
+      "goal": "SLASH-CATALOG",
+      "id": "DOC-SLASH-CATALOG-CONTRACT",
+      "section": "Next",
+      "status": "open",
+      "title": "Compare the current curated commands with an authoritative catalog"
+    },
+    {
+      "depends_on": [
+        "DOC-SLASH-CATALOG-CONTRACT"
+      ],
+      "goal": "SLASH-CATALOG",
+      "id": "DOC-SLASH-DENIAL-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Map one unavailable slash action and its recovery"
+    },
+    {
+      "depends_on": [
+        "DOC-VOICE-QUALIFICATION"
+      ],
+      "goal": "VOICE",
+      "id": "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Prepare one speech-output cancellation scenario"
+    },
+    {
+      "depends_on": [],
+      "goal": "VOICE",
+      "id": "DOC-VOICE-QUALIFICATION",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify actual physical capture, speech and acoustic behavior"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CPU-ENVELOPE-PROOF"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Assess the additional scratch inode-policy prerequisite"
+    },
+    {
+      "depends_on": [],
+      "goal": "M2",
+      "id": "M2-DEVICE-QUALIFICATION",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
+    },
+    {
+      "depends_on": [],
+      "goal": "M1",
+      "id": "PARITY-LIVE-WORKFLOW",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify actual generation, approval, Stop and restoration together"
+    },
+    {
+      "depends_on": [],
+      "goal": "API-CONFORMANCE",
+      "id": "DOC-API-CONFORMANCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [
+        "PARITY-GLOBAL-SESSIONS"
+      ],
+      "goal": "GLOBAL-LOADED-SESSIONS",
+      "id": "DOC-GLOBAL-SESSIONS-CURRENT-CHECK",
+      "section": "Done",
+      "status": "done",
+      "title": "Recheck loaded-session Open/New against the changed sidebar"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-RECOVERY-READ-ADMISSION"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-AMBIGUOUS-404",
+      "section": "Done",
+      "status": "done",
+      "title": "Retain unresolved recovery ownership on indistinguishable status 404"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-DEATH-COMPLETE-ORACLE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-ANDROID-PREFLIGHT",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare the named-device death-to-completion isolation and observer preflight"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-FORBIDDEN-RECOVERY-ORACLE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-BOOTSTRAP-DENIAL-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove recreated-client bootstrap authentication denial preserves ownership without replay"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-BOOTSTRAP-DENIAL-ORACLE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-BOOTSTRAP-FORBIDDEN-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove required-capabilities HTTP 403 denial preserves recreated ownership without replay"
+    },
+    {
+      "depends_on": [],
+      "goal": "M2",
+      "id": "DOC-M2-CONTINUITY-BASELINE",
+      "section": "Done",
+      "status": "done",
+      "title": "Recover Android owner/history after background and process death"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-RECEIPT-HANDOFF-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-COORDINATOR-ADMISSION-TRACE",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace independent QA receipt admission and exclusive read-before-write ordering"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-ANDROID-PREFLIGHT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-COUNTING-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace the authoritative metadata counting contract before QA observer implementation"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-SYNTHETIC-ISOLATION-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-CPU-ENFORCEMENT-FEASIBILITY",
+      "section": "Done",
+      "status": "done",
+      "title": "Assess exact cumulative CPU enforcement before synthetic adapter execution"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CPU-ENFORCEMENT-FEASIBILITY"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-CPU-ENVELOPE-PROOF",
+      "section": "Done",
+      "status": "done",
+      "title": "Assess the fixed single-CPU early-stop worst-case envelope"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-POST-REPAIR-CALLERS"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-CREDENTIAL-DENIAL-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove recreated-client credential denial retains ownership without replay"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-COORDINATOR-ADMISSION-TRACE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-CUSTODY-PROOF-REVIEW",
+      "section": "Done",
+      "status": "done",
+      "title": "Review bounded QA fixed-slot custody proof requirements before implementation"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CONTINUITY-BASELINE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-DEATH-COMPLETE-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Run or add the isolated app-level death-to-completion recovery oracle"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CREDENTIAL-DENIAL-ORACLE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-FORBIDDEN-RECOVERY-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove recreated-client HTTP 403 denial preserves ownership without replay"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-HISTORY-IDENTITY"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-HISTORY-ADMISSION",
+      "section": "Done",
+      "status": "done",
+      "title": "Refuse declared ungranted history reads while preserving legacy baseline support"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-AMBIGUOUS-404"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-HISTORY-IDENTITY",
+      "section": "Done",
+      "status": "done",
+      "title": "Validate canonical history response and compaction lineage before recovery settlement"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-MANIFEST-ASSESSMENT-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INSPECTOR-ISOLATION-PREFLIGHT",
+      "section": "Done",
+      "status": "done",
+      "title": "Assess pinned inspector closure and isolation prerequisites without artifact access"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-REFUSAL-CONTINUATION"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-ISSUER-EVIDENCE-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare the source-only installed QA issuer admission evidence contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-PACKAGE-PROVENANCE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-MANIFEST-ASSESSMENT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare partial-F01 offline manifest assessment contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-BOOTSTRAP-FORBIDDEN-ORACLE",
+        "DOC-M2-COUNTING-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-OBSERVER-COMPOSITION",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace QA-only recovery observer composition through production persistence seams"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-ISSUER-EVIDENCE-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-PACKAGE-PROVENANCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map isolated QA package provenance checks for F01/F02"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-HISTORY-ADMISSION"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-POST-REPAIR-CALLERS",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify current loaded-session callers after shared recovery repairs"
+    },
+    {
+      "depends_on": [
+        "QA-M2-STORE-STATE-OBSERVER"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-QA-DELIVERY-ADMISSION",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace dedicated QA packaging and private receipt-retrieval admission"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-QA-DELIVERY-ADMISSION"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-RECEIPT-HANDOFF-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Review the proposed QA attempt/generation receipt-handoff contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-COUNTING-CONTRACT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-RECOVERY-READ-ADMISSION",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace and prove the exact-owner terminal status/history recovery read"
+    },
+    {
+      "depends_on": [
+        "QA-M2-DEFAULT-REFUSAL"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-REFUSAL-CONTINUATION",
+      "section": "Done",
+      "status": "done",
+      "title": "Reassess named-device prerequisites after QA default refusal"
+    },
+    {
+      "depends_on": [
+        "QA-M2-CUSTODY-ORDERING-ORACLE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-RUNTIME-CALLER-CLOSURE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare complete runtime caller-closure proof after the isolated custody oracle"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-INSPECTOR-ISOLATION-PREFLIGHT"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-SYNTHETIC-ISOLATION-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Review the synthetic isolation and immutable-input proof contract before implementation"
+    },
+    {
+      "depends_on": [],
+      "goal": "M6",
+      "id": "DOC-M6-ARTIFACT-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify exact artifacts, integrated install, upgrade and recovery"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-ARTIFACT-EVIDENCE"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-CANDIDATE-ADMISSION",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare the offline exact-candidate comparison and negative-case oracle"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-CANDIDATE-ADMISSION"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-OFFLINE-CHECKER",
+      "section": "Done",
+      "status": "done",
+      "title": "Prepare a read-only exact-candidate comparison entrypoint"
+    },
+    {
+      "depends_on": [],
+      "goal": "M1",
+      "id": "PARITY-APPROVAL-DISMISSAL",
+      "section": "Done",
+      "status": "done",
+      "title": "Complete original-card independent dismissal review"
+    },
+    {
+      "depends_on": [],
+      "goal": "GLOBAL-LOADED-SESSIONS",
+      "id": "PARITY-GLOBAL-SESSIONS",
+      "section": "Done",
+      "status": "done",
+      "title": "Open/create loaded sessions from feature routes without incidental reads"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CUSTODY-PROOF-REVIEW"
+      ],
+      "goal": "M2",
+      "id": "QA-M2-CUSTODY-ORDERING-ORACLE",
+      "section": "Done",
+      "status": "done",
+      "title": "Run or add the isolated fake-only custody-ordering oracle"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-RUNTIME-CALLER-CLOSURE"
+      ],
+      "goal": "M2",
+      "id": "QA-M2-DEFAULT-REFUSAL",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove actual QA default refusal and public-surface closure before I/O"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-OBSERVER-COMPOSITION"
+      ],
+      "goal": "M2",
+      "id": "QA-M2-STORE-STATE-OBSERVER",
+      "section": "Done",
+      "status": "done",
+      "title": "Implement the bounded QA store/state observer through production injection seams"
+    }
+  ],
+  "version": 1
+}

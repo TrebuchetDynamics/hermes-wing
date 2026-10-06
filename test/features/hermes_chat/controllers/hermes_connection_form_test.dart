@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/controllers/hermes_connection_form.dart';
@@ -126,6 +127,66 @@ void main() {
   });
 
   group('field management', () {
+    test('read intent generation remembers edits and explicit actions', () {
+      var generation = form.intentGeneration;
+      for (final field in [form.baseUrl, form.apiKey, form.label]) {
+        field.text = 'Synthetic value';
+        field.clear();
+        expect(form.intentGeneration, greaterThan(generation));
+        generation = form.intentGeneration;
+      }
+      form.clear();
+      expect(form.intentGeneration, greaterThan(generation));
+      generation = form.intentGeneration;
+      form.applyProfile(baseUrl: '');
+      expect(form.intentGeneration, greaterThan(generation));
+      generation = form.intentGeneration;
+      form.beginAttempt(baseUrl: '');
+      expect(form.intentGeneration, greaterThan(generation));
+      generation = form.intentGeneration;
+      form.abandonAttempt();
+      expect(form.intentGeneration, greaterThan(generation));
+    });
+
+    test('selection and masking do not invalidate read intent', () {
+      form.baseUrl.text = 'https://example.invalid';
+      final generation = form.intentGeneration;
+      form.baseUrl.selection = const TextSelection.collapsed(offset: 0);
+      form.toggleApiKeyVisibility();
+      expect(form.intentGeneration, generation);
+    });
+
+    test('saved autofill intent remembers text edit and return', () {
+      expect(form.hasFieldIntent, isFalse);
+      form.label.text = 'Manual label';
+      form.label.clear();
+      expect(form.hasFieldIntent, isTrue);
+    });
+
+    test('same-value preset and saved selection establish field intent', () {
+      form.clear(keepBaseUrl: '');
+      expect(form.hasFieldIntent, isTrue);
+      final pristine = HermesConnectionForm(
+        normalizeBaseUrl: hermesPublicEndpointBaseUrl,
+        sanitizeLabel: (value) => value,
+      );
+      addTearDown(pristine.dispose);
+      pristine.applyProfile(baseUrl: '');
+      expect(pristine.hasFieldIntent, isTrue);
+    });
+
+    test('selection and masking alone leave saved autofill pristine', () {
+      final pristine = HermesConnectionForm(
+        normalizeBaseUrl: hermesPublicEndpointBaseUrl,
+        sanitizeLabel: (value) => value,
+        initialBaseUrl: 'https://saved.invalid',
+      );
+      addTearDown(pristine.dispose);
+      pristine.baseUrl.selection = const TextSelection.collapsed(offset: 0);
+      pristine.toggleApiKeyVisibility();
+      expect(pristine.hasFieldIntent, isFalse);
+    });
+
     test('applyProfile fills every field', () {
       form.applyProfile(
         baseUrl: 'https://a.example',

@@ -240,10 +240,15 @@ class MaestroFeatureChannel extends FakeHermesChannel {
   }
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
     connectCalls.add(FakeHermesConnectCall(baseUrl: baseUrl, apiKey: apiKey));
     origin = baseUrl;
     setOffline(false);
+    if (deferSessionSelection) clearActiveSession();
   }
 
   @override

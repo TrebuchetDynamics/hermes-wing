@@ -85,7 +85,8 @@ void _hermesApiChannelSessionMutationTests() {
               '/health' => '{"status":"ok"}',
               '/v1/capabilities' => _runsCapableCapabilitiesFixture,
               '/api/sessions' => _twoSessionsFixture,
-              '/api/sessions/sess_2/messages' => '{"data":[]}',
+              '/api/sessions/sess_2/messages' =>
+                '{"object":"list","session_id":"sess_2","data":[]}',
               _ => throw StateError('unexpected GET $uri'),
             };
           },
@@ -105,7 +106,7 @@ void _hermesApiChannelSessionMutationTests() {
       await channel.selectSession('sess_2');
       await channel.selectSession('sess_1');
       pendingHistory.complete(
-        '{"data":[{"id":"old","session_id":"sess_1","role":"user","content":"obsolete context"}],"pagination":{"offset":0,"limit":1,"order":"latest"}}',
+        '{"object":"list","session_id":"sess_1","data":[{"id":"old","session_id":"sess_1","role":"user","content":"obsolete context"}],"pagination":{"offset":0,"limit":1,"order":"latest"}}',
       );
       await oldSelection;
       // A later state publication exposes any pagination cache mutation.
@@ -304,7 +305,11 @@ void _hermesApiChannelSessionMutationTests() {
                 '/api/sessions' => _twoSessionsFixture,
                 '/api/sessions/sess_1/messages' => _messagesFixture,
                 '/api/sessions/sess_2/messages' ||
-                '/api/sessions/new-chat/messages' => '{"data":[]}',
+                '/api/sessions/new-chat/messages' => jsonEncode({
+                  'object': 'list',
+                  'session_id': uri.pathSegments[2],
+                  'data': [],
+                }),
                 _ => throw StateError('unexpected GET $uri'),
               };
             },
@@ -330,7 +335,7 @@ void _hermesApiChannelSessionMutationTests() {
         }
         pending.complete(
           selectionFirst
-              ? '{"data":[]}'
+              ? '{"object":"list","session_id":"sess_2","data":[]}'
               : '{"session":{"id":"new-chat","source":"api_server"}}',
         );
         await first;

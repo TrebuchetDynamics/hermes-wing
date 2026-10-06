@@ -12,7 +12,53 @@ extension _SessionsExtension on HermesApiChannel {
     _setState(const HermesChannelState());
   }
 
-  Future<void> _selectSession(String sessionId) async {
+  Future<bool> _restoreSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {
+    final client = _requireConnectedClient();
+    final profileId = _state.selectedProfileId;
+    final profileGuard = _profileRequestGuard(client, profileId);
+    clearActiveSession();
+    final selectionGeneration = _sessionSelectionGeneration;
+    bool owned() => profileGuard() && (canAccept?.call() ?? true);
+    bool currentMetadata() =>
+        owned() && selectionGeneration == _sessionSelectionGeneration;
+    if (!currentMetadata()) return false;
+    final capabilities = _state.capabilities;
+    final known = _state.sessions.any((session) => session.id == sessionId);
+    bool authorized(String name, String path) =>
+        capabilities != null &&
+        _capabilityEndpointAuthorized(capabilities, name, 'GET', path) &&
+        (capabilities.endpoints[name]?.profileScoped != true ||
+            capabilities.profileContext.isSupportedQueryContext ||
+            client.config.pathProfileId != null);
+    if (!authorized(
+          'session_messages',
+          '/api/sessions/{session_id}/messages',
+        ) ||
+        (!known && !authorized('session', '/api/sessions/{session_id}'))) {
+      throw const HermesSessionRestorationUnsupported();
+    }
+    if (!known) {
+      final session = await client.getSession(sessionId, profile: profileId);
+      if (!currentMetadata()) return false;
+      _setState(_state.copyWith(sessions: [..._state.sessions, session]));
+      // A synchronous listener may explicitly choose a session on admission.
+      if (!currentMetadata()) return false;
+    }
+    final historyGeneration = _sessionSelectionGeneration + 1;
+    await _selectSession(sessionId, canAccept: owned);
+    return owned() &&
+        historyGeneration == _sessionSelectionGeneration &&
+        _state.activeSessionId == sessionId;
+  }
+
+  Future<void> _selectSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {
+    if (!(canAccept?.call() ?? true)) return;
     _requireStableProfile();
     final client = _client;
     if (client == null) {
@@ -29,7 +75,8 @@ extension _SessionsExtension on HermesApiChannel {
         selectionGeneration == _sessionSelectionGeneration &&
         profileSelectionGeneration == _profileSelectionGeneration &&
         _isCurrentConnection(connectionGeneration, client) &&
-        _state.selectedProfileId == profileId;
+        _state.selectedProfileId == profileId &&
+        (canAccept?.call() ?? true);
     final detachedRunStillActive = baseUrl != null && capabilities != null
         ? await _recoverDetachedRun(
             client: client,
@@ -37,6 +84,7 @@ extension _SessionsExtension on HermesApiChannel {
             baseUrl: baseUrl,
             profileId: profileId,
             sessionId: sessionId,
+            canAccept: isCurrentSelection,
           )
         : false;
     if (!isCurrentSelection()) return;
@@ -114,6 +162,7 @@ extension _SessionsExtension on HermesApiChannel {
       ),
     );
     try {
+      _requireHistoryRead(client, _state.capabilities);
       final page = await client.sessionMessagesPage(
         sessionId,
         profile: profileId,
@@ -239,7 +288,11 @@ extension _SessionsExtension on HermesApiChannel {
     }
   }
 
-  Future<void> _createSession({String? title}) async {
+  Future<void> _createSession({
+    String? title,
+    bool Function()? canAccept,
+  }) async {
+    if (!(canAccept?.call() ?? true)) return;
     final client = _client;
     if (client == null) {
       throw StateError('Hermes channel is not connected.');
@@ -253,7 +306,8 @@ extension _SessionsExtension on HermesApiChannel {
     );
     final requestedId = _sessionIdFactory();
     final previousSessionId = _state.activeSessionId;
-    final isCurrentContext = _profileRequestGuard(client, profileId);
+    final profileGuard = _profileRequestGuard(client, profileId);
+    bool isCurrentContext() => profileGuard() && (canAccept?.call() ?? true);
     // New-chat intent ends the previous send target immediately. Keep the new
     // target unavailable until its initial history is ready for submission.
     clearActiveSession();
@@ -261,6 +315,8 @@ extension _SessionsExtension on HermesApiChannel {
     bool isCurrentSelection() =>
         isCurrentContext() &&
         selectionGeneration == _sessionSelectionGeneration;
+    // Clearing selection notifies synchronous listeners before the write.
+    if (!isCurrentSelection()) return;
     final HermesSession created;
     try {
       created = await client.createSession(
@@ -280,7 +336,12 @@ extension _SessionsExtension on HermesApiChannel {
     String? historyError;
     if (isCurrentSelection()) {
       try {
-        turns = await _fetchTurns(client, created.id, profileId: profileId);
+        turns = await _fetchTurns(
+          client,
+          created.id,
+          profileId: profileId,
+          canAccept: isCurrentSelection,
+        );
       } catch (error) {
         historyError =
             'Hermes session was created, but its history could not be loaded: '

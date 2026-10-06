@@ -27,22 +27,40 @@ class SchedulesScreen extends ConsumerStatefulWidget {
 }
 
 class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
+  final _searchController = TextEditingController();
+  final _clearFocusNode = FocusNode();
+  _ScheduleFilter _filter = _ScheduleFilter.all;
   String? _switchingGatewayId;
   String? _actionError;
   bool _refreshing = false;
   int _refreshGeneration = 0;
   bool _refreshFailed = false;
+  HermesChannel? _jobsChannel;
+  Object? _jobsContext;
+  Object _jobsOwner = Object();
+
+  @override
+  void dispose() {
+    _jobsChannel?.removeListener(_jobsOwnerChanged);
+    _searchController.dispose();
+    _clearFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+    setState(() {
+      _filter = _ScheduleFilter.all;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
-    ref.listen(hermesChannelStateProvider, (previous, next) {
-      if (next.refreshContextChangedFrom(previous)) {
-        setState(() {
-          _refreshGeneration++;
-          _refreshing = false;
-          _refreshFailed = false;
-        });
+    _bindJobsOwner(channel);
+    ref.listen(hermesChannelProvider, (previous, next) {
+      if (!identical(previous, next)) {
+        setState(() => _bindJobsOwner(next));
       }
     });
     final directory = ref.watch(hermesGatewayDirectoryProvider);
@@ -50,6 +68,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     return AnimatedBuilder(
       animation: Listenable.merge([channel, directory]),
       builder: (context, _) {
+        final owner = _jobsOwner;
         final canRefresh = _jobsAdvertised(channel.state);
         return Scaffold(
           appBar: AppBar(
@@ -61,7 +80,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                   tooltip: strings.schedulesRefreshTooltip,
                   onPressed: _refreshing
                       ? null
-                      : () => unawaited(_refresh(channel)),
+                      : () => unawaited(_refresh(channel, owner)),
                   icon: _refreshing
                       ? SizedBox.square(
                           dimension: 20,
@@ -103,10 +122,21 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                   ),
                 Expanded(
                   child: _SchedulesBody(
+                    key: ObjectKey(owner),
                     state: channel.state,
                     strings: strings,
                     refreshFailed: _refreshFailed,
-                    onRetry: () => _refresh(channel),
+                    onRetry: () => _refresh(channel, owner),
+                    searchController: _searchController,
+                    query: _searchController.text,
+                    filter: _filter,
+                    onQueryChanged: (_) => setState(() {}),
+                    onFilterChanged: (value) => setState(() => _filter = value),
+                    clearFocusNode: _clearFocusNode,
+                    onClear: () {
+                      _clearFocusNode.requestFocus();
+                      _clearFilters();
+                    },
                   ),
                 ),
               ],
@@ -139,8 +169,55 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     );
   }
 
-  Future<void> _refresh(HermesChannel channel) async {
-    if (_refreshing || !_jobsAdvertised(channel.state)) return;
+  void _bindJobsOwner(HermesChannel channel) {
+    if (!identical(channel, _jobsChannel)) {
+      _jobsChannel?.removeListener(_jobsOwnerChanged);
+      _jobsChannel = channel;
+      _jobsContext = null;
+      channel.addListener(_jobsOwnerChanged);
+    }
+    _syncJobsOwner();
+  }
+
+  bool _syncJobsOwner() {
+    final channel = _jobsChannel!;
+    final state = channel.state;
+    final context = (
+      channel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.status,
+      state.isSelectingProfile,
+      _jobsAdvertised(state),
+    );
+    if (_jobsContext == context) return false;
+    _jobsContext = context;
+    _jobsOwner = Object();
+    _refreshGeneration++;
+    _refreshing = false;
+    _refreshFailed = false;
+    _searchController.clear();
+    _filter = _ScheduleFilter.all;
+    return true;
+  }
+
+  void _jobsOwnerChanged() {
+    // Observe loss/restoration synchronously, even if both precede a rebuild.
+    // Inventory updates and equivalent capability documents keep local controls.
+    if (_syncJobsOwner() && mounted) setState(() {});
+  }
+
+  bool _isJobsOwner(HermesChannel channel, Object owner) {
+    if (!mounted) return false;
+    final current = ref.read(hermesChannelProvider);
+    _bindJobsOwner(current);
+    return identical(channel, current) &&
+        identical(owner, _jobsOwner) &&
+        _jobsAdvertised(current.state);
+  }
+
+  Future<void> _refresh(HermesChannel channel, Object owner) async {
+    if (!_isJobsOwner(channel, owner) || _refreshing) return;
     final generation = ++_refreshGeneration;
     setState(() {
       _refreshing = true;
@@ -149,11 +226,11 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     try {
       await channel.loadJobs();
     } catch (_) {
-      if (mounted && generation == _refreshGeneration) {
+      if (_isJobsOwner(channel, owner) && generation == _refreshGeneration) {
         setState(() => _refreshFailed = true);
       }
     } finally {
-      if (mounted && generation == _refreshGeneration) {
+      if (_isJobsOwner(channel, owner) && generation == _refreshGeneration) {
         setState(() => _refreshing = false);
       }
     }
@@ -162,16 +239,31 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
 
 class _SchedulesBody extends StatelessWidget {
   const _SchedulesBody({
+    super.key,
     required this.state,
     required this.strings,
     required this.refreshFailed,
     required this.onRetry,
+    required this.searchController,
+    required this.query,
+    required this.filter,
+    required this.onQueryChanged,
+    required this.onFilterChanged,
+    required this.onClear,
+    required this.clearFocusNode,
   });
 
   final HermesChannelState state;
   final AppLocalizations strings;
   final bool refreshFailed;
   final Future<void> Function() onRetry;
+  final TextEditingController searchController;
+  final String query;
+  final _ScheduleFilter filter;
+  final ValueChanged<String> onQueryChanged;
+  final ValueChanged<_ScheduleFilter> onFilterChanged;
+  final VoidCallback onClear;
+  final FocusNode clearFocusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +304,20 @@ class _SchedulesBody extends StatelessWidget {
       );
     }
 
-    final jobs = [...state.jobs]..sort(_compareJobs);
+    final normalizedQuery = query.trim().toLowerCase();
+    final jobs = state.jobs.where((job) {
+      final matchesEnabled = switch (filter) {
+        _ScheduleFilter.all => true,
+        _ScheduleFilter.enabled => job.enabled,
+        _ScheduleFilter.disabled => !job.enabled,
+      };
+      return matchesEnabled &&
+          [
+            boundedHermesMetadataText(job.displayName, 120),
+            boundedHermesMetadataText(job.id, 128),
+            boundedHermesMetadataText(job.scheduleDisplay ?? '', 160),
+          ].any((value) => value.toLowerCase().contains(normalizedQuery));
+    }).toList()..sort(_compareJobs);
     return RefreshIndicator(
       onRefresh: onRetry,
       semanticsLabel: strings.schedulesRefreshing,
@@ -239,7 +344,47 @@ class _SchedulesBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          if (jobs.isEmpty)
+          TextField(
+            key: const ValueKey('schedules-search'),
+            controller: searchController,
+            onChanged: onQueryChanged,
+            decoration: InputDecoration(
+              labelText: strings.schedulesSearchLabel,
+              prefixIcon: const Icon(Icons.search),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(strings.schedulesFilterLabel),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final option in _ScheduleFilter.values)
+                ChoiceChip(
+                  label: Text(switch (option) {
+                    _ScheduleFilter.all => strings.schedulesFilterAll,
+                    _ScheduleFilter.enabled => strings.scheduleEnabled,
+                    _ScheduleFilter.disabled => strings.scheduleDisabled,
+                  }),
+                  selected: filter == option,
+                  onSelected: (_) => onFilterChanged(option),
+                ),
+              TextButton.icon(
+                key: const ValueKey('schedules-clear-filters'),
+                focusNode: clearFocusNode,
+                // Keep reset idempotent and focus stable. Disabling the focused
+                // button can restore a detached browser text-editing client.
+                onPressed: onClear,
+                icon: const Icon(Icons.clear),
+                label: Text(strings.schedulesClearFilters),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (state.jobs.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: WingEmptyState(
@@ -248,6 +393,16 @@ class _SchedulesBody extends StatelessWidget {
                 body: strings.schedulesEmptyBody,
                 actionLabel: strings.schedulesRefreshTooltip,
                 onAction: onRetry,
+              ),
+            )
+          else if (jobs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: WingEmptyState(
+                icon: Icons.search_off,
+                liveRegion: true,
+                title: strings.schedulesNoMatchesTitle,
+                body: strings.schedulesNoMatchesBody,
               ),
             )
           else
@@ -304,6 +459,11 @@ class _ScheduleCard extends StatelessWidget {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 10),
+            _ScheduleDetail(
+              label: strings.scheduleIdLabel,
+              value: boundedHermesMetadataText(job.id, 128),
             ),
             if (schedule != null && schedule.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -373,7 +533,11 @@ class _ScheduleDetail extends StatelessWidget {
 }
 
 bool _jobsAdvertised(HermesChannelState state) =>
-    state.status == HermesConnectionStatus.connected && state.canReadJobs;
+    state.status == HermesConnectionStatus.connected &&
+    !state.isSelectingProfile &&
+    state.canReadJobs;
+
+enum _ScheduleFilter { all, enabled, disabled }
 
 int _compareJobs(HermesJob a, HermesJob b) {
   if (a.enabled != b.enabled) return a.enabled ? -1 : 1;

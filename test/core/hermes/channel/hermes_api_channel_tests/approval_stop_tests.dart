@@ -185,7 +185,7 @@ void _hermesApiChannelApprovalStopTests() {
     );
 
     expect(posts['/v1/runs/run_1/approval'], {
-      'approval_id': 'appr_1',
+      'request_id': 'appr_1',
       'choice': 'once',
     });
   });
@@ -233,7 +233,7 @@ void _hermesApiChannelApprovalStopTests() {
     );
 
     expect(posts['/v1/runs/run_1/approval'], {
-      'approval_id': 'appr_1',
+      'request_id': 'appr_1',
       'choice': 'always',
     });
   });

@@ -1,0 +1,72 @@
+// Only attached to an isolated byte-for-byte support mirror by the probe runner.
+// This part is not in the runtime library's delivery graph.
+part of '../../../integration_test/support/m2_observer.dart';
+
+final class _SpyRuntime implements _RuntimeBoundary {
+  final counts = <String, int>{
+    'runtime_launch': 0,
+    'sink_factory': 0,
+    'plugin_factory': 0,
+    'writer_release': 0,
+    'journal_construction': 0,
+    'observer_construction': 0,
+    'observer_start': 0,
+    'channel_construction': 0,
+    'delegate_construction': 0,
+    'runApp': 0,
+    'inspection': 0,
+    'readback': 0,
+    'write': 0,
+    'delete': 0,
+    'enumeration': 0,
+    'fallback': 0,
+  };
+  @override
+  bool get admitted => false;
+
+  @override
+  Future<M2BootstrapResult> launch() async {
+    counts['runtime_launch'] = counts['runtime_launch']! + 1;
+    // No graph implementation exists: counting the attempted launch is enough
+    // to discriminate a removed gate, without inventing a secure factory.
+    return const M2BootstrapResult._();
+  }
+}
+
+Future<void> verifyPrivateBootstrap() async {
+  final runtime = _SpyRuntime();
+  final callbacks = <void Function()>[];
+  final pending = runZoned(
+    () => _bootstrap(runtime),
+    zoneSpecification: ZoneSpecification(
+      scheduleMicrotask: (self, parent, zone, callback) =>
+          callbacks.add(callback),
+    ),
+  );
+  final completed = Completer<M2BootstrapResult>();
+  pending.then(completed.complete, onError: completed.completeError);
+  void zero() {
+    if (runtime.counts.values.any((count) => count != 0)) {
+      throw StateError(
+        'REG-DEFAULT construction/start/I/O/launch: ${runtime.counts}',
+      );
+    }
+  }
+
+  zero();
+  // Complete only recorded microtasks; no wall clock or plugin callbacks.
+  while (callbacks.isNotEmpty) {
+    callbacks.removeAt(0)();
+  }
+  final result = await completed.future;
+  if (result.code != 'not_admitted' ||
+      result.continuation != 'continuation_unavailable' ||
+      result.qualifies) {
+    throw StateError('REG-DEFAULT sanitized refusal');
+  }
+  zero();
+  while (callbacks.isNotEmpty) {
+    callbacks.removeAt(0)();
+  }
+  zero();
+}

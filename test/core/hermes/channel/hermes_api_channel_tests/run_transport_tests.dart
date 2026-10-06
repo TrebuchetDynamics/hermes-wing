@@ -284,11 +284,11 @@ void _hermesApiChannelRunTransportTests() {
 ''',
             '/api/sessions/sess_1/messages' =>
               '''
-{"object":"list","data":[{"id":"seed_1","session_id":"sess_1","role":"assistant","content":"First seed"}]}
+{"object":"list","session_id":"sess_1","data":[{"id":"seed_1","session_id":"sess_1","role":"assistant","content":"First seed"}]}
 ''',
             '/api/sessions/sess_2/messages' =>
               '''
-{"object":"list","data":[{"id":"seed_2","session_id":"sess_2","role":"assistant","content":"Second seed"}]}
+{"object":"list","session_id":"sess_2","data":[{"id":"seed_2","session_id":"sess_2","role":"assistant","content":"Second seed"}]}
 ''',
             _ => throw StateError('unexpected GET $uri'),
           },
@@ -386,8 +386,10 @@ void _hermesApiChannelRunTransportTests() {
             '''
 {"object":"list","data":[{"id":"sess_1","source":"api"},{"id":"sess_2","source":"api"}]}
 ''',
-          '/api/sessions/sess_1/messages' => '{"object":"list","data":[]}',
-          '/api/sessions/sess_2/messages' => '{"object":"list","data":[]}',
+          '/api/sessions/sess_1/messages' =>
+            '{"object":"list","session_id":"sess_1","data":[]}',
+          '/api/sessions/sess_2/messages' =>
+            '{"object":"list","session_id":"sess_2","data":[]}',
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
@@ -553,8 +555,18 @@ void _hermesApiChannelRunTransportTests() {
         var reads = 0;
         final prior = <Map<String, Object?>>[
           if (hasEarlierReply) ...[
-            {'id': 'old-user', 'role': 'user', 'content': 'Earlier request'},
-            {'id': 'old-answer', 'role': 'assistant', 'content': 'Same answer'},
+            {
+              'id': 'old-user',
+              'session_id': 'sess_1',
+              'role': 'user',
+              'content': 'Earlier request',
+            },
+            {
+              'id': 'old-answer',
+              'session_id': 'sess_1',
+              'role': 'assistant',
+              'content': 'Same answer',
+            },
           ],
         ];
         final channel = HermesApiChannel(
@@ -572,11 +584,13 @@ void _hermesApiChannelRunTransportTests() {
                   if (reads++ > 0) ...[
                     {
                       'id': 'current-user',
+                      'session_id': 'sess_1',
                       'role': 'user',
                       'content': 'Current request',
                     },
                     {
                       'id': 'current-answer',
+                      'session_id': 'sess_1',
                       'role': 'assistant',
                       'content': 'Same answer',
                     },
@@ -630,19 +644,24 @@ void _hermesApiChannelRunTransportTests() {
               reads++ == 0
                   ? _messagesFixture
                   : jsonEncode({
+                      'object': 'list',
+                      'session_id': 'sess_1',
                       'data': [
                         {
                           'id': 'current-user',
+                          'session_id': 'sess_1',
                           'role': 'user',
                           'content': 'Hello',
                         },
                         {
                           'id': 'commentary',
+                          'session_id': 'sess_1',
                           'role': 'assistant',
                           'content': 'Checking first',
                         },
                         {
                           'id': 'answer',
+                          'session_id': 'sess_1',
                           'role': 'assistant',
                           'content': 'Finished checking',
                         },
@@ -1390,10 +1409,12 @@ void _hermesApiChannelRunTransportTests() {
               '/health' => '{"status":"ok"}',
               '/v1/capabilities' => _runsCapableCapabilitiesFixture,
               '/api/sessions' => _sessionsFixture,
-              '/api/sessions/sess_1/messages' =>
-                (messagesRequests++ == 0)
-                    ? _messagesFixture
-                    : _reconciledMessagesFixture,
+              '/api/sessions/sess_1/messages' => () {
+                messagesRequests++;
+                // Failed run has no persisted reply yet. A later read still
+                // hydrates canonical context without dropping local partials.
+                return _messagesFixture;
+              }(),
               _ => throw StateError('unexpected GET $uri'),
             };
           },
@@ -1401,7 +1422,7 @@ void _hermesApiChannelRunTransportTests() {
             return switch (uri.path) {
               '/v1/runs' => () {
                 runRequests += 1;
-                return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
+                return '{"object":"hermes.run","run":{"id":"run_$runRequests","session_id":"sess_1"}}';
               }(),
               _ => '{}',
             };
@@ -1422,7 +1443,7 @@ void _hermesApiChannelRunTransportTests() {
 
       await channel.sendText('fail the run');
 
-      expect(messagesRequests, 1);
+      expect(messagesRequests, 2);
       expect(channel.state.errorMessage, 'Hermes run failed.');
       expect(channel.state.activeMessages.map((turn) => turn.text), [
         'Hello',
@@ -1433,8 +1454,8 @@ void _hermesApiChannelRunTransportTests() {
 
       await channel.sendText('retry safely');
 
-      expect(runRequests, 1);
-      expect(directStreamPath, '/api/sessions/sess_1/chat/stream');
+      expect(runRequests, 2);
+      expect(directStreamPath, isNull);
     },
   );
 

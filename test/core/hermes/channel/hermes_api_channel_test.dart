@@ -15,10 +15,13 @@ part 'hermes_api_channel_tests/connection_tests.dart';
 part 'hermes_api_channel_tests/direct_chat_tests.dart';
 part 'hermes_api_channel_tests/run_failure_tests.dart';
 part 'hermes_api_channel_tests/session_mutation_tests.dart';
+part 'hermes_api_channel_tests/session_model_tests.dart';
 part 'hermes_api_channel_tests/voice_tests.dart';
 part 'hermes_api_channel_tests/lifecycle_race_tests.dart';
 part 'hermes_api_channel_tests/run_transport_tests.dart';
 part 'hermes_api_channel_tests/approval_stop_tests.dart';
+part 'hermes_api_channel_tests/native_approval_tests.dart';
+part 'hermes_api_channel_tests/stop_outcome_tests.dart';
 
 final class _TestHermesStatusException implements HermesApiStatusException {
   const _TestHermesStatusException(this.statusCode);
@@ -32,10 +35,13 @@ void main() {
   _hermesApiChannelDirectChatTests();
   _hermesApiChannelRunFailureTests();
   _hermesApiChannelSessionMutationTests();
+  _hermesApiChannelSessionModelTests();
   _hermesApiChannelVoiceTests();
   _hermesApiChannelLifecycleRaceTests();
   _hermesApiChannelRunTransportTests();
   _hermesApiChannelApprovalStopTests();
+  _hermesApiChannelNativeApprovalTests();
+  _hermesApiChannelStopOutcomeTests();
   _hermesApiChannelAudioTests();
   _hermesApiChannelProfileTests();
   _hermesApiChannelProviderModelTests();
@@ -637,8 +643,8 @@ void _hermesApiChannelProfileTests() {
               '/api/sessions' => _sessionsFixture,
               '/api/sessions/sess_1/messages' =>
                 messageReads++ == 0
-                    ? '''{"object":"list","data":[{"id":"live-id","session_id":"sess_1","role":"assistant","content":"white\\n","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":100,"output_tokens":1,"total_tokens":101}}]}'''
-                    : '''{"object":"list","data":[{"id":"server-id","session_id":"sess_1","role":"assistant","content":"white","timestamp":"2026-08-07T12:00:00Z"}]}''',
+                    ? '''{"object":"list","session_id":"sess_1","data":[{"id":"live-id","session_id":"sess_1","role":"assistant","content":"white\\n","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":100,"output_tokens":1,"total_tokens":101}}]}'''
+                    : '''{"object":"list","session_id":"sess_1","data":[{"id":"server-id","session_id":"sess_1","role":"assistant","content":"white","timestamp":"2026-08-07T12:00:00Z"}]}''',
               _ => throw StateError('unexpected GET $uri'),
             };
           },
@@ -680,8 +686,8 @@ void _hermesApiChannelProfileTests() {
             '/api/sessions' => _sessionsFixture,
             '/api/sessions/sess_1/messages' =>
               messageReads++ == 0
-                  ? '''{"object":"list","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":8,"output_tokens":2,"total_tokens":10}}]}'''
-                  : '''{"object":"list","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z"}]}''',
+                  ? '''{"object":"list","session_id":"sess_1","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z","usage":{"input_tokens":8,"output_tokens":2,"total_tokens":10}}]}'''
+                  : '''{"object":"list","session_id":"sess_1","data":[{"id":"same-id","session_id":"sess_1","role":"assistant","content":"same","timestamp":"2026-08-07T12:00:00Z"}]}''',
             _ => throw StateError('unexpected GET $uri'),
           };
         },
@@ -798,7 +804,7 @@ void _hermesApiChannelProfileTests() {
             '/api/sessions' =>
               '{"data":[{"id":"session-$profile","source":"test","title":"$profile"}]}',
             _ when uri.path.startsWith('/api/sessions/session-') =>
-              '{"data":[{"id":"message-$profile","role":"assistant","content":"$profile message"}]}',
+              '{"object":"list","session_id":"session-$profile","data":[{"id":"message-$profile","session_id":"session-$profile","role":"assistant","content":"$profile message"}]}',
             '/v1/models' =>
               '{"data":[{"id":"$profile-model","owned_by":"test"}]}',
             '/v1/skills' =>

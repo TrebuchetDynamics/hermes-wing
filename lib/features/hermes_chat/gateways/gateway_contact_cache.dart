@@ -79,8 +79,14 @@ class GatewayContactCache {
     }
   }
 
-  Future<void> saveSelection(GatewayContactSelection selection) async {
-    await (await SharedPreferences.getInstance()).setString(
+  Future<void> saveSelection(
+    GatewayContactSelection selection, {
+    bool Function()? canWrite,
+  }) async {
+    final preferences = await SharedPreferences.getInstance();
+    // Check at the write boundary, not before asynchronous storage acquisition.
+    if (!(canWrite?.call() ?? true)) return;
+    await preferences.setString(
       _selectionKey,
       jsonEncode({
         'gatewayId': selection.contactId.gatewayId,

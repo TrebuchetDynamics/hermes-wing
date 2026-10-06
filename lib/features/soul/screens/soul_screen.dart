@@ -38,6 +38,14 @@ class _SoulScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final profile = state.selectedProfile;
+    void finishEditor() {
+      // Shell pages remain mounted during their exit transition. A late save
+      // must not replace a destination the user has already chosen.
+      if (ModalRoute.of(context)?.isCurrent ?? false) {
+        context.go(AppRoutes.profiles);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.personaLabel),
@@ -61,7 +69,7 @@ class _SoulScaffold extends StatelessWidget {
                 actionLabel: strings.soulOpenProfilesAction,
                 onAction: () => context.go(AppRoutes.profiles),
               )
-            : !_supportsPersona(state)
+            : !state.canEditProfileSoul
             ? WingEmptyState(
                 icon: Icons.lock_outline,
                 title: strings.soulUnavailableTitle,
@@ -74,41 +82,10 @@ class _SoulScaffold extends StatelessWidget {
                 profile: profile,
                 canEditSoul: true,
                 soulOnly: true,
+                onCancel: finishEditor,
+                onSaved: finishEditor,
               ),
       ),
     );
   }
-}
-
-bool _supportsPersona(HermesChannelState state) {
-  final capabilities = state.capabilities;
-  if (capabilities == null || !capabilities.supportsSchema) return false;
-  final profile = state.selectedProfile;
-  if (profile == null) return false;
-  final profileContext = capabilities.profileContext.isSupportedQueryContext;
-  if (!profileContext ||
-      !capabilities.auth.allows('profiles:read') ||
-      !capabilities.auth.allows('profiles:write')) {
-    return false;
-  }
-  bool supports(String name, String method, String path, String scope) {
-    final endpoint = capabilities.endpoints[name];
-    return endpoint != null &&
-        endpoint.requiredScopes.every(capabilities.auth.allows) &&
-        capabilities.advertisesScopedEndpoint(name, method, path, scope) &&
-        capabilities.auth.allows(scope);
-  }
-
-  return supports(
-        'profile_soul',
-        'GET',
-        '/api/profiles/{name}/soul',
-        'profiles:read',
-      ) &&
-      supports(
-        'profile_soul_update',
-        'PUT',
-        '/api/profiles/{name}/soul',
-        'profiles:write',
-      );
 }

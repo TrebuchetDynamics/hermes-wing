@@ -65,8 +65,12 @@ page, or same-origin HTTP errors.
 
 ## Where help is useful
 
-Current priorities are Android chat and approval polish, accessibility, setup
-clarity, and reproducible platform qualification. Check the
+Current priorities follow the accepted Desktop-first workflow: direct connection,
+explicit profile/model selection, Chat generation, approval/Stop, and exact-session
+restoration without duplicate sends. Preserve mobile usability and accessibility;
+Android-specific adaptations follow matched Desktop flows. See the
+[current goal and qualification boundaries](docs/plans/2026-10-03-desktop-port-goal.md).
+Check the
 [issue tracker](https://github.com/TrebuchetDynamics/hermes-wing/issues) before
 starting larger work, or open a focused issue describing the user problem and
 the platform you can test.

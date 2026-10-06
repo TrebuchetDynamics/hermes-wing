@@ -9,10 +9,37 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/models/hermes_session.dart';
+import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import 'gateway_contact.dart';
 import 'gateway_contact_cache.dart';
+
+enum GatewaySessionRestorationFailure {
+  unsupported,
+  authentication,
+  unavailable,
+  transient,
+  incompatible,
+}
+
+GatewaySessionRestorationFailure _sessionRestorationFailure(Object error) {
+  if (error is HermesSessionRestorationUnsupported) {
+    return GatewaySessionRestorationFailure.unsupported;
+  }
+  if (error is FormatException) {
+    return GatewaySessionRestorationFailure.incompatible;
+  }
+  if (error is HermesApiStatusException) {
+    if (error.statusCode == 401 || error.statusCode == 403) {
+      return GatewaySessionRestorationFailure.authentication;
+    }
+    if (error.statusCode == 404) {
+      return GatewaySessionRestorationFailure.unavailable;
+    }
+  }
+  return GatewaySessionRestorationFailure.transient;
+}
 
 class GatewaySummary {
   const GatewaySummary({
@@ -131,6 +158,10 @@ class HermesGatewayDirectory extends ChangeNotifier
   bool _disposed = false;
   int _refreshGeneration = 0;
   int _activationGeneration = 0;
+  int _selectionPersistenceGeneration = 0;
+  bool _isActivating = false;
+  String? _restoringSessionId;
+  GatewaySessionRestorationFailure? _restorationFailure;
   Future<void>? _disconnectFuture;
   Future<void> _profileSelectionTail = Future.value();
   Future<void> _selectionPersistenceTail = Future.value();
@@ -181,6 +212,30 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   GatewayContactId? get activeContactId => _activeContactId;
+  bool get isActivating => _isActivating;
+  String? get restoringSessionId => _restoringSessionId;
+  GatewaySessionRestorationFailure? get restorationFailure =>
+      _restorationFailure;
+
+  Future<void> retrySessionRestoration() async {
+    final id = _activeContactId;
+    final sessionId = _restoringSessionId;
+    if (_disposed || _isActivating || id == null || sessionId == null) return;
+    await activate(id, preferredSessionId: sessionId);
+  }
+
+  /// Only an explicit choice transfers ownership; opening a picker does not.
+  void supersedeSessionRestoration() {
+    if (_restoringSessionId == null) return;
+    ++_activationGeneration;
+    ++_selectionPersistenceGeneration;
+    _isActivating = false;
+    _restoringSessionId = null;
+    _restorationFailure = null;
+    _activeChannel.clearActiveSession();
+    notifyListeners();
+  }
+
   String? _managementGatewayId;
 
   /// Host inspection is independent of the active Agent chat connection.
@@ -872,6 +927,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     String profileId, {
     HermesProfile? discoveredProfile,
   }) async {
+    supersedeSessionRestoration();
     final predecessor = _profileSelectionTail;
     final release = Completer<void>();
     _profileSelectionTail = release.future;
@@ -895,6 +951,7 @@ class HermesGatewayDirectory extends ChangeNotifier
       }
 
       final generation = _activationGeneration;
+      _isActivating = true;
       await _activeChannel.selectProfile(
         profileId,
         allowDiscovered: nativeProfile == null,
@@ -928,9 +985,11 @@ class HermesGatewayDirectory extends ChangeNotifier
         _requireCurrentProfileSelection(generation, currentId, profileId);
       }
       _activeContactId = targetId;
+      _isActivating = false;
       await _rememberActiveSelection();
       notifyListeners();
     } finally {
+      _isActivating = false;
       release.complete();
     }
   }
@@ -980,6 +1039,11 @@ class HermesGatewayDirectory extends ChangeNotifier
     final config = _configsById[id.gatewayId];
     if (config == null) throw StateError('Gateway is no longer saved.');
     final generation = ++_activationGeneration;
+    ++_selectionPersistenceGeneration;
+    _isActivating = true;
+    _restoringSessionId = preferredSessionId;
+    _restorationFailure = null;
+    bool isCurrent() => !_disposed && generation == _activationGeneration;
 
     await _disconnectFuture;
     if (generation != _activationGeneration) return;
@@ -999,34 +1063,64 @@ class HermesGatewayDirectory extends ChangeNotifier
       await _activeChannel.connect(
         baseUrl: config.baseUrl,
         apiKey: config.apiKey,
+        deferSessionSelection: preferredSessionId != null,
       );
       if (generation != _activationGeneration) return;
       if (!_activeChannel.state.isConnected) {
+        if (preferredSessionId != null) {
+          _restorationFailure =
+              switch (_activeChannel.state.connectionFailureKind) {
+                HermesConnectionFailureKind.authentication =>
+                  GatewaySessionRestorationFailure.authentication,
+                HermesConnectionFailureKind.incompatibleResponse =>
+                  GatewaySessionRestorationFailure.incompatible,
+                _ => GatewaySessionRestorationFailure.transient,
+              };
+          return;
+        }
         clearFailedActivation();
+        return;
+      }
+      if (preferredSessionId != null &&
+          _activeChannel.state.capabilities?.supportsSchema == false) {
+        _restorationFailure = GatewaySessionRestorationFailure.unsupported;
         return;
       }
       if (!contact.isFallbackProfile) {
         await _activeChannel.selectProfile(
           contact.id.profileId,
           allowDiscovered: true,
+          deferSessionSelection: preferredSessionId != null,
         );
       }
       if (generation != _activationGeneration) return;
 
-      final resolvedPreferredSessionId =
-          preferredSessionId != null &&
-              _activeChannel.state.sessions.any(
-                (session) => session.id == preferredSessionId,
-              )
-          ? preferredSessionId
-          : null;
-      final sessionId = resolvedPreferredSessionId ?? contact.latestSession?.id;
+      if (preferredSessionId != null) {
+        try {
+          final restored = await _activeChannel.restoreSession(
+            preferredSessionId,
+            canAccept: isCurrent,
+          );
+          if (!isCurrent()) return;
+          if (restored || _activeChannel.state.activeSessionId != null) {
+            _restoringSessionId = null;
+          } else {
+            _restorationFailure = GatewaySessionRestorationFailure.unavailable;
+          }
+        } catch (error) {
+          if (!isCurrent()) return;
+          _restorationFailure = _sessionRestorationFailure(error);
+        }
+        return;
+      }
+
+      final sessionId = contact.latestSession?.id;
       final session = sessionId == null
           ? null
           : _activeChannel.state.sessions
                 .where((candidate) => candidate.id == sessionId)
                 .firstOrNull;
-      if (resolvedPreferredSessionId == null && session?.source == 'telegram') {
+      if (session?.source == 'telegram') {
         if (_activeChannel.state.canCreateSessions) {
           await _activeChannel.createSession();
           if (generation != _activationGeneration) return;
@@ -1049,15 +1143,28 @@ class HermesGatewayDirectory extends ChangeNotifier
           // A stale or slow session preview must not block a healthy gateway.
         }
       }
-      await _rememberActiveSelection();
     } catch (_) {
+      if (isCurrent() && preferredSessionId != null) {
+        _restorationFailure = GatewaySessionRestorationFailure.transient;
+        return;
+      }
       clearFailedActivation();
       rethrow;
+    } finally {
+      if (isCurrent()) {
+        _isActivating = false;
+        if (_restoringSessionId == null) await _rememberActiveSelection();
+        if (isCurrent()) notifyListeners();
+      }
     }
   }
 
   Future<void> showDirectory() async {
     ++_activationGeneration;
+    ++_selectionPersistenceGeneration;
+    _isActivating = false;
+    _restoringSessionId = null;
+    _restorationFailure = null;
     _activeContactId = null;
     final clearSelection = _clearRememberedSelection();
     final disconnect =
@@ -1074,14 +1181,29 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   Future<void> _rememberActiveSelection() async {
     final contactId = _activeContactId;
-    if (contactId == null) return;
+    if (_disposed ||
+        _isActivating ||
+        _restoringSessionId != null ||
+        contactId == null) {
+      return;
+    }
+    final activationGeneration = _activationGeneration;
+    final persistenceGeneration = ++_selectionPersistenceGeneration;
     final selection = GatewayContactSelection(
       contactId: contactId,
       sessionId: _activeChannel.state.activeSession?.id,
     );
-    final operation = _selectionPersistenceTail.then(
-      (_) => _cache.saveSelection(selection),
-    );
+    bool canWrite() =>
+        !_disposed &&
+        activationGeneration == _activationGeneration &&
+        persistenceGeneration == _selectionPersistenceGeneration &&
+        !_isActivating &&
+        _restoringSessionId == null &&
+        _activeContactId == contactId &&
+        _activeChannel.state.activeSessionId == selection.sessionId;
+    final operation = _selectionPersistenceTail.then((_) async {
+      if (canWrite()) await _cache.saveSelection(selection, canWrite: canWrite);
+    });
     _selectionPersistenceTail = operation.catchError((Object _) {});
     try {
       await operation;
@@ -1103,7 +1225,11 @@ class HermesGatewayDirectory extends ChangeNotifier
   }
 
   void _onActiveChannelChanged() {
-    if (_activeContactId == null ||
+    if (_disposed ||
+        _isActivating ||
+        _restoringSessionId != null ||
+        _activeChannel.state.isSelectingProfile ||
+        _activeContactId == null ||
         !_activeChannel.state.isConnected ||
         _activeChannel.state.activeSession == null) {
       return;
@@ -1135,6 +1261,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     _disposed = true;
     _refreshGeneration++;
     _activationGeneration++;
+    _selectionPersistenceGeneration++;
     _foregroundTimer?.cancel();
     if (_observingActiveChannel) {
       _activeChannel.removeListener(_onActiveChannelChanged);

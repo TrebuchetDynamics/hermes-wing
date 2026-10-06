@@ -289,17 +289,31 @@ extension _MessagingExtension on HermesApiChannel {
       if (error is _DetachedRunAdmissionFailure) {
         runId = error.runId;
         runOwnershipSessionId = error.sessionId;
-        _runHistorySnapshots.remove(runHistoryKey);
-        if (connectedBaseUrl != null) {
-          final provisionalLease = HermesDetachedRunLease(
-            runId: error.runId,
-            sessionId: error.sessionId,
-            baseUrl: _detachedRunBaseUrl(connectedBaseUrl),
-            profileId: profileId,
-            createdAt: error.createdAt,
-          );
-          _detachedRuns[_detachedRunKey(provisionalLease)] = provisionalLease;
+        if (error.sessionId == sessionId) {
+          _runHistorySnapshots.remove(runHistoryKey);
         }
+      }
+      DateTime? cleanupLeaseCreatedAt;
+      if (runId != null &&
+          runOwnershipSessionId != null &&
+          connectedBaseUrl != null) {
+        // Rejected admission still owns an exact cleanup run, including when
+        // there is no durable store. This does not admit the owner's history.
+        final provisionalLease = HermesDetachedRunLease(
+          runId: runId,
+          sessionId: runOwnershipSessionId,
+          baseUrl: _detachedRunBaseUrl(connectedBaseUrl),
+          profileId: profileId,
+          createdAt: error is _DetachedRunAdmissionFailure
+              ? error.createdAt
+              : DateTime.now().toUtc(),
+        );
+        cleanupLeaseCreatedAt = _detachedRuns
+            .putIfAbsent(
+              _detachedRunKey(provisionalLease),
+              () => provisionalLease,
+            )
+            .createdAt;
       }
       final runOwnershipUncertain = runId != null;
       var runStopped = false;
@@ -308,24 +322,15 @@ extension _MessagingExtension on HermesApiChannel {
               HermesTransportPolicy(capabilities).supportsRunStop)) {
         try {
           await client.stopRun(runId, profile: profileId);
-          runStopped = true;
-          if (identical(_client, client) &&
-              _state.status == HermesConnectionStatus.connected &&
-              _state.selectedProfileId == profileId) {
-            try {
-              await _fetchTurns(client, sessionId, profileId: profileId);
-            } catch (_) {
-              // A failed authoritative reload keeps run transport unavailable.
-            }
-          }
-          await _releaseDetachedRunBestEffort(
+          runStopped = await _confirmStoppedRun(
+            client: client,
             runId: runId,
             sessionId: runOwnershipSessionId!,
             profileId: profileId,
             baseUrl: connectedBaseUrl,
-            expectedCreatedAt: error is _DetachedRunAdmissionFailure
-                ? error.createdAt
-                : null,
+            canAccept: isCurrentStream,
+            reconcileHistory: runOwnershipSessionId == sessionId,
+            expectedCreatedAt: cleanupLeaseCreatedAt,
           );
         } catch (_) {
           // Keep exact provisional/durable ownership when Stop cannot complete.
@@ -891,7 +896,7 @@ extension _MessagingExtension on HermesApiChannel {
       }
     }
 
-    if (!streamFailed) {
+    if (!streamFailed || (useRunTransport && terminalRunLifecycleReceived)) {
       _runHistorySnapshots.remove(runHistoryKey);
       try {
         final serverTurns = await _fetchTurns(
@@ -911,6 +916,10 @@ extension _MessagingExtension on HermesApiChannel {
               message,
               preSendTurnCount,
             );
+        // Denial/failure still changes canonical conversation history. Hydrate
+        // the next run's context without erasing a failed local turn when the
+        // server has no reply for it, or silently changing to another transport.
+        if (streamFailed && !serverAssistantReplyObserved) return;
         if (!_serverHistoryDropsStreamedAssistant(
           serverTurns,
           assistantTurn,
@@ -1384,6 +1393,7 @@ extension _MessagingExtension on HermesApiChannel {
         'Approval requested';
     return HermesApprovalRequest(
       id:
+          wingOptionalStringFromJson(event.payload['request_id']) ??
           wingOptionalStringFromJson(event.payload['approval_id']) ??
           wingOptionalStringFromJson(event.payload['approvalId']) ??
           wingOptionalStringFromJson(event.payload['id']) ??
@@ -1538,28 +1548,17 @@ extension _MessagingExtension on HermesApiChannel {
     }
 
     if (canStop) {
+      final canAccept = _profileRequestGuard(client, profileId);
       try {
         await client.stopRun(runId, profile: profileId);
-        if (identical(_client, client) &&
-            _state.status == HermesConnectionStatus.connected &&
-            _state.selectedProfileId == profileId) {
-          final historyKey = _recentTurnKey(
-            client,
-            sessionId,
-            profileId: profileId,
-          );
-          _runHistorySnapshots.remove(historyKey);
-          try {
-            await _fetchTurns(client, sessionId, profileId: profileId);
-          } catch (_) {
-            // A failed authoritative reload keeps run transport unavailable.
-          }
-        }
-        await _releaseDetachedRunBestEffort(
+        await _confirmStoppedRun(
+          client: client,
           runId: runId,
           sessionId: sessionId,
           profileId: profileId,
           baseUrl: baseUrl,
+          canAccept: canAccept,
+          reconcileHistory: true,
           expectedCreatedAt: leaseCreatedAt,
         );
       } catch (_) {
@@ -2096,12 +2095,14 @@ extension _MessagingExtension on HermesApiChannel {
     required String baseUrl,
     required String? profileId,
     required String sessionId,
+    bool Function()? canAccept,
   }) async {
     final generation = _connectionGeneration;
     final selectionGeneration = _profileSelectionGeneration;
     bool isCurrentOwner() =>
         _isCurrentConnection(generation, client) &&
-        selectionGeneration == _profileSelectionGeneration;
+        selectionGeneration == _profileSelectionGeneration &&
+        (canAccept?.call() ?? true);
     await _ensureDetachedRunsLoaded();
     if (!isCurrentOwner()) return true;
     final matches = _detachedRuns.values
@@ -2134,7 +2135,13 @@ extension _MessagingExtension on HermesApiChannel {
             run.status == HermesRunLifecycle.failed ||
             run.status == HermesRunLifecycle.cancelled) {
           try {
-            await _fetchTurns(client, sessionId, profileId: profileId);
+            await _fetchTurns(
+              client,
+              sessionId,
+              profileId: profileId,
+              capabilities: capabilities,
+              canAccept: isCurrentOwner,
+            );
             if (!isCurrentOwner()) return true;
           } catch (_) {
             // Terminal status resolves execution, not canonical history.
@@ -2150,26 +2157,18 @@ extension _MessagingExtension on HermesApiChannel {
           _confirmedDetachedRunKeys.add(_detachedRunKey(detached));
           stillActive = true;
         }
-      } catch (error) {
+      } catch (_) {
         if (!isCurrentOwner()) return true;
-        if (error.toString().contains(hermesApiHttpStatusMessage(404))) {
-          // The run registry is process-local; a gateway restart makes an old
-          // lease authoritatively absent rather than indefinitely active.
-          final key = _detachedRunKey(detached);
-          _detachedRuns.remove(key);
-          _confirmedDetachedRunKeys.remove(key);
-          removedKeys.add(key);
-        } else {
-          // Fail closed: a transient status failure must not authorize a retry.
-          stillActive = true;
-        }
+        // Status 404 also conceals foreign/ownerless runs; it cannot prove
+        // absence. Any failed status read must retain ownership and Send guards.
+        stillActive = true;
       }
     }
     if (removedKeys.isNotEmpty) {
       try {
         await _persistDetachedMutation(removals: removedKeys);
       } catch (_) {
-        // Matching terminal status or 404 already resolved current ownership.
+        // Matching terminal status and history resolved current ownership.
         // A stale durable lease remains conservative until later recovery.
       }
     }
@@ -2208,9 +2207,70 @@ extension _MessagingExtension on HermesApiChannel {
     if (sessionId != null) _finishSessionTurnLocally(sessionId);
   }
 
-  Future<void> _stopActiveTurn() async {
+  Future<bool> _confirmStoppedRun({
+    required HermesApiClient client,
+    required String runId,
+    required String sessionId,
+    required String? profileId,
+    required String? baseUrl,
+    required bool Function() canAccept,
+    required bool reconcileHistory,
+    DateTime? expectedCreatedAt,
+  }) async {
+    final capabilities = _state.capabilities;
+    if (!canAccept() ||
+        capabilities == null ||
+        !HermesTransportPolicy(capabilities).supportsRunStatus) {
+      return false;
+    }
+    // Stop acknowledges interruption, not termination. Completion may win.
+    final status = await client.getRunStatus(runId, profile: profileId);
+    if (!canAccept() ||
+        status.id != runId ||
+        status.sessionId != sessionId ||
+        (status.status != HermesRunLifecycle.cancelled &&
+            status.status != HermesRunLifecycle.completed &&
+            status.status != HermesRunLifecycle.failed)) {
+      return false;
+    }
+    // Exact-resource rollback can resolve a rejected foreign run, but that
+    // response does not admit its session's transcript or history caches.
+    if (reconcileHistory) {
+      final historyKey = _recentTurnKey(
+        client,
+        sessionId,
+        profileId: profileId,
+      );
+      _runHistorySnapshots.remove(historyKey);
+      final turns = await _fetchTurns(
+        client,
+        sessionId,
+        profileId: profileId,
+        canAccept: canAccept,
+      );
+      if (!canAccept()) return false;
+      _setTurns(sessionId, turns);
+    }
+    await _releaseDetachedRunBestEffort(
+      runId: runId,
+      sessionId: sessionId,
+      profileId: profileId,
+      baseUrl: baseUrl,
+      expectedCreatedAt: expectedCreatedAt,
+    );
+    return canAccept() &&
+        !_sessionHasDetachedRun(
+          sessionId: sessionId,
+          baseUrl: baseUrl,
+          profileId: profileId,
+        );
+  }
+
+  Future<bool> _stopActiveTurn() async {
     final client = _client;
     final connectionGeneration = _connectionGeneration;
+    final profileGeneration = _profileSelectionGeneration;
+    final sessionGeneration = _sessionSelectionGeneration;
     final sessionId = _state.activeSessionId;
     final runId = sessionId == null ? null : _activeRunIds[sessionId];
     final streamGeneration = sessionId == null
@@ -2224,6 +2284,23 @@ extension _MessagingExtension on HermesApiChannel {
     }
     final profileId = _state.selectedProfileId;
     final baseUrl = _state.connectedBaseUrl;
+    if (runId != null &&
+        sessionId != null &&
+        baseUrl != null &&
+        !_sessionHasDetachedRun(
+          sessionId: sessionId,
+          baseUrl: baseUrl,
+          profileId: profileId,
+        )) {
+      final lease = HermesDetachedRunLease(
+        runId: runId,
+        sessionId: sessionId,
+        baseUrl: _detachedRunBaseUrl(baseUrl),
+        profileId: profileId,
+        createdAt: DateTime.now().toUtc(),
+      );
+      _detachedRuns[_detachedRunKey(lease)] = lease;
+    }
     final detachedLeaseCreatedAt =
         runId == null || sessionId == null || baseUrl == null
         ? null
@@ -2253,44 +2330,41 @@ extension _MessagingExtension on HermesApiChannel {
         ? true
         : HermesTransportPolicy(capabilities).supportsRunStop;
     if (client != null && sessionId != null && runId != null && canStopRun) {
-      await client.stopRun(runId, profile: profileId).then((_) async {
-        final stillCurrent =
-            _isCurrentConnection(connectionGeneration, client) &&
-            _state.selectedProfileId == profileId;
-        if (!stillCurrent &&
-            _state.status != HermesConnectionStatus.disconnected) {
-          return;
-        }
-        if (stillCurrent) {
-          final historyKey = _recentTurnKey(
-            client,
-            sessionId,
-            profileId: profileId,
-          );
-          _runHistorySnapshots.remove(historyKey);
-          try {
-            await _fetchTurns(client, sessionId, profileId: profileId);
-          } catch (_) {
-            // A failed authoritative reload keeps run transport unavailable.
-          }
-        }
-        await _releaseDetachedRunBestEffort(
+      bool isCurrentOwner() =>
+          _isCurrentConnection(connectionGeneration, client) &&
+          _profileSelectionGeneration == profileGeneration &&
+          _sessionSelectionGeneration == sessionGeneration &&
+          _state.selectedProfileId == profileId &&
+          _state.activeSessionId == sessionId;
+      var confirmed = false;
+      try {
+        await client.stopRun(runId, profile: profileId);
+        confirmed = await _confirmStoppedRun(
+          client: client,
           runId: runId,
           sessionId: sessionId,
           profileId: profileId,
           baseUrl: baseUrl,
+          canAccept: isCurrentOwner,
+          reconcileHistory: true,
           expectedCreatedAt: detachedLeaseCreatedAt,
         );
-        if (!stillCurrent) return;
-        final activeHasDetachedRun = _activeSessionHasDetachedRun();
-        _setState(
-          _state.copyWith(
-            hasUnreconciledRun: activeHasDetachedRun,
-            clearErrorMessage: !activeHasDetachedRun,
-          ),
-        );
-      });
+      } catch (_) {
+        // Retain exact ownership on a rejected stop or uncertain read outcome.
+      }
+      if (!isCurrentOwner()) return false;
+      _setState(
+        _state.copyWith(
+          hasUnreconciledRun: !confirmed || _activeSessionHasDetachedRun(),
+          clearErrorMessage: confirmed,
+          errorMessage: confirmed
+              ? null
+              : 'Hermes stop outcome is not confirmed. Reconnect before sending again.',
+        ),
+      );
+      return confirmed;
     }
+    return false;
   }
 
   void _finishAllTurnsLocally() {

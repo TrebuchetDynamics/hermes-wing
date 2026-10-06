@@ -228,6 +228,7 @@ class HermesMessage {
 
 class HermesMessagePage {
   const HermesMessagePage({
+    required this.sessionId,
     required this.messages,
     required this.limit,
     required this.offset,
@@ -240,6 +241,17 @@ class HermesMessagePage {
     required int requestedOffset,
     required String requestedOrder,
   }) {
+    final sessionId = json['session_id'];
+    final rows = json['data'];
+    if (json['object'] != 'list' ||
+        !_isHistorySessionId(sessionId) ||
+        rows is! List ||
+        rows.length > 500 ||
+        rows.any(
+          (row) => row is! Map || !_isHistorySessionId(row['session_id']),
+        )) {
+      throw const FormatException('Hermes returned invalid history identity.');
+    }
     final pagination = wingMapFromJson(json['pagination']);
     final limit =
         (_optionalNonNegativeInt(pagination['limit']) ?? requestedLimit).clamp(
@@ -254,6 +266,7 @@ class HermesMessagePage {
       fallback: requestedOrder,
     );
     return HermesMessagePage(
+      sessionId: sessionId as String,
       messages: wingMapListFromJson(
         json['data'],
       ).take(500).map(HermesMessage.fromJson).toList(growable: false),
@@ -265,6 +278,7 @@ class HermesMessagePage {
     );
   }
 
+  final String sessionId;
   final List<HermesMessage> messages;
   final int limit;
   final int offset;
@@ -274,6 +288,13 @@ class HermesMessagePage {
   int get nextOffset => offset + returned;
   bool get hasMore => returned >= limit;
 }
+
+bool _isHistorySessionId(Object? value) =>
+    value is String &&
+    value.isNotEmpty &&
+    value.length <= 512 &&
+    value.trim() == value &&
+    !RegExp(r'[\x00-\x1f\x7f]').hasMatch(value);
 
 ({String text, HermesTurnAttachment? attachment}) _hermesMessageContent(
   Object? value, {

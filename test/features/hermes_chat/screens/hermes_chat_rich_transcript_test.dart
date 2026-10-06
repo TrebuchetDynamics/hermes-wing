@@ -179,55 +179,63 @@ void main() {
     },
   );
 
-  testWidgets('two-finger pinch zoom changes transcript text size', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel();
-    channel.beginStreamingTurn('Zoom this conversation.');
-    channel.completeStreamingTurn(text: 'Readable answer');
+  testWidgets(
+    'two-finger pinch zoom changes transcript text size',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      channel.beginStreamingTurn('Zoom this conversation.');
+      channel.completeStreamingTurn(text: 'Readable answer');
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: _localizedApp(const HermesChatScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final transcript = find.byKey(const ValueKey('hermes-transcript'));
-    final answer = find.text('Readable answer', findRichText: true);
-    final before = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
-    final center = tester.getCenter(transcript);
-    final first = await tester.startGesture(center - const Offset(20, 0));
-    final second = await tester.startGesture(center + const Offset(20, 0));
-    await first.moveTo(center - const Offset(70, 0));
-    await second.moveTo(center + const Offset(70, 0));
-    await tester.pump();
-    await first.up();
-    await second.up();
-    await tester.pumpAndSettle();
+      final transcript = find.byKey(const ValueKey('hermes-transcript'));
+      final answer = find.text('Readable answer', findRichText: true);
+      final before = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
+      final center = tester.getCenter(transcript);
+      final first = await tester.startGesture(center - const Offset(20, 0));
+      final second = await tester.startGesture(center + const Offset(20, 0));
+      await first.moveTo(center - const Offset(70, 0));
+      await second.moveTo(center + const Offset(70, 0));
+      await tester.pump();
+      await first.up();
+      await second.up();
+      await tester.pumpAndSettle();
 
-    final after = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
-    expect(after, greaterThan(before));
+      final after = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
+      expect(after, greaterThan(before));
 
-    final shrinkCenter = tester.getCenter(transcript);
-    final shrinkFirst = await tester.startGesture(
-      shrinkCenter - const Offset(70, 0),
-    );
-    final shrinkSecond = await tester.startGesture(
-      shrinkCenter + const Offset(70, 0),
-    );
-    await shrinkFirst.moveTo(shrinkCenter - const Offset(2, 0));
-    await shrinkSecond.moveTo(shrinkCenter + const Offset(2, 0));
-    await tester.pump();
-    await shrinkFirst.up();
-    await shrinkSecond.up();
-    await tester.pumpAndSettle();
+      // Selection must not take one pointer away from a pinch over message text.
+      final shrinkCenter = tester.getCenter(answer);
+      final shrinkFirst = await tester.startGesture(
+        shrinkCenter - const Offset(70, 0),
+      );
+      final shrinkSecond = await tester.startGesture(
+        shrinkCenter + const Offset(70, 0),
+      );
+      await shrinkFirst.moveTo(shrinkCenter - const Offset(2, 0));
+      await shrinkSecond.moveTo(shrinkCenter + const Offset(2, 0));
+      await tester.pump();
+      await shrinkFirst.up();
+      await shrinkSecond.up();
+      await tester.pumpAndSettle();
 
-    final smallest = MediaQuery.textScalerOf(tester.element(answer)).scale(16);
-    expect(smallest, lessThan(before));
-    expect(smallest, moreOrLessEquals(8));
-  });
+      final smallest = MediaQuery.textScalerOf(
+        tester.element(answer),
+      ).scale(16);
+      expect(smallest, lessThan(before));
+      expect(smallest, moreOrLessEquals(8));
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.linux,
+    }),
+  );
 
   testAndroid('user Markdown renders richly and copies its original source', (
     tester,
@@ -2000,6 +2008,34 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(channel.sentImageDataUrls.last, originalPayload);
   });
 
+  testWidgets('uncertain stop offers reconciliation without a duplicate retry', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      hasUnreconciledRun: true,
+      errorMessage:
+          'Hermes stop outcome is not confirmed. Reconnect before sending again.',
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: _localizedApp(const HermesChatScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('hermes-chat-error-reconnect')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('hermes-chat-error-retry')), findsNothing);
+    final send = tester.widget<IconButton>(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
+    expect(send.onPressed, isNull);
+    expect(channel.sentImageDataUrls, isEmpty);
+  });
+
   testWidgets('active run recovery never offers a duplicate retry', (
     tester,
   ) async {
@@ -2210,6 +2246,141 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.bySemanticsLabel('Accessible answer'), findsOneWidget);
     semantics.dispose();
   });
+
+  for (final width in [390.0, 1280.0]) {
+    for (final rejected in [false, true]) {
+      for (final disposal in ['none', 'code', 'ui']) {
+        testWidgets(
+          'code clipboard ${rejected ? 'rejection' : 'success'} $disposal at $width',
+          (tester) async {
+            await tester.binding.setSurfaceSize(Size(width, 900));
+            addTearDown(() => tester.binding.setSurfaceSize(null));
+            final semantics = tester.ensureSemantics();
+            final previousPrint = debugPrint;
+            try {
+              const code = '  final label = "λ";\n\n  print(label);  ';
+              const source = '```dart\n$code\n```';
+              final writes = <String>[];
+              final completion = Completer<void>();
+              final messenger = TestDefaultBinaryMessengerBinding
+                  .instance
+                  .defaultBinaryMessenger;
+              messenger.setMockMethodCallHandler(SystemChannels.platform, (
+                call,
+              ) async {
+                if (call.method == 'Clipboard.setData') {
+                  writes.add((call.arguments as Map)['text'] as String);
+                  if (writes.length == 1) await completion.future;
+                }
+                return null;
+              });
+              addTearDown(
+                () => messenger.setMockMethodCallHandler(
+                  SystemChannels.platform,
+                  null,
+                ),
+              );
+              final logs = <String>[];
+              debugPrint = (message, {wrapWidth}) {
+                if (message != null) logs.add(message);
+              };
+
+              final channel = FakeHermesChannel();
+              addTearDown(channel.dispose);
+              channel.beginStreamingTurn('Show synthetic code.');
+              channel.completeStreamingTurn(text: source);
+              var showCode = true;
+              late StateSetter updateCode;
+              await tester.pumpWidget(
+                disposal == 'code'
+                    ? _localizedApp(
+                        Scaffold(
+                          body: StatefulBuilder(
+                            builder: (context, setState) {
+                              updateCode = setState;
+                              return HermesRichText(
+                                showCode ? source : 'Code removed',
+                              );
+                            },
+                          ),
+                        ),
+                      )
+                    : ProviderScope(
+                        overrides: [
+                          hermesChannelProvider.overrideWithValue(channel),
+                        ],
+                        child: _localizedApp(const HermesChatScreen()),
+                      ),
+              );
+              await tester.pumpAndSettle();
+              final copy = find.byKey(const ValueKey('hermes-code-copy'));
+              final strings = AppLocalizations.of(tester.element(copy));
+              final failure = strings.codeCopyFailedMessage;
+              expect(failure, 'Could not copy code. Try again.');
+              expect(find.byTooltip(strings.copyCodeAction), findsOneWidget);
+              await tester.tap(copy);
+              await tester.pump();
+              expect(writes, [code]);
+              expect(find.text(strings.codeCopiedMessage), findsNothing);
+              expect(find.text(failure), findsNothing);
+              if (disposal == 'code') {
+                updateCode(() => showCode = false);
+                await tester.pumpAndSettle();
+              } else if (disposal == 'ui') {
+                await tester.pumpWidget(const SizedBox.shrink());
+              }
+              if (rejected) {
+                completion.completeError(
+                  PlatformException(
+                    code: 'clipboard-rejected-marker',
+                    message: 'private-diagnostic-marker',
+                    details: 'private-details-marker',
+                  ),
+                );
+              } else {
+                completion.complete();
+              }
+              await tester.pumpAndSettle();
+              expect(tester.takeException(), isNull);
+              expect(writes, [code]);
+              expect(find.textContaining('private-'), findsNothing);
+              expect(logs.join(), isNot(contains('private-')));
+              expect(logs.join(), isNot(contains('clipboard-rejected-marker')));
+              expect(
+                find.text(strings.codeCopiedMessage),
+                disposal == 'none' && !rejected ? findsOneWidget : findsNothing,
+              );
+              expect(
+                find.text(failure),
+                disposal == 'none' && rejected ? findsOneWidget : findsNothing,
+              );
+              if (disposal == 'none' && rejected) {
+                expect(
+                  tester
+                      .getSemantics(find.text(failure))
+                      .flagsCollection
+                      .isLiveRegion,
+                  isTrue,
+                );
+                await tester.pump(const Duration(seconds: 5));
+                await tester.pumpAndSettle();
+                expect(writes, [code]);
+                await tester.tap(copy);
+                await tester.pumpAndSettle();
+                expect(writes, [code, code]);
+                expect(find.text(strings.codeCopiedMessage), findsOneWidget);
+                expect(find.text(failure), findsNothing);
+                expect(tester.takeException(), isNull);
+              }
+            } finally {
+              debugPrint = previousPrint;
+              semantics.dispose();
+            }
+          },
+        );
+      }
+    }
+  }
 
   testWidgets('assistant code blocks can be copied', (tester) async {
     final channel = FakeHermesChannel();

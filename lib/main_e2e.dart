@@ -18,6 +18,9 @@ import 'theme/wing_theme.dart';
 @JS('wingE2EHermesConnect')
 external set _wingE2EHermesConnect(JSFunction callback);
 
+@JS('wingE2EHermesLoadDefaultProfileInventory')
+external set _wingE2EHermesLoadDefaultProfileInventory(JSFunction callback);
+
 @JS('wingE2EHermesCreateSession')
 external set _wingE2EHermesCreateSession(JSFunction callback);
 
@@ -33,9 +36,72 @@ external set _wingE2EHermesStateSummary(JSFunction callback);
 @JS('wingE2EReduceMotion')
 external set _wingE2EReduceMotion(JSFunction callback);
 
+@JS('wingE2ETranscriptProjection')
+external set _wingE2ETranscriptProjection(JSFunction callback);
+
+@JS('wingE2EHermesReconcile')
+external set _wingE2EHermesReconcile(JSFunction callback);
+
+@JS('wingE2EHermesLoadEarlier')
+external set _wingE2EHermesLoadEarlier(JSFunction callback);
+
 void main() {
   final hermesChannel = HermesApiChannel();
   final reduceMotion = ValueNotifier(false);
+  // Explicit fixture bootstrap only: connection does not load admin profiles.
+  // Re-select the already-default identity through the existing guarded read.
+  _wingE2EHermesLoadDefaultProfileInventory = (() {
+    if (hermesChannel.state.selectedProfileId == 'default') {
+      unawaited(hermesChannel.selectProfile('default'));
+    }
+  }).toJS;
+  _wingE2EHermesLoadEarlier = (() {
+    unawaited(hermesChannel.loadEarlierMessages());
+  }).toJS;
+  _wingE2EHermesReconcile = (() {
+    unawaited(hermesChannel.reconcileActiveSession());
+  }).toJS;
+  _wingE2ETranscriptProjection = (() {
+    var allocatedRows = 0;
+    double? offset;
+    final mountedSynthetic = <Map<String, Object>>[];
+    void inspect(Element element) {
+      final widget = element.widget;
+      if (widget is ListView &&
+          widget.key == const ValueKey('hermes-transcript')) {
+        final delegate = widget.childrenDelegate;
+        if (delegate is SliverChildListDelegate) {
+          allocatedRows = delegate.children.whereType<KeyedSubtree>().length;
+        }
+        if (widget.controller?.hasClients == true) {
+          offset = widget.controller!.offset;
+        }
+      }
+      final key = widget.key;
+      if (key is ValueKey<String>) {
+        final match = RegExp(
+          r'^hermes-turn-synthetic-(\d+)$',
+        ).firstMatch(key.value);
+        final box = element.renderObject;
+        if (match != null && box is RenderBox && box.hasSize && box.attached) {
+          mountedSynthetic.add({
+            'index': int.parse(match[1]!),
+            'y': box.localToGlobal(Offset.zero).dy,
+          });
+        }
+      }
+      element.visitChildElements(inspect);
+    }
+
+    WidgetsBinding.instance.rootElement?.visitChildElements(inspect);
+    return jsonEncode({
+      'synthetic_only': true,
+      'loaded': hermesChannel.state.activeMessages.length,
+      'allocated_rows': allocatedRows,
+      'offset': offset,
+      'mounted_synthetic': mountedSynthetic,
+    }).toJS;
+  }).toJS;
   _wingE2EHermesConnect = (([JSString? baseUrl, JSString? apiKey]) {
     unawaited(
       hermesChannel.connect(
@@ -79,6 +145,13 @@ void main() {
         : 'other';
     return jsonEncode({
       'has_error': error != null,
+      'status': hermesChannel.state.status.name,
+      'selected_profile_id': hermesChannel.state.selectedProfileId,
+      'active_session_id': hermesChannel.state.activeSessionId,
+      'assigned_provider':
+          hermesChannel.state.modelInventory?.assignment.activeProvider,
+      'assigned_model':
+          hermesChannel.state.modelInventory?.assignment.activeModel,
       'error_kind': errorKind,
       'last_turn_status': last?.status.name,
       'last_turn_text_length': last?.text.length ?? 0,

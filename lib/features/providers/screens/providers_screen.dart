@@ -13,7 +13,6 @@ import '../../../shared/widgets/wing_empty_state.dart';
 import '../../../shared/widgets/wing_gateway_picker.dart';
 import '../../../shared/widgets/wing_gateway_switch.dart';
 import '../../../shared/widgets/wing_skeleton.dart';
-import '../../profiles/providers/profile_selection_provider.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../widgets/model_picker_sheet.dart';
@@ -33,7 +32,11 @@ class ProvidersScreen extends ConsumerStatefulWidget {
 }
 
 class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
-  String? _loadedContextKey;
+  late HermesChannel _channel;
+  late HermesGatewayDirectory _directory;
+  Object? _source;
+  Object _searchOwner = Object();
+  Object? _loadedOwner;
   String? _switchingGatewayId;
   String? _actionError;
   int _loadGeneration = 0;
@@ -41,9 +44,62 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
   bool _loadFailed = false;
 
   @override
+  void initState() {
+    super.initState();
+    _channel = ref.read(hermesChannelProvider);
+    _directory = ref.read(hermesGatewayDirectoryProvider);
+    _channel.addListener(_observeOwner);
+    _directory.addListener(_observeOwner);
+  }
+
+  @override
+  void dispose() {
+    _channel.removeListener(_observeOwner);
+    _directory.removeListener(_observeOwner);
+    super.dispose();
+  }
+
+  void _observeOwner() {
+    final state = _channel.state;
+    // Compare private source identity here; UI keys contain only an opaque token.
+    // Listen synchronously so A -> B -> A and grant roundtrips still discard text.
+    final source = (
+      _channel,
+      _directory,
+      _directory.activeContactId?.gatewayId,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.isConnected,
+      state.canReadProviders,
+    );
+    if (_source == source) return;
+    _source = source;
+    _searchOwner = Object();
+    _loadedOwner = null;
+    ++_loadGeneration;
+    _loading = false;
+    _loadFailed = false;
+    _actionError = null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     final directory = ref.watch(hermesGatewayDirectoryProvider);
+    ref.listen(hermesChannelProvider, (previous, next) {
+      if (identical(previous, next)) return;
+      _channel.removeListener(_observeOwner);
+      _channel = next;
+      _channel.addListener(_observeOwner);
+      _observeOwner();
+    });
+    ref.listen(hermesGatewayDirectoryProvider, (previous, next) {
+      if (identical(previous, next)) return;
+      _directory.removeListener(_observeOwner);
+      _directory = next;
+      _directory.addListener(_observeOwner);
+      _observeOwner();
+    });
     final strings = AppLocalizations.of(context);
 
     return Scaffold(
@@ -56,7 +112,7 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         child: AnimatedBuilder(
           animation: Listenable.merge([channel, directory]),
           builder: (context, _) {
-            _maybeReload(channel, directory);
+            _maybeReload(channel);
             return Column(
               children: [
                 if (directory.gateways.isNotEmpty)
@@ -78,7 +134,31 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
                       ),
                     ],
                   ),
-                Expanded(child: _buildBody(context, channel, strings)),
+                Expanded(
+                  child:
+                      channel.state.isConnected &&
+                          channel.state.canReadProviders &&
+                          !_loadFailed &&
+                          !(_loading && channel.state.providers.isEmpty)
+                      ? _ProvidersSearch(
+                          key: ObjectKey(_searchOwner),
+                          strings: strings,
+                          builder: (query, search) => _buildBody(
+                            context,
+                            channel,
+                            strings,
+                            query,
+                            search,
+                          ),
+                        )
+                      : _buildBody(
+                          context,
+                          channel,
+                          strings,
+                          '',
+                          const SizedBox.shrink(),
+                        ),
+                ),
               ],
             );
           },
@@ -90,27 +170,23 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
   /// Loads providers + models on mount and whenever the selected profile
   /// changes. Fire-and-forget: the channel drives state, and per-surface read
   /// gates keep unauthorized calls from being issued.
-  void _maybeReload(HermesChannel channel, HermesGatewayDirectory directory) {
+  void _maybeReload(HermesChannel channel) {
+    _observeOwner();
     final state = channel.state;
     if (state.status != HermesConnectionStatus.connected) return;
-    final gatewayId = directory.activeContactId?.gatewayId;
-    final profileId = effectiveSelectedProfileId(state);
-    final contextKey =
-        '${gatewayId ?? state.connectedBaseUrl ?? 'legacy'}::${profileId ?? 'default'}';
-    if (contextKey == _loadedContextKey) return;
-    _loadedContextKey = contextKey;
+    final owner = _searchOwner;
+    if (identical(owner, _loadedOwner)) return;
+    _loadedOwner = owner;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(_reload(channel, directory, profileId, contextKey));
+      if (!mounted || !identical(owner, _searchOwner)) return;
+      unawaited(_reload(channel, owner));
     });
   }
 
-  Future<void> _reload(
-    HermesChannel channel,
-    HermesGatewayDirectory directory,
-    String? profileId,
-    String contextKey,
-  ) async {
+  Future<void> _reload(HermesChannel channel, Object owner) async {
+    if (!identical(channel, _channel) || !identical(owner, _searchOwner)) {
+      return;
+    }
     final generation = ++_loadGeneration;
     setState(() {
       _loading = true;
@@ -124,12 +200,15 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     } catch (_) {
       if (mounted &&
           generation == _loadGeneration &&
-          effectiveSelectedProfileId(channel.state) == profileId &&
-          _loadedContextKey == contextKey) {
+          identical(channel, _channel) &&
+          identical(owner, _searchOwner)) {
         setState(() => _loadFailed = true);
       }
     } finally {
-      if (mounted && generation == _loadGeneration) {
+      if (mounted &&
+          generation == _loadGeneration &&
+          identical(channel, _channel) &&
+          identical(owner, _searchOwner)) {
         setState(() => _loading = false);
       }
     }
@@ -158,6 +237,8 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     BuildContext context,
     HermesChannel channel,
     AppLocalizations strings,
+    String query,
+    Widget search,
   ) {
     final state = channel.state;
 
@@ -218,21 +299,21 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
         actionLabel: strings.retryAction,
         onAction: _loading
             ? null
-            : () => unawaited(
-                _reload(
-                  channel,
-                  ref.read(hermesGatewayDirectoryProvider),
-                  effectiveSelectedProfileId(state),
-                  _loadedContextKey ?? 'retry',
-                ),
-              ),
+            : () => unawaited(_reload(channel, _searchOwner)),
       );
     }
 
-    final providers = [
-      ...state.providers.where((provider) => provider.configured),
-      ...state.providers.where((provider) => !provider.configured),
-    ];
+    final providers =
+        [
+              ...state.providers.where((provider) => provider.configured),
+              ...state.providers.where((provider) => !provider.configured),
+            ]
+            .where(
+              (provider) =>
+                  provider.slug.toLowerCase().contains(query) ||
+                  provider.label.toLowerCase().contains(query),
+            )
+            .toList(growable: false);
     final canWriteProviders = state.canWriteProviders;
 
     return ListView(
@@ -250,11 +331,17 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
           onChoose: () => _openModelPicker(channel, state),
         ),
         const SizedBox(height: 24),
+        if (state.providers.isNotEmpty) ...[search, const SizedBox(height: 16)],
         if (providers.isEmpty)
           WingEmptyState(
             icon: Icons.key_off_outlined,
-            title: strings.providersEmptyTitle,
-            body: strings.providersEmptyBody,
+            liveRegion: state.providers.isNotEmpty,
+            title: state.providers.isEmpty
+                ? strings.providersEmptyTitle
+                : strings.providersSearchNoMatchesTitle,
+            body: state.providers.isEmpty
+                ? strings.providersEmptyBody
+                : strings.providersSearchNoMatchesBody,
           )
         else ...[
           for (var index = 0; index < providers.length; index++) ...[
@@ -309,6 +396,58 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
       showDragHandle: true,
       builder: (context) =>
           ModelPickerSheet(channel: channel, inventory: inventory),
+    );
+  }
+}
+
+class _ProvidersSearch extends StatefulWidget {
+  const _ProvidersSearch({
+    super.key,
+    required this.strings,
+    required this.builder,
+  });
+
+  final AppLocalizations strings;
+  final Widget Function(String query, Widget search) builder;
+
+  @override
+  State<_ProvidersSearch> createState() => _ProvidersSearchState();
+}
+
+class _ProvidersSearchState extends State<_ProvidersSearch> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(
+      _controller.text.toLowerCase(),
+      Semantics(
+        container: true,
+        explicitChildNodes: true,
+        child: TextField(
+          key: const ValueKey('providers-search'),
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: widget.strings.providersSearchLabel,
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _controller.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: widget.strings.providersSearchClear,
+                    onPressed: () => setState(_controller.clear),
+                    icon: const Icon(Icons.clear),
+                  ),
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() {}),
+        ),
+      ),
     );
   }
 }

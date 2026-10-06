@@ -3,6 +3,7 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { handleLifecycle } from './playwright/support/hermes_lifecycle_fixture.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "build/web");
@@ -49,13 +50,24 @@ const hermesState = {
   decisions: [],
   runs: new Map(),
   presentationMode: false,
+  longTranscript: false,
   audioAdvertised: false,
   audioFailure: false,
   spokenTexts: [],
+  modelPicker: false,
+  modelLocks: [],
+  rejectModelLock: false,
+  sessionRestoration: null,
+  lifecycle: null,
 };
 
 function resetHermesState() {
   for (const run of hermesState.runs.values()) run.release?.("reset");
+  for (const pending of hermesState.sessionRestoration?.pending.values() ?? []) {
+    pending.resolve("reset");
+  }
+  hermesState.sessionRestoration = null;
+  hermesState.lifecycle = null;
   hermesState.sessions = [
     {
       id: "e2e-hermes-session",
@@ -78,9 +90,13 @@ function resetHermesState() {
   hermesState.decisions = [];
   hermesState.runs.clear();
   hermesState.presentationMode = false;
+  hermesState.longTranscript = false;
   hermesState.audioAdvertised = false;
   hermesState.audioFailure = false;
   hermesState.spokenTexts = [];
+  hermesState.modelPicker = false;
+  hermesState.modelLocks = [];
+  hermesState.rejectModelLock = false;
 }
 
 function silentWavDataUrl() {
@@ -126,11 +142,75 @@ function findHermesSession(id) {
   return hermesState.sessions.find((session) => session.id === id);
 }
 
+function sessionMetadata({ messages, ...session }) {
+  return { ...session, message_count: messages.length,
+    preview: messages.at(-1)?.content ?? "" };
+}
+
+function restorationReceipt() {
+  const state = hermesState.sessionRestoration;
+  if (!state) return { synthetic: false };
+  return {
+    synthetic: true,
+    session_ids: hermesState.sessions.map(session => session.id),
+    metadata_mode: state.metadataMode,
+    list_pages: state.listPages,
+    metadata_reads: state.metadataReads,
+    message_reads: state.messageReads,
+    pending: [...state.pending.keys()],
+    mutations: state.mutations,
+    counters: { lists: state.listPages.length, metadata: state.metadataReads.length,
+      messages: state.messageReads.length, mutations: state.mutations.length },
+  };
+}
+
 async function handleHermesApi(req, res, url) {
   if (req.method === "OPTIONS") return json(res, 204, {});
+  const lifecycleHandled = await handleLifecycle(req, res, url, hermesState,
+    json, readJsonBody, resetHermesState);
+  if (lifecycleHandled !== false) return lifecycleHandled;
   if (req.method === "POST" && url === "/e2e/hermes/reset") {
     resetHermesState();
     return json(res, 200, { reset: true });
+  }
+  // Test-only fixed synthetic inventory and explicit read gates, never Agent routes.
+  if (req.method === "POST" && url === "/e2e/hermes/session-restoration") {
+    resetHermesState();
+    hermesState.sessions = Array.from({ length: 60 }, (_, index) => {
+      const suffix = String(index).padStart(3, "0");
+      const id = `synthetic-restoration-${suffix}`;
+      return { id, source: "e2e", model: "hermes-agent",
+        title: `Synthetic conversation ${suffix}`,
+        messages: [{ id: `${id}-canonical`, role: "assistant",
+          content: `Canonical history for ${id}.` }] };
+    });
+    hermesState.sessionRestoration = { metadataMode: "immediate", pending: new Map(),
+      listPages: [], metadataReads: [], messageReads: [], mutations: [] };
+    return json(res, 200, restorationReceipt());
+  }
+  if (req.method === "GET" && url === "/e2e/hermes/session-restoration") {
+    return json(res, 200, restorationReceipt());
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/session-restoration/metadata") {
+    const state = hermesState.sessionRestoration;
+    if (!state) return json(res, 409, { error: "scenario not seeded" });
+    const body = await readJsonBody(req);
+    if (["park", "immediate"].includes(body.action) && body.request_id == null) {
+      state.metadataMode = body.action;
+    } else if (["release", "fail"].includes(body.action) &&
+        Number.isInteger(body.request_id) && state.pending.has(body.request_id)) {
+      state.pending.get(body.request_id).resolve(body.action);
+    } else {
+      return json(res, 400, { error: "invalid metadata control" });
+    }
+    return json(res, 200, restorationReceipt());
+  }
+  const restoration = hermesState.sessionRestoration;
+  if (restoration && /^(\/api\/|\/v1\/)/.test(url) &&
+      ["POST", "PATCH", "DELETE", "PUT"].includes(req.method)) {
+    if (restoration.mutations.length >= 256) return json(res, 409, { error: "fixture bound" });
+    // Record attempted mutations, including unsupported routes, but never their bodies.
+    restoration.mutations.push({ method: req.method, path: url });
   }
   if (req.method === "POST" && url === "/e2e/hermes/audio") {
     const body = await readJsonBody(req);
@@ -144,6 +224,41 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "GET" && url === "/e2e/hermes/audio") {
     return json(res, 200, { spokenTexts: hermesState.spokenTexts });
   }
+  if (req.method === "POST" && url === "/e2e/hermes/model-picker") {
+    resetHermesState();
+    hermesState.modelPicker = true;
+    hermesState.rejectModelLock = true;
+    return json(res, 200, { synthetic: true, selectable: 303 });
+  }
+  if (req.method === "GET" && url === "/e2e/hermes/model-picker") {
+    return json(res, 200, { synthetic: true, locks: hermesState.modelLocks,
+      selected: hermesState.sessions[0].runtime ?? null });
+  }
+  if (req.method === "GET" && url === "/api/model/options" && hermesState.modelPicker) {
+    return json(res, 200, { provider: "beta", model: "shared", providers: [
+      ...["alpha", "beta", "gamma"].map(slug => ({
+        slug, label: `Display ${slug}`, authenticated: true,
+        models: ["shared", ...Array.from({ length: 100 }, (_, i) => `${slug}/model-${i}`)],
+      })),
+      { slug: "unconfigured", label: "Forbidden", models: ["shared", "hidden"] },
+    ] });
+  }
+  if (req.method === "POST" && url === "/api/sessions/e2e-hermes-session/model" && hermesState.modelPicker) {
+    const { provider, model } = await readJsonBody(req);
+    if (!["alpha", "beta", "gamma"].includes(provider) ||
+        !(model === "shared" || Array.from({ length: 100 }, (_, i) => `${provider}/model-${i}`).includes(model))) {
+      return json(res, 400, { error: "synthetic invalid identity" });
+    }
+    hermesState.modelLocks.push({ provider, model });
+    if (hermesState.rejectModelLock) {
+      hermesState.rejectModelLock = false;
+      return json(res, 409, { error: "synthetic rejection" });
+    }
+    const runtime = { provider, model, model_lock: "accepted", route_source: "session" };
+    hermesState.sessions[0].runtime = runtime;
+    hermesState.sessions[0].model = model;
+    return json(res, 200, { session_id: "e2e-hermes-session", runtime });
+  }
   if (req.method === "POST" && url === "/e2e/hermes/presentation") {
     resetHermesState();
     hermesState.presentationMode = true;
@@ -151,6 +266,25 @@ async function handleHermesApi(req, res, url) {
     hermesState.sessions[0].messages[0].content =
       "Hermes is connected and ready.";
     return json(res, 200, { seeded: true });
+  }
+  // Fixed, synthetic transcript scenarios; no caller-provided content or paths.
+  if (req.method === "POST" && url === "/e2e/hermes/long-transcript") {
+    const body = await readJsonBody(req);
+    if (![250, 1000].includes(body.count)) return json(res, 400, { error: "invalid count" });
+    resetHermesState();
+    hermesState.sessions[0].messages = Array.from({ length: body.count }, (_, i) => ({
+      id: `synthetic-${i}`, role: i % 2 ? "assistant" : "user",
+      content: `Synthetic loaded turn ${i}`,
+    }));
+    hermesState.longTranscript = true;
+    return json(res, 200, { synthetic: true, count: body.count });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/append-transcript") {
+    const session = hermesState.sessions[0];
+    if (session.messages.length > 1100) return json(res, 409, { error: "fixture bound" });
+    const i = session.messages.length;
+    session.messages.push({ id: `synthetic-${i}`, role: "assistant", content: `Synthetic loaded turn ${i}` });
+    return json(res, 200, { synthetic: true, count: session.messages.length });
   }
   if (req.method === "GET" && url === "/e2e/hermes/stop-count") {
     return json(res, 200, { stopCount: hermesState.stopCount });
@@ -176,8 +310,11 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "GET" && url === "/v1/capabilities") {
     return json(res, 200, {
       object: "hermes.api_server.capabilities",
+      schema_version: 1,
       platform: "hermes-agent",
       model: "hermes-agent",
+      ...(hermesState.lifecycle ? { profile_context: { type: 'query', name: 'profile',
+        required: true, default_profile_id: 'default' } } : {}),
       auth: {
         type: "bearer",
         required: false,
@@ -201,6 +338,7 @@ async function handleHermesApi(req, res, url) {
           required_scopes: ["gateway:read"],
         },
         sessions: { method: "GET", path: "/api/sessions" },
+        session: { method: "GET", path: "/api/sessions/{session_id}" },
         session_create: { method: "POST", path: "/api/sessions" },
         session_messages: {
           method: "GET",
@@ -220,6 +358,11 @@ async function handleHermesApi(req, res, url) {
           path: "/api/sessions/{session_id}/fork",
         },
         models: { method: "GET", path: "/v1/models" },
+        ...(hermesState.modelPicker ? {
+          model_options: { method: "GET", path: "/api/model/options" },
+          session_model_lock: { method: "POST", path: "/api/sessions/{session_id}/model",
+            ...(hermesState.lifecycle?.scenario === 'desktop-daily' ? { profile_scoped: true } : {}) },
+        } : {}),
         skills: { method: "GET", path: "/v1/skills" },
         toolsets: { method: "GET", path: "/v1/toolsets" },
         jobs: {
@@ -313,13 +456,22 @@ async function handleHermesApi(req, res, url) {
     });
   }
   if (req.method === "GET" && url === "/api/sessions") {
+    const query = new URL(req.url, "http://fixture.invalid").searchParams;
+    const limit = Number(query.get("limit") ?? 50);
+    const offset = Number(query.get("offset") ?? 0);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 200 ||
+        !Number.isInteger(offset) || offset < 0 || offset > 1000000) {
+      return json(res, 400, { error: "invalid session page" });
+    }
+    const data = hermesState.sessions.slice(offset, offset + limit).map(sessionMetadata);
+    if (restoration) {
+      if (restoration.listPages.length >= 256) return json(res, 409, { error: "fixture bound" });
+      restoration.listPages.push({ offset, limit, ids: data.map(session => session.id) });
+    }
     return json(res, 200, {
       object: "list",
-      data: hermesState.sessions.map(({ messages, ...session }) => ({
-        ...session,
-        message_count: messages.length,
-        preview: messages.at(-1)?.content ?? "",
-      })),
+      limit, offset, has_more: offset + limit < hermesState.sessions.length,
+      data,
     });
   }
   if (req.method === "POST" && url === "/api/sessions") {
@@ -336,6 +488,35 @@ async function handleHermesApi(req, res, url) {
     return json(res, 200, { object: "hermes.session", session: wireSession });
   }
   const sessionMatch = url.match(/^\/api\/sessions\/([^/]+)$/);
+  if (req.method === "GET" && sessionMatch) {
+    const id = decodeURIComponent(sessionMatch[1]);
+    const session = findHermesSession(id);
+    let read;
+    if (restoration) {
+      if (restoration.metadataReads.length >= 256) return json(res, 409, { error: "fixture bound" });
+      read = { request_id: restoration.metadataReads.length + 1,
+        session_id: id, profile: new URL(req.url, "http://fixture.invalid").searchParams.get("profile"),
+        status: "reading" };
+      restoration.metadataReads.push(read);
+      if (restoration.metadataMode === "park" && session) {
+        const outcome = await new Promise(resolve => {
+          restoration.pending.set(read.request_id, { resolve });
+          res.once("close", () => resolve("closed"));
+        });
+        restoration.pending.delete(read.request_id);
+        if (outcome === "closed" || res.destroyed) { read.status = "closed"; return; }
+        if (outcome === "fail" || outcome === "reset") {
+          read.status = outcome === "fail" ? "failed" : "reset";
+          return json(res, 503, { error: { code: "synthetic_metadata_failure",
+            message: "Synthetic metadata read unavailable" } });
+        }
+      }
+      read.status = session ? "completed" : "not_found";
+    }
+    if (!session) return json(res, 404, { error: { code: "session_not_found",
+      message: "session not found" } });
+    return json(res, 200, { object: "hermes.session", session: sessionMetadata(session) });
+  }
   if (req.method === "DELETE" && sessionMatch) {
     const sessionId = decodeURIComponent(sessionMatch[1]);
     const before = hermesState.sessions.length;
@@ -380,10 +561,24 @@ async function handleHermesApi(req, res, url) {
     const session = findHermesSession(decodeURIComponent(messagesMatch[1]));
     if (!session)
       return json(res, 404, { error: { message: "session not found" } });
+    if (restoration) {
+      if (restoration.messageReads.length >= 256) return json(res, 409, { error: "fixture bound" });
+      restoration.messageReads.push({ session_id: session.id,
+        message_ids: session.messages.map(message => message.id) });
+    }
+    const query = new URL(req.url, 'http://fixture.invalid').searchParams;
+    const offset = hermesState.longTranscript ? Number(query.get('offset') ?? 0) : 0;
+    const limit = hermesState.longTranscript ? Number(query.get('limit') ?? 500) : 500;
+    if (!Number.isInteger(offset) || offset < 0 || offset > 2000 ||
+        !Number.isInteger(limit) || limit < 1 || limit > 500) return json(res, 400, { error: 'invalid page' });
+    const end = session.messages.length - offset;
+    const page = hermesState.longTranscript
+      ? session.messages.slice(Math.max(0, end - limit), Math.max(0, end)) : session.messages;
     return json(res, 200, {
       object: "list",
       session_id: session?.id ?? "",
-      data: (session?.messages ?? []).map((message) => ({
+      pagination: { offset, limit, order: 'latest' },
+      data: page.map((message) => ({
         id: message.id,
         session_id: session.id,
         role: message.role,
@@ -458,7 +653,7 @@ async function handleHermesApi(req, res, url) {
     if (decision === "stop" || decision === "reset" || decision === "deny") {
       if (run) run.status = "cancelled";
       res.end(
-        `event: run.completed\ndata: ${JSON.stringify({ status: decision })}\n\n` +
+        `event: run.cancelled\ndata: ${JSON.stringify({ run_id: run.id, session_id: run.session_id, status: 'cancelled' })}\n\n` +
           `data: [DONE]\n\n`,
       );
       return;
@@ -502,6 +697,7 @@ async function handleHermesApi(req, res, url) {
     const action = runActionMatch[2];
     if (action === "stop") {
       hermesState.stopCount += 1;
+      run.status = 'cancelled';
     } else {
       const decision = body.choice ?? body.decision;
       if (!["once", "session", "always", "deny"].includes(decision)) {

@@ -1222,6 +1222,12 @@ void main() {
   test('surface readiness recognizes exact scoped persona contracts', () {
     final capabilities = HermesCapabilityDocument.fromJson({
       'schema_version': 1,
+      'profile_context': {
+        'type': 'query',
+        'name': 'profile',
+        'required': true,
+        'default_profile_id': 'default',
+      },
       'auth': {
         'type': 'bearer',
         'required': true,
@@ -2212,7 +2218,7 @@ void main() {
         decision: 'once',
       );
       expect(posts['/v1/runs/run_1/approval'], {
-        'approval_id': 'appr_1',
+        'request_id': 'appr_1',
         'choice': 'once',
       });
 

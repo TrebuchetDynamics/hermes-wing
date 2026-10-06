@@ -3,11 +3,20 @@ import ctypes as c
 import os
 import sys
 import time
+from pathlib import Path
+import re
 
 if os.environ.get('WING_ISOLATED_NATIVE_INPUT') != '1':
     raise SystemExit('Use the isolated native-input launcher.')
+owned = Path(os.environ.get('WING_LINUX_TEST_ROOT', ''))
+temp = Path(os.environ.get('TMPDIR', '/tmp')).resolve()
+if (not owned.is_absolute() or owned.resolve() != owned or
+        owned.parent != temp or not re.fullmatch(r'wing-linux-native\.[a-zA-Z0-9]+', owned.name) or
+        not (owned / '.wing-linux-test-owner').is_file() or
+        os.environ.get('XDG_CONFIG_HOME') != str(owned / 'config')):
+    raise SystemExit('Owned native-input state unavailable.')
 mode = sys.argv[1]
-if mode not in ('type', 'pick', 'compose', 'compose_cancel', 'lifecycle'):
+if mode not in ('type', 'pick', 'compose', 'compose_cancel', 'lifecycle', 'save', 'save_cancel'):
     raise SystemExit('Unknown native test action.')
 x = c.CDLL('libX11.so.6')
 t = c.CDLL('libXtst.so.6')
@@ -67,8 +76,10 @@ def stroke(symbol):
 try:
     deadline = time.monotonic()+10
     while True:
-        targets = [w for w in windows(x.XDefaultRootWindow(d)) if
-            (title(w) == 'Hermes Wing' if mode != 'pick' else title(w) in ('Open File', 'Open file', 'Open'))]
+        expected_titles = (('Save File',) if mode in ('save', 'save_cancel') else
+                           ('Open File', 'Open file', 'Open') if mode == 'pick' else
+                           ('Hermes Wing',))
+        targets = [w for w in windows(x.XDefaultRootWindow(d)) if title(w) in expected_titles]
         if targets:
             break
         if time.monotonic() > deadline:
@@ -77,6 +88,10 @@ try:
     x.XSetInputFocus(d, targets[-1], 2, 0)
     x.XFlush(d)
     time.sleep(0.1)
+    if mode == 'save_cancel':
+        stroke(0xff1b)
+        print('Native save dialog cancelled with Escape.')
+        sys.exit(0)
     if mode == 'lifecycle':
         x.XIconifyWindow(d, targets[-1], 0)
         x.XFlush(d)
@@ -106,14 +121,25 @@ try:
         print('Native GTK composition commit and cancellation delivered.')
         sys.exit(0)
     text = 'native keyboard input'
-    if mode == 'pick':
-        text = os.environ['WING_NATIVE_PICK_FILE']
-        if not text.startswith('/tmp/wing-linux-native.') or not os.path.isfile(text):
-            raise RuntimeError('Only the owned picker fixture may be selected.')
+    if mode in ('pick', 'save'):
+        if mode == 'pick':
+            text = os.environ['WING_NATIVE_PICK_FILE']
+            if Path(text) != owned / 'sample.txt' or not os.path.isfile(text):
+                raise RuntimeError('Only the owned picker fixture may be selected.')
+        else:
+            name = os.environ.get('WING_NATIVE_SAVE_FILENAME')
+            if name not in ('hermes-transcript.txt', 'hermes-transcript.md'):
+                raise RuntimeError('Only the fixed synthetic export may be selected.')
+            text = str(owned / name)
         key(0xffe3, True)  # Control_L
         stroke(ord('l'))
         key(0xffe3, False)
         time.sleep(0.15)
+        # Save dialogs select the basename but may leave the suggested extension
+        # outside that selection. Replace the complete entry, not only the stem.
+        key(0xffe3, True)
+        stroke(ord('a'))
+        key(0xffe3, False)
     for char in text:
         shifted = char.isupper() or char == '_'
         if shifted:
@@ -122,11 +148,13 @@ try:
         if shifted:
             key(0xffe1, False)
         time.sleep(0.003)
-    if mode == 'pick':
+    if mode in ('pick', 'save'):
         stroke(0xff0d)  # Return
         # GTK resolves an explicitly entered path before accepting selection.
         time.sleep(0.6)
         stroke(0xff0d)
+        if mode == 'save':
+            print('save_dialog_still_open=' + str(any(title(w) == 'Save File' for w in windows(x.XDefaultRootWindow(d)))))
     print('Native input delivered on the isolated display.')
 finally:
     x.XCloseDisplay(d)

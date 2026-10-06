@@ -27,8 +27,10 @@ do not invent a Wing-owned profile `workdir`.
 **Directory grant** — a locally approved host root exposed by Wing Link through
 opaque handles. It is not an unrestricted saved path.
 
-**Capability parity** — equivalent user outcomes using platform-native
-implementation, not a line-for-line Desktop port.
+**Capability parity** — a 1:1 Hermes Desktop product port: feature coverage,
+navigation, terminology, interaction and recovery behavior are the reference.
+Flutter/native implementation may differ; product deviations must be explicit.
+Parity is a delivery goal, not evidence of implemented or accepted behavior.
 
 **Accessible equivalent** — a fully operable path that does not depend on 3D,
 canvas, pointer, speech, motion, sound, or color alone.

@@ -26,7 +26,7 @@ async function openConnectedHermes(page) {
   await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
 }
 
-test("a user can stop a slow Hermes run and the client sends the stop request", async ({
+test("a user can stop a slow Hermes run with an authoritative terminal outcome", async ({
   page,
   request,
 }) => {
@@ -53,6 +53,11 @@ test("a user can stop a slow Hermes run and the client sends the stop request", 
     )
     .toBeGreaterThan(before.stopCount);
   await expect(page.getByRole("checkbox", { name: "Stop" })).not.toBeVisible();
+  const statusResponse = await request.get(`${APP}v1/runs/run_1`);
+  expect(statusResponse.ok()).toBeTruthy();
+  expect(await statusResponse.json()).toMatchObject({
+    run_id: 'run_1', session_id: 'e2e-hermes-session', status: 'cancelled',
+  });
 });
 
 test("session search and bulk selection can be explored without deleting data", async ({

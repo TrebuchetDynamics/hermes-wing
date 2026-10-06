@@ -7,6 +7,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'hermes_markdown_block_viewport.dart';
 import 'inline_transcript_image_safety.dart';
 
 typedef HermesUriLauncher = Future<bool> Function(Uri uri);
@@ -270,10 +271,9 @@ class _TranscriptMarkdown extends MarkdownBody {
   @override
   Widget build(BuildContext context, List<Widget>? children) {
     if (scrollController == null) return super.build(context, children);
-    return ListView(
-      controller: scrollController,
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
+    return HermesMarkdownBlockViewport(
+      controller: scrollController!,
+      source: data,
       children: children!,
     );
   }
@@ -431,18 +431,33 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
                   ),
                 ),
               ),
-              IconButton(
-                key: const ValueKey('hermes-code-copy'),
-                tooltip: strings.copyCodeAction,
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.copy_outlined, size: 18),
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: code));
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                    SnackBar(content: Text(strings.codeCopiedMessage)),
-                  );
-                },
+              // Bind late feedback to this code action, not the Markdown owner.
+              Builder(
+                builder: (context) => IconButton(
+                  key: const ValueKey('hermes-code-copy'),
+                  tooltip: strings.copyCodeAction,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.copy_outlined, size: 18),
+                  onPressed: () async {
+                    var copied = false;
+                    try {
+                      await Clipboard.setData(ClipboardData(text: code));
+                      copied = true;
+                    } catch (_) {
+                      // Platform diagnostics may contain private data.
+                    }
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          copied
+                              ? strings.codeCopiedMessage
+                              : strings.codeCopyFailedMessage,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

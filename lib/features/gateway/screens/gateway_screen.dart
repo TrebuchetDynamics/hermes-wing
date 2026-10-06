@@ -43,7 +43,18 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   bool _deviceRevoked = false;
   bool _approvalPending = false;
   int _refreshGeneration = 0;
-  String? _refreshBaseUrl;
+  HermesChannel? _healthChannel;
+  HermesGatewayDirectory? _healthDirectory;
+  Object? _healthContext;
+  Object _healthOwner = Object();
+  final _healthDisplayReads =
+      Expando<
+        ({String? origin, String? profile, HermesHealthStatus? health})
+      >();
+  ({HermesChannel channel, String? origin, String? profile})?
+  _healthDataContext;
+  HermesConnectionStatus? _healthStatus;
+  HermesHealthStatus? _detailedHealth;
   String? _trustGatewayId;
   HermesEndpointConfig? _trustConfig;
   Future<_WingLinkTrustState>? _trustFuture;
@@ -52,23 +63,31 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     final directory = ref.watch(hermesGatewayDirectoryProvider);
+    _bindHealthOwner(channel, directory);
+    ref.listen(hermesChannelProvider, (previous, next) {
+      if (!identical(previous, next)) {
+        setState(
+          () =>
+              _bindHealthOwner(next, ref.read(hermesGatewayDirectoryProvider)),
+        );
+      }
+    });
+    ref.listen(hermesGatewayDirectoryProvider, (previous, next) {
+      if (!identical(previous, next)) {
+        setState(() => _bindHealthOwner(ref.read(hermesChannelProvider), next));
+      }
+    });
     final strings = AppLocalizations.of(context);
     return AnimatedBuilder(
       animation: Listenable.merge([channel, directory]),
       builder: (context, _) {
         final activeGatewayId = directory.managementGatewayId;
-        final selectedHost = directory.hosts
-            .where((host) => host.containsGateway(activeGatewayId))
-            .firstOrNull;
+
         final connectedGatewayId = directory.activeContactId?.gatewayId;
-        final selectedChat =
-            connectedGatewayId == activeGatewayId ||
-            selectedHost?.containsGateway(connectedGatewayId) == true;
+        final selectedChat = _selectedChat(directory);
         final chatConnected = selectedChat && channel.state.isConnected;
-        final canRefresh =
-            chatConnected && _detailedHealthAdvertised(channel.state);
-        final refreshing =
-            _refreshing && channel.state.connectedBaseUrl == _refreshBaseUrl;
+        final canRefresh = _canRefreshHealth(channel, directory);
+        final refreshing = _refreshing;
         final activeGateway = activeGatewayId == null
             ? null
             : directory.gateways
@@ -110,18 +129,34 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                       : const Icon(Icons.link_off),
                 ),
               if (canRefresh)
-                IconButton(
-                  key: const ValueKey('gateway-refresh-button'),
-                  tooltip: strings.gatewayStatusRefreshTooltip,
-                  onPressed: refreshing
-                      ? null
-                      : () => unawaited(_refresh(channel)),
-                  icon: refreshing
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh),
+                // Preserve the child's keyboard focus while keeping a named,
+                // disabled button exposed during the pending read.
+                Tooltip(
+                  message: strings.gatewayStatusRefreshTooltip,
+                  excludeFromSemantics: true,
+                  child: MergeSemantics(
+                    child: Semantics(
+                      button: true,
+                      enabled: !refreshing,
+                      label: strings.gatewayStatusRefreshTooltip,
+                      child: IconButton(
+                        key: const ValueKey('gateway-refresh-button'),
+                        onPressed: refreshing
+                            ? null
+                            : () => unawaited(_refresh()),
+                        icon: refreshing
+                            ? const ExcludeSemantics(
+                                child: SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : const Icon(Icons.refresh),
+                      ),
+                    ),
+                  ),
                 ),
               const AppShellMenuButton(),
             ],
@@ -206,10 +241,14 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
                         channel.state.status !=
                             HermesConnectionStatus.disconnected)
                       _GatewayBody(
+                        key: ObjectKey(_healthOwner),
                         state: channel.state,
+                        detailedHealth: _detailedHealth,
                         strings: strings,
                         refreshFailed: _refreshFailed,
-                        onRetry: () => unawaited(_refresh(channel)),
+                        onRetry: canRefresh && !refreshing
+                            ? () => unawaited(_refresh())
+                            : null,
                         trust: null,
                       ),
                   ],
@@ -406,28 +445,153 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     }
   }
 
-  Future<void> _refresh(HermesChannel channel) async {
+  bool _selectedChat(HermesGatewayDirectory directory) {
+    final selected = directory.managementGatewayId;
+    final connected = directory.activeContactId?.gatewayId;
+    return connected == selected ||
+        directory.hosts.any(
+          (host) =>
+              host.containsGateway(selected) && host.containsGateway(connected),
+        );
+  }
+
+  bool _canRefreshHealth(
+    HermesChannel channel,
+    HermesGatewayDirectory directory,
+  ) =>
+      _selectedChat(directory) &&
+      !channel.state.isSelectingProfile &&
+      _detailedHealthAdvertised(channel.state);
+
+  void _bindHealthOwner(
+    HermesChannel channel,
+    HermesGatewayDirectory directory,
+  ) {
+    if (!identical(_healthChannel, channel) ||
+        !identical(_healthDirectory, directory)) {
+      _healthChannel?.removeListener(_healthOwnerChanged);
+      _healthDirectory?.removeListener(_healthOwnerChanged);
+      _healthChannel = channel;
+      _healthDirectory = directory;
+      channel.addListener(_healthOwnerChanged);
+      directory.addListener(_healthOwnerChanged);
+    }
+    _syncHealthOwner();
+  }
+
+  bool _syncHealthOwner() {
+    final channel = _healthChannel!;
+    final directory = _healthDirectory!;
+    final state = channel.state;
+    final context = (
+      channel,
+      directory,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.status,
+      state.isSelectingProfile,
+      directory.managementGatewayId,
+      directory.activeContactId,
+      _canRefreshHealth(channel, directory),
+    );
+    if (_healthContext == context) return false;
+    final dataContext = (
+      channel: channel,
+      origin: state.connectedBaseUrl,
+      profile: state.selectedProfileId,
+    );
+    final displayRead = _healthDisplayReads[channel];
+    final bootstrap =
+        displayRead == null ||
+        (identical(_healthDataContext?.channel, channel) &&
+            _healthStatus == HermesConnectionStatus.connecting &&
+            state.isConnected);
+
+    // Shared loader failures have no management-owner provenance. Keep only the
+    // last successful display read for this Agent identity; never mutate the channel.
+    _detailedHealth =
+        displayRead != null &&
+            displayRead.origin == dataContext.origin &&
+            displayRead.profile == dataContext.profile &&
+            _channelHealthFailed(state)
+        ? displayRead.health
+        : state.detailedHealth;
+    _healthDataContext = dataContext;
+    _rememberHealthDisplayRead();
+    _healthStatus = state.status;
+    _healthContext = context;
+    _healthOwner = Object();
+    _refreshGeneration++;
+    _refreshing = false;
+    _refreshFailed = bootstrap && _channelHealthFailed(state);
+    return true;
+  }
+
+  bool _channelHealthFailed(HermesChannelState state) => state
+      .optionalResourceErrors
+      .containsKey(HermesOptionalResource.detailedHealth);
+
+  void _rememberHealthDisplayRead() {
+    final context = _healthDataContext!;
+    // Weak, screen-lifetime display cache only; no errors or Agent-owned state writes.
+    _healthDisplayReads[context.channel] = (
+      origin: context.origin,
+      profile: context.profile,
+      health: _detailedHealth,
+    );
+  }
+
+  void _healthOwnerChanged() {
+    // Observe every notification, including loss/restoration before a frame.
+    // Ordinary health updates with the same authorized owner do not cancel UI work.
+    final transferred = _syncHealthOwner();
+    final state = _healthChannel!.state;
+    if (!transferred && !_channelHealthFailed(state)) {
+      _detailedHealth = state.detailedHealth;
+      _rememberHealthDisplayRead();
+    }
+    if (transferred && mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _healthChannel?.removeListener(_healthOwnerChanged);
+    _healthDirectory?.removeListener(_healthOwnerChanged);
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    final channel = ref.read(hermesChannelProvider);
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    _bindHealthOwner(channel, directory);
+    if (_refreshing || !_canRefreshHealth(channel, directory)) return;
     final generation = ++_refreshGeneration;
-    final connectedBaseUrl = channel.state.connectedBaseUrl;
+    final owner = _healthOwner;
     bool isCurrent() =>
         mounted &&
         generation == _refreshGeneration &&
-        channel.state.isConnected &&
-        channel.state.connectedBaseUrl == connectedBaseUrl;
+        identical(owner, _healthOwner) &&
+        identical(channel, ref.read(hermesChannelProvider)) &&
+        identical(directory, ref.read(hermesGatewayDirectoryProvider)) &&
+        _canRefreshHealth(channel, directory);
     setState(() {
       _refreshing = true;
-      _refreshBaseUrl = connectedBaseUrl;
-      _refreshFailed = false;
     });
     try {
       await channel.loadDetailedHealth();
+      if (isCurrent()) {
+        setState(() {
+          _detailedHealth = channel.state.detailedHealth;
+          _rememberHealthDisplayRead();
+          _refreshFailed = false;
+        });
+      }
     } catch (_) {
       if (isCurrent()) setState(() => _refreshFailed = true);
     } finally {
       if (isCurrent()) {
         setState(() {
           _refreshing = false;
-          _refreshBaseUrl = null;
         });
       }
     }
@@ -436,7 +600,9 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
 
 class _GatewayBody extends StatelessWidget {
   const _GatewayBody({
+    super.key,
     required this.state,
+    required this.detailedHealth,
     required this.strings,
     required this.refreshFailed,
     required this.onRetry,
@@ -444,9 +610,10 @@ class _GatewayBody extends StatelessWidget {
   });
 
   final HermesChannelState state;
+  final HermesHealthStatus? detailedHealth;
   final AppLocalizations strings;
   final bool refreshFailed;
-  final VoidCallback onRetry;
+  final VoidCallback? onRetry;
   final Widget? trust;
 
   @override
@@ -472,13 +639,9 @@ class _GatewayBody extends StatelessWidget {
       );
     }
     final detailedAdvertised = _detailedHealthAdvertised(state);
-    final detailedFailed =
-        refreshFailed ||
-        state.optionalResourceErrors.containsKey(
-          HermesOptionalResource.detailedHealth,
-        );
+    final detailedFailed = refreshFailed;
     final health = detailedAdvertised && !detailedFailed
-        ? state.detailedHealth ?? state.basicHealth
+        ? detailedHealth ?? state.basicHealth
         : state.basicHealth;
     if (health == null) {
       return WingEmptyState(
@@ -496,7 +659,7 @@ class _GatewayBody extends StatelessWidget {
     }
     final fallbackNotice = !detailedAdvertised
         ? strings.gatewayStatusBasicOnlyBody
-        : detailedFailed || state.detailedHealth == null
+        : detailedFailed || detailedHealth == null
         ? strings.gatewayStatusDetailedFallbackBody
         : null;
 
@@ -986,4 +1149,5 @@ String _readinessValue(
 
 bool _detailedHealthAdvertised(HermesChannelState state) =>
     state.status == HermesConnectionStatus.connected &&
+    !state.isSelectingProfile &&
     state.canReadDetailedHealth;

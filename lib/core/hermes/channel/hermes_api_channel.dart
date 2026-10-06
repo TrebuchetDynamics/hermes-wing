@@ -250,8 +250,15 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) =>
-      _connect(baseUrl: baseUrl, apiKey: apiKey);
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) => _connect(
+    baseUrl: baseUrl,
+    apiKey: apiKey,
+    deferSessionSelection: deferSessionSelection,
+  );
 
   @override
   Future<void> disconnect() => _disconnect();
@@ -263,7 +270,12 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   @override
-  Future<void> selectSession(String sessionId) => _selectSession(sessionId);
+  Future<void> selectSession(String sessionId, {bool Function()? canAccept}) =>
+      _selectSession(sessionId, canAccept: canAccept);
+
+  @override
+  Future<bool> restoreSession(String sessionId, {bool Function()? canAccept}) =>
+      _restoreSession(sessionId, canAccept: canAccept);
 
   @override
   Future<void> loadEarlierMessages() => _loadEarlierMessages();
@@ -272,7 +284,8 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> loadMoreSessions() => _loadMoreSessions();
 
   @override
-  Future<void> createSession({String? title}) => _createSession(title: title);
+  Future<void> createSession({String? title, bool Function()? canAccept}) =>
+      _createSession(title: title, canAccept: canAccept);
 
   @override
   Future<void> renameSession({
@@ -291,7 +304,12 @@ class HermesApiChannel extends ChangeNotifier
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
-  }) => _selectProfile(profileId, allowDiscovered: allowDiscovered);
+    bool deferSessionSelection = false,
+  }) => _selectProfile(
+    profileId,
+    allowDiscovered: allowDiscovered,
+    deferSessionSelection: deferSessionSelection,
+  );
 
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) =>
@@ -479,13 +497,7 @@ class HermesApiChannel extends ChangeNotifier
   @override
   Future<bool> stopTurn(HermesTurnInterruptionTarget target) async {
     if (!target.matches(activeTurnInterruptionTarget)) return false;
-    final capabilities = _state.capabilities;
-    final canConfirm =
-        target.runId != null &&
-        capabilities != null &&
-        HermesTransportPolicy(capabilities).supportsRunStop;
-    await _stopActiveTurn();
-    return canConfirm;
+    return _stopActiveTurn();
   }
 
   @override
@@ -542,7 +554,9 @@ class HermesApiChannel extends ChangeNotifier
             origin.connectionGeneration != _connectionGeneration ||
             origin.profileSelectionGeneration != _profileSelectionGeneration ||
             origin.profileId != _state.selectedProfileId ||
-            _activeRunIds[origin.sessionId] != runId)) {
+            _activeRunIds[origin.sessionId] != runId ||
+            (origin.id.isNotEmpty &&
+                !_approvalResponder.isPendingApproval(origin.id, runId)))) {
       throw StateError(
         'This approval no longer belongs to the active Hermes context.',
       );

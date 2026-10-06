@@ -340,6 +340,143 @@ void main() {
     expect(channel.respondToApprovalCalls, isEmpty);
   });
 
+  for (final fails in [false, true]) {
+    test('stale dismissal preserves a delayed answer (fails=$fails)', () async {
+      final gate = Completer<void>();
+      var attempts = 0;
+      build(
+        withChannel: FakeHermesChannel(
+          approvalResponseGate: () =>
+              ++attempts == 1 ? gate.future : Future.value(),
+        ),
+      );
+      final stale = _request(id: '', toolCallId: 'malformed');
+      queue.add(stale);
+      queue.reset();
+      final replacement = _request(id: 'replacement');
+      queue.add(replacement);
+      final answer = queue.resolve(HermesApprovalDecision.once, replacement);
+      queue.dismiss(stale);
+      queue.dismiss(_request(id: '', toolCallId: 'absent'));
+      expect(queue.answeringId, replacement.identityKey);
+      expect(queue.pending, [replacement]);
+      await queue.resolve(HermesApprovalDecision.deny, replacement);
+      expect(channel.respondToApprovalCalls, hasLength(1));
+      if (fails) {
+        gate.completeError(StateError('delayed answer'));
+      } else {
+        gate.complete();
+      }
+      await answer;
+      expect(queue.answeringId, isNull);
+      expect(errors, hasLength(fails ? 1 : 0));
+      if (fails) {
+        expect(queue.pending, [replacement]);
+        await queue.resolve(HermesApprovalDecision.once, replacement);
+        expect(channel.respondToApprovalCalls, hasLength(2));
+      }
+      expect(queue.pending, isEmpty);
+    });
+  }
+
+  test('dismissal cannot remove a replacement with the same identity', () {
+    build();
+    final stale = _request(id: '', toolCallId: 'same');
+    queue.add(stale);
+    queue.reset();
+    final replacement = _request(id: '', toolCallId: 'same');
+    expect(stale.identityKey, replacement.identityKey);
+    queue.add(replacement);
+    queue.dismiss(stale);
+    expect(queue.pending, [replacement]);
+    queue.dismiss(replacement);
+    expect(queue.pending, isEmpty);
+    expect(channel.respondToApprovalCalls, isEmpty);
+  });
+
+  test('different owner dismissal leaves the current malformed ask', () {
+    build();
+    final current = _request(
+      id: '',
+      profileId: 'beta',
+      connectionGeneration: 2,
+    );
+    queue.add(current);
+    queue.dismiss(
+      _request(id: '', profileId: 'alpha', connectionGeneration: 1),
+    );
+    expect(queue.pending, [current]);
+    queue.dismiss(current);
+    expect(queue.pending, isEmpty);
+    expect(channel.respondToApprovalCalls, isEmpty);
+  });
+
+  test(
+    'current malformed dismissal and clearPending preserve ongoing answer',
+    () async {
+      final gate = Completer<void>();
+      build(
+        withChannel: FakeHermesChannel(approvalResponseGate: () => gate.future),
+      );
+      final answerRequest = _request(id: 'answer');
+      final malformed = _request(id: '', toolCallId: 'malformed');
+      queue.add(answerRequest);
+      queue.add(malformed);
+      final answer = queue.resolve(HermesApprovalDecision.once, answerRequest);
+      queue.dismiss(answerRequest);
+      expect(queue.pending, [answerRequest, malformed]);
+      queue.dismiss(malformed);
+      expect(queue.pending, [answerRequest]);
+      expect(queue.answeringId, answerRequest.identityKey);
+      queue.clearPending();
+      queue.dismiss(answerRequest);
+      expect(queue.answeringId, answerRequest.identityKey);
+      gate.complete();
+      await answer;
+      expect(queue.answeringId, isNull);
+      expect(channel.respondToApprovalCalls, hasLength(1));
+    },
+  );
+
+  test('dismissal after disposal and late settlement do not notify', () async {
+    final gate = Completer<void>();
+    build(
+      withChannel: FakeHermesChannel(approvalResponseGate: () => gate.future),
+    );
+    final request = _request();
+    queue.add(request);
+    final answer = queue.resolve(HermesApprovalDecision.once, request);
+    queue.dispose();
+    queue.dismiss(request);
+    gate.completeError(StateError('disposed answer'));
+    await answer;
+    expect(errors, isEmpty);
+    expect(channel.respondToApprovalCalls, hasLength(1));
+  });
+
+  test('exact-turn invalidation cannot correlate a malformed run-less ask', () {
+    build();
+    final malformed = _request(
+      id: '',
+      sessionId: 'session',
+      connectionGeneration: 1,
+    );
+    queue.add(malformed);
+    queue.dismissStoppedTurn(
+      HermesTurnInterruptionTarget(
+        owner: channel,
+        connectionGeneration: 1,
+        profileId: null,
+        sessionId: 'session',
+        streamGeneration: 1,
+        runId: 'owned-run',
+      ),
+    );
+    expect(malformed.hasResponseIdentity, isFalse);
+    expect(queue.pending, [malformed]);
+    expect(channel.respondToApprovalCalls, isEmpty);
+  });
+
   test('watch drops the previous gateway queue and follows the new stream', () {
     build();
     queue.add(_request(id: 'stale'));

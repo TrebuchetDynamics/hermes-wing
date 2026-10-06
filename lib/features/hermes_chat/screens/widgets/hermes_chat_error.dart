@@ -202,74 +202,107 @@ void _showHermesErrorDetailsSheet(
     _safeHermesUiText(error),
     maxLength: 1200,
   );
+  var copyFailed = false;
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetContext) {
-      final strings = AppLocalizations.of(sheetContext);
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            key: const ValueKey('hermes-error-details-sheet'),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(title, style: Theme.of(sheetContext).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(recovery),
-                const SizedBox(height: 12),
-                Text(strings.chatErrorRedactedDetailsLabel),
-                const SizedBox(height: 4),
-                SelectableText(
-                  safeError,
-                  key: const ValueKey('hermes-error-details-text'),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  strings.chatErrorRedactionNoteBody,
-                  key: const ValueKey('hermes-error-details-redaction-note'),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton.icon(
-                        key: const ValueKey('hermes-error-details-copy'),
-                        onPressed: () {
-                          unawaited(
-                            Clipboard.setData(ClipboardData(text: safeError)),
-                          );
-                          ScaffoldMessenger.maybeOf(sheetContext)?.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                strings.chatErrorCopiedRedactedDetailsBody,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.copy_outlined),
-                        label: Text(strings.chatErrorCopyRedactedDetailsAction),
-                      ),
-                      TextButton(
-                        key: const ValueKey('hermes-error-details-close'),
-                        onPressed: () => Navigator.of(sheetContext).pop(),
-                        child: Text(strings.closeAction),
-                      ),
-                    ],
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (sheetContext, setSheetState) {
+        final strings = AppLocalizations.of(sheetContext);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              key: const ValueKey('hermes-error-details-sheet'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(sheetContext).textTheme.titleLarge,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(recovery),
+                  const SizedBox(height: 12),
+                  Text(strings.chatErrorRedactedDetailsLabel),
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    safeError,
+                    key: const ValueKey('hermes-error-details-text'),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    strings.chatErrorRedactionNoteBody,
+                    key: const ValueKey('hermes-error-details-redaction-note'),
+                  ),
+                  if (copyFailed) ...[
+                    const SizedBox(height: 8),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(strings.diagnosticsCopyFailedNotice),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          key: const ValueKey('hermes-error-details-copy'),
+                          onPressed: () async {
+                            setSheetState(() => copyFailed = false);
+                            var copied = false;
+                            try {
+                              await Clipboard.setData(
+                                ClipboardData(text: safeError),
+                              );
+                              copied = true;
+                            } catch (_) {
+                              // Clipboard denial must not expose platform diagnostics.
+                            }
+                            if (!sheetContext.mounted ||
+                                ModalRoute.of(sheetContext)?.isCurrent !=
+                                    true) {
+                              return;
+                            }
+                            if (!copied) {
+                              setSheetState(() => copyFailed = true);
+                              return;
+                            }
+                            ScaffoldMessenger.maybeOf(
+                              sheetContext,
+                            )?.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  strings.chatErrorCopiedRedactedDetailsBody,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_outlined),
+                          label: Text(
+                            strings.chatErrorCopyRedactedDetailsAction,
+                          ),
+                        ),
+                        TextButton(
+                          key: const ValueKey('hermes-error-details-close'),
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          child: Text(strings.closeAction),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    },
+        );
+      },
+    ),
   );
 }
 
@@ -278,7 +311,8 @@ bool _isHermesRunStillActiveError(String error) {
   return normalized.contains(
         'run is still active after its event stream closed',
       ) ||
-      normalized.contains('hermes run is still active.');
+      normalized.contains('hermes run is still active.') ||
+      normalized.contains('hermes stop outcome is not confirmed.');
 }
 
 String _safeHermesUiText(String text) => wingRedactSensitiveText(text);

@@ -12,7 +12,7 @@ void _hermesApiChannelDirectChatTests() {
             '/api/sessions' => _sessionsFixture,
             '/api/sessions/sess_1/messages' =>
               '''
-{"object":"list","data":[
+{"object":"list","session_id":"sess_1","data":[
   {"id":"tool-1","session_id":"sess_1","role":"tool","content":"{\\"content\\":\\"1|internal\\",\\"total_lines\\":1}"},
   {"id":"assistant-1","session_id":"sess_1","role":"assistant","content":"Visible answer"}
 ]}
@@ -161,7 +161,7 @@ void _hermesApiChannelDirectChatTests() {
               '/api/sessions/sess_1/messages' =>
                 messageReads++ == 0
                     ? _messagesFixture
-                    : '''{"object":"list","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-plain","session_id":"sess_1","role":"user","content":"Inspect"}]}''',
+                    : '''{"object":"list","session_id":"sess_1","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-plain","session_id":"sess_1","role":"user","content":"Inspect"}]}''',
               _ => throw StateError('unexpected GET $uri'),
             };
           },
@@ -197,7 +197,7 @@ void _hermesApiChannelDirectChatTests() {
             '/api/sessions/sess_1/messages' =>
               messageReads++ == 0
                   ? _messagesFixture
-                  : '''{"object":"list","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"input_text","text":"Inspect"},{"type":"input_image","image_url":"data:image/png;base64,secret"}]}]}''',
+                  : '''{"object":"list","session_id":"sess_1","data":[{"id":"msg_1","session_id":"sess_1","role":"user","content":"Hello"},{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"input_text","text":"Inspect"},{"type":"input_image","image_url":"data:image/png;base64,secret"}]}]}''',
             _ => throw StateError('unexpected GET $uri'),
           };
         },
@@ -230,7 +230,7 @@ void _hermesApiChannelDirectChatTests() {
             '/v1/capabilities' => _capabilitiesFixture,
             '/api/sessions' => _sessionsFixture,
             '/api/sessions/sess_1/messages' =>
-              '''{"object":"list","data":[{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,secret"}}]}]}''',
+              '''{"object":"list","session_id":"sess_1","data":[{"id":"server-image","session_id":"sess_1","role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,secret"}}]}]}''',
             _ => throw StateError('unexpected GET $uri'),
           };
         },

@@ -212,6 +212,7 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     if (!_knownProfileIds.contains(profileId)) {
       throw StateError('unknown fixture profile $profileId');
@@ -220,10 +221,14 @@ class ProfileLifecycleFixtureChannel extends FakeHermesChannel {
     final sessionId = 'session-$profileId';
     replaceSessions(
       [HermesSession(id: sessionId, source: 'fixture', title: profileId)],
-      activeSessionId: sessionId,
+      activeSessionId: deferSessionSelection ? null : sessionId,
       messages: _history,
     );
-    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    await super.selectProfile(
+      profileId,
+      allowDiscovered: allowDiscovered,
+      deferSessionSelection: deferSessionSelection,
+    );
   }
 
   @override

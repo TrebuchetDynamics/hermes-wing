@@ -1,0 +1,2959 @@
+# Code-first documentation; Go handlers remain authoritative.
+"openapi": "3.1.0"
+"info":
+  "title": "Wing Link code-first HTTP contract"
+  "version": "protocol-2-source-snapshot"
+  "description": "Documentation of the current owned Go implementation, not schema-first authority or release qualification. ServeHTTP in wing_link/internal/app/serve.go owns management routing; bootstrap_server.go and route handlers own behavior. Pairing broker operations use a separate ephemeral server in pair.go. Agent chat, sessions, runs, tools, approvals, Projects, existing-profile configuration and general provider administration are not Wing Link routes.\n\nManagement responses send Cache-Control: no-store and Wing-Protocol: 2. GET /meta bypasses negotiation; all other requests default to generation 1 when Wing-Protocol is absent and accept only 1 or 2. Unsupported generations return 426 before route authorization. An initialization failure may replace every management response with 503 host_state_unavailable. Bearer grants are exact strings, not OAuth scopes; required grants and pending-token exceptions are operation extensions. Remote access requires TLS 1.3 and reviewed SPKI pinning for native clients; HTTP is loopback-only. Browser clients require normally trusted HTTPS. Never merge Agent and Wing Link credentials.\n\nSchema limits: this is a manually maintained code-first snapshot. It models named successful operations and concrete response shapes, not every parser tolerance. Go JSON decoding accepts null for structs and scalar fields in ways the client object schemas do not enumerate. decodeJSON rejects unknown fields and trailing data and caps bodies at 64 KiB, but does not enforce Content-Type. Local credential staging and broker decoders have different limits and do not reject trailing JSON. Method mismatch may be empty 405 or fall through to empty 404 depending on dispatch; unsupported protocol can preempt either. Path parsers can accept trimmed slash aliases not repeated here. Default responses document these dispatch errors, not a universal typed error envelope. Local trust approval, containment, TLS/pinning, total catalog byte/model limits and cross-field validation are prose/source obligations, not guarantees provided by OpenAPI validation. No SSE endpoint exists: operations are polled. No runtime, device, update activation or installed-Agent qualification was performed to create this document."
+"servers":
+  -
+    "url": "/"
+    "description": "Configured management origin. HTTP is loopback-only; non-loopback requires TLS 1.3."
+"tags":
+  -
+    "name": "Management"
+  -
+    "name": "Pairing broker"
+    "description": "Separate ephemeral listener, not management routes."
+"paths":
+  "/meta":
+    "get":
+      "operationId": "getMetadata"
+      "summary": "Read protocol metadata"
+      "description": "Unauthenticated discovery. GET /meta bypasses request protocol negotiation, including malformed values, only after successful host initialization. Unsafe approval, audit or local pairing proof state replaces discovery with 503 host_state_unavailable before negotiation or dispatch. Optional capabilities reflect initialized components, not broad write permission. Other methods and trailing-slash paths fall through to empty 404 for supported protocol values; invalid protocol values return 426 first."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+        - "wing_link/internal/protocol/metadata.go"
+      "security": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Metadata"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters": []
+  "/healthz":
+    "get":
+      "operationId": "getHealth"
+      "summary": "Read process liveness"
+      "description": "Unauthenticated liveness only; not Agent/provider readiness. Negotiates the request protocol before dispatch. Unsafe approval, audit or local pairing proof state returns 503 host_state_unavailable even for invalid protocol values. Other methods and trailing-slash paths fall through to empty 404 for supported protocol values; invalid protocol values return 426 first."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Status"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+  "/v1/status":
+    "get":
+      "operationId": "getStatus"
+      "summary": "Read authorized status"
+      "description": "Requires health:read. Pending credentials with this grant are accepted for verification reads. "
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Status"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "health:read"
+      "x-pending-credential-allowed": true
+  "/v1/pairing/acknowledged":
+    "get":
+      "operationId": "getAcknowledgment"
+      "summary": "Verify credential acknowledgment"
+      "description": "Requires device:self:read. Requires an acknowledged credential. "
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Acknowledged"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "device:self:read"
+      "x-pending-credential-allowed": false
+  "/v1/pairing/control-credentials":
+    "post":
+      "operationId": "stageCredential"
+      "summary": "Stage a host-local management credential"
+      "description": "Host-local pairing authority only, not a remotely callable anonymous enrollment. Loopback RemoteAddr and exact owner-only X-Wing-Link-Local-Proof are both required. Empty body or blank name with no scopes selects legacy defaults; otherwise name and a nonempty allowlisted scope list are required. Body limit: 8 KiB. This decoder does not check trailing JSON."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+        - "wing_link/internal/app/local_pairing_proof.go"
+      "security":
+        -
+          "LocalPairingProof": []
+      "responses":
+        "201":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/StagedCredential"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "pairing_local_only: exact host-local proof and loopback caller required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request: device metadata could not be decoded."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "requestBody":
+        "required": false
+        "description": "Optional JSON metadata; empty body selects legacy defaults. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/StageCredentialRequest"
+  "/v1/auth/credentials/{credential_id}/ack":
+    "post":
+      "operationId": "ackCredential"
+      "summary": "Acknowledge the pending device credential"
+      "description": "Uses a matching pending bearer credential, or the already-active credential with the same ID. No body is decoded. Pending credentials expire after five minutes."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/CredentialAcknowledged"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: pending token/credential ID mismatch."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "credential_unavailable: pending acknowledgment failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "credential_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "pattern": "^cred_"
+  "/v2/devices/self":
+    "get":
+      "operationId": "getDeviceSelf"
+      "summary": "Inspect own device"
+      "description": "Requires device:self:read. Requires an acknowledged credential. Cannot inspect peers, expand grants, or revoke another device. No request body is decoded."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DeviceSelf"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "device:self:read"
+      "x-pending-credential-allowed": false
+    "delete":
+      "operationId": "revokeDeviceSelf"
+      "summary": "Revoke own device"
+      "description": "Requires device:self:revoke. Requires an acknowledged credential. Cannot inspect peers, expand grants, or revoke another device. No request body is decoded."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "204":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "credential_unavailable: revocation failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "device:self:revoke"
+      "x-pending-credential-allowed": false
+  "/v2/directories":
+    "get":
+      "operationId": "listDirectoryRoots"
+      "summary": "List locally approved directory roots"
+      "description": "Requires directories:read. Requires an acknowledged credential. No query or body. Only handles and folder display names are returned. Grants remain host-local."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/workspaces.go"
+        - "wing_link/internal/workspaces/browser.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DirectoryList"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request: any query or nonempty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "directory_unavailable: browsing is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "directory_unavailable or directory_too_large."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "410":
+          "description": "directory_revoked."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "directories:read"
+      "x-pending-credential-allowed": false
+  "/v2/directories/{handle}/children":
+    "get":
+      "operationId": "listDirectoryChildren"
+      "summary": "List child folders under an opaque handle"
+      "description": "Requires directories:read. Requires an acknowledged credential. Only offset and limit are accepted, once each. Containment and grant status are revalidated. No files, metadata, contents or absolute paths. Handles are ephemeral and device-bound."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/workspaces.go"
+        - "wing_link/internal/workspaces/browser.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DirectoryList"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request: malformed path, duplicate/unknown query key, invalid pagination, or nonempty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "directory_unavailable: absent/expired/wrong-device handle."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "directory_too_large or directory_unavailable; no partial inventory."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "410":
+          "description": "directory_revoked."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "handle"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "minLength": 1
+        -
+          "name": "offset"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "minimum": 0
+            "maximum": 1000
+            "default": 0
+        -
+          "name": "limit"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "minimum": 1
+            "maximum": 100
+            "default": 50
+      "x-required-grants":
+        - "directories:read"
+      "x-pending-credential-allowed": false
+  "/v1/host/omniroute":
+    "get":
+      "operationId": "discoverOmniRoute"
+      "summary": "Discover the fixed host-local OmniRoute service"
+      "description": "Requires health:read. Requires an acknowledged credential. No query parameters or endpoint input. Three-second credential-free probe, no proxies or redirects. Returns status only; serving does not prove inference readiness."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/omniroute_discovery.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/OmniRouteDiscovery"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "Any query is rejected with an empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "health:read"
+      "x-pending-credential-allowed": false
+  "/v1/update/status":
+    "get":
+      "operationId": "getUpdateStatus"
+      "summary": "Read signed-update availability"
+      "description": "Requires diagnostics:read. Requires an acknowledged credential. Unavailable when production keys are empty or activation is not configured. No update is triggered."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/update.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpdateStatus"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "diagnostics:read"
+      "x-pending-credential-allowed": false
+  "/v1/update/apply":
+    "post":
+      "operationId": "applyUpdate"
+      "summary": "Request a signed Wing Link update"
+      "description": "Requires lifecycle:write. Requires an acknowledged credential. Empty object only. Local trust-tier approval is required when an updater is available. Production serve construction leaves updater unset, so activation is unavailable; this route is not evidence of working updates. 503 includes update_unavailable, update_activation_unsupported, update_rolled_back and approval/operation availability errors."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/update.go"
+        - "wing_link/internal/app/approval.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpdateApplied"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request or invalid typed input."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "approval_policy_missing."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "idempotency_conflict. For setup only, operation_in_progress can also report another active setup operation."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "428":
+          "description": "idempotency_key_required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "202":
+          "description": "Local approval required or terminal idempotent replay."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ApprovalOrReplay"
+        "500":
+          "description": "update_rollback_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "502":
+          "description": "update_verification_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "$ref": "#/components/parameters/Idempotency"
+      "x-required-grants":
+        - "lifecycle:write"
+      "x-pending-credential-allowed": false
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/EmptyRequest"
+  "/v1/setup":
+    "post":
+      "operationId": "startSetup"
+      "summary": "Request supervisor-owned Hermes setup"
+      "description": "Requires setup:write. Requires an acknowledged credential. Empty object only; no components, provider/config, profile or OmniRoute flags. Local trust-tier approval is required. 202 may mean pending approval, started work, or terminal replay; reconcile operation status."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/bootstrap_server.go"
+        - "wing_link/internal/app/bootstrap.go"
+        - "wing_link/internal/app/approval.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "202":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/SetupAccepted"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request or invalid typed input."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "approval_policy_missing."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "idempotency_conflict. For setup only, operation_in_progress can also report another active setup operation."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "428":
+          "description": "idempotency_key_required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "501":
+          "description": "setup_unavailable: bootstrap/operation manager missing."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "$ref": "#/components/parameters/Idempotency"
+      "x-required-grants":
+        - "setup:write"
+      "x-pending-credential-allowed": false
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/EmptyRequest"
+  "/v1/operations/{operation_id}":
+    "get":
+      "operationId": "getOperation"
+      "summary": "Read operation snapshot"
+      "description": "Requires diagnostics:read. Pending credentials with this grant are accepted for verification reads. The handler uses the required grant and operation ID, not an additional per-device operation ownership check. Cancellation is not rollback."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+        - "wing_link/internal/app/bootstrap_server.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/OperationEvent"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Operation absent or cancellation unavailable; empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "operation_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "pattern": "^op_"
+            "maxLength": 96
+      "x-required-grants":
+        - "diagnostics:read"
+      "x-pending-credential-allowed": true
+    "delete":
+      "operationId": "cancelOperation"
+      "summary": "Cancel operation"
+      "description": "Requires lifecycle:write. Requires an acknowledged credential. The handler uses the required grant and operation ID, not an additional per-device operation ownership check. Cancellation is not rollback."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+        - "wing_link/internal/app/bootstrap_server.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "204":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "Operation absent or cancellation unavailable; empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "operation_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "pattern": "^op_"
+            "maxLength": 96
+      "x-required-grants":
+        - "lifecycle:write"
+      "x-pending-credential-allowed": false
+  "/v1/profiles":
+    "get":
+      "operationId": "listProfiles"
+      "summary": "List authoritative profiles through fixed CLI"
+      "description": "Requires profiles:read. Pending credentials with this grant are accepted for verification reads. No shadow profile store. 503 profile_inventory_unavailable on unavailable or malformed CLI inventory."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ProfileList"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+      "x-required-grants":
+        - "profiles:read"
+      "x-pending-credential-allowed": true
+    "post":
+      "operationId": "createProfile"
+      "summary": "Create or clone a profile with bounded new-profile setup"
+      "description": "Requires profiles:write. Requires an acknowledged credential. Idempotency is required even without a secret. Routine creation needs no local approval; a nonblank provider secret requires local sensitive approval. Setup failure attempts deletion of the newly created profile. Provider/model configuration and readiness may run only in this transaction. 503 includes profile_setup_failed and profile_inventory_unavailable. Secrets are never returned."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "201":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ProfileResponse"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "invalid_request or invalid typed input."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "403":
+          "description": "approval_policy_missing."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "profile_already_exists, profile_operation_in_progress or idempotency_conflict."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "428":
+          "description": "idempotency_key_required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "202":
+          "description": "Local secret-write approval required, or terminal replay."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ApprovalOrReplay"
+        "404":
+          "description": "profile_not_found (clone source)."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "502":
+          "description": "profile_cli_failed or profile_postcondition_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "500":
+          "description": "profile_operation_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "$ref": "#/components/parameters/Idempotency"
+      "x-required-grants":
+        - "profiles:write"
+      "x-pending-credential-allowed": false
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ProfileCreateRequest"
+  "/v1/profiles/{profile_id}":
+    "patch":
+      "operationId": "renameProfile"
+      "summary": "Rename a profile"
+      "description": "Requires profiles:write. Requires an acknowledged credential. Rename only. Existing-profile configuration and secret fields must remain blank. Requires body revision or If-Match. No approval gate or idempotency key is used by this handler."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ProfileResponse"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "profile_invalid_name, profile_reserved, profile_setup_invalid or invalid_request."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "profile_not_found."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "profile_already_exists or profile_operation_in_progress."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "412":
+          "description": "profile_inventory_changed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "428":
+          "description": "profile_revision_required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "profile_operation_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "502":
+          "description": "profile_cli_failed or profile_postcondition_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "profile_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "description": "Normalized by trimming/lowercasing and validating the profile ID grammar."
+        -
+          "$ref": "#/components/parameters/IfMatch"
+      "x-required-grants":
+        - "profiles:write"
+      "x-pending-credential-allowed": false
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ProfileRenameRequest"
+    "delete":
+      "operationId": "deleteProfile"
+      "summary": "Delete a profile"
+      "description": "Requires profiles:write. Requires an acknowledged credential. Requires If-Match and Idempotency-Key. Local sensitive approval binds device, method/route, key and digest of profile ID plus revision. No body is decoded. Reserved profiles cannot be deleted."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/serve.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ProfileDeleted"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "profile_invalid_name, profile_reserved, profile_setup_invalid or invalid_request."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "404":
+          "description": "profile_not_found."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "409":
+          "description": "profile_already_exists or profile_operation_in_progress, idempotency_conflict."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "412":
+          "description": "profile_inventory_changed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "428":
+          "description": "profile_revision_required or idempotency_key_required."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "500":
+          "description": "profile_operation_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "502":
+          "description": "profile_cli_failed or profile_postcondition_failed."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "202":
+          "description": "Local sensitive approval required or terminal replay."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ApprovalOrReplay"
+        "403":
+          "description": "approval_policy_missing."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "profile_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "description": "Normalized by trimming/lowercasing and validating the profile ID grammar."
+        -
+          "name": "If-Match"
+          "in": "header"
+          "required": true
+          "schema":
+            "type": "string"
+          "description": "Current opaque deletion revision."
+        -
+          "$ref": "#/components/parameters/Idempotency"
+      "x-required-grants":
+        - "profiles:write"
+      "x-pending-credential-allowed": false
+  "/v1/profiles/{profile_id}/model-options":
+    "get":
+      "operationId": "getProfileModelOptions"
+      "summary": "Read Agent-authoritative provider/model setup catalog"
+      "description": "Requires profiles:read. Requires an acknowledged credential. No query or caller-selected upstream URL. Verify current profile, exact Agent catalog endpoint and all Agent grants. Uses a separate existing profile credential. Returns display fields only, including unconfigured providers. No key creation, restart, mutation or shadow catalog. Bound: under 1 MiB encoded response, 128 providers and 16384 total model IDs. Catalog read deadline: 20 seconds after inventory validation."
+      "tags":
+        - "Management"
+      "x-code-reference":
+        - "wing_link/internal/app/model_options.go"
+      "security":
+        -
+          "WingLinkBearer": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ModelCatalog"
+        "426":
+          "description": "upgrade_required: protocol generation not supported."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UpgradeError"
+        "503":
+          "description": "Host state or this operation is unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "401":
+          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "400":
+          "description": "Any query is rejected; empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "404":
+          "description": "Profile not found; empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "501":
+          "description": "Catalog reader unavailable; empty body."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+        "502":
+          "description": "model_catalog_unavailable."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Error"
+        "default":
+          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
+          "headers":
+            "Cache-Control":
+              "$ref": "#/components/headers/CacheControl"
+            "Wing-Protocol":
+              "$ref": "#/components/headers/WingProtocol"
+      "parameters":
+        -
+          "$ref": "#/components/parameters/Protocol"
+        -
+          "name": "profile_id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+      "x-required-grants":
+        - "profiles:read"
+      "x-pending-credential-allowed": false
+  "/v1/operator/enrollments/inspect":
+    "post":
+      "operationId": "inspectPairing"
+      "summary": "Inspect pairing review"
+      "description": "Separate ephemeral pairing broker only, not management ServeHTTP. Five-minute code/origin authority is in the body, not bearer authentication. Body limit 4 KiB. Unknown fields are rejected; trailing JSON is not checked. Exchange returns separate Agent and pending Wing Link credentials and reuses the issued bundle on retries until expiry/acknowledgment closes the broker. Never copy secrets to examples, URLs, logs or ordinary preferences."
+      "tags":
+        - "Pairing broker"
+      "x-code-reference":
+        - "wing_link/internal/app/pair.go"
+      "security": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerInspection"
+        "404":
+          "description": "Malformed payload, wrong origin/code or expired code."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+        "405":
+          "description": "Wrong method."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/BrokerRequest"
+      "servers":
+        -
+          "url": "{broker_origin}"
+          "description": "Separate ephemeral origin supplied by the local pairing handoff. Not the management server. HTTP loopback only, otherwise TLS 1.3."
+          "variables":
+            "broker_origin":
+              "default": "http://127.0.0.1"
+              "description": "Replace with the exact ephemeral pairing broker origin, including its assigned port."
+  "/v1/operator/enrollments/exchange":
+    "post":
+      "operationId": "exchangePairing"
+      "summary": "Exchange pairing code"
+      "description": "Separate ephemeral pairing broker only, not management ServeHTTP. Five-minute code/origin authority is in the body, not bearer authentication. Body limit 4 KiB. Unknown fields are rejected; trailing JSON is not checked. Exchange returns separate Agent and pending Wing Link credentials and reuses the issued bundle on retries until expiry/acknowledgment closes the broker. Never copy secrets to examples, URLs, logs or ordinary preferences."
+      "tags":
+        - "Pairing broker"
+      "x-code-reference":
+        - "wing_link/internal/app/pair.go"
+      "security": []
+      "responses":
+        "200":
+          "description": "Successful response."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerExchange"
+        "404":
+          "description": "Malformed payload, wrong origin/code or expired code."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+        "405":
+          "description": "Wrong method."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+        "500":
+          "description": "Could not issue Wing Link control token."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+        "502":
+          "description": "Could not exchange scoped Hermes enrollment."
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/BrokerError"
+      "requestBody":
+        "required": true
+        "description": "JSON client shape. See parser limitations in info.description."
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/BrokerRequest"
+      "servers":
+        -
+          "url": "{broker_origin}"
+          "description": "Separate ephemeral origin supplied by the local pairing handoff. Not the management server. HTTP loopback only, otherwise TLS 1.3."
+          "variables":
+            "broker_origin":
+              "default": "http://127.0.0.1"
+              "description": "Replace with the exact ephemeral pairing broker origin, including its assigned port."
+  "/open":
+    "get":
+      "operationId": "openLocalPairing"
+      "summary": "Open the ephemeral local pairing handoff"
+      "description": "Registered only on the loopback pairing broker, never the management listener. Server-provided links carry a short-lived code, never bearer credentials. Do not cache or persist this HTML. Not an input endpoint for arbitrary handoff URLs."
+      "tags":
+        - "Pairing broker"
+      "x-code-reference":
+        - "wing_link/internal/app/pair.go"
+        - "wing_link/internal/app/pair_open.go"
+      "security": []
+      "servers":
+        -
+          "url": "{broker_origin}"
+          "description": "Separate ephemeral origin supplied by the local pairing handoff. Not the management server. HTTP loopback only, otherwise TLS 1.3."
+          "variables":
+            "broker_origin":
+              "default": "http://127.0.0.1"
+              "description": "Replace with the exact ephemeral pairing broker origin, including its assigned port."
+      "responses":
+        "200":
+          "description": "HTML pairing handoff."
+          "headers":
+            "Cache-Control":
+              "schema":
+                "const": "no-store"
+              "description": "Do not cache responses."
+          "content":
+            "text/html":
+              "schema":
+                "type": "string"
+        "410":
+          "description": "Pairing handoff expired; empty body."
+        "405":
+          "description": "Only GET is accepted; empty body and Allow: GET."
+"components":
+  "securitySchemes":
+    "WingLinkBearer":
+      "type": "http"
+      "scheme": "bearer"
+      "description": "Separate Wing Link device credential. Exact per-operation grants required; pending credentials only where explicitly stated. Hermes API keys are not accepted."
+    "LocalPairingProof":
+      "type": "apiKey"
+      "in": "header"
+      "name": "X-Wing-Link-Local-Proof"
+      "description": "Owner-only local proof AND loopback RemoteAddr required. This is not a remote authentication alternative."
+  "parameters":
+    "Protocol":
+      "name": "Wing-Protocol"
+      "in": "header"
+      "required": false
+      "schema":
+        "type": "integer"
+        "enum":
+          - 1
+          - 2
+        "default": 1
+      "description": "Omission, empty or whitespace-only values select generation 1. The handler trims whitespace and parses a decimal integer (so +2 and 02 also select 2). Invalid, older, or future values return 426 before route authorization (except initialized GET /meta). Unsafe host initialization returns 503 before negotiation. The schema describes canonical client values, not every accepted spelling."
+    "Idempotency":
+      "name": "Idempotency-Key"
+      "in": "header"
+      "required": true
+      "schema":
+        "type": "string"
+        "minLength": 1
+        "maxLength": 128
+      "description": "Bounded identifier. Bind to device, method/route and payload digest. Reuse only for the identical request."
+    "IfMatch":
+      "name": "If-Match"
+      "in": "header"
+      "required": false
+      "schema":
+        "type": "string"
+      "description": "Opaque profile revision. Required for DELETE; PATCH may supply revision in its body."
+  "schemas":
+    "APIError":
+      "type": "object"
+      "properties":
+        "code":
+          "type": "string"
+        "message":
+          "type": "string"
+          "maxLength": 240
+      "required":
+        - "code"
+        - "message"
+      "additionalProperties": false
+    "Error":
+      "type": "object"
+      "properties":
+        "error":
+          "$ref": "#/components/schemas/APIError"
+        "outcome":
+          "type": "string"
+          "enum":
+            - "applied"
+            - "not_applied"
+            - "unknown"
+        "operation_id":
+          "type": "string"
+      "required":
+        - "error"
+      "additionalProperties": false
+    "UpgradeError":
+      "type": "object"
+      "properties":
+        "error":
+          "$ref": "#/components/schemas/APIError"
+        "minimum_protocol_generation":
+          "const": 1
+        "protocol_generation":
+          "const": 2
+      "required":
+        - "error"
+        - "minimum_protocol_generation"
+        - "protocol_generation"
+      "additionalProperties": false
+    "Metadata":
+      "type": "object"
+      "properties":
+        "protocol_generation":
+          "const": 2
+        "minimum_protocol_generation":
+          "const": 1
+        "supported_protocol_generations":
+          "type": "array"
+          "const": [1, 2]
+        "version":
+          "type": "string"
+          "maxLength": 64
+        "host_fingerprint":
+          "type": "string"
+          "maxLength": 96
+        "capabilities":
+          "type": "array"
+          "items":
+            "type": "string"
+      "required":
+        - "protocol_generation"
+        - "minimum_protocol_generation"
+        - "supported_protocol_generations"
+        - "version"
+        - "host_fingerprint"
+        - "capabilities"
+      "additionalProperties": false
+    "Status":
+      "type": "object"
+      "properties":
+        "status":
+          "const": "ok"
+        "protocol_version":
+          "const": 2
+      "required":
+        - "status"
+        - "protocol_version"
+      "additionalProperties": false
+    "Acknowledged":
+      "type": "object"
+      "properties":
+        "acknowledged":
+          "const": true
+      "required":
+        - "acknowledged"
+      "additionalProperties": false
+    "CredentialAcknowledged":
+      "type": "object"
+      "properties":
+        "credential_id":
+          "type": "string"
+        "acknowledged":
+          "const": true
+      "required":
+        - "credential_id"
+        - "acknowledged"
+      "additionalProperties": false
+    "StageCredentialRequest":
+      "type": "object"
+      "properties":
+        "name":
+          "type": "string"
+          "maxLength": 80
+        "scopes":
+          "type": "array"
+          "items":
+            "type": "string"
+            "enum":
+              - "setup:write"
+              - "lifecycle:write"
+              - "health:read"
+              - "diagnostics:read"
+              - "profiles:read"
+              - "profiles:write"
+              - "providers:read"
+              - "providers:write"
+              - "directories:read"
+              - "device:self:read"
+              - "device:self:revoke"
+          "uniqueItems": true
+          "maxItems": 11
+      "additionalProperties": false
+    "StagedCredential":
+      "type": "object"
+      "properties":
+        "credential_id":
+          "type": "string"
+        "token":
+          "type": "string"
+          "format": "password"
+          "description": "Sensitive pending Wing Link bearer credential. Store securely, never in a URL or handoff."
+      "required":
+        - "credential_id"
+        - "token"
+      "additionalProperties": false
+    "DeviceSelf":
+      "type": "object"
+      "properties":
+        "device_id":
+          "type": "string"
+        "name":
+          "type": "string"
+        "scopes":
+          "type": "array"
+          "items":
+            "type": "string"
+        "created_at":
+          "type": "string"
+          "format": "date-time"
+        "legacy":
+          "type": "boolean"
+        "last_used_at":
+          "type": "string"
+          "format": "date-time"
+        "expires_at":
+          "type": "string"
+          "format": "date-time"
+      "required":
+        - "device_id"
+        - "name"
+        - "scopes"
+        - "created_at"
+        - "legacy"
+      "additionalProperties": false
+    "Directory":
+      "type": "object"
+      "properties":
+        "handle":
+          "type": "string"
+          "description": "Opaque, expiring, device-bound handle. Never a host path."
+        "name":
+          "type": "string"
+      "required":
+        - "handle"
+        - "name"
+      "additionalProperties": false
+    "DirectoryList":
+      "type": "object"
+      "properties":
+        "directories":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/Directory"
+        "next_offset":
+          "type": "integer"
+      "required":
+        - "directories"
+      "additionalProperties": false
+    "ModelProvider":
+      "type": "object"
+      "properties":
+        "slug":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 80
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 160
+        "models":
+          "type": "array"
+          "items":
+            "type": "string"
+            "minLength": 1
+            "maxLength": 200
+      "required":
+        - "slug"
+        - "name"
+        - "models"
+      "additionalProperties": false
+    "ModelCatalog":
+      "type": "object"
+      "properties":
+        "providers":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ModelProvider"
+          "maxItems": 128
+      "required":
+        - "providers"
+      "additionalProperties": false
+    "OmniRouteDiscovery":
+      "type": "object"
+      "properties":
+        "status":
+          "type": "string"
+          "enum":
+            - "unavailable"
+            - "unrecognized"
+            - "starting"
+            - "authentication_required"
+            - "serving"
+      "required":
+        - "status"
+      "additionalProperties": false
+    "UpdateStatus":
+      "type": "object"
+      "properties":
+        "state":
+          "type": "string"
+          "enum":
+            - "unavailable"
+            - "idle"
+        "current_version":
+          "type": "string"
+        "reason":
+          "type": "string"
+          "enum":
+            - "release_keys_empty"
+            - "activation_not_configured"
+            - ""
+      "required":
+        - "state"
+        - "current_version"
+        - "reason"
+      "additionalProperties": false
+    "UpdateApplied":
+      "type": "object"
+      "properties":
+        "operation_id":
+          "type": "string"
+        "from_version":
+          "type": "string"
+        "to_version":
+          "type": "string"
+      "required":
+        - "operation_id"
+        - "from_version"
+        - "to_version"
+      "additionalProperties": false
+    "EmptyRequest":
+      "type": "object"
+      "properties": {}
+      "additionalProperties": false
+    "OperationEvent":
+      "type": "object"
+      "properties":
+        "protocol_version":
+          "type": "integer"
+        "operation_id":
+          "type": "string"
+        "phase":
+          "type": "string"
+        "message":
+          "type": "string"
+          "maxLength": 240
+        "percent":
+          "type": "integer"
+        "terminal":
+          "type": "boolean"
+        "error_code":
+          "type": "string"
+      "required":
+        - "protocol_version"
+        - "operation_id"
+        - "phase"
+        - "message"
+        - "percent"
+      "additionalProperties": false
+    "OperationAccepted":
+      "type": "object"
+      "properties":
+        "protocol_version":
+          "const": 2
+        "operation_id":
+          "type": "string"
+      "required":
+        - "protocol_version"
+        - "operation_id"
+      "additionalProperties": false
+    "OperationReplay":
+      "type": "object"
+      "properties":
+        "protocol_version":
+          "const": 2
+        "operation_id":
+          "type": "string"
+        "operation":
+          "$ref": "#/components/schemas/OperationEvent"
+        "replayed":
+          "const": true
+      "required":
+        - "protocol_version"
+        - "operation_id"
+        - "operation"
+        - "replayed"
+      "additionalProperties": false
+    "ApprovalRequired":
+      "type": "object"
+      "properties":
+        "error":
+          "$ref": "#/components/schemas/APIError"
+        "approval_id":
+          "type": "string"
+        "operation_id":
+          "type": "string"
+        "expires_at":
+          "type": "integer"
+          "description": "Unix seconds, not an RFC 3339 string."
+      "required":
+        - "error"
+        - "approval_id"
+        - "operation_id"
+        - "expires_at"
+      "additionalProperties": false
+    "ApprovalOrReplay":
+      "oneOf":
+        -
+          "$ref": "#/components/schemas/ApprovalRequired"
+        -
+          "$ref": "#/components/schemas/OperationReplay"
+    "SetupAccepted":
+      "oneOf":
+        -
+          "$ref": "#/components/schemas/ApprovalRequired"
+        -
+          "$ref": "#/components/schemas/OperationReplay"
+        -
+          "$ref": "#/components/schemas/OperationAccepted"
+    "ProfileAction":
+      "type": "object"
+      "properties":
+        "revision":
+          "type": "string"
+      "required":
+        - "revision"
+      "additionalProperties": false
+    "ProfileActions":
+      "type": "object"
+      "properties":
+        "rename":
+          "$ref": "#/components/schemas/ProfileAction"
+        "delete":
+          "$ref": "#/components/schemas/ProfileAction"
+      "additionalProperties": false
+    "Profile":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "string"
+        "name":
+          "type": "string"
+        "source":
+          "type": "string"
+        "revision":
+          "type": "string"
+        "topology_revision":
+          "type": "string"
+        "description":
+          "type": "string"
+        "model":
+          "type": "string"
+        "skills_count":
+          "type": "integer"
+        "gateway_state":
+          "type": "string"
+        "actions":
+          "$ref": "#/components/schemas/ProfileActions"
+      "required":
+        - "id"
+        - "name"
+        - "source"
+        - "revision"
+        - "topology_revision"
+        - "gateway_state"
+        - "actions"
+      "additionalProperties": false
+    "ProfileResponse":
+      "type": "object"
+      "properties":
+        "profile":
+          "$ref": "#/components/schemas/Profile"
+      "required":
+        - "profile"
+      "additionalProperties": false
+    "ProfileList":
+      "type": "object"
+      "properties":
+        "protocol_version":
+          "const": 2
+        "profiles":
+          "type":
+            - "array"
+            - "null"
+          "items":
+            "$ref": "#/components/schemas/Profile"
+        "warnings":
+          "type":
+            - "array"
+            - "null"
+          "items":
+            "type": "string"
+      "required":
+        - "protocol_version"
+        - "profiles"
+        - "warnings"
+      "additionalProperties": false
+    "ProfileCreateRequest":
+      "type": "object"
+      "properties":
+        "name":
+          "type": "string"
+          "description": "Trimmed and lowercased, then validated against ^[a-z0-9][a-z0-9_-]{0,63}$. Reserved IDs cannot be changed."
+        "clone_from":
+          "type": "string"
+        "description":
+          "type": "string"
+          "description": "After trimming: at most 500 runes and no control characters."
+        "provider":
+          "type": "string"
+          "description": "Trimmed, lowercased allowlist: nous, fireworks, openrouter, moa, novita, lmstudio, anthropic, openai-codex, openai-api, alibaba, xai-oauth, xiaomi, tencent-tokenhub, nvidia, copilot, copilot-acp, huggingface, gemini, vertex, deepseek, xai, zai, kimi-coding, kimi-coding-cn, stepfun, minimax, minimax-oauth, minimax-cn, ollama-cloud, arcee, gmi, kilocode, opencode-zen, opencode-go, bedrock, azure-foundry, ai-gateway, qwen-oauth, omniroute. Provider and model must both be blank or both nonblank."
+        "model":
+          "type": "string"
+          "description": "After trimming: at most 200 runes and no control characters."
+        "provider_api_key":
+          "type": "string"
+          "format": "password"
+          "writeOnly": true
+          "description": "At most 16384 bytes, no CR/LF/NUL. Requires a provider; forbidden with omniroute. Nonblank after trimming requires local sensitive-write approval. Sent to Hermes through stdin only."
+      "required":
+        - "name"
+      "additionalProperties": false
+    "ProfileRenameRequest":
+      "type": "object"
+      "properties":
+        "name":
+          "type": "string"
+        "revision":
+          "type": "string"
+          "description": "Body revision takes precedence over If-Match after trimming."
+        "description":
+          "type": "string"
+          "description": "Only blank after trimming is accepted."
+        "provider":
+          "type": "string"
+          "description": "Only blank after trimming is accepted."
+        "model":
+          "type": "string"
+          "description": "Only blank after trimming is accepted."
+        "provider_api_key":
+          "type": "string"
+          "writeOnly": true
+          "description": "Only the empty string is accepted. Existing-profile secret writes are not supported."
+      "required":
+        - "name"
+      "additionalProperties": false
+    "ProfileDeleted":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "string"
+        "deleted":
+          "const": true
+      "required":
+        - "id"
+        - "deleted"
+      "additionalProperties": false
+    "BrokerRequest":
+      "type": "object"
+      "properties":
+        "origin":
+          "type": "string"
+          "description": "Must equal this ephemeral broker origin exactly, not the Agent or management origin."
+        "code":
+          "type": "string"
+          "format": "password"
+          "writeOnly": true
+          "description": "Five-minute pairing code. Never persist, log, or analyze it."
+      "required":
+        - "origin"
+        - "code"
+      "additionalProperties": false
+    "BrokerError":
+      "type": "object"
+      "properties":
+        "error":
+          "type": "string"
+      "required":
+        - "error"
+      "additionalProperties": false
+    "BrokerInspection":
+      "type": "object"
+      "properties":
+        "label":
+          "type": "string"
+        "origin":
+          "type": "string"
+        "wing_link_origin":
+          "type": "string"
+        "credential_mode":
+          "type": "string"
+        "access_label":
+          "type": "string"
+        "scopes":
+          "type": "array"
+          "items":
+            "type": "string"
+        "connection_count":
+          "type": "integer"
+        "host_fingerprint":
+          "type": "string"
+        "protocol_generation":
+          "const": 2
+        "expires_at":
+          "type": "integer"
+      "required":
+        - "label"
+        - "origin"
+        - "wing_link_origin"
+        - "credential_mode"
+        - "access_label"
+        - "scopes"
+        - "connection_count"
+        - "host_fingerprint"
+        - "protocol_generation"
+        - "expires_at"
+      "additionalProperties": false
+    "AgentConnection":
+      "type": "object"
+      "properties":
+        "profile_id":
+          "type": "string"
+        "origin":
+          "type": "string"
+        "token":
+          "type": "string"
+          "format": "password"
+        "credential_id":
+          "type": "string"
+        "label":
+          "type": "string"
+      "required":
+        - "profile_id"
+        - "origin"
+        - "token"
+        - "credential_id"
+        - "label"
+      "additionalProperties": false
+    "BrokerExchange":
+      "type": "object"
+      "properties":
+        "token":
+          "type": "string"
+          "format": "password"
+          "description": "Separate Hermes Agent credential, not a Wing Link credential."
+        "label":
+          "type": "string"
+        "credential_id":
+          "type": "string"
+        "wing_link_origin":
+          "type": "string"
+        "wing_link_token":
+          "type": "string"
+          "format": "password"
+        "wing_link_credential_id":
+          "type": "string"
+        "wing_link_scopes":
+          "type": "array"
+          "items":
+            "type": "string"
+        "device_id":
+          "type": "string"
+        "device_scopes":
+          "type": "array"
+          "items":
+            "type": "string"
+        "host_fingerprint":
+          "type": "string"
+        "protocol_generation":
+          "const": 2
+        "connections":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/AgentConnection"
+      "required":
+        - "token"
+        - "label"
+        - "credential_id"
+        - "wing_link_origin"
+        - "wing_link_token"
+        - "wing_link_credential_id"
+        - "wing_link_scopes"
+        - "device_id"
+        - "device_scopes"
+        - "host_fingerprint"
+        - "protocol_generation"
+      "additionalProperties": false
+  "headers":
+    "CacheControl":
+      "schema":
+        "const": "no-store"
+      "description": "Do not cache responses."
+    "WingProtocol":
+      "schema":
+        "type": "string"
+        "enum":
+          - "2"
+      "description": "Current management protocol generation."
+"x-authority":
+  "mode": "code-first"
+  "routes":
+    - "wing_link/internal/app/serve.go"
+    - "wing_link/internal/app/bootstrap_server.go"
+    - "wing_link/internal/app/pair.go"
+    - "wing_link/internal/app/pair_open.go"
+  "contracts":
+    - "docs/adr/api-and-state.md"
+    - "docs/adr/runtime-and-delivery.md"
+    - "docs/adr/security-and-privacy.md"
+    - "docs/product/wing-link.md"
+    - "docs/security/threat-model.md"
+  "tests":
+    - "wing_link/internal/app/serve_test.go"
+    - "wing_link/internal/app/bootstrap_test.go"
+    - "wing_link/internal/app/local_pairing_proof_test.go"
+    - "wing_link/internal/app/workspaces_test.go"
+    - "wing_link/internal/app/model_options_test.go"
+    - "wing_link/internal/app/omniroute_discovery_test.go"
+    - "wing_link/internal/app/pair_test.go"
+    - "wing_link/internal/app/pair_open_test.go"

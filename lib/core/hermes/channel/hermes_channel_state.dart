@@ -135,6 +135,15 @@ class HermesChannelState {
       (capabilities == null ||
           _authorizesEndpoint('session_create', 'POST', '/api/sessions'));
 
+  bool get canReadSessionHistory =>
+      !isSelectingProfile &&
+      (capabilities == null ||
+          _authorizesEndpoint(
+            'session_messages',
+            'GET',
+            '/api/sessions/{session_id}/messages',
+          ));
+
   bool get canUpdateSessions =>
       capabilities == null ||
       _authorizesEndpoint(
@@ -161,6 +170,25 @@ class HermesChannelState {
 
   bool get canReadDetailedHealth =>
       _authorizesEndpoint('health_detailed', 'GET', '/health/detailed');
+
+  /// Persona editing needs both exact operations and explicit profile context.
+  bool get canEditProfileSoul =>
+      isConnected &&
+      !isSelectingProfile &&
+      capabilities?.profileContext.isSupportedQueryContext == true &&
+      _authorizesPersona('profile_soul', 'GET', 'profiles:read') &&
+      _authorizesPersona('profile_soul_update', 'PUT', 'profiles:write');
+
+  bool _authorizesPersona(String name, String method, String scope) =>
+      capabilities?.auth.allows(scope) == true &&
+      capabilities?.advertisesScopedEndpoint(
+            name,
+            method,
+            '/api/profiles/{name}/soul',
+            scope,
+          ) ==
+          true &&
+      _authorizesEndpoint(name, method, '/api/profiles/{name}/soul');
 
   bool get canReadSkills => _authorizesEndpoint('skills', 'GET', '/v1/skills');
 

@@ -60,42 +60,32 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
     'POST',
     '/api/sessions',
   );
-  final advertisesDetailedHealth =
-      capabilities.supportsSchema &&
-      capabilities.auth.allows('gateway:read') &&
-      capabilities.advertisesScopedEndpoint(
-        'health_detailed',
-        'GET',
-        '/health/detailed',
-        'gateway:read',
-      );
-  final advertisesJobsList =
-      capabilities.supportsSchema &&
-      capabilities.auth.allows('tasks:read') &&
-      capabilities.advertisesScopedEndpoint(
-        'jobs',
-        'GET',
-        '/api/jobs',
-        'tasks:read',
-      );
+  final advertisesDetailedHealth = authorizesScopedEndpoint(
+    'health_detailed',
+    'GET',
+    '/health/detailed',
+    'gateway:read',
+  );
+  final advertisesJobsList = authorizesScopedEndpoint(
+    'jobs',
+    'GET',
+    '/api/jobs',
+    'tasks:read',
+  );
   final supportsJobsAdmin =
       capabilities.supportsFeature('jobs_admin') && advertisesJobsList;
   final supportsAttachments =
       capabilities.supportsFeature('attachments_api') ||
       capabilities.supportsFeature('multimodal_chat');
-  final supportsPersonaRead =
-      capabilities.supportsSchema &&
-      capabilities.auth.allows('profiles:read') &&
-      capabilities.advertisesScopedEndpoint(
-        'profile_soul',
-        'GET',
-        '/api/profiles/{name}/soul',
-        'profiles:read',
-      );
+  final supportsPersonaRead = authorizesScopedEndpoint(
+    'profile_soul',
+    'GET',
+    '/api/profiles/{name}/soul',
+    'profiles:read',
+  );
   final supportsPersonaWrite =
-      capabilities.supportsSchema &&
-      capabilities.auth.allows('profiles:write') &&
-      capabilities.advertisesScopedEndpoint(
+      capabilities.profileContext.isSupportedQueryContext &&
+      authorizesScopedEndpoint(
         'profile_soul_update',
         'PUT',
         '/api/profiles/{name}/soul',

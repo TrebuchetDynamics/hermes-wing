@@ -475,6 +475,94 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
   }
 
+  Widget _buildSessionRestoration(BuildContext context, HermesChannel channel) {
+    final strings = _hermesStrings(context);
+    final pending = _gatewayDirectory.isActivating;
+    final canChoose = _canChooseRestorationSession(channel);
+    final title = pending
+        ? strings.chatSessionRestorationPendingTitle
+        : strings.chatSessionRestorationFailedTitle;
+    final body = pending
+        ? strings.chatSessionRestorationPendingBody
+        : switch (_gatewayDirectory.restorationFailure) {
+            GatewaySessionRestorationFailure.unsupported =>
+              strings.chatSessionRestorationUnsupportedBody,
+            GatewaySessionRestorationFailure.authentication =>
+              strings.chatSessionRestorationAuthenticationBody,
+            GatewaySessionRestorationFailure.unavailable =>
+              strings.chatSessionRestorationUnavailableBody,
+            GatewaySessionRestorationFailure.incompatible =>
+              strings.chatSessionRestorationIncompatibleBody,
+            GatewaySessionRestorationFailure.transient ||
+            null => strings.chatSessionRestorationTransientBody,
+          };
+    return SafeArea(
+      key: const ValueKey('hermes-session-restoration'),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - 48).clamp(0, double.infinity),
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ExcludeSemantics(
+                      child: Icon(
+                        pending
+                            ? Icons.hourglass_top
+                            : Icons.chat_bubble_outline,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Semantics(
+                      header: true,
+                      liveRegion: true,
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(body),
+                    const SizedBox(height: 24),
+                    FilledButton(
+                      key: const ValueKey('hermes-session-restoration-retry'),
+                      onPressed: pending
+                          ? null
+                          : () => unawaited(
+                              _gatewayDirectory.retrySessionRestoration(),
+                            ),
+                      child: Text(strings.chatSessionRestorationRetry),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      key: const ValueKey('hermes-session-restoration-choose'),
+                      onPressed: canChoose
+                          ? () => _showSessionsPanel(context, channel)
+                          : null,
+                      child: Text(strings.chatSessionRestorationChoose),
+                    ),
+                    if (!canChoose && !pending) ...[
+                      const SizedBox(height: 12),
+                      Text(strings.chatSessionRestorationProfileRequiredBody),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildChat(
     BuildContext context,
     HermesChannel channel,
@@ -946,6 +1034,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
     return _HermesTranscriptList(
       viewport: _transcriptViewport,
+      onRevealEarlier: () {
+        _transcriptViewport.userScrolled(nearLatest: false);
+        final generation = _transcriptViewport.beginAuthoritativeRefresh();
+        _setState(_transcriptViewport.revealEarlier);
+        _transcriptViewport.restore(generation);
+      },
+      onLatest: () {
+        _setState(_transcriptViewport.followLatest);
+        _transcriptViewport.restore(_transcriptViewport.generation);
+      },
       controller: _transcriptScrollController,
       textScale: ref.watch(
         wingChatPreferencesProvider.select(
@@ -1059,6 +1157,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Future<void> _openComposerModelPicker(HermesChannel channel) async {
+    if (_composerModelPickerPending) return;
     final state = channel.state;
     final sessionId = state.activeSessionId;
     final useSessionModelPicker =
@@ -1069,51 +1168,140 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         (!state.canReadModels || !state.canWriteModels)) {
       return;
     }
+    // One presentation owns the entire read-to-dismissal lifetime. Redundant
+    // activation must not admit another sheet or queue duplicate load feedback.
+    _composerModelPickerPending = true;
     try {
       if (useSessionModelPicker) {
         var options = channel.state.modelOptions;
-        if (options == null) {
-          await channel.loadModelOptions();
-          options = channel.state.modelOptions;
-        }
-        if (!mounted || options == null) {
-          throw StateError('Model options unavailable');
-        }
-        final selectedOptions = options;
         final selectedSessionId = sessionId;
+        var contextValid = true;
+        void invalidateChangedContext() {
+          if (_sessionRestorationUnsettled ||
+              channel.state.refreshContextChangedFrom(state) ||
+              channel.state.activeSessionId != selectedSessionId ||
+              (options != null &&
+                  !identical(channel.state.modelOptions, options)) ||
+              channel.state.isSelectingProfile ||
+              channel.state.isSessionStreaming(selectedSessionId) ||
+              !channel.state.canLockSessionModel) {
+            contextValid = false;
+          }
+        }
+
+        bool pickerContextIsCurrent() {
+          invalidateChangedContext();
+          return mounted &&
+              contextValid &&
+              identical(ref.read(hermesChannelProvider), channel);
+        }
+
+        void requirePickerContext() {
+          if (!pickerContextIsCurrent()) {
+            throw StateError('Session picker context changed');
+          }
+        }
+
+        channel.addListener(invalidateChangedContext);
+        _gatewayDirectory.addListener(invalidateChangedContext);
+        try {
+          if (options == null) {
+            await channel.loadModelOptions();
+            options = channel.state.modelOptions;
+          }
+          if (!mounted || !pickerContextIsCurrent()) return;
+          if (options == null) {
+            throw StateError('Model options unavailable');
+          }
+          final selectedOptions = options;
+          final sessionModel =
+              channel.state.sessionModelLocks[selectedSessionId];
+          await showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            showDragHandle: true,
+            isDismissible: false,
+            enableDrag: false,
+            builder: (context) => SessionModelPickerSheet(
+              options: selectedOptions,
+              currentSessionModel:
+                  sessionModel?.accepted == true &&
+                      sessionModel?.sessionId == selectedSessionId
+                  ? sessionModel
+                  : null,
+              onLock: (provider, model) async {
+                requirePickerContext();
+                await channel.lockSessionModel(
+                  sessionId: selectedSessionId,
+                  provider: provider,
+                  model: model,
+                );
+                requirePickerContext();
+              },
+            ),
+          );
+        } catch (_) {
+          // A load error belongs only to the initiating Chat context. Sheet
+          // confirmation errors retain their existing inline handling.
+          if (!pickerContextIsCurrent()) return;
+          rethrow;
+        } finally {
+          _gatewayDirectory.removeListener(invalidateChangedContext);
+          channel.removeListener(invalidateChangedContext);
+        }
+        return;
+      }
+
+      var contextValid = true;
+      void invalidateInventoryContext() {
+        if (_sessionRestorationUnsettled ||
+            channel.state.refreshContextChangedFrom(state) ||
+            channel.state.activeSessionId != sessionId ||
+            channel.state.isSelectingProfile ||
+            !channel.state.isConnected ||
+            !channel.state.canReadModels ||
+            !channel.state.canWriteModels) {
+          contextValid = false;
+        }
+      }
+
+      bool inventoryContextIsCurrent() {
+        invalidateInventoryContext();
+        return mounted &&
+            contextValid &&
+            identical(ref.read(hermesChannelProvider), channel);
+      }
+
+      // The sheet captures its owner only when mounted. Fence the initiating
+      // read first, including transitions that return to the original identity.
+      channel.addListener(invalidateInventoryContext);
+      _gatewayDirectory.addListener(invalidateInventoryContext);
+      try {
+        var inventory = channel.state.modelInventory;
+        if (inventory == null) {
+          await channel.loadModels();
+          inventory = channel.state.modelInventory;
+        }
+        if (!mounted || !inventoryContextIsCurrent()) return;
+        if (inventory == null) {
+          throw StateError('Model inventory unavailable');
+        }
         await showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
           showDragHandle: true,
-          builder: (context) => SessionModelPickerSheet(
-            options: selectedOptions,
-            onLock: (provider, model) => channel.lockSessionModel(
-              sessionId: selectedSessionId,
-              provider: provider,
-              model: model,
-            ),
-          ),
+          builder: (context) =>
+              ModelPickerSheet(channel: channel, inventory: inventory!),
         );
-        return;
+      } catch (_) {
+        if (!inventoryContextIsCurrent()) return;
+        rethrow;
+      } finally {
+        _gatewayDirectory.removeListener(invalidateInventoryContext);
+        channel.removeListener(invalidateInventoryContext);
       }
-
-      var inventory = channel.state.modelInventory;
-      if (inventory == null) {
-        await channel.loadModels();
-        inventory = channel.state.modelInventory;
-      }
-      if (!mounted || inventory == null) {
-        throw StateError('Model inventory unavailable');
-      }
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        showDragHandle: true,
-        builder: (context) =>
-            ModelPickerSheet(channel: channel, inventory: inventory!),
-      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1123,6 +1311,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           ),
         ),
       );
+    } finally {
+      _composerModelPickerPending = false;
     }
   }
 
@@ -1138,9 +1328,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final lockedModel = state.activeSessionId == null
         ? null
         : state.sessionModelLocks[state.activeSessionId]?.model.trim();
+    // Recovered session metadata is display-only; it does not acknowledge a
+    // provider/model lock or authorize a model mutation.
+    final sessionModel = state.activeSession?.model?.trim();
     final assignedModel = state.modelInventory?.assignment.activeModel.trim();
     final modelLabel = lockedModel != null && lockedModel.isNotEmpty
         ? lockedModel
+        : sessionModel != null && sessionModel.isNotEmpty
+        ? sessionModel
         : assignedModel != null && assignedModel.isNotEmpty
         ? assignedModel
         : strings.chatLayoutModelFallbackLabel;
@@ -1186,7 +1381,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                     channel,
                     state,
                     canSendTurns,
-                    isTurnActive || canRetry || !canSendTurns ? strip : null,
+                    isTurnActive ||
+                            canRetry ||
+                            !canSendTurns ||
+                            strip.onSelectModel != null
+                        ? strip
+                        : null,
                   ),
           );
         },

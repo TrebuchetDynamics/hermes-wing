@@ -10,6 +10,7 @@ import '../../../core/hermes/setup/secure_hermes_detached_run_store.dart';
 import '../../../core/hermes/setup/secure_hermes_endpoint_store.dart';
 import '../gateways/gateway_contact_cache.dart';
 import '../gateways/hermes_gateway_directory.dart';
+import 'hermes_directory_lifetime.dart';
 
 /// Persists the Hermes endpoint (base URL + API key); see
 /// docs/adr/security-and-privacy.md.
@@ -44,6 +45,15 @@ final gatewayContactCacheProvider = Provider<GatewayContactCache>(
   (ref) => GatewayContactCache(),
 );
 
+// Observing this reference never reads the eager-start directory provider.
+final hermesDirectoryLifetimeProvider = Provider<HermesDirectoryLifetime>((
+  ref,
+) {
+  final lifetime = HermesDirectoryLifetime();
+  ref.onDispose(lifetime.dispose);
+  return lifetime;
+});
+
 final hermesGatewayDirectoryProvider =
     ChangeNotifierProvider<HermesGatewayDirectory>((ref) {
       final directory = HermesGatewayDirectory(
@@ -52,6 +62,9 @@ final hermesGatewayDirectoryProvider =
         loader: ref.watch(hermesGatewaySummaryLoaderProvider),
         activeChannel: ref.watch(hermesChannelProvider),
       );
+      final lifetime = ref.watch(hermesDirectoryLifetimeProvider);
+      lifetime.attach(directory);
+      ref.onDispose(() => lifetime.detach(directory));
       unawaited(directory.start());
       return directory;
     });

@@ -1,0 +1,345 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T04:40:45.730327+00:00",
+  "title": "Design System: Hermes Wing — first desktop shell",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15.000% 0.115453 253.452)",
+          "oklch(26.429% 0.115453 253.452)",
+          "oklch(37.857% 0.115453 253.452)",
+          "oklch(49.286% 0.115453 253.452)",
+          "oklch(60.714% 0.115453 253.452)",
+          "oklch(72.143% 0.115453 253.452)",
+          "oklch(83.571% 0.115453 253.452)",
+          "oklch(95.000% 0.115453 253.452)"
+        ]
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Dark Accent",
+        "tonalRamp": [
+          "oklch(15.000% 0.159095 256.316)",
+          "oklch(26.429% 0.159095 256.316)",
+          "oklch(37.857% 0.159095 256.316)",
+          "oklch(49.286% 0.159095 256.316)",
+          "oklch(60.714% 0.159095 256.316)",
+          "oklch(72.143% 0.159095 256.316)",
+          "oklch(83.571% 0.159095 256.316)",
+          "oklch(95.000% 0.159095 256.316)"
+        ]
+      },
+      "light-rail": {
+        "role": "neutral",
+        "displayName": "Light Rail",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "light-work-area": {
+        "role": "neutral",
+        "displayName": "Light Work Area",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "light-foreground": {
+        "role": "neutral",
+        "displayName": "Light Foreground",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "light-secondary": {
+        "role": "neutral",
+        "displayName": "Light Secondary",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "light-hover": {
+        "role": "neutral",
+        "displayName": "Light Hover",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "light-selection": {
+        "role": "primary",
+        "displayName": "Light Selection",
+        "tonalRamp": [
+          "oklch(15.000% 0.115453 253.452)",
+          "oklch(26.429% 0.115453 253.452)",
+          "oklch(37.857% 0.115453 253.452)",
+          "oklch(49.286% 0.115453 253.452)",
+          "oklch(60.714% 0.115453 253.452)",
+          "oklch(72.143% 0.115453 253.452)",
+          "oklch(83.571% 0.115453 253.452)",
+          "oklch(95.000% 0.115453 253.452)"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Light Border",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-rail": {
+        "role": "neutral",
+        "displayName": "Dark Rail",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-work-area": {
+        "role": "neutral",
+        "displayName": "Dark Work Area",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-foreground": {
+        "role": "neutral",
+        "displayName": "Dark Foreground",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-secondary": {
+        "role": "neutral",
+        "displayName": "Dark Secondary",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-hover": {
+        "role": "neutral",
+        "displayName": "Dark Hover",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      },
+      "dark-selection": {
+        "role": "primary",
+        "displayName": "Dark Selection",
+        "tonalRamp": [
+          "oklch(15.000% 0.115453 253.452)",
+          "oklch(26.429% 0.115453 253.452)",
+          "oklch(37.857% 0.115453 253.452)",
+          "oklch(49.286% 0.115453 253.452)",
+          "oklch(60.714% 0.115453 253.452)",
+          "oklch(72.143% 0.115453 253.452)",
+          "oklch(83.571% 0.115453 253.452)",
+          "oklch(95.000% 0.115453 253.452)"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Dark Border",
+        "tonalRamp": [
+          "oklch(15.000% 0.000000 89.876)",
+          "oklch(26.429% 0.000000 89.876)",
+          "oklch(37.857% 0.000000 89.876)",
+          "oklch(49.286% 0.000000 89.876)",
+          "oklch(60.714% 0.000000 89.876)",
+          "oklch(72.143% 0.000000 89.876)",
+          "oklch(83.571% 0.000000 89.876)",
+          "oklch(95.000% 0.000000 89.876)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "shell-nav": {
+        "displayName": "Shell Nav",
+        "purpose": "Desktop shell only; inherited system/native family, not exact bundled reference typography."
+      },
+      "shell-nav-selected": {
+        "displayName": "Shell Nav Selected",
+        "purpose": "Desktop shell only; inherited system/native family, not exact bundled reference typography."
+      },
+      "shell-status": {
+        "displayName": "Shell Status",
+        "purpose": "Desktop shell only; inherited system/native family, not exact bundled reference typography."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "shell-button-response",
+        "value": "150ms",
+        "purpose": "Source ButtonStyle duration; easing not independently specified."
+      },
+      {
+        "name": "sidebar-collapse",
+        "value": "0ms",
+        "purpose": "Immediate source layout change preserving child/focus ownership."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desktop-shell",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Light navigation — default",
+      "kind": "nav",
+      "refersTo": "shell-nav-light-default",
+      "description": "Documentation translation of shell row; inline icon is illustrative, not an exact Material/Lucide glyph.",
+      "html": "<div class=\"ds-stage-light\"><button class=\"ds-nav-light-default\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 4h16v12H8l-4 4V4Z\"/></svg>Chat</button></div>",
+      "css": ".ds-stage-light { background:#f8f8f8; padding:8px; } .ds-nav-light-default { display:flex; align-items:center; gap:10px; box-sizing:border-box; width:234px; min-height:48px; padding:7px 10px; border:1px solid transparent; border-radius:10px; background:transparent; color:#111111; font-family:sans-serif, 'Helvetica Neue', Arial, 'DejaVu Sans'; font-size:13px; line-height:1.4; font-weight:400; transition:background-color 150ms, color 150ms, border-color 150ms; } .ds-nav-light-default:hover, .ds-nav-light-default:focus-visible { background:#f0f0f0; } .ds-nav-light-default:focus-visible { outline:none; border-color:#555555; }"
+    },
+    {
+      "name": "Light navigation — selected",
+      "kind": "nav",
+      "refersTo": "shell-nav-light-selected",
+      "description": "Documentation translation of shell row; inline icon is illustrative, not an exact Material/Lucide glyph.",
+      "html": "<div class=\"ds-stage-light\"><button class=\"ds-nav-light-selected\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 4h16v12H8l-4 4V4Z\"/></svg>Chat</button></div>",
+      "css": ".ds-stage-light { background:#f8f8f8; padding:8px; } .ds-nav-light-selected { display:flex; align-items:center; gap:10px; box-sizing:border-box; width:234px; min-height:48px; padding:7px 10px; border:1px solid transparent; border-radius:10px; background:#003f7a14; color:#003f7a; font-family:sans-serif, 'Helvetica Neue', Arial, 'DejaVu Sans'; font-size:13px; line-height:1.4; font-weight:600; transition:background-color 150ms, color 150ms, border-color 150ms; } .ds-nav-light-selected:hover, .ds-nav-light-selected:focus-visible { background:#f0f0f0; } .ds-nav-light-selected:focus-visible { outline:none; border-color:#555555; }"
+    },
+    {
+      "name": "Light sidebar toggle",
+      "kind": "button",
+      "refersTo": "shell-toggle-light",
+      "description": "Focus overrides hover; collapse itself is immediate in Flutter. Preview does not implement routing/collapse.",
+      "html": "<div class=\"ds-stage-light\"><button class=\"ds-toggle-light\" aria-label=\"Collapse sidebar\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"m15 6-6 6 6 6\"/></svg></button></div>",
+      "css": ".ds-stage-light { background:#f8f8f8; padding:8px; } .ds-toggle-light { box-sizing:border-box; width:48px; height:48px; padding:7px 10px; border:2px solid transparent; border-radius:10px; background:transparent; color:#111111; display:flex; align-items:center; justify-content:center; transition:background-color 150ms, border-color 150ms; } .ds-toggle-light:hover { background:#f0f0f0; } .ds-toggle-light:focus-visible { outline:none; background:transparent; border-color:#555555; }"
+    },
+    {
+      "name": "Dark navigation — default",
+      "kind": "nav",
+      "refersTo": "shell-nav-dark-default",
+      "description": "Documentation translation of shell row; inline icon is illustrative, not an exact Material/Lucide glyph.",
+      "html": "<div class=\"ds-stage-dark\"><button class=\"ds-nav-dark-default\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 4h16v12H8l-4 4V4Z\"/></svg>Chat</button></div>",
+      "css": ".ds-stage-dark { background:#171717; padding:8px; } .ds-nav-dark-default { display:flex; align-items:center; gap:10px; box-sizing:border-box; width:234px; min-height:48px; padding:7px 10px; border:1px solid transparent; border-radius:10px; background:transparent; color:#ececec; font-family:sans-serif, 'Helvetica Neue', Arial, 'DejaVu Sans'; font-size:13px; line-height:1.4; font-weight:400; transition:background-color 150ms, color 150ms, border-color 150ms; } .ds-nav-dark-default:hover, .ds-nav-dark-default:focus-visible { background:#2f2f2f; } .ds-nav-dark-default:focus-visible { outline:none; border-color:#b4b4b4; }"
+    },
+    {
+      "name": "Dark navigation — selected",
+      "kind": "nav",
+      "refersTo": "shell-nav-dark-selected",
+      "description": "Documentation translation of shell row; inline icon is illustrative, not an exact Material/Lucide glyph.",
+      "html": "<div class=\"ds-stage-dark\"><button class=\"ds-nav-dark-selected\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 4h16v12H8l-4 4V4Z\"/></svg>Chat</button></div>",
+      "css": ".ds-stage-dark { background:#171717; padding:8px; } .ds-nav-dark-selected { display:flex; align-items:center; gap:10px; box-sizing:border-box; width:234px; min-height:48px; padding:7px 10px; border:1px solid transparent; border-radius:10px; background:#003f7a26; color:#579fff; font-family:sans-serif, 'Helvetica Neue', Arial, 'DejaVu Sans'; font-size:13px; line-height:1.4; font-weight:600; transition:background-color 150ms, color 150ms, border-color 150ms; } .ds-nav-dark-selected:hover, .ds-nav-dark-selected:focus-visible { background:#2f2f2f; } .ds-nav-dark-selected:focus-visible { outline:none; border-color:#b4b4b4; }"
+    },
+    {
+      "name": "Dark sidebar toggle",
+      "kind": "button",
+      "refersTo": "shell-toggle-dark",
+      "description": "Focus overrides hover; collapse itself is immediate in Flutter. Preview does not implement routing/collapse.",
+      "html": "<div class=\"ds-stage-dark\"><button class=\"ds-toggle-dark\" aria-label=\"Collapse sidebar\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><path d=\"m15 6-6 6 6 6\"/></svg></button></div>",
+      "css": ".ds-stage-dark { background:#171717; padding:8px; } .ds-toggle-dark { box-sizing:border-box; width:48px; height:48px; padding:7px 10px; border:2px solid transparent; border-radius:10px; background:transparent; color:#ececec; display:flex; align-items:center; justify-content:center; transition:background-color 150ms, border-color 150ms; } .ds-toggle-dark:hover { background:#2f2f2f; } .ds-toggle-dark:focus-visible { outline:none; background:transparent; border-color:#b4b4b4; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Hermes Desktop Task Shell",
+    "overview": "Hermes Wing inherits the pinned Hermes Desktop visual language: a flat neutral rail, an open workspace, restrained blue selection and small, readable navigation. This documents the completed first shell/sidebar slice, not a newly invented brand. The source tokens below are normative only for the desktop shell; Flutter logical pixels are written as px for interchange.\n\nThe sidebar theme is local. The route subtree receives only the workspace scaffold background override; feature controls retain their existing app theme. Compact navigation retains its existing Material presentation. Neither Chat nor the rest of the app has been redesigned by this documentation.",
+    "keyCharacteristics": [
+      "Flat neutral rail and workspace backing",
+      "Restrained blue selection with a disclosed accessible dark accent",
+      "Reference navigation density with accessible control targets",
+      "Local shell roles, not a replacement global theme"
+    ],
+    "rules": [
+      {
+        "name": "The Scope Rule",
+        "body": "Shell roles are local; extending them to a feature requires a separate implementation and review.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do apply these tokens only to the implemented desktop shell and its status strip.",
+      "Do preserve nine real destinations, named collapsed controls and exact acknowledged loaded-session actions.",
+      "Do retain visible keyboard focus and immediate collapse without transferring route or draft ownership.",
+      "Do disclose accessible adaptations and missing reference workflows."
+    ],
+    "donts": [
+      "Don't apply shell typography or palette to untouched feature controls or compact navigation by implication.",
+      "Don't describe the system fallback or Material icons as exact Manrope/Cairo or Lucide parity.",
+      "Don't fabricate recents, profile state, unsupported destinations or Agent capabilities to complete the picture.",
+      "Don't treat a fix-list ship verdict, CSS specimen or empty detector result as whole-app or native qualification."
+    ]
+  }
+}

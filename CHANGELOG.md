@@ -6,6 +6,12 @@ All notable user-visible changes will be documented here.
 
 ### Added
 
+- A read-only source-checkout tool compares release candidate bindings with
+  independent identity and public certificate expectations. It rejects missing or
+  changed evidence without executing or writing candidate files. Signature and
+  runtime qualification remain separate; see the
+  [offline comparison runbook](docs/runbooks/offline-release-candidate-comparison.md).
+
 - Wing Link can run as a persistent Linux user service with separate direct
   Hermes and acknowledged management credentials. Its private/VPN profile API
   merges Hermes-advertised rows with validated local profiles and supports
@@ -14,6 +20,29 @@ All notable user-visible changes will be documented here.
   Wing Link profile and labels topology-only rows as management-only.
 
 ### Fixed
+
+- Declared history operations now require the exact method/path, supported schema,
+  required grants and supported profile context before hydration or pagination.
+  Denial retains unresolved ownership and refuses Send; supported legacy documents
+  may still omit the baseline advertisement. See the
+  [bounded implementation evidence](docs/quality/2026-10-06-m2-history-admission.md).
+
+- History pages now reject unrelated or malformed session identities before
+  transcript publication or recovered-run settlement. Compaction history requires
+  fresh Agent lineage evidence; rejected reads retain durable ownership. See the
+  [bounded implementation evidence](docs/quality/2026-10-06-m2-history-identity.md).
+
+- Ambiguous run-status HTTP 404 no longer clears detached-run ownership or
+  releases the duplicate-Send guard. Retry and channel recreation retain the
+  exact lease until authoritative status and canonical history resolve it.
+  History identity and declared history-grant gaps remain separate; see the
+  [bounded repair evidence](docs/quality/2026-10-06-m2-ambiguous-404.md).
+
+- Rapid session-pin changes in one Chat store no longer allow an older pending
+  preference commit to overwrite the latest settled choice. Writes are serialized
+  and waiting choices are coalesced; failed persistence remains best-effort, with
+  no automatic retry or cross-instance durability guarantee. See the
+  [repair evidence](docs/runbooks/chat-session-pin-write-order.md).
 
 - Failed Hermes runs now show the redacted server or provider reason inline
   instead of repeating only “Hermes run failed.”

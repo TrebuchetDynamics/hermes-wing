@@ -13,6 +13,7 @@ import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/shared/async/fire_and_forget.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
+import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
@@ -1435,6 +1436,147 @@ void main() {
     );
   });
 
+  for (final width in [390.0, 1280.0]) {
+    for (final entry in ['menu', 'sheet']) {
+      for (final outcome in [
+        'success',
+        'failure',
+        'disposed success',
+        'disposed failure',
+        if (entry == 'sheet') 'dismissed success',
+        if (entry == 'sheet') 'dismissed failure',
+      ]) {
+        testWidgets('session clipboard $entry $outcome at $width', (
+          tester,
+        ) async {
+          tester.view.physicalSize = Size(width, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final harness = await _pumpGatewayChat(tester);
+          harness.channel.replaceSessions(const [
+            HermesSession(
+              id: 'clipboard-session',
+              source: 'api_server',
+              title: 'Clipboard example',
+              messageCount: 2,
+              preview: 'synthetic preview excluded from details',
+            ),
+          ], activeSessionId: 'clipboard-session');
+          await tester.pump();
+          if (width < 600) {
+            await tester.tap(
+              find.byKey(const ValueKey('hermes-contact-header')),
+            );
+            await tester.pumpAndSettle();
+          }
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-session-menu-clipboard-session')),
+          );
+          await tester.pumpAndSettle();
+          String? sheetSummary;
+          if (entry == 'sheet') {
+            await tester.tap(find.text('View details'));
+            await tester.pumpAndSettle();
+            sheetSummary = tester
+                .widget<SelectableText>(find.byType(SelectableText))
+                .data;
+          }
+          final gate = Completer<void>();
+          final writes = <String>[];
+          tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            (call) async {
+              if (call.method == 'Clipboard.setData') {
+                writes.add((call.arguments as Map)['text'] as String);
+                await gate.future;
+              }
+              return null;
+            },
+          );
+          addTearDown(() {
+            if (!gate.isCompleted) gate.complete();
+            tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+              SystemChannels.platform,
+              null,
+            );
+          });
+          if (entry == 'sheet') {
+            final button = find.widgetWithText(FilledButton, 'Copy details');
+            await tester.ensureVisible(button);
+            await tester.tap(button);
+          } else {
+            await tester.tap(find.text('Copy details'));
+          }
+          await tester.pumpAndSettle();
+          expect(writes, hasLength(1));
+          expect(writes.single, contains('ID: clipboard-session'));
+          expect(writes.single, isNot(contains('synthetic preview')));
+          expect(writes.single, isNot(contains('Preview:')));
+          if (sheetSummary != null) expect(writes.single, sheetSummary);
+          final successWhilePending = find
+              .text('Copied redacted Hermes session details.')
+              .evaluate()
+              .isNotEmpty;
+          if (entry == 'sheet') {
+            expect(
+              find.byKey(const ValueKey('hermes-session-details-sheet')),
+              findsOneWidget,
+            );
+          }
+          final disposed = outcome.startsWith('disposed');
+          final dismissed = outcome.startsWith('dismissed');
+          if (disposed) await tester.pumpWidget(const SizedBox.shrink());
+          if (dismissed) {
+            Navigator.of(
+              tester.element(
+                find.byKey(const ValueKey('hermes-session-details-sheet')),
+              ),
+            ).pop();
+            await tester.pumpAndSettle();
+          }
+          if (outcome.endsWith('failure')) {
+            gate.completeError(
+              PlatformException(
+                code: 'clipboard_rejected',
+                message: 'synthetic platform diagnostic excluded from UI',
+              ),
+            );
+          } else {
+            gate.complete();
+          }
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          if (dismissed) expect(find.byType(HermesChatScreen), findsOneWidget);
+          expect(
+            successWhilePending,
+            isFalse,
+            reason: 'Clipboard completion must precede the success notice',
+          );
+          expect(
+            find.textContaining('synthetic platform diagnostic'),
+            findsNothing,
+          );
+          expect(
+            find.text('Copied redacted Hermes session details.'),
+            !disposed && outcome == 'success' ? findsOneWidget : findsNothing,
+          );
+          expect(
+            find.text('Could not copy session details. Please try again.'),
+            !disposed && outcome == 'failure' ? findsOneWidget : findsNothing,
+          );
+          if (!disposed && !dismissed && entry == 'sheet') {
+            expect(
+              find.byKey(const ValueKey('hermes-session-details-sheet')),
+              outcome == 'success' ? findsNothing : findsOneWidget,
+            );
+          }
+          expect(writes, hasLength(1));
+        });
+      }
+    }
+  }
+
   testWidgets('phone header keeps secondary actions in overflow', (
     tester,
   ) async {
@@ -1727,34 +1869,217 @@ void main() {
     );
   });
 
-  testWidgets('resume reports a failed activation without an uncaught error', (
-    tester,
-  ) async {
-    final defaultReporter = reportFireAndForgetFailure;
-    final reported = <({String operation, Object error})>[];
-    reportFireAndForgetFailure = (operation, error) =>
-        reported.add((operation: operation, error: error));
-    addTearDown(() => reportFireAndForgetFailure = defaultReporter);
+  for (final recovery in ['Retry', 'Choose session']) {
+    testWidgets(
+      'resume activation failure recovers with $recovery',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final semantics = tester.ensureSemantics();
+        final defaultReporter = reportFireAndForgetFailure;
+        final reported = <({String operation, Object error})>[];
+        reportFireAndForgetFailure = (operation, error) =>
+            reported.add((operation: operation, error: error));
+        addTearDown(() => reportFireAndForgetFailure = defaultReporter);
 
-    var selectionCount = 0;
-    final channel = FakeHermesChannel(
-      selectProfileGate: (_) async {
-        selectionCount += 1;
-        if (selectionCount > 1) throw StateError('profile selection failed');
+        const contact = GatewayContactId(gatewayId: 'a', profileId: 'agent-a');
+        const sessions = [
+          HermesSession(id: 'sess_1', title: 'Remembered A', source: 'fake'),
+          HermesSession(id: 'newer-B', title: 'Other B', source: 'fake'),
+        ];
+        final cache = _ResumeSelectionCache();
+        final resumeEntered = Completer<void>();
+        final resumeRelease = Completer<void>();
+        final retryEntered = Completer<void>();
+        final retryRelease = Completer<void>();
+        var selectionCount = 0;
+        late final FakeHermesChannel channel;
+        channel = FakeHermesChannel(
+          selectProfileGate: (_) async {
+            selectionCount += 1;
+            if (selectionCount == 1) return;
+            channel.replaceSessions(sessions, activeSessionId: null);
+            if (selectionCount == 2) {
+              resumeEntered.complete();
+              await resumeRelease.future;
+              throw StateError('profile selection failed');
+            }
+            retryEntered.complete();
+            await retryRelease.future;
+          },
+        );
+        final harness = await _pumpGatewayChat(
+          tester,
+          channel: channel,
+          cache: cache,
+          textScale: 2,
+          disableAnimations: true,
+          startDirectory: true,
+        );
+        expect(cache.selection?.contactId, contact);
+        expect(cache.selection?.sessionId, 'sess_1');
+        channel.selectSessionCalls.clear();
+        channel.addFailedExchange('resume failure');
+        await tester.pump();
+        cache.writes.clear();
+
+        void expectRetainedTarget({List<String> selections = const []}) {
+          expect(harness.directory.activeContactId, contact);
+          expect(harness.directory.restoringSessionId, 'sess_1');
+          expect(cache.selection?.contactId, contact);
+          expect(cache.selection?.sessionId, 'sess_1');
+          expect(cache.writes, isEmpty);
+          expect(channel.state.activeSessionId, isNull);
+          expect(
+            find.byKey(const ValueKey('hermes-composer-field')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('hermes-send-button')),
+            findsNothing,
+          );
+          expect(channel.selectSessionCalls, selections);
+          expect(channel.createSessionCalls, isEmpty);
+          expect(channel.sentVoiceTranscripts, isEmpty);
+          expect(tester.takeException(), isNull);
+        }
+
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        await resumeEntered.future;
+        expectRetainedTarget();
+        expect(find.text('Restoring your conversation'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.text('Restoring your conversation')),
+          matchesSemantics(
+            isHeader: true,
+            isLiveRegion: true,
+            label: 'Restoring your conversation',
+            textDirection: TextDirection.ltr,
+          ),
+        );
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        resumeRelease.complete();
+        await tester.pumpAndSettle();
+        expectRetainedTarget();
+        expect(harness.directory.isActivating, isFalse);
+        expect(
+          harness.directory.restorationFailure,
+          GatewaySessionRestorationFailure.transient,
+        );
+        expect(find.text('Conversation not restored'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.text('Conversation not restored')),
+          matchesSemantics(
+            isHeader: true,
+            isLiveRegion: true,
+            label: 'Conversation not restored',
+            textDirection: TextDirection.ltr,
+          ),
+        );
+        expect(
+          tester
+              .widget<OutlinedButton>(
+                find.byKey(const ValueKey('hermes-session-restoration-choose')),
+              )
+              .onPressed,
+          isNull,
+        );
+        await _sendControlShortcut(tester, LogicalKeyboardKey.keyK);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hermes-sessions-panel')),
+          findsNothing,
+        );
+        expectRetainedTarget();
+
+        final retryFocus = Focus.of(tester.element(find.text('Retry')));
+        retryFocus.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        await retryEntered.future;
+        expectRetainedTarget();
+        expect(find.text('Restoring your conversation'), findsOneWidget);
+        expect(channel.selectProfileCalls, ['agent-a', 'agent-a', 'agent-a']);
+        expect(channel.connectCalls.map((call) => call.baseUrl), [
+          'https://a',
+          'https://a',
+          'https://a',
+        ]);
+        channel.selectSessionFails = recovery == 'Choose session';
+        retryRelease.complete();
+        await tester.pumpAndSettle();
+
+        if (recovery == 'Choose session') {
+          expectRetainedTarget(selections: ['sess_1']);
+          expect(channel.state.selectedProfileId, 'agent-a');
+          channel.selectSessionCalls.clear();
+          channel.selectSessionFails = false;
+          final chooseFocus = Focus.of(
+            tester.element(find.text('Choose session')),
+          );
+          chooseFocus.requestFocus();
+          await tester.pump();
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          expect(chooseFocus.hasFocus, isTrue);
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-session-title-newer-B')),
+          );
+          await tester.pumpAndSettle();
+        }
+
+        final expectedSession = recovery == 'Retry' ? 'sess_1' : 'newer-B';
+        expect(harness.directory.activeContactId, contact);
+        expect(channel.state.selectedProfileId, 'agent-a');
+        expect(channel.state.activeSessionId, expectedSession);
+        expect(harness.directory.restoringSessionId, isNull);
+        expect(harness.directory.restorationFailure, isNull);
+        expect(cache.selection?.contactId, contact);
+        expect(cache.selection?.sessionId, expectedSession);
+        expect(cache.writes, isNotEmpty);
+        expect(
+          cache.writes.every((write) => write.contactId == contact),
+          isTrue,
+        );
+        expect(cache.writes.map((write) => write.sessionId).toSet(), {
+          expectedSession,
+        });
+        expect(channel.selectSessionCalls, [expectedSession]);
+        expect(
+          find.byKey(const ValueKey('hermes-session-restoration')),
+          findsNothing,
+        );
+        final composer = tester.widget<TextField>(
+          find.byKey(const ValueKey('hermes-composer-field')),
+        );
+        expect(composer.enabled, isTrue);
+        expect(composer.controller!.text, isEmpty);
+        if (recovery == 'Choose session') {
+          expect(composer.focusNode!.hasFocus, isTrue);
+        }
+        expect(channel.createSessionCalls, isEmpty);
+        expect(channel.sentVoiceTranscripts, isEmpty);
+        // Recovery handles the failure visibly; no unhandled future is reported.
+        expect(reported, isEmpty);
+        expect(tester.takeException(), isNull);
+        semantics.dispose();
       },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
     );
-    final harness = await _pumpGatewayChat(tester, channel: channel);
-    harness.channel.addFailedExchange('resume failure');
-    await tester.pump();
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
-
-    expect(
-      reported.map((failure) => failure.operation),
-      contains('Hermes reconnect after resume'),
-    );
-  });
+  }
 
   testWidgets('resume preserves an attached live stream', (tester) async {
     final harness = await _pumpGatewayChat(tester);
@@ -1922,7 +2247,10 @@ Future<
 _pumpGatewayChat(
   WidgetTester tester, {
   FakeHermesChannel? channel,
+  FakeGatewayContactCache? cache,
   double textScale = 1,
+  bool disableAnimations = false,
+  bool startDirectory = false,
   List<String> profileIds = const ['agent-a'],
 }) async {
   channel ??= FakeHermesChannel.disconnected();
@@ -1948,11 +2276,15 @@ _pumpGatewayChat(
   });
   final directory = HermesGatewayDirectory(
     store: store,
-    cache: FakeGatewayContactCache(),
+    cache: cache ?? FakeGatewayContactCache(),
     loader: loader,
     activeChannel: channel,
   );
-  await directory.refresh();
+  if (startDirectory) {
+    await directory.start();
+  } else {
+    await directory.refresh();
+  }
   await directory.activate(
     GatewayContactId(gatewayId: 'a', profileId: profileIds.first),
   );
@@ -1967,9 +2299,10 @@ _pumpGatewayChat(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(textScale),
+            disableAnimations: disableAnimations,
+          ),
           child: child!,
         ),
         home: const HermesChatScreen(),
@@ -1978,4 +2311,18 @@ _pumpGatewayChat(
   );
   await tester.pumpAndSettle();
   return (directory: directory, channel: channel, store: store, loader: loader);
+}
+
+class _ResumeSelectionCache extends FakeGatewayContactCache {
+  final writes = <GatewayContactSelection>[];
+
+  @override
+  Future<void> saveSelection(
+    GatewayContactSelection selection, {
+    bool Function()? canWrite,
+  }) async {
+    if (!(canWrite?.call() ?? true)) return;
+    writes.add(selection);
+    await super.saveSelection(selection, canWrite: canWrite);
+  }
 }

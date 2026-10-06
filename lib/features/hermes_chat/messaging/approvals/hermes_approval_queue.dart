@@ -121,11 +121,14 @@ class HermesApprovalQueue extends ChangeNotifier {
 
   /// Drops [request] locally without answering Hermes.
   void dismiss(HermesApprovalRequest request) {
-    if (_disposed) return;
-    _pending.removeWhere(
-      (pending) => _requestKey(pending) == _requestKey(request),
-    );
-    _answeringId = null;
+    // Review retains the displayed instance across queue resets. A same-key
+    // replacement is not that request, and dismissal cannot settle an answer.
+    if (_disposed ||
+        _answeringId == _requestKey(request) ||
+        !_pending.any((pending) => identical(pending, request))) {
+      return;
+    }
+    _pending.removeWhere((pending) => identical(pending, request));
     notifyListeners();
   }
 

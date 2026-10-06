@@ -17,9 +17,12 @@ Encode the existing release keystore as one base64 line; do not create a new
 identity for each build and never commit the keystore or passwords. Record key
 custody and recovery outside this repository.
 
-Set `pubspec.yaml` to the release version, then dispatch with a new matching
-alpha tag—for example, `version: 0.1.0+1` requires `v0.1.0-alpha.1`. The
-workflow rejects mismatched or existing tags before starting platform builds.
+Set `pubspec.yaml` to the release version, then dispatch with a matching alpha
+tag. For example, `version: 0.1.0+1` accepts `v0.1.0-alpha.N`, where `N` is a
+numeric suffix independent of the build number. The workflow rejects tags with
+a different app version, tags at another revision, and existing GitHub releases.
+An existing tag at the workflow's exact revision is allowed. See
+[the tag validation job](../../.github/workflows/release-alpha.yml).
 Before publication it downloads the exact candidate files, enforces their
 allowlist, verifies every checksum, verifies the APK/AAB signing certificate,
 rejects unsafe archives, launches the Linux bundle and packaged web client,
@@ -38,9 +41,41 @@ a canonical release. The Android/Termux Wing Link binary and the non-native
 macOS architecture receive checksum and format verification but still require
 matching-device runtime receipts before those platform claims advance.
 
-To repeat the host-side gate locally after collecting all candidate files:
+## Local artifact verification
+
+For a read-only comparison before candidate execution, use the
+[offline comparison tool](offline-release-candidate-comparison.md). Supply independent
+identity and public certificate expectations. A match does not authorize the
+execution gate below or establish signature validity or installed-alpha acceptance.
+
+Use a Linux qualification environment and the complete candidate directory listed
+in [`verify_release_artifacts.sh`](../../scripts/verify_release_artifacts.sh).
+Include the source-bound evidence JSON files, not only archives and checksums.
+Use the candidate's source checkout, tag and immutable 40-character commit ID.
+Do not substitute the current HEAD unless it is the candidate's source revision.
+
+For hosted CI candidates, also set `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT` and
+`GITHUB_REPOSITORY` from the candidate manifests. The evidence checker compares
+these fields with [`currentIdentity`](../../scripts/release_evidence.mjs).
+Their local defaults (`0`, `0`, `local/hermes-wing`) do not match hosted CI evidence.
+The candidate checkout supplies app version/build and dependency input digests.
+Inspect the [exact input allowlist and receipt limits](../quality/2026-10-06-m6-artifact-evidence.md#exact-verifier-input-allowlist)
+before admitting a candidate. Offline comparison does not authorize execution.
+
+The verifier requires `GITHUB_SHA` and the public signing-certificate fingerprint.
+It also requires the listed host tools and executable `apksigner`, supplied through
+`APKSIGNER` or discovered under `ANDROID_HOME`. Inspect the script's prerequisites
+before execution. It extracts and launches candidate Linux and web artifacts and
+writes a verification receipt into the candidate directory. Run it only where
+candidate execution is authorized; it is not a read-only documentation check.
 
 ```bash
+GITHUB_SHA='<candidate source commit: 40 lowercase hex characters>' \
 WING_RELEASE_CERT_SHA256='<public certificate fingerprint>' \
   npm run release:verify-artifacts -- dist v0.1.0-alpha.1
 ```
+
+The tag above is an example, not the current app version. Replace it with the
+candidate tag. A passing host gate exits 0 and writes
+`dist/release-verification-receipt.json`. This does not complete the workflow's
+separate Android emulator, Windows or macOS smoke jobs, or authorize publication.

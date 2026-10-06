@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -67,6 +68,138 @@ HermesApiClient _client({
 );
 
 void main() {
+  for (final fails in [false, true]) {
+    for (final replacementId in ['appr_1', 'appr_2']) {
+      for (final replacementRun in ['run_1', 'run_2']) {
+        for (final busy in [false, true]) {
+          test('clear fences settlement failure=$fails id=$replacementId '
+              'run=$replacementRun busy=$busy', () async {
+            final responder = HermesApprovalResponder();
+            final oldStarted = Completer<void>();
+            final oldRelease = Completer<void>();
+            final currentStarted = Completer<void>();
+            final currentRelease = Completer<void>();
+            final reported = <String>[];
+            responder.registerApproval('appr_1', 'run_1');
+            final old = responder.respond(
+              client: _client(
+                onPost: (u, h, b) async {
+                  oldStarted.complete();
+                  await oldRelease.future;
+                },
+              ),
+              state: _stateFor(_runsCapableCapabilitiesFixture),
+              approvalId: 'appr_1',
+              decision: HermesApprovalDecision.once,
+              activeRunIds: ['run_1', 'run_2'],
+              reportError: reported.add,
+            );
+            await oldStarted.future;
+            responder.clear();
+            responder.registerApproval(replacementId, replacementRun);
+            Future<void>? current;
+            if (busy) {
+              current = responder.respond(
+                client: _client(
+                  onPost: (u, h, b) async {
+                    currentStarted.complete();
+                    await currentRelease.future;
+                  },
+                ),
+                state: _stateFor(_runsCapableCapabilitiesFixture),
+                approvalId: replacementId,
+                decision: HermesApprovalDecision.deny,
+                activeRunIds: ['run_1', 'run_2'],
+              );
+              await currentStarted.future;
+            }
+            if (fails) {
+              oldRelease.completeError(StateError('retired synthetic failure'));
+            } else {
+              oldRelease.complete();
+            }
+            await old;
+            expect(reported, isEmpty);
+            expect(
+              responder.resolveRunId(replacementId, ['run_1', 'run_2']),
+              replacementRun,
+            );
+            expect(
+              responder.isPendingApproval(replacementId, replacementRun),
+              !busy,
+            );
+            if (busy) {
+              currentRelease.complete();
+              await current;
+              expect(
+                responder.resolveRunId(replacementId, ['run_1', 'run_2']),
+                isNull,
+              );
+            }
+          });
+        }
+      }
+    }
+    test('clear without re-registration retires late failure=$fails', () async {
+      final responder = HermesApprovalResponder();
+      final release = Completer<void>();
+      final started = Completer<void>();
+      final reported = <String>[];
+      responder.registerApproval('appr_1', 'run_1');
+      final response = responder.respond(
+        client: _client(
+          onPost: (u, h, b) async {
+            started.complete();
+            await release.future;
+          },
+        ),
+        state: _stateFor(_runsCapableCapabilitiesFixture),
+        approvalId: 'appr_1',
+        decision: HermesApprovalDecision.once,
+        activeRunIds: ['run_1'],
+        reportError: reported.add,
+      );
+      await started.future;
+      responder.clear();
+      if (fails) {
+        release.completeError(StateError('retired synthetic failure'));
+      } else {
+        release.complete();
+      }
+      await response;
+      expect(reported, isEmpty);
+      expect(responder.resolveRunId('appr_1', ['run_1', 'run_2']), isNull);
+    });
+  }
+
+  test('same-owner failure releases busy marker for explicit retry', () async {
+    final responder = HermesApprovalResponder();
+    responder.registerApproval('appr_1', 'run_1');
+    await expectLater(
+      responder.respond(
+        client: _client(
+          onPost: (u, h, b) async {
+            throw StateError('synthetic retry control');
+          },
+        ),
+        state: _stateFor(_runsCapableCapabilitiesFixture),
+        approvalId: 'appr_1',
+        decision: HermesApprovalDecision.once,
+        activeRunIds: ['run_1'],
+      ),
+      throwsStateError,
+    );
+    expect(responder.isPendingApproval('appr_1', 'run_1'), isTrue);
+    await responder.respond(
+      client: _client(),
+      state: _stateFor(_runsCapableCapabilitiesFixture),
+      approvalId: 'appr_1',
+      decision: HermesApprovalDecision.once,
+      activeRunIds: ['run_1'],
+    );
+    expect(responder.isPendingApproval('appr_1', 'run_1'), isFalse);
+  });
+
   group('HermesApprovalResponder.respond', () {
     test('rejects blank approval ids before POST and reports', () async {
       final responder = HermesApprovalResponder();
@@ -227,7 +360,7 @@ void main() {
         final (uri, body) = posts.single;
         expect(uri.path, '/v1/runs/run_1/approval');
         expect(uri.queryParameters['profile'], 'coder');
-        expect(body, {'approval_id': 'appr_1', 'choice': 'always'});
+        expect(body, {'request_id': 'appr_1', 'choice': 'always'});
       },
     );
 
@@ -252,7 +385,7 @@ void main() {
 
         final (uri, body) = posts.single;
         expect(uri.path, '/v1/runs/run_7/approval');
-        expect(body, {'approval_id': 'appr_2', 'choice': 'once'});
+        expect(body, {'request_id': 'appr_2', 'choice': 'once'});
       },
     );
 

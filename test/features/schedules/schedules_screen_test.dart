@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_job.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
@@ -62,7 +66,7 @@ const _errorJob = HermesJob(
 );
 
 Widget _testApp(
-  FakeHermesChannel channel, {
+  HermesChannel channel, {
   double textScale = 1,
   HermesGatewayDirectory? directory,
 }) => ProviderScope(
@@ -98,6 +102,410 @@ class _DeferredJobsChannel extends FakeHermesChannel {
 }
 
 void main() {
+  final search = find.byKey(const ValueKey('schedules-search'));
+  final clear = find.byKey(const ValueKey('schedules-clear-filters'));
+  Finder filter(String label) => find.widgetWithText(ChoiceChip, label);
+
+  testWidgets(
+    'search ignores undisplayed metadata and keeps literal characters',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(),
+        jobs: [
+          HermesJob(
+            id: 'bounded',
+            name: '${'x' * 120}hidden_name',
+            scheduleDisplay: '${'y' * 160}hidden_schedule',
+          ),
+          const HermesJob(
+            id: 'literal',
+            name: 'Review [weekly]',
+            enabled: true,
+          ),
+        ],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      for (final query in ['hidden_name', 'hidden_schedule']) {
+        await tester.enterText(search, query);
+        await tester.pumpAndSettle();
+        expect(find.text('No matching schedules'), findsOneWidget);
+      }
+      await tester.enterText(search, '[WEEKLY]');
+      await tester.pumpAndSettle();
+      expect(find.text('Review [weekly]'), findsOneWidget);
+      expect(channel.loadJobsCalls, 0);
+    },
+  );
+
+  testWidgets('clear restores existing enabled/next-run/name ordering', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      jobs: const [
+        _pausedJob,
+        HermesJob(
+          id: 'later',
+          name: 'A later check',
+          enabled: true,
+          nextRunAt: '2026-07-20T09:00:00Z',
+        ),
+        _morningJob,
+        _errorJob,
+      ],
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.enterText(search, 'check');
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Morning check')).dy,
+      lessThan(tester.getTopLeft(find.text('A later check')).dy),
+    );
+    await tester.tap(clear);
+    await tester.pumpAndSettle();
+    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
+    expect(cards, hasLength(4));
+    for (var i = 0; i < cards.length; i++) {
+      expect(
+        find.descendant(
+          of: find.byWidget(cards[i]),
+          matching: find.text(
+            [
+              'Morning check',
+              'A later check',
+              'Evening review',
+              'Failed task',
+            ][i],
+          ),
+        ),
+        findsOneWidget,
+      );
+    }
+    expect(channel.loadJobsCalls, 0);
+  });
+
+  for (final fails in [false, true]) {
+    testWidgets(
+      'old jobs ${fails ? 'failure' : 'success'} cannot return after owner change',
+      (tester) async {
+        final pending = Completer<String>();
+        var defer = false;
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              if (uri.path == '/api/jobs') {
+                if (defer) {
+                  defer = false;
+                  return pending.future;
+                }
+                return jsonEncode({
+                  'jobs': [
+                    {
+                      'id': uri.port == 8642 ? 'morning' : 'new-owner',
+                      'name': uri.port == 8642
+                          ? 'Morning check'
+                          : 'New owner task',
+                      'enabled': true,
+                    },
+                  ],
+                });
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' =>
+                  '{"schema_version":1,"auth":{"type":"bearer","required":true,"granted_scopes":["tasks:read"]},"endpoints":{"jobs":{"method":"GET","path":"/api/jobs","required_scopes":["tasks:read"]}}}',
+                '/api/sessions' => '{"data":[]}',
+                _ => throw StateError('unexpected read route'),
+              };
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        expect(channel.state.status, HermesConnectionStatus.connected);
+        await tester.pumpWidget(_testApp(channel));
+        await tester.pumpAndSettle();
+        await tester.enterText(search, 'morning');
+        await tester.tap(filter('Disabled'));
+        defer = true;
+        await tester.tap(
+          find.byKey(const ValueKey('schedules-refresh-button')),
+        );
+        await tester.pump();
+        await channel.connect(baseUrl: 'http://127.0.0.1:8643');
+        await tester.pumpAndSettle();
+        expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+        expect(tester.widget<ChoiceChip>(filter('All')).selected, isTrue);
+        expect(find.text('New owner task'), findsOneWidget);
+        if (fails) {
+          pending.completeError(StateError('obsolete jobs failure'));
+        } else {
+          pending.complete('{"jobs":[{"id":"old","name":"Old owner task"}]}');
+        }
+        await tester.pumpAndSettle();
+        expect(find.text('New owner task'), findsOneWidget);
+        expect(find.text('Old owner task'), findsNothing);
+        expect(
+          find.text('Schedules could not be loaded from Hermes.'),
+          findsNothing,
+        );
+        expect(channel.state.jobs.single.id, 'new-owner');
+      },
+    );
+  }
+
+  testWidgets('literal local search matches displayed name, ID and schedule', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      jobs: const [_morningJob, _pausedJob, _errorJob],
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    for (final query in ['mOrNiNg CHECK', 'MORNING', 'dAiLy AT']) {
+      await tester.enterText(search, query);
+      await tester.pumpAndSettle();
+      expect(find.text('Morning check'), findsOneWidget);
+      expect(find.text('Evening review'), findsNothing);
+    }
+    await tester.enterText(search, 'PAUSED');
+    await tester.pumpAndSettle();
+    expect(find.text('Evening review'), findsOneWidget);
+    expect(find.text('Morning check'), findsNothing);
+    for (final query in ['private remote', '.*', '[']) {
+      await tester.enterText(search, query);
+      await tester.pumpAndSettle();
+      expect(find.text('No matching schedules'), findsOneWidget);
+      expect(find.text('No schedules yet'), findsNothing);
+      expect(find.byType(Card), findsNothing);
+    }
+    await tester.tap(clear);
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+    expect(find.text('Morning check'), findsOneWidget);
+    expect(tester.widget<TextButton>(clear).onPressed, isNotNull);
+    expect(tester.widget<TextButton>(clear).focusNode!.hasFocus, isTrue);
+    await tester.tap(clear);
+    await tester.enterText(search, 'DAILY');
+    await tester.pumpAndSettle();
+    expect(find.text('Morning check'), findsOneWidget);
+    expect(find.text('Evening review'), findsNothing);
+    expect(channel.loadJobsCalls, 0);
+    expect(channel.connectCalls, isEmpty);
+    expect(channel.selectProfileCalls, isEmpty);
+    expect(channel.createSessionCalls, isEmpty);
+    expect(channel.sentTextAttachments, isEmpty);
+    expect(channel.stopActiveTurnCalls, 0);
+  });
+
+  testWidgets(
+    'enabled filtering combines with search without changing status',
+    (tester) async {
+      const enabledError = HermesJob(
+        id: 'enabled-error',
+        name: 'Enabled failure',
+        enabled: true,
+        state: 'error',
+      );
+      const enabledPaused = HermesJob(
+        id: 'enabled-paused',
+        name: 'Enabled pause',
+        enabled: true,
+        state: 'paused',
+      );
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(),
+        jobs: const [
+          _morningJob,
+          _pausedJob,
+          _errorJob,
+          enabledError,
+          enabledPaused,
+        ],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      await tester.tap(filter('Enabled'));
+      await tester.enterText(search, 'enabled-');
+      await tester.pumpAndSettle();
+      expect(find.text('Enabled failure'), findsOneWidget);
+      expect(find.text('Enabled pause'), findsOneWidget);
+      expect(find.text('Error'), findsOneWidget);
+      expect(find.text('Paused'), findsOneWidget);
+      await tester.tap(filter('Disabled'));
+      await tester.pumpAndSettle();
+      expect(find.text('No matching schedules'), findsOneWidget);
+      await tester.enterText(search, '');
+      await tester.pumpAndSettle();
+      expect(find.text('Evening review'), findsOneWidget);
+      expect(find.text('Failed task'), findsOneWidget);
+      expect(find.text('Enabled failure'), findsNothing);
+      expect(find.text('Error'), findsOneWidget);
+      expect(find.text('Paused'), findsOneWidget);
+      await tester.tap(clear);
+      await tester.pumpAndSettle();
+      expect(tester.widget<ChoiceChip>(filter('All')).selected, isTrue);
+      expect(channel.loadJobsCalls, 0);
+    },
+  );
+
+  testWidgets(
+    'same-owner refresh preserves filters; gateway and profile reset',
+    (tester) async {
+      final channel = _InventoryChannel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      await tester.enterText(search, 'morning');
+      await tester.tap(filter('Disabled'));
+      await tester.tap(find.byKey(const ValueKey('schedules-refresh-button')));
+      await tester.pumpAndSettle();
+      expect(channel.loadJobsCalls, 1);
+      expect(tester.widget<TextField>(search).controller!.text, 'morning');
+      expect(tester.widget<ChoiceChip>(filter('Disabled')).selected, isTrue);
+      channel.emit(channel.state.copyWith(capabilities: _capabilities()));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(search).controller!.text, 'morning');
+      expect(tester.widget<ChoiceChip>(filter('Disabled')).selected, isTrue);
+      for (final next in [
+        channel.state.copyWith(connectedBaseUrl: 'https://other.invalid'),
+        channel.state.copyWith(selectedProfileId: 'writer'),
+      ]) {
+        channel.emit(next);
+        await tester.pumpAndSettle();
+        expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+        expect(tester.widget<ChoiceChip>(filter('All')).selected, isTrue);
+        await tester.enterText(search, 'morning');
+        await tester.tap(filter('Disabled'));
+      }
+    },
+  );
+
+  testWidgets(
+    'refresh replaces matching inventory while preserving query/filter',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(),
+        jobs: const [_morningJob, _pausedJob],
+        refreshedJobs: const [
+          HermesJob(id: 'weekly', name: 'Weekly review', state: 'paused'),
+        ],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      await tester.enterText(search, 'REVIEW');
+      await tester.tap(filter('Disabled'));
+      await tester.pumpAndSettle();
+      expect(find.text('Evening review'), findsOneWidget);
+      expect(channel.loadJobsCalls, 0);
+      await tester.tap(find.byKey(const ValueKey('schedules-refresh-button')));
+      await tester.pumpAndSettle();
+      expect(find.text('Weekly review'), findsOneWidget);
+      expect(find.text('Evening review'), findsNothing);
+      expect(tester.widget<TextField>(search).controller!.text, 'REVIEW');
+      expect(tester.widget<ChoiceChip>(filter('Disabled')).selected, isTrue);
+      expect(channel.loadJobsCalls, 1);
+    },
+  );
+
+  testWidgets(
+    'authority loss hides stale matches and controls; empty is distinct',
+    (tester) async {
+      final channel = _InventoryChannel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
+      final connected = channel.state;
+      await tester.enterText(search, 'morning');
+      for (final next in [
+        connected.copyWith(capabilities: _capabilities(jobs: false)),
+        connected.copyWith(capabilities: _capabilities(grantTasksRead: false)),
+        connected.copyWith(status: HermesConnectionStatus.disconnected),
+        connected.copyWith(status: HermesConnectionStatus.connecting),
+        connected.copyWith(
+          optionalResourceErrors: {
+            HermesOptionalResource.jobs: 'private diagnostics',
+          },
+        ),
+      ]) {
+        channel.emit(next);
+        await tester.pump();
+        expect(search, findsNothing);
+        expect(clear, findsNothing);
+        expect(filter('All'), findsNothing);
+        expect(find.text('Morning check'), findsNothing);
+        expect(find.text('No matching schedules'), findsNothing);
+      }
+      channel.emit(connected.copyWith(jobs: []));
+      await tester.pumpAndSettle();
+      expect(find.text('No schedules yet'), findsOneWidget);
+      expect(find.text('No matching schedules'), findsNothing);
+      expect(channel.loadJobsCalls, 0);
+    },
+  );
+
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('search/filter/clear keyboard semantics fit $width at 200%', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final semantics = tester.ensureSemantics();
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(),
+        jobs: const [_morningJob, _pausedJob],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_testApp(channel, textScale: 2));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Search schedules'), findsOneWidget);
+      await tester.enterText(search, 'missing');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(filter('Disabled'));
+      Focus.of(tester.element(find.text('Disabled').first)).requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pumpAndSettle();
+      expect(tester.widget<ChoiceChip>(filter('Disabled')).selected, isTrue);
+      await tester.ensureVisible(clear);
+      Focus.of(tester.element(find.text('Clear filters'))).requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        search,
+        -150,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+      expect(tester.widget<ChoiceChip>(filter('All')).selected, isTrue);
+      expect(tester.takeException(), isNull);
+      expect(channel.loadJobsCalls, 0);
+      semantics.dispose();
+    });
+  }
+
   for (final initiallyEmpty in [false, true]) {
     testWidgets(
       'pull refresh reloads ${initiallyEmpty ? "empty" : "short"} inventory',
@@ -223,7 +631,10 @@ void main() {
 
     expect(find.text('Failed task'), findsOneWidget);
     expect(find.text('Error'), findsOneWidget);
-    expect(find.text('Disabled'), findsNothing);
+    expect(
+      find.descendant(of: find.byType(Card), matching: find.text('Disabled')),
+      findsNothing,
+    );
   });
 
   testWidgets('refresh exposes labelled progress and blocks duplicate taps', (
@@ -444,7 +855,12 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Long scheduled repository maintenance and review task'),
       150,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     await tester.pumpAndSettle();
 
@@ -483,5 +899,20 @@ class _RacingJobsChannel extends FakeHermesChannel {
     final gate = Completer<void>();
     gates.add(gate);
     return gate.future;
+  }
+}
+
+class _InventoryChannel extends FakeHermesChannel {
+  _InventoryChannel()
+    : super(capabilities: _capabilities(), jobs: const [_morningJob]);
+
+  HermesChannelState? _snapshot;
+
+  @override
+  HermesChannelState get state => _snapshot ?? super.state;
+
+  void emit(HermesChannelState next) {
+    _snapshot = next;
+    notifyListeners();
   }
 }

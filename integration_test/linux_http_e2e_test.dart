@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
@@ -155,7 +156,54 @@ void main() {
           find.text('Hermes echo: native socket approval'),
           allow ? findsOneWidget : findsNothing,
         );
-        expect(channel.state.errorMessage, isNull);
+        expect(
+          channel.state.errorMessage,
+          allow ? isNull : 'Hermes run was cancelled.',
+        );
+        if (!allow) {
+          // Denial is terminal, not a successful reply or an implicit retry.
+          // A new explicit prompt must use canonical history exactly once.
+          expect(
+            channel.state.activeMessages
+                .where((turn) => turn.text.isEmpty)
+                .single
+                .status,
+            HermesTurnStatus.failed,
+          );
+          await _submit(tester, 'native explicit after denial');
+          await _wait(
+            tester,
+            () => find.text('Approve once').evaluate().isNotEmpty,
+          );
+          await tester.tap(find.text('Approve once'));
+          await _wait(
+            tester,
+            () => !channel.state.isSessionStreaming(
+              channel.state.activeSessionId!,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(channel.state.errorMessage, isNull);
+          expect(
+            find.text('Hermes echo: native explicit after denial'),
+            findsOneWidget,
+          );
+          final after = await _request(
+            origin,
+            'GET',
+            '/api/sessions/${channel.state.activeSessionId}/messages',
+          );
+          expect(
+            (after['data'] as List)
+                .where((row) => row['role'] == 'user')
+                .map((row) => row['content']),
+            ['native socket approval', 'native explicit after denial'],
+          );
+          expect(
+            (after['data'] as List).where((row) => row['role'] == 'assistant'),
+            hasLength(1),
+          );
+        }
       });
     }
 

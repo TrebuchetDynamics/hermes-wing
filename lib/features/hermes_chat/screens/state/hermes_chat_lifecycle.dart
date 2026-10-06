@@ -83,7 +83,9 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
 
   Future<List<HermesEndpointConfig>> _loadEndpointProfiles() async {
     final profiles = await ref.read(hermesEndpointStoreProvider).loadProfiles();
-    if (!mounted || profiles.isEmpty) return profiles;
+    if (!mounted || profiles.isEmpty || _connectionForm.hasFieldIntent) {
+      return profiles;
+    }
     final currentBaseUrl = hermesPublicEndpointBaseUrl(
       _connectionForm.baseUrl.text,
     );
@@ -101,14 +103,23 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     });
   }
 
-  void _scheduleDesktopComposerFocus() {
+  Future<void> _scheduleDesktopComposerFocus({
+    bool Function()? canFocus,
+  }) async {
     if (!_usesDesktopKeyboardShortcuts) return;
+    final settled = Completer<void>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_composerFocusNode.canRequestFocus) return;
-      final route = ModalRoute.of(context);
-      if (route != null && !route.isCurrent) return;
-      _composerFocusNode.requestFocus();
+      try {
+        if (!mounted || !_composerFocusNode.canRequestFocus) return;
+        if (!(canFocus?.call() ?? true)) return;
+        final route = ModalRoute.of(context);
+        if (route != null && !route.isCurrent) return;
+        _composerFocusNode.requestFocus();
+      } finally {
+        settled.complete();
+      }
     });
+    await settled.future;
   }
 
   void _scheduleInitialDesktopComposerFocus(bool canSendTurns) {
@@ -144,6 +155,10 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
 
   void _onChannelChanged() {
     if (!mounted) return;
+    final generation =
+        _transcriptViewport.mode != HermesViewportMode.followingLatest
+        ? _transcriptViewport.beginAuthoritativeRefresh()
+        : null;
     final channel = _subscribed;
     if (channel != null) {
       _syncAttachmentOwner(channel);
@@ -161,7 +176,12 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
           }
         }
         if (change.activeReplyCompleted) {
-          _scheduleDesktopComposerFocus();
+          final ownerGeneration = _composerOwnerGeneration;
+          _scheduleDesktopComposerFocus(
+            canFocus: () =>
+                identical(ref.read(hermesChannelProvider), channel) &&
+                _composerOwnerGeneration == ownerGeneration,
+          );
         }
         if (change.activeSessionChanged) {
           _failedDirectTurn = null;
@@ -191,6 +211,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     }
     if (mounted) {
       _setState(() {});
+      if (generation != null) _transcriptViewport.restore(generation);
       fireAndForget(
         _voiceInputController.maybeContinue(),
         'Hermes voice continuation after channel change',

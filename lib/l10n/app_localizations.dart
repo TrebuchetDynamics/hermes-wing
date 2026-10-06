@@ -94,6 +94,120 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @profilesSearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search profiles'**
+  String get profilesSearchLabel;
+
+  /// No description provided for @chatProfileSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search profiles by name, ID or model'**
+  String get chatProfileSearch;
+
+  /// No description provided for @chatProfileManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage profiles'**
+  String get chatProfileManage;
+
+  /// No description provided for @chatProfileHighlighted.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard selection'**
+  String get chatProfileHighlighted;
+
+  /// No description provided for @profilesSearchClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear profile search'**
+  String get profilesSearchClear;
+
+  /// No description provided for @profilesSearchHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this loaded inventory by profile ID, name, description or model. Search does not change the active chat.'**
+  String get profilesSearchHelp;
+
+  /// No description provided for @profilesSearchNoMatchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching profiles'**
+  String get profilesSearchNoMatchesTitle;
+
+  /// No description provided for @profilesSearchNoMatchesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another profile ID, name, description or model, or clear the search.'**
+  String get profilesSearchNoMatchesBody;
+
+  /// No description provided for @chatSessionRestorationPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring your conversation'**
+  String get chatSessionRestorationPendingTitle;
+
+  /// No description provided for @chatSessionRestorationPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening your remembered conversation. Sending and New Chat are paused so nothing goes to another session.'**
+  String get chatSessionRestorationPendingBody;
+
+  /// No description provided for @chatSessionRestorationFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation not restored'**
+  String get chatSessionRestorationFailedTitle;
+
+  /// No description provided for @chatSessionRestorationUnsupportedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This Agent does not support restoring the remembered conversation directly. Retry after its capabilities change, or choose a session.'**
+  String get chatSessionRestorationUnsupportedBody;
+
+  /// No description provided for @chatSessionRestorationAuthenticationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Agent did not authorize access to the remembered conversation. Check this connection’s access, then retry or choose a session.'**
+  String get chatSessionRestorationAuthenticationBody;
+
+  /// No description provided for @chatSessionRestorationUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The remembered conversation is unavailable. It has not been replaced. Retry, or choose a session.'**
+  String get chatSessionRestorationUnavailableBody;
+
+  /// No description provided for @chatSessionRestorationTransientBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The remembered conversation could not be reached. It has not been replaced. Retry, or choose a session.'**
+  String get chatSessionRestorationTransientBody;
+
+  /// No description provided for @chatSessionRestorationIncompatibleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Agent response could not confirm the remembered conversation. It has not been replaced. Retry, or choose a session.'**
+  String get chatSessionRestorationIncompatibleBody;
+
+  /// No description provided for @chatSessionRestorationRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get chatSessionRestorationRetry;
+
+  /// No description provided for @chatSessionRestorationChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose session'**
+  String get chatSessionRestorationChoose;
+
+  /// No description provided for @chatSessionRestorationProfileRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry to load this profile’s sessions before choosing a conversation.'**
+  String get chatSessionRestorationProfileRequiredBody;
+
   /// No description provided for @profileCatalogLoading.
   ///
   /// In en, this message translates to:
@@ -129,6 +243,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Latest activity'**
   String get chatTranscriptLatestAction;
+
+  /// No description provided for @chatTranscriptRevealEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Show up to 100 earlier loaded turns ({remaining} remaining)'**
+  String chatTranscriptRevealEarlier(int remaining);
+
+  /// No description provided for @chatTranscriptContinuedTools.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} (continued)'**
+  String chatTranscriptContinuedTools(String title);
 
   /// No description provided for @chatVoiceMuteOutputAction.
   ///
@@ -820,6 +946,18 @@ abstract class AppLocalizations {
   /// **'Disconnected'**
   String get shellDisconnected;
 
+  /// No description provided for @shellWorkflowNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Workflow'**
+  String get shellWorkflowNavigation;
+
+  /// No description provided for @shellUtilityNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Utilities'**
+  String get shellUtilityNavigation;
+
   /// No description provided for @shellNotLoaded.
   ///
   /// In en, this message translates to:
@@ -1066,6 +1204,12 @@ abstract class AppLocalizations {
   /// **'Search toolsets and resolved tools'**
   String get searchToolsetsLabel;
 
+  /// No description provided for @clearToolsetsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear toolsets search'**
+  String get clearToolsetsSearch;
+
   /// No description provided for @noToolsetsMatchBody.
   ///
   /// In en, this message translates to:
@@ -1137,6 +1281,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search installed skills'**
   String get searchInstalledSkillsLabel;
+
+  /// No description provided for @clearInstalledSkillsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear installed skills search'**
+  String get clearInstalledSkillsSearch;
 
   /// No description provided for @noSkillsMatchBody.
   ///
@@ -1233,6 +1383,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refreshing scheduled jobs'**
   String get schedulesRefreshing;
+
+  /// No description provided for @schedulesSearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search schedules'**
+  String get schedulesSearchLabel;
+
+  /// No description provided for @schedulesFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show schedules'**
+  String get schedulesFilterLabel;
+
+  /// No description provided for @schedulesFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get schedulesFilterAll;
+
+  /// No description provided for @schedulesClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get schedulesClearFilters;
+
+  /// No description provided for @schedulesNoMatchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching schedules'**
+  String get schedulesNoMatchesTitle;
+
+  /// No description provided for @schedulesNoMatchesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another name, job ID or schedule, or clear the filters.'**
+  String get schedulesNoMatchesBody;
+
+  /// No description provided for @scheduleIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Job ID'**
+  String get scheduleIdLabel;
 
   /// No description provided for @scheduleEnabled.
   ///
@@ -1694,6 +1886,30 @@ abstract class AppLocalizations {
   /// **'Loading providers'**
   String get providersLoading;
 
+  /// No description provided for @providersSearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search providers'**
+  String get providersSearchLabel;
+
+  /// No description provided for @providersSearchClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear provider search'**
+  String get providersSearchClear;
+
+  /// No description provided for @providersSearchNoMatchesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching providers'**
+  String get providersSearchNoMatchesTitle;
+
+  /// No description provided for @providersSearchNoMatchesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another provider name or slug, or clear the search.'**
+  String get providersSearchNoMatchesBody;
+
   /// No description provided for @providersConnectionError.
   ///
   /// In en, this message translates to:
@@ -1910,6 +2126,60 @@ abstract class AppLocalizations {
   /// **'Hermes could not confirm this session model.'**
   String get sessionModelLockFailed;
 
+  /// No description provided for @sessionModelSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search models or providers'**
+  String get sessionModelSearch;
+
+  /// No description provided for @sessionModelClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear model search'**
+  String get sessionModelClearSearch;
+
+  /// No description provided for @sessionModelAllProviders.
+  ///
+  /// In en, this message translates to:
+  /// **'All selectable providers'**
+  String get sessionModelAllProviders;
+
+  /// No description provided for @sessionModelResetFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset filters'**
+  String get sessionModelResetFilters;
+
+  /// No description provided for @sessionModelNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching selectable models. Clear the search or reset filters.'**
+  String get sessionModelNoResults;
+
+  /// No description provided for @sessionModelCatalogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No selectable session models are available from Hermes Agent.'**
+  String get sessionModelCatalogEmpty;
+
+  /// No description provided for @sessionModelSelectionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected model is no longer available. Choose a model from the current catalog.'**
+  String get sessionModelSelectionUnavailable;
+
+  /// No description provided for @sessionModelResultCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matching models} =1{1 matching model} other{{count} matching models}}'**
+  String sessionModelResultCount(int count);
+
+  /// No description provided for @sessionModelSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {provider} — {model}'**
+  String sessionModelSelected(String provider, String model);
+
   /// No description provided for @modelSlotLabel.
   ///
   /// In en, this message translates to:
@@ -2036,6 +2306,60 @@ abstract class AppLocalizations {
   /// **'Choose a portable transcript format.'**
   String get copyTranscriptDescription;
 
+  /// No description provided for @transcriptExportLoadedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy or save all currently loaded turns. Older unfetched history is not included. Files contain the same redacted text as copy, up to 4 MiB; large transcripts may be rejected without truncation.'**
+  String get transcriptExportLoadedNote;
+
+  /// No description provided for @transcriptSaveTextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as text'**
+  String get transcriptSaveTextAction;
+
+  /// No description provided for @transcriptSaveMarkdownAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as Markdown'**
+  String get transcriptSaveMarkdownAction;
+
+  /// No description provided for @transcriptExportUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'File export is available in the browser and on Linux only.'**
+  String get transcriptExportUnsupported;
+
+  /// No description provided for @transcriptExportOwnerChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The conversation changed. Open transcript actions again to export it.'**
+  String get transcriptExportOwnerChanged;
+
+  /// No description provided for @transcriptExportDownloadStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcript download requested. Check your browser downloads for the file.'**
+  String get transcriptExportDownloadStarted;
+
+  /// No description provided for @transcriptExportSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcript saved to the selected file.'**
+  String get transcriptExportSaved;
+
+  /// No description provided for @transcriptExportTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This loaded transcript is too large to export (4 MiB limit). No file was written; content was not truncated.'**
+  String get transcriptExportTooLarge;
+
+  /// No description provided for @transcriptExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The transcript could not be exported. No success was confirmed. Try again explicitly.'**
+  String get transcriptExportFailed;
+
   /// No description provided for @copyAsTextAction.
   ///
   /// In en, this message translates to:
@@ -2065,6 +2389,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transcript copied as {format}'**
   String transcriptCopiedMessage(String format);
+
+  /// No description provided for @transcriptCopyFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy transcript. Try again.'**
+  String get transcriptCopyFailedMessage;
 
   /// No description provided for @transcriptAuthorYou.
   ///
@@ -2209,6 +2539,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Code copied'**
   String get codeCopiedMessage;
+
+  /// No description provided for @codeCopyFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy code. Try again.'**
+  String get codeCopyFailedMessage;
 
   /// No description provided for @showMoreAction.
   ///
@@ -4870,7 +5206,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatComposerModelPickerTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Choose profile model'**
+  /// **'Choose model'**
   String get chatComposerModelPickerTooltip;
 
   /// No description provided for @chatComposerModelsLoadFailed.
@@ -5557,6 +5893,12 @@ abstract class AppLocalizations {
   /// **'Copied Hermes surface readiness summary.'**
   String get chatStatusCopiedSurfaceReadinessBody;
 
+  /// No description provided for @chatStatusCopySurfaceReadinessFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy Hermes surface readiness summary. Try again.'**
+  String get chatStatusCopySurfaceReadinessFailedBody;
+
   /// No description provided for @chatStatusCopySummaryAction.
   ///
   /// In en, this message translates to:
@@ -5827,11 +6169,53 @@ abstract class AppLocalizations {
   /// **'Sessions'**
   String get chatRailSessionsTitle;
 
+  /// No description provided for @shellLoadedSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded sessions'**
+  String get shellLoadedSessions;
+
+  /// No description provided for @shellSessionScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Open or create. Manage sessions in Chat.'**
+  String get shellSessionScope;
+
+  /// No description provided for @shellNewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'New Session'**
+  String get shellNewSession;
+
+  /// No description provided for @shellSessionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening session…'**
+  String get shellSessionPending;
+
+  /// No description provided for @shellSessionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the session. Try again in Chat.'**
+  String get shellSessionFailed;
+
+  /// No description provided for @shellOpenSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {title}'**
+  String shellOpenSession(String title);
+
   /// No description provided for @chatRailPinnedGroupLabel.
   ///
   /// In en, this message translates to:
   /// **'Pinned'**
   String get chatRailPinnedGroupLabel;
+
+  /// No description provided for @chatRailChatsGroupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get chatRailChatsGroupLabel;
 
   /// No description provided for @chatRailPinSessionAction.
   ///
@@ -6079,6 +6463,24 @@ abstract class AppLocalizations {
   /// **'Copy details'**
   String get chatRailCopyDetailsAction;
 
+  /// No description provided for @chatRailCopySessionIdAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy session ID'**
+  String get chatRailCopySessionIdAction;
+
+  /// No description provided for @chatRailCopiedSessionIdBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied session ID.'**
+  String get chatRailCopiedSessionIdBody;
+
+  /// No description provided for @chatRailCopySessionIdFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy session ID. Try again.'**
+  String get chatRailCopySessionIdFailedBody;
+
   /// No description provided for @chatRailRenameAction.
   ///
   /// In en, this message translates to:
@@ -6102,6 +6504,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copied redacted Hermes session details.'**
   String get chatRailCopiedSessionDetailsBody;
+
+  /// No description provided for @chatRailCopySessionDetailsFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy session details. Please try again.'**
+  String get chatRailCopySessionDetailsFailedBody;
 
   /// No description provided for @chatRailSessionDetailsTitle.
   ///

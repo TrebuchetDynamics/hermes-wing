@@ -9,6 +9,7 @@ extension _ProfilesExtension on HermesApiChannel {
   Future<void> _selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     final client = _requireConnectedClient();
     final id = profileId.trim();
@@ -91,7 +92,9 @@ extension _ProfilesExtension on HermesApiChannel {
               profileId: id,
               sessionIds: sessions.map((session) => session.id),
             );
-      final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
+      final activeId = deferSessionSelection
+          ? null
+          : detachedActiveId ?? sessions.firstOrNull?.id;
       final detachedRunStillActive = detachedActiveId != null;
       var messages = const <String, List<HermesChatTurn>>{};
       if (activeId != null) {

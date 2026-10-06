@@ -155,7 +155,7 @@ Final source hashes match `.task-evidence/desktop-shell-fidelity/redesign-manife
 its older sibling `manifest.json` is superseded refinement evidence.
 The [runbook](docs/runbooks/desktop-shell-reference-fidelity.md) and finish packet
 record executor evidence. Their pending-review text predates the
-[independent verdict](.task-evidence/desktop-shell-fidelity/focus-fix-verdict.md):
+independent verdict (local-only reference: `.task-evidence/desktop-shell-fidelity/focus-fix-verdict.md`):
 **ship applies only to the two listed corrections** (toggle outline and typography
 accuracy), both resolved. The font-description correction is not font bundling.
 The parent-reported detector returned `[]`, exit 0, with limited Flutter coverage.

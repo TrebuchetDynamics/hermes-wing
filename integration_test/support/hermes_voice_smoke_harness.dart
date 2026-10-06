@@ -261,7 +261,11 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<Uint8List> synthesizeSpeech(String text) async => _silentWaveAudio();
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {}
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {}
 
   @override
   Future<void> disconnect() async {}
@@ -270,7 +274,16 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   void clearActiveSession() {}
 
   @override
-  Future<void> selectSession(String sessionId) async {}
+  Future<void> selectSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {}
+
+  @override
+  Future<bool> restoreSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async => false;
 
   @override
   Future<void> reconcileActiveSession() async {}
@@ -282,7 +295,10 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> loadEarlierMessages() async {}
 
   @override
-  Future<void> createSession({String? title}) async {}
+  Future<void> createSession({
+    String? title,
+    bool Function()? canAccept,
+  }) async {}
 
   @override
   Future<void> renameSession({
@@ -300,6 +316,7 @@ class AndroidHermesVoiceSmokeChannel extends ChangeNotifier
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {}
 
   @override

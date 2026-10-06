@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream, readFileSync } from 'node:fs';
-import { lstat, readFile, writeFile, realpath } from 'node:fs/promises';
+import { lstat, readFile, writeFile, realpath, open } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -102,9 +102,28 @@ export async function verifyManifest(manifest, root, dist, expectedIdentity, tar
   }
   return manifest;
 }
+async function readBoundedText(path, maxSize) {
+  const expected = await digest(path, maxSize);
+  const file = await open(path, 'r');
+  try {
+    // The second read must remain bounded even if a file grows after hashing.
+    const buffer = Buffer.alloc(maxSize + 1);
+    let size = 0;
+    while (size < buffer.length) {
+      const { bytesRead } = await file.read(buffer, size, buffer.length - size, null);
+      if (!bytesRead) break;
+      size += bytesRead;
+    }
+    const bytes = buffer.subarray(0, size);
+    if (size > maxSize || size !== expected.size ||
+        createHash('sha256').update(bytes).digest('hex') !== expected.sha256) fail('file changed while reading');
+    return bytes.toString('utf8');
+  } finally {
+    await file.close();
+  }
+}
 export async function readJson(path) {
-  await digest(path, 128 * 1024);
-  return JSON.parse(await readFile(path, 'utf8'));
+  return JSON.parse(await readBoundedText(path, 128 * 1024));
 }
 const smokeReceipts = {
   'android-artifact-smoke.txt': { target: 'android', names: ['hermes-wing-android.apk'], result: 'verified-installed-launched', evidence: 'emulator', scenario: 'apk-install-launch' },
@@ -142,7 +161,7 @@ export async function qualificationIndex(root, dist, identity) {
   for (const [name, contract] of Object.entries(smokeReceipts)) {
     const file = await digest(join(dist, name), 8192);
     const receipt = {};
-    for (const line of (await readFile(join(dist, name), 'utf8')).replace(/^\uFEFF/, '').trim().split(/\r?\n/)) {
+    for (const line of (await readBoundedText(join(dist, name), 8192)).replace(/^\uFEFF/, '').trim().split(/\r?\n/)) {
       const match = /^([a-z_][a-z_0-9]*)=([^\r\n]+)$/.exec(line);
       if (!match || Object.hasOwn(receipt, match[1])) fail('invalid receipt fields');
       receipt[match[1]] = match[2];

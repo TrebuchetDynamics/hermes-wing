@@ -36,7 +36,11 @@ class FakeGatewayContactCache extends GatewayContactCache {
   Future<GatewayContactSelection?> loadSelection() async => selection;
 
   @override
-  Future<void> saveSelection(GatewayContactSelection selection) async {
+  Future<void> saveSelection(
+    GatewayContactSelection selection, {
+    bool Function()? canWrite,
+  }) async {
+    if (!(canWrite?.call() ?? true)) return;
     this.selection = selection;
   }
 

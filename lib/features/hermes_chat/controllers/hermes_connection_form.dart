@@ -49,7 +49,17 @@ class HermesConnectionForm extends ChangeNotifier {
     String initialBaseUrl = '',
   }) : _normalizeBaseUrl = normalizeBaseUrl,
        _sanitizeLabel = sanitizeLabel,
-       baseUrl = TextEditingController(text: initialBaseUrl);
+       baseUrl = TextEditingController(text: initialBaseUrl) {
+    for (final field in [baseUrl, apiKey, label]) {
+      var previousText = field.text;
+      field.addListener(() {
+        if (field.text == previousText) return;
+        previousText = field.text;
+        _hasFieldIntent = true;
+        _intentGeneration++;
+      });
+    }
+  }
 
   final String Function(String value) _normalizeBaseUrl;
   final String Function(String value) _sanitizeLabel;
@@ -60,6 +70,17 @@ class HermesConnectionForm extends ChangeNotifier {
 
   bool _obscureApiKey = true;
   int _attemptId = 0;
+  bool _hasFieldIntent = false;
+  int _intentGeneration = 0;
+
+  /// Invalidates awaited reads even after edit-and-return or same-value actions.
+  /// Selection and credential masking alone do not supersede connection intent.
+  int get intentGeneration => _intentGeneration;
+
+  /// Saved reads may autofill only until the first edit or explicit selection.
+  /// Unlike connect staleness, this remembers edit-and-return and same-value
+  /// presets. Focus, selection and credential visibility are not field intent.
+  bool get hasFieldIntent => _hasFieldIntent;
 
   /// Whether the credential field is masked.
   bool get obscureApiKey => _obscureApiKey;
@@ -82,15 +103,21 @@ class HermesConnectionForm extends ChangeNotifier {
   HermesConnectionAttempt beginAttempt({
     required String baseUrl,
     String? apiKey,
-  }) => HermesConnectionAttempt(
-    id: ++_attemptId,
-    baseUrl: _normalizeBaseUrl(baseUrl),
-    apiKey: apiKey?.trim(),
-    label: sanitizedLabel,
-  );
+  }) {
+    _intentGeneration++;
+    return HermesConnectionAttempt(
+      id: ++_attemptId,
+      baseUrl: _normalizeBaseUrl(baseUrl),
+      apiKey: apiKey?.trim(),
+      label: sanitizedLabel,
+    );
+  }
 
   /// Supersedes any in-flight attempt without opening a new one.
-  void abandonAttempt() => _attemptId += 1;
+  void abandonAttempt() {
+    _attemptId += 1;
+    _intentGeneration++;
+  }
 
   /// Whether [attempt] no longer matches the operator's current intent.
   ///
@@ -104,6 +131,8 @@ class HermesConnectionForm extends ChangeNotifier {
 
   /// Fills the form from a saved endpoint profile.
   void applyProfile({required String baseUrl, String? apiKey, String? label}) {
+    _hasFieldIntent = true;
+    _intentGeneration++;
     this.baseUrl.text = baseUrl;
     this.apiKey.text = apiKey ?? '';
     this.label.text = label ?? '';
@@ -111,6 +140,8 @@ class HermesConnectionForm extends ChangeNotifier {
 
   /// Resets every field, keeping [baseUrl] when one is supplied.
   void clear({String? keepBaseUrl}) {
+    _hasFieldIntent = true;
+    _intentGeneration++;
     baseUrl.text = keepBaseUrl ?? '';
     apiKey.clear();
     label.clear();

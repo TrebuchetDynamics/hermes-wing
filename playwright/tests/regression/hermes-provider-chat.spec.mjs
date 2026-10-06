@@ -59,7 +59,9 @@ test("Hermes provider-backed text and transcript voice turns produce assistant r
     (prompt) => globalThis.wingE2EHermesSendText(prompt),
     textPrompt,
   );
-  await expect(page.getByText(textPrompt).first()).toBeVisible({
+  await expect(
+    page.getByRole("group", { name: textPrompt, exact: true }).first(),
+  ).toBeVisible({
     timeout: 30000,
   });
   await expect(
@@ -73,7 +75,9 @@ test("Hermes provider-backed text and transcript voice turns produce assistant r
     (prompt) => globalThis.wingE2EHermesSubmitVoice(prompt),
     voicePrompt,
   );
-  await expect(page.getByText(voicePrompt).first()).toBeVisible({
+  await expect(
+    page.getByRole("group", { name: voicePrompt, exact: true }).first(),
+  ).toBeVisible({
     timeout: 30000,
   });
   await expect(

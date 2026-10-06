@@ -3,6 +3,76 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/hermes_chat/presentation/hermes_transcript_viewport.dart';
 
 void main() {
+  testWidgets(
+    'fixed-row deliberate reveal retains anchor within one logical pixel',
+    (tester) async {
+      final scroll = ScrollController();
+      final viewport = HermesTranscriptViewportController(scroll)
+        ..setOwner('A');
+      addTearDown(viewport.dispose);
+      addTearDown(scroll.dispose);
+      var count = 100;
+      Widget app() => MaterialApp(
+        home: SizedBox(
+          key: viewport.listKey,
+          child: ListView(
+            controller: scroll,
+            reverse: true,
+            children: [
+              for (var i = 249; i >= 250 - count; i--)
+                SizedBox(
+                  key: viewport.rowKey('row-$i'),
+                  height: 40,
+                  child: Text('row $i'),
+                ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(app());
+      scroll.jumpTo(400);
+      viewport.userScrolled(nearLatest: false);
+      await tester.pump();
+      final y = tester.getTopLeft(find.text('row 230')).dy;
+      final generation = viewport.beginAuthoritativeRefresh();
+      count = 200;
+      await tester.pumpWidget(app());
+      viewport.restore(generation);
+      await tester.pump();
+      await tester.pump();
+      expect(tester.getTopLeft(find.text('row 230')).dy, closeTo(y, 1));
+    },
+  );
+
+  testWidgets('origin change and disposal reject queued restoration', (
+    tester,
+  ) async {
+    final scroll = ScrollController();
+    final viewport = HermesTranscriptViewportController(scroll)
+      ..setOwner('A', origin: 'synthetic-origin-A');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ListView(
+          controller: scroll,
+          children: const [SizedBox(height: 3000)],
+        ),
+      ),
+    );
+    scroll.jumpTo(300);
+    viewport.userScrolled(nearLatest: false);
+    final generation = viewport.beginAuthoritativeRefresh();
+    viewport.restore(generation);
+    viewport.setOwner('A', origin: 'synthetic-origin-B');
+    await tester.pump();
+    expect(scroll.offset, 300);
+    expect(viewport.mode, HermesViewportMode.followingLatest);
+    final disposed = viewport.beginAuthoritativeRefresh();
+    viewport.restore(disposed);
+    viewport.dispose();
+    await tester.pumpWidget(const SizedBox());
+    scroll.dispose();
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('missing canonical anchor safely returns to latest', (
     tester,
   ) async {

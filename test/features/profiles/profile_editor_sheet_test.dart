@@ -9,6 +9,7 @@ import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
+import 'profile_persona_ownership_test.dart' show personaCaps;
 
 Widget _editorTestApp(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -664,6 +665,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: personaCaps(),
       profileSoul: const HermesProfileSoul(soul: 'Be helpful.', revision: 's1'),
     );
     addTearDown(channel.dispose);
@@ -700,6 +702,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: personaCaps(),
       profileSoul: const HermesProfileSoul(soul: 'Old.', revision: 's1'),
     );
     addTearDown(channel.dispose);
@@ -780,6 +783,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: personaCaps(),
       writeProfileSoulFails: true,
       profileMutationFailure: const _TestHermesStatusException(412),
       profileSoul: const HermesProfileSoul(

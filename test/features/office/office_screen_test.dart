@@ -41,7 +41,11 @@ class _FailingOfficeChannel extends FakeHermesChannel {
   _FailingOfficeChannel() : super(status: HermesConnectionStatus.disconnected);
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
     throw StateError('private office transport failure');
   }
 }

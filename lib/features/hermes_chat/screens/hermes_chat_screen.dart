@@ -26,6 +26,7 @@ import '../../../router/routes/app_routes.dart';
 import '../../profiles/providers/profile_selection_provider.dart';
 import '../../providers/widgets/model_picker_sheet.dart';
 import '../widgets/session_model_picker_sheet.dart';
+import '../widgets/chat_profile_picker.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';
@@ -54,6 +55,7 @@ import '../gateways/gateway_contacts_view.dart';
 import '../groups/chat_group_controller.dart';
 import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
+import '../export/hermes_transcript_export.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../session/hermes_session_pin_store.dart';
 import '../widgets/hermes_profile_identity.dart';
@@ -324,6 +326,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   int _attachmentPickGeneration = 0;
   int _composerOwnerGeneration = 0;
+  final Set<VoidCallback> _sessionMutationDisposals = {};
+  final Set<VoidCallback> _sessionSettlementDisposals = {};
+  final Set<VoidCallback> _queuedDialogDisposals = {};
+  bool _transcriptActionPending = false;
+  bool _composerModelPickerPending = false;
   Object? _attachmentOwner;
 
   void _invalidateAttachmentPick() {
@@ -340,6 +347,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       _gatewayDirectory.activeContactId,
       state.selectedProfileId,
       state.activeSessionId,
+      _sessionRestorationUnsettled,
     );
     if (_attachmentOwner == owner) return;
     _attachmentOwner = owner;
@@ -367,6 +375,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   bool _initialComposerFocusScheduled = false;
   double? _transcriptPinchStartScale;
   bool _profileSwitchPending = false;
+  VoidCallback? _disposeProfileSwitch;
+  bool _profilePickerOpen = false;
 
   HermesChannel? _subscribed;
   late final ProviderSubscription<HermesChannel> _channelProviderSubscription;
@@ -494,6 +504,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         .map((gateway) => gateway.id)
         .toSet();
     _gatewayDirectory.addListener(_onGatewayDirectoryChanged);
+    _transcriptViewport.addListener(_onVoiceInputChanged);
     _chatGroupController = ChatGroupController();
     unawaited(_chatGroupController.load());
     _sessionPins = HermesSessionPinStore()..addListener(_onSessionPinsChanged);
@@ -524,6 +535,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   @override
   void dispose() {
+    _disposeProfileSwitch?.call();
+    for (final disposeIntent in _queuedDialogDisposals.toList()) {
+      disposeIntent();
+    }
+    for (final disposeIntent in _sessionMutationDisposals.toList()) {
+      disposeIntent();
+    }
+    for (final disposeOwner in _sessionSettlementDisposals.toList()) {
+      disposeOwner();
+    }
     _gatewayDirectory.removeListener(_onGatewayDirectoryChanged);
     _composerDrafts.clear();
     _transcriptViewport.dispose();
@@ -583,6 +604,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   }
 
   void _onGatewayDirectoryChanged() {
+    final channel = _subscribed;
+    if (channel != null && mounted) {
+      if (_sessionRestorationUnsettled) _voiceInputController.pause();
+      _syncAttachmentOwner(channel);
+      _syncComposerDraft(channel.state);
+    }
     final current = _gatewayDirectory.gateways
         .map((gateway) => gateway.id)
         .toSet();
@@ -640,7 +667,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final index = ordinal == 9 ? sessions.length - 1 : ordinal - 1;
     if (index < 0 || index >= sessions.length) return;
     final session = sessions[index];
-    if (session.id == state.activeSessionId) return;
+    if (session.id == state.activeSessionId &&
+        _gatewayDirectory.restoringSessionId == null) {
+      return;
+    }
     unawaited(_selectSession(context, channel, session));
   }
 
@@ -719,6 +749,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   }
 
   _ComposerDraftKey? _composerDraftKey(HermesChannelState state) {
+    if (_sessionRestorationUnsettled) return null;
     final sessionId = state.activeSessionId;
     final contact = _gatewayDirectory.activeContactId;
     final profileId = state.selectedProfileId ?? contact?.profileId;
@@ -733,6 +764,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   }
 
   _ComposerDraftKey? _composerHistoryKey(HermesChannelState state) {
+    if (_sessionRestorationUnsettled) return null;
     final sessionId = state.activeSessionId;
     if (sessionId == null) return null;
     final contact = _gatewayDirectory.activeContactId;
@@ -745,6 +777,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _syncComposerDraft(HermesChannelState state) {
     final nextKey = _composerDraftKey(state);
+    _transcriptViewport.setOwner(nextKey, origin: state.connectedBaseUrl);
     final nextHistoryKey = _composerHistoryKey(state);
     if (nextHistoryKey != _activeComposerHistoryKey) {
       _activeComposerHistoryKey = nextHistoryKey;
@@ -753,7 +786,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     }
     if (nextKey == _activeComposerDraftKey) return;
     _activeComposerDraftKey = nextKey;
-    _transcriptViewport.setOwner(nextKey);
+
     _composerDrafts.activate(nextKey);
     _composerHistoryIndex = null;
     _composerHistoryDraft = '';
@@ -826,6 +859,25 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _setState(VoidCallback fn) => setState(fn);
 
+  bool get _sessionRestorationUnsettled =>
+      _gatewayDirectory.isActivating ||
+      _gatewayDirectory.restoringSessionId != null;
+
+  bool _canChooseRestorationSession(HermesChannel channel) {
+    if (!_sessionRestorationUnsettled) return true;
+    final state = channel.state;
+    final contactId = _gatewayDirectory.activeContactId;
+    if (!state.isConnected || state.isSelectingProfile || contactId == null) {
+      return false;
+    }
+    // A failed profile activation may leave the connection's default inventory.
+    // Its rows cannot transfer the remembered profile's conversation ownership.
+    return state.selectedProfileId == contactId.profileId ||
+        _gatewayDirectory.contacts.any(
+          (contact) => contact.id == contactId && contact.isFallbackProfile,
+        );
+  }
+
   /// Compact Chat-header control (near the session controls) that shows the
   /// client-selected agent and opens the switcher. The label seeds the default
   /// agent when nothing is selected yet, purely for display.
@@ -875,58 +927,126 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     HermesChannel channel,
     HermesChannelState state,
   ) async {
-    final strings = AppLocalizations.of(context);
-    final selectedId = effectiveSelectedProfileId(state);
-    final chosen = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Semantics(
-                header: true,
-                child: Text(
-                  strings.switchAgentTitle,
-                  style: Theme.of(sheetContext).textTheme.titleLarge,
-                ),
-              ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  for (final profile in state.profiles)
-                    ListTile(
-                      leading: Icon(
-                        profile.id == selectedId
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                      ),
-                      title: Text(
-                        _safeHermesUiPreview(
-                          profile.displayName.isEmpty
-                              ? profile.id
-                              : profile.displayName,
-                          maxLength: 64,
-                        ),
-                      ),
-                      subtitle: Text(strings.agentStableId(profile.id)),
-                      selected: profile.id == selectedId,
-                      onTap: () => Navigator.of(sheetContext).pop(profile.id),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    if (!mounted ||
+        _profileSwitchPending ||
+        _profilePickerOpen ||
+        !identical(ref.read(hermesChannelProvider), channel)) {
+      return;
+    }
+    final owner = channel.state;
+    if (!owner.isConnected ||
+        owner.isSelectingProfile ||
+        owner.connectedBaseUrl != state.connectedBaseUrl ||
+        owner.selectedProfileId != state.selectedProfileId) {
+      return;
+    }
+    final directory = _gatewayDirectory;
+    final contact = directory.activeContactId;
+    final inventory = ValueNotifier(owner.profiles);
+    var invalidated = false;
+    var dismissed = false;
+    var manage = false;
+    BuildContext? modalContext;
+    ModalRoute<String>? modalRoute;
+    bool admitted() =>
+        !invalidated &&
+        mounted &&
+        identical(ref.read(hermesChannelProvider), channel) &&
+        identical(_gatewayDirectory, directory) &&
+        directory.activeContactId == contact &&
+        channel.state.isConnected &&
+        !channel.state.isSelectingProfile &&
+        channel.state.connectedBaseUrl == owner.connectedBaseUrl &&
+        channel.state.selectedProfileId == owner.selectedProfileId;
+    void observe() {
+      if (!admitted()) {
+        // Latch synchronously, even if the owner returns before the next frame.
+        invalidated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final sheet = modalContext;
+          if (sheet != null &&
+              sheet.mounted &&
+              ModalRoute.of(sheet)?.isCurrent == true) {
+            Navigator.of(sheet).pop();
+          }
+        });
+      } else {
+        inventory.value = channel.state.profiles;
+      }
+    }
+
+    channel.addListener(observe);
+    directory.addListener(observe);
+    final subscription = ref.listenManual(
+      hermesChannelProvider,
+      (_, _) => observe(),
     );
-    if (chosen == null || !context.mounted) return;
-    await _switchProfile(context, channel, chosen);
+    String? chosen;
+    Future<void>? switching;
+    _profilePickerOpen = true;
+    try {
+      chosen = await showModalBottomSheet<String>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) {
+          modalContext = sheetContext;
+          modalRoute = ModalRoute.of<String>(sheetContext);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+            ),
+            child: SizedBox(
+              height: MediaQuery.sizeOf(sheetContext).height * .7,
+              child: ChatProfilePicker(
+                profiles: inventory,
+                selectedId: effectiveSelectedProfileId(owner),
+                preview: (value) => _safeHermesUiPreview(value, maxLength: 64),
+                onChoose: (id) {
+                  if (dismissed ||
+                      !sheetContext.mounted ||
+                      ModalRoute.of(sheetContext)?.isCurrent != true ||
+                      !admitted() ||
+                      !channel.state.profiles.any((p) => p.id == id)) {
+                    return;
+                  }
+                  dismissed = true;
+                  Navigator.of(sheetContext).pop(id);
+                },
+                onManage: () {
+                  if (dismissed ||
+                      !sheetContext.mounted ||
+                      ModalRoute.of(sheetContext)?.isCurrent != true ||
+                      !admitted()) {
+                    return;
+                  }
+                  dismissed = true;
+                  manage = true;
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            ),
+          );
+        },
+      );
+      if (!context.mounted || !admitted()) return;
+      if (manage) {
+        context.go(AppRoutes.profiles);
+      } else if (chosen != null &&
+          channel.state.profiles.any((p) => p.id == chosen)) {
+        switching = _switchProfile(context, channel, chosen);
+      }
+    } finally {
+      // The pop result precedes route removal. Reject key repeats until the
+      // closing sheet is gone, rather than replaying an opener behind it.
+      await modalRoute?.completed;
+      subscription.close();
+      channel.removeListener(observe);
+      directory.removeListener(observe);
+      inventory.dispose();
+      _profilePickerOpen = false;
+    }
+    await switching;
   }
 
   Future<void> _switchProfile(
@@ -935,6 +1055,50 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     String profileId,
   ) async {
     if (profileId == effectiveSelectedProfileId(channel.state)) return;
+    final owner = channel.state;
+    final directory = _gatewayDirectory;
+    final contact = directory.activeContactId;
+    var invalidated = false;
+    var disposed = false;
+    bool sameOwner() {
+      final current = channel.state;
+      final currentContact = directory.activeContactId;
+      return !invalidated &&
+          mounted &&
+          identical(ref.read(hermesChannelProvider), channel) &&
+          identical(_gatewayDirectory, directory) &&
+          current.isConnected &&
+          current.connectedBaseUrl == owner.connectedBaseUrl &&
+          (current.selectedProfileId == owner.selectedProfileId ||
+              current.selectedProfileId == profileId) &&
+          (currentContact == contact ||
+              (contact != null &&
+                  currentContact?.gatewayId == contact.gatewayId &&
+                  currentContact?.profileId == profileId));
+    }
+
+    void observe() {
+      // Selection may move to its target, but unrelated owner loss is terminal
+      // even when that owner returns before the next frame.
+      if (!sameOwner()) invalidated = true;
+    }
+
+    channel.addListener(observe);
+    directory.addListener(observe);
+    final subscription = ref.listenManual(
+      hermesChannelProvider,
+      (_, _) => observe(),
+    );
+    void disposeIntent() {
+      if (disposed) return;
+      disposed = true;
+      invalidated = true;
+      subscription.close();
+      channel.removeListener(observe);
+      directory.removeListener(observe);
+    }
+
+    _disposeProfileSwitch = disposeIntent;
     // Switching agents changes the client-local profile context. Clear state
     // that belonged to the prior profile before the refresh lands: stale
     // pending approvals, an answering-approval marker, and continuous voice
@@ -949,11 +1113,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       _approvals.reset();
     });
     try {
-      final activeContact = _gatewayDirectory.activeContactId;
-      if (activeContact == null) {
+      if (contact == null) {
         await channel.selectProfile(profileId);
       } else {
-        await _gatewayDirectory.selectProfileOnActiveGateway(
+        await directory.selectProfileOnActiveGateway(
           profileId,
           discoveredProfile: channel.state.profiles
               .where((profile) => profile.id == profileId)
@@ -962,7 +1125,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       }
       if (!mounted) return;
     } catch (error) {
-      if (!context.mounted) return;
+      if (!context.mounted || !sameOwner()) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -973,7 +1136,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         ),
       );
     } finally {
-      if (mounted) setState(() => _profileSwitchPending = false);
+      disposeIntent();
+      if (identical(_disposeProfileSwitch, disposeIntent)) {
+        _disposeProfileSwitch = null;
+        if (mounted) setState(() => _profileSwitchPending = false);
+      }
     }
   }
 
@@ -1048,22 +1215,37 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   Future<void> _showGatewayContacts() async {
     final channel = ref.read(hermesChannelProvider);
-    if (!await _confirmLeaveActiveContact(channel) || !mounted) return;
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final generation = _composerOwnerGeneration;
+    if (!await _confirmLeaveActiveContact(channel) ||
+        !mounted ||
+        generation != _composerOwnerGeneration ||
+        !identical(ref.read(hermesChannelProvider), channel) ||
+        !identical(ref.read(hermesGatewayDirectoryProvider), directory)) {
+      return;
+    }
     _voiceInputController.pause(
       _hermesStrings(context).chatShellContactClosedBody,
     );
     _followUps.clear();
     _approvals.clearPending();
-    await ref.read(hermesGatewayDirectoryProvider).showDirectory();
+    await directory.showDirectory();
   }
 
   Future<void> _openGatewayContact(GatewayContactId id) async {
     final strings = _hermesStrings(context);
     final channel = ref.read(hermesChannelProvider);
     final directory = ref.read(hermesGatewayDirectoryProvider);
+    final generation = _composerOwnerGeneration;
     if (directory.activeContactId != null &&
         directory.activeContactId != id &&
         !await _confirmLeaveActiveContact(channel)) {
+      return;
+    }
+    if (!mounted ||
+        generation != _composerOwnerGeneration ||
+        !identical(ref.read(hermesChannelProvider), channel) ||
+        !identical(ref.read(hermesGatewayDirectoryProvider), directory)) {
       return;
     }
     _voiceInputController.pause(strings.chatShellContactSwitchedBody);
@@ -1076,44 +1258,164 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     BuildContext context,
     HermesChannelState state,
   ) async {
+    if (_transcriptActionPending) return;
+    _transcriptActionPending = true;
     final strings = _hermesStrings(context);
-    final format = await showModalBottomSheet<_TranscriptCopyFormat>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              title: Text(strings.copyTranscriptAction),
-              subtitle: Text(strings.copyTranscriptDescription),
-            ),
-            ListTile(
-              key: const ValueKey('hermes-copy-transcript-text'),
-              leading: const Icon(Icons.text_snippet_outlined),
-              title: Text(strings.copyAsTextAction),
-              onTap: () => Navigator.pop(context, _TranscriptCopyFormat.text),
-            ),
-            ListTile(
-              key: const ValueKey('hermes-copy-transcript-markdown'),
-              leading: const Icon(Icons.code_outlined),
-              title: Text(strings.copyAsMarkdownAction),
-              onTap: () =>
-                  Navigator.pop(context, _TranscriptCopyFormat.markdown),
-            ),
-          ],
-        ),
-      ),
+    final channel = ref.read(hermesChannelProvider);
+    final generation = _composerOwnerGeneration;
+    final owner = (
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.activeSessionId,
     );
-    if (format == null || !context.mounted) return;
-    await _copyTranscript(context, state, format);
+    bool sameOwner() {
+      if (!mounted || generation != _composerOwnerGeneration) return false;
+      final currentChannel = ref.read(hermesChannelProvider);
+      final current = currentChannel.state;
+      return identical(channel, currentChannel) &&
+          owner ==
+              (
+                current.connectedBaseUrl,
+                current.selectedProfileId,
+                current.activeSessionId,
+              );
+    }
+
+    final saver = ref.read(hermesTranscriptSaverProvider);
+    Future<void>? exporting;
+    void export(
+      BuildContext sheetContext,
+      HermesTranscriptExportFormat format,
+    ) {
+      if (exporting != null) return;
+      // Snapshot the exact owner's current loaded turns at this explicit action,
+      // before any platform wait. Never re-read the transcript after a picker.
+      exporting = _exportTranscript(channel.state, format, saver, sameOwner);
+      Navigator.pop(sheetContext);
+    }
+
+    try {
+      final format = await showModalBottomSheet<_TranscriptCopyFormat>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (context) => SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(strings.copyTranscriptAction),
+                  subtitle: Text(strings.transcriptExportLoadedNote),
+                ),
+                ListTile(
+                  key: const ValueKey('hermes-copy-transcript-text'),
+                  leading: const Icon(Icons.text_snippet_outlined),
+                  title: Text(strings.copyAsTextAction),
+                  onTap: () =>
+                      Navigator.pop(context, _TranscriptCopyFormat.text),
+                ),
+                ListTile(
+                  key: const ValueKey('hermes-copy-transcript-markdown'),
+                  leading: const Icon(Icons.code_outlined),
+                  title: Text(strings.copyAsMarkdownAction),
+                  onTap: () =>
+                      Navigator.pop(context, _TranscriptCopyFormat.markdown),
+                ),
+                if (saver.supported) ...[
+                  ListTile(
+                    key: const ValueKey('hermes-save-transcript-text'),
+                    leading: const Icon(Icons.save_alt),
+                    title: Text(strings.transcriptSaveTextAction),
+                    onTap: () =>
+                        export(context, HermesTranscriptExportFormat.text),
+                  ),
+                  ListTile(
+                    key: const ValueKey('hermes-save-transcript-markdown'),
+                    leading: const Icon(Icons.save_alt),
+                    title: Text(strings.transcriptSaveMarkdownAction),
+                    onTap: () =>
+                        export(context, HermesTranscriptExportFormat.markdown),
+                  ),
+                ] else
+                  ListTile(subtitle: Text(strings.transcriptExportUnsupported)),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (exporting != null) await exporting;
+      if (format == null || !context.mounted) return;
+      await _copyTranscript(context, state, format, sameOwner);
+    } finally {
+      _transcriptActionPending = false;
+    }
+  }
+
+  Future<void> _exportTranscript(
+    HermesChannelState state,
+    HermesTranscriptExportFormat format,
+    HermesTranscriptSaver saver,
+    bool Function() sameOwner,
+  ) async {
+    final strings = _hermesStrings(context);
+    String? message;
+    try {
+      if (!sameOwner()) {
+        message = strings.transcriptExportOwnerChanged;
+      } else {
+        // Bound work before redaction/serialization as well as final UTF-8 bytes.
+        var units = 0;
+        for (final turn in state.activeMessages) {
+          units += turn.text.length + (turn.attachment?.name.length ?? 0) + 256;
+          if (units > hermesTranscriptExportByteLimit) {
+            throw const HermesTranscriptExportTooLarge();
+          }
+        }
+        final transcript = format == HermesTranscriptExportFormat.text
+            ? _hermesTranscriptText(
+                state.activeMessages,
+                strings,
+                session: state.activeSession,
+              )
+            : _hermesTranscriptMarkdown(
+                state.activeMessages,
+                strings,
+                session: state.activeSession,
+              );
+        final snapshot = HermesTranscriptExport(transcript, format);
+        final result = await saver.save(snapshot, canWrite: sameOwner);
+        if (!sameOwner()) return;
+        message = switch (result) {
+          HermesTranscriptExportResult.downloadStarted =>
+            strings.transcriptExportDownloadStarted,
+          HermesTranscriptExportResult.saved => strings.transcriptExportSaved,
+          HermesTranscriptExportResult.cancelled => null,
+          HermesTranscriptExportResult.unsupported =>
+            strings.transcriptExportUnsupported,
+        };
+      }
+    } on HermesTranscriptExportTooLarge {
+      message = strings.transcriptExportTooLarge;
+    } catch (_) {
+      // Do not surface platform errors containing transcript or local paths.
+      message = strings.transcriptExportFailed;
+    }
+    if (!mounted || message == null || !sameOwner()) return;
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _copyTranscript(
     BuildContext context,
     HermesChannelState state,
-    _TranscriptCopyFormat format,
-  ) async {
+    _TranscriptCopyFormat format, [
+    bool Function()? sameOwner,
+  ]) async {
     final strings = _hermesStrings(context);
+    final channel = ref.read(hermesChannelProvider);
+    final generation = _composerOwnerGeneration;
     final transcript = switch (format) {
       _TranscriptCopyFormat.text => _hermesTranscriptText(
         state.activeMessages,
@@ -1127,14 +1429,27 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       ),
     };
     if (transcript.isEmpty) return;
-    await Clipboard.setData(ClipboardData(text: transcript));
-    if (!context.mounted) return;
     final label = format == _TranscriptCopyFormat.markdown
         ? strings.transcriptFormatMarkdown
         : strings.transcriptFormatText;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(content: Text(strings.transcriptCopiedMessage(label))),
-    );
+    String message;
+    try {
+      await Clipboard.setData(ClipboardData(text: transcript));
+      message = strings.transcriptCopiedMessage(label);
+    } catch (_) {
+      // Platform errors may contain transcript content or private diagnostics.
+      message = strings.transcriptCopyFailedMessage;
+    }
+    // A started clipboard write cannot be undone; suppress only stale feedback.
+    if (!context.mounted ||
+        generation != _composerOwnerGeneration ||
+        !identical(channel, ref.read(hermesChannelProvider)) ||
+        (sameOwner != null && !sameOwner())) {
+      return;
+    }
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -1449,6 +1764,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               onConnect: () => context.push(AppRoutes.enroll),
               groupController: _chatGroupController,
             )
+          : directory.restoringSessionId != null
+          ? _buildSessionRestoration(context, channel)
           : unsupportedCapabilitySchema
           ? WingEmptyState(
               key: const ValueKey('hermes-unsupported-capability-schema'),
@@ -1607,8 +1924,8 @@ List<String> _hermesTranscriptSections(
     final attachmentText = attachment == null
         ? null
         : attachment.kind == HermesAttachmentKind.image
-        ? strings.chatImageAttachmentLabel(attachment.name)
-        : strings.chatFileAttachmentLabel(attachment.name);
+        ? strings.chatImageAttachmentLabel(_safeHermesUiText(attachment.name))
+        : strings.chatFileAttachmentLabel(_safeHermesUiText(attachment.name));
     if (text.isEmpty && attachmentText == null) continue;
     final author = turn.kind == HermesTurnKind.reasoning
         ? strings.reasoningTitle

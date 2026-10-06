@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -85,10 +86,15 @@ class _GatedProfileSelectionChannel extends FakeHermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     selectionAttempts += 1;
     await selectionGate.future;
-    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    await super.selectProfile(
+      profileId,
+      allowDiscovered: allowDiscovered,
+      deferSessionSelection: deferSessionSelection,
+    );
   }
 }
 
@@ -117,9 +123,10 @@ Widget _profilesTestApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(textScale),
+        disableAnimations: true,
+      ),
       child: child!,
     ),
     home: ProfilesScreen(startSetup: startSetup),
@@ -127,6 +134,177 @@ Widget _profilesTestApp(
 );
 
 void main() {
+  for (final width in [390.0, 1280.0]) {
+    testWidgets(
+      'local profile search metadata, literal clear and keyboard at $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final channel = FakeHermesChannel(
+          capabilities: _profileCapabilities([
+            'profiles:read',
+            'profiles:write',
+          ]),
+          selectedProfileId: 'default',
+          profiles: [
+            const HermesProfile(
+              id: 'default',
+              displayName: 'Home',
+              revision: 'r1',
+            ),
+            const HermesProfile(
+              id: 'coder',
+              displayName: 'Coding Profile',
+              revision: 'r2',
+              description: 'Review [draft].*',
+              model: 'Example/Small',
+            ),
+            HermesProfile.fromJson({
+              'id': 'bare',
+              'name': null,
+              'revision': 'r3',
+              'description': null,
+              'model': null,
+            }),
+          ],
+        );
+        addTearDown(channel.dispose);
+        await tester.pumpWidget(_profilesTestApp(channel, textScale: 2));
+        await tester.pumpAndSettle();
+        final search = find.byKey(const ValueKey('profiles-search'));
+        expect(search, findsOneWidget);
+        expect(find.byTooltip('Clear profile search'), findsNothing);
+        for (final query in [
+          'CODER',
+          'coding PROFILE',
+          'review [DRAFT].*',
+          'example/SMALL',
+        ]) {
+          await tester.enterText(search, query);
+          await tester.pumpAndSettle();
+          expect(find.text('Coding Profile'), findsOneWidget);
+          expect(find.text('Home'), findsNothing);
+          expect(find.text('Active chat'), findsNothing);
+          expect(channel.state.selectedProfileId, 'default');
+        }
+        await tester.enterText(search, 'not present');
+        await tester.pumpAndSettle();
+        expect(find.text('No matching profiles'), findsOneWidget);
+        expect(find.text('No profiles available'), findsNothing);
+        expect(find.text('New Profile'), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+        expect(find.text('Home'), findsOneWidget);
+        expect(find.text('bare'), findsOneWidget);
+        expect(find.text('Active chat'), findsOneWidget);
+        expect(find.bySemanticsLabel('Search profiles'), findsOneWidget);
+        expect(channel.selectProfileCalls, isEmpty);
+        expect(channel.connectCalls, isEmpty);
+        expect(channel.createProfileCalls, isEmpty);
+        expect(channel.renameProfileCalls, isEmpty);
+        expect(channel.deleteProfileCalls, isEmpty);
+        expect(channel.readProfileSoulCalls, isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'profile search preserves same-owner updates, loses read authority and does not resurrect',
+    (tester) async {
+      final caps = _profileCapabilities(['profiles:read']);
+      final channel = FakeHermesChannel(
+        capabilities: caps,
+        profiles: const [
+          HermesProfile(id: 'first', displayName: 'First', revision: 'r1'),
+          HermesProfile(id: 'second', displayName: 'Second', revision: 'r2'),
+        ],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_profilesTestApp(channel));
+      await tester.pumpAndSettle();
+      final search = find.byKey(const ValueKey('profiles-search'));
+      await tester.enterText(search, 'second');
+      channel.replaceCapabilitiesAndProfiles(
+        _profileCapabilities(['profiles:read']),
+        const [
+          HermesProfile(
+            id: 'first',
+            displayName: 'First refreshed',
+            revision: 'r3',
+          ),
+          HermesProfile(
+            id: 'second',
+            displayName: 'Second refreshed',
+            revision: 'r4',
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(search).controller!.text, 'second');
+      expect(find.text('First refreshed'), findsNothing);
+      expect(find.text('Second refreshed'), findsOneWidget);
+      channel.replaceCapabilitiesAndProfiles(
+        _profileCapabilities([]),
+        channel.state.profiles,
+      );
+      await tester.pumpAndSettle();
+      expect(search, findsNothing);
+      expect(find.text('Profiles unavailable'), findsOneWidget);
+      channel.replaceCapabilitiesAndProfiles(caps, channel.state.profiles);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+      expect(find.text('First refreshed'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'filtered profile create retains full clone inventory and server rejection',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        createProfileFails: true,
+        capabilities: _profileCapabilities(['profiles:read', 'profiles:write']),
+        profiles: const [
+          HermesProfile(id: 'default', displayName: 'Home', revision: 'r1'),
+          HermesProfile(
+            id: 'coder',
+            displayName: 'Coding Profile',
+            revision: 'r2',
+          ),
+        ],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_profilesTestApp(channel));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('profiles-search')),
+        'no match',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('New Profile'));
+      await tester.pumpAndSettle();
+      final editor = tester.widget<ProfileEditorSheet>(
+        find.byType(ProfileEditorSheet),
+      );
+      expect(editor.profiles.map((p) => p.id), ['default', 'coder']);
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Profile name'),
+        'coder',
+      );
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Create'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+      await tester.pumpAndSettle();
+      expect(channel.createProfileCalls, [
+        {'name': 'coder', 'cloneFrom': 'default'},
+      ]);
+      expect(find.byType(ProfileEditorSheet), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'paired setup opens after saved hosts finish loading without connecting chat',
     (tester) async {
@@ -558,7 +736,16 @@ void main() {
       final browseFolders = find.byKey(
         const ValueKey('agent-browse-folders-link'),
       );
-      await tester.scrollUntilVisible(browseFolders, 200);
+      await tester.scrollUntilVisible(
+        browseFolders,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.tap(browseFolders);
       await tester.pumpAndSettle();
 
@@ -756,7 +943,16 @@ void main() {
       );
       expect(enrolledChat.onPressed, isNotNull);
 
-      await tester.scrollUntilVisible(find.text('Newbie'), 500);
+      await tester.scrollUntilVisible(
+        find.text('Newbie'),
+        500,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       expect(find.text('Not enrolled'), findsOneWidget);
       final inventoryOnlyChat = tester.widget<FilledButton>(
         find.byKey(const ValueKey('agent-chat-newbie')),
@@ -765,7 +961,16 @@ void main() {
       expect(find.text('Active chat'), findsNothing);
       await directory.activateGateway('link-endpoint');
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Link'), -500);
+      await tester.scrollUntilVisible(
+        find.text('Link'),
+        -500,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       expect(find.text('Active chat'), findsOneWidget);
       final activeCard = find.ancestor(
         of: find.text('Active chat'),
@@ -775,6 +980,29 @@ void main() {
         find.descendant(of: activeCard, matching: find.text('Link')),
         findsOneWidget,
       );
+      final activeBeforeSearch = directory.activeContactId;
+      final connectsBeforeSearch = channel.connectCalls.length;
+      await tester.ensureVisible(find.byKey(const ValueKey('profiles-search')));
+      await tester.enterText(
+        find.byKey(const ValueKey('profiles-search')),
+        'NEWBIE',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Link'), findsNothing);
+      expect(find.text('Active chat'), findsNothing);
+      expect(directory.activeContactId, activeBeforeSearch);
+      expect(channel.connectCalls.length, connectsBeforeSearch);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('agent-chat-newbie')),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(find.byTooltip('Clear profile search'));
+      await tester.pumpAndSettle();
+      expect(find.text('Active chat'), findsOneWidget);
       await directory.showDirectory();
       await tester.pumpAndSettle();
       expect(find.text('Active chat'), findsNothing);
@@ -842,6 +1070,12 @@ void main() {
         final chatButton = tester.widget<FilledButton>(
           find.byKey(const ValueKey('agent-chat-link')),
         );
+        await tester.enterText(
+          find.byKey(const ValueKey('profiles-search')),
+          'LINK',
+        );
+        await tester.pumpAndSettle();
+        expect(channel.connectCalls, isEmpty);
         chatButton.onPressed!.call();
         await tester.pumpAndSettle();
 
@@ -1827,7 +2061,16 @@ void main() {
     await tester.pumpAndSettle();
 
     final coderChat = find.widgetWithText(FilledButton, 'Chat').last;
-    await tester.scrollUntilVisible(coderChat, 300);
+    await tester.scrollUntilVisible(
+      coderChat,
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.tap(coderChat);
     await tester.pump();
 
@@ -1899,6 +2142,17 @@ void main() {
 
     await tester.pumpWidget(_profilesTestApp(channel, textScale: 2.0));
     await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Coding Agent with a longer profile name'),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
 
     expect(tester.takeException(), isNull);
     expect(

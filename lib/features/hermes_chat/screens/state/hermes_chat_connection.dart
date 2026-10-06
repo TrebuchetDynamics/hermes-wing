@@ -176,7 +176,41 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _reconnectOnce(HermesChannel channel) async {
-    final saved = await ref.read(hermesEndpointStoreProvider).load();
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final contactId = directory.activeContactId;
+    final sessionId = channel.state.activeSessionId;
+    if (contactId != null && sessionId != null) {
+      // Ordinary connect selects page-zero defaults. A saved conversation must
+      // instead use exact owner restoration, including its profile and failures.
+      await directory.activate(contactId, preferredSessionId: sessionId);
+      return;
+    }
+    final ownerGeneration = _composerOwnerGeneration;
+    final formGeneration = _connectionForm.intentGeneration;
+    bool ownsRead() =>
+        mounted &&
+        identical(ref.read(hermesChannelProvider), channel) &&
+        ownerGeneration == _composerOwnerGeneration &&
+        formGeneration == _connectionForm.intentGeneration;
+    HermesEndpointConfig? saved;
+    try {
+      saved = await ref.read(hermesEndpointStoreProvider).load();
+    } catch (_) {
+      if (!mounted || !ownsRead()) return;
+      // Storage failures may contain private platform details. Keep recovery
+      // explicit; do not connect with an unknown or superseded credential.
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            _hermesStrings(context).chatSavedEndpointsLoadFailedBody,
+          ),
+        ),
+      );
+      return;
+    }
+    // Admit before touching controllers or starting network work, not just
+    // after connect. The generation also rejects owner changes that return.
+    if (!ownsRead()) return;
     final stateBaseUrl = channel.state.connectedBaseUrl;
     final controllerBaseUrl = hermesPublicEndpointBaseUrl(
       _connectionForm.baseUrl.text,
@@ -262,9 +296,9 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     BuildContext context,
     HermesChannel channel,
   ) async {
-    final activeContact = ref
-        .read(hermesGatewayDirectoryProvider)
-        .activeContact;
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final ownerGeneration = _composerOwnerGeneration;
+    final activeContact = directory.activeContact;
     final target = activeContact?.gatewayLabel ?? _connectionForm.baseUrl.text;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -293,14 +327,21 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         );
       },
     );
-    if (confirmed == true) await _disconnect(channel);
+    // Returning to an old owner does not renew consent from its earlier dialog.
+    if (confirmed != true ||
+        !mounted ||
+        ownerGeneration != _composerOwnerGeneration ||
+        !identical(channel, ref.read(hermesChannelProvider)) ||
+        !identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+      return;
+    }
+    await _disconnect(directory);
   }
 
-  Future<void> _disconnect(HermesChannel channel) async {
+  Future<void> _disconnect(HermesGatewayDirectory directory) async {
     _voiceInputController.pause();
     _followUps.clear();
     _approvals.clearPending();
-    final directory = ref.read(hermesGatewayDirectoryProvider);
     await directory.showDirectory();
     _refreshEndpointProfiles();
   }
@@ -308,75 +349,94 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   void _showDiagnosticsDialog(BuildContext context, HermesChannelState state) {
     final diagnostics = hermesDiagnosticsExport(state);
     final rawLogsSummary = _rawLogsDeferredSummary();
+    var copyFailed = false;
     showDialog<void>(
       context: context,
-      builder: (context) {
-        final strings = AppLocalizations.of(context);
-        return AlertDialog(
-          insetPadding: const EdgeInsets.all(16),
-          contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-          title: Text(strings.chatConnectionDiagnosticsTitle),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (state.capabilities != null) ...[
-                    _HermesCapabilityStrip(
-                      capabilities: state.capabilities!,
-                      detailedHealth: state.detailedHealth,
-                      models: state.models,
-                      skills: state.skills,
-                      enabledToolsets: state.enabledToolsets,
-                      jobs: state.jobs,
-                      optionalResourceErrors: state.optionalResourceErrors,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final strings = AppLocalizations.of(context);
+          Future<void> copy(String text, String successNotice) async {
+            setState(() => copyFailed = false);
+            var copied = false;
+            try {
+              await Clipboard.setData(ClipboardData(text: text));
+              copied = true;
+            } catch (_) {
+              // Clipboard denial must not expose platform diagnostics.
+            }
+            if (!context.mounted || ModalRoute.of(context)?.isCurrent != true) {
+              return;
+            }
+            if (!copied) {
+              setState(() => copyFailed = true);
+              return;
+            }
+            ScaffoldMessenger.maybeOf(
+              context,
+            )?.showSnackBar(SnackBar(content: Text(successNotice)));
+          }
+
+          return AlertDialog(
+            insetPadding: const EdgeInsets.all(16),
+            contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+            title: Text(strings.chatConnectionDiagnosticsTitle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (state.capabilities != null) ...[
+                      _HermesCapabilityStrip(
+                        capabilities: state.capabilities!,
+                        detailedHealth: state.detailedHealth,
+                        models: state.models,
+                        skills: state.skills,
+                        enabledToolsets: state.enabledToolsets,
+                        jobs: state.jobs,
+                        optionalResourceErrors: state.optionalResourceErrors,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    SelectableText(
+                      diagnostics,
+                      key: const ValueKey('hermes-diagnostics-text'),
                     ),
-                    const SizedBox(height: 12),
                   ],
-                  SelectableText(
-                    diagnostics,
-                    key: const ValueKey('hermes-diagnostics-text'),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton.icon(
-              key: const ValueKey('hermes-raw-logs-status-copy'),
-              onPressed: () {
-                unawaited(
-                  Clipboard.setData(ClipboardData(text: rawLogsSummary)),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(strings.chatConnectionRawLogStatusCopiedBody),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.copy_outlined),
-              label: Text(strings.chatConnectionCopyRawLogStatusAction),
-            ),
-            TextButton(
-              key: const ValueKey('hermes-diagnostics-copy'),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: diagnostics));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(strings.chatConnectionDiagnosticsCopiedBody),
-                  ),
-                );
-              },
-              child: Text(strings.chatConnectionCopyAction),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(strings.closeAction),
-            ),
-          ],
-        );
-      },
+            actions: [
+              if (copyFailed)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(strings.diagnosticsCopyFailedNotice),
+                ),
+              TextButton.icon(
+                key: const ValueKey('hermes-raw-logs-status-copy'),
+                onPressed: () => copy(
+                  rawLogsSummary,
+                  strings.chatConnectionRawLogStatusCopiedBody,
+                ),
+                icon: const Icon(Icons.copy_outlined),
+                label: Text(strings.chatConnectionCopyRawLogStatusAction),
+              ),
+              TextButton(
+                key: const ValueKey('hermes-diagnostics-copy'),
+                onPressed: () => copy(
+                  diagnostics,
+                  strings.chatConnectionDiagnosticsCopiedBody,
+                ),
+                child: Text(strings.chatConnectionCopyAction),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(strings.closeAction),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -391,6 +451,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   void _showSessionsPanel(BuildContext context, HermesChannel channel) {
+    if (!_canChooseRestorationSession(channel)) return;
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,

@@ -225,54 +225,79 @@ class _HermesCapabilityStrip extends StatelessWidget {
   void _showSurfaceReadiness(BuildContext context) {
     final items = hermesSurfaceReadiness(capabilities);
     final summary = _surfaceReadinessSummary(items);
+    var copyFailed = false;
     showDialog<void>(
       context: context,
-      builder: (context) {
-        final strings = AppLocalizations.of(context);
-        return AlertDialog(
-          title: Text(strings.chatStatusSurfaceReadinessTitle),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Text(
-                    strings.chatStatusSurfaceReadinessNoteBody,
-                    key: const ValueKey('hermes-admin-surfaces-note'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final strings = AppLocalizations.of(context);
+          return AlertDialog(
+            title: Text(strings.chatStatusSurfaceReadinessTitle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Text(
+                      strings.chatStatusSurfaceReadinessNoteBody,
+                      key: const ValueKey('hermes-admin-surfaces-note'),
+                    ),
                   ),
+                  for (final item in items)
+                    ListTile(
+                      title: Text(item.title),
+                      subtitle: Text(item.detail),
+                      trailing: Text(item.status.label),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              if (copyFailed)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(strings.chatStatusCopySurfaceReadinessFailedBody),
                 ),
-                for (final item in items)
-                  ListTile(
-                    title: Text(item.title),
-                    subtitle: Text(item.detail),
-                    trailing: Text(item.status.label),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton.icon(
-              key: const ValueKey('hermes-surfaces-copy'),
-              onPressed: () {
-                unawaited(Clipboard.setData(ClipboardData(text: summary)));
-                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                  SnackBar(
-                    content: Text(strings.chatStatusCopiedSurfaceReadinessBody),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.copy_outlined),
-              label: Text(strings.chatStatusCopySummaryAction),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(strings.closeAction),
-            ),
-          ],
-        );
-      },
+              TextButton.icon(
+                key: const ValueKey('hermes-surfaces-copy'),
+                onPressed: () async {
+                  setState(() => copyFailed = false);
+                  var copied = false;
+                  try {
+                    await Clipboard.setData(ClipboardData(text: summary));
+                    copied = true;
+                  } catch (_) {
+                    // Clipboard denial must not expose platform diagnostics.
+                  }
+                  if (!context.mounted ||
+                      ModalRoute.of(context)?.isCurrent != true) {
+                    return;
+                  }
+                  if (!copied) {
+                    setState(() => copyFailed = true);
+                    return;
+                  }
+                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        strings.chatStatusCopiedSurfaceReadinessBody,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.copy_outlined),
+                label: Text(strings.chatStatusCopySummaryAction),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(strings.closeAction),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

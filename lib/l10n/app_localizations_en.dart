@@ -9,6 +9,73 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get profilesSearchLabel => 'Search profiles';
+
+  @override
+  String get chatProfileSearch => 'Search profiles by name, ID or model';
+
+  @override
+  String get chatProfileManage => 'Manage profiles';
+
+  @override
+  String get chatProfileHighlighted => 'Keyboard selection';
+
+  @override
+  String get profilesSearchClear => 'Clear profile search';
+
+  @override
+  String get profilesSearchHelp =>
+      'Search this loaded inventory by profile ID, name, description or model. Search does not change the active chat.';
+
+  @override
+  String get profilesSearchNoMatchesTitle => 'No matching profiles';
+
+  @override
+  String get profilesSearchNoMatchesBody =>
+      'Try another profile ID, name, description or model, or clear the search.';
+
+  @override
+  String get chatSessionRestorationPendingTitle =>
+      'Restoring your conversation';
+
+  @override
+  String get chatSessionRestorationPendingBody =>
+      'Opening your remembered conversation. Sending and New Chat are paused so nothing goes to another session.';
+
+  @override
+  String get chatSessionRestorationFailedTitle => 'Conversation not restored';
+
+  @override
+  String get chatSessionRestorationUnsupportedBody =>
+      'This Agent does not support restoring the remembered conversation directly. Retry after its capabilities change, or choose a session.';
+
+  @override
+  String get chatSessionRestorationAuthenticationBody =>
+      'The Agent did not authorize access to the remembered conversation. Check this connection’s access, then retry or choose a session.';
+
+  @override
+  String get chatSessionRestorationUnavailableBody =>
+      'The remembered conversation is unavailable. It has not been replaced. Retry, or choose a session.';
+
+  @override
+  String get chatSessionRestorationTransientBody =>
+      'The remembered conversation could not be reached. It has not been replaced. Retry, or choose a session.';
+
+  @override
+  String get chatSessionRestorationIncompatibleBody =>
+      'The Agent response could not confirm the remembered conversation. It has not been replaced. Retry, or choose a session.';
+
+  @override
+  String get chatSessionRestorationRetry => 'Retry';
+
+  @override
+  String get chatSessionRestorationChoose => 'Choose session';
+
+  @override
+  String get chatSessionRestorationProfileRequiredBody =>
+      'Retry to load this profile’s sessions before choosing a conversation.';
+
+  @override
   String get profileCatalogLoading =>
       'Loading providers and models from Hermes Agent…';
 
@@ -29,6 +96,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatTranscriptLatestAction => 'Latest activity';
+
+  @override
+  String chatTranscriptRevealEarlier(int remaining) {
+    return 'Show up to 100 earlier loaded turns ($remaining remaining)';
+  }
+
+  @override
+  String chatTranscriptContinuedTools(String title) {
+    return '$title (continued)';
+  }
 
   @override
   String get chatVoiceMuteOutputAction => 'Mute speech';
@@ -426,6 +503,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellDisconnected => 'Disconnected';
 
   @override
+  String get shellWorkflowNavigation => 'Workflow';
+
+  @override
+  String get shellUtilityNavigation => 'Utilities';
+
+  @override
   String get shellNotLoaded => 'Not loaded';
 
   @override
@@ -588,6 +671,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchToolsetsLabel => 'Search toolsets and resolved tools';
 
   @override
+  String get clearToolsetsSearch => 'Clear toolsets search';
+
+  @override
   String get noToolsetsMatchBody => 'No toolsets match this search.';
 
   @override
@@ -632,6 +718,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchInstalledSkillsLabel => 'Search installed skills';
+
+  @override
+  String get clearInstalledSkillsSearch => 'Clear installed skills search';
 
   @override
   String get noSkillsMatchBody => 'No installed skills match this search.';
@@ -689,6 +778,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedulesRefreshing => 'Refreshing scheduled jobs';
+
+  @override
+  String get schedulesSearchLabel => 'Search schedules';
+
+  @override
+  String get schedulesFilterLabel => 'Show schedules';
+
+  @override
+  String get schedulesFilterAll => 'All';
+
+  @override
+  String get schedulesClearFilters => 'Clear filters';
+
+  @override
+  String get schedulesNoMatchesTitle => 'No matching schedules';
+
+  @override
+  String get schedulesNoMatchesBody =>
+      'Try another name, job ID or schedule, or clear the filters.';
+
+  @override
+  String get scheduleIdLabel => 'Job ID';
 
   @override
   String get scheduleEnabled => 'Enabled';
@@ -949,6 +1060,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providersLoading => 'Loading providers';
 
   @override
+  String get providersSearchLabel => 'Search providers';
+
+  @override
+  String get providersSearchClear => 'Clear provider search';
+
+  @override
+  String get providersSearchNoMatchesTitle => 'No matching providers';
+
+  @override
+  String get providersSearchNoMatchesBody =>
+      'Try another provider name or slug, or clear the search.';
+
+  @override
   String get providersConnectionError =>
       'Providers could not be loaded from Hermes.';
 
@@ -1074,6 +1198,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hermes could not confirm this session model.';
 
   @override
+  String get sessionModelSearch => 'Search models or providers';
+
+  @override
+  String get sessionModelClearSearch => 'Clear model search';
+
+  @override
+  String get sessionModelAllProviders => 'All selectable providers';
+
+  @override
+  String get sessionModelResetFilters => 'Reset filters';
+
+  @override
+  String get sessionModelNoResults =>
+      'No matching selectable models. Clear the search or reset filters.';
+
+  @override
+  String get sessionModelCatalogEmpty =>
+      'No selectable session models are available from Hermes Agent.';
+
+  @override
+  String get sessionModelSelectionUnavailable =>
+      'The selected model is no longer available. Choose a model from the current catalog.';
+
+  @override
+  String sessionModelResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count matching models',
+      one: '1 matching model',
+      zero: 'No matching models',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionModelSelected(String provider, String model) {
+    return 'Selected: $provider — $model';
+  }
+
+  @override
   String get modelSlotLabel => 'Slot';
 
   @override
@@ -1145,6 +1310,39 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose a portable transcript format.';
 
   @override
+  String get transcriptExportLoadedNote =>
+      'Copy or save all currently loaded turns. Older unfetched history is not included. Files contain the same redacted text as copy, up to 4 MiB; large transcripts may be rejected without truncation.';
+
+  @override
+  String get transcriptSaveTextAction => 'Save as text';
+
+  @override
+  String get transcriptSaveMarkdownAction => 'Save as Markdown';
+
+  @override
+  String get transcriptExportUnsupported =>
+      'File export is available in the browser and on Linux only.';
+
+  @override
+  String get transcriptExportOwnerChanged =>
+      'The conversation changed. Open transcript actions again to export it.';
+
+  @override
+  String get transcriptExportDownloadStarted =>
+      'Transcript download requested. Check your browser downloads for the file.';
+
+  @override
+  String get transcriptExportSaved => 'Transcript saved to the selected file.';
+
+  @override
+  String get transcriptExportTooLarge =>
+      'This loaded transcript is too large to export (4 MiB limit). No file was written; content was not truncated.';
+
+  @override
+  String get transcriptExportFailed =>
+      'The transcript could not be exported. No success was confirmed. Try again explicitly.';
+
+  @override
   String get copyAsTextAction => 'Copy as text';
 
   @override
@@ -1160,6 +1358,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String transcriptCopiedMessage(String format) {
     return 'Transcript copied as $format';
   }
+
+  @override
+  String get transcriptCopyFailedMessage =>
+      'Could not copy transcript. Try again.';
 
   @override
   String get transcriptAuthorYou => 'You';
@@ -1246,6 +1448,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get codeCopiedMessage => 'Code copied';
+
+  @override
+  String get codeCopyFailedMessage => 'Could not copy code. Try again.';
 
   @override
   String get showMoreAction => 'Show more';
@@ -2908,7 +3113,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutModelFallbackLabel => 'Hermes model';
 
   @override
-  String get chatComposerModelPickerTooltip => 'Choose profile model';
+  String get chatComposerModelPickerTooltip => 'Choose model';
 
   @override
   String get chatComposerModelsLoadFailed =>
@@ -3329,6 +3534,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Copied Hermes surface readiness summary.';
 
   @override
+  String get chatStatusCopySurfaceReadinessFailedBody =>
+      'Could not copy Hermes surface readiness summary. Try again.';
+
+  @override
   String get chatStatusCopySummaryAction => 'Copy summary';
 
   @override
@@ -3511,7 +3720,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRailSessionsTitle => 'Sessions';
 
   @override
+  String get shellLoadedSessions => 'Loaded sessions';
+
+  @override
+  String get shellSessionScope => 'Open or create. Manage sessions in Chat.';
+
+  @override
+  String get shellNewSession => 'New Session';
+
+  @override
+  String get shellSessionPending => 'Opening session…';
+
+  @override
+  String get shellSessionFailed =>
+      'Could not open the session. Try again in Chat.';
+
+  @override
+  String shellOpenSession(String title) {
+    return 'Open $title';
+  }
+
+  @override
   String get chatRailPinnedGroupLabel => 'Pinned';
+
+  @override
+  String get chatRailChatsGroupLabel => 'Chats';
 
   @override
   String get chatRailPinSessionAction => 'Pin';
@@ -3678,6 +3911,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRailCopyDetailsAction => 'Copy details';
 
   @override
+  String get chatRailCopySessionIdAction => 'Copy session ID';
+
+  @override
+  String get chatRailCopiedSessionIdBody => 'Copied session ID.';
+
+  @override
+  String get chatRailCopySessionIdFailedBody =>
+      'Could not copy session ID. Try again.';
+
+  @override
   String get chatRailRenameAction => 'Rename';
 
   @override
@@ -3689,6 +3932,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatRailCopiedSessionDetailsBody =>
       'Copied redacted Hermes session details.';
+
+  @override
+  String get chatRailCopySessionDetailsFailedBody =>
+      'Could not copy session details. Please try again.';
 
   @override
   String get chatRailSessionDetailsTitle => 'Session details';

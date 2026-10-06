@@ -2,6 +2,18 @@ part of '../screens/hermes_chat_screen.dart';
 
 enum _TranscriptContextAction { copyText, copyMarkdown }
 
+// Claim both fingers before selectable text can claim the first horizontal
+// move and split a transcript pinch between competing recognizers.
+final class _TranscriptScaleGestureRecognizer extends ScaleGestureRecognizer {
+  @override
+  void handleEvent(PointerEvent event) {
+    super.handleEvent(event);
+    if (event is PointerDownEvent && pointerCount >= 2) {
+      resolve(GestureDisposition.accepted);
+    }
+  }
+}
+
 final class _TranscriptTextScaler extends TextScaler {
   const _TranscriptTextScaler(this.base, this.factor);
 
@@ -40,6 +52,8 @@ RelativeRect _contextMenuPosition(BuildContext context, Offset globalPosition) {
 class _HermesTranscriptList extends StatelessWidget {
   const _HermesTranscriptList({
     required this.viewport,
+    required this.onRevealEarlier,
+    required this.onLatest,
     required this.controller,
     required this.textScale,
     required this.onScaleStart,
@@ -73,6 +87,8 @@ class _HermesTranscriptList extends StatelessWidget {
 
   final ScrollController controller;
   final HermesTranscriptViewportController viewport;
+  final VoidCallback onRevealEarlier;
+  final VoidCallback onLatest;
   final double textScale;
   final GestureScaleStartCallback onScaleStart;
   final GestureScaleUpdateCallback onScaleUpdate;
@@ -104,7 +120,7 @@ class _HermesTranscriptList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleTurns = turns
+    final eligibleTurns = turns
         .where(
           (turn) =>
               turn.kind != HermesTurnKind.text ||
@@ -113,9 +129,13 @@ class _HermesTranscriptList extends StatelessWidget {
               turn.attachment != null,
         )
         .toList(growable: false);
+    final uniqueIds = HermesTurnPresentationIdentity.uniqueIds(turns);
+    final visibleTurns = viewport.project(eligibleTurns, uniqueIds: uniqueIds);
     final rows = <Widget>[];
-    final uniqueIds = HermesTurnPresentationIdentity.uniqueIds(visibleTurns);
-    viewport.retainRows(uniqueIds);
+    viewport.retainRows({
+      for (final turn in visibleTurns)
+        if (uniqueIds.contains(turn.id)) turn.id,
+    });
     if (canLoadEarlierMessages || isLoadingEarlierMessages) {
       final strings = AppLocalizations.of(context);
       rows.add(
@@ -157,10 +177,12 @@ class _HermesTranscriptList extends StatelessWidget {
     for (var index = 0; index < visibleTurns.length; index++) {
       final turn = visibleTurns[index];
       final rowIndex = index;
+      var identityIndex = rowIndex;
       final showAssistantAvatar =
           turn.author != HermesTurnAuthor.user &&
-          (index == 0 ||
-              visibleTurns[index - 1].author == HermesTurnAuthor.user);
+          (index + viewport.windowStart == 0 ||
+              eligibleTurns[index + viewport.windowStart - 1].author ==
+                  HermesTurnAuthor.user);
       if (turn.kind == HermesTurnKind.reasoning) {
         rows.add(
           _ReasoningCard(
@@ -178,9 +200,12 @@ class _HermesTranscriptList extends StatelessWidget {
             visibleTurns[index + 1].toolCall != null) {
           group.add(visibleTurns[++index]);
         }
+        // The newest member survives deliberate prepends to this group.
+        identityIndex = index;
         rows.add(
           _ToolActivityGroup(
             turns: group,
+            continued: rowIndex == 0 && viewport.continuedTools,
             profileId: profileId,
             profileColor: profileColor,
             showAvatar: showAssistantAvatar,
@@ -204,12 +229,12 @@ class _HermesTranscriptList extends StatelessWidget {
         );
       }
       rows[rows.length - 1] = KeyedSubtree(
-        key: uniqueIds.contains(turn.id)
-            ? viewport.rowKey(turn.id)
+        key: uniqueIds.contains(visibleTurns[identityIndex].id)
+            ? viewport.rowKey(visibleTurns[identityIndex].id)
             : ValueKey(
                 HermesTurnPresentationIdentity.resolve(
                   visibleTurns,
-                  rowIndex,
+                  identityIndex,
                   unique: uniqueIds,
                 ),
               ),
@@ -244,16 +269,32 @@ class _HermesTranscriptList extends StatelessWidget {
     }
 
     final colors = Theme.of(context).colorScheme;
-    return GestureDetector(
+    final gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
+    return RawGestureDetector(
       behavior: HitTestBehavior.translucent,
-      onScaleStart: onScaleStart,
-      onScaleUpdate: onScaleUpdate,
-      onScaleEnd: onScaleEnd,
-      onSecondaryTapDown: !enableDesktopContextMenu || turns.isEmpty
-          ? null
-          : (details) => unawaited(
-              _showTranscriptContextMenu(context, details.globalPosition),
+      gestures: {
+        _TranscriptScaleGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+              _TranscriptScaleGestureRecognizer
+            >(
+              _TranscriptScaleGestureRecognizer.new,
+              (recognizer) => recognizer
+                ..gestureSettings = gestureSettings
+                ..onStart = onScaleStart
+                ..onUpdate = onScaleUpdate
+                ..onEnd = onScaleEnd,
             ),
+        if (enableDesktopContextMenu && turns.isNotEmpty)
+          TapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+                TapGestureRecognizer.new,
+                (recognizer) => recognizer
+                  ..gestureSettings = gestureSettings
+                  ..onSecondaryTapDown = (details) => unawaited(
+                    _showTranscriptContextMenu(context, details.globalPosition),
+                  ),
+              ),
+      },
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: _TranscriptTextScaler(
@@ -277,6 +318,17 @@ class _HermesTranscriptList extends StatelessWidget {
           ),
           child: Column(
             children: [
+              if (viewport.windowStart > 0)
+                OutlinedButton.icon(
+                  key: const ValueKey('hermes-transcript-reveal-earlier'),
+                  onPressed: onRevealEarlier,
+                  icon: const Icon(Icons.unfold_more),
+                  label: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).chatTranscriptRevealEarlier(viewport.windowStart),
+                  ),
+                ),
               ListenableBuilder(
                 listenable: viewport,
                 builder: (context, child) =>
@@ -288,12 +340,7 @@ class _HermesTranscriptList extends StatelessWidget {
                       ),
                 child: TextButton.icon(
                   key: const ValueKey('hermes-transcript-latest'),
-                  onPressed: () {
-                    viewport.followLatest();
-                    if (controller.hasClients) {
-                      controller.jumpTo(controller.position.minScrollExtent);
-                    }
-                  },
+                  onPressed: onLatest,
                   icon: const Icon(Icons.arrow_downward, size: 16),
                   label: Text(
                     AppLocalizations.of(context).chatTranscriptLatestAction,
@@ -555,12 +602,14 @@ class _ToolActivityGroup extends StatelessWidget {
     required this.profileId,
     required this.showAvatar,
     this.profileColor,
+    this.continued = false,
   });
 
   final List<HermesChatTurn> turns;
   final String profileId;
   final String? profileColor;
   final bool showAvatar;
+  final bool continued;
 
   @override
   Widget build(BuildContext context) {
@@ -576,10 +625,13 @@ class _ToolActivityGroup extends StatelessWidget {
         .toList(growable: false);
     final aggregateIcon = _hostToolStatusIcon(aggregateStatus);
     final status = _hostToolStatusLabel(strings, aggregateStatus);
-    final title = tools.length == 1
+    final groupTitle = tools.length == 1
         ? _hostToolCategoryLabel(strings, categories.single) ??
               strings.chatTranscriptHostActivityTitle
         : strings.chatTranscriptHostActivityCountTitle(tools.length);
+    final title = continued
+        ? strings.chatTranscriptContinuedTools(groupTitle)
+        : groupTitle;
     final statusText = Semantics(
       key: ValueKey('hermes-tool-activity-status-${turns.first.id}'),
       container: true,

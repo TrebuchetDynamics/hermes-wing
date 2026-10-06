@@ -149,6 +149,31 @@ class HermesApiClient {
     return HermesSessionPage.fromJson(await _getJson(uri));
   }
 
+  /// Reads one authoritative row without treating a partial inventory as absence.
+  Future<HermesSession> getSession(String sessionId, {String? profile}) async {
+    final body = await _getJson(_scoped(config.sessionUri(sessionId), profile));
+    final row = body['session'];
+    if (body['object'] != 'hermes.session' ||
+        row is! Map ||
+        row['id'] is! String ||
+        row['id'] != sessionId ||
+        (row['parent_session_id'] != null &&
+            (row['parent_session_id'] is! String ||
+                (row['parent_session_id'] as String).trim() !=
+                    row['parent_session_id'] ||
+                (row['parent_session_id'] as String).isEmpty ||
+                (row['parent_session_id'] as String).length > 512 ||
+                RegExp(
+                  r'[\x00-\x1f\x7f]',
+                ).hasMatch(row['parent_session_id'] as String))) ||
+        (row['end_reason'] != null &&
+            (row['end_reason'] is! String ||
+                (row['end_reason'] as String).trim() != row['end_reason']))) {
+      throw const FormatException('Hermes returned invalid session metadata.');
+    }
+    return HermesSession.fromJson(Map<String, Object?>.from(row));
+  }
+
   Future<HermesModelOptions> getModelOptions({
     String? profile,
     bool refresh = false,
@@ -240,12 +265,82 @@ class HermesApiClient {
         'order': order,
       },
     );
-    return HermesMessagePage.fromJson(
+    final page = HermesMessagePage.fromJson(
       await _getJson(uri),
       requestedLimit: limit,
       requestedOffset: offset,
       requestedOrder: order,
     );
+    await _validateHistoryIdentity(page, sessionId, profile: profile);
+    return page;
+  }
+
+  Future<void> _validateHistoryIdentity(
+    HermesMessagePage page,
+    String requestedSession, {
+    String? profile,
+  }) async {
+    final requiredIds = {
+      requestedSession,
+      ...page.messages.map((row) => row.sessionId),
+    };
+    requiredIds.remove(page.sessionId);
+    if (requiredIds.isEmpty) return;
+
+    // The API envelope resolves old handles to the live continuation. Parent
+    // metadata alone is insufficient: forks also have parents. A fresh bounded
+    // history probe must resolve each compression parent to this same tip.
+    final document = await capabilities();
+    bool authorized(String name, String path) {
+      final endpoint = document.endpoints[name];
+      return document.supportsSchema &&
+          document.advertisesEndpoint(name, 'GET', path) &&
+          endpoint != null &&
+          endpoint.requiredScopes.every(document.auth.allows) &&
+          (endpoint.profileScoped != true ||
+              document.profileContext.isSupportedQueryContext ||
+              config.pathProfileId != null);
+    }
+
+    if (!authorized('session', '/api/sessions/{session_id}') ||
+        !authorized(
+          'session_messages',
+          '/api/sessions/{session_id}/messages',
+        )) {
+      throw const FormatException('Hermes history lineage cannot be verified.');
+    }
+    final seen = {page.sessionId};
+    var current = await getSession(page.sessionId, profile: profile);
+    while (requiredIds.isNotEmpty && seen.length < 100) {
+      final parentId = current.parentSessionId;
+      if (parentId == null || parentId.isEmpty || !seen.add(parentId)) break;
+      final parent = await getSession(parentId, profile: profile);
+      if (parent.endReason != 'compression') break;
+      final scoped = _scoped(config.sessionMessagesUri(parentId), profile);
+      final probe = HermesMessagePage.fromJson(
+        await _getJson(
+          scoped.replace(
+            queryParameters: {
+              ...scoped.queryParameters,
+              'limit': '1',
+              'offset': '0',
+              'order': 'latest',
+            },
+          ),
+        ),
+        requestedLimit: 1,
+        requestedOffset: 0,
+        requestedOrder: 'latest',
+      );
+      if (probe.sessionId != page.sessionId) break;
+      requiredIds.remove(parentId);
+      current = parent;
+    }
+    if (requiredIds.isNotEmpty) {
+      throw const FormatException(
+        'Hermes returned unrelated history identity.',
+      );
+    }
   }
 
   Future<HermesSession> updateSessionTitle(
@@ -417,7 +512,7 @@ class HermesApiClient {
     String? profile,
   }) async {
     final body = <String, Object?>{'choice': decision};
-    if (approvalId.trim().isNotEmpty) body['approval_id'] = approvalId.trim();
+    if (approvalId.trim().isNotEmpty) body['request_id'] = approvalId.trim();
     await _postJson(_scoped(config.runApprovalUri(runId), profile), body);
   }
 

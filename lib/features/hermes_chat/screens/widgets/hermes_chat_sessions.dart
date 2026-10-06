@@ -177,7 +177,120 @@ class _HermesSessionLoadMoreButton extends StatelessWidget {
   }
 }
 
-class _HermesSessionRail extends StatefulWidget {
+// Volatile disclosure belongs to the rendered channel/host/profile, not a session.
+mixin _HermesSessionDisclosure<T extends ConsumerStatefulWidget>
+    on ConsumerState<T> {
+  late HermesChannel _disclosureChannel;
+  late final ProviderSubscription<HermesChannel> _disclosureSubscription;
+  Object? _disclosureOwner;
+  int _disclosureGeneration = 0;
+  bool _pinnedExpanded = true;
+  bool _chatsExpanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _disclosureChannel = ref.read(hermesChannelProvider);
+    _disclosureChannel.addListener(_checkDisclosureOwner);
+    _checkDisclosureOwner();
+    _disclosureSubscription = ref.listenManual(hermesChannelProvider, (
+      _,
+      next,
+    ) {
+      _disclosureChannel.removeListener(_checkDisclosureOwner);
+      _disclosureChannel = next;
+      _disclosureChannel.addListener(_checkDisclosureOwner);
+      _checkDisclosureOwner();
+    });
+  }
+
+  void _checkDisclosureOwner() {
+    final state = _disclosureChannel.state;
+    final owner = (
+      _disclosureChannel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+    );
+    if (owner == _disclosureOwner) return;
+    _disclosureOwner = owner;
+    _disclosureGeneration++;
+    if (!_pinnedExpanded || !_chatsExpanded) {
+      setState(() {
+        _pinnedExpanded = true;
+        _chatsExpanded = true;
+      });
+    }
+  }
+
+  Widget _disclosureHeading(_HermesSessionGroup group) {
+    final pinned = group.key == 'pinned';
+    final generation = _disclosureGeneration;
+    return MergeSemantics(
+      key: ValueKey('hermes-session-disclosure-${group.key}'),
+      child: Semantics(
+        expanded: pinned ? _pinnedExpanded : _chatsExpanded,
+        child: TextButton(
+          style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+          onPressed: () {
+            if (!mounted) return;
+            _checkDisclosureOwner();
+            if (generation != _disclosureGeneration) return;
+            setState(() {
+              if (pinned) {
+                _pinnedExpanded = !_pinnedExpanded;
+              } else {
+                _chatsExpanded = !_chatsExpanded;
+              }
+            });
+          },
+          child: Row(
+            children: [
+              Icon(
+                (pinned ? _pinnedExpanded : _chatsExpanded)
+                    ? Icons.expand_more
+                    : Icons.chevron_right,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(group.label)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<_HermesSessionGroup> _disclosedGroups(
+    List<HermesSession> sessions,
+    AppLocalizations strings,
+    Set<String> pinnedIds,
+  ) {
+    final groups = _sessionGroups(
+      sessions,
+      strings: strings,
+      pinnedSessionIds: pinnedIds,
+    );
+    return [
+      for (final group in groups.where((group) => group.key == 'pinned'))
+        _HermesSessionGroup(
+          group.key,
+          group.label,
+          _pinnedExpanded ? group.sessions : const [],
+        ),
+      _HermesSessionGroup('chats', strings.chatRailChatsGroupLabel, const []),
+      if (_chatsExpanded) ...groups.where((group) => group.key != 'pinned'),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _disclosureGeneration++;
+    _disclosureSubscription.close();
+    _disclosureChannel.removeListener(_checkDisclosureOwner);
+    super.dispose();
+  }
+}
+
+class _HermesSessionRail extends ConsumerStatefulWidget {
   const _HermesSessionRail({
     required this.state,
     required this.canCreate,
@@ -207,10 +320,11 @@ class _HermesSessionRail extends StatefulWidget {
   final ValueChanged<HermesSession> onTogglePinned;
 
   @override
-  State<_HermesSessionRail> createState() => _HermesSessionRailState();
+  ConsumerState<_HermesSessionRail> createState() => _HermesSessionRailState();
 }
 
-class _HermesSessionRailState extends State<_HermesSessionRail> {
+class _HermesSessionRailState extends ConsumerState<_HermesSessionRail>
+    with _HermesSessionDisclosure<_HermesSessionRail> {
   final _searchController = TextEditingController();
   final _listState = _HermesSessionListState();
 
@@ -437,22 +551,26 @@ class _HermesSessionRailState extends State<_HermesSessionRail> {
                 Expanded(
                   child: ListView(
                     key: const ValueKey('hermes-session-rail-list'),
+
                     children: [
-                      for (final group in _sessionGroups(
+                      for (final group in _disclosedGroups(
                         sessions,
-                        strings: _hermesStrings(context),
-                        pinnedSessionIds: widget.pinnedSessionIds,
+                        strings,
+                        widget.pinnedSessionIds,
                       )) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                          child: Text(
-                            group.label,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
+                        if (group.key == 'pinned' || group.key == 'chats')
+                          _disclosureHeading(group)
+                        else
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                            child: Text(
+                              group.label,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
                         for (final session in group.sessions)
                           _HermesSessionTile(
                             session: session,
@@ -900,7 +1018,7 @@ class _ComposerChip extends StatelessWidget {
   }
 }
 
-class _HermesSessionsPanel extends StatefulWidget {
+class _HermesSessionsPanel extends ConsumerStatefulWidget {
   const _HermesSessionsPanel({
     required this.state,
     required this.canCreate,
@@ -930,10 +1048,12 @@ class _HermesSessionsPanel extends StatefulWidget {
   final ValueChanged<HermesSession> onTogglePinned;
 
   @override
-  State<_HermesSessionsPanel> createState() => _HermesSessionsPanelState();
+  ConsumerState<_HermesSessionsPanel> createState() =>
+      _HermesSessionsPanelState();
 }
 
-class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
+class _HermesSessionsPanelState extends ConsumerState<_HermesSessionsPanel>
+    with _HermesSessionDisclosure<_HermesSessionsPanel> {
   final _searchController = TextEditingController();
   final _listState = _HermesSessionListState();
 
@@ -1124,20 +1244,24 @@ class _HermesSessionsPanelState extends State<_HermesSessionsPanel> {
               Expanded(
                 child: ListView(
                   key: const ValueKey('hermes-sessions-list'),
+
                   children: [
-                    for (final group in _sessionGroups(
+                    for (final group in _disclosedGroups(
                       sessions,
-                      strings: _hermesStrings(context),
-                      pinnedSessionIds: widget.pinnedSessionIds,
+                      strings,
+                      widget.pinnedSessionIds,
                     )) ...[
-                      Padding(
-                        key: ValueKey('hermes-session-group-${group.key}'),
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Text(
-                          group.label,
-                          style: Theme.of(context).textTheme.labelLarge,
+                      if (group.key == 'pinned' || group.key == 'chats')
+                        _disclosureHeading(group)
+                      else
+                        Padding(
+                          key: ValueKey('hermes-session-group-${group.key}'),
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                          child: Text(
+                            group.label,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
                         ),
-                      ),
                       for (final session in group.sessions)
                         _HermesSessionTile(
                           session: session,
@@ -1458,7 +1582,7 @@ Text _sessionSearchText(
   );
 }
 
-class _HermesSessionTile extends StatelessWidget {
+class _HermesSessionTile extends ConsumerStatefulWidget {
   const _HermesSessionTile({
     required this.session,
     required this.active,
@@ -1502,7 +1626,86 @@ class _HermesSessionTile extends StatelessWidget {
   final String highlightQuery;
 
   @override
+  ConsumerState<_HermesSessionTile> createState() => _HermesSessionTileState();
+}
+
+class _HermesSessionTileState extends ConsumerState<_HermesSessionTile> {
+  late HermesChannel _channel;
+  late final ProviderSubscription<HermesChannel> _channelSubscription;
+  Object? _copyOwner;
+  int _copyGeneration = 0;
+  int? _menuGeneration;
+  bool _idCopyPending = false;
+  String? _idCopyFeedback;
+
+  @override
+  void initState() {
+    super.initState();
+    _channel = ref.read(hermesChannelProvider);
+    _channel.addListener(_checkCopyOwner);
+    _checkCopyOwner();
+    _channelSubscription = ref.listenManual(hermesChannelProvider, (_, next) {
+      _channel.removeListener(_checkCopyOwner);
+      _channel = next;
+      _channel.addListener(_checkCopyOwner);
+      _checkCopyOwner();
+    });
+  }
+
+  void _checkCopyOwner() {
+    final state = _channel.state;
+    final owner = (
+      _channel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.activeSessionId,
+      state.status,
+      state.isSelectingProfile,
+      widget.session.id,
+      state.sessions.any((row) => row.id == widget.session.id),
+    );
+    if (owner == _copyOwner) return;
+    _copyOwner = owner;
+    _copyGeneration++;
+    if (_idCopyFeedback != null) setState(() => _idCopyFeedback = null);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HermesSessionTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _checkCopyOwner();
+  }
+
+  @override
+  void dispose() {
+    _channelSubscription.close();
+    _channel.removeListener(_checkCopyOwner);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _HermesSessionTile(
+      :session,
+      :active,
+      :streaming,
+      :failed,
+      :unread,
+      :canRename,
+      :canFork,
+      :canDelete,
+      :onSelect,
+      :onRename,
+      :onFork,
+      :onDelete,
+      :pinned,
+      :onTogglePinned,
+      :highlightQuery,
+      :selectionMode,
+      :selected,
+      :selectable,
+      :onSelectionChanged,
+    ) = widget;
     final strings = _hermesStrings(context);
     final title = _safeHermesUiPreview(
       session.title ?? session.id,
@@ -1577,12 +1780,19 @@ class _HermesSessionTile extends StatelessWidget {
         query: highlightQuery,
         maxLines: 1,
       ),
-      subtitle: _sessionSearchText(
-        context,
-        key: ValueKey('hermes-session-subtitle-${session.id}'),
-        text: subtitle,
-        query: highlightQuery,
-        maxLines: 2,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sessionSearchText(
+            context,
+            key: ValueKey('hermes-session-subtitle-${session.id}'),
+            text: subtitle,
+            query: highlightQuery,
+            maxLines: 2,
+          ),
+          if (_idCopyFeedback != null)
+            Semantics(liveRegion: true, child: Text(_idCopyFeedback!)),
+        ],
       ),
       onTap: selectionMode
           ? selectable
@@ -1594,27 +1804,52 @@ class _HermesSessionTile extends StatelessWidget {
           : PopupMenuButton<String>(
               key: ValueKey('hermes-session-menu-${session.id}'),
               tooltip: strings.chatRailSessionActionsTooltip,
-              onSelected: (value) {
+              onOpened: () => _menuGeneration = _copyGeneration,
+              onCanceled: () => _menuGeneration = null,
+              onSelected: (value) async {
                 switch (value) {
+                  case 'copy-id':
+                    if (!mounted) return;
+                    final generation = _menuGeneration;
+                    _menuGeneration = null;
+                    _checkCopyOwner();
+                    if (_idCopyPending || generation != _copyGeneration) return;
+                    if (_channel.state.isSelectingProfile ||
+                        !_channel.state.sessions.any(
+                          (row) => row.id == session.id,
+                        )) {
+                      return;
+                    }
+                    _idCopyPending = true;
+                    setState(() => _idCopyFeedback = null);
+                    final copied = await _writeSessionDetailsClipboard(
+                      session.id,
+                    );
+                    _idCopyPending = false;
+                    if (!mounted || generation != _copyGeneration) return;
+                    // Keep feedback in the row: a compact modal hides the
+                    // underlying Scaffold's snackbar from accessibility.
+                    setState(
+                      () => _idCopyFeedback = copied
+                          ? strings.chatRailCopiedSessionIdBody
+                          : strings.chatRailCopySessionIdFailedBody,
+                    );
                   case 'pin':
                     onTogglePinned(session);
                   case 'details':
                     unawaited(_showSessionDetails(context, session, active));
                   case 'copy':
-                    unawaited(
-                      Clipboard.setData(
-                        ClipboardData(
-                          text: _sessionDetailsSummary(
-                            context,
-                            session,
-                            active,
-                          ),
-                        ),
-                      ),
+                    final copied = await _writeSessionDetailsClipboard(
+                      _sessionDetailsSummary(context, session, active),
                     );
+                    if (!context.mounted) return;
                     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                       SnackBar(
-                        content: Text(strings.chatRailCopiedSessionDetailsBody),
+                        content: Text(
+                          copied
+                              ? strings.chatRailCopiedSessionDetailsBody
+                              : strings.chatRailCopySessionDetailsFailedBody,
+                        ),
                       ),
                     );
                   case 'rename':
@@ -1642,6 +1877,10 @@ class _HermesSessionTile extends StatelessWidget {
                   value: 'copy',
                   child: Text(strings.chatRailCopyDetailsAction),
                 ),
+                PopupMenuItem(
+                  value: 'copy-id',
+                  child: Text(strings.chatRailCopySessionIdAction),
+                ),
                 if (canRename)
                   PopupMenuItem(
                     value: 'rename',
@@ -1662,12 +1901,23 @@ class _HermesSessionTile extends StatelessWidget {
     );
   }
 
+  Future<bool> _writeSessionDetailsClipboard(String summary) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: summary));
+      return true;
+    } catch (_) {
+      // Platform diagnostics may contain sensitive data; show only fixed copy.
+      return false;
+    }
+  }
+
   Future<void> _showSessionDetails(
     BuildContext context,
     HermesSession session,
     bool active,
   ) {
     final summary = _sessionDetailsSummary(context, session, active);
+    var copyFailed = false;
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1686,25 +1936,48 @@ class _HermesSessionTile extends StatelessWidget {
               const SizedBox(height: 16),
               SelectableText(summary),
               const SizedBox(height: 16),
-              FilledButton.tonalIcon(
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: summary));
-                  if (!sheetContext.mounted) return;
-                  Navigator.of(sheetContext).pop();
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        _hermesStrings(
-                          context,
-                        ).chatRailCopiedSessionDetailsBody,
+              StatefulBuilder(
+                builder: (copyContext, setCopyState) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FilledButton.tonalIcon(
+                      onPressed: () async {
+                        final copied = await _writeSessionDetailsClipboard(
+                          summary,
+                        );
+                        if (!copyContext.mounted || !context.mounted) return;
+                        if (!copied) {
+                          setCopyState(() => copyFailed = true);
+                          return;
+                        }
+                        Navigator.of(copyContext).pop();
+                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              _hermesStrings(
+                                context,
+                              ).chatRailCopiedSessionDetailsBody,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_outlined),
+                      label: Text(
+                        _hermesStrings(copyContext).chatRailCopyDetailsAction,
                       ),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.copy_outlined),
-                label: Text(
-                  _hermesStrings(sheetContext).chatRailCopyDetailsAction,
+                    if (copyFailed) ...[
+                      const SizedBox(height: 8),
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          _hermesStrings(
+                            copyContext,
+                          ).chatRailCopySessionDetailsFailedBody,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

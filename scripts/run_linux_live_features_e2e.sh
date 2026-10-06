@@ -13,13 +13,18 @@ for manifest in "$WING_LIVE_PROFILE_MANIFEST" "$WING_LIVE_LINK_MANIFEST"; do
   mode="$(stat -c '%a' "$manifest")"
   (( (8#$mode & 077) == 0 )) || { echo 'Live manifests must be owner-only.' >&2; exit 2; }
 done
-coverage_root=$(mktemp -d /tmp/wing-linux-coverage.XXXXXX)
+temp_root=$(realpath "${TMPDIR:-/opt/data/cache/scratch}")
+coverage_root=$(mktemp -d "$temp_root/wing-linux-coverage.XXXXXX")
 cleanup_coverage() {
-  [[ "$coverage_root" == /tmp/wing-linux-coverage.* ]] || return 1
+  [[ "$(dirname "$coverage_root")" == "$temp_root" &&
+     "$(basename "$coverage_root")" == wing-linux-coverage.* ]] || return 1
   rm -r -- "$coverage_root"
 }
 trap cleanup_coverage EXIT
-mkdir -p "$coverage_root/grant-root/child-folder"
+mkdir -p "$coverage_root/grant-root/child-folder" "$coverage_root/config"
+touch "$coverage_root/.wing-linux-test-owner"
 cp test/fixtures/linux-picker-sample.txt "$coverage_root/grant-root/private-file.txt"
-env WING_LIVE_DIRECTORY_ROOT="$coverage_root/grant-root" \
+env TMPDIR="$temp_root" WING_LINUX_TEST_ROOT="$coverage_root" \
+  XDG_CONFIG_HOME="$coverage_root/config" \
+  WING_LIVE_DIRECTORY_ROOT="$coverage_root/grant-root" \
   xvfb-run -a flutter test -d linux integration_test/linux_live_feature_journeys_test.dart --reporter expanded

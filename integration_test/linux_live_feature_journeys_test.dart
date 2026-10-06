@@ -20,6 +20,7 @@ import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 
 import '../test/features/hermes_chat/support/fake_hermes_endpoint_store.dart';
+import 'support/linux_test_isolation.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -301,11 +302,10 @@ void main() {
     (tester) async {
       final issued = manifest('WING_LIVE_LINK_MANIFEST');
       final binary = Platform.environment['WING_LIVE_LINK_BINARY']!;
-      final root = Platform.environment['WING_LIVE_DIRECTORY_ROOT']!;
-      if (!root.startsWith('/tmp/wing-linux-coverage.') ||
-          !Directory(root).existsSync()) {
-        throw StateError('An owned synthetic directory root is required.');
-      }
+      final root = requireLinuxLiveDirectoryRoot(
+        Platform.environment['WING_LIVE_DIRECTORY_ROOT']!,
+        requireLinuxTestRoot('wing-linux-coverage.'),
+      );
       final client = WingLinkClient(
         origin: Uri.parse(issued['wing_link_origin'] as String),
         token: issued['wing_link_token'] as String,

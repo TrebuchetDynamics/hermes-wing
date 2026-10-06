@@ -58,8 +58,14 @@ class HermesProfileSoul {
   const HermesProfileSoul({required this.soul, required this.revision});
 
   factory HermesProfileSoul.fromJson(Map<String, Object?> json) {
+    final soul = json['soul'];
+    if (soul is! String) {
+      // Missing/malformed content must not become a writable empty document.
+      throw const FormatException('Invalid persona document.');
+    }
     return HermesProfileSoul(
-      soul: wingStringFromJson(json['soul'], fallback: ''),
+      // Document whitespace is content, unlike trimmed identity/metadata fields.
+      soul: soul,
       revision: wingStringFromJson(json['revision'], fallback: ''),
     );
   }

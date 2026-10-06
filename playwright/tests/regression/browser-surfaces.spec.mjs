@@ -150,9 +150,7 @@ test("Tools inventory supports search and resolved-tool disclosure", async ({
   await page.waitForTimeout(100);
   await skillSearch.fill("no_matching_skill_98765");
   await expect(
-    page.getByRole("textbox", {
-      name: /No installed skills match this search/,
-    }),
+    page.getByText("No installed skills match this search.", { exact: true }),
   ).toBeVisible();
   await page.getByRole("textbox", { name: /Search installed skills/ }).fill("");
 
@@ -171,7 +169,10 @@ test("Schedules renders and refreshes read-only jobs", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText(/Morning check/)).toBeVisible();
   await expect(page.getByText(/Every day at 09:00/)).toBeVisible();
-  await expect(page.getByText(/Enabled/)).toBeVisible();
+  await expect(page.getByText(
+    'Morning check Enabled Job ID job_1 Schedule Every day at 09:00',
+    { exact: true },
+  )).toBeVisible();
   await page.getByRole("button", { name: "Refresh schedules" }).click();
   await expect(
     page.getByText(/Morning check/),

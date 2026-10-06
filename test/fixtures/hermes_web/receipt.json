@@ -1,0 +1,64 @@
+{
+  "provenance": {
+    "kind": "sanitized-live-capture",
+    "receipt": "/opt/data/cache/scratch/wing-dart-web-s9xu1tc0/receipt.json",
+    "native_version": "0.21.5",
+    "native_upstream": "749220ef",
+    "setup": "Fresh owned HOME/HERMES_HOME, generated basic auth, native API import of synthetic ended session. Actual Dart reads qualified in the same receipt.",
+    "sanitization": "Session/message fields allowlisted; host-path/domain extras dropped. Top-level list/history envelopes retained verbatim. No credentials or production content. Ready/RPC tests use observed contract shapes with explicitly synthetic epoch/ticket values, not claimed wire-value captures."
+  },
+  "rest_list_envelope": {
+    "total": 1,
+    "limit": 10,
+    "offset": 0,
+    "storage": {},
+    "sessions": [
+      {
+        "id": "wing-qualification-session",
+        "profile": "default",
+        "source": "cli",
+        "model": null,
+        "started_at": 1790832799.6847298,
+        "ended_at": 1790832799.6847298,
+        "message_count": 2,
+        "title": "Synthetic qualification",
+        "preview": "Synthetic read-only fixture",
+        "is_active": false
+      }
+    ]
+  },
+  "rest_history_envelope": {
+    "session_id": "wing-qualification-session",
+    "profile": "default",
+    "pagination": {
+      "limit": 10,
+      "offset": 0,
+      "order": "oldest",
+      "returned": 2
+    },
+    "messages": [
+      {
+        "id": 1,
+        "session_id": "wing-qualification-session",
+        "role": "user",
+        "content": "Synthetic read-only fixture",
+        "timestamp": 1790832799.6847298,
+        "tool_name": null,
+        "tool_call_id": null,
+        "reasoning": null,
+        "display_kind": null
+      },
+      {
+        "id": 2,
+        "session_id": "wing-qualification-session",
+        "role": "assistant",
+        "content": "Synthetic fixture reply, not generation",
+        "timestamp": 1790832799.6847298,
+        "tool_name": null,
+        "tool_call_id": null,
+        "reasoning": null,
+        "display_kind": null
+      }
+    ]
+  }
+}

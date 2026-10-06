@@ -9,6 +9,13 @@ class HermesApprovalResponder {
   HermesApprovalResponder();
 
   final Map<String, String> _approvalRunIds = <String, String>{};
+  final Set<String> _respondingApprovalIds = <String>{};
+  int _generation = 0;
+
+  bool isPendingApproval(String approvalId, String? runId) =>
+      runId != null &&
+      _approvalRunIds[approvalId] == runId &&
+      !_respondingApprovalIds.contains(approvalId);
 
   /// Registers an approval raised by [runId]. Returns whether this approval
   /// is new (false when already registered; the mapping is still refreshed).
@@ -40,7 +47,9 @@ class HermesApprovalResponder {
 
   /// Clears every mapping (connect/disconnect/dispose teardown).
   void clear() {
+    _generation += 1;
     _approvalRunIds.clear();
+    _respondingApprovalIds.clear();
   }
 
   /// Executes the response. [client] must be a client of the connected
@@ -50,9 +59,8 @@ class HermesApprovalResponder {
   /// response was in flight swallows the error; [reportError] is called with
   /// the user-facing message before rethrowing.
   ///
-  /// Current Hermes run events identify the approval by its run, not a
-  /// separate approval id. [runId] carries that explicit identity for those
-  /// events; older events continue to use [approvalId].
+  /// [approvalId] carries Agent's exact request_id. Genuinely idless legacy
+  /// events may use the explicit [runId] without an exact request identity.
   Future<void> respond({
     required HermesApiClient client,
     required HermesChannelState state,
@@ -90,6 +98,11 @@ class HermesApprovalResponder {
       reportError?.call(message);
       throw StateError(message);
     }
+    // Teardown retires settlement ownership, not the already-started POST.
+    final generation = _generation;
+    if (trimmedApprovalId.isNotEmpty) {
+      _respondingApprovalIds.add(trimmedApprovalId);
+    }
     try {
       await client.respondApproval(
         runId: resolvedRunId,
@@ -97,10 +110,11 @@ class HermesApprovalResponder {
         decision: decision.name,
         profile: selectedProfileId,
       );
-      if (trimmedApprovalId.isNotEmpty) {
+      if (generation == _generation && trimmedApprovalId.isNotEmpty) {
         _approvalRunIds.remove(trimmedApprovalId);
       }
     } catch (error) {
+      if (generation != _generation) return;
       final runStillActive = activeRunIds.contains(resolvedRunId);
       final approvalStillMapped =
           trimmedApprovalId.isNotEmpty &&
@@ -113,6 +127,10 @@ class HermesApprovalResponder {
         '${safeError?.call(error) ?? error}',
       );
       rethrow;
+    } finally {
+      if (generation == _generation) {
+        _respondingApprovalIds.remove(trimmedApprovalId);
+      }
     }
   }
 }

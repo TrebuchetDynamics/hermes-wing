@@ -42,16 +42,9 @@ extension _InventoryExtension on HermesApiChannel {
       errors: errors,
     );
     final jobsFuture = _loadOptional<List<HermesJob>>(
-      advertised:
-          capabilities != null &&
-          capabilities.supportsSchema &&
-          capabilities.auth.allows('tasks:read') &&
-          capabilities.advertisesScopedEndpoint(
-            'jobs',
-            'GET',
-            '/api/jobs',
-            'tasks:read',
-          ),
+      // Reuse exact state authorization without requiring settled connection
+      // or selection state: both callers are still bootstrapping inventory.
+      advertised: HermesChannelState(capabilities: capabilities).canReadJobs,
       resource: HermesOptionalResource.jobs,
       load: () => client.listJobs(profile: profileId),
       errors: errors,

@@ -138,6 +138,12 @@ void _hermesApiChannelRunFailureTests() {
           '/v1/capabilities' => _runsCapableCapabilitiesFixture,
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_wrong' => () {
+            expect(stopCalled, isTrue);
+            return '{"run_id":"run_wrong","session_id":"sess_other","status":"cancelled"}';
+          }(),
+          '/api/sessions/sess_other/messages' =>
+            '{"object":"list","session_id":"sess_other","data":[{"id":"foreign-message","session_id":"sess_other","role":"assistant","content":"Synthetic foreign history"}]}',
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
@@ -146,7 +152,7 @@ void _hermesApiChannelRunFailureTests() {
           }
           if (uri.path == '/v1/runs/run_wrong/stop') {
             stopCalled = true;
-            return '{}';
+            return '{"run_id":"run_wrong","status":"stopping"}';
           }
           throw StateError('unexpected POST $uri');
         },
@@ -165,7 +171,376 @@ void _hermesApiChannelRunFailureTests() {
     expect(streamOpened, isFalse);
     expect(store.leases, isEmpty);
     expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
+    expect(channel.state.activeSessionId, 'sess_1');
+    expect(channel.state.messages.containsKey('sess_other'), isFalse);
   });
+
+  for (final (outcome, persistence) in [
+    ('cancelled', 'durable'),
+    ('completed', 'durable'),
+    ('failed', 'durable'),
+    ('running', 'durable'),
+    ('unknown', 'durable'),
+    ('status-error', 'durable'),
+    ('stop-error', 'durable'),
+    ('wrong-run', 'durable'),
+    ('wrong-session', 'durable'),
+    ('cancelled', 'volatile'),
+    ('cancelled', 'save-failure'),
+  ]) {
+    test(
+      'mismatched run cleanup $outcome/$persistence never admits foreign history',
+      () async {
+        final HermesDetachedRunStore? store = switch (persistence) {
+          'durable' => _MemoryDetachedRunStore(),
+          'save-failure' => _FailingSaveNumberDetachedRunStore(1),
+          _ => null,
+        };
+        var submits = 0;
+        var stops = 0;
+        var statusReads = 0;
+        var foreignReads = 0;
+        var directStreams = 0;
+        final streams = <_ManualStringStream>[];
+        final channel = HermesApiChannel(
+          detachedRunStore: store,
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              switch (uri.path) {
+                case '/health':
+                  return '{"status":"ok"}';
+                case '/v1/capabilities':
+                  return _runsCapableCapabilitiesFixture;
+                case '/api/sessions':
+                  return _sessionsFixture;
+                case '/api/sessions/sess_1/messages':
+                  return _messagesFixture;
+                case '/api/sessions/sess_other/messages':
+                  foreignReads++;
+                  return '{"session_id":"sess_other","has_more":true,"next_offset":1,"data":[{"id":"foreign-message","session_id":"sess_other","role":"assistant","content":"Synthetic foreign history"}]}';
+                case '/v1/runs/run_wrong':
+                  statusReads++;
+                  expect(stops, 1);
+                  if (outcome == 'status-error') {
+                    throw StateError('synthetic status failure');
+                  }
+                  return jsonEncode({
+                    'run_id': outcome == 'wrong-run' ? 'foreign' : 'run_wrong',
+                    'session_id': outcome == 'wrong-session'
+                        ? 'sess_1'
+                        : 'sess_other',
+                    'status':
+                        [
+                          'completed',
+                          'failed',
+                          'running',
+                          'unknown',
+                        ].contains(outcome)
+                        ? outcome
+                        : 'cancelled',
+                  });
+                default:
+                  throw StateError('unexpected synthetic GET');
+              }
+            },
+            post: (uri, headers, body) async {
+              if (uri.path == '/v1/runs') {
+                submits++;
+                final request = jsonDecode(body) as Map;
+                expect(request['session_id'], 'sess_1');
+                expect(request['conversation_history'], [
+                  {'role': 'user', 'content': 'Hello'},
+                ]);
+                return submits == 1
+                    ? '{"run_id":"run_wrong","session_id":"sess_other"}'
+                    : '{"run_id":"run_next","session_id":"sess_1"}';
+              }
+              expect(uri.path, '/v1/runs/run_wrong/stop');
+              stops++;
+              if (outcome == 'stop-error') {
+                throw StateError('synthetic stop failure');
+              }
+              return '{"run_id":"run_wrong","status":"stopping"}';
+            },
+            getStream: (uri, headers) {
+              expect(uri.path, '/v1/runs/run_next/events');
+              final stream = _ManualStringStream();
+              streams.add(stream);
+              return stream;
+            },
+            postStream: (uri, headers, body) {
+              directStreams++;
+              return const Stream.empty();
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        final profile = channel.state.selectedProfileId;
+        final initialIds = channel.state.activeMessages
+            .map((turn) => turn.id)
+            .toList();
+        final initialOffsets = Map.of(channel.state.messageHistoryNextOffsets);
+        final publications = <HermesChannelState>[];
+        channel.addListener(() => publications.add(channel.state));
+
+        await expectLater(
+          channel.sendText('Synthetic wrong owner'),
+          throwsStateError,
+        );
+
+        final terminal = ['cancelled', 'completed', 'failed'].contains(outcome);
+        expect(stops, 1);
+        expect(statusReads, outcome == 'stop-error' ? 0 : 1);
+        expect(streams, isEmpty);
+        expect(
+          channel.state.activeMessages
+              .take(initialIds.length)
+              .map((turn) => turn.id),
+          initialIds,
+        );
+        expect(
+          channel.state.activeMessages.last.status,
+          HermesTurnStatus.failed,
+        );
+        if (store != null) {
+          final leases = await store.load();
+          if (terminal) {
+            expect(leases, isEmpty);
+          } else {
+            expect(leases.single.runId, 'run_wrong');
+            expect(leases.single.sessionId, 'sess_other');
+            expect(leases.single.profileId, profile);
+          }
+        }
+        expect(foreignReads, 0);
+        expect(channel.state.messageHistoryNextOffsets, initialOffsets);
+        final next = channel.sendText('Synthetic next prompt');
+        await pumpEventQueue();
+        expect(submits, 2);
+        expect(directStreams, 0);
+        expect(streams, hasLength(1));
+        streams.single.emit(
+          'event: run.completed\ndata: {"run_id":"run_next","session_id":"sess_1"}\n\n',
+        );
+        await next;
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        expect(submits, 2);
+        expect(channel.state.activeMessages.map((turn) => turn.id), initialIds);
+        expect(foreignReads, 0);
+        expect(channel.state.activeSessionId, 'sess_1');
+        for (final state in publications) {
+          expect(state.selectedProfileId, profile);
+          expect(state.activeSessionId, isNot('sess_other'));
+          expect(
+            state.sessions.any((session) => session.id == 'sess_other'),
+            isFalse,
+          );
+          expect(state.messages.containsKey('sess_other'), isFalse);
+          expect(
+            state.messageHistoryNextOffsets.containsKey('sess_other'),
+            isFalse,
+          );
+          expect(
+            state.sessionsWithEarlierMessages.contains('sess_other'),
+            isFalse,
+          );
+        }
+        if (store != null && !terminal) {
+          expect((await store.load()).single.sessionId, 'sess_other');
+        }
+      },
+    );
+  }
+
+  for (final persistence in ['volatile', 'durable']) {
+    for (final outcome in [
+      'running',
+      'unknown',
+      'status-error',
+      'stop-error',
+      'wrong-run',
+      'wrong-session',
+      'no-stop',
+    ]) {
+      test(
+        'uncertain mismatched cleanup $outcome/$persistence gates explicitly selected owner until terminal recovery',
+        () async {
+          final store = persistence == 'durable'
+              ? _MemoryDetachedRunStore()
+              : null;
+          var submits = 0;
+          var stops = 0;
+          var statusReads = 0;
+          var foreignReads = 0;
+          var directStreams = 0;
+          var terminal = false;
+          final streams = <_ManualStringStream>[];
+          final channel = HermesApiChannel(
+            detachedRunStore: store,
+            runStatusReconcileInterval: Duration.zero,
+            clientBuilder: (config) => HermesApiClient(
+              config: config,
+              get: (uri, headers) async {
+                switch (uri.path) {
+                  case '/health':
+                    return '{"status":"ok"}';
+                  case '/v1/capabilities':
+                    if (outcome == 'no-stop') {
+                      final capabilities =
+                          jsonDecode(_runsCapableCapabilitiesFixture) as Map;
+                      (capabilities['features'] as Map).remove('run_stop');
+                      (capabilities['endpoints'] as Map).remove('run_stop');
+                      return jsonEncode(capabilities);
+                    }
+                    return _runsCapableCapabilitiesFixture;
+                  case '/api/sessions':
+                    return '{"data":[{"id":"sess_1"},{"id":"sess_other"}]}';
+                  case '/api/sessions/sess_1/messages':
+                    return _messagesFixture;
+                  case '/api/sessions/sess_other/messages':
+                    foreignReads++;
+                    return '{"object":"list","session_id":"sess_other","data":[{"id":"foreign-message","session_id":"sess_other","role":"assistant","content":"Synthetic explicitly selected history"}]}';
+                  case '/v1/runs/run_wrong':
+                    statusReads++;
+                    if (!terminal && outcome == 'status-error') {
+                      throw StateError('synthetic status failure');
+                    }
+                    return jsonEncode({
+                      'run_id': !terminal && outcome == 'wrong-run'
+                          ? 'foreign'
+                          : 'run_wrong',
+                      'session_id': !terminal && outcome == 'wrong-session'
+                          ? 'sess_1'
+                          : 'sess_other',
+                      'status': terminal
+                          ? 'cancelled'
+                          : outcome == 'unknown'
+                          ? 'unknown'
+                          : 'running',
+                    });
+                  default:
+                    throw StateError('unexpected synthetic GET');
+                }
+              },
+              post: (uri, headers, body) async {
+                if (uri.path == '/v1/runs') {
+                  submits++;
+                  final request = jsonDecode(body) as Map;
+                  expect(
+                    request['session_id'],
+                    submits == 1 ? 'sess_1' : 'sess_other',
+                  );
+                  if (submits > 1) {
+                    expect(terminal, isTrue);
+                    expect(request['conversation_history'], [
+                      {
+                        'role': 'assistant',
+                        'content': 'Synthetic explicitly selected history',
+                      },
+                    ]);
+                  }
+                  return submits == 1
+                      ? '{"run_id":"run_wrong","session_id":"sess_other"}'
+                      : '{"run_id":"run_next","session_id":"sess_other"}';
+                }
+                expect(uri.path, '/v1/runs/run_wrong/stop');
+                stops++;
+                if (outcome == 'stop-error') {
+                  throw StateError('synthetic stop failure');
+                }
+                return '{"run_id":"run_wrong","status":"stopping"}';
+              },
+              getStream: (uri, headers) {
+                expect(
+                  uri.path,
+                  isIn([
+                    '/v1/runs/run_wrong/events',
+                    '/v1/runs/run_next/events',
+                  ]),
+                );
+                final stream = _ManualStringStream();
+                streams.add(stream);
+                return stream;
+              },
+              postStream: (uri, headers, body) {
+                directStreams++;
+                return const Stream.empty();
+              },
+            ),
+          );
+          addTearDown(channel.dispose);
+          await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+          final profile = channel.state.selectedProfileId;
+          await expectLater(
+            channel.sendText('Synthetic wrong owner'),
+            throwsStateError,
+          );
+          expect(submits, 1);
+          expect(stops, outcome == 'no-stop' ? 0 : 1);
+          expect(
+            statusReads,
+            ['no-stop', 'stop-error'].contains(outcome) ? 0 : 1,
+          );
+          expect(foreignReads, 0);
+          expect(channel.state.activeSessionId, 'sess_1');
+          expect(channel.state.selectedProfileId, profile);
+          expect(channel.state.messages.containsKey('sess_other'), isFalse);
+          expect(
+            channel.state.messageHistoryNextOffsets.containsKey('sess_other'),
+            isFalse,
+          );
+          expect(channel.state.hasUnreconciledRun, isFalse);
+          expect(streams, isEmpty);
+
+          await channel.selectSession('sess_other');
+          await pumpEventQueue();
+          expect(
+            statusReads,
+            ['no-stop', 'stop-error'].contains(outcome) ? 1 : 2,
+          );
+          expect(channel.state.activeSessionId, 'sess_other');
+          expect(channel.state.hasUnreconciledRun, isTrue);
+          await expectLater(
+            channel.sendText('Synthetic must not submit'),
+            throwsStateError,
+          );
+          expect(submits, 1);
+          expect(directStreams, 0);
+          if (store != null) {
+            expect(store.leases.single.runId, 'run_wrong');
+            expect(store.leases.single.sessionId, 'sess_other');
+            expect(store.leases.single.profileId, profile);
+          }
+
+          // Local stream cancellation is not authoritative terminal proof.
+          channel.cancelActiveTurn();
+          await pumpEventQueue();
+          expect(channel.state.hasUnreconciledRun, isTrue);
+          terminal = true;
+          await channel.selectSession('sess_other');
+          expect(channel.state.hasUnreconciledRun, isFalse);
+          expect(channel.state.activeMessages.map((turn) => turn.id), [
+            'foreign-message',
+          ]);
+          expect(submits, 1);
+          if (store != null) expect(store.leases, isEmpty);
+
+          final next = channel.sendText('Synthetic terminal next prompt');
+          await pumpEventQueue();
+          expect(submits, 2);
+          expect(directStreams, 0);
+          streams.last.emit(
+            'event: run.completed\ndata: {"run_id":"run_next","session_id":"sess_other"}\n\n',
+          );
+          await next;
+          expect(channel.state.hasUnreconciledRun, isFalse);
+          expect(stops, outcome == 'no-stop' ? 0 : 1);
+        },
+      );
+    }
+  }
 
   test('failed mismatched-run rollback retains exact server ownership', () async {
     final store = _MemoryDetachedRunStore();
@@ -567,6 +942,11 @@ void _hermesApiChannelRunFailureTests() {
               messageReads++ == 0
                   ? _messagesFixture
                   : _reconciledMessagesFixture,
+            '/v1/runs/run_1' || '/v1/runs/run_2' => () {
+              final runId = uri.pathSegments.last;
+              expect(stops, contains('/v1/runs/$runId/stop'));
+              return '{"run_id":"$runId","session_id":"sess_1","status":"cancelled"}';
+            }(),
             _ => throw StateError('unexpected GET $uri'),
           };
         },
@@ -580,7 +960,7 @@ void _hermesApiChannelRunFailureTests() {
           }
           if (uri.path.endsWith('/stop')) {
             stops.add(uri.path);
-            return '{}';
+            return '{"run_id":"${uri.pathSegments[2]}","status":"stopping"}';
           }
           throw StateError('unexpected POST $uri');
         },
@@ -611,10 +991,7 @@ void _hermesApiChannelRunFailureTests() {
     ]);
     expect(channel.state.activeMessages.map((turn) => turn.text), [
       'Hello',
-      'first',
-      'Stopped.',
-      'second',
-      'Stopped.',
+      'Hi there',
     ]);
   });
 
@@ -1285,8 +1662,8 @@ void _hermesApiChannelRunFailureTests() {
             '/api/sessions' => _twoSessionsFixture,
             '/api/sessions/sess_2/messages' =>
               messagesRequests++ == 0
-                  ? _messagesFixture
-                  : _reconciledMessagesFixture,
+                  ? _messagesFixture.replaceAll('sess_1', 'sess_2')
+                  : _reconciledMessagesFixture.replaceAll('sess_1', 'sess_2'),
             '/v1/runs/run_detached' => () {
               statusRequests += 1;
               return '{"run_id":"run_detached","session_id":"sess_2","status":"running"}';
@@ -1420,7 +1797,10 @@ void _hermesApiChannelRunFailureTests() {
             '/v1/capabilities' => _runsCapableCapabilitiesFixture,
             '/api/sessions' => _twoSessionsFixture,
             '/api/sessions/sess_1/messages' => _messagesFixture,
-            '/api/sessions/sess_2/messages' => _messagesFixture,
+            '/api/sessions/sess_2/messages' => _messagesFixture.replaceAll(
+              'sess_1',
+              'sess_2',
+            ),
             '/v1/runs/run_detached' =>
               '{"run_id":"run_detached","session_id":"sess_2","status":"running"}',
             _ => throw StateError('unexpected GET $uri'),
@@ -1473,12 +1853,12 @@ void _hermesApiChannelRunFailureTests() {
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
           '/v1/runs/run_detached' =>
-            '{"run_id":"run_detached","session_id":"sess_1","status":"running"}',
+            '{"run_id":"run_detached","session_id":"sess_1","status":"${stopPaths.isEmpty ? 'running' : 'cancelled'}"}',
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
           stopPaths.add(uri.path);
-          return '{}';
+          return '{"run_id":"run_detached","status":"stopping"}';
         },
         getStream: (uri, headers) => Stream<String>.fromIterable(const [
           'event: error\ndata: {"run_id":"run_detached","session_id":"sess_1","message":"transport failed"}\n\n',
@@ -1520,12 +1900,12 @@ void _hermesApiChannelRunFailureTests() {
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
           '/v1/runs/run_detached' =>
-            '{"run_id":"run_detached","session_id":"sess_1","status":"running"}',
+            '{"run_id":"run_detached","session_id":"sess_1","status":"${stopPaths.isEmpty ? 'running' : 'cancelled'}"}',
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
           stopPaths.add(uri.path);
-          return '{}';
+          return '{"run_id":"run_detached","status":"stopping"}';
         },
         getStream: (uri, headers) => Stream<String>.empty(),
       ),
@@ -1758,7 +2138,10 @@ void _hermesApiChannelRunFailureTests() {
           '/v1/capabilities' => _runsCapableCapabilitiesFixture,
           '/api/sessions' => _twoSessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
-          '/api/sessions/sess_2/messages' => _messagesFixture,
+          '/api/sessions/sess_2/messages' => _messagesFixture.replaceAll(
+            'sess_1',
+            'sess_2',
+          ),
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
@@ -2128,22 +2511,31 @@ void _hermesApiChannelRunFailureTests() {
           '/v1/capabilities' => _runsCapableCapabilitiesFixture,
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' =>
-            messagesRequests++ == 0
+            messagesRequests++ < 2
                 ? _messagesFixture
                 : throw StateError('authoritative reload unavailable'),
+          '/v1/runs/run_1' => () {
+            expect(stoppedRunId, 'run_1');
+            return '{"run_id":"run_1","session_id":"sess_1","status":"cancelled"}';
+          }(),
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
           if (uri.path == '/v1/runs/run_1/stop') {
             stoppedRunId = 'run_1';
-            return '{}';
+            return '{"run_id":"run_1","status":"stopping"}';
           }
           runSubmissions += 1;
-          return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
+          expect(uri.path, '/v1/runs');
+          return '{"object":"hermes.run","run":{"id":"run_$runSubmissions","session_id":"sess_1"}}';
         },
         getStream: (uri, headers) {
           streamOpened = true;
-          return const Stream.empty();
+          expect(uri.path, '/v1/runs/run_2/events');
+          return Stream.fromIterable(const [
+            'event: message.delta\ndata: {"run_id":"run_2","session_id":"sess_1","delta":"safe retry"}\n\n',
+            'event: run.completed\ndata: {"run_id":"run_2","session_id":"sess_1"}\n\n',
+          ]);
         },
         postStream: (uri, headers, body) {
           directStreamPath = uri.path;
@@ -2170,55 +2562,59 @@ void _hermesApiChannelRunFailureTests() {
 
     await channel.sendText('retry safely');
 
-    expect(runSubmissions, 1);
-    expect(directStreamPath, '/api/sessions/sess_1/chat/stream');
+    expect(runSubmissions, 2);
+    expect(streamOpened, isTrue);
+    expect(directStreamPath, isNull);
+    expect(channel.state.activeMessages.last.text, 'safe retry');
+    expect(store.leases, isEmpty);
   });
 
-  test(
-    'successful rollback remains authoritative when cleanup save fails',
-    () async {
-      final store = _FailFirstDetachedRunStore(failures: 2);
-      var stoppedRunId = '';
-      var streamOpened = false;
-      final channel = HermesApiChannel(
-        detachedRunStore: store,
-        clientBuilder: (config) => HermesApiClient(
-          config: config,
-          get: (uri, headers) async => switch (uri.path) {
-            '/health' => '{"status":"ok"}',
-            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
-            '/api/sessions' => _sessionsFixture,
-            '/api/sessions/sess_1/messages' => _messagesFixture,
-            _ => throw StateError('unexpected GET $uri'),
-          },
-          post: (uri, headers, body) async {
-            if (uri.path == '/v1/runs/run_1/stop') {
-              stoppedRunId = 'run_1';
-              return '{}';
-            }
-            return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
-          },
-          getStream: (uri, headers) {
-            streamOpened = true;
-            return const Stream.empty();
-          },
-        ),
-      );
-      addTearDown(channel.dispose);
-      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+  test('successful rollback remains authoritative when cleanup save fails', () async {
+    final store = _FailFirstDetachedRunStore(failures: 2);
+    var stoppedRunId = '';
+    var streamOpened = false;
+    final channel = HermesApiChannel(
+      detachedRunStore: store,
+      clientBuilder: (config) => HermesApiClient(
+        config: config,
+        get: (uri, headers) async => switch (uri.path) {
+          '/health' => '{"status":"ok"}',
+          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+          '/api/sessions' => _sessionsFixture,
+          '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' => () {
+            expect(stoppedRunId, 'run_1');
+            return '{"run_id":"run_1","session_id":"sess_1","status":"cancelled"}';
+          }(),
+          _ => throw StateError('unexpected GET $uri'),
+        },
+        post: (uri, headers, body) async {
+          if (uri.path == '/v1/runs/run_1/stop') {
+            stoppedRunId = 'run_1';
+            return '{"run_id":"run_1","status":"stopping"}';
+          }
+          return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
+        },
+        getStream: (uri, headers) {
+          streamOpened = true;
+          return const Stream.empty();
+        },
+      ),
+    );
+    addTearDown(channel.dispose);
+    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
-      await expectLater(channel.sendText('first'), throwsStateError);
+    await expectLater(channel.sendText('first'), throwsStateError);
 
-      expect(stoppedRunId, 'run_1');
-      expect(streamOpened, isFalse);
-      expect(store.saveCalls, 2);
-      expect(channel.state.hasUnreconciledRun, isFalse);
-      expect(
-        channel.state.errorMessage,
-        'Hermes run was stopped because Wing could not persist its recovery lease.',
-      );
-    },
-  );
+    expect(stoppedRunId, 'run_1');
+    expect(streamOpened, isFalse);
+    expect(store.saveCalls, 2);
+    expect(channel.state.hasUnreconciledRun, isFalse);
+    expect(
+      channel.state.errorMessage,
+      'Hermes run was stopped because Wing could not persist its recovery lease.',
+    );
+  });
 
   test('failed rollback keeps detached run guarded', () async {
     final store = _FailFirstDetachedRunStore(failures: 2);
@@ -2261,6 +2657,7 @@ void _hermesApiChannelRunFailureTests() {
   test('failed detached save does not poison a later retry', () async {
     final store = _FailFirstDetachedRunStore();
     var runCount = 0;
+    var firstRunStopped = false;
     final channel = HermesApiChannel(
       detachedRunStore: store,
       clientBuilder: (config) => HermesApiClient(
@@ -2270,11 +2667,21 @@ void _hermesApiChannelRunFailureTests() {
           '/v1/capabilities' => _runsCapableCapabilitiesFixture,
           '/api/sessions' => _twoSessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
-          '/api/sessions/sess_2/messages' => _messagesFixture,
+          '/api/sessions/sess_2/messages' => _messagesFixture.replaceAll(
+            'sess_1',
+            'sess_2',
+          ),
+          '/v1/runs/run_1' => () {
+            expect(firstRunStopped, isTrue);
+            return '{"run_id":"run_1","session_id":"sess_1","status":"cancelled"}';
+          }(),
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
-          if (uri.path.endsWith('/stop')) return '{}';
+          if (uri.path == '/v1/runs/run_1/stop') {
+            firstRunStopped = true;
+            return '{"run_id":"run_1","status":"stopping"}';
+          }
           runCount += 1;
           final sessionId = body.contains('sess_2') ? 'sess_2' : 'sess_1';
           return '{"object":"hermes.run","run":{"id":"run_$runCount","session_id":"$sessionId"}}';
@@ -2297,51 +2704,63 @@ void _hermesApiChannelRunFailureTests() {
     await secondSend;
   });
 
-  test('successful Stop cleans durable ownership after disconnect', () async {
-    final store = _MemoryDetachedRunStore();
-    final stream = _ManualStringStream();
-    final stopStarted = Completer<void>();
-    final releaseStop = Completer<void>();
-    final channel = HermesApiChannel(
-      detachedRunStore: store,
-      clientBuilder: (config) => HermesApiClient(
-        config: config,
-        get: (uri, headers) async => switch (uri.path) {
-          '/health' => '{"status":"ok"}',
-          '/v1/capabilities' => _runsCapableCapabilitiesFixture,
-          '/api/sessions' => _sessionsFixture,
-          '/api/sessions/sess_1/messages' => _messagesFixture,
-          _ => throw StateError('unexpected GET $uri'),
-        },
-        post: (uri, headers, body) async {
-          if (uri.path == '/v1/runs/run_1/stop') {
-            stopStarted.complete();
-            await releaseStop.future;
-            return '{}';
-          }
-          return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
-        },
-        getStream: (uri, headers) => stream,
-      ),
-    );
-    addTearDown(channel.dispose);
-    await channel.connect(baseUrl: 'http://127.0.0.1:8642');
-    final send = channel.sendText('start');
-    while (store.leases.isEmpty) {
-      await pumpEventQueue();
-    }
+  test(
+    'Stop acknowledgement after disconnect retains ownership until reconnect',
+    () async {
+      final store = _MemoryDetachedRunStore();
+      final stream = _ManualStringStream();
+      final stopStarted = Completer<void>();
+      final releaseStop = Completer<void>();
+      var stopAcknowledged = false;
+      final channel = HermesApiChannel(
+        detachedRunStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async => switch (uri.path) {
+            '/health' => '{"status":"ok"}',
+            '/v1/capabilities' => _runsCapableCapabilitiesFixture,
+            '/api/sessions' => _sessionsFixture,
+            '/api/sessions/sess_1/messages' => _messagesFixture,
+            '/v1/runs/run_1' =>
+              '{"run_id":"run_1","session_id":"sess_1","status":"${stopAcknowledged ? 'cancelled' : 'running'}"}',
+            _ => throw StateError('unexpected GET $uri'),
+          },
+          post: (uri, headers, body) async {
+            if (uri.path == '/v1/runs/run_1/stop') {
+              stopStarted.complete();
+              await releaseStop.future;
+              stopAcknowledged = true;
+              return '{"run_id":"run_1","status":"stopping"}';
+            }
+            return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
+          },
+          getStream: (uri, headers) => stream,
+        ),
+      );
+      addTearDown(channel.dispose);
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      final send = channel.sendText('start');
+      while (store.leases.isEmpty) {
+        await pumpEventQueue();
+      }
 
-    channel.stopActiveTurn();
-    await stopStarted.future;
-    await channel.disconnect();
-    releaseStop.complete();
-    for (var index = 0; index < 20; index += 1) {
-      await pumpEventQueue();
-    }
+      channel.stopActiveTurn();
+      await stopStarted.future;
+      await channel.disconnect();
+      releaseStop.complete();
+      for (var index = 0; index < 20; index += 1) {
+        await pumpEventQueue();
+      }
 
-    expect(store.leases, isEmpty);
-    await send;
-  });
+      expect(stopAcknowledged, isTrue);
+      expect(store.leases.single.runId, 'run_1');
+      expect(store.leases.single.sessionId, 'sess_1');
+      await send;
+      await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+      expect(store.leases, isEmpty);
+      expect(channel.state.hasUnreconciledRun, isFalse);
+    },
+  );
 
   test('normal stop stays authoritative when cleanup save fails', () async {
     final store = _FailingSaveNumberDetachedRunStore(2);
@@ -2356,12 +2775,16 @@ void _hermesApiChannelRunFailureTests() {
           '/v1/capabilities' => _runsCapableCapabilitiesFixture,
           '/api/sessions' => _sessionsFixture,
           '/api/sessions/sess_1/messages' => _messagesFixture,
+          '/v1/runs/run_1' => () {
+            expect(stopCalls, 1);
+            return '{"run_id":"run_1","session_id":"sess_1","status":"cancelled"}';
+          }(),
           _ => throw StateError('unexpected GET $uri'),
         },
         post: (uri, headers, body) async {
           if (uri.path == '/v1/runs/run_1/stop') {
             stopCalls += 1;
-            return '{}';
+            return '{"run_id":"run_1","status":"stopping"}';
           }
           return '{"object":"hermes.run","run":{"id":"run_1","session_id":"sess_1"}}';
         },
@@ -2574,7 +2997,7 @@ void _hermesApiChannelRunFailureTests() {
   );
 
   test(
-    'reconnect releases a detached run missing after server restart',
+    'reconnect retains unresolved detached ownership on ambiguous run status 404',
     () async {
       final store = _MemoryDetachedRunStore()
         ..leases = [
@@ -2605,8 +3028,9 @@ void _hermesApiChannelRunFailureTests() {
 
       await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
-      expect(channel.state.errorMessage, isNull);
-      expect(store.leases, isEmpty);
+      expect(channel.state.errorMessage, contains('Reconnect later'));
+      expect(channel.state.hasUnreconciledRun, isTrue);
+      expect(store.leases.single.runId, 'run_gone');
     },
   );
 

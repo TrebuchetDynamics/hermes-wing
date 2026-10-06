@@ -6,6 +6,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:wing/theme/wing_theme.dart';
 
 import 'hermes_features_maestro_main.dart' as fixture;
+import 'support/linux_test_isolation.dart';
 
 // Uses the real Linux preferences plugin. The launcher provides a fresh XDG
 // directory shared by two separate app processes, never the user's preferences.
@@ -14,9 +15,8 @@ void main() {
   binding.shouldPropagateDevicePointerEvents = true;
   WidgetController.hitTestWarningShouldBeFatal = true;
   final phase = Platform.environment['WING_PERSISTENCE_PHASE'];
-  final config = Platform.environment['XDG_CONFIG_HOME'] ?? '';
+  requireLinuxTestRoot('wing-linux-persistence.');
   if (Platform.environment['WING_ISOLATED_PREFERENCES'] != '1' ||
-      !config.startsWith('/tmp/wing-linux-persistence.') ||
       !{'write', 'verify'}.contains(phase)) {
     throw StateError('Use the isolated Linux persistence launcher.');
   }

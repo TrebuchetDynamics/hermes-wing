@@ -14,6 +14,10 @@ export '../models/hermes_profile.dart';
 export '../models/hermes_provider.dart';
 export 'hermes_channel_state.dart';
 
+final class HermesSessionRestorationUnsupported implements Exception {
+  const HermesSessionRestorationUnsupported();
+}
+
 abstract interface class HermesAudioChannel {
   Future<String> transcribePcm16(Uint8List pcm16);
   Future<Uint8List> synthesizeSpeech(String text);
@@ -52,20 +56,33 @@ final class HermesTurnInterruptionTarget {
 abstract interface class HermesChannel implements Listenable {
   HermesChannelState get state;
 
-  Future<void> connect({required String baseUrl, String? apiKey});
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  });
   Future<void> disconnect();
 
   /// Clears the client-side session selection without deleting or mutating
   /// any Agent-owned session.
   void clearActiveSession();
-  Future<void> selectSession(String sessionId);
+
+  /// Caller admission is checked before work and before history/selection commit.
+  Future<void> selectSession(String sessionId, {bool Function()? canAccept});
+
+  /// Read-only exact recovery. Unknown rows require advertised authorized reads;
+  /// stale ownership must be rejected before admitting metadata or history caches.
+  Future<bool> restoreSession(String sessionId, {bool Function()? canAccept});
 
   /// Refreshes canonical history for the selected idle session without
   /// replacing the connection or disturbing an owned live stream.
   Future<void> reconcileActiveSession();
   Future<void> loadEarlierMessages();
   Future<void> loadMoreSessions();
-  Future<void> createSession({String? title});
+
+  /// An already-submitted Agent write may finish, but a stale caller cannot
+  /// admit its result, history or selection into this client.
+  Future<void> createSession({String? title, bool Function()? canAccept});
   Future<void> renameSession({
     required String sessionId,
     required String title,
@@ -76,7 +93,11 @@ abstract interface class HermesChannel implements Listenable {
   /// Selects [profileId] as the client-local active profile. This never calls
   /// a server active-profile endpoint; it refreshes the profile list and the
   /// profile-owned sessions/inventory using the mandatory `profile` query.
-  Future<void> selectProfile(String profileId, {bool allowDiscovered = false});
+  Future<void> selectProfile(
+    String profileId, {
+    bool allowDiscovered = false,
+    bool deferSessionSelection = false,
+  });
 
   Future<void> createProfile({required String name, String? cloneFrom});
   Future<void> renameProfile({

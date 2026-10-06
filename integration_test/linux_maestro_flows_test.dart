@@ -422,7 +422,7 @@ void main() {
         'Office',
         'Providers',
         'Persona',
-        'Gateway',
+        'Connections',
         'Settings',
         'Voice & speech',
         'Diagnostics',

@@ -6,14 +6,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:wing/features/voice/services/platform/default_voice_capture_service.dart';
 
+import 'support/linux_test_isolation.dart';
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.shouldPropagateDevicePointerEvents = true;
   WidgetController.hitTestWarningShouldBeFatal = true;
   final sample = Platform.environment['WING_NATIVE_PICK_FILE'];
+  final root = requireLinuxTestRoot('wing-linux-native.');
   if (Platform.environment['WING_ISOLATED_NATIVE_INPUT'] != '1' ||
       sample == null ||
-      !sample.startsWith('/tmp/wing-linux-native.')) {
+      sample != '$root/sample.txt') {
     throw StateError('Use the isolated native-input launcher.');
   }
   testWidgets('Linux real X11 keyboard and GTK file picker', (tester) async {

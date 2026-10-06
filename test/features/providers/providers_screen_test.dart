@@ -148,9 +148,17 @@ class _GatewaySwitchingProviderChannel extends FakeHermesChannel {
   String? _gatewayUrl;
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
     _gatewayUrl = baseUrl;
-    await super.connect(baseUrl: baseUrl, apiKey: apiKey);
+    await super.connect(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      deferSessionSelection: deferSessionSelection,
+    );
   }
 
   @override
@@ -279,13 +287,21 @@ void main() {
 
     expect(channel.loadProvidersCalls, greaterThanOrEqualTo(1));
     expect(channel.loadModelsCalls, greaterThanOrEqualTo(1));
-    await tester.scrollUntilVisible(find.text('OpenAI'), 160);
+    await tester.scrollUntilVisible(
+      find.text('OpenAI'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('OpenAI'), findsOneWidget);
     // Presence badge from `configured`.
     expect(find.text('Configured'), findsWidgets);
     // Masked hint (never a full key).
     expect(find.textContaining('····ab12'), findsWidgets);
-    await tester.scrollUntilVisible(find.text('Anthropic'), 160);
+    await tester.scrollUntilVisible(
+      find.text('Anthropic'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Anthropic'), findsOneWidget);
   });
 
@@ -627,6 +643,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Long subscription provider account'),
       160,
+      scrollable: find.byType(Scrollable).first,
     );
     expect(tester.takeException(), isNull);
     expect(find.text('Long subscription provider account'), findsOneWidget);

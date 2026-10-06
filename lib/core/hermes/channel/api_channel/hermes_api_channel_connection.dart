@@ -24,7 +24,11 @@ HermesConnectionFailureKind _connectionFailureKind(Object error) {
 }
 
 extension _ConnectionExtension on HermesApiChannel {
-  Future<void> _connect({required String baseUrl, String? apiKey}) async {
+  Future<void> _connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
     _sessionSelectionGeneration += 1;
@@ -39,6 +43,7 @@ extension _ConnectionExtension on HermesApiChannel {
       const HermesChannelState(status: HermesConnectionStatus.connecting),
     );
     HermesApiClient? client;
+    var hasUnreconciledRun = false;
     try {
       client = _clientBuilder(
         HermesApiConfig.fromBaseUrl(baseUrl, apiKey: apiKey),
@@ -84,7 +89,11 @@ extension _ConnectionExtension on HermesApiChannel {
         profileId: initialProfileId,
         sessionIds: sessions.map((session) => session.id),
       );
-      final activeId = detachedActiveId ?? sessions.firstOrNull?.id;
+      if (!_isCurrentConnection(generation, client)) return;
+      hasUnreconciledRun = detachedActiveId != null;
+      final activeId = deferSessionSelection
+          ? null
+          : detachedActiveId ?? sessions.firstOrNull?.id;
       final detachedRunConfirmed =
           detachedActiveId != null &&
           _detachedRuns.values.any(
@@ -100,6 +109,7 @@ extension _ConnectionExtension on HermesApiChannel {
           client,
           activeId,
           profileId: initialProfileId,
+          capabilities: capabilities,
         );
       }
       if (!_isCurrentConnection(generation, client)) return;
@@ -159,6 +169,7 @@ extension _ConnectionExtension on HermesApiChannel {
           status: HermesConnectionStatus.error,
           errorMessage: _safeHermesError(error),
           connectionFailureKind: _connectionFailureKind(error),
+          hasUnreconciledRun: hasUnreconciledRun,
         ),
       );
     }
@@ -229,6 +240,10 @@ extension _ConnectionExtension on HermesApiChannel {
 
   Future<void> _reloadJobs() async {
     final client = _requireConnectedClient();
+    _requireStableProfile();
+    if (!_isConnectedClient(client)) {
+      throw StateError('Hermes channel is not connected.');
+    }
     if (!_state.canReadJobs) {
       throw StateError('Hermes did not advertise scheduled-job inventory.');
     }
@@ -263,6 +278,10 @@ extension _ConnectionExtension on HermesApiChannel {
 
   Future<void> _reloadToolInventory() async {
     final client = _requireConnectedClient();
+    _requireStableProfile();
+    if (!_isConnectedClient(client)) {
+      throw StateError('Hermes channel is not connected.');
+    }
     final canReadSkills = _state.canReadSkills;
     final canReadToolsets = _state.canReadToolsets;
     if (!canReadSkills && !canReadToolsets) {
@@ -316,8 +335,10 @@ extension _ConnectionExtension on HermesApiChannel {
     HermesApiClient client,
     String sessionId, {
     String? profileId,
+    HermesCapabilityDocument? capabilities,
     bool Function()? canAccept,
   }) async {
+    _requireHistoryRead(client, capabilities ?? _state.capabilities);
     final connectionGeneration = _connectionGeneration;
     final profileGeneration = _profileSelectionGeneration;
     final requestProfile = profileId ?? _state.selectedProfileId;
@@ -375,6 +396,29 @@ extension _ConnectionExtension on HermesApiChannel {
       _recentTurns.remove(_recentTurns.keys.first);
     }
     return turns;
+  }
+
+  void _requireHistoryRead(
+    HermesApiClient client,
+    HermesCapabilityDocument? capabilities,
+  ) {
+    // Legacy servers may omit the baseline history advertisement. A declared
+    // operation is never permission to bypass its exact contract or grants.
+    if (capabilities == null ||
+        !capabilities.supportsSchema ||
+        (capabilities.endpoints.containsKey('session_messages') &&
+            (!_capabilityEndpointAuthorized(
+                  capabilities,
+                  'session_messages',
+                  'GET',
+                  '/api/sessions/{session_id}/messages',
+                ) ||
+                (capabilities.endpoints['session_messages']?.profileScoped ==
+                        true &&
+                    !capabilities.profileContext.isSupportedQueryContext &&
+                    client.config.pathProfileId == null)))) {
+      throw StateError('Hermes session history is not authorized.');
+    }
   }
 
   List<HermesChatTurn> _turnsFromHistory(

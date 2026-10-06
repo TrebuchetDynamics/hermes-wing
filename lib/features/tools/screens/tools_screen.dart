@@ -30,25 +30,30 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   String? _actionError;
   bool _refreshing = false;
   int _refreshGeneration = 0;
+  HermesChannel? _inventoryChannel;
+  Object? _inventoryContext;
+  Object _inventoryOwner = Object();
+
+  @override
+  void dispose() {
+    _inventoryChannel?.removeListener(_inventoryOwnerChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
-    ref.listen(hermesChannelStateProvider, (previous, next) {
-      if (next.refreshContextChangedFrom(previous)) {
-        setState(() {
-          _refreshGeneration++;
-          _refreshing = false;
-          _actionError = null;
-        });
+    _bindInventoryOwner(channel);
+    ref.listen(hermesChannelProvider, (previous, next) {
+      if (!identical(previous, next)) {
+        setState(() => _bindInventoryOwner(next));
       }
     });
     final directory = ref.watch(hermesGatewayDirectoryProvider);
     final strings = AppLocalizations.of(context);
     final state = channel.state;
-    final canRefresh =
-        state.status == HermesConnectionStatus.connected &&
-        (state.canReadSkills || state.canReadToolsets);
+    final owner = _inventoryOwner;
+    final canRefresh = _canRefreshInventory(state);
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.toolsTitle),
@@ -59,7 +64,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
               tooltip: strings.toolsRefreshAction,
               onPressed: _refreshing
                   ? null
-                  : () => unawaited(_refreshInventory(channel, strings)),
+                  : () => unawaited(_refreshInventory(channel, owner, strings)),
               icon: _refreshing
                   ? const SizedBox.square(
                       dimension: 20,
@@ -96,7 +101,17 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
                   ],
                 ),
               Expanded(
-                child: _ToolsBody(state: channel.state, strings: strings),
+                // Search and disclosure belong to this client/host/profile,
+                // not to inventory content or capability-document identity.
+                child: _ToolsBody(
+                  key: ValueKey((
+                    channel,
+                    channel.state.connectedBaseUrl,
+                    channel.state.selectedProfileId,
+                  )),
+                  state: channel.state,
+                  strings: strings,
+                ),
               ),
             ],
           ),
@@ -107,8 +122,10 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
 
   Future<void> _refreshInventory(
     HermesChannel channel,
+    Object owner,
     AppLocalizations strings,
   ) async {
+    if (!_isInventoryOwner(channel, owner) || _refreshing) return;
     final generation = ++_refreshGeneration;
     setState(() {
       _refreshing = true;
@@ -117,11 +134,13 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
     try {
       await channel.loadToolInventory();
     } catch (_) {
-      if (mounted && generation == _refreshGeneration) {
+      if (_isInventoryOwner(channel, owner) &&
+          generation == _refreshGeneration) {
         setState(() => _actionError = strings.toolsRefreshFailed);
       }
     } finally {
-      if (mounted && generation == _refreshGeneration) {
+      if (_isInventoryOwner(channel, owner) &&
+          generation == _refreshGeneration) {
         setState(() => _refreshing = false);
       }
     }
@@ -147,17 +166,68 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
       onFinished: () => setState(() => _switchingGatewayId = null),
     );
   }
+
+  bool _canRefreshInventory(HermesChannelState state) =>
+      state.isConnected &&
+      !state.isSelectingProfile &&
+      (state.canReadSkills || state.canReadToolsets);
+
+  void _bindInventoryOwner(HermesChannel channel) {
+    if (!identical(channel, _inventoryChannel)) {
+      _inventoryChannel?.removeListener(_inventoryOwnerChanged);
+      _inventoryChannel = channel;
+      _inventoryContext = null;
+      channel.addListener(_inventoryOwnerChanged);
+    }
+    _syncInventoryOwner();
+  }
+
+  bool _syncInventoryOwner() {
+    final channel = _inventoryChannel!;
+    final state = channel.state;
+    final context = (
+      channel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.status,
+      state.isSelectingProfile,
+      state.canReadSkills,
+      state.canReadToolsets,
+    );
+    if (_inventoryContext == context) return false;
+    _inventoryContext = context;
+    _inventoryOwner = Object();
+    _refreshGeneration++;
+    _refreshing = false;
+    _actionError = null;
+    return true;
+  }
+
+  void _inventoryOwnerChanged() {
+    // Invalidate cached controls even when loss/restoration precedes a frame.
+    if (_syncInventoryOwner() && mounted) setState(() {});
+  }
+
+  bool _isInventoryOwner(HermesChannel channel, Object owner) {
+    if (!mounted) return false;
+    final current = ref.read(hermesChannelProvider);
+    _bindInventoryOwner(current);
+    return identical(channel, current) &&
+        identical(owner, _inventoryOwner) &&
+        _canRefreshInventory(current.state);
+  }
 }
 
 class _ToolsBody extends StatelessWidget {
-  const _ToolsBody({required this.state, required this.strings});
+  const _ToolsBody({super.key, required this.state, required this.strings});
 
   final HermesChannelState state;
   final AppLocalizations strings;
 
   @override
   Widget build(BuildContext context) {
-    if (state.status == HermesConnectionStatus.connecting) {
+    if (state.status == HermesConnectionStatus.connecting ||
+        state.isSelectingProfile) {
       return WingSkeletonList(
         semanticLabel: AppLocalizations.of(context).toolsLoading,
       );
@@ -189,6 +259,7 @@ class _ToolsBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SkillsInventorySection(
+            key: ValueKey(('skills', skillsAdvertised)),
             advertised: skillsAdvertised,
             loadFailed: state.optionalResourceErrors.containsKey(
               HermesOptionalResource.skills,
@@ -199,6 +270,7 @@ class _ToolsBody extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _ToolsetsInventorySection(
+            key: ValueKey(('toolsets', toolsetsAdvertised)),
             advertised: toolsetsAdvertised,
             loadFailed: state.optionalResourceErrors.containsKey(
               HermesOptionalResource.toolsets,
@@ -215,6 +287,7 @@ class _ToolsBody extends StatelessWidget {
 
 class _SkillsInventorySection extends StatefulWidget {
   const _SkillsInventorySection({
+    super.key,
     required this.advertised,
     required this.loadFailed,
     required this.details,
@@ -268,85 +341,117 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
               )
               .toList(growable: false);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.extension_outlined, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.strings.installedSkillsTitle,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (message != null)
-              Text(
-                message,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              )
-            else if (details.isEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: widget.strings.installedSkillsTitle,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  for (final name in fallbackNames) Chip(label: Text(name)),
+                  const Icon(Icons.extension_outlined, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ExcludeSemantics(
+                      child: Text(
+                        widget.strings.installedSkillsTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
                 ],
-              )
-            else ...[
-              TextField(
-                key: const ValueKey('installed-skills-search'),
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: widget.strings.searchInstalledSkillsLabel,
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                ),
-                onChanged: (value) => setState(() => _query = value),
               ),
               const SizedBox(height: 8),
-              if (filtered.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(widget.strings.noSkillsMatchBody),
-                )
-              else
-                for (var index = 0; index < filtered.length; index++)
-                  ListTile(
-                    key: ValueKey(
-                      'installed-skill-${filtered[index].name}-$index',
-                    ),
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(filtered[index].name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (filtered[index].description.isNotEmpty)
-                          Text(filtered[index].description),
-                        if (filtered[index].category.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            filtered[index].category,
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                          ),
-                        ],
-                      ],
-                    ),
+              if (message != null)
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+                )
+              else if (details.isEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final name in fallbackNames) Chip(label: Text(name)),
+                  ],
+                )
+              else ...[
+                // Keep the editor's semantic owner stable when filtering removes
+                // every result; result text must not merge into its input label.
+                Semantics(
+                  container: true,
+                  child: TextField(
+                    key: const ValueKey('installed-skills-search'),
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: widget.strings.searchInstalledSkillsLabel,
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              key: const ValueKey('installed-skills-clear'),
+                              tooltip:
+                                  widget.strings.clearInstalledSkillsSearch,
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                              icon: const Icon(Icons.clear),
+                            ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (value) => setState(() => _query = value),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (filtered.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Semantics(
+                      container: true,
+                      child: Text(widget.strings.noSkillsMatchBody),
+                    ),
+                  )
+                else
+                  for (var index = 0; index < filtered.length; index++)
+                    Semantics(
+                      container: true,
+                      child: ListTile(
+                        key: ValueKey(
+                          'installed-skill-${filtered[index].name}-$index',
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(filtered[index].name),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (filtered[index].description.isNotEmpty)
+                              Text(filtered[index].description),
+                            if (filtered[index].category.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                filtered[index].category,
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -355,6 +460,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
 
 class _ToolsetsInventorySection extends StatefulWidget {
   const _ToolsetsInventorySection({
+    super.key,
     required this.advertised,
     required this.loadFailed,
     required this.details,
@@ -415,68 +521,97 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
               )
               .toList(growable: false);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.build_outlined, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    details.isEmpty
-                        ? widget.strings.enabledToolsetsTitle
-                        : widget.strings.toolsetsTitle,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (message != null)
-              Text(
-                message,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              )
-            else if (details.isEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: details.isEmpty
+          ? widget.strings.enabledToolsetsTitle
+          : widget.strings.toolsetsTitle,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  for (final name in fallbackNames) Chip(label: Text(name)),
+                  const Icon(Icons.build_outlined, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ExcludeSemantics(
+                      child: Text(
+                        details.isEmpty
+                            ? widget.strings.enabledToolsetsTitle
+                            : widget.strings.toolsetsTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
                 ],
-              )
-            else ...[
-              TextField(
-                key: const ValueKey('toolsets-search'),
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: widget.strings.searchToolsetsLabel,
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                ),
-                onChanged: (value) => setState(() => _query = value),
               ),
               const SizedBox(height: 8),
-              if (filtered.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(widget.strings.noToolsetsMatchBody),
-                )
-              else
-                for (var index = 0; index < filtered.length; index++)
-                  _ToolsetTile(
-                    toolset: filtered[index],
-                    index: index,
-                    strings: widget.strings,
+              if (message != null)
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+                )
+              else if (details.isEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final name in fallbackNames) Chip(label: Text(name)),
+                  ],
+                )
+              else ...[
+                Semantics(
+                  container: true,
+                  child: TextField(
+                    key: const ValueKey('toolsets-search'),
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: widget.strings.searchToolsetsLabel,
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              key: const ValueKey('toolsets-clear'),
+                              tooltip: widget.strings.clearToolsetsSearch,
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                              icon: const Icon(Icons.clear),
+                            ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (value) => setState(() => _query = value),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (filtered.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Semantics(
+                      container: true,
+                      child: Text(widget.strings.noToolsetsMatchBody),
+                    ),
+                  )
+                else
+                  for (var index = 0; index < filtered.length; index++)
+                    Semantics(
+                      container: true,
+                      child: _ToolsetTile(
+                        toolset: filtered[index],
+                        index: index,
+                        strings: widget.strings,
+                      ),
+                    ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

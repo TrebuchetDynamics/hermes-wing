@@ -40,6 +40,7 @@ void main() {
 
     expect(find.text('Use a model for this session'), findsOneWidget);
     expect(find.text('openai/gpt-5'), findsOneWidget);
+    await tester.ensureVisible(find.text('Use for session'));
     await tester.tap(find.text('Use for session'));
     await tester.pumpAndSettle();
 

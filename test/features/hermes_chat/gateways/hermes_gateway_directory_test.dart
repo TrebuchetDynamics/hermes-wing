@@ -37,12 +37,17 @@ class _QueuedProfileChannel extends FakeHermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     if (profileId == 'slow') {
       if (!slowStarted.isCompleted) slowStarted.complete();
       await releaseSlow.future;
     }
-    await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
+    await super.selectProfile(
+      profileId,
+      allowDiscovered: allowDiscovered,
+      deferSessionSelection: deferSessionSelection,
+    );
   }
 }
 
@@ -50,8 +55,16 @@ class _EmptySessionChannel extends FakeHermesChannel {
   _EmptySessionChannel() : super(status: HermesConnectionStatus.disconnected);
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {
-    await super.connect(baseUrl: baseUrl, apiKey: apiKey);
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
+    await super.connect(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      deferSessionSelection: deferSessionSelection,
+    );
     replaceSessions(const [], activeSessionId: null);
   }
 }
@@ -63,12 +76,13 @@ class _ProfileSessionChannel extends FakeHermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
     replaceSessions(const [
       HermesSession(id: 'sess_1', source: 'test'),
       HermesSession(id: 'sess_2', source: 'test'),
-    ], activeSessionId: 'sess_1');
+    ], activeSessionId: deferSessionSelection ? null : 'sess_1');
   }
 }
 
@@ -84,14 +98,21 @@ class _TelegramSessionChannel extends FakeHermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     await super.selectProfile(profileId, allowDiscovered: allowDiscovered);
-    replaceSessions(_agentSessions, activeSessionId: 'telegram-session');
+    replaceSessions(
+      _agentSessions,
+      activeSessionId: deferSessionSelection ? null : 'telegram-session',
+    );
   }
 
   @override
-  Future<void> createSession({String? title}) async {
-    await super.createSession(title: title);
+  Future<void> createSession({
+    String? title,
+    bool Function()? canAccept,
+  }) async {
+    await super.createSession(title: title, canAccept: canAccept);
     _agentSessions = state.sessions;
   }
 }
@@ -968,41 +989,46 @@ void main() {
     );
   });
 
-  test('stale preference still isolates the latest Telegram session', () async {
-    final channel = _TelegramSessionChannel();
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
-      ],
-      loader: FakeGatewaySummaryLoader(const {
-        'beta': GatewaySummary(
-          profileContextAvailable: true,
-          profiles: [
-            HermesProfile(
-              id: 'agent-2',
-              displayName: 'Agent 2',
-              revision: 'r2',
-            ),
-          ],
-          sessionsByProfile: {
-            'agent-2': [
-              HermesSession(id: 'telegram-session', source: 'telegram'),
+  test(
+    'missing remembered identity never creates a fallback Telegram session',
+    () async {
+      final channel = _TelegramSessionChannel();
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(id: 'beta', baseUrl: 'https://beta.example'),
+        ],
+        loader: FakeGatewaySummaryLoader(const {
+          'beta': GatewaySummary(
+            profileContextAvailable: true,
+            profiles: [
+              HermesProfile(
+                id: 'agent-2',
+                displayName: 'Agent 2',
+                revision: 'r2',
+              ),
             ],
-          },
-        ),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
+            sessionsByProfile: {
+              'agent-2': [
+                HermesSession(id: 'telegram-session', source: 'telegram'),
+              ],
+            },
+          ),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
 
-    await directory.activate(
-      const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
-      preferredSessionId: 'deleted-session',
-    );
+      await directory.activate(
+        const GatewayContactId(gatewayId: 'beta', profileId: 'agent-2'),
+        preferredSessionId: 'deleted-session',
+      );
 
-    expect(channel.selectSessionCalls, isEmpty);
-    expect(channel.createSessionCalls, [isNull]);
-  });
+      expect(channel.selectSessionCalls, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(directory.restoringSessionId, 'deleted-session');
+      expect(channel.state.activeSessionId, isNull);
+    },
+  );
 
   test('repeated activation reuses the Wing session it created', () async {
     final channel = _TelegramSessionChannel();

@@ -221,6 +221,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   @override
   HermesChannelState get state => _state;
 
+  void replaceTranscript(List<HermesChatTurn> turns) {
+    final session = _state.activeSessionId!;
+    _setState(_state.copyWith(messages: {..._state.messages, session: turns}));
+  }
+
   @override
   bool get canSteerActiveTurn =>
       _state.canSteerRuns && _state.activeSessionId != null && _isStreaming;
@@ -298,7 +303,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
-  Future<void> connect({required String baseUrl, String? apiKey}) async {
+  Future<void> connect({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+  }) async {
     connectCalls.add(FakeHermesConnectCall(baseUrl: baseUrl, apiKey: apiKey));
     final gate = connectGate;
     if (gate != null) {
@@ -328,7 +337,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
         capabilities: connectCapabilities,
         basicHealth: connectBasicHealth,
         sessions: [const HermesSession(id: sessionId, source: 'fake')],
-        activeSessionId: sessionId,
+        activeSessionId: deferSessionSelection ? null : sessionId,
         connectedBaseUrl: baseUrl,
         connectedWithApiKey: apiKey?.trim().isNotEmpty ?? false,
         messages: const {sessionId: []},
@@ -348,12 +357,30 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
-  Future<void> selectSession(String sessionId) async {
+  Future<void> selectSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {
+    if (!(canAccept?.call() ?? true)) return;
     selectSessionCalls.add(sessionId);
     if (selectSessionFails) {
       throw StateError(selectSessionFailureMessage);
     }
     _setState(_state.copyWith(activeSessionId: sessionId));
+  }
+
+  @override
+  Future<bool> restoreSession(
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {
+    if (!(canAccept?.call() ?? true)) return false;
+    if (!_state.sessions.any((session) => session.id == sessionId)) {
+      clearActiveSession();
+      throw const HermesSessionRestorationUnsupported();
+    }
+    await selectSession(sessionId);
+    return canAccept?.call() ?? true;
   }
 
   int reconcileActiveSessionCalls = 0;
@@ -390,7 +417,11 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   }
 
   @override
-  Future<void> createSession({String? title}) async {
+  Future<void> createSession({
+    String? title,
+    bool Function()? canAccept,
+  }) async {
+    if (!(canAccept?.call() ?? true)) return;
     createSessionCalls.add(title);
     if (createSessionFails) {
       throw StateError('create failed');
@@ -480,6 +511,7 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
   Future<void> selectProfile(
     String profileId, {
     bool allowDiscovered = false,
+    bool deferSessionSelection = false,
   }) async {
     selectProfileCalls.add(profileId);
     selectProfileAllowDiscoveredCalls.add(allowDiscovered);
@@ -488,7 +520,12 @@ class FakeHermesChannel extends ChangeNotifier implements HermesChannel {
     if (selectProfileFails) {
       throw _profileMutationError;
     }
-    _setState(_state.copyWith(selectedProfileId: profileId));
+    _setState(
+      _state.copyWith(
+        selectedProfileId: profileId,
+        clearActiveSessionId: deferSessionSelection,
+      ),
+    );
   }
 
   @override

@@ -44,7 +44,9 @@ test("Hermes Wing sends a say-hi turn through the live Hermes Agent", async ({
   });
 
   await page.evaluate((text) => globalThis.wingE2EHermesSendText(text), prompt);
-  await expect(page.getByText(prompt).first()).toBeVisible({ timeout: 30000 });
+  await expect(
+    page.getByRole("group", { name: prompt, exact: true }).first(),
+  ).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole("group", { name: expected }).first()).toBeVisible(
     {
       timeout: 120000,

@@ -109,17 +109,16 @@ class _ModelPickerSheetState extends State<ModelPickerSheet> {
   void _observeOwner() {
     final state = _ownerChannel.state;
     if (!state.isConnected ||
-        (state.connectedBaseUrl, state.selectedProfileId) != _ownerIdentity) {
+        (state.connectedBaseUrl, state.selectedProfileId) != _ownerIdentity ||
+        (state.capabilities != null && !state.canWriteModels)) {
+      // Restored authority requires a fresh explicit picker, not an old intent.
       _ownerInvalid = true;
     }
   }
 
   void _assertOwner() {
     _observeOwner();
-    if (_ownerInvalid ||
-        !identical(widget.channel, _ownerChannel) ||
-        (widget.channel.state.capabilities != null &&
-            !widget.channel.state.canWriteModels)) {
+    if (_ownerInvalid || !identical(widget.channel, _ownerChannel)) {
       throw StateError('Model sheet ownership changed. Reopen the sheet.');
     }
   }

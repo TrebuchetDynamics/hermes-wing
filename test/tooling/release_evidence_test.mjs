@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm, symlink, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { artifactsByTarget, inputs, createManifest, verifyManifest, digest, qualificationIndex } from '../../scripts/release_evidence.mjs';
+import { fileURLToPath } from 'node:url';
+import { artifactsByTarget, inputs, createManifest, verifyManifest, digest, qualificationIndex, readJson, main } from '../../scripts/release_evidence.mjs';
 
 const identity = { source_revision: 'a'.repeat(40), source_dirty: false, version: '0.1.0',
   build_number: '7', run_id: '12', run_attempt: '1', repository: 'example/wing', tag: 'v0.1.0-alpha.1' };
@@ -123,4 +124,114 @@ test('final index rejects missing required receipts', async t => {
   const root = await qualificationFixture(t);
   await rm(join(root, 'wing-link-macos-smoke.txt'));
   await assert.rejects(qualificationIndex(root, root, identity));
+});
+
+// These are synthetic comparison fixtures, never observed platform qualification.
+test('offline admission round-trips the index and independently hashes its file bindings', async t => {
+  const root = await qualificationFixture(t);
+  const indexPath = join(root, 'synthetic-qualification-index.json');
+  await writeFile(indexPath, JSON.stringify(await qualificationIndex(root, root, identity)));
+  const index = await readJson(indexPath);
+  const { source_dirty, ...expected } = identity;
+  assert.deepEqual(index.identity, expected);
+  assert.deepEqual(index, await qualificationIndex(root, root, expected));
+  for (const [name, binding] of Object.entries(index.manifests)) {
+    assert.deepEqual(binding, await digest(join(root, name)));
+  }
+  for (const { name, size, sha256 } of [...index.artifacts, ...index.receipts]) {
+    assert.deepEqual({ size, sha256 }, await digest(join(root, name)));
+  }
+  for (const [name, binding] of Object.entries(index.inputs)) {
+    assert.deepEqual(binding, await digest(join(root, name)));
+  }
+  for (const { name, bytes, sha256 } of index.auxiliary) {
+    assert.deepEqual({ size: bytes, sha256 }, await digest(join(root, name)));
+  }
+});
+
+for (const [key, changed] of Object.entries({
+  source_revision: 'b'.repeat(40), tag: 'v0.1.0-alpha.2', version: '0.1.1',
+  build_number: '8', run_id: '13', run_attempt: '2', repository: 'example/other',
+})) {
+  test(`offline admission rejects independently changed expected ${key}`, async t => {
+    const root = await qualificationFixture(t);
+    const manifest = await readJson(join(root, 'android-release-evidence.json'));
+    const expected = { ...identity, [key]: changed };
+    const error = { message: `identity mismatch: ${key}` };
+    await assert.rejects(verifyManifest(manifest, root, root, expected, 'android'), error);
+    await assert.rejects(qualificationIndex(root, root, expected), error);
+  });
+}
+
+for (const name of [...inputs, 'android-termux-bootstrap.json', ...Object.values(artifactsByTarget).flat()]) {
+  test(`offline admission rejects same-size changed bytes: ${name}`, async t => {
+    const root = await qualificationFixture(t);
+    const path = join(root, name);
+    const before = await digest(path);
+    const bytes = await readFile(path);
+    bytes[0] ^= 1;
+    await writeFile(path, bytes);
+    const after = await digest(path);
+    assert.equal(after.size, before.size);
+    assert.notEqual(after.sha256, before.sha256);
+    const stage = inputs.includes(name) || name === 'android-termux-bootstrap.json' ? 'input' : 'artifact';
+    const binding = name === 'android-termux-bootstrap.json' ? 'assets/config/termux_bootstrap.json' : name;
+    await assert.rejects(qualificationIndex(root, root, identity), { message: `${stage} mismatch: ${binding}` });
+  });
+}
+
+for (const name of ['android-artifact-smoke.txt', 'wing-link-macos-smoke.txt',
+  'wing-link-windows-smoke.txt', 'release-verification-receipt.json']) {
+  test(`offline admission rejects missing named receipt: ${name}`, async t => {
+    const root = await qualificationFixture(t);
+    await rm(join(root, name));
+    await assert.rejects(qualificationIndex(root, root, identity), error => {
+      assert.equal(error.code, 'ENOENT');
+      assert.equal(error.path, join(root, name));
+      return true;
+    });
+  });
+}
+
+test('offline admission rejects host certificate disagreement and incomplete host checks', async t => {
+  const root = await qualificationFixture(t);
+  const path = join(root, 'release-verification-receipt.json');
+  const host = await readJson(path);
+  await writeFile(path, JSON.stringify({ ...host, android_certificate_sha256: 'd'.repeat(64) }));
+  await assert.rejects(qualificationIndex(root, root, identity), { message: 'host receipt identity mismatch' });
+  await writeFile(path, JSON.stringify({ ...host, checks: host.checks.slice(1) }));
+  await assert.rejects(qualificationIndex(root, root, identity), { message: 'host checks incomplete' });
+});
+
+test('offline admission rejects altered auxiliary bytes at the host receipt stage', async t => {
+  const root = await qualificationFixture(t);
+  await writeFile(join(root, 'wing-link-checksums.sha256'), 'changed synthetic checksum sidecar\n');
+  await assert.rejects(qualificationIndex(root, root, identity), { message: 'host receipt bytes mismatch' });
+});
+
+test('offline certificate expectation uses the real verify seam, not qualificationIndex', async t => {
+  const { root, manifest } = await fixture(t);
+  // main(verify) reads public checkout locks/version and runs read-only Git identity
+  // discovery. All candidate files stay synthetic in the disposable fixture.
+  const checkout = fileURLToPath(new URL('../../', import.meta.url));
+  const versionText = await readFile(join(checkout, 'pubspec.yaml'), 'utf8');
+  const [version, build_number = '1'] = versionText.match(/^version:\s*(\S+)/m)[1].split('+');
+  manifest.identity = { ...identity, version, build_number, tag: `v${version}-alpha.1` };
+  for (const name of inputs) manifest.inputs[name] = await digest(join(checkout, name));
+  await writeFile(join(root, 'android-release-evidence.json'), JSON.stringify(manifest));
+  const env = { GITHUB_SHA: identity.source_revision, GITHUB_RUN_ID: identity.run_id,
+    GITHUB_RUN_ATTEMPT: identity.run_attempt, GITHUB_REPOSITORY: identity.repository,
+    TAG: manifest.identity.tag, WING_RELEASE_CERT_SHA256: 'C'.repeat(64).match(/../g).join(':') };
+  const previous = Object.fromEntries(Object.keys(env).map(key => [key, process.env[key]]));
+  t.after(() => {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  });
+  Object.assign(process.env, env);
+  assert.equal(await main(['verify', 'android', root]), undefined);
+  for (const expectation of ['d'.repeat(64), '']) {
+    process.env.WING_RELEASE_CERT_SHA256 = expectation;
+    await assert.rejects(main(['verify', 'android', root]), { message: 'signing identity mismatch' });
+  }
 });

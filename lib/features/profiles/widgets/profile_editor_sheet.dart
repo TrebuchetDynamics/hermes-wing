@@ -52,6 +52,10 @@ class ProfileEditorSheet extends StatefulWidget {
     this.onCreate,
     this.onRename,
     this.onDelete,
+    this.ownerChanges,
+    this.isOwnerCurrent,
+    this.onCancel,
+    this.onSaved,
     super.key,
   });
 
@@ -68,6 +72,12 @@ class ProfileEditorSheet extends StatefulWidget {
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
+
+  // A modal's management source can change independently of its channel.
+  final Listenable? ownerChanges;
+  final bool Function()? isOwnerCurrent;
+  final VoidCallback? onCancel;
+  final VoidCallback? onSaved;
 
   @override
   State<ProfileEditorSheet> createState() => _ProfileEditorSheetState();
@@ -96,6 +106,98 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   _PendingProfileApproval? _pendingApproval;
   Timer? _approvalExpiryTimer;
 
+  Object? _personaSource;
+  Object _personaOwner = Object();
+  int _personaReadGeneration = 0;
+
+  Object? _mutationSource;
+  Object _mutationOwner = Object();
+  bool _mutationObsolete = false;
+
+  void _observeMutationOwner() {
+    if (!_editing) return;
+    final source = (
+      widget.channel,
+      widget.channel.state.connectedBaseUrl,
+      widget.profile?.id,
+      widget.profile?.revision,
+      widget.onRename,
+      widget.onDelete,
+      widget.isOwnerCurrent?.call() ?? true,
+    );
+    if (source == _mutationSource) return;
+    _mutationSource = source;
+    _mutationOwner = Object();
+    _mutationObsolete = !(widget.isOwnerCurrent?.call() ?? true);
+    _clearPendingApproval();
+    _saving = false;
+    _error = null;
+  }
+
+  bool _ownsMutation(Object owner) {
+    if (!mounted) return false;
+    _observeMutationOwner();
+    return identical(owner, _mutationOwner) && !_mutationObsolete;
+  }
+
+  bool get _personaEligible =>
+      widget.profile != null &&
+      widget.canEditSoul &&
+      widget.channel.state.canEditProfileSoul &&
+      (widget.isOwnerCurrent?.call() ?? true);
+
+  void _observePersonaOwner() {
+    if (!widget.canEditSoul && _personaSource == null) return;
+    final state = widget.channel.state;
+    final source = (
+      widget.channel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.isConnected,
+      state.isSelectingProfile,
+      widget.profile?.id,
+      _personaEligible,
+    );
+    if (source == _personaSource) return;
+    _personaSource = source;
+    _personaOwner = Object();
+    ++_personaReadGeneration;
+    _personaController.clear();
+    _personaRevision = null;
+    _originalPersona = '';
+    _error = null;
+    _loadingPersona = false;
+    _saving = false;
+    _nameController.text = widget.stableNames
+        ? widget.profile?.id ?? ''
+        : widget.profile?.displayName ?? '';
+    final owner = _personaOwner;
+    if (_personaEligible) {
+      _loadingPersona = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_ownsPersona(owner)) unawaited(_loadPersona());
+      });
+    }
+  }
+
+  void _personaOwnerChanged() {
+    final previous = _personaOwner;
+    final previousMutation = _mutationOwner;
+    _observeMutationOwner();
+    _observePersonaOwner();
+    if (mounted &&
+        (!identical(previous, _personaOwner) ||
+            !identical(previousMutation, _mutationOwner))) {
+      setState(() {});
+    }
+  }
+
+  bool _ownsPersona(Object owner) {
+    if (!mounted) return false;
+    _observePersonaOwner();
+    return identical(owner, _personaOwner) && _personaEligible;
+  }
+
   bool get _editing => widget.profile != null;
   bool get _payloadFrozen =>
       _saving || _loadingPersona || _pendingApproval != null;
@@ -112,9 +214,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       _cloneFrom = widget.profiles.any((profile) => profile.id == 'default')
           ? 'default'
           : widget.profiles.firstOrNull?.id;
-    } else if (widget.canEditSoul) {
-      _loadPersona();
     }
+    widget.channel.addListener(_personaOwnerChanged);
+    widget.ownerChanges?.addListener(_personaOwnerChanged);
+    _observeMutationOwner();
+    _observePersonaOwner();
     if (widget.canConfigure) {
       unawaited(_loadCatalog());
       unawaited(_discoverOmniRoute());
@@ -122,7 +226,24 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   }
 
   @override
+  void didUpdateWidget(ProfileEditorSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.channel, widget.channel)) {
+      oldWidget.channel.removeListener(_personaOwnerChanged);
+      widget.channel.addListener(_personaOwnerChanged);
+    }
+    if (!identical(oldWidget.ownerChanges, widget.ownerChanges)) {
+      oldWidget.ownerChanges?.removeListener(_personaOwnerChanged);
+      widget.ownerChanges?.addListener(_personaOwnerChanged);
+    }
+    _observeMutationOwner();
+    _observePersonaOwner();
+  }
+
+  @override
   void dispose() {
+    widget.channel.removeListener(_personaOwnerChanged);
+    widget.ownerChanges?.removeListener(_personaOwnerChanged);
     _approvalExpiryTimer?.cancel();
     _credentialController.clear();
     _nameController.dispose();
@@ -244,22 +365,39 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   ];
 
   Future<void> _loadPersona() async {
-    setState(() => _loadingPersona = true);
+    final owner = _personaOwner;
+    if (!_ownsPersona(owner)) return;
+    final channel = widget.channel;
+    final profileId = widget.profile!.id;
+    final generation = ++_personaReadGeneration;
+    setState(() {
+      _loadingPersona = true;
+      _personaRevision = null;
+      _personaController.clear();
+      _originalPersona = '';
+      _error = null;
+    });
+    bool current() =>
+        _ownsPersona(owner) && generation == _personaReadGeneration;
     try {
-      final soul = await widget.channel.readProfileSoul(widget.profile!.id);
-      if (!mounted) return;
+      final soul = await channel.readProfileSoul(profileId);
+      if (!current()) return;
+      if (soul.revision.trim().isEmpty) throw StateError('Missing revision');
       _personaController.text = soul.soul;
       _originalPersona = soul.soul;
       _personaRevision = soul.revision;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || !current()) return;
       _error = AppLocalizations.of(context).profileOperationFailed;
     } finally {
-      if (mounted) setState(() => _loadingPersona = false);
+      if (current()) setState(() => _loadingPersona = false);
     }
   }
 
   Future<void> _deleteProfile() async {
+    _observeMutationOwner();
+    final owner = _mutationOwner;
+    if (!_ownsMutation(owner)) return;
     final profile = widget.profile;
     if (profile == null || profile.id == 'default' || _saving) return;
     final pendingApproval = _pendingApproval;
@@ -285,7 +423,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
               strings: strings,
             ),
           );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !_ownsMutation(owner)) return;
 
     setState(() {
       _saving = true;
@@ -305,10 +443,11 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           idempotencyKey: pendingApproval?.idempotencyKey,
         );
       }
+      if (!_ownsMutation(owner)) return;
       _clearPendingApproval();
       if (mounted) await Navigator.of(context).maybePop();
     } on WingLinkApprovalRequired catch (approval) {
-      if (!mounted) return;
+      if (!_ownsMutation(owner)) return;
       setState(() {
         if (pendingApproval != null &&
             approval.idempotencyKey != pendingApproval.idempotencyKey) {
@@ -319,7 +458,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         }
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!_ownsMutation(owner)) return;
       setState(() {
         _clearPendingApproval();
         _error = _isProfileRevisionConflict(error)
@@ -327,7 +466,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             : strings.profileOperationFailed;
       });
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (_ownsMutation(owner)) setState(() => _saving = false);
     }
   }
 
@@ -367,11 +506,38 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
 
   void _cancelEditor() {
     setState(() => _clearPendingApproval());
-    Navigator.of(context).maybePop();
+    final onCancel = widget.onCancel;
+    if (onCancel != null) {
+      onCancel();
+    } else {
+      Navigator.of(context).maybePop();
+    }
   }
 
   Future<void> _save() async {
+    _observeMutationOwner();
+    final mutationOwner = _mutationOwner;
+    if (_editing && !_ownsMutation(mutationOwner)) return;
+    _observePersonaOwner();
     if (_loadingPersona || _saving) return;
+    if (widget.canEditSoul && (!_personaEligible || _personaRevision == null)) {
+      return;
+    }
+    if (!(widget.isOwnerCurrent?.call() ?? true)) return;
+    final owner = _personaOwner;
+    final channel = widget.channel;
+    final profile = widget.profile;
+    final persona = _personaController.text;
+    final personaRevision = _personaRevision;
+    final originalPersona = _originalPersona;
+    final editSoul = widget.canEditSoul;
+    final stableNames = widget.stableNames;
+    final onRename = widget.onRename;
+    bool current() =>
+        mounted &&
+        (profile == null || _ownsMutation(mutationOwner)) &&
+        (widget.isOwnerCurrent?.call() ?? true) &&
+        (!editSoul || _ownsPersona(owner));
     if (_editing && _pendingApproval != null) return _deleteProfile();
     final pendingApproval = _pendingApproval;
     if (pendingApproval != null && _approvalExpired(pendingApproval)) {
@@ -390,7 +556,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     });
     try {
       final name = _nameController.text.trim();
-      final profile = widget.profile;
       if (profile == null) {
         final onCreate = widget.onCreate;
         if (onCreate == null) {
@@ -409,9 +574,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           );
         }
       } else {
-        final currentName = widget.stableNames
-            ? profile.id
-            : profile.displayName;
+        final currentName = stableNames ? profile.id : profile.displayName;
         final hasConfigurationChange =
             widget.canConfigure &&
             (_descriptionController.text.trim().isNotEmpty ||
@@ -419,9 +582,8 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                 _modelController.text.trim().isNotEmpty ||
                 _credentialController.text.isNotEmpty);
         if (name != currentName || hasConfigurationChange) {
-          final onRename = widget.onRename;
           if (onRename == null) {
-            await widget.channel.renameProfile(
+            await channel.renameProfile(
               profileId: profile.id,
               name: name,
               revision: profile.revision,
@@ -434,24 +596,25 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             );
           }
         }
-        final personaRevision = _personaRevision;
-        if (widget.canEditSoul &&
-            personaRevision != null &&
-            _personaController.text != _originalPersona) {
-          await widget.channel.writeProfileSoul(
-            profileId: widget.stableNames && name != currentName
-                ? name
-                : profile.id,
-            soul: _personaController.text,
+        if (!current()) return;
+        if (editSoul && personaRevision != null && persona != originalPersona) {
+          await channel.writeProfileSoul(
+            profileId: stableNames && name != currentName ? name : profile.id,
+            soul: persona,
             revision: personaRevision,
           );
         }
       }
-      if (!mounted) return;
+      if (!mounted || !current()) return;
       _clearPendingApproval();
-      await Navigator.of(context).maybePop();
+      final onSaved = widget.onSaved;
+      if (onSaved != null) {
+        onSaved();
+      } else {
+        await Navigator.of(context).maybePop();
+      }
     } on WingLinkApprovalRequired catch (approval) {
-      if (!mounted) return;
+      if (!current()) return;
       if (pendingApproval != null &&
           approval.idempotencyKey != pendingApproval.idempotencyKey) {
         setState(() {
@@ -465,13 +628,14 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         });
       }
     } catch (error) {
+      if (!current()) return;
       final conflict = _isProfileRevisionConflict(error);
-      if (conflict && widget.canEditSoul && mounted) {
+      if (conflict && editSoul) {
         // A rejected SOUL write means the server has newer content. Reconcile
         // before showing the conflict so a retry cannot overwrite stale text.
         await _loadPersona();
       }
-      if (!mounted) return;
+      if (!mounted || !current()) return;
       final strings = AppLocalizations.of(context);
       setState(() {
         _clearPendingApproval();
@@ -480,7 +644,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             : strings.profileOperationFailed;
       });
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (current()) setState(() => _saving = false);
     }
   }
 
@@ -542,7 +706,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             const SizedBox(height: 20),
                             TextFormField(
                               controller: _nameController,
-                              enabled: !_payloadFrozen,
+                              enabled: !_payloadFrozen && !_mutationObsolete,
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
                                 labelText: strings.agentDisplayName,
@@ -766,6 +930,10 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             else
                               TextFormField(
                                 controller: _personaController,
+                                enabled:
+                                    !_payloadFrozen &&
+                                    _personaEligible &&
+                                    _personaRevision != null,
                                 minLines: 5,
                                 maxLines: 12,
                                 decoration: InputDecoration(
@@ -790,7 +958,9 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                                 ).colorScheme.error,
                                 minimumSize: const Size(48, 48),
                               ),
-                              onPressed: _payloadFrozen ? null : _deleteProfile,
+                              onPressed: _payloadFrozen || _mutationObsolete
+                                  ? null
+                                  : _deleteProfile,
                               icon: const Icon(Icons.delete_outline),
                               label: Text(strings.deleteAgent),
                             ),
@@ -823,6 +993,13 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                                 ),
                               ),
                             ),
+                            if (widget.canEditSoul &&
+                                _personaEligible &&
+                                _personaRevision == null)
+                              TextButton(
+                                onPressed: _payloadFrozen ? null : _loadPersona,
+                                child: Text(strings.retryAction),
+                              ),
                           ],
                         ],
                       ),
@@ -846,12 +1023,26 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                         ),
                       ),
                       FilledButton(
-                        onPressed: _saving || _loadingPersona ? null : _save,
+                        onPressed:
+                            _saving ||
+                                _loadingPersona ||
+                                !(widget.isOwnerCurrent?.call() ?? true) ||
+                                (widget.canEditSoul &&
+                                    (!_personaEligible ||
+                                        _personaRevision == null))
+                            ? null
+                            : _save,
                         child: _saving
-                            ? const SizedBox.square(
-                                dimension: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                            ? Semantics(
+                                excludeSemantics: widget.canEditSoul,
+                                label: widget.canEditSoul
+                                    ? strings.saveAction
+                                    : null,
+                                child: const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               )
                             : Text(

@@ -15,8 +15,12 @@ class HermesSessionPinStore extends ChangeNotifier {
 
   final LinkedHashSet<String> _entries = LinkedHashSet<String>();
   Future<void>? _loadFuture;
+  Future<void>? _writeFuture;
+  int _writeRevision = 0;
+  bool _disposed = false;
 
   Future<void> load() {
+    if (_disposed) return Future<void>.value();
     return _loadFuture ??= _load();
   }
 
@@ -25,11 +29,13 @@ class HermesSessionPinStore extends ChangeNotifier {
       final stored =
           (await SharedPreferences.getInstance()).getStringList(_key) ??
           const <String>[];
+      if (_disposed) return;
       _entries
         ..clear()
         ..addAll(stored.where(_isValidToken).take(_maxEntries));
       notifyListeners();
     } catch (_) {
+      if (_disposed) return;
       _entries.clear();
     }
   }
@@ -40,7 +46,9 @@ class HermesSessionPinStore extends ChangeNotifier {
   }
 
   Future<void> toggle(GatewayContactId contactId, String sessionId) async {
+    if (_disposed) return;
     await _loadFuture;
+    if (_disposed) return;
     final token = _token(contactId, sessionId);
     if (token == null) return;
     if (!_entries.remove(token)) {
@@ -49,16 +57,42 @@ class HermesSessionPinStore extends ChangeNotifier {
         _entries.remove(_entries.first);
       }
     }
+    _writeRevision++;
     notifyListeners();
+    await (_writeFuture ??= _persist());
+  }
+
+  Future<void> _persist() async {
     try {
-      await (await SharedPreferences.getInstance()).setStringList(
-        _key,
-        _entries.toList(growable: false),
-      );
-    } catch (_) {
-      // Pinning is a local convenience; keep the in-memory state usable when
-      // platform preference storage is unavailable.
+      while (!_disposed) {
+        var revision = _writeRevision;
+        try {
+          final preferences = await SharedPreferences.getInstance();
+          // Fence new writes, not platform writes that have already started.
+          if (_disposed) return;
+          revision = _writeRevision;
+          await preferences.setStringList(
+            _key,
+            _entries.toList(growable: false),
+          );
+        } catch (_) {
+          // Keep local state usable; retry only for a newer deliberate choice.
+        }
+        if (revision == _writeRevision) return;
+        // Coalesce waiting choices into one bounded snapshot, never parallel
+        // commits or an unbounded queue of per-toggle persistence operations.
+      }
+    } finally {
+      _writeFuture = null;
     }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _loadFuture = null;
+    _entries.clear();
+    super.dispose();
   }
 
   static String? _token(GatewayContactId contactId, String sessionId) {

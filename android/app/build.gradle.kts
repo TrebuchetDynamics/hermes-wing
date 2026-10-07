@@ -85,6 +85,13 @@ android {
             }
         }
         release {
+            if (providers.environmentVariable("WING_PRIVATE_RELEASE_TEST").orNull == "1") {
+                check(signingConfigs.findByName("release") != null) {
+                    "Private release handoffs require a configured signing key."
+                }
+                // Keep private release tests separate from paired and debug QA apps.
+                applicationIdSuffix = ".qa.release"
+            }
             // A keystore-backed release signing config is selected when all
             // wing.release.* local properties or WING_RELEASE_* environment
             // variables are present. Without them, keep debug signing only for

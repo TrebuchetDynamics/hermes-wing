@@ -496,7 +496,12 @@ void main() {
       ),
     );
 
-    expect(find.text('Hermes Wing'), findsOneWidget);
+    // The reference shell removes the redundant brand block, not navigation.
+    expect(find.text('Hermes Wing'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('desktop-sidebar-toggle')),
+      findsOneWidget,
+    );
     expect(find.text('Chat'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
   });

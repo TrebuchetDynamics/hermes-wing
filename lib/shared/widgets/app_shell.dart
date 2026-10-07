@@ -5,24 +5,37 @@ import 'package:go_router/go_router.dart';
 import '../../core/hermes/channel/hermes_channel_state.dart';
 import '../../features/profiles/providers/profile_selection_provider.dart';
 import '../../features/hermes_chat/providers/hermes_channel_provider.dart';
+import '../../features/hermes_chat/widgets/shell_session_access.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router/app_routes.dart';
+import 'app_shell_desktop_style.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
 
 // ponytail: one app shell; route state can replace this if nested shells arrive.
 final appShellNavigationVisible = ValueNotifier(true);
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({required this.location, required this.child, super.key});
 
   final String location;
   final Widget child;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  // Presentation only: route/channel updates and compact layouts retain the
+  // user's choice without persisting or copying any Agent-owned state.
+  bool _sidebarExpanded = true;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final presentation = AppShellPresentation(l10n).stateForLocation(location);
+    final presentation = AppShellPresentation(
+      l10n,
+    ).stateForLocation(widget.location);
     final channel = ref.watch(hermesChannelProvider);
 
     return AnimatedBuilder(
@@ -32,19 +45,25 @@ class AppShell extends ConsumerWidget {
           final status = _AppShellStatus.fromState(channel.state, l10n);
           if (constraints.maxWidth < 600) {
             return _MobileShell(
-              location: location,
+              location: widget.location,
               presentation: presentation,
               status: status,
-              child: child,
+              child: widget.child,
             );
           }
+          final desktopPresentation = AppShellPresentation(
+            l10n,
+          ).stateForLocation(widget.location, desktop: true);
           return _DesktopShell(
-            destinations: presentation.destinations,
-            selectedIndex: presentation.selectedIndex,
+            expanded: _sidebarExpanded,
+            onToggle: () =>
+                setState(() => _sidebarExpanded = !_sidebarExpanded),
+            destinations: desktopPresentation.destinations,
+            selectedIndex: desktopPresentation.selectedIndex,
             onSelected: (index) =>
-                context.go(presentation.destinations[index].path),
+                context.go(desktopPresentation.destinations[index].path),
             status: status,
-            child: child,
+            child: widget.child,
           );
         },
       ),
@@ -340,6 +359,8 @@ class _AppShellStatus {
 
 class _DesktopShell extends StatelessWidget {
   const _DesktopShell({
+    required this.expanded,
+    required this.onToggle,
     required this.child,
     required this.destinations,
     required this.selectedIndex,
@@ -352,53 +373,259 @@ class _DesktopShell extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final _AppShellStatus status;
+  final bool expanded;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final style = AppShellDesktopStyle.forBrightness(theme.brightness);
     return Scaffold(
       body: Column(
         children: [
           Expanded(
-            child: Row(
-              children: [
-                NavigationRail(
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: onSelected,
-                  extended: true,
-                  scrollable: true,
-                  minExtendedWidth: 208,
-                  leading: const _HermesDesktopBrand(),
-                  destinations: [
-                    for (final d in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(d.icon),
-                        label: Text(d.label),
+            // Scrolling destinations must not reorder the shell/route boundary.
+            child: FocusTraversalGroup(
+              policy: WidgetOrderTraversalPolicy(),
+              child: Row(
+                children: [
+                  FocusTraversalGroup(
+                    policy: WidgetOrderTraversalPolicy(),
+                    child: SizedBox(
+                      key: const ValueKey('desktop-sidebar'),
+                      width: expanded ? 250 : 64,
+                      child: Theme(
+                        data: style.sidebarTheme(theme),
+                        child: Builder(
+                          builder: (context) => ColoredBox(
+                            color: style.rail,
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 64,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: Align(
+                                      alignment: expanded
+                                          ? Alignment.centerRight
+                                          : Alignment.center,
+                                      child: MergeSemantics(
+                                        key: const ValueKey(
+                                          'desktop-sidebar-toggle',
+                                        ),
+                                        child: Semantics(
+                                          expanded: expanded,
+                                          child: IconButton(
+                                            style: style.toggleStyle(),
+                                            constraints:
+                                                const BoxConstraints.tightFor(
+                                                  width: 48,
+                                                  height: 48,
+                                                ),
+                                            tooltip: expanded
+                                                ? MaterialLocalizations.of(
+                                                    context,
+                                                  ).expandedIconTapHint
+                                                : MaterialLocalizations.of(
+                                                    context,
+                                                  ).collapsedIconTapHint,
+                                            icon: Icon(
+                                              expanded
+                                                  ? Icons.chevron_left
+                                                  : Icons.chevron_right,
+                                              size: 16,
+                                            ),
+                                            onPressed: onToggle,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) =>
+                                        SingleChildScrollView(
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight,
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Column(
+                                                  children: [
+                                                    _navigationGroup(
+                                                      context,
+                                                      key: const ValueKey(
+                                                        'desktop-workflow-navigation',
+                                                      ),
+                                                      label: AppLocalizations.of(
+                                                        context,
+                                                      ).shellWorkflowNavigation,
+                                                      start: 0,
+                                                      end: 3,
+                                                    ),
+                                                    if (expanded)
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                              top: 8,
+                                                            ),
+                                                        child:
+                                                            ShellSessionAccess(),
+                                                      ),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  children: [
+                                                    const Divider(
+                                                      indent: 12,
+                                                      endIndent: 12,
+                                                    ),
+                                                    _navigationGroup(
+                                                      context,
+                                                      key: const ValueKey(
+                                                        'desktop-utility-navigation',
+                                                      ),
+                                                      label: AppLocalizations.of(
+                                                        context,
+                                                      ).shellUtilityNavigation,
+                                                      start: 3,
+                                                      end: destinations.length,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                  ],
-                ),
-                const VerticalDivider(thickness: 1, width: 1),
-                Expanded(
-                  child: Container(
-                    color: theme.colorScheme.surfaceContainerLowest,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final width = constraints.maxWidth < 1180
-                            ? constraints.maxWidth
-                            : 1180.0;
-                        return Align(
-                          alignment: Alignment.topCenter,
-                          child: SizedBox(width: width, child: child),
-                        );
-                      },
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: FocusTraversalGroup(
+                      policy: ReadingOrderTraversalPolicy(),
+                      child: Container(
+                        color: style.workArea,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final width = constraints.maxWidth;
+                            return Align(
+                              alignment: Alignment.topCenter,
+                              // A nested route's BlockSemantics must not hide the
+                              // rail painted before it from keyboard/semantic focus.
+                              child: Semantics(
+                                container: true,
+                                explicitChildNodes: true,
+                                child: SizedBox(
+                                  width: width,
+                                  child: Theme(
+                                    data: theme.copyWith(
+                                      scaffoldBackgroundColor: style.workArea,
+                                    ),
+                                    child: child,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           _DesktopStatusBar(status: status),
         ],
+      ),
+    );
+  }
+
+  Widget _navigationGroup(
+    BuildContext context, {
+    required Key key,
+    required String label,
+    required int start,
+    required int end,
+  }) {
+    final theme = Theme.of(context);
+    return Semantics(
+      key: key,
+      container: true,
+      explicitChildNodes: true,
+      label: label,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var index = start; index < end; index++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Builder(
+                  builder: (destinationContext) => Focus(
+                    canRequestFocus: false,
+                    skipTraversal: true,
+                    onFocusChange: (focused) {
+                      if (focused) {
+                        Scrollable.ensureVisible(
+                          destinationContext,
+                          alignment: 0.5,
+                        );
+                      }
+                    },
+                    child: MergeSemantics(
+                      child: Semantics(
+                        selected: selectedIndex == index,
+                        child: Tooltip(
+                          message: destinations[index].label,
+                          excludeFromSemantics: true,
+                          child: TextButton(
+                            style: AppShellDesktopStyle.forBrightness(
+                              theme.brightness,
+                            ).navigationStyle(selected: selectedIndex == index),
+                            onPressed: () => onSelected(index),
+                            child: expanded
+                                ? Row(
+                                    children: [
+                                      Icon(destinations[index].icon, size: 16),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(destinations[index].label),
+                                      ),
+                                    ],
+                                  )
+                                : Semantics(
+                                    label: destinations[index].label,
+                                    child: ExcludeSemantics(
+                                      child: Icon(
+                                        destinations[index].icon,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -412,16 +639,16 @@ class _DesktopStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final style = AppShellDesktopStyle.forBrightness(theme.brightness);
     final rows = status.infoRows;
     return Container(
       key: const ValueKey('app-shell-status-bar'),
+      constraints: const BoxConstraints(minHeight: 26),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
+        color: style.rail,
+        border: Border(top: BorderSide(color: style.border)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Row(
         children: [
           for (var index = 0; index < rows.length; index++) ...[
@@ -431,11 +658,7 @@ class _DesktopStatusBar extends StatelessWidget {
                 message: '${rows[index].label}: ${rows[index].value}',
                 child: Row(
                   children: [
-                    Icon(
-                      rows[index].icon,
-                      size: 14,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    Icon(rows[index].icon, size: 12, color: style.secondary),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -443,7 +666,9 @@ class _DesktopStatusBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: style.secondary,
+                          fontSize: 11,
+                          height: 1,
                         ),
                       ),
                     ),
@@ -453,68 +678,6 @@ class _DesktopStatusBar extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _HermesDesktopBrand extends StatelessWidget {
-  const _HermesDesktopBrand();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: SizedBox(
-        width: 176,
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.36),
-                ),
-              ),
-              child: Icon(
-                Icons.auto_awesome,
-                color: colorScheme.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Hermes Wing',
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Hermes Agent client',
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

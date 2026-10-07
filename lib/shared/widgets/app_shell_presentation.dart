@@ -22,6 +22,21 @@ class AppShellPresentation {
 
   String get mobileOverflowLabel => localizations.moreDestinations;
 
+  List<AppShellDestination> get workflowDestinations => [
+    _hermesDestination,
+    _officeDestination,
+    _schedulesDestination,
+  ];
+
+  List<AppShellDestination> get utilityDestinations => [
+    _providersDestination,
+    _gatewayDestination,
+    _toolsDestination,
+    _agentsDestination,
+    _soulDestination,
+    _settingsDestination,
+  ];
+
   String get mobileOverflowTooltip => localizations.openMoreDestinations;
 
   AppShellDestination get _hermesDestination => AppShellDestination(
@@ -78,8 +93,13 @@ class AppShellPresentation {
     label: localizations.settingsDestination,
   );
 
-  AppShellNavigationState stateForLocation(String location) {
-    final allDestinations = destinations;
+  AppShellNavigationState stateForLocation(
+    String location, {
+    bool desktop = false,
+  }) {
+    final allDestinations = desktop
+        ? [...workflowDestinations, ...utilityDestinations]
+        : destinations;
     final selectedIndex = allDestinations.indexWhere(
       (destination) => AppRoutes.isNavigationDestinationLocation(
         location: location,

@@ -57,6 +57,24 @@ This file contains only hard blockers that require user action.
 
 ## Resolved
 
+### BLK-20261007-W03 — Private ARM64 release-test signing identity
+
+- Status: RESOLVED
+- Category: USER_DECISION
+- Resolved: 2026-10-07T12:43:58-06:00
+- Resolution: owner confirmed private releases may use a test key. Created and
+  retained a dedicated private-testing key outside the repository. Built the
+  optimized ARM64 release APK with separate `.qa.release` identity; no paired
+  application or production signing identity was changed.
+- Evidence: `.task-evidence/arm64-release-handoff/private-release-receipt.json`;
+  signature matches the retained key's public certificate, ZIP integrity and AOT
+  code checks pass, source inputs stayed unchanged during compilation. Artifact
+  is 22.95 MB and not debuggable. All 115 tooling tests, analyzer and formatting
+  pass; Gradle rejects private-release configuration without signing values.
+- Limits: no store publication, phone installation or emulator execution in this
+  handoff. Future private builds reuse the same key; production signing remains
+  separate.
+
 ### BLK-20261005-001 — Admit the passive global-session lifecycle seam
 
 - Status: RESOLVED

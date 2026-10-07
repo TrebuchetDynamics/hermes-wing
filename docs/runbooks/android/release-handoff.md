@@ -91,6 +91,31 @@ WING_RELEASE_KEY_PASSWORD
 
 If any value is missing, Gradle falls back to Flutter's debug signing config so local `--release` smoke builds can still run. Do not distribute a release artifact built with that fallback.
 
+## Private release APK handoff
+
+For direct phone testing, use an optimized ARM64 APK rather than a debug APK or
+store AAB. A private signing key is sufficient; it is not a production/store
+signing identity. Retain the approved private key for future updates and keep
+its password and keystore outside the repository and artifacts.
+
+Supply the four `WING_RELEASE_*` signing values through the secret-safe local
+build environment, then set `WING_PRIVATE_RELEASE_TEST=1`. This selects the
+separate `com.trebuchetdynamics.hermes.wing.qa.release` app ID and fails configuration
+if no signing configuration is available. It does not replace the paired app or
+the `.qa` debug installation.
+
+```bash
+WING_PRIVATE_RELEASE_TEST=1 flutter build apk --release --split-per-abi \
+  --target-platform android-arm64 -t lib/main.dart
+```
+
+Before handoff, verify the exact app ID, ARM64 ABI, version, signature against the
+approved private key's public certificate, and ZIP integrity. Verify that the
+app is not debuggable, contains native AOT app code, and has no debug kernel
+bundle. Compilation and signature checks are not Android device qualification.
+Never include signing secrets, configured endpoints, or paired state in the APK
+or attachment. Store publication remains a separate authorization and workflow.
+
 ## Release app bundle handoff
 
 Only build a release bundle after release signing values, versioning, and tester scope are agreed:

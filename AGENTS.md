@@ -250,8 +250,11 @@ setup is `flutter pub get` and `npm ci`.
   wide formatting to solve a scoped task.
 - Do not commit or stage credentials, transcripts, private endpoint URLs, generated
   Agent/runtime state, local tool state, build output, or test screenshots.
-- Do not commit, push, create branches, or modify external systems unless the user
-  explicitly asks.
+- A request to commit, push, or ship (including `git-commit-push`) authorizes the
+  necessary delivery branch, commits, push, and pull request. Follow repository
+  protection and required checks without asking again for those steps.
+- Merging, releases, deployments, destructive history changes, and unrelated
+  external-system changes require separate explicit authorization.
 - Keep comments focused on invariants and reasons; do not narrate obvious code.
 - Update product docs when user-visible support or terminology changes. Update an
   ADR only for a cross-cutting, expensive-to-reverse decision.

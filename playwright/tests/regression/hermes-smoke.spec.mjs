@@ -184,7 +184,8 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
     semanticText(page, "Hermes echo: hello hermes browser"),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "New session" }).click();
+  // Chat's action is distinct from the shell's "New Session" action.
+  await page.getByRole("button", { name: "New session", exact: true }).click();
   await page.waitForTimeout(1000);
   await expect(
     page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),

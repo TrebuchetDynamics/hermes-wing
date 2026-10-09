@@ -293,6 +293,65 @@ void main() {
   );
 
   test(
+    'request.cancel event withdraws only its owned approval before a turn',
+    () async {
+      fixture.open = [
+        {
+          'id': 'srq-first',
+          'method': 'approval',
+          'params': {
+            'session_id': 'runtime-fixture',
+            'request_id': 'queue-first',
+          },
+        },
+        {
+          'id': 'srq-second',
+          'method': 'approval',
+          'params': {
+            'session_id': 'runtime-fixture',
+            'request_id': 'queue-second',
+          },
+        },
+      ];
+      await adapter.reconcileActiveSession();
+      expect(adapter.approvalRequestIds, {'queue-first', 'queue-second'});
+      fixture.event(
+        'request.cancel',
+        {'id': 'srq-first', 'method': 'approval', 'reason': 'timeout'},
+        session: 'other-runtime',
+        seq: 1,
+      );
+      fixture.event('request.cancel', {
+        'id': 'srq-unknown',
+        'method': 'approval',
+        'reason': 'resolved',
+      });
+      await fixture.flush();
+      expect(adapter.approvalRequestIds, {'queue-first', 'queue-second'});
+      fixture.event('request.cancel', {
+        'id': 'srq-first',
+        'method': 'approval',
+        'reason': 'timeout',
+      });
+      await fixture.flush();
+      expect(adapter.approvalRequestIds, {'queue-second'});
+      await expectLater(
+        adapter.respondToApproval('queue-first', HermesWebApprovalChoice.once),
+        throwsA(isA<HermesWebReadException>()),
+      );
+      expect(
+        fixture.requests.where((r) => r['method'] == 'approval.respond'),
+        isEmpty,
+      );
+      await adapter.respondToApproval(
+        'queue-second',
+        HermesWebApprovalChoice.deny,
+      );
+      expect(adapter.approvalRequestIds, isEmpty);
+    },
+  );
+
+  test(
     'interrupt racing completion does not manufacture completion or send again',
     () async {
       await adapter.submitText('Fixture');

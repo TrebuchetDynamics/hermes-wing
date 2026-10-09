@@ -408,6 +408,14 @@ final class HermesWebLifecycle {
       return;
     }
     _sequence = seq;
+    if (type == 'request.cancel') {
+      // Withdrawal is a gateway event, including while no local turn is running.
+      final payload = webObject(event['payload']);
+      final id = webString(payload['id'], maximum: 128);
+      _approvals.removeWhere((_, value) => value == id);
+      _notify();
+      return;
+    }
     if (!_running) return; // No server turn ID: never attach to another turn.
     final payload = event['payload'] == null
         ? <String, dynamic>{}

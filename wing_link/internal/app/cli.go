@@ -44,8 +44,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return pairCommand(stdout, stderr, args[1:])
 	case "setup":
 		return bootstrapCommand(stdout, stderr, args[1:])
-	case "omniroute-setup":
-		return omniRouteSetupCommand(stdout, stderr, args[1:])
+
 	case "inspect":
 		return inspectCommand(stdout, stderr, args[1:])
 	case "doctor":
@@ -90,10 +89,10 @@ Get started:
   inspect    Check for a local Hermes Agent installation without showing paths.
              --json                  Print machine-readable output
   setup      Install or adopt Hermes Agent, secure API access, and start it.
-             --with-omniroute         Also install the pinned OmniRoute runtime
+
              --json                  Print one JSON result
              --json-lines            Stream progress as JSON lines
-  omniroute-setup  Open OmniRoute's local setup wizard after installation.
+
   pair       Create a secure pairing handoff for Hermes Wing.
              Prints a scannable QR and single-use paste link by default.
              --remote                Pair through NetBird, Tailscale, or a trusted VPN (default)

@@ -7,13 +7,13 @@ import (
 )
 
 func quickStart(writer io.Writer) {
-	_, _ = fmt.Fprintln(writer, "Wing Link — set up Hermes and connect Hermes Wing.\n\nStart here:\n  wing-link doctor                 Check what needs attention\n  wing-link setup --with-omniroute  Install Hermes and the locked OmniRoute runtime")
+	_, _ = fmt.Fprintln(writer, "Wing Link — set up Hermes and connect Hermes Wing.\n\nStart here:\n  wing-link doctor                 Check what needs attention\n  wing-link setup                  Install or adopt Hermes Agent")
 	if runtime.GOOS == "android" {
 		_, _ = fmt.Fprintln(writer, "  wing-link pair --local --same-device  Connect Wing on this phone")
 	} else {
 		_, _ = fmt.Fprintln(writer, "  wing-link pair                   Connect Wing over your LAN or VPN")
 	}
-	_, _ = fmt.Fprintln(writer, "\nUse wing-link setup for Hermes alone.\nUse wing-link help <command> for examples. No changes were made.")
+	_, _ = fmt.Fprintln(writer, "\nUse wing-link help <command> for examples. No changes were made.")
 }
 
 func commandHelp(stdout, stderr io.Writer, command string) int {
@@ -28,17 +28,15 @@ func commandHelp(stdout, stderr io.Writer, command string) int {
 }
 
 var commandHelpText = map[string]string{
-	"setup": `Usage: wing-link setup [--with-omniroute] [--json | --json-lines]
+	"setup": `Usage: wing-link setup [--json | --json-lines]
 
 Install or adopt Hermes Agent, secure its API, and start its gateway.
 Healthy installations are reused. Existing provider/model settings stay in Hermes.
 
-  wing-link setup --with-omniroute  Also install the locked OmniRoute runtime
+  wing-link setup                  Install or adopt Hermes Agent
   wing-link setup --json-lines      Show progress for automation
 
-OmniRoute requires Node.js >=22.22.2 <23 or >=24 <27, plus npm.
-Setup installs OmniRoute but does not start its server.
-Then run wing-link omniroute-setup locally to configure it.
+
 Configure the Hermes default profile with hermes model, then pair Wing.
 If setup fails, run wing-link doctor before retrying.`,
 	"doctor": `Usage: wing-link doctor [--json]
@@ -70,12 +68,7 @@ On this Android phone: wing-link serve --listen 127.0.0.1:8654
 Keep that terminal open; use another terminal for pairing.
 Android background operation is best-effort. Non-loopback listeners require TLS.
 On a managed Linux installation, use wing-link start instead.`,
-	"omniroute-setup": `Usage: wing-link omniroute-setup
 
-Open the installed OmniRoute runtime's local configuration wizard.
-First install it with wing-link setup --with-omniroute.
-Enter credentials directly in the wizard, never in command arguments.
-This does not configure Hermes profiles or start OmniRoute's server.`,
 	"version":     "Usage: wing-link version\n\nPrint the Wing Link build version.",
 	"status":      "Usage: wing-link status\n\nCheck the managed Wing Link service. Use wing-link doctor for local connection checks.",
 	"start":       "Usage: wing-link start\n\nStart the managed Wing Link service. For Termux, see wing-link help serve.",

@@ -733,48 +733,6 @@ func TestProfileCreateConfiguresDescriptionProviderModelAndWriteOnlyCredential(t
 	}
 }
 
-func TestProfileCreateConfiguresFixedLoopbackOmniRouteAdapter(t *testing.T) {
-	harness := newProfileHarness(t)
-	created := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
-		"name": "omniqa", "clone_from": "link",
-		"description": "Physical OmniRoute profile",
-		"provider":    "omniroute", "model": "auto/best-coding",
-	}, true, nil)
-	if created.StatusCode != http.StatusCreated {
-		t.Fatalf("create status = %d", created.StatusCode)
-	}
-	_ = created.Body.Close()
-
-	want := [][]string{
-		{"profile", "create", "omniqa", "--no-alias", "--clone-from", "link"},
-		{"profile", "describe", "omniqa", "--text", "Physical OmniRoute profile"},
-		{"--profile", "omniqa", "config", "set", "--force", "model.provider", "custom"},
-		{"--profile", "omniqa", "config", "set", "--force", "model.base_url", "http://127.0.0.1:20128/v1"},
-		{"--profile", "omniqa", "config", "set", "--force", "model.default", "auto/best-coding"},
-	}
-	if !reflect.DeepEqual(harness.commands, want) {
-		t.Fatalf("commands = %#v, want %#v", harness.commands, want)
-	}
-	if len(harness.secretCommands) != 0 {
-		t.Fatalf("OmniRoute setup unexpectedly handled a secret: %#v", harness.secretCommands)
-	}
-}
-
-func TestProfileCreateRejectsOmniRouteCredentialBeforeMutation(t *testing.T) {
-	harness := newProfileHarness(t)
-	response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{
-		"name": "omniqa", "provider": "omniroute", "model": "auto/best-coding",
-		"provider_api_key": "must-not-be-forwarded",
-	}, true, nil)
-	if response.StatusCode != http.StatusBadRequest {
-		t.Fatalf("status = %d", response.StatusCode)
-	}
-	_ = response.Body.Close()
-	if len(harness.commands) != 0 || len(harness.secretCommands) != 0 {
-		t.Fatalf("invalid setup spawned commands: %#v %#v", harness.commands, harness.secretCommands)
-	}
-}
-
 func TestProfileCreateRejectsUnallowlistedProviderBeforeMutation(t *testing.T) {
 	harness := newProfileHarness(t)
 	response := harness.request(t, http.MethodPost, "/v1/profiles", map[string]any{

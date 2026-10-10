@@ -299,7 +299,7 @@ void main() {
       expect(find.widgetWithText(InkWell, 'alpha-model'), findsNothing);
     },
   );
-  testWidgets('OmniRoute discovery selects host service and can recheck', (
+  testWidgets('Agent-owned catalog stays visible without host discovery', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1000, 1800);
@@ -308,7 +308,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
-    var status = 'serving';
+
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -324,25 +324,26 @@ void main() {
                 revision: 'r1',
               ),
             ],
-            discoverOmniRoute: () async => status,
+            loadModelOptions: (_) async => HermesModelOptions.fromJson({
+              'providers': [
+                {
+                  'provider': 'omniroute',
+                  'name': 'OmniRoute',
+                  'models': ['example-model'],
+                },
+              ],
+            }),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Use OmniRoute'));
-    await tester.pumpAndSettle();
+    expect(find.text('Use OmniRoute'), findsNothing);
+    expect(find.text('Check for OmniRoute'), findsNothing);
     final fields = tester.widgetList<CatalogAutocompleteField>(
       find.byType(CatalogAutocompleteField),
     );
-    expect(fields.first.controller.text, 'omniroute');
-    status = 'unavailable';
-    await tester.tap(find.text('Check for OmniRoute'));
-    await tester.pumpAndSettle();
-    expect(find.text('Use OmniRoute'), findsNothing);
-    expect(
-      find.textContaining('No OmniRoute service was found'),
-      findsOneWidget,
-    );
+    expect(fields.first.controller.text, isEmpty);
+    expect(fields.first.options, contains('omniroute'));
   });
 }

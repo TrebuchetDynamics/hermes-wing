@@ -659,66 +659,77 @@ test("Agent speech queues replies during playback", async ({
   await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
 });
 
-test("Agent speech stops when starting a new session", async ({
-  page,
-}, testInfo) => {
-  await installAgentAudioRecorder(page);
-  await connectFromVoiceSettings(page, { testInfo });
-  await sendChat(page, "old session active speech browser turn", {
-    testInfo,
-    screenshotPrefix: "session-change-old-speech",
-  });
-  await expect(
-    page.getByRole("button", { name: "Stop speaking" }),
-  ).toBeVisible();
-  const pausesBeforeSessionChange = await page.evaluate(
-    () => globalThis.wingE2EAgentAudio.pauseCount,
-  );
+for (const width of [1280, 390]) {
+  test(`Agent speech stops when starting a new session (${width}px)`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await installAgentAudioRecorder(page);
+    await connectFromVoiceSettings(page, { testInfo });
+    await sendChat(page, "old session active speech browser turn", {
+      testInfo,
+      screenshotPrefix: "session-change-old-speech",
+    });
+    await expect(
+      page.getByRole("button", { name: "Stop speaking" }),
+    ).toBeVisible();
+    const pausesBeforeSessionChange = await page.evaluate(
+      () => globalThis.wingE2EAgentAudio.pauseCount,
+    );
 
-  const newSession = page.getByRole("button", { name: "New session" });
-  if (await newSession.isVisible()) {
-    await newSession.click();
-  } else {
-    await page.getByRole("button", { name: "More actions" }).click();
-    await page.getByRole("menuitem", { name: "New session" }).click();
-  }
-  await expect(
-    page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),
-  ).toBeVisible();
-  await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
-    .toBeGreaterThan(pausesBeforeSessionChange);
-  await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
-    0,
-  );
-  const pausedVoice = page.getByRole("group", {
-    name: "Hermes session changed. Spoken reply stopped.",
-    exact: true,
-  });
-  await expect(pausedVoice).toBeVisible();
-  await expect(pausedVoice.getByRole("button", { name: "Continue in text" })).toBeVisible();
-  await expect(pausedVoice.getByRole("button", { name: "Resume hands-free" })).toBeVisible();
-  await expect(
-    page.getByText("Hermes session changed. Continuous voice paused."),
-  ).toHaveCount(0);
-  expect(
-    await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
-  ).toBe(1);
-  await screenshot(page, testInfo, "session-change-playback-cancelled");
+    // Match Chat's action, not the shell's separately named "New Session".
+    const newSession = page.getByRole("button", {
+      name: "New session",
+      exact: true,
+    });
+    if (await newSession.isVisible()) {
+      await newSession.click();
+    } else {
+      await page.getByRole("button", { name: "More actions", exact: true }).click();
+      await page.getByRole("menuitem", { name: "New session", exact: true }).click();
+    }
+    await expect(
+      page.getByRole("heading", { name: /E2E Hermes Session \d+/ }),
+    ).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
+      .toBeGreaterThan(pausesBeforeSessionChange);
+    await expect(page.getByRole("button", { name: "Stop speaking" })).toHaveCount(
+      0,
+    );
+    const pausedVoice = page.getByRole("group", {
+      name: "Hermes session changed. Spoken reply stopped.",
+      exact: true,
+    });
+    await expect(pausedVoice).toBeVisible();
+    await expect(
+      pausedVoice.getByRole("button", { name: "Continue in text" }),
+    ).toBeVisible();
+    await expect(
+      pausedVoice.getByRole("button", { name: "Resume hands-free" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Hermes session changed. Continuous voice paused."),
+    ).toHaveCount(0);
+    expect(
+      await page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length),
+    ).toBe(1);
+    await screenshot(page, testInfo, "session-change-playback-cancelled");
 
-  await sendChat(page, "new session spoken browser turn", {
-    testInfo,
-    screenshotPrefix: "session-change-new-speech",
+    await sendChat(page, "new session spoken browser turn", {
+      testInfo,
+      screenshotPrefix: "session-change-new-speech",
+    });
+    await expect
+      .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
+      .toBe(2);
+    const sessionAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
+    expect((await sessionAudioState.json()).spokenTexts.at(-1)).toBe(
+      "Hermes echo: new session spoken browser turn",
+    );
+    await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
   });
-  await expect
-    .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.plays.length))
-    .toBe(2);
-  const sessionAudioState = await page.request.get(`${APP}e2e/hermes/audio`);
-  expect((await sessionAudioState.json()).spokenTexts.at(-1)).toBe(
-    "Hermes echo: new session spoken browser turn",
-  );
-  await page.evaluate(() => globalThis.wingE2EAgentAudio.finish());
-});
+}
 
 test("Agent speech preference survives reload", async ({ page }, testInfo) => {
   await installAgentAudioRecorder(page);

@@ -96,41 +96,10 @@ standalone repository script is the shorter manual installation path.
 
 ## Configure a model
 
-### Optional OmniRoute installation
-
-Wing Link builds containing the OmniRoute installer support this explicit local
-command after Node.js and npm are available:
-
-```bash
-wing-link setup --with-omniroute
-wing-link omniroute-setup
-```
-
-The first command installs or adopts Hermes and installs OmniRoute 3.8.50 using
-an embedded npm dependency lock. It disables npm lifecycle scripts, keeps
-installation output private, checks the CLI, and activates the version directory
-only after those checks pass. The second command opens OmniRoute's own interactive
-setup wizard in the local terminal; it accepts no credential arguments.
-
-The lock overrides vulnerable transitive dependencies with `adm-zip` 0.6.0,
-`sharp` 0.35.3, and DOMPurify 3.4.13. See the
-[installer review](../quality/omniroute-install-review.md) for audit results,
-compatibility checks, and runtime limits.
-
-OmniRoute is not started by Wing Link setup. Configure its administrator password
-and provider access locally before running its server. Installing it does not
-select a Hermes provider/model or connect Hermes to it. Existing Hermes profile
-configuration still belongs to the Hermes CLI or an advertised Agent API.
-
-The installer requires Node `>=22.22.2 <23` or `>=24 <27`. It currently supports
-POSIX hosts; the locked installation and CLI checks were exercised on Linux.
-This OmniRoute path has not yet been exercised on the physical Android device,
-which disconnected during implementation. Earlier pinned Wing Link binaries do
-not contain this option; installing an older bootstrap pin will not add it.
-
-See [OmniRoute's Termux guide](https://github.com/diegosouzapw/OmniRoute/blob/release/v3.8.51/docs/guides/TERMUX_GUIDE.md)
-for upstream runtime requirements. Electron and native integrations are not
-qualified by this installation check.
+Wing no longer bundles or manages OmniRoute. Its former installer and setup
+commands are unavailable; existing installations and user data are preserved.
+The [historical installer review](../quality/omniroute-install-review.md) records
+older snapshots, not current support. Configure model access through Hermes Agent.
 
 ### Hermes profile configuration
 

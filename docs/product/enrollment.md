@@ -107,10 +107,8 @@ separate readiness evidence.
   require the native client's reviewed pinning flow.
 - Existing-profile provider configuration remains a Hermes host action. No
   compatibility configuration API or shadow model state was added.
-- Optional OmniRoute installation and its local wizard are available through the
-  [Wing Link CLI](../runbooks/wing-link-cli.md). They are not part of this screen
-  and do not configure Hermes provider access. The UI does not promise free or
-  unlimited models.
+- Wing does not bundle or manage optional model gateways. Configure provider
+  access through Hermes Agent; the UI does not promise free or unlimited models.
 
 ## Completion evidence
 

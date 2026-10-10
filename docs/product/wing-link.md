@@ -209,24 +209,12 @@ Provider/configuration mutation retains the existing authorization and
 compatibility restrictions. Old Wing Link versions without this capability
 continue to allow manual form entry and report catalog unavailability.
 
-### Discover an existing OmniRoute service
+### Retired optional runtime
 
-New-profile setup checks for OmniRoute on the paired computer through the exact
-`host.omniroute.discover` capability and authenticated
-`GET /v1/host/omniroute` operation. The server requires an acknowledged device
-with `health.read`, accepts no query parameters or endpoint input, and checks
-only its fixed loopback service. It never scans the client's computer or LAN.
-
-The bounded check reads OmniRoute's public agent card, liveness, and model-list
-routes without credentials, redirects, proxies, or inference. Only an enum
-crosses Wing Link: unavailable, unrecognized, starting, serving, or authentication
-required. A matching public card identifies the product; it is not a trust or
-inference-readiness guarantee. Responses are not cached.
-
-Wing offers **Use OmniRoute** for a serving service and **Check for OmniRoute**
-for retry. It uses the existing transactional new-profile operation; Hermes Agent
-still owns configuration and readiness. An authenticated service is reported but
-its credential setup remains unsupported. Installation, starting a service, and
-custom-endpoint registration are not yet available in this UI. The product
-direction is to complete setup from Wing through typed operations and any required
-host approval; these missing operations must not be represented as supported.
+Wing-managed OmniRoute installation, discovery and special profile setup have
+been removed. The old discovery route returns not found and its capability is
+not advertised. The profile editor makes no discovery request and offers no
+special selection or retry controls. Existing external installations, saved
+access and Agent configuration remain untouched. Agent-owned provider/model
+inventory remains visible through the generic catalog; this does not authorize
+an unsupported Wing Link provider setup.

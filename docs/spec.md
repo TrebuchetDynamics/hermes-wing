@@ -30,6 +30,9 @@ or new architecture decisions. [Product requirements](product/prd.md) own intent
   separately identified ephemeral pairing-broker routes. It is manually
   maintained from Go handlers, not generated or schema-first authority.
   Its declared parser and security limits require source review when routes change.
+  Wing no longer bundles or manages OmniRoute: installer, discovery, release
+  component and special profile-setup paths are removed, with no user-data
+  migration. Generic Agent-owned catalog entries remain unfiltered.
 
 Hermes Agent remains authoritative for domain state. Profile and session IDs
 are resource identities, not display names or inventory positions. A Hermes

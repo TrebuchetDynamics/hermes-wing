@@ -11,8 +11,8 @@ var currentProtocolMetadata = protocol.CurrentMetadata
 type Component = protocol.Component
 
 const (
-	ComponentHermes         = protocol.ComponentHermes
-	ComponentOmniRoute      = protocol.ComponentOmniRoute
+	ComponentHermes = protocol.ComponentHermes
+
 	ComponentStarterProfile = protocol.ComponentStarterProfile
 )
 

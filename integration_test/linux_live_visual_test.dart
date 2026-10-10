@@ -267,7 +267,7 @@ void main() {
           await Future<void>.delayed(const Duration(seconds: 3));
           await capture(
             'profile-create-editor',
-            'Real Wing Link setup catalog and OmniRoute discovery',
+            'Real Wing Link setup catalog',
           );
           await click(find.widgetWithText(TextFormField, 'Provider'));
           final field = find.widgetWithText(TextFormField, 'Provider');
@@ -593,7 +593,7 @@ void main() {
         await pause();
         await capture(
           'chat-real-provider-reply',
-          'Actual OmniRoute provider reply to synthetic prompt',
+          'Actual Agent provider reply to synthetic prompt',
         );
         if (await click(
           find.byKey(const ValueKey('hermes-composer-model-chip')),

@@ -34,7 +34,7 @@ void main() {
       var catalogLoaded = false;
       var providerOption = '';
       var modelOption = '';
-      var discoveryLoaded = false;
+
       tester.view.physicalSize = const Size(1400, 1200);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -82,19 +82,7 @@ void main() {
                   catalogLoaded = true;
                   return catalog;
                 },
-                discoverOmniRoute: () async {
-                  final status = await client.discoverOmniRoute().catchError((
-                    Object error,
-                  ) {
-                    debugPrint(
-                      'Live discovery error type: ${error.runtimeType}',
-                    );
-                    throw error;
-                  });
-                  debugPrint('Live checkpoint: discovery loaded');
-                  discoveryLoaded = true;
-                  return status;
-                },
+
                 onCreate:
                     ({
                       required name,
@@ -120,7 +108,7 @@ void main() {
             ),
           ),
         );
-        await _until(tester, () => catalogLoaded && discoveryLoaded);
+        await _until(tester, () => catalogLoaded);
         debugPrint('Live checkpoint: setup data visible');
         expect(providerOption.isNotEmpty && modelOption.isNotEmpty, isTrue);
         final fields = find.byType(CatalogAutocompleteField);

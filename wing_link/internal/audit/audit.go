@@ -83,7 +83,7 @@ const (
 // downgrade a tier.
 var auditOperationTiers = map[string]RiskTier{
 	"health.read":                TierRoutine,
-	"omniroute.discover":         TierRoutine,
+	"omniroute.discover":         TierRoutine, // Retained only to read historical audit logs; no route emits it.
 	"status.read":                TierRoutine,
 	"metadata.read":              TierRoutine,
 	"device.self.read":           TierRoutine,

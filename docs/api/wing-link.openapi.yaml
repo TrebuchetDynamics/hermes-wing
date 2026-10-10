@@ -821,83 +821,7 @@
       "x-required-grants":
         - "directories:read"
       "x-pending-credential-allowed": false
-  "/v1/host/omniroute":
-    "get":
-      "operationId": "discoverOmniRoute"
-      "summary": "Discover the fixed host-local OmniRoute service"
-      "description": "Requires health:read. Requires an acknowledged credential. No query parameters or endpoint input. Three-second credential-free probe, no proxies or redirects. Returns status only; serving does not prove inference readiness."
-      "tags":
-        - "Management"
-      "x-code-reference":
-        - "wing_link/internal/app/omniroute_discovery.go"
-      "security":
-        -
-          "WingLinkBearer": []
-      "responses":
-        "200":
-          "description": "Successful response."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-          "content":
-            "application/json":
-              "schema":
-                "$ref": "#/components/schemas/OmniRouteDiscovery"
-        "426":
-          "description": "upgrade_required: protocol generation not supported."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-          "content":
-            "application/json":
-              "schema":
-                "$ref": "#/components/schemas/UpgradeError"
-        "503":
-          "description": "Host state or this operation is unavailable."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-          "content":
-            "application/json":
-              "schema":
-                "$ref": "#/components/schemas/Error"
-        "401":
-          "description": "unauthorized: missing, invalid, revoked, expired, or insufficient-grant Wing Link credential."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-          "content":
-            "application/json":
-              "schema":
-                "$ref": "#/components/schemas/Error"
-        "400":
-          "description": "Any query is rejected with an empty body."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-        "default":
-          "description": "Other handler-specific errors (including empty 404/405 dispatch responses). See the cited handler. Not every error carries JSON."
-          "headers":
-            "Cache-Control":
-              "$ref": "#/components/headers/CacheControl"
-            "Wing-Protocol":
-              "$ref": "#/components/headers/WingProtocol"
-      "parameters":
-        -
-          "$ref": "#/components/parameters/Protocol"
-      "x-required-grants":
-        - "health:read"
-      "x-pending-credential-allowed": false
+
   "/v1/update/status":
     "get":
       "operationId": "getUpdateStatus"
@@ -1129,7 +1053,7 @@
     "post":
       "operationId": "startSetup"
       "summary": "Request supervisor-owned Hermes setup"
-      "description": "Requires setup:write. Requires an acknowledged credential. Empty object only; no components, provider/config, profile or OmniRoute flags. Local trust-tier approval is required. 202 may mean pending approval, started work, or terminal replay; reconcile operation status."
+      "description": "Requires setup:write. Requires an acknowledged credential. Empty object only; no components, provider/config or profile flags. Local trust-tier approval is required. 202 may mean pending approval, started work, or terminal replay; reconcile operation status."
       "tags":
         - "Management"
       "x-code-reference":
@@ -2518,20 +2442,7 @@
       "required":
         - "providers"
       "additionalProperties": false
-    "OmniRouteDiscovery":
-      "type": "object"
-      "properties":
-        "status":
-          "type": "string"
-          "enum":
-            - "unavailable"
-            - "unrecognized"
-            - "starting"
-            - "authentication_required"
-            - "serving"
-      "required":
-        - "status"
-      "additionalProperties": false
+
     "UpdateStatus":
       "type": "object"
       "properties":
@@ -2747,7 +2658,7 @@
           "description": "After trimming: at most 500 runes and no control characters."
         "provider":
           "type": "string"
-          "description": "Trimmed, lowercased allowlist: nous, fireworks, openrouter, moa, novita, lmstudio, anthropic, openai-codex, openai-api, alibaba, xai-oauth, xiaomi, tencent-tokenhub, nvidia, copilot, copilot-acp, huggingface, gemini, vertex, deepseek, xai, zai, kimi-coding, kimi-coding-cn, stepfun, minimax, minimax-oauth, minimax-cn, ollama-cloud, arcee, gmi, kilocode, opencode-zen, opencode-go, bedrock, azure-foundry, ai-gateway, qwen-oauth, omniroute. Provider and model must both be blank or both nonblank."
+          "description": "Trimmed, lowercased allowlist: nous, fireworks, openrouter, moa, novita, lmstudio, anthropic, openai-codex, openai-api, alibaba, xai-oauth, xiaomi, tencent-tokenhub, nvidia, copilot, copilot-acp, huggingface, gemini, vertex, deepseek, xai, zai, kimi-coding, kimi-coding-cn, stepfun, minimax, minimax-oauth, minimax-cn, ollama-cloud, arcee, gmi, kilocode, opencode-zen, opencode-go, bedrock, azure-foundry, ai-gateway, qwen-oauth. Provider and model must both be blank or both nonblank."
         "model":
           "type": "string"
           "description": "After trimming: at most 200 runes and no control characters."
@@ -2755,7 +2666,7 @@
           "type": "string"
           "format": "password"
           "writeOnly": true
-          "description": "At most 16384 bytes, no CR/LF/NUL. Requires a provider; forbidden with omniroute. Nonblank after trimming requires local sensitive-write approval. Sent to Hermes through stdin only."
+          "description": "At most 16384 bytes, no CR/LF/NUL. Requires a supported provider. Nonblank after trimming requires local sensitive-write approval. Sent to Hermes through stdin only."
       "required":
         - "name"
       "additionalProperties": false
@@ -2954,6 +2865,6 @@
     - "wing_link/internal/app/local_pairing_proof_test.go"
     - "wing_link/internal/app/workspaces_test.go"
     - "wing_link/internal/app/model_options_test.go"
-    - "wing_link/internal/app/omniroute_discovery_test.go"
+    - "wing_link/internal/app/omniroute_retirement_test.go"
     - "wing_link/internal/app/pair_test.go"
     - "wing_link/internal/app/pair_open_test.go"

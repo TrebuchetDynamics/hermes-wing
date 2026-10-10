@@ -16,7 +16,7 @@ import (
 
 func TestBareCommandAndHelpDoNotTouchRuntime(t *testing.T) {
 	t.Setenv("WING_HERMES_HOME", "relative-home")
-	for _, args := range [][]string{nil, {"setup", "--help"}, {"help", "setup"}, {"pair", "-h"}, {"doctor", "--help"}, {"omniroute-setup", "--help"}, {"devices", "--help"}} {
+	for _, args := range [][]string{nil, {"setup", "--help"}, {"help", "setup"}, {"pair", "-h"}, {"doctor", "--help"}, {"devices", "--help"}} {
 		var out, err bytes.Buffer
 		if code := run(args, &out, &err); code != 0 || out.Len() == 0 || err.Len() != 0 {
 			t.Fatalf("%v code=%d out=%q err=%q", args, code, out.String(), err.String())
@@ -25,18 +25,6 @@ func TestBareCommandAndHelpDoNotTouchRuntime(t *testing.T) {
 	var out, err bytes.Buffer
 	if code := run([]string{"help", "pasted-sensitive-value"}, &out, &err); code != 2 || strings.Contains(err.String(), "pasted-sensitive-value") {
 		t.Fatal("unknown help argument exposed")
-	}
-}
-
-func TestOmniRoutePrerequisitesFailBeforeHermesSetup(t *testing.T) {
-	t.Setenv("PATH", t.TempDir())
-	t.Setenv("WING_HERMES_HOME", "relative-home")
-	var out, err bytes.Buffer
-	if code := bootstrapCommand(&out, &err, []string{"--with-omniroute"}); code != 1 {
-		t.Fatal(code)
-	}
-	if !strings.Contains(err.String(), "prerequisite check failed") || !strings.Contains(err.String(), "Hermes setup has not started") || strings.Contains(err.String(), "absolute path") {
-		t.Fatalf("unexpected setup sequence: %s", err.String())
 	}
 }
 

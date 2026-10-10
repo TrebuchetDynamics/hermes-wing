@@ -30,30 +30,9 @@ func TestInstallRequestRejectsDuplicateComponents(t *testing.T) {
 	}
 }
 
-func TestInstallRequestRequiresHermesForOmniRoute(t *testing.T) {
-	request := InstallRequest{
-		Components:                   []Component{ComponentOmniRoute},
-		AcceptCommunityProviderTerms: true,
-	}
-	if err := request.Validate(); err == nil {
-		t.Fatal("expected Hermes requirement")
-	}
-}
-
-func TestInstallRequestRequiresCommunityProviderConsent(t *testing.T) {
-	request := InstallRequest{Components: []Component{ComponentHermes, ComponentOmniRoute}}
-	if err := request.Validate(); err == nil {
-		t.Fatal("expected community provider consent requirement")
-	}
-}
-
 func TestInstallRequestAcceptsSupportedComponents(t *testing.T) {
 	requests := []InstallRequest{
 		{Components: []Component{ComponentHermes}},
-		{
-			Components:                   []Component{ComponentHermes, ComponentOmniRoute},
-			AcceptCommunityProviderTerms: true,
-		},
 	}
 	for _, request := range requests {
 		if err := request.Validate(); err != nil {
@@ -132,7 +111,7 @@ func TestInstallStatusJSONOmitsEmptyOptionalFields(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const want = `{"protocol_version":2,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"starter_profile_installed":false,"omniroute_installed":false,"omniroute_healthy":false}`
+	const want = `{"protocol_version":2,"state":"healthy","hermes_installed":true,"hermes_healthy":true,"starter_profile_installed":false}`
 	if string(got) != want {
 		t.Fatalf("got %s", got)
 	}

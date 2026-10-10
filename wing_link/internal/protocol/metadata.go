@@ -15,7 +15,7 @@ var supportedCapabilities = []string{
 }
 
 var optionalCapabilities = map[string]struct{}{
-	"host.omniroute.discover":     {},
+
 	"profiles.model-options.read": {},
 	"directories.children.read":   {},
 	"directories.roots.read":      {},

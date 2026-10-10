@@ -93,14 +93,13 @@ pinned to reviewed release artifacts. Both listeners remain loopback-only and us
 best-effort background execution; this is not a managed-service qualification.
 Hermes Wing does not request Termux external-command access.
 
-An explicit local `wing-link setup --with-omniroute` may also install the
-external OmniRoute model gateway. Its npm package and complete dependency closure
-are integrity-locked; lifecycle scripts are disabled, installation is staged in
-an owner-only version directory, and CLI readiness is checked before activation.
-This option is not exposed through remote bootstrap requests. Installation does
-not start OmniRoute, change Hermes provider configuration, or copy credentials
-between the three systems. OmniRoute owns its own settings and credentials;
-Hermes Agent remains the profile and chat authority.
+Wing no longer bundles, installs, starts, discovers or configures OmniRoute.
+The former local installer flag, setup command, discovery capability/route and
+special new-profile adapter are retired. Existing external installations,
+credentials, Agent configuration and user data are not removed or migrated.
+Historical receipts remain evidence of their recorded snapshots only. Generic
+Agent-advertised provider inventory is not filtered by this retirement; visibility
+does not authorize the removed Wing Link setup operation.
 
 Runtime and application artifacts must be versioned and signature/digest verified
 before activation. Wing Link updates stage under versioned owner-only paths,
@@ -109,12 +108,3 @@ version on failure. An empty production release-key set makes updating unavailab
 it never enables unsigned installation. Production service qualification is Linux
 systemd-user first and requires restart, state-permission, activation, health, and
 rollback evidence on Linux. A cross-compiled binary is not a qualified service.
-
-Wing Link may perform a credential-free, read-only OmniRoute discovery at its
-fixed host-loopback endpoint. The advertised `host.omniroute.discover` operation
-requires acknowledged `health.read` authorization, uses a three-second deadline
-and 64 KiB per-response bound, and follows no redirects or proxies. It returns
-only a status enum; it never exposes discovered endpoints, credentials, provider
-inventory, or arbitrary upstream bodies. Public identity and liveness checks do
-not establish trust in the service or prove inference readiness. Remove this
-compatibility discovery when Hermes Agent advertises equivalent host discovery.

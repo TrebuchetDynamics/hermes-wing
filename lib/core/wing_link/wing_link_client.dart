@@ -382,29 +382,6 @@ class WingLinkClient {
     return operation;
   }
 
-  Future<String> discoverOmniRoute() async {
-    final metadata = await getMetadata();
-    if (!metadata.capabilities.contains('host.omniroute.discover')) {
-      throw const WingLinkException('Update Wing Link to discover OmniRoute');
-    }
-    final status = _decode(
-      await _get(_uri('/v1/host/omniroute'), _headers),
-    )['status'];
-    if (status is! String ||
-        !const {
-          'unavailable',
-          'unrecognized',
-          'starting',
-          'serving',
-          'authentication_required',
-        }.contains(status)) {
-      throw const WingLinkException(
-        'Wing Link returned invalid discovery data',
-      );
-    }
-    return status;
-  }
-
   Future<HermesModelOptions> getProfileModelOptions(String profileId) async {
     if (!RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(profileId)) {
       throw ArgumentError.value(profileId, 'profileId');

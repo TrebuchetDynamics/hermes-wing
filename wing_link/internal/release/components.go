@@ -40,13 +40,6 @@ type StarterProfileComponent struct {
 	BlockedReason string `json:"blocked_reason,omitempty"`
 }
 
-type OmniRouteComponent struct {
-	Version   string `json:"version"`
-	URL       string `json:"url"`
-	Size      int64  `json:"size"`
-	Integrity string `json:"integrity"`
-}
-
 // WingLinkComponent describes the optional signed Wing Link Linux release
 // artifact carried by a component catalog. MinimumProtocolGeneration is the
 // lowest Wing Link protocol generation the artifact can speak; hosts running
@@ -65,8 +58,8 @@ type ComponentCatalog struct {
 	ExpiresAt       time.Time                `json:"expires_at"`
 	Hermes          *HermesComponent         `json:"hermes,omitempty"`
 	StarterProfile  *StarterProfileComponent `json:"starter_profile,omitempty"`
-	OmniRoute       *OmniRouteComponent      `json:"omniroute,omitempty"`
-	WingLink        *WingLinkComponent       `json:"wing_link,omitempty"`
+
+	WingLink *WingLinkComponent `json:"wing_link,omitempty"`
 }
 
 func VerifyComponentManifest(manifest, signature []byte, trustedKeys map[string]ed25519.PublicKey) (ComponentCatalog, error) {

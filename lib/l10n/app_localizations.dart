@@ -7194,54 +7194,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The local approval expired. Enter the credential again to start a new request.'**
   String get profileApprovalExpired;
-
-  /// No description provided for @profileOmniRouteServing.
-  ///
-  /// In en, this message translates to:
-  /// **'OmniRoute is serving on the paired computer. Model access still depends on its provider setup.'**
-  String get profileOmniRouteServing;
-
-  /// No description provided for @profileOmniRouteAuthentication.
-  ///
-  /// In en, this message translates to:
-  /// **'OmniRoute is serving on the paired computer and requires authentication. Credential setup is not yet supported here.'**
-  String get profileOmniRouteAuthentication;
-
-  /// No description provided for @profileOmniRouteStarting.
-  ///
-  /// In en, this message translates to:
-  /// **'OmniRoute was found but is not ready yet.'**
-  String get profileOmniRouteStarting;
-
-  /// No description provided for @profileOmniRouteUnrecognized.
-  ///
-  /// In en, this message translates to:
-  /// **'Another or unrecognized service is using the local OmniRoute endpoint.'**
-  String get profileOmniRouteUnrecognized;
-
-  /// No description provided for @profileOmniRouteUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'No OmniRoute service was found at the default endpoint on the paired computer.'**
-  String get profileOmniRouteUnavailable;
-
-  /// No description provided for @profileOmniRouteUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'OmniRoute discovery has not completed. Check again or update Wing Link.'**
-  String get profileOmniRouteUnknown;
-
-  /// No description provided for @profileOmniRouteUse.
-  ///
-  /// In en, this message translates to:
-  /// **'Use OmniRoute'**
-  String get profileOmniRouteUse;
-
-  /// No description provided for @profileOmniRouteCheck.
-  ///
-  /// In en, this message translates to:
-  /// **'Check for OmniRoute'**
-  String get profileOmniRouteCheck;
 }
 
 class _AppLocalizationsDelegate

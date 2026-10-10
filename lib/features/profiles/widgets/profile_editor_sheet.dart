@@ -48,7 +48,7 @@ class ProfileEditorSheet extends StatefulWidget {
     this.canConfigure = false,
     this.soulOnly = false,
     this.loadModelOptions,
-    this.discoverOmniRoute,
+
     this.onCreate,
     this.onRename,
     this.onDelete,
@@ -68,7 +68,7 @@ class ProfileEditorSheet extends StatefulWidget {
   final bool canConfigure;
   final bool soulOnly;
   final Future<HermesModelOptions> Function(String profileId)? loadModelOptions;
-  final Future<String> Function()? discoverOmniRoute;
+
   final ProfileCreateCallback? onCreate;
   final ProfileRenameCallback? onRename;
   final ProfileDeleteCallback? onDelete;
@@ -96,8 +96,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   String _originalPersona = '';
   String? _error;
   HermesModelOptions? _modelOptions;
-  String? _omniRouteStatus;
-  bool _loadingOmniRoute = false;
+
   bool _loadingModels = false;
   bool _catalogFailed = false;
   int _catalogGeneration = 0;
@@ -221,7 +220,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     _observePersonaOwner();
     if (widget.canConfigure) {
       unawaited(_loadCatalog());
-      unawaited(_discoverOmniRoute());
     }
   }
 
@@ -253,23 +251,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     _modelController.dispose();
     _credentialController.dispose();
     super.dispose();
-  }
-
-  Future<void> _discoverOmniRoute() async {
-    final discover = widget.discoverOmniRoute;
-    if (discover == null) return;
-    setState(() => _loadingOmniRoute = true);
-    String status;
-    try {
-      status = await discover();
-    } catch (_) {
-      status = 'unknown';
-    }
-    if (!mounted) return;
-    setState(() {
-      _omniRouteStatus = status;
-      _loadingOmniRoute = false;
-    });
   }
 
   Future<void> _loadCatalog() async {
@@ -319,37 +300,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   }
 
   List<Widget> _catalogStatus(AppLocalizations strings) => [
-    if (widget.discoverOmniRoute != null) ...[
-      Text(switch (_omniRouteStatus) {
-        'serving' => strings.profileOmniRouteServing,
-        'authentication_required' => strings.profileOmniRouteAuthentication,
-        'starting' => strings.profileOmniRouteStarting,
-        'unrecognized' => strings.profileOmniRouteUnrecognized,
-        'unavailable' => strings.profileOmniRouteUnavailable,
-        _ => strings.profileOmniRouteUnknown,
-      }),
-      Wrap(
-        spacing: 8,
-        children: [
-          if (_omniRouteStatus == 'serving')
-            TextButton(
-              onPressed: _payloadFrozen
-                  ? null
-                  : () {
-                      _providerController.text = 'omniroute';
-                      _providerChanged('omniroute');
-                    },
-              child: Text(strings.profileOmniRouteUse),
-            ),
-          TextButton(
-            onPressed: _payloadFrozen || _loadingOmniRoute
-                ? null
-                : _discoverOmniRoute,
-            child: Text(strings.profileOmniRouteCheck),
-          ),
-        ],
-      ),
-    ],
     if (_loadingModels) ...[
       const LinearProgressIndicator(),
       Text(strings.profileCatalogLoading),

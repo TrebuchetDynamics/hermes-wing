@@ -4359,34 +4359,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileApprovalExpired =>
       'The local approval expired. Enter the credential again to start a new request.';
-
-  @override
-  String get profileOmniRouteServing =>
-      'OmniRoute is serving on the paired computer. Model access still depends on its provider setup.';
-
-  @override
-  String get profileOmniRouteAuthentication =>
-      'OmniRoute is serving on the paired computer and requires authentication. Credential setup is not yet supported here.';
-
-  @override
-  String get profileOmniRouteStarting =>
-      'OmniRoute was found but is not ready yet.';
-
-  @override
-  String get profileOmniRouteUnrecognized =>
-      'Another or unrecognized service is using the local OmniRoute endpoint.';
-
-  @override
-  String get profileOmniRouteUnavailable =>
-      'No OmniRoute service was found at the default endpoint on the paired computer.';
-
-  @override
-  String get profileOmniRouteUnknown =>
-      'OmniRoute discovery has not completed. Check again or update Wing Link.';
-
-  @override
-  String get profileOmniRouteUse => 'Use OmniRoute';
-
-  @override
-  String get profileOmniRouteCheck => 'Check for OmniRoute';
 }

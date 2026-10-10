@@ -21,6 +21,28 @@ func validInput() Input {
 	}
 }
 
+func TestRetiredDiscoveryAuditHistoryRemainsReadable(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "audit.jsonl")
+	log, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := validInput()
+	input.Operation = "omniroute.discover"
+	input.ApprovalSource = SourceNone
+	if err := log.Append(input); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	events, err := reopened.List()
+	if err != nil || len(events) != 1 || events[0].Operation != input.Operation {
+		t.Fatalf("historical event lost: %v", err)
+	}
+}
+
 func TestAuditPersistsOnlyAllowlistedBoundedFieldsOwnerOnly(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "audit.jsonl")
 	log, err := Open(path)

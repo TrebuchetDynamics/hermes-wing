@@ -35,13 +35,12 @@ exit codes and includes `next_steps`.
 ## Setup and next steps
 
 ```bash
-wing-link setup --with-omniroute
+wing-link setup
 ```
 
-OmniRoute's Node/npm prerequisites are checked before Hermes setup begins. If
-they are missing, fix them and rerun the same command, or use `wing-link setup`
-for Hermes alone. The locked installation behavior is described in the
-[Termux runbook](android-termux-local-agent.md#optional-omniroute-installation).
+Setup installs or adopts Hermes Agent only. Wing no longer ships an optional
+OmniRoute runtime, installer flag or setup wizard. It does not remove existing
+external installations or their data.
 
 Successful setup prints the next pairing command for the platform. On Android,
 keep `wing-link serve --listen 127.0.0.1:8654` running in another Termux session,
@@ -49,5 +48,5 @@ then use `wing-link pair --local --same-device`. On a managed Linux host, use
 `wing-link pair` for another device or `wing-link pair --local` for this computer.
 
 Setup does not choose a model or configure an existing Hermes profile. Use the
-local Hermes CLI for that configuration and OmniRoute's local wizard for its
-own credentials. Android background hosting remains best-effort.
+local Hermes CLI for that configuration. Android background hosting remains
+best-effort.

@@ -917,9 +917,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         canDelete: canDelete,
         stableNames: stableNames,
         canConfigure: canConfigure,
-        discoverOmniRoute: stableNames
-            ? catalogClient?.discoverOmniRoute
-            : null,
+
         loadModelOptions: stableNames
             ? catalogClient?.getProfileModelOptions
             : null,

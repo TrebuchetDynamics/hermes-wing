@@ -2270,13 +2270,5 @@
   "profileRetryApprovedDeletion": "Retry approved deletion",
   "profileRetryApprovedSetup": "Retry approved setup",
   "profileCancelSetup": "Cancel setup",
-  "profileApprovalExpired": "The local approval expired. Enter the credential again to start a new request.",
-  "profileOmniRouteServing": "OmniRoute is serving on the paired computer. Model access still depends on its provider setup.",
-  "profileOmniRouteAuthentication": "OmniRoute is serving on the paired computer and requires authentication. Credential setup is not yet supported here.",
-  "profileOmniRouteStarting": "OmniRoute was found but is not ready yet.",
-  "profileOmniRouteUnrecognized": "Another or unrecognized service is using the local OmniRoute endpoint.",
-  "profileOmniRouteUnavailable": "No OmniRoute service was found at the default endpoint on the paired computer.",
-  "profileOmniRouteUnknown": "OmniRoute discovery has not completed. Check again or update Wing Link.",
-  "profileOmniRouteUse": "Use OmniRoute",
-  "profileOmniRouteCheck": "Check for OmniRoute"
+  "profileApprovalExpired": "The local approval expired. Enter the credential again to start a new request."
 }

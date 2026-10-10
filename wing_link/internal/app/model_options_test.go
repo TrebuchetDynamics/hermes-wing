@@ -193,7 +193,7 @@ func TestSetupCapabilitiesAreAdvertisedByServer(t *testing.T) {
 	if err := json.NewDecoder(response.Body).Decode(&metadata); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{modelOptionsCapability, omniRouteDiscoveryCapability} {
+	for _, want := range []string{modelOptionsCapability} {
 		found := false
 		for _, got := range metadata.Capabilities {
 			if got == want {

@@ -1,5 +1,7 @@
 # Wing Link Local Runtime Bootstrap Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Wing Link is deprecated and is not a port prerequisite.
+
 > **Status: historical implementation plan; current boundaries live in the ADRs.**
 > The supervisor foundation is implemented, but this plan's older loopback-only,
 > provider bootstrap, and broad profile-topology language is superseded by

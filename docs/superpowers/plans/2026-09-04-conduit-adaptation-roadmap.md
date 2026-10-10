@@ -1,5 +1,7 @@
 # Conduit-Informed Reliability Roadmap Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Conduit is secondary technique research, not a competing product reference.
+
 > **For agentic workers:** Use the available executing-plans skill task-by-task. Checkboxes track implementation, not planning completion. No commits, external tracker writes, or delegation are authorized by this document.
 
 **Goal:** Adapt the strongest reliability lessons from Hermes Conduit without adopting its Dashboard transport, security policy, shadow state, or monolithic coordinator.

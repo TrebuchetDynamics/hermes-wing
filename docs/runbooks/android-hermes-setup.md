@@ -1,8 +1,25 @@
 # Android Hermes setup
 
+Deprecated Wing Link procedure: retained for existing installations only. Do not
+use this as the new-user setup direction. Use [direct Agent connection](../getting-started.md#direct-agent-connection).
+The [product decision](../adr/product.md#wing-link-deprecation) requires an Agent-only
+replacement. Commands below describe existing legacy behavior; this pass does not
+install, restart, migrate or remove anything.
+
 This runbook pairs Android with a remote Linux Hermes host that has a functioning
 systemd user session. For the same-phone Tier 2 candidate, use the separate
 [Android/Termux local Agent runbook](android-termux-local-agent.md).
+
+This is a **deprecated Wing Link management and pairing procedure**, retained
+for existing installations. It is not a supported new-user setup path.
+For an existing authenticated Agent API, use the
+[direct connection steps](../getting-started.md#direct-agent-connection).
+Older builds place direct access inside pairing, without requiring a pairing
+transaction or Wing Link credential. The current development worktree exposes
+primary Add Hermes access before optional setup/pairing. First-run qualification
+and main delivery remain open. The current development client includes
+Wing-managed native SSH; live SSH and Android full-app qualification remain open.
+See the [current direct connection procedure](../getting-started.md#direct-agent-connection).
 
 ## Before you start
 

@@ -14,7 +14,10 @@ record every product deviation and capability gap explicitly. Desktop parity
 takes precedence over new Wing-specific management features. Existing milestone
 evidence, blockers and acceptance requirements remain unchanged; this priority
 does not close cards or qualify a platform. Agent owns domain state; Wing Link
-remains the current host-management implementation, not the port's product goal.
+remains in the current host-management implementation but is deprecated. Remove
+its product dependencies, then retire its packaging without deleting paired state
+or pretending unsupported Agent operations exist. Linux Local discovery and
+Android guided same-phone setup replace management-first onboarding.
 [Product boundaries](docs/adr/product.md) and [routes](docs/product/routes.md) define
 delivery order, not deadlines; deferred capabilities are not completed parity.
 
@@ -44,7 +47,27 @@ Scans, curated graphs and analysis-tool tests are not Wing runtime qualification
 Existing cards, blockers and independently accepted receipts below retain their
 status; this adoption closes no milestone.
 
+## Current delivery order
+
+The accepted order is connection prerequisites, then **reliable away-and-return
+chat, visible job status, and notifications**. Deliver small usable improvements
+individually. The [user-demand acceptance](docs/product/prd.md#user-demand-emphasis)
+and [workflow policy](docs/product/autogoal-workflows.md#user-demand-sequencing)
+supersede the older Now/Next ordering below. Keep CONNECTION-PATHS focus until the
+current connection slice is reconciled; this document does not dispatch work.
+
+Reuse existing M1 recovery implementation and fixtures. The bounded Android
+successor is M1-MOBILE-AWAY-STATUS: qualify authoritative return/status through
+production controls in isolated Waydroid, repairing only demonstrated gaps.
+This is not live inference or physical-device process-death qualification.
+M1-NOTIFICATION-CONTRACT follows with one supported-contract assessment; the
+notification architecture remains proposed, not enabled infrastructure.
+Voice and mobile Kanban remain later user-demand signals with existing owners.
+
 ## Now / Next / Later
+
+The following detail retains historical receipts and dependencies. Its old
+selection order is superseded by Current delivery order above.
 
 - **Now — Desktop daily-use workflow:** execute the accepted
   [daily-workflow plan](docs/plans/2026-10-03-desktop-daily-workflow.md): local

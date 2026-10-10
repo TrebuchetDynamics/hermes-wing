@@ -12,6 +12,7 @@ import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/features/hermes_chat/widgets/session_model_picker_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import 'support/linux_test_isolation.dart';
@@ -19,8 +20,8 @@ import 'support/linux_test_isolation.dart';
 // Synthetic Agent API, production native HTTP/SSE channel and Chat UI, and real
 // Linux selection preferences across two app processes. No Agent generation,
 // secure credential enrollment, OS keyboard/IME or whole-shell acceptance.
-// Model confirmation is separate: the existing lifecycle fixture forbids model
-// writes and cannot honestly qualify a combined profile/model/run scenario.
+// The combined scenario acknowledges a pair before runs. Agent metadata exposes
+// model text only: restart must report the unknown pair, never a catalog default.
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.shouldPropagateDevicePointerEvents = true;
@@ -83,9 +84,17 @@ void main() {
           'model_lock': 'accepted',
           'route_source': 'session',
         });
+        final confirmed = channel.state.sessionModelLocks[session]!;
+        expect(confirmed.sessionId, session);
+        expect(confirmed.provider, 'alpha');
+        expect(confirmed.model, 'alpha/model-99');
+        expect(confirmed.accepted, true);
         expect(
           (await _request(api, 'GET', '/e2e/hermes/run-count'))['runCount'],
           0,
+        );
+        debugPrint(
+          'MODEL_RECEIPT ${jsonEncode({'synthetic': true, 'native_pid': pid, 'session_id': confirmed.sessionId, 'provider': confirmed.provider, 'model': confirmed.model, 'locks': (receipt['locks'] as List).length, 'runs': 0, 'scenario': 'separate-model-confirmation'})}',
         );
       },
     );
@@ -102,7 +111,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     if (phase == 'write') {
       expect(
-        (await _request(api, 'POST', '/e2e/hermes/lifecycle'))['synthetic'],
+        (await _request(api, 'POST', '/e2e/hermes/lifecycle', {
+          'scenario': 'desktop-daily',
+        }))['synthetic'],
         true,
       );
     }
@@ -155,6 +166,10 @@ void main() {
     expect(directory.restoringSessionId, isNull);
     expect(channel.state.connectedBaseUrl, api);
     final afterRestore = await _request(api, 'GET', '/e2e/hermes/lifecycle');
+    final checkpoints = <String, Map<String, int>>{
+      'before_restore': _counts(beforeRestore),
+      'after_restore': _counts(afterRestore),
+    };
     final restorationAfter = afterRestore['restoration'] as Map;
     final firstPages = (restorationAfter['inventory_reads'] as List)
         .skip(inventoryCount)
@@ -200,6 +215,7 @@ void main() {
       'stops',
       'unexpected_mutations',
       'sessions',
+      'model_locks',
     ]) {
       expect(
         afterRestore[key],
@@ -226,7 +242,148 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    if (phase == 'write') {
+      await expectLater(
+        channel.lockSessionModel(
+          sessionId: 'e2e-hermes-session',
+          provider: 'alpha',
+          model: 'alpha/model-99',
+        ),
+        throwsA(isA<Exception>()),
+      );
+      expect(channel.state.sessionModelLocks, isEmpty);
+      await channel.lockSessionModel(
+        sessionId: 'e2e-hermes-session',
+        provider: 'alpha',
+        model: 'alpha/model-99',
+      );
+      final confirmed = channel.state.sessionModelLocks['e2e-hermes-session']!;
+      expect(confirmed.accepted, true);
+      expect(confirmed.provider, 'alpha');
+      expect(confirmed.model, 'alpha/model-99');
+    } else {
+      expect(channel.state.activeSession?.model, 'alpha/model-99');
+      expect(channel.state.activeSession?.hasModelConfig, true);
+      expect(channel.state.sessionModelLocks, isEmpty);
+    }
     await mount();
+    if (phase == 'verify') {
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-model-chip')),
+      );
+      await _wait(
+        tester,
+        () => find.byType(SessionModelPickerSheet).evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+      final picker = tester.widget<SessionModelPickerSheet>(
+        find.byType(SessionModelPickerSheet),
+      );
+      expect(picker.currentSessionModel, isNull);
+      expect(picker.requireExplicitSelection, true);
+      expect(picker.options.currentProvider, 'beta');
+      expect(picker.options.currentModel, 'shared');
+      expect(
+        find.text(
+          AppLocalizations.of(
+            tester.element(find.byType(SessionModelPickerSheet)),
+          ).sessionModelIdentityNotReported,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Use for session'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(find.text('Cancel'));
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(channel.state.sessionModelLocks, isEmpty);
+      final afterCancel = await _request(api, 'GET', '/e2e/hermes/lifecycle');
+      checkpoints['after_cancel'] = _counts(afterCancel);
+      expect(_counts(afterCancel), _counts(afterRestore));
+      _assertReceipt(afterCancel);
+
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-model-chip')),
+      );
+      await _wait(
+        tester,
+        () => find.byType(SessionModelPickerSheet).evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('session-model-search')),
+        'alpha/model-99',
+      );
+      await tester.pumpAndSettle();
+      final row = find.byKey(
+        const ValueKey('session-model-alpha/alpha/model-99'),
+      );
+      await tester.ensureVisible(row);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      final use = find.widgetWithText(FilledButton, 'Use for session');
+      expect(tester.widget<FilledButton>(use).onPressed, isNotNull);
+      await tester.ensureVisible(use);
+      await tester.tap(use);
+      await _wait(
+        tester,
+        () => find.byType(SessionModelPickerSheet).evaluate().isEmpty,
+      );
+      final confirmed = channel.state.sessionModelLocks['e2e-hermes-session']!;
+      expect(confirmed.accepted, true);
+      expect(confirmed.provider, 'alpha');
+      expect(confirmed.model, 'alpha/model-99');
+      final afterSelection = await _request(
+        api,
+        'GET',
+        '/e2e/hermes/lifecycle',
+      );
+      checkpoints['after_reselection'] = _counts(afterSelection);
+      expect(_counts(afterSelection), {
+        ..._counts(afterCancel),
+        'model_locks': 3,
+      });
+      expect((afterSelection['model_locks'] as List).last, {
+        'profile_id': 'default',
+        'session_id': 'e2e-hermes-session',
+        'provider': 'alpha',
+        'model': 'alpha/model-99',
+        'status': 'accepted',
+      });
+      await _submit(tester, 'Deterministic resumed prompt');
+      await _wait(
+        tester,
+        () =>
+            !channel.state.isSessionStreaming('e2e-hermes-session') &&
+            channel.state.activeMessages.any((m) => m.id == 'canonical_run_3'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Deterministic fixture reply 3.'), findsOneWidget);
+      expect(
+        channel.state.activeMessages
+            .singleWhere((m) => m.id == 'canonical_run_3')
+            .text,
+        'Deterministic fixture reply 3.',
+      );
+      final afterSend = await _request(api, 'GET', '/e2e/hermes/lifecycle');
+      checkpoints['after_send'] = _counts(afterSend);
+      expect(_counts(afterSend), {..._counts(afterSelection), 'submits': 3});
+      expect(
+        (afterSend['history_reads'] as List).any(
+          (r) =>
+              r['session_id'] == 'e2e-hermes-session' &&
+              r['profile_id'] == 'default' &&
+              (r['message_ids'] as List).contains('canonical_run_3'),
+        ),
+        true,
+      );
+    }
     if (phase == 'write') {
       await _submit(tester, 'Deterministic daily approval');
       await _wait(
@@ -297,7 +454,8 @@ void main() {
       );
     }
     final beforeLeave = await _request(api, 'GET', '/e2e/hermes/lifecycle');
-    _assertReceipt(beforeLeave);
+    checkpoints['before_reopen'] = _counts(beforeLeave);
+    _assertReceipt(beforeLeave, resumed: phase == 'verify');
     expect(
       channel.state.activeMessages.any(
         (t) => t.text == 'Synthetic canonical stopped outcome.',
@@ -327,12 +485,19 @@ void main() {
     expect(selection?.contactId.profileId, 'default');
     expect(selection?.sessionId, 'e2e-hermes-session');
     final afterLeave = await _request(api, 'GET', '/e2e/hermes/lifecycle');
-    _assertReceipt(afterLeave);
+    checkpoints['after_reopen'] = _counts(afterLeave);
+    _assertReceipt(afterLeave, resumed: phase == 'verify');
+    expect(_counts(afterLeave), _counts(beforeLeave));
+    if (phase == 'verify') {
+      expect(find.text('Deterministic fixture reply 3.'), findsOneWidget);
+    }
     for (final key in [
       'submits',
       'approvals',
       'stops',
       'unexpected_mutations',
+      'sessions',
+      'model_locks',
     ]) {
       expect(
         afterLeave[key],
@@ -353,7 +518,10 @@ void main() {
     }
     expect(tester.takeException(), isNull);
     debugPrint(
-      'DAILY_RECEIPT ${jsonEncode({'phase': phase, 'synthetic': true, 'gateway_id': selection!.contactId.gatewayId, 'profile_id': selection.contactId.profileId, 'session_id': selection.sessionId, 'submits': 2, 'approvals': 1, 'stops': 1})}',
+      'CONTINUATION_RECEIPT ${jsonEncode({'phase': phase, 'synthetic': true, 'checkpoints': checkpoints})}',
+    );
+    debugPrint(
+      'DAILY_RECEIPT ${jsonEncode({'phase': phase, 'synthetic': true, 'scenario': 'combined-model-lifecycle', 'native_pid': pid, 'gateway_id': selection!.contactId.gatewayId, 'profile_id': selection.contactId.profileId, 'session_id': selection.sessionId, 'provider': channel.state.sessionModelLocks[selection.sessionId]?.provider, 'model': channel.state.sessionModelLocks[selection.sessionId]?.model ?? channel.state.activeSession?.model, 'pair_readback': phase == 'write' ? 'acknowledged-write' : 'unsupported-until-explicit-reselection', 'model_locks': (afterLeave['model_locks'] as List).length, 'submits': (afterLeave['submits'] as List).length, 'approvals': (afterLeave['approvals'] as List).length, 'stops': (afterLeave['stops'] as List).length, 'unexpected_mutations': (afterLeave['unexpected_mutations'] as List).length})}',
     );
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpAndSettle();
@@ -373,12 +541,36 @@ class _OwnedEndpointStore extends EmptyHermesEndpointStore {
   ];
 }
 
-void _assertReceipt(Map<String, dynamic> receipt) {
+Map<String, int> _counts(Map<String, dynamic> receipt) => {
+  for (final key in [
+    'submits',
+    'approvals',
+    'stops',
+    'unexpected_mutations',
+    'sessions',
+    'model_locks',
+  ])
+    key: (receipt[key] as List).length,
+};
+
+void _assertReceipt(Map<String, dynamic> receipt, {bool resumed = false}) {
   expect(receipt['synthetic'], true);
+  expect(receipt['scenario'], 'desktop-daily');
+  expect(receipt['model_locks'], [
+    for (final status in ['rejected', 'accepted', if (resumed) 'accepted'])
+      {
+        'profile_id': 'default',
+        'session_id': 'e2e-hermes-session',
+        'provider': 'alpha',
+        'model': 'alpha/model-99',
+        'status': status,
+      },
+  ]);
   final submits = receipt['submits'] as List;
   expect(submits.map((r) => r['message']), [
     'Deterministic daily approval',
     'Deterministic daily stop',
+    if (resumed) 'Deterministic resumed prompt',
   ]);
   expect(
     submits.every(
@@ -395,6 +587,7 @@ void _assertReceipt(Map<String, dynamic> receipt) {
   expect((receipt['runs'] as List).map((r) => r['status']), [
     'completed',
     'cancelled',
+    if (resumed) 'completed',
   ]);
   final sessions = receipt['sessions'] as List;
   final messages =
@@ -405,12 +598,13 @@ void _assertReceipt(Map<String, dynamic> receipt) {
   expect(messages.where((m) => m['role'] == 'user').map((m) => m['id']), [
     'user_run_1',
     'user_run_2',
+    if (resumed) 'user_run_3',
   ]);
   expect(
     messages
         .where((m) => m['id'].toString().startsWith('canonical_'))
         .map((m) => m['id']),
-    ['canonical_run_1', 'canonical_run_2'],
+    ['canonical_run_1', 'canonical_run_2', if (resumed) 'canonical_run_3'],
   );
   expect(
     sessions.singleWhere(

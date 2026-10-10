@@ -1,0 +1,29 @@
+--- a/playwright/support/hermes_desktop_daily_fixture_test.mjs
++++ b/playwright/support/hermes_desktop_daily_fixture_test.mjs
+@@ -138,4 +138,26 @@
+     console.log(JSON.stringify({ synthetic: true, submits: after.submits.length,
+       approvals: after.approvals.length, stops: after.stops.length, model_locks: after.model_locks.length }));
++    // Explicit reselection is a new acknowledged write, not metadata persistence.
++    assert.equal((await request(modelRoute, 'POST', pair)).status, 200);
++    assert.equal((await request('/v1/runs?profile=default', 'POST', {
++      session_id: session, message: 'Deterministic resumed prompt', input: 'Deterministic resumed prompt',
++    })).status, 202);
++    const continuation = await fetch(`${origin}/v1/runs/run_3/events?profile=default`, {
++      signal: AbortSignal.timeout(5000),
++    });
++    const continuationEvents = await continuation.text();
++    assert.ok(continuationEvents.includes('run.completed'));
++    assert.ok(continuationEvents.includes('Deterministic fixture reply 3.'));
++    assert.ok(!continuationEvents.includes('approval.request'));
++    const resumed = (await request(control)).body;
++    assert.equal(resumed.submits.length - after.submits.length, 1);
++    assert.equal(resumed.model_locks.length - after.model_locks.length, 1);
++    for (const key of ['approvals', 'stops', 'unexpected_mutations']) {
++      assert.deepEqual(resumed[key], after[key]);
++    }
++    const history = (await request(`/api/sessions/${session}/messages?profile=default`)).body;
++    assert.ok(JSON.stringify(history).includes('canonical_run_3'));
++    assert.ok(JSON.stringify(history).includes('Deterministic fixture reply 3.'));
++    assert.equal((await request(`/api/sessions/${session}?profile=default`)).body.session.runtime, undefined);
+   });
+ });

@@ -1,5 +1,8 @@
 # Hermes Desktop parity
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 The owner-accepted priority (2026-10-03) is a **1:1 Hermes Desktop product port in
 Flutter**: feature coverage, navigation, wording, interactions, state transitions
 and recovery follow Desktop, not merely equivalent outcomes. Native implementation
@@ -14,6 +17,31 @@ integration is not implemented or approved by this ledger, and existing fixed
 operation, authorization and secret-handling rules are unchanged.
 
 ## Current delivery assessment
+
+Port-wide fidelity includes welcome, screen structure, layout and visual hierarchy,
+not only feature coverage and equivalent outcomes. The owner-supplied APK screenshot
+shows Profiles/gateway-first entry and a Chat-selected/Profiles-title mismatch.
+Treat that delivered APK welcome as a parity failure. The current development
+worktree now shows a Desktop-guided welcome before the connected shell. The
+[welcome receipt](../quality/desktop-welcome.md) records bounded widget/Chromium
+qualification with explicit branding, motion and connection differences. This
+unmerged candidate does not repair the supplied APK. The
+[recovery receipt](../quality/desktop-welcome-recovery.md) separately qualifies
+isolated Linux GTK keyboard cancellation, explicit retry and process restoration.
+Android, physical keychain, live authentication and main delivery remain open.
+Earlier direct-entry receipts remain evidence for their separate connection slice.
+Chat, sessions, profiles and settings require the same reference-comparison standard.
+No new app or artifact execution occurred in this documentation pass.
+
+The [feature matrix](hermes-desktop-feature-matrix.md) separates each Desktop
+feature group into Wing's current subset, remaining gap, retained evidence and
+goal ownership. It now links delivered primary entry, footer/recents/global modal,
+reasoning disclosure, draft dictation and bounded session journeys. A separate
+table maps Android Maestro and native Linux counterpart candidates. Its not-run
+cells and syntax census belong to the earlier preparation pass, not a fresh
+platform check. Retained widget/browser receipts do not qualify native/device use.
+Follow its [runbook](../runbooks/desktop-feature-qualification.md) and retain
+unsupported outcomes and adaptive differences as parity gaps.
 
 Wing is a working Flutter client, not a visual mockup. Chat and shared client
 reliability are its strongest areas. Existing session actions, profile/model
@@ -32,6 +60,69 @@ different sizes, and no weighted completion model has been adopted. Follow the
 then matched Desktop composition and remaining capabilities, with separate
 packaging, installation, update and recovery evidence.
 
+The [latest graph/source comparison](../quality/graphify-wing-recomparison.md)
+records partial private-key UI progress, retained welcome/gate composition and
+the implemented sidebar preference. It keeps conversation tabs and native SSH
+qualification separate. Graph counts are structural evidence, not parity scores.
+Concurrent edits prevent a whole-current-tree test claim for that comparison.
+
+### Supported composer checkpoint
+
+The [wide composer receipt](../quality/chat-composer-order.md) qualifies the
+existing attachment/draft/model/Send order with named keyboard traversal, model
+loading and explicit Stop. Retained logs record 59 widget passes and one compiled
+Chromium journey. Stop placement and explicit follow-up queuing differ from
+Desktop; hands-free is a Wing addition. The [adaptive recovery receipt](../quality/chat-composer-order-recovery.md) adds
+seven owner/keyboard widgets, 68 focused passes and one compiled Chromium journey.
+Compact/wide return preserves the supported order and draft. Pending obsolete
+model/capture results cannot open a sheet or transfer focus. The
+[enlarged-text receipt](../quality/chat-composer-accessibility.md) separately qualifies
+supported controls at 200% widget text and Chromium zoom with reduced motion.
+This evidence does not close full composer, native,
+live Agent or physical-audio parity. No production change was needed for this slice.
+
+### Streamed transcript checkpoint
+
+The [streamed-order receipt](../quality/chat-transcript-order.md) records 129 focused
+widget passes and two compiled Chromium journeys. Canonical request, reasoning,
+commentary, adjacent tools and answer order survives completion and adaptive
+keyboard return. Explicit-profile approval filtering now rejects display and
+activation for another profile even when session IDs match. Nullable-profile
+compatibility is unchanged. Widgets cover session/profile/channel replacement;
+Chromium covers session replacement with exact run/decision counts and no Stop.
+The later [reconnect receipt](../quality/chat-transcript-reconnect.md) records
+391 focused passes and two Chromium journeys through canonical history recovery,
+route/viewport remount and page reload without replay. Recovered tool-result rows
+retain categories and canonical order, never tool content or inferred success.
+The [whole-transcript accessibility receipt](../quality/chat-transcript-accessibility.md)
+records two widget tests and two compiled Chromium journeys at 200% scaling/zoom.
+Tool titles wrap; keyboard disclosures and current approvals remain reachable
+after recovery and adaptive return without mutation replay. All eight selected
+receipt fingerprints match this snapshot. The later
+[native transcript receipt](../quality/native-transcript-recovery.md) records four
+Linux GTK fixture cases with keyboard tool disclosure, current-owner approval,
+explicit failure retry and delayed-owner replacement at 100/200% text. Reconnect
+and adaptive remount add no mutation replay. Its 783 archived execution inputs
+match this inspected tree. Unfinished tools, transient reasoning, process restart,
+live Agent behavior, physical input and screen-reader qualification remain open.
+The broader native transcript task stays open; do not repeat this bounded slice.
+CHAT-FIDELITY stays partial.
+These are inspected executor receipts, not a new product run or review approval.
+
+The [native Stop receipt](../quality/native-stop-recovery.md) separately records
+four passing Linux GTK fixture cases at compact/wide widths and 100/200% text.
+Keyboard Stop, uncertainty/error ownership, canonical recovery and delayed-owner
+fencing pass with zero recovery mutations. All 788 executed input hashes match
+this inspected tree. This closes the bounded native Stop task, not live Agent
+Stop, process-relaunch recovery or full M1 acceptance.
+
+The later [integrated native fixture](../quality/native-integrated-daily-restart.md)
+qualifies correlated approval, uncertain Stop, canonical recovery and two-process
+exact-session restoration together at compact/wide widths with 200% text.
+One deliberate resumed send follows explicit model reselection. Restart and route
+return add no mutations. This closes the bounded synthetic restart slice, not
+live generation, authoritative provider/model restoration or protected-main delivery.
+
 ## Leading daily-use milestone
 
 [Daily-workflow acceptance](../plans/2026-10-03-desktop-daily-workflow.md) now leads:
@@ -49,6 +140,19 @@ paused it for missing provisioning; no automatic resume is authorized. This is
 receipt-based status, not a fresh scheduler check or uptime guarantee. Historical
 cards are not promoted by this ordering.
 
+### Current bounded picker delivery
+
+The [session-pair contract trace](../quality/session-model-pair-read.md) finds
+no advertised exact-pair read in the inspected unmodified Agent. Chat now leaves
+unknown identity unselected and requires a deliberate choice before Use for
+session. Known acknowledged pairs still seed the picker; Cancel leaves state
+unchanged. This is a safe fallback, not restoration parity or a shadow cache.
+The retained focused run records 358 passes. The fresh compiled daily cases
+still fail at both widths on the exact-pair assertion; later resumed-send and
+final mutation-count assertions remain NOT_CHECKED. PARITY-PAIR-READ is done
+for its bounded delivery, while M1 remains partial. These are inspected receipts,
+not new runtime execution by this documentation pass.
+
 ### Recorded workflow checkpoint
 
 The [integrated browser receipt](../quality/2026-10-04-desktop-cron-0117-selector.md)
@@ -58,7 +162,17 @@ provider/model pair. Model-label restoration is not authoritative pair restorati
 the final resumed send and complete zero-duplicate guarantees were not reached.
 The [parent review receipt](../quality/2026-10-04-desktop-cron-0309-review-validation.md)
 validated source consistency only and withheld runtime acceptance. Native
-process-relaunch and actual approved-target generation remain unqualified.
+process-relaunch was unqualified at that checkpoint. The later
+[native receipt](../quality/native-relaunch-workflow.md) records two real Linux GTK
+processes with exact off-page history and zero replay. The later
+[combined native fixture](../quality/native-model-relaunch-workflow.md) also
+qualifies model acknowledgment, approval and Stop before restart. It preserves
+model text, not a confirmed provider/model pair; authoritative pair readback is
+unsupported. The later [native resumed-send receipt](../quality/native-resumed-send.md)
+qualifies deliberate reselection and one send to the restored exact session,
+with zero restart or route-reopen mutations. It does not repair the historical
+browser exact-pair failure or qualify live generation. Full-shell startup and
+actual approved-target generation remain unqualified.
 The [independent restoration admission review](../quality/2026-10-04-autogoal-restoration-admission-review.md)
 also concluded `SOURCE_CONSISTENT_RUNTIME_WITHHELD`. It closed the clarified
 proposal's source-review gate, not implementation authorization or runtime
@@ -72,8 +186,15 @@ owns verification methods; neither document establishes workflow acceptance.
 
 ## Reference and evidence boundary
 
-Read-only source pin: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` from
-`https://github.com/fathah/hermes-desktop`, verified with HEAD/origin and cited
+The [graph-guided shell refactor](../quality/graphify-shell-persistence.md) adds
+local sidebar-choice persistence through Riverpod. Fresh-scope restoration,
+early-click protection, ordered saves and compact/wide return have deterministic
+coverage. Actual native process relaunch remains unqualified by this slice.
+Both source graphs are retained locally, including a post-refactor Wing rebuild.
+They guide source inspection and do not establish full parity or runtime support.
+
+Read-only source pin: `withdrawn reference revision` from
+`withdrawn source`, verified with HEAD/origin and cited
 local paths on 2026-10-03. Five pre-existing `.claude` deletions remain untouched;
 the pin is not a complete dirty-tree snapshot or remote-latest claim. No Desktop
 runtime or tooling was exercised. The [UI audit](hermes-desktop-ui-gap.md) supplies
@@ -81,17 +202,60 @@ source links for Layout, profile/footer/recents, tabs, composer and transcript.
 
 | Port gap | Source-backed Desktop reference | Delivery boundary |
 | --- | --- | --- |
-| Shell collapse/expand | [Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx), `toggleSidebar` and persisted `SIDEBAR_COLLAPSED_KEY` | First-wave local toggle/regression receipt preserved; not the leading daily-use milestone. Runtime/card acceptance not observed here; relaunch persistence is a separate gap. |
-| Navigation, profile footer, recents | [Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx), [ProfileSwitcher](../../hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx), [SidebarRecentSessions](../../hermes-desktop/src/renderer/src/screens/Layout/SidebarRecentSessions.tsx) | Workflow/Utilities grouping is implemented in the production desktop shell; see the [navigation runbook](../runbooks/desktop-navigation-groups.md) for bounded widget/browser evidence and explicit adaptations. Profiles/Persona remain utility routes, not Desktop's profile-footer editor; global profile-picker placement, grouped recents and full session-modal parity remain gaps. The [global loaded-session slice](../runbooks/global-session-access.md) now supplies exact Open/New Session from feature routes without incidental reads. Unsupported routes remain visibly unavailable or hidden, not fake working screens. Grouping does not establish full sidebar or daily-workflow acceptance. |
-| Multi-conversation tabs | [ActiveSessionsBar](../../hermes-desktop/src/renderer/src/screens/Layout/ActiveSessionsBar.tsx), [chatRuns](../../hermes-desktop/src/renderer/src/screens/Layout/chatRuns.ts) | Current-session status is not parity. Exact identity, safe switching/close-stop and reconnect require independent behavior qualification. |
-| Composer and transcript fidelity | [ChatInput](../../hermes-desktop/src/renderer/src/screens/Chat/ChatInput.tsx), [MessageList](../../hermes-desktop/src/renderer/src/screens/Chat/MessageList.tsx) | Compare action order, disclosure, model/context/reasoning controls and recovery; current responsive layout is a deviation, not acceptance. |
-| Full remaining surfaces | [Discover](../../hermes-desktop/src/renderer/src/screens/Discover/Discover.tsx), [Memory](../../hermes-desktop/src/renderer/src/screens/Memory/Memory.tsx), [Kanban](../../hermes-desktop/src/renderer/src/screens/Kanban/Kanban.tsx), [Office](../../hermes-desktop/src/renderer/src/screens/Office/Office.tsx) | **Later:** complete feature coverage only through qualified authoritative contracts and accessible/native implementations. Existing partial surfaces remain gaps. |
+| Shell collapse/expand | [Layout](../quality/official-desktop-reference.md#withdrawn-evidence), `toggleSidebar` and persisted `SIDEBAR_COLLAPSED_KEY` | First-wave local toggle/regression receipt preserved; not the leading daily-use milestone. Runtime/card acceptance not observed here; relaunch persistence is a separate gap. |
+| Navigation, profile footer, recents | [Layout](../quality/official-desktop-reference.md#withdrawn-evidence), [ProfileSwitcher](../quality/official-desktop-reference.md#withdrawn-evidence), [SidebarRecentSessions](../quality/official-desktop-reference.md#withdrawn-evidence) | Workflow/Utilities grouping is implemented in the production desktop shell; see the [navigation runbook](../runbooks/desktop-navigation-groups.md) for bounded widget/browser evidence and explicit adaptations. Profiles/Persona remain utility routes. The [passive footer](../quality/profile-footer-implementation.md) adds current-profile display and Manage profiles navigation, not Desktop's split edit/switch controls; the later [source-grouped recents](../quality/grouped-recents-implementation.md) preserve loaded order and exact Open/New without incidental reads. Global profile-picker placement and Project/folder grouping remain gaps. The [global modal](../quality/global-session-modal.md) now reuses loaded search, gated management and exact acknowledged activation over feature routes; deterministic focus/cancellation evidence does not qualify native/live or screen-reader parity. The [global loaded-session slice](../runbooks/global-session-access.md) now supplies exact Open/New Session from feature routes without incidental reads. Unsupported routes remain visibly unavailable or hidden, not fake working screens. Grouping does not establish full sidebar or daily-workflow acceptance. |
+| Multi-conversation tabs | [ActiveSessionsBar](../quality/official-desktop-reference.md#withdrawn-evidence), [chatRuns](../quality/official-desktop-reference.md#withdrawn-evidence) | Current-session status is not parity. Exact identity, safe switching/close-stop and reconnect require independent behavior qualification. |
+| Composer and transcript fidelity | [ChatInput](../quality/official-desktop-reference.md#withdrawn-evidence), [MessageList](../quality/official-desktop-reference.md#withdrawn-evidence) | The [reasoning implementation](../quality/reasoning-disclosure-implementation.md) delivers Thinking…/Thought and keyboard disclosure focus with executor-reported deterministic checks. The later [recovery receipt](../quality/reasoning-disclosure-recovery.md) records mounted-update, eviction/remount and read-only reconnect checks; HTTP history drops transient reasoning. The [adaptive receipt](../quality/reasoning-disclosure-adaptive.md) qualifies compact/wide keyboard return under reduced motion with current-owner expansion retained and remounted focus reachable. The [enlarged-text receipt](../quality/reasoning-disclosure-accessibility.md) separately covers 200% widget text scaling and Chromium zoom, completion and collapsed reused-ID owner replacement; native/live and screen-reader qualification remain separate. Compare remaining action order, model/context/reasoning controls and recovery; current responsive layout is a deviation, not full acceptance. |
+| Full remaining surfaces | [Discover](../quality/official-desktop-reference.md#withdrawn-evidence), [Memory](../quality/official-desktop-reference.md#withdrawn-evidence), [Kanban](../quality/official-desktop-reference.md#withdrawn-evidence), [Office](../quality/official-desktop-reference.md#withdrawn-evidence) | **Later:** complete feature coverage only through qualified authoritative contracts and accessible/native implementations. Existing partial surfaces remain gaps. |
 
 Follow the [daily-workflow plan](../plans/2026-10-03-desktop-daily-workflow.md) and
 [Now/Next/Later](../../ROADMAP.md#now--next--later). This documentation lane observes
 source only: new implementation, browser/native/device/live Agent execution, card
 acceptance and release qualification are **not observed**.
 
+
+## Connection-path parity
+
+Desktop Welcome offers Get Started (local install/reuse), Connect via SSH and
+Connect to Remote Hermes. Settings manages named saved connections. The
+[source comparison](desktop-connection-paths.md) traces those paths at the pinned
+checkout and records managed SSH's remote-service side effects.
+
+Wing currently offers Local, SSH and Remote as primary choices, with Remote HTTPS
+and VPN / NetBird / Tailscale nested under Remote. The SSH choice uses a tunnel
+started outside Wing, not managed native
+SSH. Local setup and direct endpoint/enrollment workflows exist, but three
+working Desktop-equivalent onboarding paths are not qualified. The
+[saved-host receipt](../quality/saved-connection-owner-safety.md) qualifies public
+rename/remove cancellation, stale consent, delayed storage settlement and generic
+failure/retry behavior. Separate [saved editor evidence](../quality/saved-endpoint-edit.md)
+qualifies exact-ID editing and direct read-only Test through widgets/Chromium.
+The [native editor receipt](../quality/saved-endpoint-edit-native.md) also records
+four passing Linux GTK fixture journeys with fake endpoint storage. The later
+[real-storage receipt](../quality/saved-endpoint-storage-native.md) qualifies repair,
+explicit denied-save retry and two-process persistence through isolated Linux
+libsecret/GNOME Keyring at its frozen candidate. Later editor changes, other keyring
+failure modes, Local setup, full Remote authentication and OAuth remain unqualified.
+The later [feedback accessibility receipt](../quality/saved-endpoint-feedback-accessibility.md)
+qualifies complete compact/wide guidance and Test/Save notices with keyboard
+focus and paging at 100/200% text in widgets and Linux GTK fixtures. Screen
+readers, physical input and real-storage qualification of this later editor remain open.
+The separate
+[native retry receipt](../quality/remote-connection-retry-native.md) records passing
+Linux GTK fixture auth/save recovery, including delayed draft/owner settlement.
+Injected storage and logical keys do not qualify physical keychain/input, live
+authentication, Android or main delivery. The final rerun includes Go-module
+isolation and six passing launcher regressions. Its archived candidate does not
+qualify later Chat/storage changes or the whole current worktree.
+
+CONNECTION-PATHS tracks primary entry and existing-flow composition.
+REMOTE-BACKENDS retains managed SSH and the separate Docker/WSL lifecycle gaps.
+The proposed first SSH implementation connects an already-configured Agent after
+bounded native-contract review. Remote bootstrap remains separate. Browser OAuth,
+native SSH and live authentication cannot be inferred from Desktop source or a
+fixture pass. See [requirements](prd.md#connection-path-requirements),
+[verification](../test-plan.md#connection-path-verification) and
+[root TODO](../../TODO.md#now--next).
 
 ## Supporting Chat repairs
 
@@ -138,7 +302,11 @@ Desktop parity. The governor separately archived `t_11b62717` as superseded,
 not done or approved. Global loaded-session access `t_1c1e6f37` is completed and
 independently approved in run 169. Its [runbook](../runbooks/global-session-access.md)
 records the bounded Open/New Session surface and remaining qualification limits.
-Grouped recents, the profile footer and full session-modal parity remain gaps.
+The [passive profile footer](../quality/profile-footer-implementation.md) is now
+delivered with bounded widget/browser evidence. The later
+[source-grouped recents](../quality/grouped-recents-implementation.md) deliver
+loaded-row grouping, not Desktop Project/folder grouping. Split edit/switch
+controls and complete composition remain gaps. The [global session modal](../quality/global-session-modal.md) delivers feature-route access and bounded keyboard/owner recovery. Its [adaptive receipt](../quality/global-session-modal-adaptive.md) adds compact/short-window reachability at separate 200% text/zoom under reduced motion; native/live and screen-reader qualification remain separate.
 
 ## Statuses
 
@@ -164,7 +332,7 @@ Grouped recents, the profile footer and full session-modal parity remain gaps.
 | Kanban/task planning                                                          | contract-blocked | No board state                                                    | Agent-owned Hermes Project/card contract plus opaque directory grants  |
 | Backup/import, debug dump, log viewer, config health/fixes                    | partial          | Bounded diagnostics and local settings                            | Redacted structured diagnostics and atomic backup contracts            |
 | Account/OAuth/credential pools, credits, wallet balances                      | contract-blocked | No account route                                                  | Exact account/provider/wallet contracts and secure OAuth handoff       |
-| SSH/Docker/WSL remote backends                                                | contract-blocked | Typed gateway connections only                                    | Fixed Wing Link backend profiles and lifecycle contracts               |
+| SSH/Docker/WSL remote backends                                                | contract-blocked | Typed endpoints and externally managed SSH tunnel access          | Reviewed native SSH forwarding and separate typed Docker/WSL lifecycle contracts |
 | Web preview, file viewer, attachments/media                                   | partial          | Text/image attachments and bounded transcript media               | Advertised artifact/preview contracts and directory grants             |
 | Office 3D/Claw3d management                                                   | partial          | Accessible 2D Office path; full Desktop interaction parity missing | Qualified native/3D implementation; accessible 2D remains required     |
 | Auto-updates and desktop window/install flows                                 | partial          | Linux install/build and native menu commands                      | Signed manifest, activation, health, and rollback evidence             |

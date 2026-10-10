@@ -1,0 +1,102 @@
+--- a/lib/features/local_setup/providers/local_hermes_setup_provider.dart
++++ b/lib/features/local_setup/providers/local_hermes_setup_provider.dart
+@@ -5,6 +5,12 @@
+ import 'package:flutter_riverpod/legacy.dart';
+
+ import '../../../core/wing_link/local_wing_link_host.dart';
++
++// Overridden only by deterministic qualification hosts; browsers cannot spawn
++// the native setup helper in production.
++final localLinuxSetupAvailableProvider = Provider<bool>(
++  (ref) => !kIsWeb && defaultTargetPlatform == TargetPlatform.linux,
++);
+
+ final localWingLinkHostProvider = Provider<LocalWingLinkHost>(
+   (ref) => LocalWingLinkHost(),
+--- a/lib/features/enrollment/screens/hermes_enrollment_screen.dart
++++ b/lib/features/enrollment/screens/hermes_enrollment_screen.dart
+@@ -12,6 +12,7 @@
+ import '../widgets/enrollment_readiness.dart';
+ import '../widgets/hermes_welcome.dart';
+ import '../../hermes_chat/screens/hermes_chat_screen.dart';
++import '../../local_setup/providers/local_hermes_setup_provider.dart';
+ import '../models/hermes_enrollment_payload.dart';
+ import '../providers/hermes_enrollment_provider.dart';
+ import '../services/hermes_connect_intent_source.dart';
+@@ -604,7 +605,7 @@
+   Widget _chooserActions() {
+     final s = AppLocalizations.of(context);
+     final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+-    final linux = !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
++    final linux = ref.watch(localLinuxSetupAvailableProvider);
+     Widget choice(
+       String key,
+       IconData icon,
+--- a/lib/router/providers/app_router.dart
++++ b/lib/router/providers/app_router.dart
+@@ -9,6 +9,7 @@
+ import '../../features/hermes_chat/screens/hermes_add_screen.dart';
+ import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
+ import '../../features/local_setup/screens/local_hermes_setup_screen.dart';
++import '../../features/local_setup/providers/local_hermes_setup_provider.dart';
+ import '../../features/local_setup/screens/termux_hermes_setup_screen.dart';
+ import '../../features/office/screens/office_screen.dart';
+ import '../../features/providers/screens/providers_screen.dart';
+@@ -170,9 +171,8 @@
+       GoRoute(
+         path: AppRoutes.localSetup,
+         redirect: (_, _) =>
+-            !kIsWeb &&
+-                (defaultTargetPlatform == TargetPlatform.android ||
+-                    defaultTargetPlatform == TargetPlatform.linux)
++            ref.read(localLinuxSetupAvailableProvider) ||
++                (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+             ? null
+             : AppRoutes.enroll,
+         builder: (context, state) => _SelectableRoute(
+--- a/test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart
++++ b/test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart
+@@ -30,6 +30,7 @@
+   testWidgets(
+     'Remote and VPN explain token support without claiming OAuth detection',
+     (tester) async {
++      final semantics = tester.ensureSemantics();
+       final channel = FakeHermesChannel.disconnected();
+       await tester.pumpWidget(
+         ProviderScope(
+@@ -69,9 +70,11 @@
+           expect(copy, contains('OAuth-only server cannot currently connect'));
+           expect(copy, contains('retry explicitly'));
+           expect(copy, isNot(contains('detected')));
++          expect(find.bySemanticsLabel(copy), findsOneWidget);
+         }
+       }
+       expect(channel.connectCalls, isEmpty);
++      semantics.dispose();
+     },
+   );
+ }
+--- a/lib/features/hermes_chat/screens/state/hermes_chat_layout.dart
++++ b/lib/features/hermes_chat/screens/state/hermes_chat_layout.dart
+@@ -214,11 +214,16 @@
+                     const SizedBox(height: 12),
+                     Focus(
+                       key: const ValueKey('hermes-remote-auth-focus'),
+-                      child: SelectableText(
+-                        strings.chatLayoutRemoteAuthExplanation,
+-                        key: const ValueKey('hermes-remote-auth-explanation'),
+-                        style: theme.textTheme.bodyMedium?.copyWith(
+-                          height: 1.4,
++                      child: Semantics(
++                        container: true,
++                        label: strings.chatLayoutRemoteAuthExplanation,
++                        excludeSemantics: true,
++                        child: SelectableText(
++                          strings.chatLayoutRemoteAuthExplanation,
++                          key: const ValueKey('hermes-remote-auth-explanation'),
++                          style: theme.textTheme.bodyMedium?.copyWith(
++                            height: 1.4,
++                          ),
+                         ),
+                       ),
+                     ),

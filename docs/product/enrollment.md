@@ -5,16 +5,43 @@ Agent endpoint, through an explicit handoff, or while adding another host.
 `/enroll?step=pair` opens the pairing step after local setup. The query contains
 only navigation state, never a handoff, credential, host address, or pairing code.
 
+## Desktop connection-path alignment
+
+The [connection requirements](prd.md#connection-path-requirements) call for Local,
+SSH and Remote primary first-run entry without mandatory Wing Link installation,
+pairing or credentials. In the current development worktree, Chat Add and
+connect-another actions open the direct endpoint form. The enrollment chooser
+also offers **Add Hermes** before **Optional setup and pairing**. The form keeps
+Local/SSH/Remote grouping. The [first-run receipt](../quality/direct-first-run.md)
+records passing widgets and compiled Chromium journeys on Linux. This is bounded
+deterministic qualification. The [native first-run receipt](../quality/direct-first-run-native.md)
+also records Linux GTK fixture journeys. Main delivery, Android and live
+authentication remain separate gaps.
+Wing does not yet manage SSH processes.
+
+Reuse the direct Agent channel and secure endpoint storage, not a mandatory
+management exchange. Retain pairing only as a separate optional management flow.
+Missing Agent APIs must leave affected features unavailable with an explanation.
+No new backend, shadow state or broader compatibility adapter is authorized.
+
+Pairing transfers approved host authority. Connecting through SSH is not pairing
+and must not implicitly install Wing Link, create credentials or restart Agent.
+Keep the manual single-profile Agent connection available. See the
+[Desktop comparison](desktop-connection-paths.md) for source evidence and limits.
+
 ## Journey
 
-The opening question offers three outcomes rather than a list of transfer methods:
+The current development chooser offers direct **Add Hermes** access first.
+The following describes the separate **optional management enrollment** choices.
+Their existing trust and transaction contracts remain unchanged:
 
 - **Use this phone** on native Android (or local setup on native Linux).
 - **Use another computer** for a Linux host reached through a trusted VPN.
 - **I have a QR code or pairing link** for an existing host.
 
-Manual Agent credentials appear inside pairing as an advanced, single-profile
-alternative. That path does not import Wing Link management access.
+Pairing retains advanced manual single-profile Agent connection as a recovery
+alternative. Primary **Add Hermes** and that recovery path both use direct Agent
+connection; neither imports Wing Link management access.
 
 ### This phone
 

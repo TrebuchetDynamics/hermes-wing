@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
@@ -182,7 +183,12 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       _expectCount(0);
-      expect(h.router.routeInformationProvider.value.uri.path, '/profiles');
+      expect(
+        GoRouterState.of(
+          tester.element(find.text('Profiles destination')),
+        ).uri.path,
+        '/profiles',
+      );
       expect(find.text('Profiles destination'), findsOneWidget);
       profile.expectNoMutations(h.channel);
       expect(tester.takeException(), isNull);

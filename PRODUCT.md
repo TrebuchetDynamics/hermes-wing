@@ -16,11 +16,11 @@ Port Hermes Desktop's UI and product behavior to a working Flutter client. The l
 
 ## Operating Context
 
-The existing Flutter application targets desktop, web and mobile. The first redesign slice is the desktop shell/sidebar; Chat follows. Implementation and named-platform qualification are separate outcomes.
+The existing Flutter application targets desktop, web and mobile. The current entry prerequisite is direct connection. After it, prioritize reliable away-and-return chat, visible job status and notifications over unrelated cosmetic work. See [user-demand acceptance](docs/product/prd.md#user-demand-emphasis). Implementation and named-platform qualification are separate outcomes.
 
 ## Capabilities and Constraints
 
-Hermes Agent owns domain state. Wing Link is a separate authenticated host-management plane, not a chat proxy or arbitrary shell. Reuse existing Riverpod, channel and adaptive routing contracts. Never patch upstream references, create shadow domain state, expose unsupported mutations, or weaken identity, authorization, containment or credential handling.
+Hermes Agent owns domain state. Wing Link is deprecated legacy host-management code awaiting retirement, not a supported product prerequisite. Reuse existing Riverpod, channel and adaptive routing contracts. Never patch upstream references, create shadow domain state, expose unsupported mutations, or weaken identity, authorization, containment or credential handling.
 
 ## Brand Commitments
 
@@ -28,10 +28,12 @@ Use the name Hermes Wing. The owner explicitly pinned the checked-out Hermes Des
 
 ## Evidence on Hand
 
+[Official reference correction](docs/quality/official-desktop-reference.md) withdraws the prior comparisons. Re-map the official source before claiming product fidelity.
+
 - [Product requirements](docs/product/prd.md)
 - [Architecture decisions](docs/adr/README.md)
 - [Desktop parity ledger](docs/product/hermes-desktop-parity.md)
-- Read-only reference implementation: `hermes-desktop/`.
+- Read-only reference implementation: `hermes-agent/apps/desktop/` in Nous Research Hermes Agent.
 
 Source, deterministic fixtures and screenshots do not establish live inference, native integration, release readiness or full parity.
 

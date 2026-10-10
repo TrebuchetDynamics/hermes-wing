@@ -11,7 +11,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     file: open.yaml
     env:
       SCREEN: Chat fixture
-- tapOn: '(?s).*Message Hermes.*'
+- tapOn: '(?s).*Message Fixture profile.*'
 - inputText: Fixture deny turn
 - hideKeyboard
 - tapOn: '^Send$'
@@ -28,7 +28,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     direction: DOWN
 - assertVisible: "Approval decisions: 1"
 - tapOn: Close controls
-- tapOn: '(?s).*Message Hermes.*'
+- tapOn: '(?s).*Message Fixture profile.*'
 - inputText: Fixture stopped turn
 - hideKeyboard
 - tapOn: '^Send$'
@@ -53,8 +53,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     file: control.yaml
     env:
       ACTION: Reconnect fixture
-- assertVisible: '^Profiles$'
-- tapOn: '(?s).*Fixture gateway.*DEFAULT.*'
+- assertVisible: '(?s).*Fixture decision once.*'
 - tapOn: Fixture controls
 - scrollUntilVisible:
     element:
@@ -69,6 +68,14 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     direction: DOWN
 - assertVisible: "Approval decisions: 2"
 - tapOn: Close controls
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Stop calls: 1'
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Active session: sess_1'
 - assertVisible: '(?s).*Fixture decision once.*'
 - runFlow:
     file: control.yaml

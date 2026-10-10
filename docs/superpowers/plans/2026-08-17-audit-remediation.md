@@ -1,5 +1,7 @@
 # Audit Remediation Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Internal repairs do not establish product parity.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Address the 2026-08-17 technical audit findings — land the in-flight refactor, tame the HermesApiChannel god-object, retire brittle meta-tests, and harden security-critical parsers — without disturbing unrelated product work.

@@ -4,7 +4,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - runFlow: configured_create.yaml
 - tapOn: Chat with setup-qa
 - assertVisible: '(?s).*MODEL_RECEIPT::setup-qa::openrouter::fixture-model::fixture-configured-profile::assistant.*'
-- tapOn: '(?s).*Message Hermes.*'
+- tapOn: '(?s)^Message .*[.…]$'
 - inputText: fixture-model-followup
 - hideKeyboard
 - tapOn: '^Send$'

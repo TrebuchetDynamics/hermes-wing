@@ -1,5 +1,8 @@
 # M2 QA runtime writer caller closure
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Card: `t_481b1474`. Backlog: `DOC-M2-RUNTIME-CALLER-CLOSURE`.
 Status: source-bound preparation only; runtime migration NOT_AUTHORIZED.
 M2 remains unverified; qualifies=false. No installed authority is inferred.
@@ -28,7 +31,7 @@ reflection/dynamic-call, generated/package/plugin, installed binary, external
 consumer or cross-process closure. Arbitrary future consumers can still import
 public Dart APIs. No upstream/tools/build/vendor/private-state tree was scanned.
 No Agent contract or Desktop parity change is proposed; their confirmed read-only
-reference locations are `hermes-agent/` and `hermes-desktop/` per AGENTS.md.
+reference locations are `hermes-agent/` and `withdrawn source citation` per AGENTS.md.
 
 ## Present reachable paths
 

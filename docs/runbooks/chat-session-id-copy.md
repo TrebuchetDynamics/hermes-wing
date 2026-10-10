@@ -1,5 +1,8 @@
 # Copy an exact Chat session ID
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## User flow
 
 Open a session row's **Session actions** menu and choose **Copy session ID**.
@@ -69,5 +72,5 @@ changes are part of this verification.
 
 See [client architecture](../adr/client.md) and
 [route support](../product/routes.md). The read-only Desktop reference is
-`hermes-desktop/src/renderer/src/screens/Layout/SidebarSessionMenu.tsx`, whose
+`withdrawn source citation`, whose
 Copy session ID callback uses the selected `target.id`.

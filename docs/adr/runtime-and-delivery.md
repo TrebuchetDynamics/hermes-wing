@@ -4,8 +4,9 @@ Status: current decision
 
 ## Decision
 
-Hermes Agent remains an external authoritative runtime. Hermes Wing packages may
-include Wing Link, but never embed Hermes Agent or create a second domain backend.
+Hermes Agent remains an external authoritative runtime. Wing Link packaging is
+deprecated and scheduled for removal, but remains in current code. Wing must never
+embed Hermes Agent or create a second domain backend.
 
 ### Hard boundary: never modify Hermes Agent
 
@@ -51,6 +52,13 @@ defer only their individual operations; they do not justify upstream patches, a
 data-plane proxy, merged credentials or broad compatibility expansion.
 
 ### Management and compatibility
+
+Deprecation: the [product decision](product.md#wing-link-deprecation) supersedes
+Wing Link as the target host-management architecture. The following contracts
+bound retained legacy code until removal; they do not authorize new dependencies
+or compatibility expansion. Replacement local operations require their own
+bounded review. Agent-only migration must preserve secure connection records,
+profile ownership and no-replay behavior.
 
 Wing Link is the authenticated remote management plane on the Hermes host. It
 owns installation/adoption, pairing, lifecycle, health, diagnostics, host

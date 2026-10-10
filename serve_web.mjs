@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { handleLifecycle } from './playwright/support/hermes_lifecycle_fixture.mjs';
+import { writeTranscriptOrderPrelude, finishTranscriptOrder } from './playwright/support/hermes_transcript_order_fixture.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "build/web");
@@ -58,6 +59,8 @@ const hermesState = {
   modelLocks: [],
   rejectModelLock: false,
   sessionRestoration: null,
+  reasoningDisclosure: false,
+  reasoningRecovery: false,
   lifecycle: null,
 };
 
@@ -67,6 +70,9 @@ function resetHermesState() {
     pending.resolve("reset");
   }
   hermesState.sessionRestoration = null;
+  hermesState.reasoningDisclosure = false;
+  hermesState.reasoningRecovery = false;
+  hermesState.transcriptOrder = false;
   hermesState.lifecycle = null;
   hermesState.sessions = [
     {
@@ -142,8 +148,9 @@ function findHermesSession(id) {
   return hermesState.sessions.find((session) => session.id === id);
 }
 
-function sessionMetadata({ messages, ...session }) {
-  return { ...session, message_count: messages.length,
+function sessionMetadata({ messages, runtime, ...session }) {
+  // Agent's session GET projects model text and config presence, not the lock.
+  return { ...session, has_model_config: Boolean(runtime), message_count: messages.length,
     preview: messages.at(-1)?.content ?? "" };
 }
 
@@ -166,12 +173,47 @@ function restorationReceipt() {
 
 async function handleHermesApi(req, res, url) {
   if (req.method === "OPTIONS") return json(res, 204, {});
+  if (req.method === 'POST' && url === '/e2e/hermes/transcript-order') {
+    resetHermesState();
+    hermesState.transcriptOrder = true;
+    hermesState.sessions.push({ id: 'synthetic-order-other', source: 'e2e',
+      title: 'Synthetic order other', model: 'hermes-agent', messages: [] });
+    return json(res, 200, { synthetic: true });
+  }
   const lifecycleHandled = await handleLifecycle(req, res, url, hermesState,
     json, readJsonBody, resetHermesState);
   if (lifecycleHandled !== false) return lifecycleHandled;
   if (req.method === "POST" && url === "/e2e/hermes/reset") {
     resetHermesState();
     return json(res, 200, { reset: true });
+  }
+  // Bounded reasoning scenario uses the existing Agent event contract only.
+  if (req.method === "POST" && url === "/e2e/hermes/reasoning-disclosure-recovery") {
+    resetHermesState();
+    hermesState.reasoningDisclosure = true;
+    hermesState.reasoningRecovery = true;
+    hermesState.sessions.push({ id: 'synthetic-reasoning-other', source: 'e2e',
+      title: 'Synthetic reasoning other', model: 'hermes-agent', messages: [] });
+    return json(res, 200, { synthetic: true });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/reasoning-disclosure") {
+    resetHermesState();
+    hermesState.reasoningDisclosure = true;
+    hermesState.sessions.push({ id: 'synthetic-reasoning-other', source: 'e2e',
+      title: 'Synthetic reasoning other', model: 'hermes-agent', messages: [] });
+    return json(res, 200, { synthetic: true });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/reasoning-disclosure/complete") {
+    const run = [...hermesState.runs.values()].find(run => run.reasoning && run.status === 'running');
+    if (!run?.release) return json(res, 409, { error: 'no pending synthetic reasoning run' });
+    run.release('complete');
+    return json(res, 200, { run_id: run.id, session_id: run.session_id });
+  }
+  if (req.method === "POST" && url === "/e2e/hermes/reasoning-disclosure-recovery/interrupt") {
+    const run = [...hermesState.runs.values()].find(run => run.reasoning && run.status === 'running');
+    if (!run?.release) return json(res, 409, { error: 'no pending synthetic reasoning run' });
+    run.release('interrupt');
+    return json(res, 200, { synthetic: true });
   }
   // Test-only fixed synthetic inventory and explicit read gates, never Agent routes.
   if (req.method === "POST" && url === "/e2e/hermes/session-restoration") {
@@ -607,6 +649,8 @@ async function handleHermesApi(req, res, url) {
       reply,
       approval_id: `approval_${runId}`,
       presentation,
+      reasoning: hermesState.reasoningDisclosure,
+      transcriptOrder: hermesState.transcriptOrder,
       status: "running",
       release: null,
     });
@@ -636,6 +680,44 @@ async function handleHermesApi(req, res, url) {
       "Access-Control-Allow-Origin": "*",
       "Cache-Control": "no-store",
     });
+    if (run.reasoning) {
+      const text = run.session_id === 'synthetic-reasoning-other'
+        ? 'Synthetic fresh reasoning at /tmp/synthetic-fresh.txt'
+        : 'Synthetic old reasoning at /tmp/synthetic-old.txt';
+      res.write(`event: reasoning.available\ndata: ${JSON.stringify({ run_id: run.id,
+        session_id: run.session_id, text })}\n\n`);
+      const decision = await new Promise(resolve => {
+        run.release = resolve;
+        res.once('close', () => resolve('closed'));
+      });
+      if (decision === 'interrupt' && !res.writableEnded) {
+        run.status = 'failed';
+        res.end();
+        return;
+      }
+      if (decision !== 'complete' || res.writableEnded) return;
+      // Fixed event burst evicts the earlier disclosure from the 100-turn
+      // projection. It exercises existing tool events, not new wire fields.
+      if (hermesState.reasoningRecovery) {
+        for (let i = 0; i < 100; i++) {
+          res.write(`event: tool.started\ndata: ${JSON.stringify({
+            tool: 'synthetic_probe', tool_call_id: `synthetic-${i}`, preview: `Synthetic bounded activity ${i}`,
+          })}\n\n`);
+          res.write(`event: tool.completed\ndata: ${JSON.stringify({
+            tool: 'synthetic_probe', tool_call_id: `synthetic-${i}`, result_text: 'Synthetic activity complete',
+          })}\n\n`);
+        }
+      }
+      run.status = 'completed';
+      findHermesSession(run.session_id)?.messages.push({
+        id: `msg_${hermesState.nextMessageId++}`, role: 'assistant', content: run.reply,
+      });
+      res.end(`event: message.delta\ndata: ${JSON.stringify({ delta: run.reply })}\n\n` +
+        `event: run.completed\ndata: ${JSON.stringify({ run_id: run.id,
+          session_id: run.session_id, status: 'completed' })}\n\n` + 'data: [DONE]\n\n');
+      return;
+    }
+    if (run.transcriptOrder) writeTranscriptOrderPrelude(res, run);
     res.write(
       `event: approval.request\ndata: ${JSON.stringify({
         run_id: run.id,
@@ -674,6 +756,10 @@ async function handleHermesApi(req, res, url) {
       ? "Gateway checks complete"
       : "tool complete";
     if (run) run.status = "completed";
+    if (run.transcriptOrder) {
+      finishTranscriptOrder(res, run);
+      return;
+    }
     res.end(
       `event: tool.started\ndata: ${JSON.stringify({
         tool,

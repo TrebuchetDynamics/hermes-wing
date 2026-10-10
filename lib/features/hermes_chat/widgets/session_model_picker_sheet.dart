@@ -10,10 +10,14 @@ class SessionModelPickerSheet extends StatefulWidget {
     required this.options,
     required this.onLock,
     this.currentSessionModel,
+    this.requireExplicitSelection = false,
     super.key,
   });
   final HermesModelOptions options;
   final HermesSessionModelLock? currentSessionModel;
+
+  /// Do not substitute a catalog default for an unknown session identity.
+  final bool requireExplicitSelection;
   final Future<void> Function(String provider, String model) onLock;
 
   @override
@@ -51,6 +55,7 @@ class _SessionModelPickerSheetState extends State<SessionModelPickerSheet> {
       _model = _currentModel;
       return;
     }
+    if (widget.requireExplicitSelection) return;
     final initial =
         _providers.where((p) => p.slug == _currentProvider).firstOrNull ??
         _providers.firstOrNull;
@@ -158,6 +163,11 @@ class _SessionModelPickerSheetState extends State<SessionModelPickerSheet> {
                     ),
                     const SizedBox(height: 8),
                     Text(strings.sessionModelPickerDescription),
+                    if (widget.requireExplicitSelection &&
+                        widget.currentSessionModel == null) ...[
+                      const SizedBox(height: 8),
+                      Text(strings.sessionModelIdentityNotReported),
+                    ],
                     const SizedBox(height: 16),
                     if (_providers.isEmpty)
                       Text(strings.sessionModelCatalogEmpty)
@@ -284,6 +294,9 @@ class _SessionModelPickerSheetState extends State<SessionModelPickerSheet> {
                                   '${selected!.label} ($_provider)',
                                   _model!,
                                 )
+                              : _model == null &&
+                                    widget.requireExplicitSelection
+                              ? strings.sessionModelChooseExplicitly
                               : strings.sessionModelSelectionUnavailable,
                         ),
                       ),

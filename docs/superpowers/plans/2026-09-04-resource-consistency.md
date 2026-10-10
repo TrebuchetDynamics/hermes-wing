@@ -1,5 +1,7 @@
 # Resource Consistency Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Preserve source-bound Wing checks without relabeling them as parity.
+
 ### Additional connection checkpoint (2026-09-04)
 
 A deferred secure-store save reproduced a stale connection-attempt completion

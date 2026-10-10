@@ -1,10 +1,17 @@
 # Desktop daily-use workflow — 2026-10-03
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Re-trace official flows before claiming matched parity.
+
 Status: owner-accepted outcome and ordering; implementation/qualification open.
 Authoritative continuation ownership: [goal ledger](2026-10-03-desktop-port-goal.md).
 
 ## Accepted decisions and scope
 
+- Owner correction, 2026-10-07: Local, SSH and Remote connect directly to Hermes
+  Agent. Wing Link installation, pairing and credentials are not prerequisites.
+  First-run entry must match Desktop rather than force a management setup detour.
+  Direct manual access exists; its primary-entry redesign and Wing-managed SSH
+  remain implementation work. Missing Agent APIs are explained as unavailable.
 - Desktop-first fidelity on Flutter desktop and wide web. Preserve compact/mobile
   usability; Android adaptations follow the matched Desktop flow, not a separate
   product goal. Wide web does not acquire local process/filesystem privileges.
@@ -23,6 +30,81 @@ Non-goals: new backend, native-web migration, arbitrary CLI, privileged Desktop
 IPC copying, upstream changes, personal runtime/credential access, full tabs,
 release/distribution, or automatic card transitions. Existing independent evidence
 and dirty work must remain intact.
+
+## Official lifecycle source trace
+
+Use the [bounded knowledge findings](../analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences)
+from official revision `158fd638da1629c8e62caf9ade1515d162def8ab`.
+This adds source-backed acceptance leads, not execution evidence or a new milestone.
+
+1. Trace one full send → stream → input request → Stop → disconnect → resume path.
+   Record connection, profile, durable session, runtime session and lineage identity
+   at each boundary. Identify the live Wing caller and nearest regression first.
+2. Compare `store/gateway.ts` request routing and lease cleanup with Wing's owner
+   admission. Timeout, abort, disconnect and late results must not retarget requests.
+3. Trace production helpers behind `warm-resume-replay-barrier.test.tsx` before
+   translating warm activation, socket loss, cold resume, REST races and background
+   refresh scenarios. Recovered history and held live events must settle in canonical
+   order, without duplicate sends or replayed approvals.
+4. Compare captured-session interruption and pending-input cleanup in
+   `use-prompt-actions/index.ts`. Prove success and failure recovery. Expired or
+   withdrawn approvals must become inoperable and have an accessible explanation.
+   Clearing the UI or closing a stream is not authoritative Stop.
+5. Add the smallest behavior regression and production correction under existing
+   task ownership. Keep pane subscriptions scoped so unrelated drafts and views
+   survive streaming and background refresh. Qualify compact/wide interaction and
+   named native targets separately.
+
+Desktop paths above are within `hermes-agent/apps/desktop/src/`; the shared replay
+transport is `hermes-agent/apps/shared/src/json-rpc-gateway.ts`. Production Wing
+REST/SSE is not declared compatible with Desktop JSON-RPC by this plan. Preserve
+actual operation gating and unsupported behavior until qualified. Existing connection
+and recovery tasks own this work; do not close them on graph or source results.
+
+## Owner update — Wing implementation and QA
+
+The subsequent Telegram interview selected a disposable local QA Agent/profile.
+Wing owns implementation, test preparation, execution, failure diagnosis and fixes.
+The owner does not coordinate individual QA steps. Prioritize the complete daily-use
+workflow over labels, matrix maintenance or isolated shell polish.
+
+- Keep the personal Agent runtime, credentials, client state and system packages
+  unchanged. Use isolated QA preferences, workspace and an owned display.
+- Allow at most three short QA generations through separately authorized
+  subscription/test access. No metered spending or purchase is authorized without
+  another approval. Count and report actual usage. Do not assume tool continuations
+  or failed attempts are free or automatically retry them beyond the limit.
+- Default applied: harmless read-only checks and scratch-workspace-only test actions.
+  The owner delegated QA rather than selecting a tool-operation option. This default
+  does not authorize arbitrary host commands or external side effects.
+- Wing selects reversible setup details and repairs reproduced workflow failures.
+  Use supported unmodified Agent contracts. Do not copy personal credentials,
+  patch Agent, weaken tests or manufacture approval/Stop support.
+- Request owner input only for authentication or permissions Wing cannot complete
+  safely, or spending outside the approved limit. Prepare independent work first.
+  Use the supported secret-safe flow, never ordinary chat for credentials.
+
+This records responsibility, target strategy and usage limits, not a provisioned
+Agent, authenticated provider or passing workflow. The
+`PARITY-NATIVE-RELAUNCH` slice is delivered for the bounded synthetic Linux workflow.
+See the [receipt](../quality/native-relaunch-workflow.md).
+`VERIFY-NATIVE-MODEL-RELAUNCH` delivered the
+[combined native fixture](../quality/native-model-relaunch-workflow.md), not exact
+provider/model persistence: the inspected Agent contract cannot read that pair.
+Restart preserves model text and requires explicit re-selection.
+`VERIFY-NATIVE-RESUMED-SEND` delivered
+[explicit reselection and one resumed send](../quality/native-resumed-send.md)
+on the restored exact session in two isolated Linux GTK processes. Restart,
+Cancel and route reopening add no mutations. This is synthetic qualification;
+the separately scoped `PARITY-LIVE-WORKFLOW` retains actual generation proof.
+The later `M1-NATIVE-INTEGRATED-RESTART`
+[integrated fixture](../quality/native-integrated-daily-restart.md) is complete
+for correlated approval, uncertain Stop, canonical recovery and two-process
+exact-session restart together. Compact/wide Linux GTK journeys use 200% text,
+explicit model reselection and one resumed send without recovery replay.
+This is frozen-source synthetic qualification, not live generation or main delivery.
+Full M1 acceptance remains open.
+This update creates no worker lease, resumes no schedule and authorizes no release.
 
 ## Binding architecture and native-design prerequisite
 
@@ -110,7 +192,7 @@ Do not claim physical speech, screen-reader or detached-run support from this pl
 | --- | --- |
 | Source/unit/widget | Exact source/diff and focused regressions. [First-wave receipt](../quality/2026-10-03-desktop-port-first-wave.md) attributes shell toggle review/tests and the earlier 2,397-test parent run; none qualifies this workflow. |
 | Fixture | Synthetic deterministic server/channel operation receipts, explicit counts and failures. [Production journey](../runbooks/chat-production-journey.md) and [restoration](../runbooks/chat-session-restoration.md) are existing bounded leads, not actual inference. |
-| Native | Named OS/GTK/display/SDK/plugins, owned state, real process lifecycle and native request/readback logs. An Xvfb fixture run may be native execution but remains synthetic provider evidence. Initial full daily-workflow native receipt is open. |
+| Native | Named OS/GTK/display/SDK/plugins, owned state, real process lifecycle and native request/readback logs. An Xvfb fixture run may be native execution but remains synthetic provider evidence. The [two-process receipt](../quality/native-relaunch-workflow.md) qualifies synthetic off-page history restoration, not model persistence, full-shell startup or live inference. |
 | Browser | Fresh compiled Flutter Chromium wide/compact journey, reload and keyboard evidence; record source/artifact and fixture/real backend separately. 390px is not Android. |
 | Live Agent/provider | Approved isolated target, exact provider/model/run, canonical history/terminal/request readback, zero duplicate sends and supported private auth. Actual generation is open, not inferred from fixtures or old credentials/build blockers. |
 | Card/release | Same-card independent tester/reviewer and source binding, separately from code/tests. `t_f098a32e` and `t_38174cb7` are not promoted; `t_19a425b2` has inconsistent historical acceptance wording requiring exact readback. No release claim. |

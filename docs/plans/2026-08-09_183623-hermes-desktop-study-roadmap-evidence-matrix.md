@@ -1,5 +1,10 @@
 # Hermes Desktop Study, Wing Roadmap, and Evidence Matrix
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). The versioned study below is withdrawn historical evidence, not the current baseline.
+
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 > **For Hermes:** Use subagent-driven-development skill to implement this plan task-by-task.
 
 **Goal:** Adapt the highest-value user outcomes from Hermes Desktop v0.7.4 into Hermes Wing without copying Electron/CLI/filesystem ownership, while maintaining an explicit evidence matrix that prevents deterministic tests from being mislabeled as battle-tested behavior.
@@ -14,9 +19,9 @@
 
 ### Repositories
 
-- Hermes Desktop (read-only): `/home/xel/git/gormes/hermes-desktop`
+- Hermes Desktop (read-only): `<home>/git/gormes/hermes-desktop`
 - Desktop HEAD studied: `f5d78cc` on `main`, package version `0.7.4`
-- Hermes Wing: `/home/xel/git/gormes/hermes-wing`
+- Hermes Wing: `<repo>`
 - Earlier Wing feature-study snapshot: Desktop `8da8d212`, version `0.7.3`
 - Frozen parity baseline remains `d31e52e85449b6effcfd4d037b7517541c8fadf2`; this study records deltas and does not silently move the retirement baseline.
 
@@ -32,7 +37,7 @@ The reachable renderer confirms this primary information architecture:
 - Models: under Providers and the chat picker.
 - Global Settings modal.
 
-Primary source: `/home/xel/git/gormes/hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx`.
+Primary source: `<home>/git/gormes/withdrawn source citation`.
 
 ### Important v0.7.4 deltas since the existing Wing study
 
@@ -278,13 +283,13 @@ Receipts must match the current source/artifact identity. A receipt from an olde
 Run as applicable:
 
 ```bash
-/home/xel/flutter/bin/dart format <changed files>
-/home/xel/flutter/bin/flutter test <focused tests>
-/home/xel/flutter/bin/flutter test
-/home/xel/flutter/bin/flutter analyze --no-pub
+<home>/flutter/bin/dart format <changed files>
+<home>/flutter/bin/flutter test <focused tests>
+<home>/flutter/bin/flutter test
+<home>/flutter/bin/flutter analyze --no-pub
 git diff --check
 cd wing_link && go test ./... && go vet ./...
-/home/xel/flutter/bin/flutter build apk --release
+<home>/flutter/bin/flutter build apk --release
 ```
 
 Then select the correct evidence tier:

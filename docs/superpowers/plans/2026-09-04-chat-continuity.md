@@ -1,5 +1,7 @@
 # Chat Continuity Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Reuse reliability techniques only within accepted official-app flows.
+
 > **For agentic workers:** Use executing-plans task-by-task. Checkboxes track future implementation. No commits, external writes, or delegation are authorized by this plan.
 
 **Goal:** Preserve the user’s exact composer and transcript context across delayed callbacks, session changes, authoritative refreshes, and foreground recovery.

@@ -1,5 +1,7 @@
 # Wing Link remote management implementation plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Wing Link is deprecated; this retained plan does not authorize expansion or make it a port prerequisite.
+
 Status: approved design; hardening, local grants, and remote directory browsing complete; Project mutation blocked on an Agent contract
 
 **Goal:** Extend Wing Link from setup and profile compatibility into a secure

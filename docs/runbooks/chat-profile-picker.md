@@ -1,5 +1,8 @@
 # Chat profile picker
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Chat's existing **Switch profile** header action now opens a searchable,
 keyboard-operable picker over the current Agent channel's already-loaded profiles.
 This is a local presentation slice, not a new profile API or backend.
@@ -51,7 +54,7 @@ backend contract, shared fake or state-management contract was changed.
 ## Desktop fidelity and limits
 
 The read-only reference is
-[Desktop ProfileSwitcher](../../hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx),
+[Desktop ProfileSwitcher](../quality/official-desktop-reference.md#withdrawn-evidence),
 especially its name/ID/model search, active-first ordering, arrow/Enter/Escape
 handling and management action. Wing keeps the existing adaptive bottom sheet
 and explicit Agent selection flow rather than Desktop's optimistic global

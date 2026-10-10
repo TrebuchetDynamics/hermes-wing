@@ -7,6 +7,20 @@ test.describe.configure({ retries: 0 });
 test('global loaded sessions open exact identity from Tools, create once and recover compact navigation', async ({ page, request }, testInfo) => {
   const trace = [], requests = [], errors = [];
   const actor = keyboardActor(page, testInfo, trace);
+  const rowFocus = async (name, slug, direction = 'Tab') => {
+    const row = await actor.assertFocus('button', name);
+    const focused = await row.screenshot({ animations: 'disabled' });
+    await actor.press(direction);
+    // Follow the same row's new bounds after Flutter auto-scroll. A fixed
+    // viewport crop can accidentally compare two different session labels.
+    const unfocused = await row.screenshot({ animations: 'disabled' });
+    expect(focused.equals(unfocused), `${name} must paint keyboard focus`).toBe(false);
+    await testInfo.attach(`${slug}-focused.png`, { body: focused, contentType: 'image/png' });
+    await testInfo.attach(`${slug}-unfocused.png`, { body: unfocused, contentType: 'image/png' });
+    await actor.press(direction === 'Tab' ? 'Shift+Tab' : 'Tab');
+    await actor.assertFocus('button', name);
+    trace.push({ assertion: 'same named row focus pixels differ; inverse key returns', name, direction });
+  };
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => {
     const url = new URL(request.url());
@@ -34,18 +48,32 @@ test('global loaded sessions open exact identity from Tools, create once and rec
     await page.evaluate(() => { globalThis.wingE2EReduceMotion(); globalThis.wingE2EHermesConnect(); });
     await expect.poll(state).toEqual({ profile: 'default', session: 'e2e-hermes-session', status: 'connected' });
     await expect(page.getByRole('group', { name: 'Loaded sessions', exact: true })).toHaveCount(1);
+    // Existing fixture sessions have one exact source; interleaved/custom and
+    // redaction-collision cases are covered by the production-shell widgets.
+    await expect(page.getByRole('heading', { name: 'Source: e2e', exact: true })).toHaveCount(1);
+    await page.setViewportSize({ width: 1280, height: 600 });
     const baseline = requests.length;
     await actor.reach('button', openOther);
-    await actor.visibleFocus('button', openOther, 'global-open');
+    await rowFocus(openOther, 'global-open', 'Shift+Tab');
     expect(requests.slice(baseline)).toEqual([]);
     await actor.press('Enter');
     await expect(page).toHaveURL(/#\/hermes$/);
     await expect.poll(state).toEqual({ profile: 'default', session: 'synthetic-global-other', status: 'connected' });
     const opened = requests.slice(baseline);
     expect(opened).toEqual([{ method: 'GET', path: '/api/sessions/synthetic-global-other/messages', query: { profile: 'default', limit: '500', offset: '0', order: 'latest' }, body: null }]);
-    await actor.reach('button', 'Tools'); await actor.press('Space');
+    await actor.reach('button', 'Tools', 'Shift+Tab'); await actor.press('Space');
     await expect(page).toHaveURL(/#\/tools$/);
     expect(requests.slice(baseline)).toEqual(opened);
+    // Space also opens the exact already-active loaded row, with no create/send.
+    const beforeActive = requests.length;
+    await actor.reach('button', openOther, 'Shift+Tab');
+    await rowFocus(openOther, 'grouped-active-short-height', 'Shift+Tab');
+    await actor.press('Space');
+    await expect(page).toHaveURL(/#\/hermes$/);
+    await expect.poll(state).toEqual({ profile: 'default', session: 'synthetic-global-other', status: 'connected' });
+    expect(requests.slice(beforeActive)).toEqual(opened);
+    await actor.reach('button', 'Tools', 'Shift+Tab'); await actor.press('Enter');
+    await expect(page).toHaveURL(/#\/tools$/);
     const beforeCreate = requests.length;
     await actor.reach('button', 'New Session', 'Shift+Tab');
     await actor.visibleFocus('button', 'New Session', 'global-new');
@@ -59,6 +87,9 @@ test('global loaded sessions open exact identity from Tools, create once and rec
     expect(createRequests[0]).toEqual({ method: 'POST', path: '/api/sessions', query: { profile: 'default' }, body: { id: created.session } });
     expect(createRequests[1]).toEqual({ method: 'GET', path: `/api/sessions/${created.session}/messages`, query: { profile: 'default', limit: '500', offset: '0', order: 'latest' }, body: null });
     const beforeLayout = requests.length;
+    // Split the longer Chat traversal at a real control; retain the helper's
+    // bounded search rather than increasing it or assigning focus directly.
+    await actor.reach('button', 'Sessions', 'Shift+Tab');
     await actor.reach('button', 'Tools', 'Shift+Tab'); await actor.press('Enter');
     await actor.reach('button', 'Collapse'); await actor.press('Space');
     await expect(actor.control('button', 'New Session')).toHaveCount(0);

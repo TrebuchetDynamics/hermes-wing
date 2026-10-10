@@ -122,8 +122,8 @@ void main() {
           final picker = tester.widget<SessionModelPickerSheet>(
             find.byType(SessionModelPickerSheet),
           );
-          // Catalog selection is only a draft. Shared model text cannot prove
-          // either provider, nor an acknowledged exact-session lock.
+          // Shared model text and catalog defaults cannot prove either provider.
+          // An unknown session pair requires a fresh explicit selection.
           expect(picker.currentSessionModel, isNull);
           expect(picker.options.currentProvider, 'beta');
           expect(picker.options.currentModel, 'shared-model');
@@ -133,7 +133,32 @@ void main() {
           ]);
           expect(
             find.text('Selected: Beta (beta) — shared-model'),
+            findsNothing,
+          );
+          expect(
+            find.text(
+              'Hermes Agent does not report this session’s confirmed provider and model. Choose a model explicitly to change this session; cancelling leaves it unchanged.',
+            ),
             findsOneWidget,
+          );
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.widgetWithText(FilledButton, 'Use for session'),
+                )
+                .onPressed,
+            isNull,
+          );
+          expect(
+            tester
+                .widgetList<ListTile>(
+                  find.descendant(
+                    of: find.byType(SessionModelPickerSheet),
+                    matching: find.byType(ListTile),
+                  ),
+                )
+                .every((tile) => tile.trailing == null),
+            isTrue,
           );
           await tester.tap(
             find.byKey(const ValueKey('session-model-alpha/shared-model')),

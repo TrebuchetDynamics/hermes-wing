@@ -159,10 +159,20 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     final profiles = await loadProfiles();
     final existing = profiles
         .where(
-          (profile) =>
-              profile.id == profileId || profile.baseUrl == normalizedBaseUrl,
+          (profile) => profileId != null
+              ? profile.id == profileId
+              : profile.baseUrl == normalizedBaseUrl,
         )
         .firstOrNull;
+    if (profileId != null &&
+        profiles.any(
+          (profile) =>
+              profile.id != profileId && profile.baseUrl == normalizedBaseUrl,
+        )) {
+      throw StateError('Another saved endpoint already uses this origin.');
+    }
+    // A changed Agent identity must never inherit a paired management trust.
+    final sameEndpoint = existing?.baseUrl == normalizedBaseUrl;
     final id = profileId?.trim().isNotEmpty ?? false
         ? profileId!.trim()
         : existing?.id ?? hermesEndpointIdForBaseUrl(normalizedBaseUrl);
@@ -172,21 +182,30 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
       baseUrl: normalizedBaseUrl,
       apiKey: apiKey,
       wingLinkOrigin: wingLinkOrigin == null
-          ? existing?.wingLinkOrigin
+          ? sameEndpoint
+                ? existing?.wingLinkOrigin
+                : null
           : hermesPublicEndpointBaseUrl(wingLinkOrigin),
-      wingLinkToken: wingLinkToken ?? existing?.wingLinkToken,
+      wingLinkToken:
+          wingLinkToken ?? (sameEndpoint ? existing?.wingLinkToken : null),
       wingLinkPendingCredentialId: wingLinkPendingCredentialId == null
-          ? existing?.wingLinkPendingCredentialId
+          ? sameEndpoint
+                ? existing?.wingLinkPendingCredentialId
+                : null
           : wingLinkPendingCredentialId.trim().isEmpty
           ? null
           : wingLinkPendingCredentialId.trim(),
       wingLinkHostFingerprint: wingLinkHostFingerprint == null
-          ? existing?.wingLinkHostFingerprint
+          ? sameEndpoint
+                ? existing?.wingLinkHostFingerprint
+                : null
           : wingLinkHostFingerprint.trim().isEmpty
           ? null
           : wingLinkHostFingerprint.trim(),
       wingLinkDeviceId: wingLinkDeviceId == null
-          ? existing?.wingLinkDeviceId
+          ? sameEndpoint
+                ? existing?.wingLinkDeviceId
+                : null
           : wingLinkDeviceId.trim().isEmpty
           ? null
           : wingLinkDeviceId.trim(),

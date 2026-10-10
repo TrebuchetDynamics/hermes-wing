@@ -952,51 +952,54 @@ class _HermesComposerStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = _hermesStrings(context);
-    return SingleChildScrollView(
-      key: const ValueKey('hermes-composer-strip'),
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          if (isTurnActive)
-            ActionChip(
-              key: const ValueKey('hermes-composer-stop-chip'),
-              avatar: const Icon(Icons.stop_circle_outlined, size: 18),
-              label: Text(strings.chatRailStopAction),
-              onPressed: onStop,
-            )
-          else if (canRetry)
-            ActionChip(
-              key: const ValueKey('hermes-composer-retry-chip'),
-              avatar: const Icon(Icons.refresh, size: 18),
-              label: Text(strings.retryAction),
-              onPressed: onRetry,
+    // Keep dynamically inserted Stop/Retry controls in the strip's toolbar slot.
+    return FocusTraversalGroup(
+      child: SingleChildScrollView(
+        key: const ValueKey('hermes-composer-strip'),
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            if (isTurnActive)
+              ActionChip(
+                key: const ValueKey('hermes-composer-stop-chip'),
+                avatar: const Icon(Icons.stop_circle_outlined, size: 18),
+                label: Text(strings.chatRailStopAction),
+                onPressed: onStop,
+              )
+            else if (canRetry)
+              ActionChip(
+                key: const ValueKey('hermes-composer-retry-chip'),
+                avatar: const Icon(Icons.refresh, size: 18),
+                label: Text(strings.retryAction),
+                onPressed: onRetry,
+              ),
+            if (isTurnActive || canRetry) const SizedBox(width: 8),
+            Tooltip(
+              message: strings.chatComposerModelPickerTooltip,
+              child: ActionChip(
+                key: const ValueKey('hermes-composer-model-chip'),
+                avatar: const Icon(Icons.memory_outlined, size: 18),
+                label: Text(_safeHermesUiPreview(modelLabel, maxLength: 32)),
+                onPressed: onSelectModel,
+              ),
             ),
-          if (isTurnActive || canRetry) const SizedBox(width: 8),
-          Tooltip(
-            message: strings.chatComposerModelPickerTooltip,
-            child: ActionChip(
-              key: const ValueKey('hermes-composer-model-chip'),
-              avatar: const Icon(Icons.memory_outlined, size: 18),
-              label: Text(_safeHermesUiPreview(modelLabel, maxLength: 32)),
-              onPressed: onSelectModel,
-            ),
-          ),
-          if (!isTurnActive && (hasUnreconciledRun || !canSendTurns)) ...[
-            const SizedBox(width: 8),
-            _ComposerChip(
-              icon: hasUnreconciledRun
-                  ? Icons.hourglass_top
-                  : canSendTurns
-                  ? Icons.bolt_outlined
-                  : Icons.block,
-              label: hasUnreconciledRun
-                  ? strings.chatErrorRunStillActiveTitle
-                  : canSendTurns
-                  ? strings.chatRailStatusReadyLabel
-                  : strings.chatRailStatusTransportUnavailableLabel,
-            ),
+            if (!isTurnActive && (hasUnreconciledRun || !canSendTurns)) ...[
+              const SizedBox(width: 8),
+              _ComposerChip(
+                icon: hasUnreconciledRun
+                    ? Icons.hourglass_top
+                    : canSendTurns
+                    ? Icons.bolt_outlined
+                    : Icons.block,
+                label: hasUnreconciledRun
+                    ? strings.chatErrorRunStillActiveTitle
+                    : canSendTurns
+                    ? strings.chatRailStatusReadyLabel
+                    : strings.chatRailStatusTransportUnavailableLabel,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1018,8 +1021,12 @@ class _ComposerChip extends StatelessWidget {
   }
 }
 
-class _HermesSessionsPanel extends ConsumerStatefulWidget {
-  const _HermesSessionsPanel({
+class HermesSessionsPanel extends ConsumerStatefulWidget {
+  const HermesSessionsPanel({
+    super.key,
+    this.autofocusSearch = false,
+    this.canLoadMore = true,
+    this.inventoryFailed = false,
     required this.state,
     required this.canCreate,
     required this.onCreate,
@@ -1048,23 +1055,65 @@ class _HermesSessionsPanel extends ConsumerStatefulWidget {
   final ValueChanged<HermesSession> onTogglePinned;
 
   @override
-  ConsumerState<_HermesSessionsPanel> createState() =>
+  ConsumerState<HermesSessionsPanel> createState() =>
       _HermesSessionsPanelState();
+  final bool autofocusSearch;
+  final bool canLoadMore;
+  final bool inventoryFailed;
 }
 
-class _HermesSessionsPanelState extends ConsumerState<_HermesSessionsPanel>
-    with _HermesSessionDisclosure<_HermesSessionsPanel> {
+class _HermesSessionsPanelState extends ConsumerState<HermesSessionsPanel>
+    with _HermesSessionDisclosure<HermesSessionsPanel> {
   final _searchController = TextEditingController();
   final _listState = _HermesSessionListState();
+  (Size, double)? _viewport;
 
   @override
-  void didUpdateWidget(covariant _HermesSessionsPanel oldWidget) {
+  void initState() {
+    super.initState();
+    FocusManager.instance.addListener(_revealFocus);
+  }
+
+  void _revealFocus() {
+    final focus = FocusManager.instance.primaryFocus;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || FocusManager.instance.primaryFocus != focus) return;
+      final focused = focus?.context;
+      var inside = identical(focused, context);
+      focused?.visitAncestorElements((ancestor) {
+        if (identical(ancestor, context)) inside = true;
+        return !inside;
+      });
+      if (inside && focused != null) {
+        Scrollable.ensureVisible(focused, alignment: 0.5);
+      }
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final viewport = (
+      MediaQuery.sizeOf(context),
+      MediaQuery.textScalerOf(context).scale(14),
+    );
+    if (_viewport == viewport) return;
+    _viewport = viewport;
+    // Focus can survive resize while its old scroll offset leaves it clipped.
+    // Reveal only the current panel's focus after the new layout has settled.
+    _revealFocus();
+  }
+
+  @override
+  void didUpdateWidget(covariant HermesSessionsPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     _listState.reconcile(widget.state);
   }
 
   @override
   void dispose() {
+    FocusManager.instance.removeListener(_revealFocus);
     _searchController.dispose();
     super.dispose();
   }
@@ -1093,158 +1142,210 @@ class _HermesSessionsPanelState extends ConsumerState<_HermesSessionsPanel>
       key: const ValueKey('hermes-sessions-panel'),
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: Column(
-          children: [
-            ListTile(
-              title: Text(
-                strings.chatRailHermesSessionsTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              trailing: widget.canCreate && !_listState.selecting
-                  ? FilledButton.icon(
-                      key: const ValueKey('hermes-sessions-new'),
-                      onPressed: widget.onCreate,
-                      icon: const Icon(Icons.add_comment_outlined),
-                      label: Text(strings.chatRailNewSessionAction),
-                    )
-                  : null,
-            ),
-            if (_canDelete && allSessions.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _listState.selecting
-                    ? Wrap(
-                        alignment: WrapAlignment.end,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          Text(
-                            strings.chatRailSelectedCountLabel(
-                              _listState.selectedIds.length,
-                            ),
-                          ),
-                          TextButton(
-                            key: const ValueKey('hermes-sessions-select-all'),
-                            onPressed: () {
-                              setState(() {
-                                _listState.selectAll(sessions, widget.state);
-                              });
-                            },
-                            child: Text(strings.chatRailSelectAllAction),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _listState.cancelSelection();
-                              });
-                            },
-                            child: Text(strings.cancelAction),
-                          ),
-                          FilledButton.icon(
-                            key: const ValueKey(
-                              'hermes-sessions-delete-selected',
-                            ),
-                            onPressed: _listState.selectedIds.isEmpty
-                                ? null
-                                : () => widget.onDeleteSelected(
-                                    _listState.selectedSessions(allSessions),
+        child: FocusTraversalGroup(
+          child: CustomScrollView(
+            key: const ValueKey('hermes-sessions-list'),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final title = Text(
+                            strings.chatRailHermesSessionsTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          );
+                          final create =
+                              widget.canCreate && !_listState.selecting
+                              ? FilledButton.icon(
+                                  key: const ValueKey('hermes-sessions-new'),
+                                  onPressed: widget.onCreate,
+                                  icon: const Icon(Icons.add_comment_outlined),
+                                  label: Text(strings.chatRailNewSessionAction),
+                                )
+                              : null;
+                          if (constraints.maxWidth < 400 ||
+                              MediaQuery.textScalerOf(context).scale(14) > 18) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                title,
+                                if (create != null) ...[
+                                  const SizedBox(height: 8),
+                                  create,
+                                ],
+                              ],
+                            );
+                          }
+                          return Row(
+                            children: [
+                              Expanded(child: title),
+                              if (create != null) ...[
+                                const SizedBox(width: 8),
+                                create,
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    if (_canDelete && allSessions.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: _listState.selecting
+                            ? Wrap(
+                                alignment: WrapAlignment.end,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  Text(
+                                    strings.chatRailSelectedCountLabel(
+                                      _listState.selectedIds.length,
+                                    ),
                                   ),
-                            icon: const Icon(Icons.delete_outline),
-                            label: Text(
-                              strings.chatRailDeleteCountAction(
-                                _listState.selectedIds.length,
+                                  TextButton(
+                                    key: const ValueKey(
+                                      'hermes-sessions-select-all',
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _listState.selectAll(
+                                          sessions,
+                                          widget.state,
+                                        );
+                                      });
+                                    },
+                                    child: Text(
+                                      strings.chatRailSelectAllAction,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _listState.cancelSelection();
+                                      });
+                                    },
+                                    child: Text(strings.cancelAction),
+                                  ),
+                                  FilledButton.icon(
+                                    key: const ValueKey(
+                                      'hermes-sessions-delete-selected',
+                                    ),
+                                    onPressed: _listState.selectedIds.isEmpty
+                                        ? null
+                                        : () => widget.onDeleteSelected(
+                                            _listState.selectedSessions(
+                                              allSessions,
+                                            ),
+                                          ),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: Text(
+                                      strings.chatRailDeleteCountAction(
+                                        _listState.selectedIds.length,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Align(
+                                alignment: Alignment.centerRight,
+                                child: OutlinedButton.icon(
+                                  key: const ValueKey('hermes-sessions-select'),
+                                  onPressed: () => setState(
+                                    () => _listState.selecting = true,
+                                  ),
+                                  icon: const Icon(Icons.checklist_outlined),
+                                  label: Text(strings.chatRailSelectAction),
+                                ),
                               ),
-                            ),
+                      ),
+                    if (allSessions.isNotEmpty || widget.autofocusSearch) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: TextField(
+                          key: const ValueKey('hermes-session-search-field'),
+                          autofocus: widget.autofocusSearch,
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            labelText: strings.chatRailSearchSessionsLabel,
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _listState.query.isEmpty
+                                ? null
+                                : IconButton(
+                                    key: const ValueKey(
+                                      'hermes-session-search-clear',
+                                    ),
+                                    tooltip: strings.chatRailClearSearchTooltip,
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _listState.query = '');
+                                    },
+                                  ),
                           ),
-                        ],
-                      )
-                    : Align(
-                        alignment: Alignment.centerRight,
-                        child: OutlinedButton.icon(
-                          key: const ValueKey('hermes-sessions-select'),
-                          onPressed: () =>
-                              setState(() => _listState.selecting = true),
-                          icon: const Icon(Icons.checklist_outlined),
-                          label: Text(strings.chatRailSelectAction),
+                          onChanged: (value) =>
+                              setState(() => _listState.query = value),
                         ),
                       ),
-              ),
-            if (allSessions.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: TextField(
-                  key: const ValueKey('hermes-session-search-field'),
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: strings.chatRailSearchSessionsLabel,
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _listState.query.isEmpty
-                        ? null
-                        : IconButton(
-                            key: const ValueKey('hermes-session-search-clear'),
-                            tooltip: strings.chatRailClearSearchTooltip,
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _listState.query = '');
-                            },
+                      if (sortedSourceOptions.length > 1)
+                        _HermesSessionSourceFilter(
+                          keyPrefix: 'hermes-session',
+                          sources: sortedSourceOptions,
+                          selectedSource: selectedSource,
+                          onChanged: (source) =>
+                              setState(() => _listState.selectSource(source)),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _sessionCountSummary(
+                              strings: strings,
+                              visibleCount: sessions.length,
+                              totalCount: allSessions.length,
+                              query: _listState.query,
+                              filtered: selectedSource != null,
+                            ),
+                            key: const ValueKey('hermes-session-count-summary'),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
-                  ),
-                  onChanged: (value) =>
-                      setState(() => _listState.query = value),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              if (sortedSourceOptions.length > 1)
-                _HermesSessionSourceFilter(
-                  keyPrefix: 'hermes-session',
-                  sources: sortedSourceOptions,
-                  selectedSource: selectedSource,
-                  onChanged: (source) =>
-                      setState(() => _listState.selectSource(source)),
-                ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _sessionCountSummary(
-                      strings: strings,
-                      visibleCount: sessions.length,
-                      totalCount: allSessions.length,
-                      query: _listState.query,
-                      filtered: selectedSource != null,
+              if (allSessions.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      widget.inventoryFailed
+                          ? strings.shellSessionFailed
+                          : strings.chatRailNoHermesSessionsBody,
                     ),
-                    key: const ValueKey('hermes-session-count-summary'),
-                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                ),
-              ),
-            ],
-            if (allSessions.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Text(strings.chatRailNoHermesSessionsBody),
-                ),
-              )
-            else if (sessions.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Text(
-                    strings.chatRailNoHermesSessionsMatchBody(
-                      _safeHermesUiPreview(
-                        _listState.query.trim(),
-                        maxLength: 64,
+                )
+              else if (sessions.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      strings.chatRailNoHermesSessionsMatchBody(
+                        _safeHermesUiPreview(
+                          _listState.query.trim(),
+                          maxLength: 64,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-            else
-              Expanded(
-                child: ListView(
-                  key: const ValueKey('hermes-sessions-list'),
-
+                )
+              else
+                SliverList.list(
                   children: [
                     for (final group in _disclosedGroups(
                       sessions,
@@ -1301,13 +1402,16 @@ class _HermesSessionsPanelState extends ConsumerState<_HermesSessionsPanel>
                     ],
                   ],
                 ),
-              ),
-            _HermesSessionLoadMoreButton(
-              state: widget.state,
-              onPressed: widget.onLoadMore,
-              buttonKey: const ValueKey('hermes-sessions-load-more'),
-            ),
-          ],
+              if (widget.canLoadMore)
+                SliverToBoxAdapter(
+                  child: _HermesSessionLoadMoreButton(
+                    state: widget.state,
+                    onPressed: widget.onLoadMore,
+                    buttonKey: const ValueKey('hermes-sessions-load-more'),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

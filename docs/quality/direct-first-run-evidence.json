@@ -1,0 +1,563 @@
+{
+  "task": "t_98b85c1b",
+  "baseline_commit": "c7899719a9aa9c5619412a9977804917eec46a49",
+  "qualified_source_fingerprint": "7a0055385e2bc6ed9623ee516ebe867b3f2c5c89374fd699b38e4f1b1476860a",
+  "source_sha256": {
+    "lib/features/enrollment/screens/hermes_enrollment_screen.dart": "8ef9628cee151b2737954d79821573af466822de173b0d1ff9be2ac84b845764",
+    "lib/features/hermes_chat/screens/hermes_chat_screen.dart": "79ad8648db2375ba691aac47fefcbb7defc38860a936e8456a445084d664146b",
+    "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart": "0f5eed485e25f18b105249a92550f876248867fc856a9f92beb6524537af7243",
+    "lib/l10n/app_en.arb": "661f2c37399cb4f8c7af735423ce6a37df056b383a793417ab5c9d9fdf01c278",
+    "lib/l10n/app_localizations.dart": "9e3ffb16d3eaa2190cbd0a1a8731430792a0814c5c79acb94d184b7dd2cb76a0",
+    "lib/l10n/app_localizations_en.dart": "988d098aef17b69d4ab7cce58de911daa0135856b6b175b66674d9f3f9bef0eb",
+    "test/features/enrollment/hermes_direct_first_run_test.dart": "0f5feb0e6525ab5fca8d35c79671ee3f263ce2b646705fd3e3b76669164ee5bc",
+    "playwright/tests/regression/direct-first-run.spec.mjs": "6b424dfbd7a404bb5400b0d4b8305df088ed312354d1b36d19f7842898004617",
+    "lib/router/providers/app_router.dart": "db0c9eb9937c86ffa85ad6fbb62b56be600795ea6ef59d6539024d5a92746780",
+    "lib/main_e2e.dart": "18ba25fd2d0920563edd8ea281342940c2dc9c3a9b4a3b241043c7de73b36ac4",
+    "serve_web.mjs": "4b70918cad51b44afed0d82ece43fd65c01a8031d29393a5007e8cc4afeb0100",
+    "playwright/support/hermes_lifecycle_fixture.mjs": "8d0ecef725847da39e6b1b008a9e44559c9bc005cba66b55ddbdf828839a7e31",
+    "playwright/tests/regression/connection-primary-entry.spec.mjs": "de21da8f750b9a16ea4dd26fab6016b0f9d44448b17867b2bf942842739f39a8",
+    "pubspec.lock": "9ec3db9492cbace9de690033eead7b4fe162f2f485544813a3166b58e9ac9e85",
+    "package-lock.json": "f32c4b4d226bf6cef1a1f66733d4c2e065e0656d1223e89f17ceb68f42429b63"
+  },
+  "checks": [
+    {
+      "name": "analyze",
+      "command": [
+        "timeout",
+        "5m",
+        "flutter",
+        "analyze"
+      ],
+      "exit": 0,
+      "seconds": 16.3
+    },
+    {
+      "name": "widgets",
+      "command": [
+        "timeout",
+        "8m",
+        "flutter",
+        "test",
+        "--concurrency=1",
+        "test/features/enrollment",
+        "test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart",
+        "test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart"
+      ],
+      "exit": 0,
+      "seconds": 25.05
+    },
+    {
+      "name": "web-build-retry",
+      "command": [
+        "timeout",
+        "8m",
+        "flutter",
+        "build",
+        "web",
+        "--release",
+        "-t",
+        "lib/main_e2e.dart",
+        "--no-wasm-dry-run"
+      ],
+      "exit": 0,
+      "seconds": 45.15
+    },
+    {
+      "name": "browser",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 1,
+      "seconds": 4.4
+    },
+    {
+      "name": "browser-retry",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 1,
+      "seconds": 236.34
+    },
+    {
+      "name": "l10n",
+      "command": [
+        "flutter",
+        "gen-l10n"
+      ],
+      "exit": 0,
+      "seconds": 0.35
+    },
+    {
+      "name": "web-final",
+      "command": [
+        "timeout",
+        "8m",
+        "flutter",
+        "build",
+        "web",
+        "--release",
+        "-t",
+        "lib/main_e2e.dart",
+        "--no-wasm-dry-run"
+      ],
+      "exit": 0,
+      "seconds": 39.43
+    },
+    {
+      "name": "direct-browser-iterate",
+      "command": [
+        "timeout",
+        "6m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser",
+        "--grep",
+        "Local.*390px"
+      ],
+      "exit": 1,
+      "seconds": 11.87
+    },
+    {
+      "name": "direct-browser-iterate2",
+      "command": [
+        "timeout",
+        "6m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser",
+        "--grep",
+        "Local.*390px"
+      ],
+      "exit": 1,
+      "seconds": 17.38
+    },
+    {
+      "name": "browser-final",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 1,
+      "seconds": 248.32
+    },
+    {
+      "name": "browser-qualified",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 0,
+      "seconds": 237.4
+    },
+    {
+      "name": "format",
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/features/enrollment/screens/hermes_enrollment_screen.dart",
+        "lib/features/hermes_chat/screens/hermes_chat_screen.dart",
+        "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart",
+        "test/features/enrollment/hermes_direct_first_run_test.dart"
+      ],
+      "exit": 0,
+      "seconds": 0.17
+    },
+    {
+      "name": "analyze-final",
+      "command": [
+        "timeout",
+        "5m",
+        "flutter",
+        "analyze"
+      ],
+      "exit": 0,
+      "seconds": 14.93
+    },
+    {
+      "name": "widgets-final",
+      "command": [
+        "timeout",
+        "8m",
+        "flutter",
+        "test",
+        "--concurrency=1",
+        "test/features/enrollment",
+        "test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart",
+        "test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart"
+      ],
+      "exit": 0,
+      "seconds": 22.3
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "lib/features/enrollment/screens/hermes_enrollment_screen.dart",
+        "lib/features/hermes_chat/screens/hermes_chat_screen.dart",
+        "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart",
+        "lib/l10n/app_en.arb",
+        "lib/l10n/app_localizations.dart",
+        "lib/l10n/app_localizations_en.dart",
+        "test/features/enrollment/hermes_direct_first_run_test.dart",
+        "playwright/tests/regression/direct-first-run.spec.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.01
+    },
+    {
+      "name": "browser-captures",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 1,
+      "seconds": 74.59
+    },
+    {
+      "name": "browser-captures-retry",
+      "command": [
+        "timeout",
+        "12m",
+        "npx",
+        "playwright",
+        "test",
+        "--config=playwright.config.mjs",
+        "playwright/tests/regression/direct-first-run.spec.mjs",
+        "playwright/tests/regression/connection-primary-entry.spec.mjs",
+        "--workers=1",
+        "--output=build/t_98b85c1b/browser"
+      ],
+      "exit": 0,
+      "seconds": 242.49
+    },
+    {
+      "name": "direct-widgets",
+      "command": [
+        "timeout",
+        "5m",
+        "flutter",
+        "test",
+        "--concurrency=1",
+        "test/features/enrollment/hermes_direct_first_run_test.dart"
+      ],
+      "exit": 0,
+      "seconds": 8.56
+    }
+  ],
+  "browser_receipts": [
+    {
+      "width": 390,
+      "mode": "Remote",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    },
+    {
+      "width": 390,
+      "mode": "SSH",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    },
+    {
+      "width": 1280,
+      "mode": "Local",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    },
+    {
+      "width": 1280,
+      "mode": "SSH",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    },
+    {
+      "width": 1280,
+      "mode": "Remote",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    },
+    {
+      "width": 390,
+      "mode": "Local",
+      "reads": [
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /health",
+        "GET /v1/capabilities",
+        "GET /health/detailed",
+        "GET /api/jobs",
+        "GET /api/sessions",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /health",
+        "GET /health",
+        "GET /api/sessions/synthetic-restoration-000/messages",
+        "GET /v1/capabilities",
+        "GET /v1/capabilities",
+        "GET /api/sessions",
+        "GET /api/sessions"
+      ],
+      "mutations": [],
+      "management": [],
+      "attempts": 6,
+      "errors": [],
+      "managedSsh": "not implemented",
+      "liveAgent": "NOT_CHECKED",
+      "native": "NOT_CHECKED"
+    }
+  ],
+  "environment": {
+    "Flutter": "3.44.2",
+    "Dart": "3.12.2",
+    "framework": "c9a6c48423",
+    "Node": "26.7.0",
+    "Chromium": "151.0.7922.34",
+    "ports": [
+      18867,
+      18868
+    ],
+    "WING_APP_URL": "http://127.0.0.1:18867/",
+    "CHROME_EXECUTABLE": "<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+    "NODE_OPTIONS": "--max-old-space-size=2048"
+  },
+  "qualified": {
+    "widget_cases": 123,
+    "dedicated_widget_cases": 4,
+    "browser_cases": 10,
+    "widget_text_scales": [
+      1,
+      2
+    ],
+    "widths": [
+      390,
+      1280
+    ]
+  },
+  "not_checked": [
+    "live authenticated Agent",
+    "live provider inference",
+    "native GTK",
+    "physical Android",
+    "managed SSH",
+    "OAuth",
+    "protected-main delivery",
+    "full combined integration gate"
+  ]
+}

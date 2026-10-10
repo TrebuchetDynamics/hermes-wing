@@ -1,5 +1,7 @@
 # Android Same-Device Pairing UX Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Retained legacy pairing is not required for the port.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let an Android user pair Hermes Wing from a link displayed on that same phone in at most two taps, without Termux, ADB, manually copying an API token, or losing the multi-profile Wing Link bundle.

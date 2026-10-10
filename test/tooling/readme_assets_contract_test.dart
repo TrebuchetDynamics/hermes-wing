@@ -70,12 +70,9 @@ void main() {
     expect(readme, contains('showcase-mobile.png'));
     expect(readme, contains('Hermes remains the source of truth'));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
-    expect(gettingStarted, contains('./install-wing-link.sh'));
-    expect(gettingStarted, contains('Use `--release`'));
-    expect(gettingStarted, contains('Go 1.26 or newer'));
-    expect(gettingStarted, contains('authenticated remote management API'));
-    expect(gettingStarted, contains("Today, Wing Link's"));
-    expect(gettingStarted, contains('Agent-domain compatibility surface'));
+    expect(gettingStarted, contains('Wing connects directly to Hermes Agent.'));
+    expect(gettingStarted, contains('Wing Link is not required.'));
+    expect(gettingStarted, isNot(contains('./install-wing-link.sh')));
     expect(readme, isNot(contains('--provider')));
     expect(gettingStarted, isNot(contains('--provider')));
     expect(readme, isNot(contains('--profile')));
@@ -92,6 +89,17 @@ void main() {
     expect(generatorSource, isNot(contains('erasePendingRunSpinner')));
     expect(generatorSource, contains('wingE2EReduceMotion'));
     expect(e2eSource, contains("@JS('wingE2EReduceMotion')"));
-    expect(e2eSource, contains('disableAnimations: disabled'));
+    expect(
+      e2eSource,
+      matches(
+        RegExp(
+          r'disableAnimations:\s*disabled\s*\|\|\s*'
+          r'MediaQuery\.disableAnimationsOf\(context\)',
+        ),
+      ),
+      reason:
+          'The fixture must preserve platform reduced motion as well as the '
+          'explicit test setting, independent of Dart formatting.',
+    );
   });
 }

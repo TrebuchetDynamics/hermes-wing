@@ -1,6 +1,12 @@
 # Android/Termux local Hermes Agent candidate
 
-Status: Tier 2 qualification candidate; best-effort background operation
+Status: deprecated Tier 2 Wing Link bootstrap candidate; not the replacement phone setup
+
+The owner requires an Agent-only guided same-phone flow. This legacy installer
+still includes Wing Link and must not be presented as the replacement. Preserve
+its verification and sandbox rules until retirement. Agent remains unmodified;
+new setup must not import community runtime patches or imply unattended Android
+service reliability. See the [deprecation decision](../adr/product.md#wing-link-deprecation).
 
 This flow hosts Hermes Agent and Wing Link inside Termux on the same Android
 phone as Hermes Wing. It is separate from [pairing Android to a remote Linux

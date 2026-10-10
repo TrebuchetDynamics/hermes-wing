@@ -1,5 +1,10 @@
 # Bounded desktop-local integration design
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). The old transport comparison below is withdrawn, not a finding about the official app.
+
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Date: 2026-10-03. Status: decision-ready proposal, **not implementation authorization or platform acceptance**.
 
 ## Recommendation
@@ -24,14 +29,14 @@ Observed reference revisions:
 | --- | --- | --- |
 | Wing | `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f` | Extensively dirty, including current production/channel changes and untracked qualification clients. HEAD alone is not their content snapshot. |
 | Agent | `158fd638da1629c8e62caf9ade1515d162def8ab` | `git status --short` returned empty. Source evidence for this reference only, not the installed runtime. |
-| Desktop | `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` | Existing `.claude` settings/skill deletions observed; preserved. Inspected main/preload sources are reference evidence, not runtime proof. |
+| Desktop | `withdrawn reference revision` | Existing `.claude` settings/skill deletions observed; preserved. Inspected main/preload sources are reference evidence, not runtime proof. |
 
 SHA-256 content pins at inspection (concurrent changes require re-tracing before implementation):
 
 ```text
-62bb6636dd0526ed7615cf99685dd42ac5df6c1fbdb34c4674ca951bdfd38a5b  hermes-desktop/src/main/dashboard.ts
-d9a81f3206ecf3b0b7be1f022f5ab3a035393f24abd9ced89af87ed7c68daf4e  hermes-desktop/src/main/ipc/register.ts
-3b93c80366ea8fa05811d5fd1bc24a0a909bfd738dbe3372583f4e8ac77aa93b  hermes-desktop/src/main/hermes-agent-compat.ts
+62bb6636dd0526ed7615cf99685dd42ac5df6c1fbdb34c4674ca951bdfd38a5b  withdrawn source citation
+d9a81f3206ecf3b0b7be1f022f5ab3a035393f24abd9ced89af87ed7c68daf4e  withdrawn source citation
+3b93c80366ea8fa05811d5fd1bc24a0a909bfd738dbe3372583f4e8ac77aa93b  withdrawn source citation
 29a0b007e2a78eefed635d785a49c8c18b40c60329185d647157071bf4219290  lib/core/hermes/channel/hermes_channel.dart
 e53915c6cc53ef9414e910b6574fb1b08275666fc4b5d5a05ee562f042a8e770  lib/core/hermes/client/hermes_web_read_client.dart
 f40ab9494c64d42eb6e97406c3572c70e5cee00d3f6f9ce4ffd3ffb29f3958f2  lib/core/hermes/client/hermes_web_lifecycle.dart
@@ -47,14 +52,14 @@ Paths are repository-relative; line ranges refer to inspected content, not immut
 
 | ID | Source and exact seam |
 | --- | --- |
-| D1 | [Desktop preload](../../hermes-desktop/src/preload/index.ts), `hermesAPI`, `DashboardConnection` (71–81), install/adopt APIs (131–155): typed renderer calls via `ipcRenderer.invoke`, including paths and token-bearing dashboard descriptors. |
-| D2 | [Desktop IPC registration](../../hermes-desktop/src/main/ipc/register.ts), `registerIpcHandlers` (728 onward), `send-message` (1679 onward), `approval-respond` (1930), dashboard handlers (2198–2212), `select-folder` (3279): privileged main-process dispatch and local/remote/SSH branches. Sender destruction aborts its owned legacy run (1733–1773); completion notifications can include a transcript preview (1811–1825). |
-| D3 | [Desktop local backend](../../hermes-desktop/src/main/dashboard.ts), `startDashboard` (617–739), `stopDashboard` (742–752); [argument builder](../../hermes-desktop/src/main/dashboard-launch.ts), `buildLocalDashboardCliArgs`: per-profile child process, loopback port, token minted in main, environment handoff, readiness probe, token-bearing WebSocket URL. |
-| D4 | [Desktop compatibility](../../hermes-desktop/src/main/hermes-agent-compat.ts), `ensureLocalDashboardCompatibility` (485–517), called by D3 (647): reads and may rewrite Agent `hermes_cli/web_server.py`. This mechanism is forbidden in Wing. |
-| D5 | [Desktop gateway/chat](../../hermes-desktop/src/main/hermes.ts), `resolveProfile`, `getApiUrl`, `getApiAuthHeaders` (101–212): explicit profile can fall back to global file-backed selection; local gateway uses per-profile ports and keys. |
-| D6 | [Desktop profiles](../../hermes-desktop/src/main/profiles.ts), `createProfile` (269–325), `deleteProfile` (328–366), `setActiveProfile` (368–409): fixed CLI creation/deletion but extra profile metadata write, global `profile use`, and `active_profile` fallback write. |
-| D7 | [Desktop config](../../hermes-desktop/src/main/config.ts), `readEnv`, `setEnvValue`, `getConfigValue`, `setConfigValue`, `setModelConfig`; [sessions](../../hermes-desktop/src/main/sessions.ts), `deleteSession` / transaction (771–801); [memory](../../hermes-desktop/src/main/memory.ts), `writeMemoryRaw`, entry mutations; [SOUL](../../hermes-desktop/src/main/soul.ts), `writeSoul`: privileged local Agent-file/database access, not a Wing contract. |
-| D8 | [Desktop cron](../../hermes-desktop/src/main/cronjobs.ts), `listCronJobs`, CLI runner (324 onward); [toolsets](../../hermes-desktop/src/main/tools.ts), `setToolsetEnabled`; [MCP](../../hermes-desktop/src/main/mcp-servers.ts), `readConfig`, `writeConfig`, `addMcpServer`: mixed local file reads/edits and CLI operations; not wholesale compatibility authorization. |
+| D1 | [Desktop preload](../quality/official-desktop-reference.md#withdrawn-evidence), `hermesAPI`, `DashboardConnection` (71–81), install/adopt APIs (131–155): typed renderer calls via `ipcRenderer.invoke`, including paths and token-bearing dashboard descriptors. |
+| D2 | [Desktop IPC registration](../quality/official-desktop-reference.md#withdrawn-evidence), `registerIpcHandlers` (728 onward), `send-message` (1679 onward), `approval-respond` (1930), dashboard handlers (2198–2212), `select-folder` (3279): privileged main-process dispatch and local/remote/SSH branches. Sender destruction aborts its owned legacy run (1733–1773); completion notifications can include a transcript preview (1811–1825). |
+| D3 | [Desktop local backend](../quality/official-desktop-reference.md#withdrawn-evidence), `startDashboard` (617–739), `stopDashboard` (742–752); [argument builder](../quality/official-desktop-reference.md#withdrawn-evidence), `buildLocalDashboardCliArgs`: per-profile child process, loopback port, token minted in main, environment handoff, readiness probe, token-bearing WebSocket URL. |
+| D4 | [Desktop compatibility](../quality/official-desktop-reference.md#withdrawn-evidence), `ensureLocalDashboardCompatibility` (485–517), called by D3 (647): reads and may rewrite Agent `hermes_cli/web_server.py`. This mechanism is forbidden in Wing. |
+| D5 | [Desktop gateway/chat](../quality/official-desktop-reference.md#withdrawn-evidence), `resolveProfile`, `getApiUrl`, `getApiAuthHeaders` (101–212): explicit profile can fall back to global file-backed selection; local gateway uses per-profile ports and keys. |
+| D6 | [Desktop profiles](../quality/official-desktop-reference.md#withdrawn-evidence), `createProfile` (269–325), `deleteProfile` (328–366), `setActiveProfile` (368–409): fixed CLI creation/deletion but extra profile metadata write, global `profile use`, and `active_profile` fallback write. |
+| D7 | [Desktop config](../quality/official-desktop-reference.md#withdrawn-evidence), `readEnv`, `setEnvValue`, `getConfigValue`, `setConfigValue`, `setModelConfig`; [sessions](../quality/official-desktop-reference.md#withdrawn-evidence), `deleteSession` / transaction (771–801); [memory](../quality/official-desktop-reference.md#withdrawn-evidence), `writeMemoryRaw`, entry mutations; [SOUL](../quality/official-desktop-reference.md#withdrawn-evidence), `writeSoul`: privileged local Agent-file/database access, not a Wing contract. |
+| D8 | [Desktop cron](../quality/official-desktop-reference.md#withdrawn-evidence), `listCronJobs`, CLI runner (324 onward); [toolsets](../quality/official-desktop-reference.md#withdrawn-evidence), `setToolsetEnabled`; [MCP](../quality/official-desktop-reference.md#withdrawn-evidence), `readConfig`, `writeConfig`, `addMcpServer`: mixed local file reads/edits and CLI operations; not wholesale compatibility authorization. |
 | A1 | [Agent API server](../../hermes-agent/gateway/platforms/api_server.py), `_CAPABILITY_ENDPOINTS` (78–102), `_http_route_table` (1751–1793): exact advertised direct endpoints, distinct from dashboard REST/WS. |
 | A2 | [Agent server parsers](../../hermes-agent/hermes_cli/subcommands/dashboard.py), `_add_server_runtime_args`, `_configure_serve_parser`, `build_dashboard_parser` (15–101); [parser tests](../../hermes-agent/tests/hermes_cli/test_fast_serve_launch.py), `test_lean_serve_parser_matches_full_subcommand_parser`. |
 | A3 | [Agent dashboard auth](../../hermes-agent/hermes_cli/web_server.py), `_resolve_session_token` (364–371), `_has_valid_session_token` (452 onward), `_desktop_loopback_auth_exempt` (541–560); [WS auth](../../hermes-agent/hermes_cli/web_server_chat.py), `_ws_auth_reason` (250–374); [WS route](../../hermes-agent/hermes_cli/web_routers/chat_ws.py), `gateway_ws` (595–613). |

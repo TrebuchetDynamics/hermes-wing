@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web/web.dart' as web;
 
 import 'core/hermes/channel/hermes_api_channel.dart';
+import 'core/hermes/setup/secure_hermes_endpoint_store.dart';
 import 'features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
@@ -45,8 +46,72 @@ external set _wingE2EHermesReconcile(JSFunction callback);
 @JS('wingE2EHermesLoadEarlier')
 external set _wingE2EHermesLoadEarlier(JSFunction callback);
 
+@JS('wingE2EEndpointSaveControl')
+external set _wingE2EEndpointSaveControl(JSFunction callback);
+
+// Fault injection exists only in this deterministic entrypoint. It records no
+// endpoint, label, credential, or platform exception payload.
+class _E2EEndpointStore extends SecureHermesEndpointStore {
+  int attempts = 0;
+  int completed = 0;
+  bool failNext = false;
+  Completer<void>? pending;
+
+  @override
+  Future<void> save({
+    required String baseUrl,
+    String? apiKey,
+    String? label,
+    String? profileId,
+    String? wingLinkOrigin,
+    String? wingLinkToken,
+    String? wingLinkPendingCredentialId,
+    String? wingLinkHostFingerprint,
+    String? wingLinkDeviceId,
+  }) async {
+    attempts++;
+    final fail = failNext;
+    failNext = false;
+    await pending?.future;
+    if (fail) throw StateError('synthetic storage rejection');
+    await super.save(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      label: label,
+      profileId: profileId,
+      wingLinkOrigin: wingLinkOrigin,
+      wingLinkToken: wingLinkToken,
+      wingLinkPendingCredentialId: wingLinkPendingCredentialId,
+      wingLinkHostFingerprint: wingLinkHostFingerprint,
+      wingLinkDeviceId: wingLinkDeviceId,
+    );
+    completed++;
+  }
+}
+
 void main() {
   final hermesChannel = HermesApiChannel();
+  final endpointStore = _E2EEndpointStore();
+  _wingE2EEndpointSaveControl = ((JSString action) {
+    switch (action.toDart) {
+      case 'fail-next':
+        endpointStore.failNext = true;
+      case 'park':
+        endpointStore.pending ??= Completer<void>();
+      case 'release':
+        endpointStore.pending?.complete();
+        endpointStore.pending = null;
+      case 'read':
+        break;
+      default:
+        throw ArgumentError('Unknown synthetic save control');
+    }
+    return jsonEncode({
+      'attempts': endpointStore.attempts,
+      'completed': endpointStore.completed,
+      'pending': endpointStore.pending != null,
+    }).toJS;
+  }).toJS;
   final reduceMotion = ValueNotifier(false);
   // Explicit fixture bootstrap only: connection does not load admin profiles.
   // Re-select the already-default identity through the existing guarded read.
@@ -164,7 +229,10 @@ void main() {
 
   runApp(
     ProviderScope(
-      overrides: [hermesChannelProvider.overrideWithValue(hermesChannel)],
+      overrides: [
+        hermesChannelProvider.overrideWithValue(hermesChannel),
+        hermesEndpointStoreProvider.overrideWithValue(endpointStore),
+      ],
       child: _E2ETestApp(reduceMotion: reduceMotion),
     ),
   );
@@ -190,7 +258,14 @@ class _E2ETestApp extends ConsumerWidget {
       builder: (context, child) => ValueListenableBuilder(
         valueListenable: reduceMotion,
         builder: (context, disabled, _) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(disableAnimations: disabled),
+          data: MediaQuery.of(context).copyWith(
+            // Deterministic browser accessibility qualification, not app state.
+            textScaler: Uri.base.queryParameters['e2eTextScale'] == '2'
+                ? TextScaler.linear(2)
+                : MediaQuery.textScalerOf(context),
+            disableAnimations:
+                disabled || MediaQuery.disableAnimationsOf(context),
+          ),
           child: child ?? const SizedBox.shrink(),
         ),
       ),

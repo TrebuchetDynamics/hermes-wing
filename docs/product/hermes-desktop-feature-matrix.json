@@ -1,0 +1,1736 @@
+{
+  "reference_head": null,
+  "scope": "WITHDRAWN as official Desktop parity evidence. Wing subsets and executed receipts remain historical behavior evidence only; official feature mapping is pending.",
+  "features": [
+    {
+      "id": "HD-ENTRY",
+      "outcome": "Welcome and three connection paths",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/local_setup_accessibility.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CONNECTION-PATHS",
+      "existing_task_ids": [
+        "CONNECTION-ENTRY-LABELS",
+        "CONNECTION-PRIMARY-ENTRY",
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "current_wing_subset": "Exact Local/SSH/Remote primary labels, nested HTTPS/VPN and owner-safe cancel/back.",
+      "remaining_parity_gap": "Native bootstrap and managed SSH/OAuth remain separate gaps.",
+      "wing_sources": [
+        "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart"
+      ],
+      "browser_test_sources": [
+        "playwright/tests/regression/connection-primary-entry.spec.mjs"
+      ],
+      "retained_evidence_docs": [
+        "docs/quality/connection-primary-entry.md",
+        "docs/quality/connection-entry-labels.md"
+      ],
+      "evidence_boundary": "Fresh entry-label widget and compiled Chromium checks are recorded in docs/quality/connection-entry-labels.md. Native/Android qualification remains not_run.",
+      "remaining_task_ids": [
+        "CONNECTION-SAVED-WORKFLOWS",
+        "CONNECTION-OWNER-RECONNECT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-LOCAL",
+      "outcome": "Local detect/adopt/install/update",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/computer_setup.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M3",
+      "existing_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "current_wing_subset": "Platform local-setup route and readiness guidance.",
+      "remaining_parity_gap": "Full Desktop detect/adopt/install/update lifecycle is not qualified on all targets.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-REMOTE",
+      "outcome": "Remote token connection and readiness",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/gateway_connection.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CONNECTION-PATHS",
+      "existing_task_ids": [
+        "CONNECTION-ENTRY-LABELS",
+        "CONNECTION-PRIMARY-ENTRY",
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "current_wing_subset": "Direct authenticated Agent endpoint and independent management enrollment.",
+      "remaining_parity_gap": "Desktop browser OAuth and full remote recovery need separate exact contracts/evidence.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "CONNECTION-ENTRY-LABELS",
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-OAUTH",
+      "outcome": "Remote dashboard OAuth sign-in/out",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "ACCOUNT",
+      "existing_task_ids": [
+        "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "current_wing_subset": "No qualified Desktop remote dashboard OAuth flow.",
+      "remaining_parity_gap": "Advertised OAuth acquisition, callback, logout and secure credential lifecycle.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SSH",
+      "outcome": "Managed SSH trust/forward/reconnect",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "REMOTE-BACKENDS",
+      "existing_task_ids": [
+        "BACKEND-SSH-CONNECT",
+        "DOC-BACKEND-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "current_wing_subset": "Externally created SSH tunnel with explicit local Agent URL instructions.",
+      "remaining_parity_gap": "Managed host trust, authentication, forwarding, cancellation and reconnect.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "BACKEND-SSH-CONNECT",
+        "DOC-BACKEND-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-BACKENDS",
+      "outcome": "Docker and WSL lifecycle",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "REMOTE-BACKENDS",
+      "existing_task_ids": [
+        "BACKEND-SSH-CONNECT",
+        "DOC-BACKEND-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "current_wing_subset": "No managed Docker/WSL surface.",
+      "remaining_parity_gap": "Reviewed fixed lifecycle operations and matching native execution.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "BACKEND-SSH-CONNECT",
+        "DOC-BACKEND-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-HOSTS",
+      "outcome": "Saved connection name/edit/test/remove",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/gateway_connection.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CONNECTION-PATHS",
+      "existing_task_ids": [
+        "CONNECTION-ENTRY-LABELS",
+        "CONNECTION-PRIMARY-ENTRY",
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "current_wing_subset": "Connections inventory, edit/remove and explicit Agent connect/disconnect.",
+      "remaining_parity_gap": "Desktop saved-workflow fidelity and per-host conversation ownership qualification.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "CONNECTION-ENTRY-LABELS",
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PAIR",
+      "outcome": "Pairing expiry/refusal/trust recovery",
+      "reference": null,
+      "wing_scope": "wing-specific",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/pairing.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "pairing invalid expired used",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M3",
+      "existing_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "current_wing_subset": "Wing Link enrollment and pairing recovery.",
+      "remaining_parity_gap": "Wing extension, not a substitute for the three Desktop connection paths.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-TRUST",
+      "outcome": "Separate Agent and management trust/revocation",
+      "reference": null,
+      "wing_scope": "wing-specific",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/gateway_trust.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "device revocation",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SECURITY",
+      "existing_task_ids": [
+        "DOC-SECURITY-CURRENT-BOUNDARY",
+        "DOC-SECURITY-REPLAY-EVIDENCE",
+        "FIX-NPM-AUDIT",
+        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
+      ],
+      "current_wing_subset": "Independent Agent and Wing Link credentials and own-device revocation.",
+      "remaining_parity_gap": "Wing extension; exact trust failures and physical-device qualification remain separate.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "FIX-NPM-AUDIT",
+        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SHELL",
+      "outcome": "Sidebar grouping/collapse/profile footer/recents",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/visual_review.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "PARITY-COMPOSITION",
+      "existing_task_ids": [
+        "DOC-PARITY-COMPOSITION",
+        "DOC-PARITY-RECENTS-REFERENCE",
+        "FINISH-DESKTOP-SHELL",
+        "PORT-GLOBAL-SESSION-MODAL",
+        "PORT-GROUPED-RECENTS",
+        "PORT-PROFILE-FOOTER",
+        "VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE",
+        "VERIFY-GROUPED-RECENTS-RECOVERY"
+      ],
+      "current_wing_subset": "Adaptive sidebar, passive profile footer, source-grouped loaded recents and global Sessions modal.",
+      "remaining_parity_gap": "Project/folder recents differ from source grouping. Footer model/group controls, relaunch persistence and complete shell fidelity remain gaps.",
+      "wing_sources": [
+        "lib/shared/widgets/app_shell.dart",
+        "lib/features/hermes_chat/widgets/shell_session_access.dart",
+        "lib/features/hermes_chat/widgets/global_session_scope.dart"
+      ],
+      "widget_test_sources": [
+        "test/shared/widgets/app_shell_profile_footer_test.dart",
+        "test/shared/widgets/app_shell_grouped_recents_test.dart",
+        "test/shared/widgets/app_shell_global_session_modal_test.dart"
+      ],
+      "browser_test_sources": [
+        "playwright/tests/regression/global-session-modal.spec.mjs",
+        "playwright/tests/regression/global-session-access.spec.mjs"
+      ],
+      "retained_evidence_docs": [
+        "docs/quality/profile-footer-implementation.md",
+        "docs/quality/grouped-recents-implementation.md",
+        "docs/quality/global-session-modal.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "VERIFY-GROUPED-RECENTS-RECOVERY",
+        "VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-TABS",
+      "outcome": "Concurrent chat tabs and close/Stop ownership",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "PARITY-TABS",
+      "existing_task_ids": [
+        "DOC-PARITY-TAB-CONTRACT",
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT"
+      ],
+      "current_wing_subset": "No owner-safe Desktop multi-conversation tab bar.",
+      "remaining_parity_gap": "Concurrent owner-bound tabs, close/Stop and reconnect behavior.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-PARITY-TAB-CONTRACT",
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PROFILE",
+      "outcome": "Profile lifecycle and switching",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/profiles/switch_chat.yaml",
+        "scripts/maestro/profiles/create_setup_delete.yaml",
+        "scripts/maestro/profiles/provider_model_chat.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M3",
+      "existing_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "current_wing_subset": "Scoped profile inventory/lifecycle and transactional new-profile setup.",
+      "remaining_parity_gap": "Complete Desktop profile editing/switching plus native/live qualification.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PROJECT",
+      "outcome": "Project/repository assignment and scoped Chat",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/soul_directories.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M3-PROJECT",
+      "existing_task_ids": [
+        "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "current_wing_subset": "Approved opaque child-folder browsing; no qualified Project-aware Chat.",
+      "remaining_parity_gap": "Authoritative Project creation/selection and workspace-scoped conversations. Persona directory flow is not Project coverage.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PROVIDER",
+      "outcome": "Provider credential CRUD/validation",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/providers.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "provider mutations",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M3-PROVIDER",
+      "existing_task_ids": [
+        "DOC-M3-PROVIDER-CONTRACT",
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+      ],
+      "current_wing_subset": "Capability-gated inventory, secret-safe key CRUD/validation and model operations.",
+      "remaining_parity_gap": "OAuth, multi-credential pools and full provider parity; unavailable mutations stay hidden.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M3-PROVIDER-CONTRACT",
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-MODEL",
+      "outcome": "Exact session provider/model selection/restoration",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/profiles/switch_chat.yaml",
+        "scripts/maestro/profiles/create_setup_delete.yaml",
+        "scripts/maestro/profiles/provider_model_chat.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M1",
+      "existing_task_ids": [
+        "FIX-APPROVAL-SETTLEMENT-OWNER",
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "current_wing_subset": "Exact provider/model picker and session-bound selection surfaces.",
+      "remaining_parity_gap": "Full live daily workflow, exact relaunch restoration and all provider-catalog edge cases.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-REASON",
+      "outcome": "Reasoning effort and context budget",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CHAT-FIDELITY",
+      "existing_task_ids": [
+        "DOC-CHAT-FIDELITY-REFERENCE",
+        "DOC-CHAT-TRANSCRIPT-DISCLOSURE",
+        "PORT-CHAT-COMPOSER-ORDER",
+        "PORT-CHAT-DIRECT-DICTATION",
+        "PORT-CHAT-TRANSCRIPT-DISCLOSURE",
+        "VERIFY-CHAT-COMPOSER-ACCESSIBILITY",
+        "VERIFY-CHAT-COMPOSER-ORDER-RECOVERY",
+        "VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY",
+        "VERIFY-CHAT-DISCLOSURE-ADAPTIVE",
+        "VERIFY-CHAT-DISCLOSURE-RECOVERY",
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "current_wing_subset": "Existing reasoning-effort/model controls where advertised.",
+      "remaining_parity_gap": "Complete reference effort/context-budget behavior. Thinking/Thought disclosure is tracked under HD-CHAT, not proof of effort controls.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-CHAT",
+      "outcome": "Send/stream/Markdown/code/tool transcript",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/approvals_recovery.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M1",
+      "existing_task_ids": [
+        "FIX-APPROVAL-SETTLEMENT-OWNER",
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "current_wing_subset": "Streaming transcript, Markdown/code/tool rendering and keyboard Thinking/Thought disclosure.",
+      "remaining_parity_gap": "Full reference transcript/composer fidelity, transport qualification and live generation.",
+      "wing_sources": [
+        "lib/features/hermes_chat/presentation/hermes_chat_timeline.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart"
+      ],
+      "browser_test_sources": [
+        "playwright/tests/regression/reasoning-disclosure.spec.mjs"
+      ],
+      "retained_evidence_docs": [
+        "docs/quality/reasoning-disclosure-implementation.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-APPROVAL",
+      "outcome": "Approve once/session/deny and stale correlation",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/approvals_recovery.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M1",
+      "existing_task_ids": [
+        "FIX-APPROVAL-SETTLEMENT-OWNER",
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "current_wing_subset": "Correlated gated approval controls and stale-owner settlement handling.",
+      "remaining_parity_gap": "Actual live-provider/native approval recovery and every reference interaction.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-STOP",
+      "outcome": "Authoritative Stop and post-Stop recovery",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/approvals_recovery.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M1",
+      "existing_task_ids": [
+        "FIX-APPROVAL-SETTLEMENT-OWNER",
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "current_wing_subset": "Explicit run Stop and uncertain/terminal reconciliation states.",
+      "remaining_parity_gap": "Authoritative live terminal outcome and post-disconnect/relaunch qualification. Local stream teardown is not Stop.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-CLARIFY",
+      "outcome": "Agent questions and user answer protocol",
+      "reference": null,
+      "wing_scope": "unverified",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CHAT-FIDELITY",
+      "existing_task_ids": [
+        "DOC-CHAT-FIDELITY-REFERENCE",
+        "DOC-CHAT-TRANSCRIPT-DISCLOSURE",
+        "PORT-CHAT-COMPOSER-ORDER",
+        "PORT-CHAT-DIRECT-DICTATION",
+        "PORT-CHAT-TRANSCRIPT-DISCLOSURE",
+        "VERIFY-CHAT-COMPOSER-ACCESSIBILITY",
+        "VERIFY-CHAT-COMPOSER-ORDER-RECOVERY",
+        "VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY",
+        "VERIFY-CHAT-DISCLOSURE-ADAPTIVE",
+        "VERIFY-CHAT-DISCLOSURE-RECOVERY",
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "current_wing_subset": "Human-request contract and complete Desktop question interaction not requalified here.",
+      "remaining_parity_gap": "Inspect exact operation/correlation and add matching end-to-end response coverage.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-QUEUE",
+      "outcome": "Queued messages/edit/remove/cancel ownership",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "CHAT-FIDELITY",
+      "existing_task_ids": [
+        "DOC-CHAT-FIDELITY-REFERENCE",
+        "DOC-CHAT-TRANSCRIPT-DISCLOSURE",
+        "PORT-CHAT-COMPOSER-ORDER",
+        "PORT-CHAT-DIRECT-DICTATION",
+        "PORT-CHAT-TRANSCRIPT-DISCLOSURE",
+        "VERIFY-CHAT-COMPOSER-ACCESSIBILITY",
+        "VERIFY-CHAT-COMPOSER-ORDER-RECOVERY",
+        "VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY",
+        "VERIFY-CHAT-DISCLOSURE-ADAPTIVE",
+        "VERIFY-CHAT-DISCLOSURE-RECOVERY",
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "current_wing_subset": "Explicit follow-up draft/queue behavior in the existing composer.",
+      "remaining_parity_gap": "Desktop queued-message placement, editing/removal and owner-safe recovery.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "VERIFY-CHAT-TRANSCRIPT-ORDER"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-DRAFT",
+      "outcome": "Draft isolation across session/host changes",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/draft_isolation.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "draft ownership",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M2",
+      "existing_task_ids": [
+        "DOC-M2-AMBIGUOUS-404",
+        "DOC-M2-ANDROID-PREFLIGHT",
+        "DOC-M2-BOOTSTRAP-DENIAL-ORACLE",
+        "DOC-M2-BOOTSTRAP-FORBIDDEN-ORACLE",
+        "DOC-M2-CONTINUITY-BASELINE",
+        "DOC-M2-COORDINATOR-ADMISSION-TRACE",
+        "DOC-M2-COUNTING-CONTRACT",
+        "DOC-M2-CPU-ENFORCEMENT-FEASIBILITY",
+        "DOC-M2-CPU-ENVELOPE-PROOF",
+        "DOC-M2-CREDENTIAL-DENIAL-ORACLE",
+        "DOC-M2-CUSTODY-PROOF-REVIEW",
+        "DOC-M2-DEATH-COMPLETE-ORACLE",
+        "DOC-M2-FORBIDDEN-RECOVERY-ORACLE",
+        "DOC-M2-HISTORY-ADMISSION",
+        "DOC-M2-HISTORY-IDENTITY",
+        "DOC-M2-INODE-POLICY-EVIDENCE",
+        "DOC-M2-INSPECTOR-ISOLATION-PREFLIGHT",
+        "DOC-M2-ISSUER-EVIDENCE-CONTRACT",
+        "DOC-M2-MANIFEST-ASSESSMENT-CONTRACT",
+        "DOC-M2-OBSERVER-COMPOSITION",
+        "DOC-M2-PACKAGE-PROVENANCE",
+        "DOC-M2-POST-REPAIR-CALLERS",
+        "DOC-M2-QA-DELIVERY-ADMISSION",
+        "DOC-M2-RECEIPT-HANDOFF-CONTRACT",
+        "DOC-M2-RECOVERY-READ-ADMISSION",
+        "DOC-M2-REFUSAL-CONTINUATION",
+        "DOC-M2-RUNTIME-CALLER-CLOSURE",
+        "DOC-M2-SYNTHETIC-ISOLATION-CONTRACT",
+        "M2-DEVICE-QUALIFICATION",
+        "QA-M2-CUSTODY-ORDERING-ORACLE",
+        "QA-M2-DEFAULT-REFUSAL",
+        "QA-M2-STORE-STATE-OBSERVER"
+      ],
+      "current_wing_subset": "Volatile owner-scoped composer drafts and invalidation across selection/recovery.",
+      "remaining_parity_gap": "Cross-host/navigation/relaunch persistence and complete reference draft semantics.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M2-INODE-POLICY-EVIDENCE",
+        "M2-DEVICE-QUALIFICATION"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SEARCH",
+      "outcome": "Session pagination/search/filter metadata",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/sessions.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "session pagination",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SESSIONS",
+      "existing_task_ids": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE",
+        "DOC-SESSION-FORK-JOURNEY",
+        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
+      ],
+      "current_wing_subset": "Loaded metadata/preview filtering, explicit pagination and exact-owner activation.",
+      "remaining_parity_gap": "Not full server transcript search. Native/live session search remains unqualified.",
+      "wing_sources": [
+        "lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart"
+      ],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [
+        "docs/quality/session-search-resume-journey.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-RESUME",
+      "outcome": "Exact session resume/history/reconnect/relaunch",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/approvals_recovery.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M1",
+      "existing_task_ids": [
+        "FIX-APPROVAL-SETTLEMENT-OWNER",
+        "PARITY-APPROVAL-DISMISSAL",
+        "PARITY-LIVE-WORKFLOW",
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-PAIR-READ"
+      ],
+      "current_wing_subset": "Explicit authoritative reopen with stale history rejection.",
+      "remaining_parity_gap": "Automatic exact-session relaunch and detached-run/live recovery are different outcomes.",
+      "wing_sources": [
+        "lib/core/hermes/channel/api_channel/hermes_api_channel_sessions.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart"
+      ],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [
+        "docs/quality/session-search-resume-journey.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-NATIVE-RELAUNCH",
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-FORK",
+      "outcome": "Session branch and rename",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/session_branch_qa.yaml",
+        "scripts/maestro/session_metadata_qa.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SESSIONS",
+      "existing_task_ids": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE",
+        "DOC-SESSION-FORK-JOURNEY",
+        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
+      ],
+      "current_wing_subset": "Confirmed owner-bound fork, server-returned child history and gated rename.",
+      "remaining_parity_gap": "Live/native qualification, all branch metadata and automatic child relaunch restoration.",
+      "wing_sources": [
+        "lib/features/hermes_chat/session/hermes_chat_session_actions.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart"
+      ],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [
+        "docs/quality/session-fork-journey.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-DELETE",
+      "outcome": "Single/bulk session delete with cancel/counts",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/sessions.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "session pagination",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SESSIONS",
+      "existing_task_ids": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE",
+        "DOC-SESSION-FORK-JOURNEY",
+        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
+      ],
+      "current_wing_subset": "Scoped single/bulk deletion with confirmation and stale-owner guards.",
+      "remaining_parity_gap": "Reference management fidelity and authoritative live/native mutation readback.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PINS",
+      "outcome": "Session pin/group/filter persistence",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/chat_groups.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "session pagination",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SESSIONS",
+      "existing_task_ids": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE",
+        "DOC-SESSION-FORK-JOURNEY",
+        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
+      ],
+      "current_wing_subset": "Loaded-row pins/contact scope, filtering and source grouping.",
+      "remaining_parity_gap": "Reference Project/folder groups and process-relaunch persistence.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-ATTACH",
+      "outcome": "Attachments/media and picker owner races",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/attachment_picker_race.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "attachments and schedule",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "ARTIFACTS",
+      "existing_task_ids": [
+        "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "current_wing_subset": "Text/image attachments and owner-safe picker/upload handling.",
+      "remaining_parity_gap": "All Desktop media/file types, native pickers and exact artifact access boundaries.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-PREVIEW",
+      "outcome": "Web preview/file viewer/artifact access",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "ARTIFACTS",
+      "existing_task_ids": [
+        "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "current_wing_subset": "Bounded transcript media; no full reference web/file preview qualification.",
+      "remaining_parity_gap": "Advertised preview/artifact access and native/browser isolation.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-EXPORT",
+      "outcome": "Copy/save/share text and Markdown transcript",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/transcript_export.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "clipboard exports",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M5",
+      "existing_task_ids": [
+        "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "current_wing_subset": "Text/Markdown transcript copy/save/share surfaces.",
+      "remaining_parity_gap": "Native clipboard/export dialogs, permissions and all reference formatting.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-VOICE",
+      "outcome": "Capture/language/speech/cancel/permission failure",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/microphone_denied.yaml",
+        "scripts/maestro/fixture/voice_language.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "VOICE",
+      "existing_task_ids": [
+        "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+        "DOC-VOICE-QUALIFICATION"
+      ],
+      "current_wing_subset": "Wide draft dictation, compact menu, language/settings and separate hands-free controls.",
+      "remaining_parity_gap": "Physical/native audio is unqualified. Cancel discards recognition rather than Desktop finalize-on-stop.",
+      "wing_sources": [
+        "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart",
+        "lib/features/hermes_chat/voice/hermes_voice_input_controller.dart"
+      ],
+      "widget_test_sources": [
+        "test/features/hermes_chat/screens/hermes_chat_direct_dictation_test.dart"
+      ],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [
+        "docs/quality/chat-direct-dictation.md"
+      ],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+        "DOC-VOICE-QUALIFICATION"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-COMMAND",
+      "outcome": "Full slash command catalog/completion",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/composer_commands.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "SLASH-CATALOG",
+      "existing_task_ids": [
+        "DOC-SLASH-CATALOG-CONTRACT",
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "current_wing_subset": "Supported composer slash commands and explicit completion.",
+      "remaining_parity_gap": "Full advertised command catalog and reference completion/argument behavior.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-SLASH-CATALOG-CONTRACT",
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SOUL",
+      "outcome": "Standalone and profile persona editor/revision conflicts",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/soul_directories.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "PERSONA",
+      "existing_task_ids": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE",
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "current_wing_subset": "Exact-scoped revision-aware profile persona editor and recovery.",
+      "remaining_parity_gap": "Full reference persona behavior and live/native conflict qualification.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE",
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SKILLS",
+      "outcome": "Installed skills and Discover/install/uninstall",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/tools_inventory_qa.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-DISCOVER",
+      "existing_task_ids": [
+        "DOC-M4-CONTRACT-CHECKPOINT",
+        "DOC-M4-DISCOVERY-SELECTION-CONTRACT"
+      ],
+      "current_wing_subset": "Searchable installed-skill metadata and resolved toolsets.",
+      "remaining_parity_gap": "Discover/install/uninstall remain gated. Inventory tests do not prove mutation support.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-CONTRACT-CHECKPOINT",
+        "DOC-M4-DISCOVERY-SELECTION-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-MCP",
+      "outcome": "Toolset enable/disable and MCP administration",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-MCP",
+      "existing_task_ids": [
+        "DOC-M4-MCP-CONFIG-CONTRACT",
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "current_wing_subset": "Read-only toolset metadata and exact-scoped inventory refresh.",
+      "remaining_parity_gap": "MCP administration and toolset mutations need authoritative operation contracts.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-MCP-CONFIG-CONTRACT",
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-MEMORY",
+      "outcome": "Memory entries/profile/capacity/providers",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-MEMORY",
+      "existing_task_ids": [
+        "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+        "DOC-M4-MEMORY-CONTRACT"
+      ],
+      "current_wing_subset": "No shipped memory route.",
+      "remaining_parity_gap": "Entry/profile/capacity/provider UI and advertised read/write operations.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+        "DOC-M4-MEMORY-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SCHEDULE",
+      "outcome": "Schedule inventory and create/edit/run/delete",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/schedules.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "attachments and schedule",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-SCHEDULES",
+      "existing_task_ids": [
+        "DOC-M4-SCHEDULE-CONTRACT",
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+      ],
+      "current_wing_subset": "Gateway-scoped schedule inventory and read-only refresh/filtering.",
+      "remaining_parity_gap": "Create/edit/pause/run/delete stay hidden until exact scoped operations are advertised.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-SCHEDULE-CONTRACT",
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-KANBAN",
+      "outcome": "Agent-owned cards and planning workflow",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-KANBAN",
+      "existing_task_ids": [
+        "DOC-M4-KANBAN-CONTRACT",
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
+      ],
+      "current_wing_subset": "No Agent-owned planning/card board surface.",
+      "remaining_parity_gap": "Authoritative card/Project operations and owner-bound board interactions.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-KANBAN-CONTRACT",
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-GATEWAY",
+      "outcome": "Gateway health/lifecycle/messaging platform admin",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/gateway_connection.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M4-PLATFORMS",
+      "existing_task_ids": [
+        "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "current_wing_subset": "Saved connections, bounded Agent health and own Wing Link trust/revocation.",
+      "remaining_parity_gap": "Gateway lifecycle/logs, peer administration and messaging-platform setup.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-OFFICE",
+      "outcome": "Office contacts/3D/representative interactions",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/office_workspace_qa.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "OFFICE",
+      "existing_task_ids": [
+        "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "current_wing_subset": "Accessible 2D gateway-contact workspace with exact contact activation.",
+      "remaining_parity_gap": "Desktop 3D, representative management and associated account interactions.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-ACCOUNT",
+      "outcome": "Account/OAuth/pools/credits/wallet",
+      "reference": null,
+      "wing_scope": "unsupported",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "ACCOUNT",
+      "existing_task_ids": [
+        "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "current_wing_subset": "No account/OAuth/pools/credits/wallet route.",
+      "remaining_parity_gap": "Exact external account/provider authority and secure OAuth/credential contracts.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-SETTINGS",
+      "outcome": "Appearance/language/voice/spellcheck/privacy",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/settings.yaml",
+        "scripts/maestro/fixture/spellcheck.yaml"
+      ],
+      "linux_native_candidate": "integration_test/linux_maestro_flows_test.dart",
+      "linux_case_hint": "screen tour",
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "PARITY",
+      "existing_task_ids": [
+        "DOC-PARITY-COVERAGE",
+        "DOC-PARITY-PLATFORM-DEVIATIONS",
+        "FIX-GATEWAY-KEYBOARD-390",
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "current_wing_subset": "Appearance, spellcheck, voice, Connections link and redacted diagnostics.",
+      "remaining_parity_gap": "Desktop Settings organization, complete preferences and platform-specific persistence.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-DIAG",
+      "outcome": "Logs/config diagnosis/debug dump/backup/import",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "existing_task_ids": [
+        "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "current_wing_subset": "Bounded redacted diagnostics and local settings.",
+      "remaining_parity_gap": "Full log/config health/fix, debug dump and atomic backup/import behavior.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-UPDATE",
+      "outcome": "Install/signed updates/rollback/uninstall",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "DESKTOP-DELIVERY",
+      "existing_task_ids": [
+        "DOC-DESKTOP-DELIVERY-EVIDENCE",
+        "DOC-DESKTOP-UNINSTALL-EVIDENCE"
+      ],
+      "current_wing_subset": "Existing desktop installation/build and native command surfaces.",
+      "remaining_parity_gap": "Signed distribution/update activation, local health and rollback qualification.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-DESKTOP-DELIVERY-EVIDENCE",
+        "DOC-DESKTOP-UNINSTALL-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-NATIVE",
+      "outcome": "Menus/window/zoom/fullscreen/shortcuts",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "NATIVE-INTEGRATION",
+      "existing_task_ids": [
+        "DOC-NATIVE-DESIGN-REVIEW",
+        "DOC-NATIVE-FAILURE-BOUNDARY"
+      ],
+      "current_wing_subset": "Bounded native menu and settings commands.",
+      "remaining_parity_gap": "Installed window/zoom/fullscreen/shortcut behavior on each named platform.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-NATIVE-DESIGN-REVIEW",
+        "DOC-NATIVE-FAILURE-BOUNDARY"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    },
+    {
+      "id": "HD-ACCESS",
+      "outcome": "Keyboard/focus/large text/reduced motion/non-spatial path",
+      "reference": null,
+      "wing_scope": "partial",
+      "android_flow_candidates": [
+        "scripts/maestro/fixture/local_setup_accessibility.yaml"
+      ],
+      "linux_native_candidate": null,
+      "linux_case_hint": null,
+      "android_runtime_result": "not_run",
+      "linux_native_runtime_result": "not_run",
+      "coverage_note": "Candidate mapping only. Assert each operation and identity boundary before treating it as coverage. Unsupported actions require separate unavailable-state tests and remain parity gaps.",
+      "goal": "M5",
+      "existing_task_ids": [
+        "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "current_wing_subset": "Adaptive semantics, keyboard focus, reduced-motion and non-spatial equivalents.",
+      "remaining_parity_gap": "Full keyboard/large-text/screen-reader qualification on actual Android and native desktop targets.",
+      "wing_sources": [],
+      "widget_test_sources": [],
+      "browser_test_sources": [],
+      "retained_evidence_docs": [],
+      "evidence_boundary": "Current source/test inventory and retained executor receipts. No feature/runtime check rerun in this documentation pass. Unmapped groups use the operation-scoped route/parity ledger, not new source qualification.",
+      "remaining_task_ids": [
+        "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "platform_qualification_task_ids": [
+        "PARITY-MAESTRO-ANDROID",
+        "PARITY-NATIVE-LINUX"
+      ],
+      "reference_status": "requires_official_source_mapping"
+    }
+  ],
+  "reference_status": "withdrawn_wrong_application",
+  "official_reference": "https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop",
+  "official_reference_head": "158fd638da1629c8e62caf9ade1515d162def8ab"
+}

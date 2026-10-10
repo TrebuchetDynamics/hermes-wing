@@ -399,6 +399,7 @@ class _EndpointProfileChips extends StatelessWidget {
     required this.connecting,
     required this.onSelect,
     required this.onRename,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -406,6 +407,7 @@ class _EndpointProfileChips extends StatelessWidget {
   final bool connecting;
   final ValueChanged<HermesEndpointConfig> onSelect;
   final ValueChanged<HermesEndpointConfig> onRename;
+  final ValueChanged<HermesEndpointConfig> onEdit;
   final ValueChanged<HermesEndpointConfig> onDelete;
 
   @override
@@ -444,15 +446,25 @@ class _EndpointProfileChips extends StatelessWidget {
                         onPressed: connecting ? null : () => onSelect(profile),
                         onDeleted: connecting || profile.id == null
                             ? null
-                            : () => unawaited(
-                                _confirmDeleteProfile(context, profile),
-                              ),
+                            : () => onDelete(profile),
                         deleteIcon: const Icon(Icons.close, size: 18),
                         tooltip: _safeHermesUiPreview(
                           profile.baseUrl,
                           maxLength: 96,
                         ),
                       ),
+                    ),
+                    IconButton(
+                      key: ValueKey(
+                        'hermes-endpoint-profile-edit-${profile.id}',
+                      ),
+                      tooltip: AppLocalizations.of(
+                        context,
+                      ).chatSavedEndpointEdit,
+                      icon: const Icon(Icons.settings_ethernet, size: 18),
+                      onPressed: connecting || profile.id == null
+                          ? null
+                          : () => onEdit(profile),
                     ),
                     IconButton(
                       key: ValueKey(
@@ -473,41 +485,6 @@ class _EndpointProfileChips extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Future<void> _confirmDeleteProfile(
-    BuildContext context,
-    HermesEndpointConfig profile,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        final strings = AppLocalizations.of(dialogContext);
-        return AlertDialog(
-          key: const ValueKey('hermes-endpoint-profile-delete-dialog'),
-          title: Text(strings.chatErrorRemoveProfileTitle),
-          content: Text(
-            strings.chatErrorRemoveProfileBody(
-              _safeHermesUiPreview(profile.displayLabel, maxLength: 96),
-              _safeHermesUiPreview(profile.baseUrl, maxLength: 120),
-            ),
-          ),
-          actions: [
-            TextButton(
-              key: const ValueKey('hermes-endpoint-profile-delete-cancel'),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(strings.cancelAction),
-            ),
-            FilledButton(
-              key: const ValueKey('hermes-endpoint-profile-delete-confirm'),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(strings.chatErrorRemoveProfileAction),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed == true) onDelete(profile);
   }
 }
 
@@ -545,7 +522,8 @@ bool _isHermesAuthError(String lowerCaseError) {
 }
 
 bool _isHermesNetworkError(String lowerCaseError) {
-  return lowerCaseError.contains('socketexception') ||
+  return lowerCaseError.contains('hermes api network connection failed') ||
+      lowerCaseError.contains('socketexception') ||
       lowerCaseError.contains('clientexception') ||
       lowerCaseError.contains('handshakeexception') ||
       lowerCaseError.contains('connection refused') ||

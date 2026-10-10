@@ -6,6 +6,12 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../core/wing_link/local_wing_link_host.dart';
 
+// Overridden only by deterministic qualification hosts; browsers cannot spawn
+// the native setup helper in production.
+final localLinuxSetupAvailableProvider = Provider<bool>(
+  (ref) => !kIsWeb && defaultTargetPlatform == TargetPlatform.linux,
+);
+
 final localWingLinkHostProvider = Provider<LocalWingLinkHost>(
   (ref) => LocalWingLinkHost(),
 );
@@ -47,7 +53,8 @@ class LocalHermesSetupController extends ChangeNotifier {
   LocalHermesInspection? get inspection => _inspection;
 
   Future<void> inspect() async {
-    if (_status == LocalHermesSetupStatus.installing ||
+    if (_disposed ||
+        _status == LocalHermesSetupStatus.installing ||
         _status == LocalHermesSetupStatus.cancelling ||
         _status == LocalHermesSetupStatus.detecting) {
       return;
@@ -79,6 +86,7 @@ class LocalHermesSetupController extends ChangeNotifier {
   }
 
   Future<void> setup() async {
+    if (_disposed) return;
     if (_status != LocalHermesSetupStatus.missing &&
         _status != LocalHermesSetupStatus.ready &&
         _status != LocalHermesSetupStatus.unhealthy) {
@@ -139,7 +147,7 @@ class LocalHermesSetupController extends ChangeNotifier {
   }
 
   Future<void> cancel() async {
-    if (_status != LocalHermesSetupStatus.installing) return;
+    if (_disposed || _status != LocalHermesSetupStatus.installing) return;
     ++_generation;
     _status = LocalHermesSetupStatus.cancelling;
     _notify();
@@ -160,7 +168,8 @@ class LocalHermesSetupController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _generation++;
-    unawaited(_host.cancelSetup());
+    // Teardown has no remaining UI owner to receive a cancellation failure.
+    unawaited(_host.cancelSetup().catchError((Object _) {}));
     super.dispose();
   }
 }

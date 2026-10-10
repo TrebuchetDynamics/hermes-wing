@@ -27,11 +27,13 @@ class InfoActionSheet extends SheetContent {
   final String title;
   final List<SheetInfoRow> infoRows;
   final List<SheetActionRow> actions;
+  final WidgetBuilder? infoBuilder;
 
   const InfoActionSheet(
     this.title, {
     required this.infoRows,
     required this.actions,
+    this.infoBuilder,
   }) : super._();
 }
 
@@ -71,8 +73,13 @@ void showSheet(BuildContext context, SheetContent content) {
   switch (content) {
     case ActionSheet(:final title, :final rows):
       _showActionSheet(context, title, rows);
-    case InfoActionSheet(:final title, :final infoRows, :final actions):
-      _showInfoActionSheet(context, title, infoRows, actions);
+    case InfoActionSheet(
+      :final title,
+      :final infoRows,
+      :final actions,
+      :final infoBuilder,
+    ):
+      _showInfoActionSheet(context, title, infoRows, actions, infoBuilder);
   }
 }
 
@@ -122,6 +129,7 @@ void _showInfoActionSheet(
   String title,
   List<SheetInfoRow> infoRows,
   List<SheetActionRow> actions,
+  WidgetBuilder? infoBuilder,
 ) {
   showModalBottomSheet<void>(
     context: context,
@@ -141,7 +149,7 @@ void _showInfoActionSheet(
               const SizedBox(height: 16),
               const Divider(height: 1),
               const SizedBox(height: 12),
-              _buildInfoGrid(context, infoRows),
+              infoBuilder?.call(context) ?? _buildInfoGrid(context, infoRows),
             ],
           ),
         ),

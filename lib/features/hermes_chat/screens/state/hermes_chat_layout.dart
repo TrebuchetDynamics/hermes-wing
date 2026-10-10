@@ -2,40 +2,40 @@ part of '../hermes_chat_screen.dart';
 
 String _connectionModeLabel(
   AppLocalizations strings,
-  _HermesConnectionMode mode,
+  HermesConnectionMode mode,
 ) => switch (mode) {
-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalLabel,
-  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteLabel,
-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnLabel,
-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshLabel,
+  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalLabel,
+  HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteLabel,
+  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnLabel,
+  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshLabel,
 };
 
 String _connectionModeBody(
   AppLocalizations strings,
-  _HermesConnectionMode mode,
+  HermesConnectionMode mode,
 ) => switch (mode) {
-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalBody,
-  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteBody,
-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnBody,
-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshBody,
+  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalBody,
+  HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteBody,
+  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnBody,
+  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshBody,
 };
 
-IconData _connectionModeIcon(_HermesConnectionMode mode) => switch (mode) {
-  _HermesConnectionMode.local => Icons.devices_outlined,
-  _HermesConnectionMode.remote => Icons.cloud_outlined,
-  _HermesConnectionMode.vpn => Icons.shield_outlined,
-  _HermesConnectionMode.ssh => Icons.terminal_outlined,
+IconData _connectionModeIcon(HermesConnectionMode mode) => switch (mode) {
+  HermesConnectionMode.local => Icons.devices_outlined,
+  HermesConnectionMode.remote => Icons.cloud_outlined,
+  HermesConnectionMode.vpn => Icons.shield_outlined,
+  HermesConnectionMode.ssh => Icons.terminal_outlined,
 };
 
 String _connectionModeUrlHelper(
   AppLocalizations strings,
-  _HermesConnectionMode mode,
+  HermesConnectionMode mode,
 ) => switch (mode) {
-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalUrlHelper,
-  _HermesConnectionMode.remote =>
+  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalUrlHelper,
+  HermesConnectionMode.remote =>
     strings.chatLayoutConnectionModeRemoteUrlHelper,
-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnUrlHelper,
-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshUrlHelper,
+  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnUrlHelper,
+  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshUrlHelper,
 };
 
 extension _HermesChatScreenLayout on _HermesChatScreenState {
@@ -44,14 +44,27 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     HermesChannel channel,
     HermesChannelState state,
   ) {
-    final connecting = state.status == HermesConnectionStatus.connecting;
+    final connecting =
+        state.status == HermesConnectionStatus.connecting ||
+        (_connectionSavePending != null &&
+            _connectionSavePending!.form == _connectionForm.intentGeneration &&
+            _connectionSavePending!.owner == _composerOwnerGeneration);
     final canConnect =
         !connecting && _isValidHermesBaseUrl(_connectionForm.baseUrl.text);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final strings = AppLocalizations.of(context);
 
-    return SingleChildScrollView(
+    Future<void> connectLocal() async {
+      // The phone guide must never submit a saved/late-hydrated Remote origin
+      // behind its fixed loopback display. Keep the existing attempt owner.
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        _connectionForm.baseUrl.text = 'http://127.0.0.1:8642';
+      }
+      await _connect(channel);
+    }
+
+    final form = SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       child: Center(
         child: ConstrainedBox(
@@ -91,7 +104,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            strings.chatLayoutConnectBody,
+                            _connectionMode == HermesConnectionMode.local
+                                ? strings.platformLocalConnectBody
+                                : strings.chatLayoutConnectBody,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                               height: 1.45,
@@ -102,6 +117,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                     ),
                   ],
                 ),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TextButton.icon(
+                    key: const ValueKey('connection-information-help'),
+                    onPressed: () => showConnectionInformationHelp(context),
+                    icon: const Icon(Icons.help_outline),
+                    label: Text(strings.connectionInformationHelpTitle),
+                  ),
+                ),
                 const SizedBox(height: 28),
                 Text(
                   strings.chatLayoutConnectionModeLabel,
@@ -111,367 +135,720 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 ),
                 const SizedBox(height: 10),
                 Wrap(
+                  key: const ValueKey('hermes-primary-connection-modes'),
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final mode in _HermesConnectionMode.values)
+                    for (final mode in const [
+                      HermesConnectionMode.local,
+                      HermesConnectionMode.ssh,
+                      HermesConnectionMode.remote,
+                    ])
                       ChoiceChip(
                         key: ValueKey('hermes-connection-mode-${mode.name}'),
-                        selected: _connectionMode == mode,
+                        selected:
+                            _connectionMode == mode ||
+                            (mode == HermesConnectionMode.remote &&
+                                _connectionMode == HermesConnectionMode.vpn),
                         onSelected: connecting
                             ? null
-                            : (_) => _selectConnectionMode(mode),
+                            : (_) {
+                                if (mode == HermesConnectionMode.local &&
+                                    !kIsWeb &&
+                                    defaultTargetPlatform ==
+                                        TargetPlatform.android) {
+                                  _connectionForm.baseUrl.text =
+                                      'http://127.0.0.1:8642';
+                                }
+                                _selectConnectionMode(
+                                  mode == HermesConnectionMode.remote &&
+                                          _connectionMode ==
+                                              HermesConnectionMode.vpn
+                                      ? HermesConnectionMode.vpn
+                                      : mode,
+                                );
+                              },
                         avatar: Icon(_connectionModeIcon(mode), size: 18),
-                        label: Text(_connectionModeLabel(strings, mode)),
+                        label: Text(
+                          mode == HermesConnectionMode.remote
+                              ? strings.chatLayoutConnectionPrimaryRemoteLabel
+                              : _connectionModeLabel(strings, mode),
+                        ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _connectionModeBody(strings, _connectionMode),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FutureBuilder<List<HermesEndpointConfig>>(
-                  future: _endpointProfilesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: Semantics(
-                          label: strings.chatSavedEndpointsLoading,
-                          child: const LinearProgressIndicator(
-                            key: ValueKey('hermes-endpoints-loading'),
-                          ),
+                if (_connectionMode == HermesConnectionMode.remote ||
+                    _connectionMode == HermesConnectionMode.vpn) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    key: const ValueKey('hermes-remote-connection-modes'),
+                    padding: const EdgeInsetsDirectional.only(start: 12),
+                    decoration: BoxDecoration(
+                      border: BorderDirectional(
+                        start: BorderSide(
+                          color: colors.outlineVariant,
+                          width: 2,
                         ),
-                      );
-                    }
-                    if (snapshot.hasError) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: _EndpointProfilesLoadError(
-                          onRetry: _refreshEndpointProfiles,
-                        ),
-                      );
-                    }
-                    final profiles = snapshot.data ?? const [];
-                    if (profiles.isEmpty) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: _EndpointProfileChips(
-                        profiles: profiles,
-                        connecting: connecting,
-                        onSelect: _selectEndpointProfile,
-                        onRename: (profile) =>
-                            unawaited(_renameEndpointProfile(context, profile)),
-                        onDelete: (profile) =>
-                            unawaited(_deleteEndpointProfile(profile)),
                       ),
-                    );
-                  },
-                ),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          strings.chatLayoutVpsConnectionTitle,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          strings.chatLayoutVpsConnectionBody,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                        if (!kIsWeb &&
-                            defaultTargetPlatform ==
-                                TargetPlatform.android) ...[
-                          const SizedBox(height: 16),
-                          OutlinedButton.icon(
-                            key: const ValueKey('hermes-open-qr-scanner'),
-                            onPressed: () =>
-                                context.push('${AppRoutes.enroll}?step=pair'),
-                            icon: const Icon(Icons.qr_code_scanner),
-                            label: Text(strings.chatLayoutScanQrAction),
-                          ),
-                        ],
-                        if (!kIsWeb &&
-                            defaultTargetPlatform == TargetPlatform.linux) ...[
-                          const SizedBox(height: 16),
-                          FilledButton.tonalIcon(
-                            key: const ValueKey('hermes-open-local-setup'),
-                            onPressed: () async {
-                              final pair = await context.push<bool>(
-                                AppRoutes.localSetup,
-                              );
-                              if (context.mounted && pair == true) {
-                                unawaited(
-                                  context.push('${AppRoutes.enroll}?step=pair'),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.computer_outlined),
-                            label: Text(strings.localSetupAction),
-                          ),
-                        ],
-                        const SizedBox(height: 20),
-                        TextField(
-                          key: const ValueKey('hermes-base-url-field'),
-                          controller: _connectionForm.baseUrl,
-                          keyboardType: TextInputType.url,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          enableIMEPersonalizedLearning: false,
-                          decoration: InputDecoration(
-                            labelText: strings.chatLayoutServerUrlLabel,
-                            hintText: strings.chatLayoutServerUrlHint,
-                            helperText: _connectionModeUrlHelper(
-                              strings,
-                              _connectionMode,
-                            ),
-                            helperMaxLines: 2,
-                            prefixIcon: const Icon(Icons.language_outlined),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          key: const ValueKey('hermes-api-key-field'),
-                          controller: _connectionForm.apiKey,
-                          obscureText: _connectionForm.obscureApiKey,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          enableIMEPersonalizedLearning: false,
-                          decoration: InputDecoration(
-                            labelText: strings.chatLayoutAccessTokenLabel,
-                            helperText: strings.chatLayoutAccessTokenHelper,
-                            helperMaxLines: 2,
-                            prefixIcon: const Icon(Icons.key_outlined),
-                            suffixIcon: IconButton(
-                              key: const ValueKey('hermes-api-key-visibility'),
-                              tooltip: _connectionForm.obscureApiKey
-                                  ? strings.chatLayoutShowAccessTokenTooltip
-                                  : strings.chatLayoutHideAccessTokenTooltip,
-                              onPressed: _connectionForm.toggleApiKeyVisibility,
-                              icon: Icon(
-                                _connectionForm.obscureApiKey
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
+                    ),
+                    child: Semantics(
+                      container: true,
+                      label: strings.chatLayoutConnectionPrimaryRemoteLabel,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final mode in const [
+                            HermesConnectionMode.remote,
+                            HermesConnectionMode.vpn,
+                          ])
+                            ChoiceChip(
+                              key: ValueKey(
+                                'hermes-remote-transport-${mode.name}',
                               ),
+                              selected: _connectionMode == mode,
+                              onSelected: connecting
+                                  ? null
+                                  : (_) => _selectConnectionMode(mode),
+                              avatar: Icon(_connectionModeIcon(mode), size: 18),
+                              label: Text(_connectionModeLabel(strings, mode)),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          key: const ValueKey('hermes-profile-label-field'),
-                          controller: _connectionForm.label,
-                          textInputAction: TextInputAction.done,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          enableIMEPersonalizedLearning: false,
-                          onSubmitted: canConnect
-                              ? (_) => unawaited(_connect(channel))
-                              : null,
-                          decoration: InputDecoration(
-                            labelText: strings.chatLayoutVpsNameLabel,
-                            hintText: strings.chatLayoutVpsNameHint,
-                            helperText: strings.chatLayoutVpsNameHelper,
-                            prefixIcon: const Icon(Icons.label_outline),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          key: const ValueKey('hermes-credential-boundary'),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colors.secondaryContainer,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.account_tree_outlined,
-                                size: 20,
-                                color: colors.onSecondaryContainer,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      strings.chatLayoutCredentialBoundaryTitle,
-                                      style: theme.textTheme.labelLarge
-                                          ?.copyWith(
-                                            color: colors.onSecondaryContainer,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                if (_connectionMode == HermesConnectionMode.ssh)
+                  ManagedSshConnectionPanel(
+                    onConnected: () {
+                      _setState(() => _editingConnection = false);
+                      widget.onConnectionSaved?.call();
+                    },
+                    onCancel: () {
+                      _setState(() => _editingConnection = false);
+                      widget.onConnectionCancelled?.call();
+                    },
+                  )
+                else if (_connectionMode == HermesConnectionMode.local)
+                  PlatformLocalConnectionPanel(
+                    key: const ValueKey('platform-local-panel'),
+                    enabled: true,
+                    busy: connecting,
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (!kIsWeb &&
+                                defaultTargetPlatform == TargetPlatform.android)
+                              const Text('http://127.0.0.1:8642')
+                            else if (!kIsWeb &&
+                                defaultTargetPlatform == TargetPlatform.linux)
+                              ExpansionTile(
+                                key: const ValueKey(
+                                  'platform-local-advanced-endpoint',
+                                ),
+                                title: Text(
+                                  strings.platformLocalAdvancedEndpoint,
+                                ),
+                                children: [
+                                  TextField(
+                                    key: const ValueKey(
+                                      'hermes-base-url-field',
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      strings.chatLayoutCredentialBoundaryBody,
+                                    controller: _connectionForm.baseUrl,
+                                    keyboardType: TextInputType.url,
+                                    textInputAction: TextInputAction.next,
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    enableIMEPersonalizedLearning: false,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          strings.chatLayoutServerUrlLabel,
+                                      hintText: strings.chatLayoutServerUrlHint,
+                                      helperText: _connectionModeUrlHelper(
+                                        strings,
+                                        _connectionMode,
+                                      ),
+                                      helperMaxLines: 2,
+                                      prefixIcon: const Icon(
+                                        Icons.language_outlined,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              TextField(
+                                key: const ValueKey('hermes-base-url-field'),
+                                controller: _connectionForm.baseUrl,
+                                keyboardType: TextInputType.url,
+                                textInputAction: TextInputAction.next,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                enableIMEPersonalizedLearning: false,
+                                decoration: InputDecoration(
+                                  labelText: strings.chatLayoutServerUrlLabel,
+                                  hintText: strings.chatLayoutServerUrlHint,
+                                  helperText: _connectionModeUrlHelper(
+                                    strings,
+                                    _connectionMode,
+                                  ),
+                                  helperMaxLines: 2,
+                                  prefixIcon: const Icon(
+                                    Icons.language_outlined,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              key: const ValueKey('hermes-api-key-field'),
+                              controller: _connectionForm.apiKey,
+                              obscureText: _connectionForm.obscureApiKey,
+                              textInputAction: TextInputAction.next,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              enableIMEPersonalizedLearning: false,
+                              decoration: InputDecoration(
+                                labelText: strings.platformLocalTokenLabel,
+                                helperText: strings.platformLocalTokenHelper,
+                                helperMaxLines: 4,
+                                prefixIcon: const Icon(Icons.key_outlined),
+                                suffixIcon: IconButton(
+                                  key: const ValueKey(
+                                    'hermes-api-key-visibility',
+                                  ),
+                                  tooltip: _connectionForm.obscureApiKey
+                                      ? strings.chatLayoutShowAccessTokenTooltip
+                                      : strings
+                                            .chatLayoutHideAccessTokenTooltip,
+                                  onPressed:
+                                      _connectionForm.toggleApiKeyVisibility,
+                                  icon: Icon(
+                                    _connectionForm.obscureApiKey
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              key: const ValueKey('hermes-profile-label-field'),
+                              controller: _connectionForm.label,
+                              textInputAction: TextInputAction.done,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              enableIMEPersonalizedLearning: false,
+                              onSubmitted: canConnect
+                                  ? (_) => unawaited(connectLocal())
+                                  : null,
+                              decoration: InputDecoration(
+                                labelText: strings.chatLayoutVpsNameLabel,
+                                hintText: strings.chatLayoutVpsNameHint,
+                                helperText: strings.chatLayoutVpsNameHelper,
+                                prefixIcon: const Icon(Icons.label_outline),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.lock_outline,
+                                    size: 20,
+                                    color: colors.primary,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      strings.chatLayoutTokenStorageBody,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
-                                            color: colors.onSecondaryContainer,
+                                            color: colors.onSurfaceVariant,
                                             height: 1.4,
                                           ),
                                     ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (state.status == HermesConnectionStatus.error &&
+                                state.errorMessage != null) ...[
+                              const SizedBox(height: 16),
+                              _HermesConnectError(
+                                error: state.errorMessage!,
+                                failureKind: state.connectionFailureKind,
+                              ),
+                            ],
+                            if (_connectionSaveFailure ==
+                                (
+                                  form: _connectionForm.intentGeneration,
+                                  owner: _composerOwnerGeneration,
+                                )) ...[
+                              const SizedBox(height: 16),
+                              Semantics(
+                                key: const ValueKey(
+                                  'hermes-connection-save-error',
                                 ),
+                                liveRegion: true,
+                                child: Text(
+                                  strings.chatConnectionSaveUnconfirmed,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 20),
+                            FilledButton.icon(
+                              key: const ValueKey('hermes-connect-button'),
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size.fromHeight(52),
+                              ),
+                              onPressed: canConnect
+                                  ? () => unawaited(connectLocal())
+                                  : null,
+                              icon: connecting
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.arrow_forward),
+                              label: Text(
+                                connecting
+                                    ? strings.chatLayoutConnectingAction
+                                    : strings.chatLayoutConnectAction,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    _connectionModeBody(strings, _connectionMode),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (_connectionMode == HermesConnectionMode.remote ||
+                      _connectionMode == HermesConnectionMode.vpn) ...[
+                    const SizedBox(height: 12),
+                    Focus(
+                      key: const ValueKey('hermes-remote-auth-focus'),
+                      child: Semantics(
+                        container: true,
+                        label: strings.chatLayoutRemoteAuthExplanation,
+                        excludeSemantics: true,
+                        child: SelectableText(
+                          strings.chatLayoutRemoteAuthExplanation,
+                          key: const ValueKey('hermes-remote-auth-explanation'),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  FutureBuilder<List<HermesEndpointConfig>>(
+                    future: _endpointProfilesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: Semantics(
+                            label: strings.chatSavedEndpointsLoading,
+                            child: const LinearProgressIndicator(
+                              key: ValueKey('hermes-endpoints-loading'),
+                            ),
+                          ),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: _EndpointProfilesLoadError(
+                            onRetry: _refreshEndpointProfiles,
+                          ),
+                        );
+                      }
+                      final profiles = snapshot.data ?? const [];
+                      if (profiles.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: _EndpointProfileChips(
+                          profiles: profiles,
+                          connecting: connecting,
+                          onSelect: _selectEndpointProfile,
+                          onEdit: (profile) =>
+                              unawaited(_editEndpointProfile(context, profile)),
+                          onRename: (profile) => unawaited(
+                            _renameEndpointProfile(context, profile),
+                          ),
+                          onDelete: (profile) =>
+                              unawaited(_deleteEndpointProfile(profile)),
+                        ),
+                      );
+                    },
+                  ),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            strings.chatLayoutVpsConnectionTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            strings.chatLayoutVpsConnectionBody,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                          if (!kIsWeb &&
+                              _connectionMode == HermesConnectionMode.local &&
+                              defaultTargetPlatform ==
+                                  TargetPlatform.android) ...[
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              key: const ValueKey('hermes-open-qr-scanner'),
+                              onPressed: () =>
+                                  context.push('${AppRoutes.enroll}?step=pair'),
+                              icon: const Icon(Icons.qr_code_scanner),
+                              label: Text(strings.chatLayoutScanQrAction),
+                            ),
+                          ],
+                          if (!kIsWeb &&
+                              defaultTargetPlatform ==
+                                  TargetPlatform.linux) ...[
+                            const SizedBox(height: 16),
+                            FilledButton.tonalIcon(
+                              key: const ValueKey('hermes-open-local-setup'),
+                              onPressed: () async {
+                                final pair = await context.push<bool>(
+                                  AppRoutes.localSetup,
+                                );
+                                if (context.mounted && pair == true) {
+                                  unawaited(
+                                    context.push(
+                                      '${AppRoutes.enroll}?step=pair',
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.computer_outlined),
+                              label: Text(strings.localSetupAction),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                          TextField(
+                            key: const ValueKey('hermes-base-url-field'),
+                            controller: _connectionForm.baseUrl,
+                            keyboardType: TextInputType.url,
+                            textInputAction: TextInputAction.next,
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            enableIMEPersonalizedLearning: false,
+                            decoration: InputDecoration(
+                              labelText: strings.chatLayoutServerUrlLabel,
+                              hintText: strings.chatLayoutServerUrlHint,
+                              helperText: _connectionModeUrlHelper(
+                                strings,
+                                _connectionMode,
+                              ),
+                              helperMaxLines: 2,
+                              prefixIcon: const Icon(Icons.language_outlined),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            key: const ValueKey('hermes-api-key-field'),
+                            controller: _connectionForm.apiKey,
+                            obscureText: _connectionForm.obscureApiKey,
+                            textInputAction: TextInputAction.next,
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            enableIMEPersonalizedLearning: false,
+                            decoration: InputDecoration(
+                              labelText: strings.chatLayoutAccessTokenLabel,
+                              helperText: strings.chatLayoutAccessTokenHelper,
+                              helperMaxLines: 2,
+                              prefixIcon: const Icon(Icons.key_outlined),
+                              suffixIcon: IconButton(
+                                key: const ValueKey(
+                                  'hermes-api-key-visibility',
+                                ),
+                                tooltip: _connectionForm.obscureApiKey
+                                    ? strings.chatLayoutShowAccessTokenTooltip
+                                    : strings.chatLayoutHideAccessTokenTooltip,
+                                onPressed:
+                                    _connectionForm.toggleApiKeyVisibility,
+                                icon: Icon(
+                                  _connectionForm.obscureApiKey
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            key: const ValueKey('hermes-profile-label-field'),
+                            controller: _connectionForm.label,
+                            textInputAction: TextInputAction.done,
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            enableIMEPersonalizedLearning: false,
+                            onSubmitted: canConnect
+                                ? (_) => unawaited(_connect(channel))
+                                : null,
+                            decoration: InputDecoration(
+                              labelText: strings.chatLayoutVpsNameLabel,
+                              hintText: strings.chatLayoutVpsNameHint,
+                              helperText: strings.chatLayoutVpsNameHelper,
+                              prefixIcon: const Icon(Icons.label_outline),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            key: const ValueKey('hermes-credential-boundary'),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: colors.secondaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.account_tree_outlined,
+                                  size: 20,
+                                  color: colors.onSecondaryContainer,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        strings
+                                            .chatLayoutCredentialBoundaryTitle,
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              color:
+                                                  colors.onSecondaryContainer,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        strings
+                                            .chatLayoutCredentialBoundaryBody,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color:
+                                                  colors.onSecondaryContainer,
+                                              height: 1.4,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 20,
+                                  color: colors.primary,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    strings.chatLayoutTokenStorageBody,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (state.status == HermesConnectionStatus.error &&
+                              state.errorMessage != null) ...[
+                            const SizedBox(height: 16),
+                            _HermesConnectError(
+                              error: state.errorMessage!,
+                              failureKind: state.connectionFailureKind,
+                            ),
+                          ],
+                          if (_connectionSaveFailure ==
+                              (
+                                form: _connectionForm.intentGeneration,
+                                owner: _composerOwnerGeneration,
+                              )) ...[
+                            const SizedBox(height: 16),
+                            Semantics(
+                              key: const ValueKey(
+                                'hermes-connection-save-error',
+                              ),
+                              liveRegion: true,
+                              child: Text(
+                                strings.chatConnectionSaveUnconfirmed,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            key: const ValueKey('hermes-connect-button'),
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52),
+                            ),
+                            onPressed: canConnect
+                                ? () => unawaited(_connect(channel))
+                                : null,
+                            icon: connecting
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.arrow_forward),
+                            label: Text(
+                              connecting
+                                  ? strings.chatLayoutConnectingAction
+                                  : strings.chatLayoutConnectAction,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    key: const ValueKey('hermes-optional-setup'),
+                    onPressed: connecting
+                        ? null
+                        : () => context.push(AppRoutes.enroll),
+                    icon: const Icon(Icons.settings_outlined),
+                    label: Text(strings.enrollOptionalSetupAction),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: ExpansionTile(
+                      key: const ValueKey('hermes-developer-shortcuts'),
+                      leading: const Icon(Icons.developer_mode_outlined),
+                      title: Text(strings.chatLayoutDevShortcutsTitle),
+                      subtitle: Text(strings.chatLayoutDevShortcutsBody),
+                      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              if (!_isAndroid)
+                                ActionChip(
+                                  key: const ValueKey('hermes-preset-local'),
+                                  avatar: const Icon(
+                                    Icons.computer_outlined,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                    strings.chatLayoutPresetThisDeviceLabel,
+                                  ),
+                                  onPressed: connecting
+                                      ? null
+                                      : () => _applyEndpointPreset(
+                                          'http://127.0.0.1:8642',
+                                        ),
+                                ),
+                              ActionChip(
+                                key: const ValueKey('hermes-preset-android'),
+                                avatar: const Icon(
+                                  Icons.android_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  strings.chatLayoutPresetAndroidEmulatorLabel,
+                                ),
+                                onPressed: connecting
+                                    ? null
+                                    : () => _applyEndpointPreset(
+                                        'http://10.0.2.2:8642',
+                                      ),
+                              ),
+                              ActionChip(
+                                key: const ValueKey('hermes-preset-remote'),
+                                avatar: const Icon(Icons.refresh, size: 18),
+                                label: Text(
+                                  strings.chatLayoutPresetClearAction,
+                                ),
+                                onPressed: connecting
+                                    ? null
+                                    : () => _applyEndpointPreset(''),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.lock_outline,
-                                size: 20,
-                                color: colors.primary,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  strings.chatLayoutTokenStorageBody,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (state.status == HermesConnectionStatus.error &&
-                            state.errorMessage != null) ...[
-                          const SizedBox(height: 16),
-                          _HermesConnectError(
-                            error: state.errorMessage!,
-                            failureKind: state.connectionFailureKind,
-                          ),
-                        ],
-                        const SizedBox(height: 20),
-                        FilledButton.icon(
-                          key: const ValueKey('hermes-connect-button'),
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                          ),
-                          onPressed: canConnect
-                              ? () => unawaited(_connect(channel))
-                              : null,
-                          icon: connecting
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.arrow_forward),
-                          label: Text(
-                            connecting
-                                ? strings.chatLayoutConnectingAction
-                                : strings.chatLayoutConnectAction,
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _hermesBaseUrlHint,
+                            style: TextStyle(fontSize: 12),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: ExpansionTile(
-                    key: const ValueKey('hermes-developer-shortcuts'),
-                    leading: const Icon(Icons.developer_mode_outlined),
-                    title: Text(strings.chatLayoutDevShortcutsTitle),
-                    subtitle: Text(strings.chatLayoutDevShortcutsBody),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            if (!_isAndroid)
-                              ActionChip(
-                                key: const ValueKey('hermes-preset-local'),
-                                avatar: const Icon(
-                                  Icons.computer_outlined,
-                                  size: 18,
-                                ),
-                                label: Text(
-                                  strings.chatLayoutPresetThisDeviceLabel,
-                                ),
-                                onPressed: connecting
-                                    ? null
-                                    : () => _applyEndpointPreset(
-                                        'http://127.0.0.1:8642',
-                                      ),
-                              ),
-                            ActionChip(
-                              key: const ValueKey('hermes-preset-android'),
-                              avatar: const Icon(
-                                Icons.android_outlined,
-                                size: 18,
-                              ),
-                              label: Text(
-                                strings.chatLayoutPresetAndroidEmulatorLabel,
-                              ),
-                              onPressed: connecting
-                                  ? null
-                                  : () => _applyEndpointPreset(
-                                      'http://10.0.2.2:8642',
-                                    ),
-                            ),
-                            ActionChip(
-                              key: const ValueKey('hermes-preset-remote'),
-                              avatar: const Icon(Icons.refresh, size: 18),
-                              label: Text(strings.chatLayoutPresetClearAction),
-                              onPressed: connecting
-                                  ? null
-                                  : () => _applyEndpointPreset(''),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _hermesBaseUrlHint,
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ],
             ),
           ),
         ),
       ),
+    );
+    // Scrolling enlarged fields must not reorder traversal or strand AppBar Back.
+    return FocusTraversalGroup(
+      policy: WidgetOrderTraversalPolicy(),
+      child: form,
     );
   }
 
@@ -1225,6 +1602,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             enableDrag: false,
             builder: (context) => SessionModelPickerSheet(
               options: selectedOptions,
+              requireExplicitSelection: true,
               currentSessionModel:
                   sessionModel?.accepted == true &&
                       sessionModel?.sessionId == selectedSessionId
@@ -1361,35 +1739,44 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           : null,
     );
 
-    return SafeArea(
-      top: false,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final useDesktopCommandBar = constraints.maxWidth >= 720;
-          return Padding(
-            padding: EdgeInsets.fromLTRB(8, useDesktopCommandBar ? 6 : 8, 8, 8),
-            child: useDesktopCommandBar
-                ? _buildDesktopComposerCommandBar(
-                    context,
-                    channel,
-                    state,
-                    canSendTurns,
-                    strip,
-                  )
-                : _buildMobileComposer(
-                    context,
-                    channel,
-                    state,
-                    canSendTurns,
-                    isTurnActive ||
-                            canRetry ||
-                            !canSendTurns ||
-                            strip.onSelectModel != null
-                        ? strip
-                        : null,
-                  ),
-          );
-        },
+    // Text scaling changes control bounds, not the supported command order.
+    return FocusTraversalGroup(
+      policy: WidgetOrderTraversalPolicy(),
+      child: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final useDesktopCommandBar = constraints.maxWidth >= 720;
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                8,
+                useDesktopCommandBar ? 6 : 8,
+                8,
+                8,
+              ),
+              child: useDesktopCommandBar
+                  ? _buildDesktopComposerCommandBar(
+                      context,
+                      channel,
+                      state,
+                      canSendTurns,
+                      strip,
+                    )
+                  : _buildMobileComposer(
+                      context,
+                      channel,
+                      state,
+                      canSendTurns,
+                      isTurnActive ||
+                              canRetry ||
+                              !canSendTurns ||
+                              strip.onSelectModel != null
+                          ? strip
+                          : null,
+                    ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -1657,7 +2044,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       case 'clear':
         break;
       case 'settings':
-        context.go(AppRoutes.settings);
+        ChatWorkspaceOverlay.open(context, AppRoutes.settings);
       case 'tools' || 'skills':
         context.go(AppRoutes.tools);
       case 'gateway':
@@ -1665,7 +2052,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       case 'office':
         context.go(AppRoutes.office);
       case 'profiles':
-        context.go(AppRoutes.profiles);
+        ChatWorkspaceOverlay.open(context, AppRoutes.profiles);
       case 'providers' || 'model':
         context.go(AppRoutes.providers);
       case 'schedules':
@@ -2020,7 +2407,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               ),
               _buildAttachmentButton(canSendTurns),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
                 switchInCurve: Curves.easeOut,
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: (child, animation) => FadeTransition(
@@ -2222,11 +2611,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           const SizedBox(height: 6),
           Row(
             children: [
-              _buildContinuousVoiceSwitch(canSendTurns),
+              _buildAttachmentButton(canSendTurns),
+              _buildDraftMicButton(channel, canSendTurns),
               const SizedBox(width: 4),
               Expanded(child: strip),
               const SizedBox(width: 8),
-              ..._composerIconButtons(channel, canSendTurns),
+              _buildContinuousVoiceSwitch(canSendTurns),
+              const SizedBox(width: 4),
+              _buildMicButton(canSendTurns),
+              _buildSendButton(channel, canSendTurns),
             ],
           ),
         ],
@@ -2243,6 +2636,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final handsFreeAvailable = canSendTurns && settings.continuousVoiceEnabled;
     final handsFreeActive = _voiceInputController.continuousEnabled;
     final strings = AppLocalizations.of(context);
+    final draftIsCurrent = _draftCaptureGuard(channel);
     return PopupMenuButton<_ComposerMenuAction>(
       key: const ValueKey('hermes-composer-menu-button'),
       tooltip: strings.chatLayoutChatMenuTooltip,
@@ -2254,7 +2648,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           case _ComposerMenuAction.handsFree:
             _setContinuousVoice(!handsFreeActive);
           case _ComposerMenuAction.dictate:
-            unawaited(_voiceInputController.captureDraft());
+            unawaited(
+              _voiceInputController.captureDraft(isCurrent: draftIsCurrent),
+            );
         }
       },
       itemBuilder: (_) => [
@@ -2530,9 +2926,74 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     if (_voiceInputController.capturing || !canSendTurns || !voiceEnabled) {
       return micButton;
     }
+    final draftIsCurrent = _draftCaptureGuard(ref.read(hermesChannelProvider));
     return GestureDetector(
-      onLongPress: () => unawaited(_voiceInputController.captureDraft()),
+      onLongPress: () => unawaited(
+        _voiceInputController.captureDraft(isCurrent: draftIsCurrent),
+      ),
       child: micButton,
+    );
+  }
+
+  bool Function() _draftCaptureGuard(HermesChannel channel) {
+    final generation = _composerOwnerGeneration;
+    final voiceGeneration = _draftVoiceGateGeneration;
+    final state = channel.state;
+    final owner = (
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.activeSessionId,
+    );
+    return () {
+      if (!mounted ||
+          generation != _composerOwnerGeneration ||
+          voiceGeneration != _draftVoiceGateGeneration ||
+          !identical(ref.read(hermesChannelProvider), channel)) {
+        return false;
+      }
+      final current = channel.state;
+      return current.isConnected &&
+          _canSendTurns(current) &&
+          ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled &&
+          owner ==
+              (
+                current.connectedBaseUrl,
+                current.selectedProfileId,
+                current.activeSessionId,
+              );
+    };
+  }
+
+  Widget _buildDraftMicButton(HermesChannel channel, bool canSendTurns) {
+    final strings = AppLocalizations.of(context);
+    final isCurrent = _draftCaptureGuard(channel);
+    final capturing = _voiceInputController.capturing;
+    final captureGeneration = _voiceInputController.captureGeneration;
+    final enabled =
+        canSendTurns &&
+        ref.watch(wingVoiceSettingsProvider).continuousVoiceEnabled &&
+        isCurrent();
+    return IconButton(
+      key: const ValueKey('hermes-draft-mic-button'),
+      tooltip: capturing
+          ? strings.chatVoiceCancelDraftAction
+          : strings.chatVoiceDictateAction,
+      isSelected: capturing,
+      icon: const Icon(Icons.mic_none_rounded),
+      selectedIcon: const Icon(Icons.close_rounded),
+      onPressed: capturing
+          ? () {
+              if (isCurrent() &&
+                  captureGeneration ==
+                      _voiceInputController.captureGeneration) {
+                _voiceInputController.pause();
+              }
+            }
+          : enabled
+          ? () => unawaited(
+              _voiceInputController.captureDraft(isCurrent: isCurrent),
+            )
+          : null,
     );
   }
 
@@ -2548,13 +3009,6 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           : null,
     );
   }
-
-  List<Widget> _composerIconButtons(HermesChannel channel, bool canSendTurns) =>
-      [
-        _buildAttachmentButton(canSendTurns),
-        _buildMicButton(canSendTurns),
-        _buildSendButton(channel, canSendTurns),
-      ];
 }
 
 class _VoiceWaveform extends StatelessWidget {

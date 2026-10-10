@@ -137,6 +137,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool _playbackUnavailable = false;
   bool _outputMuted = false;
   int _operationGeneration = 0;
+  bool Function()? _draftCaptureIsCurrent;
   int _speechGeneration = 0;
   int _conversationGeneration = 0;
   HermesChannel? _ownedChannel;
@@ -158,6 +159,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   StreamSubscription<double>? _soundLevelSubscription;
 
   bool get capturing => _capturing;
+  int get captureGeneration => _operationGeneration;
   String? get liveTranscript => _liveTranscript;
   double? get soundLevel => _soundLevel;
   bool get continuousEnabled => _continuousEnabled;
@@ -196,6 +198,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (channel == null) return false;
     final state = channel.state;
     if (identical(channel, _channel()) &&
+        (_draftCaptureIsCurrent?.call() ?? true) &&
         state.isConnected &&
         (
               state.connectedBaseUrl,
@@ -209,7 +212,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     return false;
   }
 
-  Future<void> captureDraft() => _capture(autoSend: false);
+  Future<void> captureDraft({bool Function()? isCurrent}) =>
+      _capture(autoSend: false, draftIsCurrent: isCurrent);
 
   void dismissNotice() {
     if (_error == null && !_playbackUnavailable) return;
@@ -355,8 +359,10 @@ class HermesVoiceInputController extends ChangeNotifier {
   Future<void> _capture({
     required bool autoSend,
     bool continuous = false,
+    bool Function()? draftIsCurrent,
   }) async {
-    if (_capturing || _disposed) return;
+    if (_capturing || _disposed || !(draftIsCurrent?.call() ?? true)) return;
+    _draftCaptureIsCurrent = draftIsCurrent;
     final conversation = _bindConversation();
     final operationGeneration = ++_operationGeneration;
     _capturing = true;
@@ -450,6 +456,18 @@ class HermesVoiceInputController extends ChangeNotifier {
     final effectiveContinuous = continuous || _continuousEnabled;
 
     _activeCaptureService = null;
+    if (!autoSend &&
+        !effectiveContinuous &&
+        outcome.status == HermesVoiceCaptureStatus.failed &&
+        service != null) {
+      // A recognizer failure is not proof that it released the microphone.
+      // Explicit retry must wait for the same teardown fence as cancellation.
+      _captureTeardown = Future.wait<void>([
+        _captureTeardown,
+        _cancelCaptureForTeardown(service, 'failed capture teardown'),
+      ]);
+      fireAndForget(_captureTeardown, 'failed capture teardown');
+    }
     unawaited(_partialTranscriptSubscription?.cancel());
     _partialTranscriptSubscription = null;
     unawaited(_soundLevelSubscription?.cancel());
@@ -597,6 +615,7 @@ class HermesVoiceInputController extends ChangeNotifier {
           unawaited(_rearmContinuousCapture());
         }
     }
+    _draftCaptureIsCurrent = null;
     if (_disposed) return;
     notifyListeners();
   }
@@ -889,6 +908,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   }
 
   void pause([String? notice, bool playbackUnavailable = false]) {
+    _draftCaptureIsCurrent = null;
     _conversationGeneration += 1;
     _ownedChannel?.removeListener(_onConversationChanged);
     _ownedChannel = null;

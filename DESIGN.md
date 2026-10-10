@@ -1,4 +1,7 @@
 ---
+
+> Reference correction: [official Desktop authority](docs/quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
 {
   "version": "alpha",
   "name": "Hermes Wing — first desktop shell",
@@ -150,7 +153,7 @@ The [surface direction](.impeccable/surfaces/lib-shared-widgets-app-shell-dart.m
 remains surface strategy; [PRODUCT.md](PRODUCT.md) owns product truth.
 
 Read-only Hermes Desktop checkout verified at
-`2ed89070bc6c9e8231a37bb55df8a7722a3776b8`; this is a checkout pin, not a remote-latest claim.
+`withdrawn reference revision`; this is a checkout pin, not a remote-latest claim.
 Final source hashes match `.task-evidence/desktop-shell-fidelity/redesign-manifest.json`;
 its older sibling `manifest.json` is superseded refinement evidence.
 The [runbook](docs/runbooks/desktop-shell-reference-fidelity.md) and finish packet

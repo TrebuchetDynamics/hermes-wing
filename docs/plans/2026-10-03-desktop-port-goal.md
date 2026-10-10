@@ -1,5 +1,7 @@
 # Desktop port continuous-work goal
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Existing leases and daily-workflow acceptance remain unchanged.
+
 ## Owner decisions
 
 Accepted in the Telegram interview, 2026-10-03:
@@ -16,7 +18,7 @@ Accepted in the Telegram interview, 2026-10-03:
 
 ## Boundaries
 
-Repository: `/home/xel/git/gormes/hermes-wing`.
+Repository: `<repo>`.
 Active Hermes profile: wing; never edit other profiles' data.
 Agent, Desktop and Conduit references including tooling/hooks remain read-only.
 Preserve unrelated dirty edits, no commits/push/releases or acceptance-card changes.
@@ -28,23 +30,36 @@ Fixtures/widget tests are not live generation/native acceptance.
 
 ## Current checkpoint
 
-Status: blocked at the latest recorded continuation checkpoint, 2026-10-04 03:22.
+Wing owns implementation and QA for the complete daily-use milestone. The owner
+selected a disposable local QA Agent/profile and at most three short generations
+through separately authorized subscription/test access. Personal state and system
+packages remain unchanged. No metered spend is authorized. See the
+[owner update](2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa)
+for scope, safe defaults and authentication limits. M1 remains partial.
+
+Historical checkpoint: the scheduled continuation stopped on 2026-10-04 03:22.
 Job `6f218a559ed2` was paused and read back paused in the
 [isolated-target preflight receipt](../quality/2026-10-04-desktop-cron-0322-auth-preflight.md).
 This summarizes recorded evidence, not a fresh scheduler or environment check.
 The occurrence released its lease; no automatic resume is authorized.
 
-Unblocking requires an owner-approved isolated target and supported private auth,
-separately reviewed exact provider/model read and native recovery authority,
-separately authorized native development prerequisites, then explicit continuation
-ownership and resume. The preflight found no supplied live-launcher inputs and
-missing libsecret/GStreamer development metadata. The package-provisioning question
-was cancelled, not approved; no installation is authorized. Do not retry unchanged
-browser/native/full-suite gates or treat source review as runtime acceptance.
+That historical occurrence lacked an approved target, supported private auth and
+native prerequisites. The owner has since selected the isolated local QA strategy
+and assigned implementation and QA to Wing. Authenticated access and exact runtime
+operations still need verification. Missing development metadata is an engineering
+prerequisite, not a reason to suspend all M1 work. System installs remain excluded.
+Keep supported independent checks moving and repair reproduced Wing failures.
+Neither this owner update nor historical receipts resume the paused job or establish
+native/live acceptance.
 
 The harness/design/documentation wave remains integrated. Independent re-review
 `deleg_04bb2580` resolved both original P2s through source and bounded executable
-probes; native two-process Flutter acceptance has not run. Historical receipt:
+probes. The later [native relaunch receipt](../quality/native-relaunch-workflow.md)
+records two real GTK processes, isolated preference restoration and zero replay.
+The later [combined native receipt](../quality/native-model-relaunch-workflow.md)
+qualifies model acknowledgment, approval and Stop in one restart scenario.
+Exact provider/model readback remains unsupported, with explicit unknown identity
+after restart. Resumed sending, live inference and full M1 acceptance remain open. Historical receipt:
 [initial workflow wave](../quality/2026-10-03-desktop-daily-workflow-wave.md).
 The prior sidebar toggle wave is implemented, independently source-reviewed and
 locally verified (2,397 tests), not runtime/card accepted.
@@ -53,6 +68,9 @@ Known earlier preflight: `docs/quality/2026-10-03-native-chat-qualification.md`;
 recheck prerequisites rather than treating historical blockers as live facts.
 
 ## Initial wave ownership
+
+The scopes below record the initial wave, not new restrictions on Wing's current
+implementation and QA responsibility. Preserve active file leases and trust boundaries.
 
 - Native harness lane: write only
   `integration_test/linux_desktop_daily_workflow_test.dart` and
@@ -122,7 +140,7 @@ scheduler/provider is unavailable or an owner-only blocker remains unresolved.
   Lease status: released after focused gate. `flutter test --no-pub
   --concurrency=1 --reporter=json` on the three named gateway restoration/race
   targets: exit 0, JSON parsed 49 passed/0 failed/0 skipped; source hashes unchanged.
-  Logs: `/home/xel/.hermes/profiles/wing/cache/scratch/desktop-cron-2128-restoration/`.
+  Logs: `<home>/.hermes/profiles/wing/cache/scratch/desktop-cron-2128-restoration/`.
   Receipt: `docs/quality/2026-10-03-desktop-cron-2128-restoration.md`.
   Fresh native metadata checks remain blocked (libsecret plus three GStreamer
   packages each exit 1); no launcher retry/install. Scheduler lists this occurrence

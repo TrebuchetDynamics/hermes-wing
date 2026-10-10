@@ -1,5 +1,8 @@
 # Desktop continuation — session model read authority, 2026-10-04 01:47
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Result
 
 **The inspected Agent API does not provide a readback of a session's confirmed
@@ -97,13 +100,13 @@ credentials, cards, commits, releases or scheduler mutations were attempted.
    it is not a production API. Advertising an invented read endpoint, restoring
    from that receipt, or changing the catalog to hide this mismatch is not a fix.
 8. **Desktop outcome uses a different authority mechanism.**
-   [Desktop Chat:370–408](../../hermes-desktop/src/renderer/src/screens/Chat/Chat.tsx)
+   [Desktop Chat:370–408](official-desktop-reference.md#withdrawn-evidence)
    restores a local per-session override and uses `persist:false` for the picker.
-   [Desktop store:5–74](../../hermes-desktop/src/main/session-model-override-store.ts)
+   [Desktop store:5–74](official-desktop-reference.md#withdrawn-evidence)
    creates `desktop_session_model_overrides` and reads/writes provider/model/base
    URL through local database access. This explains the reference user outcome,
    but copying its privileged store would create prohibited shadow state in Wing.
-   Desktop reference HEAD: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`.
+   Desktop reference HEAD: `withdrawn reference revision`.
 
 ## Inspected tests, not executed test results
 
@@ -116,7 +119,7 @@ credentials, cards, commits, releases or scheduler mutations were attempted.
 - [Wing session-model tests:19–117](../../test/core/hermes/channel/hermes_api_channel_tests/session_model_tests.dart)
   cover accepted/rejected scoped writes, missing grants/unknown sessions and stale
   reconnect/profile results, not authoritative lock restoration from a read.
-- [Desktop store tests:91–124](../../hermes-desktop/src/main/session-model-override-store.test.ts)
+- [Desktop store tests:91–124](official-desktop-reference.md#withdrawn-evidence)
   inspect local routing persistence/clear behavior with a fake database.
 
 No upstream test runner was invoked: doing so might write inside read-only
@@ -126,7 +129,7 @@ occurrence changed no Desktop functionality and makes no Desktop verification cl
 
 ## Executed evidence and limits
 
-Scratch: `/home/xel/.hermes/profiles/wing/cache/scratch/desktop-cron-0147-runtime-pair/`.
+Scratch: `<home>/.hermes/profiles/wing/cache/scratch/desktop-cron-0147-runtime-pair/`.
 
 - Admission `git status --short --branch`, QA process census, `hermes cron list`,
   reference Git status/HEAD commands: exit 0; output observed directly.

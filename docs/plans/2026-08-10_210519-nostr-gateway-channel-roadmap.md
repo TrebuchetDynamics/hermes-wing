@@ -1,5 +1,7 @@
 # Hermes Wing Nostr Gateway and Channel Roadmap Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). This does not reopen the deferred Nostr proposal.
+
 > **Decision status (2026-08-10): EXPLORATORY / DEFERRED.** Preserve this document as research, but do not implement the custom Nostr Relay Link as Wing's foundational gateway or control transport. Core Wing-to-gateway control remains the Hermes API over HTTPS using established secure reachability such as LAN, Tailscale, VPN, or a reviewed reverse proxy. Continue channel-centric UX as a transport-neutral product track; consider Buzz/Nostr later only as an optional Hermes messaging integration.
 
 > **For future reconsideration only:** If the decision is explicitly reopened, use subagent-driven-development skill to implement this plan task-by-task.
@@ -62,7 +64,7 @@ Wing Link orchestrates generation, enrollment, health, rotation, and revocation 
 
 ## 2. Frozen study baseline
 
-- Target repository: `/home/xel/git/gormes/hermes-wing`
+- Target repository: `<repo>`
 - Target branch: `main`
 - Target commit at study time: `ab7a4f8ce53e927da785883c37931e18bf5f0eb4`
 - Reference repository: `https://github.com/block/buzz`
@@ -235,7 +237,7 @@ A relay `OK` frame is not a Hermes completion receipt.
 **Verification:**
 
 ```bash
-/home/xel/flutter/bin/flutter test test/tooling/documentation_contract_test.dart
+<home>/flutter/bin/flutter test test/tooling/documentation_contract_test.dart
 
 git diff --check
 ```
@@ -651,9 +653,9 @@ Search is added only after authoritative server-side search exists. Do not copy 
 **Verification gates:**
 
 ```bash
-/home/xel/flutter/bin/dart format --output=none --set-exit-if-changed lib test integration_test
-/home/xel/flutter/bin/flutter analyze
-/home/xel/flutter/bin/flutter test
+<home>/flutter/bin/dart format --output=none --set-exit-if-changed lib test integration_test
+<home>/flutter/bin/flutter analyze
+<home>/flutter/bin/flutter test
 cd wing_link && gofmt -w *.go && go test -race ./... && go vet ./...
 git diff --check
 ```

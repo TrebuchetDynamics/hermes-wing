@@ -8,6 +8,13 @@ The reference clients are useful for outcomes and race policies, not as authorit
 
 ## What was actually analyzed
 
+The linked graph JSON, tooling census and tool checkout are Git-ignored local
+analysis artifacts. They exist in the inspected development worktree but are not
+included in a fresh clone. The tracked studies and tooling report remain the
+readable record. Reproduction requires the pinned tool checkout and dependencies
+specified in that report; the commands below are not a ready-to-run clean-clone
+workflow. Missing artifacts must not be treated as current validation evidence.
+
 Understand Anything was cloned under `tools/understand-anything` at `1d7418b8abfa543744ae029e63a482aee03f9022`. Its core was built and its shipped scanner and real parser APIs were exercised. Hermes subagents performed the grounded semantic studies using the tool's file-analysis, architecture, tour and review methodology. This was not a Claude plugin slash-command invocation or an exhaustive per-function LLM analysis.
 
 - [Agent study](agent-study.md) and [graph](agent-graph.json): runtime authority, distinct HTTP/native contracts, profiles, runs, requests, Projects and administration.

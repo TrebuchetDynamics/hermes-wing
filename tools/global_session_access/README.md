@@ -1,9 +1,12 @@
 # Global session access: historical diagnosis
 
+> Reference correction: [official Desktop authority](../../docs/quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Task `t_1c1e6f37`. Source revision
 `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f` plus the existing dirty worktree.
 The reference Desktop checkout was confirmed at
-`2ed89070bc6c9e8231a37bb55df8a7722a3776b8`.
+`withdrawn reference revision`.
 
 The original run delivered no feature and withdrew its candidates. The same-card
 recovery now implements passive directory-lifetime observation and caller-guarded
@@ -97,7 +100,7 @@ Localization was regenerated after withdrawal and the original hashes matched.
 Raw logs, exact command receipts, parsed test counts, baseline-relative and
 withdrawn candidate diffs, saved candidate/test files, source revision and hashes:
 
-`/home/xel/.hermes/profiles/wing/autogoal/global-session-access/`
+`<home>/.hermes/profiles/wing/autogoal/global-session-access/`
 
 No commit, staging, upstream modification, profile configuration change,
 continuation resume, browser fixture modification or external publication was

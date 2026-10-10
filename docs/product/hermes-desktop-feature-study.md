@@ -1,16 +1,19 @@
 # Hermes Desktop complete feature study
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 This is a source-backed inventory of the sibling `../hermes-desktop` application for Hermes Wing capability-parity planning. It describes user outcomes, not a line-for-line Electron port.
 
 ## Study baseline
 
-- Repository: ignored local reference checkout `hermes-desktop/`
+- Repository: ignored local reference checkout `withdrawn source citation`
 - Version: `0.7.4`
 - Refreshed commit: `3aaadb01076a749d7f9389dca4ffce081cf8ebaa`
 - Previous study commit: `8da8d212abd40b449d55957b2cff9a220797ff71`
 - Refresh range: 68 commits, reviewed locally on 2026-08-06.
 - Existing frozen Wing planning baseline: `d31e52e85449b6effcfd4d037b7517541c8fadf2`
-- Architecture: Electron main process + context-isolated preload bridge + React renderer (`../hermes-desktop/src/main/app/start.ts:25`, `../hermes-desktop/src/preload/index.d.ts:229`, `../hermes-desktop/src/renderer/src/App.tsx:21`)
+- Architecture: Electron main process + context-isolated preload bridge + React renderer (`withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`)
 
 The studied checkout is newer than the frozen planning baseline. Its notable post-baseline additions are remote Dashboard OAuth, provider/model-list improvements, and custom-provider management. These are deltas; they do not silently move the frozen retirement baseline.
 
@@ -76,7 +79,7 @@ Desktop currently presents a chat-first shell with these primary destinations:
 - **Soul/persona** inside Memory and each profile modal.
 - **Settings** as a global modal.
 
-Source: `../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:43-93`, `../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:217-234`.
+Source: `withdrawn source citation`, `withdrawn source citation`.
 
 This topology matters: the README's screen list reflects older standalone destinations in places, while current renderer navigation is authoritative.
 
@@ -96,7 +99,7 @@ Desktop provides:
 - Local OpenAI-compatible presets and remote compatible endpoints.
 - OpenClaw detection and migration from Settings.
 
-Sources: `../hermes-desktop/src/renderer/src/App.tsx:21-240`, `../hermes-desktop/src/renderer/src/screens/Welcome/Welcome.tsx:20-381`, `../hermes-desktop/src/renderer/src/screens/Install/Install.tsx:28-292`, `../hermes-desktop/src/renderer/src/screens/Setup/Setup.tsx:15-331`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** local discovery/install/update/adoption and SSH are **host-only**. Remote enrollment and provider setup are **remote outcomes** but remain capability- and scope-gated. Android must never run the Desktop installer or inspect a Hermes home.
 
@@ -114,7 +117,7 @@ Desktop supports:
 - Force-IPv4 and HTTP proxy settings.
 - Connection-change events that reset or refresh affected renderer state.
 
-Sources: `../hermes-desktop/src/preload/index.d.ts:338-410`, `../hermes-desktop/src/renderer/src/components/settings/ConnectionPane.tsx:8-431`, `../hermes-desktop/src/main/ssh-tunnel.ts`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** one canonical Hermes API origin is the Wing transport. Dashboard WebSockets are not a Wing transport. SSH is **host-only** and requires explicit host-key trust in Wing. Remote OAuth is a post-frozen-baseline delta requiring an independently accepted contract.
 
@@ -130,7 +133,7 @@ Desktop provides:
 - macOS inset titlebar behavior and platform package/window integration.
 - Auto-update availability, download progress, restart-to-install, and opt-out.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:95-1016`, `../hermes-desktop/src/main/app/menu.ts:8-82`, `../hermes-desktop/src/main/app/updater.ts:33-106`, `../hermes-desktop/src/main/app/start.ts:104-201`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** adaptive navigation and run switching are **remote outcomes/presentation**. Menus, windows, packaging, updater, and GPU process behavior are **host-only**.
 
@@ -152,7 +155,7 @@ Desktop chat includes:
 - Config-health banner and diagnostics entry.
 - Empty-state prompt suggestions.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Chat/Chat.tsx:114-1150`, `../hermes-desktop/src/renderer/src/screens/Chat/MessageList.tsx`, `../hermes-desktop/src/renderer/src/screens/Chat/MessageRow.tsx`, `../hermes-desktop/src/preload/index.d.ts:412-516`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** these are primarily **remote outcomes**. Wing now renders bounded `reasoning.available` run events in collapsed readable cards, preserves them through transcript reconciliation/export, and preserves bounded server-reported input/output/total token usage from run completion or advertised run status on the assistant reply and in transcript export. Cost, cache, rate-limit, and context-window metadata remain unavailable. Each event/action must come from advertised HTTP/SSE contracts; Wing must not use Dashboard sockets as a shortcut.
 
@@ -172,7 +175,7 @@ Desktop's composer provides:
 - Embedded web preview; clicking links opens the preview and inspected HTML can be appended to the composer.
 - Quick Ask and normal Send/Stop controls.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Chat/ChatInput.tsx:58-759`, `../hermes-desktop/src/shared/attachments.ts:1-141`, `../hermes-desktop/src/renderer/src/screens/Chat/attachmentUtils.ts`, `../hermes-desktop/src/renderer/src/screens/Chat/Chat.tsx:736-1144`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** inline images and bounded text already have mobile-safe outcomes. Arbitrary binaries and folders require opaque Hermes resource handles. Desktop path references must never cross a remote Wing boundary.
 
@@ -186,7 +189,7 @@ Desktop merges three sources:
 
 The current implementation therefore has no reliable fixed command count despite the README advertising 22. Runtime discovery and conflict reconciliation are the real behavior.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Chat/slashCommands.ts:9-174`, `../hermes-desktop/src/renderer/src/screens/Chat/slash/desktopCommands.ts:12-129`, `../hermes-desktop/src/renderer/src/screens/Chat/slash/commandCatalog.ts:40-176`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** Wing now provides filtered, tap-operable client-owned `/new`, `/sessions`, `/clear`, `/settings`, `/usage`, `/help`, `/agents`, `/providers`, `/model`, `/tools`, `/skills`, `/schedules`, and `/gateway` suggestions, plus `/persona` only when the selected gateway advertises the exact scoped SOUL read contract and `/version` only with exact scoped detailed health, including 200% text-scale coverage. Exact local commands execute as client actions without sending slash text as an agent turn and cannot bypass an active run; unknown slash commands remain server-owned messages. Runtime model/agent command discovery is still **contract-gated** rather than reimplemented from guessed semantics.
 
@@ -205,7 +208,7 @@ Desktop provides:
 - Persisted per-session context folder and model override.
 - Session de-duplication when reopening an already active run.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Sessions/Sessions.tsx:290-1052`, `../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:394-555`, `../hermes-desktop/src/preload/index.d.ts:548-628`, `../hermes-desktop/src/preload/index.d.ts:780-818`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** a **remote outcome** where exact session operations are advertised. Wing must not read Desktop's SQLite/cache files.
 
@@ -225,7 +228,7 @@ Desktop provides:
 - Profile wallet and cloud-sync tabs.
 - Protected default profile and confirmed deletion for named profiles.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Agents/Agents.tsx:34-494`, `../hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx:32-235`, `../hermes-desktop/src/renderer/src/components/profile/ProfileModal.tsx:67-558`, `../hermes-desktop/src/renderer/src/screens/Soul/Soul.tsx:9-125`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 Desktop implements profile creation/deletion/activation through CLI and local/SSH filesystem state. Its profile topology is not Wing's gateway topology.
 
@@ -248,7 +251,7 @@ Desktop provides:
 
 Current provider options include aggregators, first-party providers, local servers, OAuth/subscription providers, and arbitrary OpenAI-compatible endpoints. The list is code-driven rather than the shorter README list.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Providers/Providers.tsx:135-1088`, `../hermes-desktop/src/renderer/src/constants.ts:37-412`, `../hermes-desktop/src/renderer/src/components/ProviderKeysSection.tsx`, `../hermes-desktop/src/renderer/src/components/RegistryBrowserModal.tsx:28-235`, `../hermes-desktop/src/renderer/src/components/AuxiliaryTasksSection.tsx:21-341`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** exact scoped administration remains **contract-gated**. When it is absent but the gateway advertises `GET /v1/models`, Wing shows a bounded read-only runtime model inventory without credential or assignment controls. Secrets must be write-only, profile-scoped, and never returned. Generic `.env` or YAML access is not a Wing contract.
 
@@ -263,7 +266,7 @@ Desktop Discover has four catalogs:
 
 It supports search, refresh, counts, metadata/tags, source links, Markdown/spec details, install/create actions, installed-state detection, and MCP removal. Bundled Hermes skills are merged into community skill results with deduplication.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Discover/Discover.tsx:22-608`, `../hermes-desktop/src/preload/index.d.ts:1227-1243`.
+Sources: `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** catalog browsing may be client/account-service owned, but installation/removal is **contract-gated** and profile-scoped.
 
@@ -278,7 +281,7 @@ Desktop provides:
 - Install and confirmed uninstall.
 - Embedded installed-skills view under Tools with a Discover handoff.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Skills/Skills.tsx:33-393`, `../hermes-desktop/src/preload/index.d.ts:746-778`.
+Sources: `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** **contract-gated**. Wing must not inspect skill directories or invoke the skills CLI.
 
@@ -296,7 +299,7 @@ Desktop supports:
 - Enable/disable, test, refresh, and remove MCP servers.
 - MCP catalog discovery/install bridge methods, although the current renderer's main path uses Discover for catalog browsing.
 
-Sources: `../hermes-desktop/src/main/tools.ts:10-127`, `../hermes-desktop/src/renderer/src/screens/Tools/Tools.tsx:178-753`, `../hermes-desktop/src/preload/index.d.ts:1160-1225`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** advertised installed skills now expose bounded searchable name, description, and category metadata read-only alongside enabled toolsets. Community discovery, install/remove, toolset mutation, and MCP remain **contract-gated**. Terminal, filesystem, code-execution, and computer-use controls also require explicit risk presentation and server enforcement.
 
@@ -310,7 +313,7 @@ Desktop Memory provides:
 - Memory-provider discovery, active provider, activate/deactivate controls, credential entry, and provider-site links.
 - Embedded persona/SOUL editor.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Memory/Memory.tsx:12-101`, `../hermes-desktop/src/renderer/src/screens/Memory/MemoryEntries.tsx`, `../hermes-desktop/src/renderer/src/screens/Memory/MemoryProfile.tsx`, `../hermes-desktop/src/renderer/src/screens/Memory/MemoryProviders.tsx`, `../hermes-desktop/src/preload/index.d.ts:707-732`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** profile persona is available only where advertised; broader memory administration remains **contract-gated**.
 
@@ -326,7 +329,7 @@ Desktop provides:
 
 The current screen does **not** provide job editing despite broader parity prose occasionally saying “edit”; changes require delete/recreate.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Schedules/Schedules.tsx:14-661`, `../hermes-desktop/src/preload/index.d.ts:974-1018`.
+Sources: `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** gateway- and profile-scoped read-only inventory is implemented at `/tasks` through advertised `GET /api/jobs`. Create, pause/resume, trigger, delete, delivery, and Kanban remain **contract-gated** and revision-safe. Failed mutations must never be replayed automatically.
 
@@ -363,7 +366,7 @@ The live catalog contains 20 cards, newer than the README's older “16 gateways
 19. API server
 20. Webhooks
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Gateway/Gateway.tsx:30-974`, `../hermes-desktop/src/shared/messaging-platforms.ts:645-902`, `../hermes-desktop/src/preload/index.d.ts:518-546`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** bounded, gateway-selected detailed health is implemented read-only at `/gateway`. All lifecycle, log, API-key, and messaging-platform configuration actions remain **contract-gated** and server-owned. Wing must not write gateway environment variables or restart processes itself.
 
@@ -384,7 +387,7 @@ Desktop provides:
 
 Some preload operations are not wired into the current renderer UI, including board removal, task reassignment, and adding comments.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Kanban/Kanban.tsx:97-1382`, `../hermes-desktop/src/preload/index.d.ts:1020-1127`.
+Sources: `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** **contract-gated**. Filesystem workspaces require resource handles. The HQ mirror is not a portable control-plane contract.
 
@@ -407,7 +410,7 @@ Current Desktop Office is a native React Three Fiber scene, not the older extern
 
 Legacy Claw3D setup/dev-server/adapter methods remain in the preload API, but the current Office renderer does not call them; they are bridge surface, not an active current UI feature.
 
-Sources: `../hermes-desktop/src/renderer/src/screens/Office/Office.tsx:46-792`, `../hermes-desktop/src/renderer/src/screens/Office/office3d/core/locations.ts:1-113`, `../hermes-desktop/src/renderer/src/screens/Office/OneChatModal.tsx:18-499`, `../hermes-desktop/src/renderer/src/screens/Office/RepInteractionPanel.tsx:51-446`, `../hermes-desktop/src/renderer/src/screens/Office/office3d/interactions/registry.ts:31-56`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** **presentation** over shared authoritative profile, chat, account, and wallet outcomes. Android should use an accessible 2D Office; desktop Wing may add 3D plus a fully equivalent semantic path.
 
@@ -426,7 +429,7 @@ Desktop provides:
 
 The preload bridge also exposes local wallet create/import/rename operations, but current renderer screens do not call them. Do not count those bridge methods as active current UI parity.
 
-Sources: `../hermes-desktop/src/renderer/src/components/profile/ProfileSyncPane.tsx:22-160`, `../hermes-desktop/src/renderer/src/components/profile/ProfileWalletPane.tsx:37-372`, `../hermes-desktop/src/main/agent-sync.ts`, `../hermes-desktop/src/preload/index.d.ts:278-287`, `../hermes-desktop/src/preload/index.d.ts:673-705`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** **account-service**. Legacy local wallets are migration/export concerns, not a new Wing wallet store. Hermes Agent must remain usable when the optional account service is unavailable.
 
@@ -445,7 +448,7 @@ Settings is a global modal with eight sections:
 
 Config health supports rerun and selected automatic fixes. Logs show host file paths and tail content. Desktop backup/import invokes host/CLI operations.
 
-Sources: `../hermes-desktop/src/renderer/src/components/settings/SettingsModal.tsx:22-194`, `../hermes-desktop/src/renderer/src/components/settings/AppearancePane.tsx:11-184`, `../hermes-desktop/src/shared/i18n/config.ts:6-29`, `../hermes-desktop/src/renderer/src/components/settings/DataPane.tsx:9-118`, `../hermes-desktop/src/renderer/src/components/settings/AboutPane.tsx:25-389`, `../hermes-desktop/src/renderer/src/components/settings/LogsPane.tsx:7-82`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** app-local appearance/language/privacy are portable. Runtime diagnostics, logs, updates, and backup/restore are **host-only** or **contract-gated** depending on whether they manage the local client or Hermes Agent.
 
@@ -462,7 +465,7 @@ Desktop includes:
 - Windows NSIS and portable builds; macOS DMG/notarization settings; Linux AppImage, Snap, DEB, and RPM.
 - Vitest unit/integration tests, renderer component tests, and live regression scripts.
 
-Sources: `../hermes-desktop/src/main/security.ts:1-106`, `../hermes-desktop/src/main/app/start.ts:45-201`, `../hermes-desktop/electron-builder.yml:1-73`, `../hermes-desktop/package.json:8-31`.
+Sources: `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`, `withdrawn source citation`.
 
 **Wing disposition:** preserve security outcomes with native Flutter/platform mechanisms. Do not reproduce Electron-specific webview, CSP, package, or updater implementation.
 
@@ -478,7 +481,7 @@ The preload interface exposes 244 methods; a source scan found 38 with no non-te
 
 These methods may support tests, old screens, future work, or compatibility. They are not proof of a user-facing feature. Parity should follow reachable renderer behavior and executable scenarios, not preload surface area alone.
 
-Source: `../hermes-desktop/src/preload/index.d.ts:229-1249` compared with non-test `window.hermesAPI.*` calls under `../hermes-desktop/src/renderer/src/`.
+Source: `withdrawn source citation` compared with non-test `window.hermesAPI.*` calls under `withdrawn source citation`.
 
 ## Source contradictions resolved
 

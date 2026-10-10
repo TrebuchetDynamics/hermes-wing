@@ -4,7 +4,11 @@ Status: current decision
 
 ## Decision
 
-Hermes Wing uses two typed planes:
+The retained implementation uses two typed planes. Wing Link is deprecated under
+the [product decision](product.md#wing-link-deprecation), not removed yet. New
+product flows must not require its compatibility APIs or model catalog. Keep the
+following legacy contracts enforced until retirement:
+
 
 - Hermes Agent APIs for authoritative domain and run state; and
 - Wing Link for authenticated host management and reviewed compatibility

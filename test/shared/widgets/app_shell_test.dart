@@ -377,10 +377,27 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const ValueKey('app-shell-status-bar')), findsOneWidget);
-    expect(find.text('Connected · fake-hermes:8642'), findsOneWidget);
-    expect(find.text('Default'), findsOneWidget);
-    expect(find.text('profile-model'), findsOneWidget);
+    final statusBar = find.byKey(const ValueKey('app-shell-status-bar'));
+    expect(statusBar, findsOneWidget);
+    // The passive footer also displays the profile. Require each status value
+    // inside the status bar so the footer cannot mask a missing status row.
+    for (final value in [
+      'Connected · fake-hermes:8642',
+      'Default',
+      'profile-model',
+    ]) {
+      expect(
+        find.descendant(of: statusBar, matching: find.text(value)),
+        findsOneWidget,
+      );
+    }
+    final footer = find.byKey(const ValueKey('desktop-profile-footer'));
+    expect(footer, findsOneWidget);
+    expect(
+      find.descendant(of: footer, matching: find.text('Default')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('desktop shell expands its content to the available width', (

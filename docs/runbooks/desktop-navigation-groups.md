@@ -1,5 +1,8 @@
 # Desktop navigation groups
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Task `t_1083781a` separates existing working destinations in the production shell. This is the regrouping portion of [Desktop next-gaps rank 4](../analysis/2026-10-03-desktop-port-next-gaps.md), not full sidebar parity or daily-workflow qualification.
 
 ## Behavior and boundaries
@@ -15,7 +18,7 @@ At widths of 600 logical pixels and above:
 
 Grouping, collapse and navigation do not call channel domain operations. Feature screens can still perform their existing capability-gated reads or lifecycle behavior when mounted. Neither this slice nor its tests assert that routing preserves all feature drafts: the shell's toggle and channel update preserve its current child; navigating to another route still follows that route's existing lifecycle.
 
-The read-only [Desktop Layout reference](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx) at `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` pins Office/Schedules and places utilities and the profile switcher in its footer. Wing deliberately keeps Profiles and Persona as explicit utility routes rather than replacing them with Desktop's profile-footer editor. Chat remains navigation, not a New Chat creation action. Global recents, global profile-picker placement, Discover, Memory and Kanban remain out of scope. No Agent/Wing Link contract, grant or operation has been enabled.
+The read-only [Desktop Layout reference](../quality/official-desktop-reference.md#withdrawn-evidence) at `withdrawn reference revision` pins Office/Schedules and places utilities and the profile switcher in its footer. Wing deliberately keeps Profiles and Persona as explicit utility routes rather than replacing them with Desktop's profile-footer editor. Chat remains navigation, not a New Chat creation action. Global recents, global profile-picker placement, Discover, Memory and Kanban remain out of scope. No Agent/Wing Link contract, grant or operation has been enabled.
 
 ## Verification
 
@@ -77,5 +80,5 @@ full parity and release are **NOT_CHECKED**.
 The [Provider forward receipt](provider-search.md#forward-shared-shell-repair-receipt-t_c5a4d301)
 records exact focused Flutter commands and toolchain limits. Raw logs, owned
 browser results, baseline-relative diff, source hashes and acceptance mapping
-are in `/home/xel/.hermes/profiles/wing/autogoal/shared-shell-keyboard-forward/`.
+are in `<home>/.hermes/profiles/wing/autogoal/shared-shell-keyboard-forward/`.
 Required native review, not this executor receipt, owns final closure.

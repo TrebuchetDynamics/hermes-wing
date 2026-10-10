@@ -1,6 +1,12 @@
 # Hermes Agent compatibility
 
-Status: current integration contract
+Status: retained integration contract; Wing Link compatibility is deprecated
+
+The [product decision](../adr/product.md#wing-link-deprecation) requires Agent-only
+product flows and retirement of Link-dependent compatibility. Rules below bound
+existing legacy consumers, not new compatibility expansion. Missing direct Agent
+operations stay unavailable until advertised; no Agent patches or arbitrary shell
+substitute are permitted.
 
 Verified against Hermes Agent `v0.20.0` (`2026.8.3`) and the official documentation
 on 2026-08-14. Hermes Agent documentation is authoritative when this file and a

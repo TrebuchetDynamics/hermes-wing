@@ -63,6 +63,14 @@ void main() {
       await tester.pumpAndSettle();
       unawaited(router.push(AppRoutes.enroll));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-welcome-optional')),
+      );
+      await tester.tap(find.byKey(const ValueKey('hermes-welcome-optional')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
+      );
       await tester.tap(
         find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
       );
@@ -126,6 +134,14 @@ void main() {
       expect(
         find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         findsNothing,
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-welcome-optional')),
+      );
+      await tester.tap(find.byKey(const ValueKey('hermes-welcome-optional')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
       );
       await tester.tap(
         find.byKey(const ValueKey('hermes-enrollment-local-setup')),

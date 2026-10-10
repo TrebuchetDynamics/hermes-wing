@@ -1,5 +1,7 @@
 # Android Termux Local Hermes Agent Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Historical Wing Link bootstrap is not the current setup requirement.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let an Android user start in Hermes Wing, run one explicit verified command in Termux, return through the existing same-device pairing flow, and complete every setup operation Wing can safely support without turning Wing into a shell bridge or a second Hermes backend.

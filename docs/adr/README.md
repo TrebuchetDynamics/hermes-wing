@@ -15,3 +15,27 @@ These five living decisions are the current architectural guardrails for Hermes 
 - Prefer advertised capabilities and runtime evidence over assumptions about a platform or Hermes Agent release.
 - Keep implementation detail in code, tests, plans, and runbooks rather than creating another ADR.
 - Update an existing decision before adding a new one. Add a decision only for a cross-cutting choice that is expensive to reverse and is not covered here.
+
+## Local development and testing
+
+Use the owner's scoped test request as authorization for ordinary development
+work. Do not require a second architectural approval to build an isolated QA app,
+install it on the selected test device, operate its UI, or run regression tests.
+Preserve the user's paired application and unrelated work.
+
+External test tools may use ADB forwarding or an authenticated SSH tunnel to a
+selected host. These tools are not Wing Link compatibility operations or shipped
+native integration. Record which connection was exercised. A test tunnel does
+not establish that Wing manages SSH itself.
+
+Choose reversible implementation details and continue. Ask only when a missing
+credential, device permission, destructive operation, service change or durable
+trust-boundary decision actually needs the owner. Existing authorization covers
+the same scoped action; do not ask for it again. OS permissions and authentication
+must still succeed, and missing access must not be reported as an ADR restriction.
+
+These development rules do not relax credential protection, profile isolation,
+Agent ownership, upstream immutability, or remote-management authorization. They
+do not authorize replacing a paired app, bypassing host trust, changing another
+profile, restarting a shared gateway, or publishing a release. Keep runtime
+support claims tied to executed evidence.

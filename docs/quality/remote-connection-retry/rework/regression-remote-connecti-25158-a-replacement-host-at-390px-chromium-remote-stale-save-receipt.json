@@ -1,0 +1,26 @@
+{
+  "width": 390,
+  "owner": {
+    "has_error": false,
+    "status": "connected",
+    "selected_profile_id": null,
+    "active_session_id": "synthetic-restoration-000",
+    "assigned_provider": null,
+    "assigned_model": null,
+    "error_kind": null,
+    "last_turn_status": "completed",
+    "last_turn_text_length": 48,
+    "has_unreconciled_run": false
+  },
+  "save": {
+    "attempts": 1,
+    "completed": 1,
+    "pending": false
+  },
+  "mutations": [],
+  "errors": [],
+  "replacement": "existing E2E authoritative connect event; public form draft edited to host B",
+  "staleOwnerDisconnects": 0,
+  "storage": "E2E-only deferred save",
+  "liveAgent": "NOT_CHECKED"
+}

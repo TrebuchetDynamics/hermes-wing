@@ -31,7 +31,7 @@ test("Hermes Wing sends a say-hi turn through the live Hermes Agent", async ({
     { baseUrl: liveUrl, apiKey: liveKey || null },
   );
 
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible({
+  await expect(page.getByRole("textbox", { name: "Message Hermes…", exact: true })).toBeVisible({
     timeout: 30000,
   });
   const title = `Hermes Wing says hi ${Date.now()}`;

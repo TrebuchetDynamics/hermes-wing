@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:wing/core/hermes/local_discovery/local_hermes_home_discovery.dart';
+import 'package:wing/features/hermes_chat/widgets/platform_local_connection_panel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +23,8 @@ void main() {
   testWidgets('superseded endpoint save cannot disconnect a newer attempt', (
     tester,
   ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     final channel = FakeHermesChannel.disconnected();
     final store = _DeferredSaveEndpointStore();
     addTearDown(channel.dispose);
@@ -41,6 +46,10 @@ void main() {
       find.byKey(const ValueKey('hermes-connection-mode-local')),
     );
     await tester.pump();
+    final skip = find.byKey(const ValueKey('platform-local-skip-guide'));
+    await tester.ensureVisible(skip);
+    await tester.tap(skip);
+    await tester.pumpAndSettle();
     final connect = tester
         .widget<FilledButton>(
           find.byKey(const ValueKey('hermes-connect-button')),
@@ -61,11 +70,14 @@ void main() {
     expect(channel.state.status, HermesConnectionStatus.connected);
     store.pending.last.complete();
     await tester.pumpAndSettle();
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('connection failures are announced as a live region', (
     tester,
   ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     final semantics = tester.ensureSemantics();
     final channel = FakeHermesChannel(
       status: HermesConnectionStatus.disconnected,
@@ -97,6 +109,10 @@ void main() {
       find.byKey(const ValueKey('hermes-connection-mode-local')),
     );
     await tester.pump();
+    final skip = find.byKey(const ValueKey('platform-local-skip-guide'));
+    await tester.ensureVisible(skip);
+    await tester.tap(skip);
+    await tester.pumpAndSettle();
     final connect = find.byKey(const ValueKey('hermes-connect-button'));
     await tester.ensureVisible(connect);
     await tester.tap(connect);
@@ -107,6 +123,7 @@ void main() {
     expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
     expect(find.textContaining('private transport'), findsNothing);
     semantics.dispose();
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('typed connection auth failure ignores platform wording', (
@@ -416,12 +433,17 @@ void main() {
     );
   });
 
-  testWidgets('Add Hermes shows safe local, remote, VPN, and SSH choices', (
+  testWidgets('Add Hermes groups VPN within three primary connection choices', (
     tester,
   ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          platformLocalHomeDiscoveryProvider.overrideWithValue(
+            _MetadataDiscovery(),
+          ),
           hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
           hermesEndpointStoreProvider.overrideWithValue(
             FakeHermesEndpointStore(),
@@ -446,7 +468,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('hermes-connection-mode-vpn')),
+      find.byKey(const ValueKey('hermes-remote-transport-vpn')),
       findsOneWidget,
     );
     expect(
@@ -457,7 +479,15 @@ void main() {
       find.byKey(const ValueKey('hermes-credential-boundary')),
       findsOneWidget,
     );
+    expect(find.text('Remote'), findsOneWidget);
     expect(find.text('Remote HTTPS'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('hermes-primary-connection-modes')),
+        matching: find.byType(ChoiceChip),
+      ),
+      findsNWidgets(3),
+    );
     expect(find.text('VPN / NetBird / Tailscale'), findsOneWidget);
     expect(
       find.textContaining('authenticated WebSocket support waits'),
@@ -468,6 +498,12 @@ void main() {
       find.byKey(const ValueKey('hermes-connection-mode-local')),
     );
     await tester.pump();
+    final advanced = find.byKey(
+      const ValueKey('platform-local-advanced-endpoint'),
+    );
+    await tester.ensureVisible(advanced);
+    await tester.tap(advanced);
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<TextField>(
@@ -478,16 +514,34 @@ void main() {
       'http://127.0.0.1:8642',
     );
 
-    await tester.tap(find.byKey(const ValueKey('hermes-connection-mode-ssh')));
-    await tester.pump();
-    expect(
-      find.textContaining('never runs arbitrary SSH commands'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Start the fixed tunnel outside Wing'),
-      findsOneWidget,
-    );
+    final ssh = find.byKey(const ValueKey('hermes-connection-mode-ssh'));
+    await tester.ensureVisible(ssh);
+    await tester.tap(ssh);
+    await tester.pumpAndSettle();
+    for (final field in [
+      'host',
+      'ssh-port',
+      'username',
+      'password',
+      'agent-port',
+      'agent-token',
+    ]) {
+      expect(find.byKey(ValueKey('managed-ssh-$field')), findsOneWidget);
+    }
+    for (final secret in ['password', 'agent-token']) {
+      expect(
+        tester
+            .widget<TextField>(
+              find.descendant(
+                of: find.byKey(ValueKey('managed-ssh-$secret')),
+                matching: find.byType(TextField),
+              ),
+            )
+            .obscureText,
+        isTrue,
+      );
+    }
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('approval failures remain visible to the operator', (
@@ -529,6 +583,12 @@ void main() {
     );
     expect(find.byKey(const ValueKey('hermes-approval-deny')), findsOneWidget);
   });
+}
+
+class _MetadataDiscovery extends LocalHermesHomeDiscovery {
+  @override
+  Future<LocalHermesHomeInspection> inspectDefault() async =>
+      const LocalHermesHomeInspection.directory('/synthetic/.hermes');
 }
 
 class _DeferredSaveEndpointStore extends FakeHermesEndpointStore {

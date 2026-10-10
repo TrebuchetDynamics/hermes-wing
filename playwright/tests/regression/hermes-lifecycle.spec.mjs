@@ -23,7 +23,7 @@ async function openConnectedHermes(page) {
   );
   await a11y(page, { delay: 500 });
   await page.evaluate(() => globalThis.wingE2EHermesConnect());
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Message Hermes…", exact: true })).toBeVisible();
 }
 
 test("a user can stop a slow Hermes run with an authoritative terminal outcome", async ({
@@ -64,7 +64,6 @@ test("session search and bulk selection can be explored without deleting data", 
   page,
 }) => {
   await openConnectedHermes(page);
-  await page.getByRole("button", { name: "Sessions" }).click();
 
   const search = page.getByRole("textbox", { name: /Search sessions/ });
   await expect(search).toBeVisible();
@@ -73,7 +72,7 @@ test("session search and bulk selection can be explored without deleting data", 
   await expect(
     page.getByRole("button", { name: "Clear search" }),
   ).toBeVisible();
-  await expect(page.getByText(/No Hermes sessions match/)).toBeVisible();
+  await expect(page.getByText(/No sessions match/)).toBeVisible();
   await page.getByRole("button", { name: "Clear search" }).click();
 
   await page.getByRole("button", { name: "Select" }).click();

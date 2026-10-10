@@ -1,0 +1,313 @@
+--- a/lib/main_e2e.dart
++++ b/lib/main_e2e.dart
+@@ -261,0 +262,4 @@
++            // Deterministic browser accessibility qualification, not app state.
++            textScaler: Uri.base.queryParameters['e2eTextScale'] == '2'
++                ? TextScaler.linear(2)
++                : MediaQuery.textScalerOf(context),
+--- a/lib/l10n/app_en.arb
++++ b/lib/l10n/app_en.arb
+@@ -2,0 +3,9 @@
++  "welcomeEyebrow": "HERMES WING",
++  "welcomeTitle": "Welcome to Hermes Wing",
++  "welcomeSubtitle": "Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.",
++  "welcomeGetStarted": "Get Started",
++  "welcomeLocalHint": "Connect to a running local Hermes Agent. Nothing is installed automatically.",
++  "welcomeOr": "or",
++  "welcomeSsh": "Connect via SSH",
++  "welcomeRemote": "Connect to Remote Hermes",
++  "welcomeStorageRetry": "Saved connections could not be read. Retry",
+--- a/lib/l10n/app_localizations.dart
++++ b/lib/l10n/app_localizations.dart
+@@ -102,0 +103,54 @@
++  /// No description provided for @welcomeEyebrow.
++  ///
++  /// In en, this message translates to:
++  /// **'HERMES WING'**
++  String get welcomeEyebrow;
++
++  /// No description provided for @welcomeTitle.
++  ///
++  /// In en, this message translates to:
++  /// **'Welcome to Hermes Wing'**
++  String get welcomeTitle;
++
++  /// No description provided for @welcomeSubtitle.
++  ///
++  /// In en, this message translates to:
++  /// **'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.'**
++  String get welcomeSubtitle;
++
++  /// No description provided for @welcomeGetStarted.
++  ///
++  /// In en, this message translates to:
++  /// **'Get Started'**
++  String get welcomeGetStarted;
++
++  /// No description provided for @welcomeLocalHint.
++  ///
++  /// In en, this message translates to:
++  /// **'Connect to a running local Hermes Agent. Nothing is installed automatically.'**
++  String get welcomeLocalHint;
++
++  /// No description provided for @welcomeOr.
++  ///
++  /// In en, this message translates to:
++  /// **'or'**
++  String get welcomeOr;
++
++  /// No description provided for @welcomeSsh.
++  ///
++  /// In en, this message translates to:
++  /// **'Connect via SSH'**
++  String get welcomeSsh;
++
++  /// No description provided for @welcomeRemote.
++  ///
++  /// In en, this message translates to:
++  /// **'Connect to Remote Hermes'**
++  String get welcomeRemote;
++
++  /// No description provided for @welcomeStorageRetry.
++  ///
++  /// In en, this message translates to:
++  /// **'Saved connections could not be read. Retry'**
++  String get welcomeStorageRetry;
++
+--- a/lib/l10n/app_localizations_en.dart
++++ b/lib/l10n/app_localizations_en.dart
+@@ -13,0 +14,30 @@
++
++  @override
++  String get welcomeEyebrow => 'HERMES WING';
++
++  @override
++  String get welcomeTitle => 'Welcome to Hermes Wing';
++
++  @override
++  String get welcomeSubtitle =>
++      'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.';
++
++  @override
++  String get welcomeGetStarted => 'Get Started';
++
++  @override
++  String get welcomeLocalHint =>
++      'Connect to a running local Hermes Agent. Nothing is installed automatically.';
++
++  @override
++  String get welcomeOr => 'or';
++
++  @override
++  String get welcomeSsh => 'Connect via SSH';
++
++  @override
++  String get welcomeRemote => 'Connect to Remote Hermes';
++
++  @override
++  String get welcomeStorageRetry =>
++      'Saved connections could not be read. Retry';
+--- a/lib/features/enrollment/screens/hermes_enrollment_screen.dart
++++ b/lib/features/enrollment/screens/hermes_enrollment_screen.dart
+@@ -12,0 +13,2 @@
++import '../widgets/hermes_welcome.dart';
++import '../../hermes_chat/screens/hermes_chat_screen.dart';
+@@ -256 +258,3 @@
+-  void _openManualConnection() {
++  void _openManualConnection([
++    HermesConnectionMode mode = HermesConnectionMode.remote,
++  ]) {
+@@ -258 +262 @@
+-    context.push(AppRoutes.addHermes);
++    context.push('${AppRoutes.addHermes}?mode=${mode.name}&welcome=1');
+@@ -263,0 +268,18 @@
++    if (_page == _EnrollmentPage.choose &&
++        _payloadError == null &&
++        controller.status == HermesEnrollmentStatus.idle) {
++      return Scaffold(
++        body: SafeArea(
++          child: HermesWelcome(
++            onConnect: _openManualConnection,
++            optionalSetup: ExpansionTile(
++              key: const ValueKey('hermes-welcome-optional'),
++              title: Text(
++                AppLocalizations.of(context).enrollOptionalSetupAction,
++              ),
++              children: [_chooserActions()],
++            ),
++          ),
++        ),
++      );
++    }
+@@ -610,13 +631,0 @@
+-        choice(
+-          'hermes-enrollment-direct-connect',
+-          Icons.link_outlined,
+-          s.chatLayoutConnectTitle,
+-          s.chatLayoutConnectBody,
+-          _openManualConnection,
+-        ),
+-        const SizedBox(height: 12),
+-        Text(
+-          s.enrollOptionalSetupAction,
+-          style: Theme.of(context).textTheme.titleMedium,
+-        ),
+-        const SizedBox(height: 8),
+--- a/lib/features/hermes_chat/screens/hermes_chat_screen.dart
++++ b/lib/features/hermes_chat/screens/hermes_chat_screen.dart
+@@ -194 +194 @@
+-enum _HermesConnectionMode { local, remote, vpn, ssh }
++enum HermesConnectionMode { local, remote, vpn, ssh }
+@@ -300,0 +301,3 @@
++    this.initialConnectionMode = HermesConnectionMode.remote,
++    this.onConnectionSaved,
++    this.onConnectionCancelled,
+@@ -306,0 +310,3 @@
++  final HermesConnectionMode initialConnectionMode;
++  final VoidCallback? onConnectionSaved;
++  final VoidCallback? onConnectionCancelled;
+@@ -412 +418 @@
+-  _HermesConnectionMode _connectionMode = _HermesConnectionMode.remote;
++  late HermesConnectionMode _connectionMode;
+@@ -483,0 +490 @@
++    _connectionMode = widget.initialConnectionMode;
+@@ -625 +632 @@
+-  void _selectConnectionMode(_HermesConnectionMode mode) {
++  void _selectConnectionMode(HermesConnectionMode mode) {
+@@ -628,2 +635,2 @@
+-    if ((mode == _HermesConnectionMode.local ||
+-            mode == _HermesConnectionMode.ssh) &&
++    if ((mode == HermesConnectionMode.local ||
++            mode == HermesConnectionMode.ssh) &&
+@@ -1565 +1572,3 @@
+-        leading: activeContact == null
++        leading: _editingConnection && widget.onConnectionCancelled != null
++            ? BackButton(onPressed: widget.onConnectionCancelled)
++            : activeContact == null
+--- a/lib/features/hermes_chat/screens/state/hermes_chat_layout.dart
++++ b/lib/features/hermes_chat/screens/state/hermes_chat_layout.dart
+@@ -5 +5 @@
+-  _HermesConnectionMode mode,
++  HermesConnectionMode mode,
+@@ -7,4 +7,4 @@
+-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalLabel,
+-  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteLabel,
+-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnLabel,
+-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshLabel,
++  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalLabel,
++  HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteLabel,
++  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnLabel,
++  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshLabel,
+@@ -15 +15 @@
+-  _HermesConnectionMode mode,
++  HermesConnectionMode mode,
+@@ -17,4 +17,4 @@
+-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalBody,
+-  _HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteBody,
+-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnBody,
+-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshBody,
++  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalBody,
++  HermesConnectionMode.remote => strings.chatLayoutConnectionModeRemoteBody,
++  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnBody,
++  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshBody,
+@@ -23,5 +23,5 @@
+-IconData _connectionModeIcon(_HermesConnectionMode mode) => switch (mode) {
+-  _HermesConnectionMode.local => Icons.devices_outlined,
+-  _HermesConnectionMode.remote => Icons.cloud_outlined,
+-  _HermesConnectionMode.vpn => Icons.shield_outlined,
+-  _HermesConnectionMode.ssh => Icons.terminal_outlined,
++IconData _connectionModeIcon(HermesConnectionMode mode) => switch (mode) {
++  HermesConnectionMode.local => Icons.devices_outlined,
++  HermesConnectionMode.remote => Icons.cloud_outlined,
++  HermesConnectionMode.vpn => Icons.shield_outlined,
++  HermesConnectionMode.ssh => Icons.terminal_outlined,
+@@ -32 +32 @@
+-  _HermesConnectionMode mode,
++  HermesConnectionMode mode,
+@@ -34,2 +34,2 @@
+-  _HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalUrlHelper,
+-  _HermesConnectionMode.remote =>
++  HermesConnectionMode.local => strings.chatLayoutConnectionModeLocalUrlHelper,
++  HermesConnectionMode.remote =>
+@@ -37,2 +37,2 @@
+-  _HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnUrlHelper,
+-  _HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshUrlHelper,
++  HermesConnectionMode.vpn => strings.chatLayoutConnectionModeVpnUrlHelper,
++  HermesConnectionMode.ssh => strings.chatLayoutConnectionModeSshUrlHelper,
+@@ -123,3 +123,3 @@
+-                      _HermesConnectionMode.local,
+-                      _HermesConnectionMode.ssh,
+-                      _HermesConnectionMode.remote,
++                      HermesConnectionMode.local,
++                      HermesConnectionMode.ssh,
++                      HermesConnectionMode.remote,
+@@ -131,2 +131,2 @@
+-                            (mode == _HermesConnectionMode.remote &&
+-                                _connectionMode == _HermesConnectionMode.vpn),
++                            (mode == HermesConnectionMode.remote &&
++                                _connectionMode == HermesConnectionMode.vpn),
+@@ -136 +136 @@
+-                                mode == _HermesConnectionMode.remote &&
++                                mode == HermesConnectionMode.remote &&
+@@ -138,2 +138,2 @@
+-                                            _HermesConnectionMode.vpn
+-                                    ? _HermesConnectionMode.vpn
++                                            HermesConnectionMode.vpn
++                                    ? HermesConnectionMode.vpn
+@@ -144 +144 @@
+-                          mode == _HermesConnectionMode.remote
++                          mode == HermesConnectionMode.remote
+@@ -151,2 +151,2 @@
+-                if (_connectionMode == _HermesConnectionMode.remote ||
+-                    _connectionMode == _HermesConnectionMode.vpn) ...[
++                if (_connectionMode == HermesConnectionMode.remote ||
++                    _connectionMode == HermesConnectionMode.vpn) ...[
+@@ -173,2 +173,2 @@
+-                            _HermesConnectionMode.remote,
+-                            _HermesConnectionMode.vpn,
++                            HermesConnectionMode.remote,
++                            HermesConnectionMode.vpn,
+--- a/lib/features/hermes_chat/screens/state/hermes_chat_connection.dart
++++ b/lib/features/hermes_chat/screens/state/hermes_chat_connection.dart
+@@ -450,0 +451 @@
++      widget.onConnectionSaved?.call();
+--- a/test/features/enrollment/hermes_direct_first_run_test.dart
++++ b/test/features/enrollment/hermes_direct_first_run_test.dart
+@@ -107,0 +108,6 @@
++        // This deterministic controller is reused across independent route visits.
++        final enrollmentLease = container.listen(
++          hermesEnrollmentControllerProvider,
++          (_, _) {},
++        );
++        addTearDown(enrollmentLease.close);
+@@ -127 +133,24 @@
+-        await activate(tester, 'gateway-contacts-add');
++        expect(key('hermes-welcome'), findsOneWidget);
++        expect(find.text('Welcome to Hermes Wing'), findsOneWidget);
++        expect(key('mobile-shell-navigation-bar'), findsNothing);
++        for (final entry in ['hermes-welcome-ssh', 'hermes-welcome-remote']) {
++          await activate(tester, entry);
++          final mode = entry.endsWith('ssh') ? 'ssh' : 'remote';
++          expect(
++            tester
++                .widget<ChoiceChip>(key('hermes-connection-mode-$mode'))
++                .selected,
++            isTrue,
++          );
++          expect(store.saveCalls, isEmpty);
++          await tester.pageBack();
++          await tester.pumpAndSettle();
++          expect(key('hermes-welcome'), findsOneWidget);
++        }
++        await activate(tester, 'hermes-enrollment-direct-connect');
++        expect(
++          tester
++              .widget<ChoiceChip>(key('hermes-connection-mode-local'))
++              .selected,
++          isTrue,
++        );
+@@ -163,0 +193,2 @@
++        expect(router.routeInformationProvider.value.uri.path, '/hermes');
++        expect(key('hermes-welcome'), findsNothing);
+@@ -173,0 +205 @@
++        await activate(tester, 'hermes-welcome-optional');

@@ -230,7 +230,12 @@ void main() {
       expect(focusedKey(const ValueKey('chat-profile-manage')), isTrue);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
-      expect(h.router.routeInformationProvider.value.uri.path, '/profiles');
+      expect(
+        GoRouterState.of(
+          tester.element(find.text('Profiles destination')),
+        ).uri.path,
+        '/profiles',
+      );
       expect(search, findsNothing);
       expect(find.text('Profiles destination'), findsOneWidget);
       expect(identical(h.channel.state, original), isTrue);

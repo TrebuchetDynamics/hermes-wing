@@ -54,21 +54,9 @@ void main() {
       roadmap,
       contains('File listing, preview, reading, or editing through Wing Link'),
     );
-    expect(
-      gettingStarted,
-      contains('general provider operations are planned.'),
-    );
-    expect(
-      gettingStarted,
-      contains('existing-profile credential edits remain blocked'),
-    );
-    expect(
-      gettingStarted,
-      contains(
-        'hermes config set --force platforms.api_server.extra.host '
-        '<trusted-vpn-ip>',
-      ),
-    );
+    expect(gettingStarted, contains('Wing connects directly to Hermes Agent.'));
+    expect(gettingStarted, contains('Wing Link is deprecated.'));
+    expect(gettingStarted, isNot(contains('./install-wing-link.sh')));
     expect(
       wingLinkGuide,
       contains('Wing Link exposure and Hermes Agent exposure are separate'),

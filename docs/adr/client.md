@@ -1,5 +1,8 @@
 # Client architecture
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Status: current
 
 ## Decision
@@ -20,8 +23,10 @@ in the [parity ledger](../product/hermes-desktop-parity.md) and
 Accessibility remains primary, including an operable equivalent when speech, sound,
 motion, pointer input, canvas or 3D is unavailable.
 
-Use [Desktop Layout](../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx)
-at `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` as the shell source reference.
+Shell parity remains unverified against the official Desktop reference.
+Inspect `hermes-agent/apps/desktop/` before selecting a shell source or claiming
+parity; follow the [reference policy](../quality/official-desktop-reference.md).
+Do not use the withdrawn Layout comparison as implementation authority.
 The [first-wave receipt](../quality/2026-10-03-desktop-port-first-wave.md) preserves
 local collapse/expand implementation and bounded source/test evidence, not runtime
 or card acceptance. The next milestone is the
@@ -45,8 +50,9 @@ stay unavailable until their individual reviewed contract/evidence gates pass.
 
 Wing Link remains the current host-management plane, not the product organizing
 principle. Prioritize direct Agent connection and Desktop fidelity over new
-Wing-specific management features; existing dependencies are not removed or made
-optional by this decision.
+Wing-specific management features; retained dependencies are deprecated under the
+[product decision](product.md#wing-link-deprecation). Their actual removal and
+replacement qualification remain implementation work.
 
 Use platform-native features where practical. Voice may use exact advertised
 Agent audio routes with platform processing as fallback; availability and

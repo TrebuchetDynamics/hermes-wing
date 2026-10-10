@@ -1,5 +1,8 @@
 # Desktop shell reference fidelity — redesign slice
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Status: independent fix-list review resolved the P1 toggle-outline defect and
 corrected the typography description. `DESIGN.md` and `.impeccable/design.json`
 record the delivered slice. This bounded disposition is not whole-surface,
@@ -9,12 +12,12 @@ This receipt supersedes the earlier refinement framing, not its preserved eviden
 
 ## Reference and direction
 
-Read-only Desktop pin: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`.
+Read-only Desktop pin: `withdrawn reference revision`.
 
-- Layout (local-only reference: `../../hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx`),
+- Layout (local-only reference: `withdrawn source citation`),
   lines 686–850: clean collapse header, pinned navigation, flexible session region,
   utility/profile footer; missing domain functionality must not be imitated.
-- CSS (local-only reference: `../../hermes-desktop/src/renderer/src/assets/main.css`), lines 9–75:
+- CSS (local-only reference: `withdrawn source citation`), lines 9–75:
   light/dark rail, work-area, foreground, hover and selection roles.
 - CSS lines 507–518: 10px medium corners and Cairo/Manrope/system font stack.
 - CSS lines 2175–2189, 2237–2268, 2406–2453: 26px status bar, 250/64px sidebar,
@@ -146,7 +149,8 @@ subsequently passed on the final code.
 
 A separate repository-root `npm run test` completed with 3,386 passes and three
 shell assertion failures. The test plan (local-only reference: `../test-plan.md#acceptance-records-and-gaps`)
-links that log and the existing current-check task. Do not combine its completed
+records that historical log separately from the completed FINISH-DESKTOP-SHELL qualification.
+Do not combine its completed
 result with the isolated mirror's incomplete counts, or infer a full-suite pass
 from the focused redesign checks. This documentation pass did not rerun tests.
 
@@ -209,6 +213,40 @@ not claim those independent features were implemented or runtime-qualified by th
 redesign. Historical receipts above describe their own source state. Exact-tree
 gates, source hashes and the concurrent-base observation remain local-only delivery
 evidence under `.task-evidence/shell-delivery/`; they are not product files.
+
+## Committed-tree validation
+
+Commit `1afe1307e37ee1ddfa1f7d67ad047509e99c8784` delivers this slice on tree
+`5681b2c9ffc0c7221a1e5a497665a2d35393256b`. The local-only
+`.task-evidence/shell-delivery/delivery-receipt.json` binds the integrated snapshot
+and seven hashed logs. This documentation pass matched the commit tree and log
+hashes. It inspected execution evidence; it did not rerun product checks.
+
+The receipt records passing formatting, `flutter analyze`,
+`flutter test --concurrency=1` (3,469 passes), the 57-test focused shell command,
+a release `lib/main_e2e.dart` web build and two Chromium shell journeys.
+Root `npm audit` passed with unchanged root dependency blobs. That result does
+not cover later changes to Wing Link's embedded OmniRoute dependencies.
+
+These checks supersede the earlier shell assertion failures only for the committed
+snapshot. The untracked inventory keyboard harness and subsequent dirty-worktree
+changes were not in that tree. The later inventory qualification below closes
+that bounded check; the restyle itself is delivered. Go, complete web E2E, native runtime, live Agent
+and device qualification were not run in this receipt. Node 26.7.0 execution does
+not qualify the documented Node.js 22 baseline.
+
+## Inventory keyboard qualification
+
+The later [qualification receipt](../quality/shell-inventory-keyboard-qualification.md)
+on `t_65ce1e31` records eight inventory and 73 focused shell widget passes,
+clean analysis and two Chromium journeys after a fresh JS-release build.
+The original inventory harness passed unchanged. Browser checks cover navigation
+and exact Open/New at 390/1280px, not 200% browser text scaling.
+
+FINISH-DESKTOP-SHELL is done for this bounded delivery in goals.json. Retained
+log hashes and the harness match the inspected receipt and branch.
+This pass does not rerun tests or establish independent final approval.
+Full composition parity and native/live/screen-reader qualification remain incomplete.
 
 ## Remaining gates and parity gaps
 

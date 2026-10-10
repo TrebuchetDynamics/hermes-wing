@@ -1,10 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/app.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/router/app_router.dart';
+import 'package:wing/router/app_routes.dart';
 import 'package:wing/theme/wing_theme.dart';
 
+import '../features/hermes_chat/support/fake_hermes_channel.dart';
+import '../features/hermes_chat/support/fake_hermes_endpoint_store.dart';
+
+Widget testApp() => ProviderScope(
+  overrides: [
+    hermesEndpointStoreProvider.overrideWithValue(FakeHermesEndpointStore()),
+    hermesChannelProvider.overrideWith((ref) {
+      final channel = FakeHermesChannel.disconnected();
+      ref.onDispose(channel.dispose);
+      return channel;
+    }),
+  ],
+  child: const WingApp(),
+);
+
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   test('primary button labels retain readable contrast in every palette', () {
     for (final palette in WingThemePalette.values) {
       for (final brightness in Brightness.values) {
@@ -168,7 +188,7 @@ void main() {
   });
 
   testWidgets('WingApp exposes system light and dark themes', (tester) async {
-    await tester.pumpWidget(const WingApp());
+    await tester.pumpWidget(testApp());
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
 
@@ -185,7 +205,7 @@ void main() {
       'flutter.wing.theme.palette': 'forest',
     });
 
-    await tester.pumpWidget(const WingApp());
+    await tester.pumpWidget(testApp());
     await tester.pumpAndSettle();
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -203,8 +223,13 @@ void main() {
   testWidgets('WingApp wraps routed content in a text selection area', (
     tester,
   ) async {
-    await tester.pumpWidget(const WingApp());
-
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(MaterialApp)),
+    );
+    container.read(routerProvider).go(AppRoutes.settings);
+    await tester.pumpAndSettle();
     expect(find.byType(SelectionArea), findsOneWidget);
   });
 }

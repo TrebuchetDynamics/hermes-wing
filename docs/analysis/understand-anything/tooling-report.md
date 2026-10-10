@@ -1,5 +1,8 @@
 # Understand Anything tooling execution
 
+> Reference correction: [official Desktop authority](../../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Outcome and scope
 
 Executed the **actual upstream deterministic scanner**, not a replacement file walker, against Wing, Hermes Agent, Hermes Conduit, and Hermes Desktop. Every final scan completed without read/stat failures and repeated byte-identically in consecutive runs. Outputs describe the working tree at scan time, not pristine commits; Wing's unrelated dirty files were preserved. Static census plus bounded real parser smoke tests only: no LLM analysis, fabricated symbols, generated graph, inference, dashboard, runtime service, hook, or profile/plugin configuration.
@@ -10,7 +13,7 @@ Repository HEADs:
 - `wing`: `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f`
 - `hermes-agent`: `158fd638da1629c8e62caf9ade1515d162def8ab`
 - `hermes-conduit`: `67a2e8de6b39d2086f59149e0f5fd8b1d44c1fe6`
-- `hermes-desktop`: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`
+- `hermes-desktop`: `withdrawn reference revision`
 
 ## Final census
 
@@ -73,7 +76,7 @@ Inspected `scan-project.mjs`, `extract-structure.mjs`, its outcome mapper, core 
 
 ## Exclusions and privacy
 
-Wing additionally excludes `/hermes-agent/`, `/hermes-conduit/`, `/hermes-desktop/`, `/tools/`, and `/docs/analysis/understand-anything/`, so nested repositories, tool installs/builds, and concurrent analysis outputs are not Wing source inputs.
+Wing additionally excludes `/hermes-agent/`, `/hermes-conduit/`, `/withdrawn source citation`, `/tools/`, and `/docs/analysis/understand-anything/`, so nested repositories, tool installs/builds, and concurrent analysis outputs are not Wing source inputs.
 
 Every scan applies UA defaults (fully listed in `tooling/summary.json`), existing Git ignore rules, and the following explicit patterns:
 

@@ -74,17 +74,9 @@ test("Hermes route opens manual enrollment from the agent empty state", async ({
   await page.waitForTimeout(2000);
   await a11y(page);
 
-  await page
-    .getByRole("button", { name: "Add gateway or profile" })
-    .first()
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Connect to Hermes" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: /I have a QR code or pairing link/ }).click();
-  await expect(
-    page.getByRole("button", { name: "Connect one profile manually" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Hermes Wing", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Connect to Remote Hermes", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: /^Hermes Agent URL/ })).toBeVisible();
 });
 
 test("mobile Hermes chat keeps secondary actions in an accessible overflow menu", async ({
@@ -147,7 +139,6 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await expect(semanticLabel(page, "Jobs: 1")).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
 
-  await page.getByRole("button", { name: "Sessions" }).click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Rename" }).click();
   await page
@@ -157,7 +148,6 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await expect(
     page.getByRole("heading", { name: "Renamed e2e session" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Sessions" }).click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Branch" }).click();
   await expect(page.getByRole("alertdialog")).toContainText(
@@ -232,7 +222,6 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
     semanticText(page, "Hermes echo: voice browser turn"),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Sessions" }).click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Delete" }).click();

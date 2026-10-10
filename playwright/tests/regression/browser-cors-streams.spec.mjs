@@ -32,7 +32,7 @@ test("cross-origin Agent SSE works with the advertised CORS headers", async ({
     ({ baseUrl, apiKey }) => globalThis.wingE2EHermesConnect(baseUrl, apiKey),
     { baseUrl: hermesOrigin, apiKey: "cors-test-key" },
   );
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Message Hermes…", exact: true })).toBeVisible();
 
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("cross-origin stream turn"),
@@ -58,7 +58,7 @@ test("Agent approval streams survive the ordinary request deadline", async ({
     (baseUrl) => globalThis.wingE2EHermesConnect(baseUrl, "cors-test-key"),
     hermesOrigin,
   );
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Message Hermes…", exact: true })).toBeVisible();
   await page.evaluate(() =>
     globalThis.wingE2EHermesSendText("delayed approval stream"),
   );

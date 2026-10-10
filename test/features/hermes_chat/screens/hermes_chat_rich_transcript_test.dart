@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -784,6 +785,188 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.textContaining('created a file on its host'), findsOneWidget);
   });
 
+  testWidgets(
+    'reasoning keyboard disclosure retains focus through completion',
+    (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final semantics = tester.ensureSemantics();
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      channel.beginStreamingTurn('Synthetic reasoning request');
+      channel.addReasoningTurn(
+        'Synthetic constraints at /tmp/synthetic-reasoning.txt',
+      );
+      final reasoning = channel.state.activeMessages.firstWhere(
+        (t) => t.kind == HermesTurnKind.reasoning,
+      );
+      final card = find.byKey(ValueKey('hermes-reasoning-${reasoning.id}'));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: _localizedApp(const HermesChatScreen()),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Thinking…'), findsOneWidget);
+      expect(
+        find.descendant(of: card, matching: find.byIcon(Icons.hourglass_top)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: card,
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsNothing,
+      );
+      expect(find.textContaining('Synthetic constraints'), findsNothing);
+      bool summaryFocused() {
+        final context = FocusManager.instance.primaryFocus?.context;
+        if (context == null) return false;
+        return context.findAncestorWidgetOfExactType<ExpansionTile>() != null;
+      }
+
+      for (var i = 0; i < 40 && !summaryFocused(); i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+      }
+      expect(summaryFocused(), isTrue);
+      final focus = FocusManager.instance.primaryFocus;
+      expect(
+        tester.getSemantics(find.text('Thinking…')).flagsCollection.isExpanded,
+        Tristate.isFalse,
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump(const Duration(seconds: 1));
+      expect(
+        tester.getSemantics(find.text('Thinking…')).flagsCollection.isExpanded,
+        Tristate.isTrue,
+      );
+      expect(
+        find.textContaining('Synthetic constraints at [redacted-path]'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('/tmp/synthetic-reasoning.txt'), findsNothing);
+      expect(
+        tester
+            .widget<HermesRichText>(
+              find.descendant(of: card, matching: find.byType(HermesRichText)),
+            )
+            .selectable,
+        isTrue,
+      );
+      channel.completeStreamingTurn(text: 'Synthetic answer');
+      await tester.pumpAndSettle();
+      expect(find.text('Thought'), findsOneWidget);
+      expect(find.text('Thinking…'), findsNothing);
+      expect(FocusManager.instance.primaryFocus, same(focus));
+      expect(
+        tester.getSemantics(find.text('Thought')).label,
+        contains('Thought'),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.text('Thought')).flagsCollection.isExpanded,
+        Tristate.isFalse,
+      );
+      expect(find.textContaining('Synthetic constraints'), findsNothing);
+      expect(FocusManager.instance.primaryFocus, same(focus));
+      expect(channel.sentImageDataUrls, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.selectSessionCalls, isEmpty);
+      expect(channel.lockSessionModelCalls, isEmpty);
+      expect(channel.respondToApprovalCalls, isEmpty);
+      expect(channel.connectCalls, isEmpty);
+      semantics.dispose();
+      debugDefaultTargetPlatformOverride = null;
+    },
+  );
+
+  testWidgets(
+    'reasoning owner replacement with reused row ID starts collapsed',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final now = DateTime.utc(2026);
+      HermesChatTurn reasoning(String session, String text) => HermesChatTurn(
+        id: 'synthetic-reused-reasoning',
+        sessionId: session,
+        author: HermesTurnAuthor.system,
+        createdAt: now,
+        kind: HermesTurnKind.reasoning,
+        text: text,
+      );
+      channel.replaceTranscript([
+        reasoning('sess_1', 'Synthetic old reasoning'),
+      ]);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final card = find.byKey(
+        const ValueKey('hermes-reasoning-synthetic-reused-reasoning'),
+      );
+      await tester.tap(find.text('Thought'));
+      await tester.pumpAndSettle();
+      expect(find.text('Synthetic old reasoning'), findsOneWidget);
+      final oldTile = tester.element(
+        find.descendant(of: card, matching: find.byType(ExpansionTile)),
+      );
+      channel.replaceSessions(
+        const [HermesSession(id: 'synthetic-owner-b', source: 'fake')],
+        activeSessionId: 'synthetic-owner-b',
+        messages: {
+          'synthetic-owner-b': [
+            reasoning('synthetic-owner-b', 'Synthetic fresh reasoning'),
+          ],
+        },
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Synthetic old reasoning'), findsNothing);
+      expect(find.text('Synthetic fresh reasoning'), findsNothing);
+      expect(card, findsOneWidget);
+      expect(oldTile.mounted, isFalse);
+      await tester.tap(find.text('Thought'));
+      await tester.pumpAndSettle();
+      expect(find.text('Synthetic fresh reasoning'), findsOneWidget);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.selectSessionCalls, isEmpty);
+      expect(channel.sentImageDataUrls, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'reasoning becomes Thought when answer starts before completion',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      channel.beginStreamingTurn('Synthetic request');
+      channel.addReasoningTurn('Synthetic reasoning');
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Thinking…'), findsOneWidget);
+      channel.appendStreamingTurnText('Synthetic partial answer');
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Thinking…'), findsNothing);
+      expect(find.text('Thought'), findsOneWidget);
+      channel.completeStreamingTurn();
+      await tester.pumpAndSettle();
+    },
+  );
+
   testWidgets('reasoning is available in a collapsed readable card', (
     tester,
   ) async {
@@ -800,10 +983,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Reasoning'), findsOneWidget);
+    expect(find.text('Thought'), findsOneWidget);
     expect(find.text('Compare constraints before answering.'), findsNothing);
 
-    await tester.tap(find.text('Reasoning'));
+    await tester.tap(find.text('Thought'));
     await tester.pumpAndSettle();
 
     expect(find.text('Compare constraints before answering.'), findsOneWidget);

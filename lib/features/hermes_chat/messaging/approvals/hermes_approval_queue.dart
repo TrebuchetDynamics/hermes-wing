@@ -49,8 +49,14 @@ class HermesApprovalQueue extends ChangeNotifier {
   Iterable<HermesApprovalRequest> activeFor(String? activeSessionId) =>
       _pending.where(
         (request) =>
-            request.sessionId == null || request.sessionId == activeSessionId,
+            _matchesProfile(request) &&
+            (request.sessionId == null || request.sessionId == activeSessionId),
       );
+
+  // Session IDs are profile-local. A reused ID cannot authorize an old ask.
+  bool _matchesProfile(HermesApprovalRequest request) =>
+      request.profileId == null ||
+      request.profileId == _channel().state.selectedProfileId;
 
   /// Re-points the queue at [channel], dropping anything from the previous one.
   void watch(HermesChannel channel) {
@@ -81,7 +87,7 @@ class HermesApprovalQueue extends ChangeNotifier {
     HermesApprovalDecision decision,
     HermesApprovalRequest request,
   ) async {
-    if (!request.allows(decision)) return;
+    if (!_matchesProfile(request) || !request.allows(decision)) return;
     if (_answeringId != null ||
         !_pending.any(
           (pending) => _requestKey(pending) == _requestKey(request),

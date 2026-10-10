@@ -1,0 +1,47 @@
+{
+  "checks": [
+    {
+      "name": "frozen-offline-gate",
+      "command": "make check",
+      "cwd": "<home>/.hermes/shared-skills",
+      "exit_code": 0,
+      "wall_seconds": 8.871,
+      "output": "python3 scripts/check.py\nPASS: 26 skill contracts and Python/shell syntax\n\nCHECK autogoal/scripts/test_discovery.py\n.......\n----------------------------------------------------------------------\nRan 7 tests in 0.014s\n\nOK\n\nCHECK autogoal/scripts/test_disjoint_triage.py\n.........\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nOK\n\nCHECK autogoal/scripts/test_engineering_signals.py\n....\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nOK\n\nCHECK autogoal/scripts/test_goal_handoff.py\n....................\n----------------------------------------------------------------------\nRan 20 tests in 0.013s\n\nOK\n\nCHECK autogoal/scripts/test_picker_policy.py\n....\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n\nCHECK autogoal/scripts/test_reconcile.py\n.......\n----------------------------------------------------------------------\nRan 7 tests in 0.005s\n\nOK\n\nCHECK autogoal/scripts/test_source_freshness.py\n...\n----------------------------------------------------------------------\nRan 3 tests in 0.010s\n\nOK\n\nCHECK autogoal/scripts/test_workflow_handoff.py\n.\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n\nCHECK extras/install/test_configure_stt.py\n....\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nOK\nTarget HERMES_HOME=<home>/.hermes/cache/scratch/tmp13o3k1kt\nstt.provider = local\nstt.local.model = tiny\nstt.enabled = True\nSTT settings verified. Recognition and dependencies have not been tested.\nTarget HERMES_HOME=<home>/.hermes/cache/scratch/tmphdg87i76\nstt.provider = local\nstt.local.model = base\nstt.enabled = True\nTarget HERMES_HOME=<home>/.hermes/cache/scratch/tmphdg87i76\nstt.provider = local\nstt.local.model = base\nstt.enabled = True\nTarget HERMES_HOME=<home>/.hermes/cache/scratch/tmphdg87i76\nstt.enabled = False\nTarget HERMES_HOME=<home>/.hermes/cache/scratch/tmpa04wio5i\nstt.provider = local\nstt.local.model = base\nstt.enabled = True\nPreview only; use --apply to change this target.\n\nCHECK extras/install/test_install.py\n.........\n----------------------------------------------------------------------\nRan 9 tests in 0.908s\n\nOK\n\nCHECK extras/install/test_new_profile.py\n...\n----------------------------------------------------------------------\nRan 3 tests in 0.660s\n\nOK\n\nCHECK extras/install/test_provisioning.py\n.....\n----------------------------------------------------------------------\nRan 5 tests in 1.770s\n\nOK\n\nCHECK extras/maintenance/test_question_relay.py\n..\n----------------------------------------------------------------------\nRan 2 tests in 0.076s\n\nOK\n\nCHECK extras/monitors/test_autogoal_gate.py\n......\n----------------------------------------------------------------------\nRan 6 tests in 0.286s\n\nOK\n\nCHECK extras/monitors/test_autogoal_monitor.py\n..\n----------------------------------------------------------------------\nRan 2 tests in 0.002s\n\nOK\n\nCHECK extras/monitors/test_repo_docs_monitor.py\n....\n----------------------------------------------------------------------\nRan 4 tests in 0.511s\n\nOK\n\nCHECK extras/vendor/test_implement_spec.py\n.\n----------------------------------------------------------------------\nRan 1 test in 0.007s\n\nOK\n\nCHECK extras/vendor/test_sync_vendor.py\n...\n----------------------------------------------------------------------\nRan 3 tests in 0.003s\n\nOK\n\nCHECK fleet-blockers/scripts/test_collect.py\n.........\n----------------------------------------------------------------------\nRan 9 tests in 0.005s\n\nOK\n\nCHECK fleet-governor/scripts/test_merge_train.py\n...\n----------------------------------------------------------------------\nRan 3 tests in 0.523s\n\nOK\n\nCHECK fleet-governor/scripts/test_protected_delivery.py\n...................\n----------------------------------------------------------------------\nRan 19 tests in 0.012s\n\nOK\n\nCHECK fleet-status/scripts/test_status.py\n..........................................\n----------------------------------------------------------------------\nRan 42 tests in 0.068s\n\nOK\n\nCHECK graphify/scripts/test_build.py\n.......\n----------------------------------------------------------------------\nRan 7 tests in 0.004s\n\nOK\n\nCHECK repo-docs/scripts/test_archive_policy.py\n..\n----------------------------------------------------------------------\nRan 2 tests in 0.390s\n\nOK\n\nCHECK repo-docs/scripts/test_goals.py\n........\n----------------------------------------------------------------------\nRan 8 tests in 0.744s\n\nOK\n\nCHECK repo-docs/scripts/test_milestone_focus.py\n..........\n----------------------------------------------------------------------\nRan 10 tests in 0.562s\n\nOK\n\nCHECK scripts/test_check.py\n...\n----------------------------------------------------------------------\nRan 3 tests in 0.023s\n\nOK\n\nCHECK scripts/test_validate_skills.py\n...........\n----------------------------------------------------------------------\nRan 11 tests in 0.010s\n\nOK\n\nOffline suites: 28 passed, 0 failed; 2 model-backed suites excluded."
+    },
+    {
+      "name": "wing-ledger",
+      "command": "python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>",
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "wall_seconds": 0.12,
+      "output": "ok"
+    },
+    {
+      "name": "wing-diff",
+      "command": "git diff --check -- CONTRIBUTING.md TODO.md goals.json docs/product/autogoal-workflows.md docs/quality/autogoal-workflows .hermes/merge-train.json",
+      "cwd": "<repo>",
+      "exit_code": 0,
+      "wall_seconds": 0.09,
+      "output": ""
+    },
+    {
+      "name": "shared-diff",
+      "command": "git diff --check -- autogoal/SKILL.md autogoal/references/handoff.md autogoal/references/maintenance.md autogoal/scripts/start_goal.py autogoal/scripts/test_goal_handoff.py repo-docs/SKILL.md repo-docs/scripts/goals.py extras/cron/autogoal.prompt.md fleet-governor/SKILL.md fleet-governor/references/merge-train.md fleet-governor/scripts/merge_train.py",
+      "cwd": "<home>/.hermes/shared-skills",
+      "exit_code": 0,
+      "wall_seconds": 0.094,
+      "output": ""
+    }
+  ],
+  "policy_links_and_anchors": 5,
+  "configuration": {
+    "branches": true,
+    "delivery": "protected-pr",
+    "enabled": true,
+    "worktree": false
+  },
+  "focus": "M1",
+  "assertion_review_seconds": 0.002,
+  "usage": "Token and monetary totals unavailable. No savings inferred.",
+  "scope": "Local frozen orchestration gate. No product/live/platform/remote merge qualification."
+}

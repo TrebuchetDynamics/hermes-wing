@@ -7,12 +7,6 @@ cd "$ROOT_DIR"
 # Require an explicit target: never replace or clear a paired production app.
 : "${WING_QA_DEVICE:?Set WING_QA_DEVICE to the disposable Android target serial}"
 MAESTRO_BIN="${MAESTRO_BIN:-maestro}"
-OUTPUT_DIR="${WING_QA_OUTPUT_DIR:-$ROOT_DIR/test-results/maestro-features}"
-mkdir -p "$OUTPUT_DIR"
-OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
-# Maestro prunes its shared log cache on startup. Isolate this run so another
-# syntax check or device job cannot delete the active run's logs.
-MAESTRO_CACHE_DIR="$(mktemp -d "$OUTPUT_DIR/maestro-cache.XXXXXX")"
 flows=(
   scripts/maestro/fixture/attachments.yaml
   scripts/maestro/fixture/attachment_picker_race.yaml
@@ -35,6 +29,37 @@ flows=(
   scripts/maestro/fixture/pairing.yaml
   scripts/maestro/fixture/local_setup_accessibility.yaml
 )
+
+# A bounded qualification slice must not silently run unrelated scenarios.
+if (( $# > 0 )); then
+  selected=()
+  for requested in "$@"; do
+    found=0
+    for flow in "${flows[@]}"; do
+      if [[ "$requested" == "$flow" ]]; then found=1; break; fi
+    done
+    if (( ! found )); then
+      printf 'Unknown feature fixture flow: %s\n' "$requested" >&2
+      exit 2
+    fi
+    selected+=("$requested")
+  done
+  flows=("${selected[@]}")
+fi
+
+# Authentication must succeed before any build, install or clearState journey.
+device_state="$(adb -s "$WING_QA_DEVICE" get-state)"
+if [[ "$device_state" != device ]]; then
+  printf 'Selected disposable target is not authenticated and reachable.\n' >&2
+  exit 1
+fi
+
+OUTPUT_DIR="${WING_QA_OUTPUT_DIR:-$ROOT_DIR/test-results/maestro-features}"
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
+# Maestro prunes its shared log cache on startup. Isolate this run so another
+# syntax check or device job cannot delete the active run's logs.
+MAESTRO_CACHE_DIR="$(mktemp -d "$OUTPUT_DIR/maestro-cache.XXXXXX")"
 
 for flow in "${flows[@]}"; do
   XDG_CACHE_HOME="$MAESTRO_CACHE_DIR" "$MAESTRO_BIN" check-syntax "$flow"

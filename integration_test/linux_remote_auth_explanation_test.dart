@@ -1,0 +1,64 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/remote_auth_explanation_native_fixture.dart';
+
+void main() {
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  for (final width in [1280.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets(
+        'native production Remote auth explanation $width text $scale',
+        (tester) async {
+          final root = Platform.environment['WING_RETRY_ROOT'];
+          if (root == null ||
+              Platform.environment['HOME'] != '$root/home' ||
+              Platform.environment['XDG_CONFIG_HOME'] != '$root/config' ||
+              Platform.environment['DBUS_SESSION_BUS_ADDRESS'] != null ||
+              Platform.environment['WING_LIVE_AUTH'] != null) {
+            throw StateError(
+              'Use the isolated Remote auth explanation launcher',
+            );
+          }
+          await (await SharedPreferences.getInstance()).clear();
+          await binding.setSurfaceSize(Size(width, 1000));
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          addTearDown(() => binding.setSurfaceSize(null));
+          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          final receipt = await runRemoteAuthExplanationJourney(
+            tester,
+            capture: (name) async {
+              await tester.runAsync(() async {
+                await Future<void>.delayed(const Duration(milliseconds: 200));
+                final result = await Process.run('/usr/bin/import', [
+                  '-window',
+                  'root',
+                  '$root/cache/auth-$name-$width-$scale.png',
+                ]);
+                expect(result.exitCode, 0);
+              });
+            },
+          );
+          final file = File('$root/cache/retry-$width-$scale.json');
+          File('${file.path}.tmp').writeAsStringSync(
+            jsonEncode({
+              ...receipt,
+              'native_pid': pid,
+              'width': width,
+              'text_scale': scale,
+            }),
+          );
+          File('${file.path}.tmp').renameSync(file.path);
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(seconds: 1)),
+          );
+        },
+      );
+    }
+  }
+}

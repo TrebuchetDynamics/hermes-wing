@@ -1,5 +1,7 @@
 # Wing Link Hardening Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Wing Link is deprecated; preserve retained security checks without expanding it.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Turn Wing Link into a production Linux-first, local-first management plane with pinned host identity, encrypted non-loopback transport, device-scoped credentials, host-rooted approvals, compatible versioned protocols, recoverable transactions and updates, and bounded privacy-safe auditing.

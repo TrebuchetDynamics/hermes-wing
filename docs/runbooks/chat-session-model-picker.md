@@ -1,5 +1,8 @@
 # Searchable Chat session-model picker
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## User flow
 
 On a connected Chat session whose Agent advertises exact `model_options` read
@@ -135,7 +138,7 @@ inference, Android hardware/native Linux, software keyboard hardware, signed
 release, full provider administration or full upstream parity qualification.
 
 UI provenance: upstream Desktop `ModelPicker.tsx` at
-`2ed89070bc6c9e8231a37bb55df8a7722a3776b8`. Flutter equivalents preserve its
+`withdrawn reference revision`. Flutter equivalents preserve its
 search, provider filtering, stable current-first order, reset and keyboard
 outcomes; they do not port Electron events or base-URL input. Agent source
 `gateway/platforms/api_server.py`'s `_handle_session_model_lock` and nearest

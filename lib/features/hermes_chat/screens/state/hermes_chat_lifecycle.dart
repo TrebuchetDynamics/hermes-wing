@@ -180,7 +180,11 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
           _scheduleDesktopComposerFocus(
             canFocus: () =>
                 identical(ref.read(hermesChannelProvider), channel) &&
-                _composerOwnerGeneration == ownerGeneration,
+                _composerOwnerGeneration == ownerGeneration &&
+                // Completion must not interrupt a keyboard reasoning disclosure.
+                FocusManager.instance.primaryFocus?.context
+                        ?.findAncestorWidgetOfExactType<_ReasoningCard>() ==
+                    null,
           );
         }
         if (change.activeSessionChanged) {

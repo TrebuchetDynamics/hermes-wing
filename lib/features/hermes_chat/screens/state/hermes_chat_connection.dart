@@ -35,12 +35,66 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     _connectionForm.clear(keepBaseUrl: baseUrl);
   }
 
+  Future<void> _editEndpointProfile(
+    BuildContext context,
+    HermesEndpointConfig profile,
+  ) async {
+    final id = profile.id;
+    if (id == null || id.trim().isEmpty) return;
+    final owner = _composerOwnerGeneration;
+    final intent = _connectionForm.intentGeneration;
+    final channel = ref.read(hermesChannelProvider);
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final store = ref.read(hermesEndpointStoreProvider);
+    final clientBuilder = ref.read(hermesEndpointTestClientProvider);
+    bool ownsIntent() =>
+        mounted &&
+        owner == _composerOwnerGeneration &&
+        intent == _connectionForm.intentGeneration &&
+        identical(channel, ref.read(hermesChannelProvider)) &&
+        identical(directory, ref.read(hermesGatewayDirectoryProvider)) &&
+        identical(store, ref.read(hermesEndpointStoreProvider));
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _SavedEndpointEditor(
+        profile: profile,
+        ownsIntent: ownsIntent,
+        clientBuilder: clientBuilder,
+        confirmCleartext: _confirmCleartextCredentialUse,
+        save: (url, key) async {
+          await store.save(
+            baseUrl: url,
+            apiKey: key,
+            label: profile.label,
+            profileId: id,
+          );
+          if (!ownsIntent()) return;
+          _refreshEndpointProfiles();
+          if (identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+            unawaited(directory.reload());
+          }
+        },
+      ),
+    );
+  }
+
   Future<void> _renameEndpointProfile(
     BuildContext context,
     HermesEndpointConfig profile,
   ) async {
     final id = profile.id;
     if (id == null || id.trim().isEmpty) return;
+    final ownerGeneration = _composerOwnerGeneration;
+    final formGeneration = _connectionForm.intentGeneration;
+    final channel = ref.read(hermesChannelProvider);
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final store = ref.read(hermesEndpointStoreProvider);
+    bool ownsIntent() =>
+        mounted &&
+        ownerGeneration == _composerOwnerGeneration &&
+        formGeneration == _connectionForm.intentGeneration &&
+        identical(channel, ref.read(hermesChannelProvider)) &&
+        identical(directory, ref.read(hermesGatewayDirectoryProvider));
     var draftLabel = _safeHermesRenameDefault(profile.label ?? '');
     final nextLabel = await showDialog<String>(
       context: context,
@@ -77,28 +131,29 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         );
       },
     );
-    if (nextLabel == null || nextLabel.trim() == (profile.label ?? '').trim()) {
+    if (!ownsIntent() ||
+        nextLabel == null ||
+        nextLabel.trim() == (profile.label ?? '').trim()) {
       return;
     }
     try {
-      await ref
-          .read(hermesEndpointStoreProvider)
-          .save(
-            baseUrl: profile.baseUrl,
-            apiKey: profile.apiKey,
-            label: nextLabel.trim().isEmpty ? null : nextLabel.trim(),
-            profileId: id,
-          );
+      await store.save(
+        baseUrl: profile.baseUrl,
+        apiKey: profile.apiKey,
+        label: nextLabel.trim().isEmpty ? null : nextLabel.trim(),
+        profileId: id,
+      );
+      if (!mounted) return;
       _refreshEndpointProfiles();
-      unawaited(ref.read(hermesGatewayDirectoryProvider).reload());
-    } catch (error) {
-      if (!context.mounted) return;
+      if (identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+        unawaited(directory.reload());
+      }
+    } catch (_) {
+      if (!context.mounted || !ownsIntent()) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(
-              context,
-            ).chatConnectionRenameProfileErrorBody(_safeHermesUiError(error)),
+            AppLocalizations.of(context).settingsRenameGatewayError,
           ),
         ),
       );
@@ -108,16 +163,77 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   Future<void> _deleteEndpointProfile(HermesEndpointConfig profile) async {
     final id = profile.id;
     if (id == null || id.trim().isEmpty) return;
-    await ref.read(hermesEndpointStoreProvider).deleteProfile(id);
-    if (hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text) ==
-        hermesPublicEndpointBaseUrl(profile.baseUrl)) {
+    final ownerGeneration = _composerOwnerGeneration;
+    final formGeneration = _connectionForm.intentGeneration;
+    final channel = ref.read(hermesChannelProvider);
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final store = ref.read(hermesEndpointStoreProvider);
+    bool ownsIntent() =>
+        mounted &&
+        ownerGeneration == _composerOwnerGeneration &&
+        formGeneration == _connectionForm.intentGeneration &&
+        identical(channel, ref.read(hermesChannelProvider)) &&
+        identical(directory, ref.read(hermesGatewayDirectoryProvider));
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final strings = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          key: const ValueKey('hermes-endpoint-profile-delete-dialog'),
+          title: Text(strings.chatErrorRemoveProfileTitle),
+          content: Text(
+            strings.chatErrorRemoveProfileBody(
+              _safeHermesUiPreview(profile.displayLabel, maxLength: 96),
+              _safeHermesUiPreview(profile.baseUrl, maxLength: 120),
+            ),
+          ),
+          actions: [
+            TextButton(
+              key: const ValueKey('hermes-endpoint-profile-delete-cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.cancelAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-endpoint-profile-delete-confirm'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.chatErrorRemoveProfileAction),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !ownsIntent()) return;
+    try {
+      await store.deleteProfile(id);
+    } catch (_) {
+      if (!mounted || !ownsIntent()) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).settingsRemoveGatewayError,
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+    // Persistence belongs to the confirmed saved host; clearing a draft also
+    // requires the original intent, even after selecting away and returning.
+    if (ownsIntent() &&
+        hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text) ==
+            hermesPublicEndpointBaseUrl(profile.baseUrl)) {
       _connectionForm.clear();
     }
     _refreshEndpointProfiles();
-    unawaited(ref.read(hermesGatewayDirectoryProvider).reload());
+    if (identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+      unawaited(directory.reload());
+    }
   }
 
   Future<void> _connect(HermesChannel channel) async {
+    final ownerGeneration = _composerOwnerGeneration;
+    final formGeneration = _connectionForm.intentGeneration;
+    final directory = ref.read(hermesGatewayDirectoryProvider);
     final baseUrl = hermesPublicEndpointBaseUrl(_connectionForm.baseUrl.text);
     final apiKey = _connectionForm.apiKey.text.trim();
     if (hermesEndpointRequiresCleartextCredentialWarning(
@@ -125,7 +241,14 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       apiKey: apiKey,
     )) {
       final confirmed = await _confirmCleartextCredentialUse(baseUrl);
-      if (!confirmed || !mounted) return;
+      if (!confirmed ||
+          !mounted ||
+          ownerGeneration != _composerOwnerGeneration ||
+          formGeneration != _connectionForm.intentGeneration ||
+          !identical(channel, ref.read(hermesChannelProvider)) ||
+          !identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+        return;
+      }
     }
     await _connectToEndpoint(
       channel,
@@ -262,33 +385,70 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       baseUrl: baseUrl,
       apiKey: apiKey,
     );
+    final formGeneration = _connectionForm.intentGeneration;
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    final store = ref.read(hermesEndpointStoreProvider);
+    _setState(() => _connectionSaveFailure = null);
     bool ownsAttempt() =>
         mounted &&
+        formGeneration == _connectionForm.intentGeneration &&
         !_connectionForm.isStale(attempt) &&
-        identical(ref.read(hermesChannelProvider), channel);
+        identical(ref.read(hermesChannelProvider), channel) &&
+        identical(ref.read(hermesGatewayDirectoryProvider), directory) &&
+        identical(ref.read(hermesEndpointStoreProvider), store);
     await channel.connect(
       baseUrl: attempt.baseUrl,
       apiKey: attempt.storedApiKey,
     );
     if (!ownsAttempt() ||
-        channel.state.status != HermesConnectionStatus.connected) {
+        channel.state.status != HermesConnectionStatus.connected ||
+        hermesPublicEndpointBaseUrl(channel.state.connectedBaseUrl ?? '') !=
+            attempt.baseUrl) {
       return;
     }
     if (persistOnSuccess) {
-      _setState(() => _editingConnection = false);
-      await ref
-          .read(hermesEndpointStoreProvider)
-          .save(
-            baseUrl: attempt.baseUrl,
-            apiKey: attempt.storedApiKey,
-            label: attempt.storedLabel,
+      // Connecting itself changes the conversation owner. Fence storage against
+      // changes after that acknowledged connection, including away-and-return.
+      final ownerGeneration = _composerOwnerGeneration;
+      bool ownsSave() =>
+          ownsAttempt() && ownerGeneration == _composerOwnerGeneration;
+      _setState(
+        () => _connectionSavePending = (
+          id: attempt.id,
+          form: formGeneration,
+          owner: ownerGeneration,
+        ),
+      );
+      try {
+        await store.save(
+          baseUrl: attempt.baseUrl,
+          apiKey: attempt.storedApiKey,
+          label: attempt.storedLabel,
+        );
+      } catch (_) {
+        if (!mounted || !ownsSave()) return;
+        // A store can fail before or after its authoritative commit. Never
+        // claim rollback, expose platform details, or disconnect on uncertainty.
+        _setState(() {
+          _connectionSaveFailure = (
+            form: formGeneration,
+            owner: ownerGeneration,
           );
+        });
+        return;
+      } finally {
+        if (mounted && _connectionSavePending?.id == attempt.id) {
+          _setState(() => _connectionSavePending = null);
+        }
+      }
       // Secure storage can finish after a newer connection has taken ownership.
-      if (!ownsAttempt()) return;
+      if (!ownsSave()) return;
+      _setState(() => _editingConnection = false);
       _refreshEndpointProfiles();
       await channel.disconnect();
       if (!ownsAttempt()) return;
-      unawaited(ref.read(hermesGatewayDirectoryProvider).reload());
+      unawaited(directory.reload());
+      widget.onConnectionSaved?.call();
     }
   }
 
@@ -460,7 +620,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         final pinContact = _sessionPinContact(channel.state);
         return ListenableBuilder(
           listenable: Listenable.merge([channel, _sessionPins]),
-          builder: (_, _) => _HermesSessionsPanel(
+          builder: (_, _) => HermesSessionsPanel(
             state: channel.state,
             canCreate: _canCreateSession(channel.state),
             pinnedSessionIds: {

@@ -1,5 +1,8 @@
 # Desktop continuation — native model-read design review, 2026-10-04 02:25
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Result
 
 **The existing native proposal is not yet sufficient to restore an authoritative
@@ -114,7 +117,7 @@ new guessed opt-out parameter or indirect stop-after-start workaround.
 resolves a config model and derives its provider; it is not an exact confirmed
 session-lock read. [`session.status`:472–481](../../hermes-agent/tui_gateway/contracts/sessions.py)
 returns rendered output text, not a structured pair contract. Do not scrape it to
-invent authority. [Desktop override store:5–74](../../hermes-desktop/src/main/session-model-override-store.ts)
+invent authority. [Desktop override store:5–74](official-desktop-reference.md#withdrawn-evidence)
 is explicitly Desktop-owned local SQLite routing state. Borrowing it violates
 Wing's [no-shadow-state and no-Agent-file boundary](../adr/runtime-and-delivery.md).
 
@@ -125,13 +128,13 @@ review prerequisite; in-process locality does not manufacture missing authority.
 ## Executed evidence
 
 Reference status/HEAD commands exited 0: Agent `158fd638da1629c8e62caf9ade1515d162def8ab`
-clean; Desktop `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` retains existing deleted
+clean; Desktop `withdrawn reference revision` retains existing deleted
 `.claude` entries; Conduit `67a2e8de6b39d2086f59149e0f5fd8b1d44c1fe6` clean.
 No Conduit source research or mutation was needed. Dirty Wing HEAD is not a
 content snapshot. `lat` is absent on PATH; no install/key provisioning/wiki edit
 or Desktop verification command was attempted.
 
-Scratch: `/home/xel/.hermes/profiles/wing/cache/scratch/desktop-cron-0225-native-model-review/`.
+Scratch: `<home>/.hermes/profiles/wing/cache/scratch/desktop-cron-0225-native-model-review/`.
 
 - Read-only ownership/process/scheduler/time commands: exit 0.
 - Python AST inspection of four actual resume branch bodies: exit 0;

@@ -1,6 +1,9 @@
 # Hermes Desktop Architecture Map
 
-A practical source map of the local `hermes-desktop/` reference checkout for studying Hermes Wing bugs. It describes the checkout at commit `3aaadb01076a749d7f9389dca4ffce081cf8ebaa` (the `0.7.4` reference used by the existing feature study), not a promise that every declared API is currently reachable in the UI.
+> Reference correction: [official Desktop authority](../docs/quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
+A practical source map of the local `withdrawn source citation` reference checkout for studying Hermes Wing bugs. It describes the checkout at commit `3aaadb01076a749d7f9389dca4ffce081cf8ebaa` (the `0.7.4` reference used by the existing feature study), not a promise that every declared API is currently reachable in the UI.
 
 > **Important:** Hermes Desktop is reference material. Hermes Agent owns agent/domain state. Wing Link owns host management. Do not port Desktop's filesystem, CLI, SQLite, SSH, or Electron mechanisms into Wing.
 

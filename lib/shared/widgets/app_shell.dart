@@ -4,10 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/hermes/channel/hermes_channel_state.dart';
 import '../../features/profiles/providers/profile_selection_provider.dart';
+import '../../features/settings/providers/shell_preferences_provider.dart';
 import '../../features/hermes_chat/providers/hermes_channel_provider.dart';
 import '../../features/hermes_chat/widgets/shell_session_access.dart';
+import '../../features/hermes_chat/widgets/global_session_scope.dart';
 import '../../l10n/app_localizations.dart';
 import '../../router/app_routes.dart';
+import '../../router/widgets/chat_workspace_overlay.dart';
+import '../security/wing_redaction.dart';
 import 'app_shell_desktop_style.dart';
 import 'app_shell_presentation.dart';
 import 'sheet_presenter.dart';
@@ -15,57 +19,52 @@ import 'sheet_presenter.dart';
 // ponytail: one app shell; route state can replace this if nested shells arrive.
 final appShellNavigationVisible = ValueNotifier(true);
 
-class AppShell extends ConsumerStatefulWidget {
+class AppShell extends ConsumerWidget {
   const AppShell({required this.location, required this.child, super.key});
 
   final String location;
   final Widget child;
 
   @override
-  ConsumerState<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends ConsumerState<AppShell> {
-  // Presentation only: route/channel updates and compact layouts retain the
-  // user's choice without persisting or copying any Agent-owned state.
-  bool _sidebarExpanded = true;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final presentation = AppShellPresentation(
-      l10n,
-    ).stateForLocation(widget.location);
+    final presentation = AppShellPresentation(l10n).stateForLocation(location);
     final channel = ref.watch(hermesChannelProvider);
+    final sidebarExpanded = ref.watch(wingSidebarExpandedProvider);
 
-    return AnimatedBuilder(
-      animation: channel,
-      builder: (context, _) => LayoutBuilder(
-        builder: (context, constraints) {
-          final status = _AppShellStatus.fromState(channel.state, l10n);
-          if (constraints.maxWidth < 600) {
-            return _MobileShell(
-              location: widget.location,
-              presentation: presentation,
+    return GlobalSessionScope(
+      child: AnimatedBuilder(
+        animation: channel,
+        builder: (context, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            final status = _AppShellStatus.fromState(channel.state, l10n);
+            if (constraints.maxWidth < 600) {
+              return _MobileShell(
+                location: location,
+                presentation: presentation,
+                status: status,
+                child: child,
+              );
+            }
+            final desktopPresentation = AppShellPresentation(
+              l10n,
+            ).stateForLocation(location, desktop: true);
+            return _DesktopShell(
+              expanded: sidebarExpanded,
+              onToggle: () => ref
+                  .read(wingSidebarExpandedProvider.notifier)
+                  .setSidebarExpanded(!ref.read(wingSidebarExpandedProvider)),
+              destinations: desktopPresentation.destinations,
+              selectedIndex: desktopPresentation.selectedIndex,
+              onSelected: (index) => ChatWorkspaceOverlay.open(
+                context,
+                desktopPresentation.destinations[index].path,
+              ),
               status: status,
-              child: widget.child,
+              child: child,
             );
-          }
-          final desktopPresentation = AppShellPresentation(
-            l10n,
-          ).stateForLocation(widget.location, desktop: true);
-          return _DesktopShell(
-            expanded: _sidebarExpanded,
-            onToggle: () =>
-                setState(() => _sidebarExpanded = !_sidebarExpanded),
-            destinations: desktopPresentation.destinations,
-            selectedIndex: desktopPresentation.selectedIndex,
-            onSelected: (index) =>
-                context.go(desktopPresentation.destinations[index].path),
-            status: status,
-            child: widget.child,
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -132,7 +131,8 @@ class _MobileShell extends StatelessWidget {
                     );
                     return;
                   }
-                  context.go(
+                  ChatWorkspaceOverlay.open(
+                    context,
                     [
                       AppRoutes.hermes,
                       AppRoutes.profiles,
@@ -245,6 +245,21 @@ void _showMoreDestinations(
     InfoActionSheet(
       title,
       infoRows: status.infoRows,
+      infoBuilder: (sheetContext) {
+        final channel = ProviderScope.containerOf(
+          context,
+        ).read(hermesChannelProvider);
+        return AnimatedBuilder(
+          animation: channel,
+          builder: (context, _) => _DesktopStatusBar(
+            initiallyExpanded: true,
+            status: _AppShellStatus.fromState(
+              channel.state,
+              AppLocalizations.of(context),
+            ),
+          ),
+        );
+      },
       actions: [
         for (final destination in destinations)
           if (!AppRoutes.isNavigationDestinationLocation(
@@ -445,66 +460,72 @@ class _DesktopShell extends StatelessWidget {
                                   ),
                                 ),
                                 Expanded(
-                                  child: LayoutBuilder(
-                                    builder: (context, constraints) =>
-                                        SingleChildScrollView(
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              minHeight: constraints.maxHeight,
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Column(
-                                                  children: [
-                                                    _navigationGroup(
+                                  // Keep layout-built destinations ordered before
+                                  // the fixed footer regardless of attach timing.
+                                  child: FocusTraversalGroup(
+                                    policy: WidgetOrderTraversalPolicy(),
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) => SingleChildScrollView(
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minHeight: constraints.maxHeight,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  _navigationGroup(
+                                                    context,
+                                                    key: const ValueKey(
+                                                      'desktop-workflow-navigation',
+                                                    ),
+                                                    label: AppLocalizations.of(
                                                       context,
-                                                      key: const ValueKey(
-                                                        'desktop-workflow-navigation',
+                                                    ).shellWorkflowNavigation,
+                                                    start: 0,
+                                                    end: 3,
+                                                  ),
+                                                  if (expanded)
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        top: 8,
                                                       ),
-                                                      label: AppLocalizations.of(
-                                                        context,
-                                                      ).shellWorkflowNavigation,
-                                                      start: 0,
-                                                      end: 3,
+                                                      child:
+                                                          ShellSessionAccess(),
                                                     ),
-                                                    if (expanded)
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              top: 8,
-                                                            ),
-                                                        child:
-                                                            ShellSessionAccess(),
-                                                      ),
-                                                  ],
-                                                ),
-                                                Column(
-                                                  children: [
-                                                    const Divider(
-                                                      indent: 12,
-                                                      endIndent: 12,
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Divider(
+                                                    indent: 12,
+                                                    endIndent: 12,
+                                                  ),
+                                                  _navigationGroup(
+                                                    context,
+                                                    key: const ValueKey(
+                                                      'desktop-utility-navigation',
                                                     ),
-                                                    _navigationGroup(
+                                                    label: AppLocalizations.of(
                                                       context,
-                                                      key: const ValueKey(
-                                                        'desktop-utility-navigation',
-                                                      ),
-                                                      label: AppLocalizations.of(
-                                                        context,
-                                                      ).shellUtilityNavigation,
-                                                      start: 3,
-                                                      end: destinations.length,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
+                                                    ).shellUtilityNavigation,
+                                                    start: 3,
+                                                    end: destinations.length,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
+                                      ),
+                                    ),
                                   ),
+                                ),
+                                _DesktopProfileFooter(
+                                  expanded: expanded,
+                                  status: status,
                                 ),
                               ],
                             ),
@@ -631,16 +652,116 @@ class _DesktopShell extends StatelessWidget {
   }
 }
 
-class _DesktopStatusBar extends StatelessWidget {
-  const _DesktopStatusBar({required this.status});
+/// Display only: no inventory read, selection or deferred domain intent.
+class _DesktopProfileFooter extends StatelessWidget {
+  const _DesktopProfileFooter({required this.expanded, required this.status});
+
+  final bool expanded;
+  final _AppShellStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final style = AppShellDesktopStyle.forBrightness(
+      Theme.of(context).brightness,
+    );
+    // Bound after redaction; use the same safe context in every new surface.
+    final profile = wingRedactedPreview(status.profile, maxLength: 80);
+    final label =
+        '${l10n.chatProfileManage} — ${status.profileLabel}: $profile';
+    return Container(
+      key: const ValueKey('desktop-profile-footer'),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: style.border)),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (expanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    status.profileLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: style.secondary, fontSize: 11),
+                  ),
+                  Text(
+                    key: const ValueKey('desktop-profile-value'),
+                    profile,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: style.secondary, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          Tooltip(
+            message: label,
+            excludeFromSemantics: true,
+            child: TextButton(
+              key: const ValueKey('desktop-manage-profiles'),
+              style: style.toggleStyle().copyWith(
+                visualDensity: VisualDensity.standard,
+                padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                ),
+              ),
+              onPressed: () =>
+                  ChatWorkspaceOverlay.open(context, AppRoutes.profiles),
+              child: Semantics(
+                label: label,
+                child: ExcludeSemantics(
+                  child: expanded
+                      ? Row(
+                          children: [
+                            const Icon(Icons.people_outline, size: 16),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(l10n.chatProfileManage)),
+                          ],
+                        )
+                      : const Icon(Icons.people_outline, size: 16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DesktopStatusBar extends StatefulWidget {
+  const _DesktopStatusBar({
+    required this.status,
+    this.initiallyExpanded = false,
+  });
 
   final _AppShellStatus status;
+  final bool initiallyExpanded;
+
+  @override
+  State<_DesktopStatusBar> createState() => _DesktopStatusBarState();
+}
+
+class _DesktopStatusBarState extends State<_DesktopStatusBar> {
+  bool _inspect = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _inspect = widget.initiallyExpanded;
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final style = AppShellDesktopStyle.forBrightness(theme.brightness);
-    final rows = status.infoRows;
+    final rows = widget.status.infoRows;
     return Container(
       key: const ValueKey('app-shell-status-bar'),
       constraints: const BoxConstraints(minHeight: 26),
@@ -649,35 +770,73 @@ class _DesktopStatusBar extends StatelessWidget {
         border: Border(top: BorderSide(color: style.border)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Row(
-        children: [
-          for (var index = 0; index < rows.length; index++) ...[
-            if (index > 0) const SizedBox(width: 12),
-            Expanded(
-              child: Tooltip(
-                message: '${rows[index].label}: ${rows[index].value}',
-                child: Row(
-                  children: [
-                    Icon(rows[index].icon, size: 12, color: style.secondary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        rows[index].value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: style.secondary,
-                          fontSize: 11,
-                          height: 1,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Inspection stays inline and is rebuilt from the current owner;
+          // no modal captures obsolete connection/profile/model context.
+          final columns = _inspect
+              ? (constraints.maxWidth /
+                        (260 * MediaQuery.textScalerOf(context).scale(1)))
+                    .floor()
+                    .clamp(1, rows.length)
+              : rows.length;
+          final width = (constraints.maxWidth - 12 * (columns - 1)) / columns;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              for (final row in rows)
+                SizedBox(
+                  width: width,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: style.secondary,
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () => setState(() => _inspect = !_inspect),
+                    child: Semantics(
+                      label:
+                          '${row.label}: ${wingRedactSensitiveText(row.value)}',
+                      expanded: _inspect,
+                      child: ExcludeSemantics(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(row.icon, size: 12, color: style.secondary),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: DefaultTextStyle(
+                                style: theme.textTheme.labelMedium!.copyWith(
+                                  color: style.secondary,
+                                  fontSize: 11,
+                                  height: 1,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (_inspect) Text(row.label),
+                                    Text(
+                                      wingRedactSensitiveText(row.value),
+                                      maxLines: _inspect ? null : 1,
+                                      overflow: _inspect
+                                          ? TextOverflow.visible
+                                          : TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
-        ],
+            ],
+          );
+        },
       ),
     );
   }

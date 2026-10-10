@@ -42,7 +42,8 @@ void main() {
       find.byKey(const ValueKey('gateway-contacts-empty')),
       findsOneWidget,
     );
-    expect(find.text('Add gateway or profile'), findsOneWidget);
+    expect(find.text('Add Hermes'), findsOneWidget);
+    expect(find.byKey(const ValueKey('gateway-contacts-add')), findsOneWidget);
     expect(find.text('Connect to your Hermes VPS'), findsNothing);
     expect(find.byKey(const ValueKey('hermes-base-url-field')), findsNothing);
   });

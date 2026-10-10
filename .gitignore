@@ -46,6 +46,7 @@ node_modules/
 *.trace.zip
 playwright/results.json
 playwright/test-results/
+playwright/.matrix-results/
 playwright-report/
 blob-report/
 playwright/screenshots/*.png
@@ -78,3 +79,8 @@ test/tooling/failures/
 /docs/analysis/understand-anything/*.json
 /docs/analysis/understand-anything/*.zip
 /docs/analysis/understand-anything/tooling/
+
+# Local workflow state and Python bytecode
+/.hermes/
+__pycache__/
+*.py[cod]

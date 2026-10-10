@@ -133,6 +133,15 @@ void main() {
     expect(
       navigation.flag(
         tester,
+        find.byKey(const ValueKey('desktop-manage-profiles')),
+        focused: true,
+      ),
+      isTrue,
+    );
+    await tab(tester);
+    expect(
+      navigation.flag(
+        tester,
         find.bySemanticsLabel('Upper route control'),
         focused: true,
       ),
@@ -152,6 +161,15 @@ void main() {
       navigation.flag(
         tester,
         find.bySemanticsLabel('Upper route control'),
+        focused: true,
+      ),
+      isTrue,
+    );
+    await tab(tester, backwards: true);
+    expect(
+      navigation.flag(
+        tester,
+        find.byKey(const ValueKey('desktop-manage-profiles')),
         focused: true,
       ),
       isTrue,

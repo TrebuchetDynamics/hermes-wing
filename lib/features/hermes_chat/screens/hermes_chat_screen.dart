@@ -6,10 +6,14 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:wing/router/widgets/chat_workspace_overlay.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/client/hermes_api_client.dart';
+import '../../../core/hermes/client/hermes_api_config.dart';
+import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../core/hermes/models/hermes_chat_turn.dart';
 import '../../../core/hermes/models/hermes_health.dart';
@@ -27,6 +31,9 @@ import '../../profiles/providers/profile_selection_provider.dart';
 import '../../providers/widgets/model_picker_sheet.dart';
 import '../widgets/session_model_picker_sheet.dart';
 import '../widgets/chat_profile_picker.dart';
+import '../widgets/managed_ssh_connection_panel.dart';
+import '../widgets/platform_local_connection_panel.dart';
+import '../widgets/connection_information_help_dialog.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';
@@ -64,6 +71,7 @@ import '../presentation/hermes_turn_presentation_identity.dart';
 import '../presentation/hermes_transcript_viewport.dart';
 
 part 'widgets/hermes_chat_error.dart';
+part 'widgets/hermes_saved_endpoint_editor.dart';
 part 'widgets/hermes_chat_sessions.dart';
 part 'widgets/hermes_chat_status.dart';
 part '../presentation/hermes_chat_timeline.dart';
@@ -103,6 +111,12 @@ final hermesVoiceCaptureServiceProvider = Provider<VoiceCaptureService?>((ref) {
 final hermesAttachmentPickerProvider = Provider<Future<XFile?> Function()>(
   (_) => openFile,
 );
+
+final hermesEndpointTestClientProvider =
+    Provider<HermesApiClient Function(HermesApiConfig)>(
+      (_) =>
+          (config) => HermesApiClient(config: config),
+    );
 
 typedef HermesAgentTtsFactory =
     TextToSpeechService Function(HermesSpeechSynthesizer synthesize);
@@ -181,7 +195,7 @@ const _composerEmojis = [
 
 enum _ComposerMenuAction { sessions, handsFree, dictate }
 
-enum _HermesConnectionMode { local, remote, vpn, ssh }
+enum HermesConnectionMode { local, remote, vpn, ssh }
 
 enum _TranscriptCopyFormat { text, markdown }
 
@@ -288,12 +302,18 @@ class HermesChatScreen extends ConsumerStatefulWidget {
     this.voiceCaptureServiceOverride,
     this.textToSpeechServiceOverride,
     this.initiallyEditingConnection = false,
+    this.initialConnectionMode = HermesConnectionMode.remote,
+    this.onConnectionSaved,
+    this.onConnectionCancelled,
     super.key,
   });
 
   final VoiceCaptureService? voiceCaptureServiceOverride;
   final TextToSpeechService? textToSpeechServiceOverride;
   final bool initiallyEditingConnection;
+  final HermesConnectionMode initialConnectionMode;
+  final VoidCallback? onConnectionSaved;
+  final VoidCallback? onConnectionCancelled;
 
   @override
   ConsumerState<HermesChatScreen> createState() => _HermesChatScreenState();
@@ -326,6 +346,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   int _attachmentPickGeneration = 0;
   int _composerOwnerGeneration = 0;
+  int _draftVoiceGateGeneration = 0;
+  late final ProviderSubscription<bool> _draftVoiceGateSubscription;
   final Set<VoidCallback> _sessionMutationDisposals = {};
   final Set<VoidCallback> _sessionSettlementDisposals = {};
   final Set<VoidCallback> _queuedDialogDisposals = {};
@@ -348,6 +370,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       state.selectedProfileId,
       state.activeSessionId,
       _sessionRestorationUnsettled,
+      _canSendTurns(state),
     );
     if (_attachmentOwner == owner) return;
     _attachmentOwner = owner;
@@ -394,7 +417,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final LinkedHashSet<String> _unreadCompletedSessionIds = LinkedHashSet();
   bool _reconnectingOnResume = false;
   bool _reconnectInFlight = false;
-  _HermesConnectionMode _connectionMode = _HermesConnectionMode.remote;
+  ({int id, int form, int owner})? _connectionSavePending;
+  ({int form, int owner})? _connectionSaveFailure;
+  late HermesConnectionMode _connectionMode;
   late bool _editingConnection;
   bool? _requestedShellNavigationVisible;
   late Future<List<HermesEndpointConfig>> _endpointProfilesFuture;
@@ -466,12 +491,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _editingConnection = widget.initiallyEditingConnection;
+    _connectionMode = widget.initialConnectionMode;
     _connectionForm = HermesConnectionForm(
       normalizeBaseUrl: hermesPublicEndpointBaseUrl,
       sanitizeLabel: _safeHermesUiText,
       initialBaseUrl: _defaultHermesBaseUrl,
     )..addListener(_onConnectionFormChanged);
     _connectionForm.baseUrl.addListener(_onConnectionFormChanged);
+    _connectionForm.apiKey.addListener(_onConnectionFormChanged);
+    _connectionForm.label.addListener(_onConnectionFormChanged);
     _composerFocusNode = FocusNode(
       debugLabel: 'Hermes composer',
       onKeyEvent: (_, event) => _handleLocalSlashCommandKeyEvent(
@@ -521,6 +549,19 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       (_, channel) => _subscribeToChannel(channel),
       fireImmediately: true,
     );
+    _draftVoiceGateSubscription = ref.listenManual<bool>(
+      wingVoiceSettingsProvider.select(
+        (settings) => settings.continuousVoiceEnabled,
+      ),
+      (_, enabled) {
+        _draftVoiceGateGeneration++;
+        if (!enabled &&
+            _voiceInputController.capturing &&
+            !_voiceInputController.continuousEnabled) {
+          _voiceInputController.pause();
+        }
+      },
+    );
     _endpointProfilesFuture = _loadEndpointProfiles();
   }
 
@@ -558,6 +599,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     });
     WidgetsBinding.instance.removeObserver(this);
     _channelProviderSubscription.close();
+    _draftVoiceGateSubscription.close();
     _completionSoundSubscription.close();
     _voiceInputController.removeListener(_onVoiceInputChanged);
     _voiceInputController.dispose();
@@ -567,6 +609,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _sessionPins.removeListener(_onSessionPinsChanged);
     _sessionPins.dispose();
     _connectionForm.baseUrl.removeListener(_onConnectionFormChanged);
+    _connectionForm.apiKey.removeListener(_onConnectionFormChanged);
+    _connectionForm.label.removeListener(_onConnectionFormChanged);
     _connectionForm.removeListener(_onConnectionFormChanged);
     _connectionForm.dispose();
     _composerController.removeListener(_onComposerChanged);
@@ -589,10 +633,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     if (mounted) setState(() {});
   }
 
-  void _selectConnectionMode(_HermesConnectionMode mode) {
+  void _selectConnectionMode(HermesConnectionMode mode) {
     if (_connectionMode == mode) return;
-    if ((mode == _HermesConnectionMode.local ||
-            mode == _HermesConnectionMode.ssh) &&
+    _connectionForm.abandonAttempt();
+    if ((mode == HermesConnectionMode.local ||
+            mode == HermesConnectionMode.ssh) &&
         _connectionForm.baseUrl.text.trim().isEmpty) {
       _connectionForm.baseUrl.text = _hermesLocalBaseUrl;
     }
@@ -745,7 +790,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       text: draft,
       selection: TextSelection.collapsed(offset: draft.length),
     );
-    if (_usesDesktopKeyboardShortcuts) _composerFocusNode.requestFocus();
+    if (_usesDesktopKeyboardShortcuts ||
+        (kIsWeb && MediaQuery.sizeOf(context).width >= 720)) {
+      _composerFocusNode.requestFocus();
+    }
   }
 
   _ComposerDraftKey? _composerDraftKey(HermesChannelState state) {
@@ -1031,7 +1079,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       );
       if (!context.mounted || !admitted()) return;
       if (manage) {
-        context.go(AppRoutes.profiles);
+        ChatWorkspaceOverlay.open(context, AppRoutes.profiles);
       } else if (chosen != null &&
           channel.state.profiles.any((p) => p.id == chosen)) {
         switching = _switchProfile(context, channel, chosen);
@@ -1525,7 +1573,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
     final scaffold = Scaffold(
       appBar: AppBar(
-        leading: activeContact == null
+        leading: _editingConnection && widget.onConnectionCancelled != null
+            ? BackButton(onPressed: widget.onConnectionCancelled)
+            : activeContact == null
             ? null
             : IconButton(
                 key: const ValueKey('hermes-back-to-contacts'),
@@ -1634,7 +1684,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
             IconButton(
               key: const ValueKey('hermes-connect-another-gateway'),
               tooltip: strings.chatShellConnectAnotherGatewayTooltip,
-              onPressed: () => context.push(AppRoutes.enroll),
+              onPressed: () => context.push(AppRoutes.addHermes),
               icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
           if (!showingDirectory && canUseConnectedAgent) ...[
@@ -1761,7 +1811,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               refreshing: directory.refreshing,
               onRefresh: directory.refresh,
               onOpen: (id) => unawaited(_openGatewayContact(id)),
-              onConnect: () => context.push(AppRoutes.enroll),
+              onConnect: () => context.push(AppRoutes.addHermes),
               groupController: _chatGroupController,
             )
           : directory.restoringSessionId != null

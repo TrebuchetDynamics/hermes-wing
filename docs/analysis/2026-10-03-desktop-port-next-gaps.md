@@ -1,11 +1,14 @@
 # Desktop port: next bounded gaps and dependency boundaries
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Source audit for the accepted Desktop 1:1 product-port priority. This report proposes work; it does not implement it, qualify a platform, accept a card, or expand management permissions.
 
 ## Evidence and scope
 
 - Wing HEAD: `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f`; the inspected worktree is extensively dirty, so HEAD is **not** a snapshot of the inspected Wing content.
-- Desktop reference HEAD: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`. Its pre-existing deleted `.claude` configuration/skill entries were preserved. No fetch, checkout, installation, hook configuration or upstream edits were performed.
+- Desktop reference HEAD: `withdrawn reference revision`. Its pre-existing deleted `.claude` configuration/skill entries were preserved. No fetch, checkout, installation, hook configuration or upstream edits were performed.
 - Agent reference HEAD: `158fd638da1629c8e62caf9ade1515d162def8ab`; clean at initial inspection. This pins the available clone, not the installed/connected runtime or upstream latest release.
 - Read `CONTEXT.md`, `CONTRIBUTING.md`, all five living ADRs, security policy/threat model, route status and the first-wave plan. Its lane ownership explicitly reserves only this report for this audit [S1]. The shell collapse/expand implementation belongs to another lane and is deliberately not claimed or re-audited here.
 - Desktop's guide and `lat.md/sidebar-navigation.md` were read as reference intent. `lat` is not installed on PATH; no tooling/key setup was attempted. Live source, rather than graph prose, backs the findings below.
@@ -62,19 +65,19 @@ The product ADR explicitly says Wing Link is not the organizing principle or pre
 Paths are repository-relative; line ranges refer to inspected worktree content, not a guarantee against concurrent edits. Desktop calls describe client behavior, never an advertised connected-Agent contract.
 
 - **S1** `docs/plans/2026-10-03-desktop-port-first-wave.md:13-35` — lane ownership and evidence limits.
-- **S2** `hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:55-84` — view vocabulary, primary/footer destinations.
-- **S3** `hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:716-763` — New Chat and global session area.
-- **S4** `hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx:290-299` — Manage profiles action.
+- **S2** `withdrawn source citation` — view vocabulary, primary/footer destinations.
+- **S3** `withdrawn source citation` — New Chat and global session area.
+- **S4** `withdrawn source citation` — Manage profiles action.
 - **S5** `lib/shared/widgets/app_shell_presentation.dart:11-20` — current destination list.
 - **S6** `lib/features/hermes_chat/screens/state/hermes_chat_layout.dart:580-628` — Chat-local rail and existing action wiring.
 - **S7** `lib/features/hermes_chat/screens/hermes_chat_screen.dart:1477-1512` — profile/session/new-session header controls.
 - **S8** `docs/product/routes.md:5-21` — current route availability, not runtime acceptance.
-- **S9** `hermes-desktop/src/renderer/src/screens/Layout/SidebarSessionMenu.tsx:227-250` — ID copy versus Project menu.
-- **S10** `hermes-desktop/src/renderer/src/screens/Layout/SidebarSessionMenu.test.tsx:12-40` — inspected callback regression.
+- **S9** `withdrawn source citation` — ID copy versus Project menu.
+- **S10** `withdrawn source citation` — inspected callback regression.
 - **S11** `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart:1594-1660` and `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart:1717-1733` — details copy, menu and preview-limited ID.
-- **S12** `hermes-desktop/src/renderer/src/screens/Layout/ProfileSwitcher.tsx:70-170` — shortcut, filter, ordering, keyboard behavior and global activation caveat.
+- **S12** `withdrawn source citation` — shortcut, filter, ordering, keyboard behavior and global activation caveat.
 - **S13** `lib/features/hermes_chat/screens/hermes_chat_screen.dart:867-964` — current Chat picker.
-- **S14** `hermes-desktop/src/renderer/src/screens/Layout/SidebarRecentSessions.tsx:790-968` — Pinned/Projects/Chats disclosure, row actions and path-based Project selection.
+- **S14** `withdrawn source citation` — Pinned/Projects/Chats disclosure, row actions and path-based Project selection.
 - **S15** `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart:438-505`, `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart:1124-1185` and `lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart:1229-1258` — static headers, shared tile and date groups.
 - **S16** `test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart:1401-1436` — existing details-copy test intent.
 - **S17** `docs/adr/product.md:7-28` — port priority and management-plane role.

@@ -1,5 +1,7 @@
 # Provenance and Notifications Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Notifications remain a proposal, not automatically accepted port scope.
+
 > **For agentic workers:** Use executing-plans task-by-task. Notifications are a proposal deliverable only; no relay enrollment, infrastructure, external messages, or publishing are authorized.
 
 **Goal:** Make conversation ownership and supported actions obvious, and specify a private notification path without inventing Agent capabilities.

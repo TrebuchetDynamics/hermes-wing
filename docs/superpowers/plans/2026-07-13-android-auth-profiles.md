@@ -1,5 +1,7 @@
 # Android Scoped Auth and Profiles Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). This does not reactivate superseded Agent contract proposals.
+
 > **Status: superseded planning history (2026-08-14).** Supported Hermes Agent
 > releases were not modified with the proposed scoped enrollment or `/api/profiles`
 > contract. Current Wing uses Agent API capabilities plus the bounded Wing Link

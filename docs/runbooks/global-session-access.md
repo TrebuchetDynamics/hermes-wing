@@ -1,5 +1,8 @@
 # Global loaded-session access
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Task `t_1c1e6f37` adds a bounded expanded desktop/wide-web sidebar section.
 Implementation is completed and independently approved in same-card review run 169.
 The reviewer independently passed 75 focused tests and six compiled Chromium cases.
@@ -17,8 +20,20 @@ Both return to Chat only after a still-current acknowledged result. Pending work
 disables repeated input. Failures remain on the feature with generic, localized
 feedback; there is no automatic retry or deferred navigation-first action.
 
-This surface provides Open and New only. Chat retains search, pagination, pins,
-rename/delete/fork/export, its full rail, and its compact picker. Recents live
+The original loaded sidebar surface provides Open and New only. The later
+[global session modal](../quality/global-session-modal.md) exposes the existing
+session panel over feature routes through Sessions or Ctrl/Command+K. Search
+receives focus, Tab/Shift+Tab stays inside, and Escape/Close returns focus to the
+surviving opener. Local search adds no reads; Load more and management remain
+explicit and capability-gated. Exact activation returns to Chat after acknowledgement.
+Owner/resource/route loss rejects stale callbacks; cancellation/reopening never
+replays New, prompts or approvals. Chat retains its full rail and compact picker.
+The [adaptive panel receipt](../quality/global-session-modal-adaptive.md) adds
+compact/wide and short-window keyboard access at separate 200% text/zoom.
+The shared panel scrolls controls and rows together and reveals current focus
+after resize; Close remains outside that scroll surface. These presentation
+changes also apply to the Chat sheet. Neither receipt qualifies native/live
+or screen-reader behavior. Recents live
 inside the existing sidebar, not a third column. Collapse removes their focus
 and semantics and invalidates in-flight caller admission. Compact layouts retain
 existing Chat/Profiles/Connections/More route access; resize-back reprojects loaded
@@ -52,6 +67,11 @@ Shell presentation lifetime is not a new Chat/session domain lifetime.
 ## Verification
 
 ### Current snapshot limit
+
+The following source comparisons describe earlier maintenance snapshots, not
+fresh qualification of the later global modal. Its separate
+[receipt](../quality/global-session-modal.md) binds the current eight scoped files.
+Earlier shell/caller checks retain their historical attribution.
 
 The current `lib/shared/widgets/app_shell.dart` does not match the final manifest
 for `t_1c1e6f37`. Comparison with that task's retained branch shows changed sidebar
@@ -106,7 +126,7 @@ Native desktop, live generation, full suites and full parity remain unqualified.
 ### Retained delivery evidence
 
 Source baseline: `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f` plus the pre-existing
-dirty worktree. Desktop reference: `2ed89070bc6c9e8231a37bb55df8a7722a3776b8`,
+dirty worktree. Desktop reference: `withdrawn reference revision`,
 `Layout.tsx:716–763`, read-only. [Client ADR](../adr/client.md) and
 [API/state ADR](../adr/api-and-state.md) remain unchanged.
 

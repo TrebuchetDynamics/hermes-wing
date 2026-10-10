@@ -1,5 +1,8 @@
 # Maestro profile journeys
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Run the isolated profile suite on a dedicated Android device:
 
 ```bash
@@ -46,13 +49,13 @@ not included in the focused three-scenario runner.
 
 The local read-only Desktop checkout supplied these user outcomes:
 
-- [Profile switch and active chat](../../hermes-desktop/lat.md/sidebar-navigation.md):
+- [Profile switch and active chat](official-desktop-reference.md#withdrawn-evidence):
   align the selected profile and visible conversation while preserving other
   profiles' conversations. Wing checks this through its Profiles → Chat route.
-- [ProfileModal](../../hermes-desktop/src/renderer/src/components/profile/ProfileModal.tsx):
+- [ProfileModal](official-desktop-reference.md#withdrawn-evidence):
   edits and deletion use stable identity; canceled edits/deletion must preserve
   the resource. Wing retains its own explicit save and typed confirmation UI.
-- [Profile creation/deletion](../../hermes-desktop/src/main/profiles.ts):
+- [Profile creation/deletion](official-desktop-reference.md#withdrawn-evidence):
   clone configuration from an explicit source and protect default from deletion.
   Agent's [profile tests](../../hermes-agent/tests/hermes_cli/test_profiles.py)
   corroborate named-source configuration/persona cloning. Wing does not copy

@@ -1,5 +1,8 @@
 # M2 required-capabilities HTTP 403 recreation oracle
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Delivered change and boundary
 
 Card `t_df29f3c6`, task `DOC-M2-BOOTSTRAP-FORBIDDEN-ORACLE` adds the
@@ -15,7 +18,7 @@ recovery. Its typed HTTP 401/403 classification is authentication failure
 (`lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart`).
 The transport fixture rejects at that required read, rather than injecting a
 channel or directory state. No production defect was found or fixed.
-Permanent reference locations are `hermes-agent/` and `hermes-desktop/`; neither
+Permanent reference locations are `hermes-agent/` and `withdrawn source citation`; neither
 was edited. No deeper upstream contract change is claimed.
 
 ## Acceptance evidence
@@ -57,8 +60,8 @@ was edited. No deeper upstream contract change is claimed.
 ## Executed checks and receipts
 
 Tests and analyzer cwd:
-`/home/xel/git/gormes/hermes-wing/.task-evidence/t_df29f3c6/mirror`.
-Formatting and scope cwd: `/home/xel/git/gormes/hermes-wing`.
+`<repo>/.task-evidence/t_df29f3c6/mirror`.
+Formatting and scope cwd: `<repo>`.
 
 ```text
 flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded

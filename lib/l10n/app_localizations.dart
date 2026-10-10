@@ -94,6 +94,534 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatConnectionSaveUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to Hermes, but saving this connection could not be confirmed. Keep this form open and retry Add Hermes to connect and save again.'**
+  String get chatConnectionSaveUnconfirmed;
+
+  /// No description provided for @managedSshGenerateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate SSH key'**
+  String get managedSshGenerateKey;
+
+  /// No description provided for @managedSshUseGeneratedKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Use saved Wing key'**
+  String get managedSshUseGeneratedKey;
+
+  /// No description provided for @managedSshGenerateKeyConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a key on this device?'**
+  String get managedSshGenerateKeyConsentTitle;
+
+  /// No description provided for @managedSshGenerateKeyConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing keeps the private key in secure storage on this device. Only its public key is copied. Add that public key to the SSH account on your host. An existing Wing key is reused, never replaced.'**
+  String get managedSshGenerateKeyConsentBody;
+
+  /// No description provided for @managedSshGenerateKeyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Create or reuse key'**
+  String get managedSshGenerateKeyConfirm;
+
+  /// No description provided for @managedSshCopyPublicKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy public key'**
+  String get managedSshCopyPublicKey;
+
+  /// No description provided for @managedSshPublicKeyCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Public key copied'**
+  String get managedSshPublicKeyCopied;
+
+  /// No description provided for @managedSshGeneratedKeyStorageFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure key storage is unavailable. No key was selected. Retry or select your own key file.'**
+  String get managedSshGeneratedKeyStorageFailure;
+
+  /// No description provided for @managedSshGeneratedKeySelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing key selected'**
+  String get managedSshGeneratedKeySelected;
+
+  /// No description provided for @managedSshGeneratingKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating SSH key…'**
+  String get managedSshGeneratingKey;
+
+  /// No description provided for @connectionInformationHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection help'**
+  String get connectionInformationHelpTitle;
+
+  /// No description provided for @connectionInformationCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy instructions'**
+  String get connectionInformationCopy;
+
+  /// No description provided for @connectionInformationCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Public instructions copied. No connection values were included.'**
+  String get connectionInformationCopied;
+
+  /// No description provided for @connectionInformationCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy the instructions. You can select the help text instead.'**
+  String get connectionInformationCopyFailed;
+
+  /// No description provided for @connectionInformationClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get connectionInformationClose;
+
+  /// No description provided for @connectionInformationHelpText.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCAL — THIS DEVICE\nLinux: Wing checks ~/.hermes directory metadata. Another Hermes home is not a Project, current working directory or a binding to the running Agent. Discovery does not prove Agent is installed, running, authenticated or model-ready. Configure and start Agent yourself.\nAndroid: localhost and 127.0.0.1 refer to this phone, not your computer. Prepare Agent in Termux using official documentation. The official native Termux package is currently documented broken; a fresh install is not qualified by Wing.\n\nSSH — A NATIVE FORWARD\nHost/IP: use the computer\'s reachable hostname or IP provided by its administrator. SSH username: your account on that computer, not the Agent profile. User-run, non-secret Linux examples are whoami (account), hostname -I (candidate addresses) and ss -ltn (listening TCP ports). Addresses may not be reachable from this device. A listening port does not prove it is SSH: verify the actual SSH listener with the administrator.\nSSH port: 22 is a default, not a guarantee. Enter the actual SSH listener port. Review the host-key fingerprint through a trusted administrator before accepting. Authenticate using your SSH password or selected private key, with its passphrase if required. SSH authentication is separate from Agent authentication. For public-key authentication, have the host administrator add only your public key to that SSH account\'s authorized_keys. Never copy, share or install the private key on the host. These commands describe information lookup only, not setup actions.\nAgent port: 8642 is the default API port, but it is configurable. Enter the API listener port on the SSH host, not the SSH port. Wing forwards that listener; an SSH login does not prove Agent readiness.\n\nREMOTE — DIRECT AGENT API\nAgent URL: obtain the full HTTPS API URL from the host administrator, including the configured port or profile path when required. Do not guess an address from network location. A VPN does not replace Agent authentication.\nAgent API token: use the credential supplied separately through Agent-approved configuration. This is not an SSH password, provider key or dashboard token. Type it into the masked Agent token field. Never place secrets in the clipboard, QR codes, URLs or command arguments.\n\nCONNECTING\nConfigure an authenticated Agent API using official Agent documentation. Local uses http://127.0.0.1:8642 by default; that port is configurable on the host. Linux advanced local endpoint controls can select a different configured API endpoint. Android This phone uses the fixed loopback endpoint. Nothing in this help installs, starts, restarts or configures a service. Only an explicit Add Hermes action checks the connection; finishing guidance is not a connected or model-ready state. These copyable instructions contain no current form values or credentials.'**
+  String get connectionInformationHelpText;
+
+  /// No description provided for @platformLocalConnectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect directly to Hermes Agent on this device. Preparing Agent and discovering its home are separate from an authenticated connection.'**
+  String get platformLocalConnectBody;
+
+  /// No description provided for @platformLocalTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent API token'**
+  String get platformLocalTokenLabel;
+
+  /// No description provided for @platformLocalTokenHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent API authentication is required even on loopback. Enter your API token, not a provider key or SSH password.'**
+  String get platformLocalTokenHelper;
+
+  /// No description provided for @platformLocalHomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes home'**
+  String get platformLocalHomeTitle;
+
+  /// No description provided for @platformLocalHomeExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing checks ~/.hermes directory metadata on this device. Choose another Hermes home if needed. No files are read, and this choice is not saved or sent to Agent. A found directory does not prove an installation, running service, authentication or model readiness, or bind the running Agent to that home.'**
+  String get platformLocalHomeExplanation;
+
+  /// No description provided for @platformLocalHomeInspecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking default Hermes home…'**
+  String get platformLocalHomeInspecting;
+
+  /// No description provided for @platformLocalHomeFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Directory found — discovery only'**
+  String get platformLocalHomeFound;
+
+  /// No description provided for @platformLocalHomeMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes home was not found. Select another directory or prepare Agent separately.'**
+  String get platformLocalHomeMissing;
+
+  /// No description provided for @platformLocalHomeNotDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected location is not a directory.'**
+  String get platformLocalHomeNotDirectory;
+
+  /// No description provided for @platformLocalHomeUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not inspect this directory. Check access or choose another Hermes home.'**
+  String get platformLocalHomeUnreadable;
+
+  /// No description provided for @platformLocalHomeUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Directory inspection is unavailable on this platform.'**
+  String get platformLocalHomeUnsupported;
+
+  /// No description provided for @platformLocalChooseHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another Hermes home'**
+  String get platformLocalChooseHome;
+
+  /// No description provided for @platformLocalAdvancedEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced local endpoint'**
+  String get platformLocalAdvancedEndpoint;
+
+  /// No description provided for @platformLocalPhoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone'**
+  String get platformLocalPhoneTitle;
+
+  /// No description provided for @platformLocalPhoneBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare Hermes Agent in Termux yourself, then connect directly. Wing cannot inspect Termux files and does not install, configure, start or restart Agent. Loopback still requires authentication.'**
+  String get platformLocalPhoneBoundary;
+
+  /// No description provided for @platformLocalPackageWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Known package issue: official Agent documentation currently warns that native Termux is broken. Fresh installation may fail or produce a non-running package. Wing does not provide a tested fresh installer. Debian/proot is a separate, unqualified setup path.'**
+  String get platformLocalPackageWarning;
+
+  /// No description provided for @platformLocalPrepareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Termux and Agent'**
+  String get platformLocalPrepareTitle;
+
+  /// No description provided for @platformLocalPrepareBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Install or open Termux using its official guide. For a fresh Agent installation, read the package warning and current official documentation first. If Agent is already installed, check hermes --version and hermes doctor in Termux before continuing.'**
+  String get platformLocalPrepareBody;
+
+  /// No description provided for @platformLocalTermuxDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Termux installation guide'**
+  String get platformLocalTermuxDocs;
+
+  /// No description provided for @platformLocalAgentDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Agent Termux documentation'**
+  String get platformLocalAgentDocs;
+
+  /// No description provided for @platformLocalExistingAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent is installed — configure it'**
+  String get platformLocalExistingAgent;
+
+  /// No description provided for @platformLocalSkipGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent already running — skip guide'**
+  String get platformLocalSkipGuide;
+
+  /// No description provided for @platformLocalConfigureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Configure and start Agent'**
+  String get platformLocalConfigureTitle;
+
+  /// No description provided for @platformLocalConfigureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In Termux, run hermes setup to configure your provider and model. Follow Agent\'s API documentation to enable API_SERVER_ENABLED=true, set a strong API_SERVER_KEY in Agent-owned configuration, and use API_SERVER_HOST=127.0.0.1 and API_SERVER_PORT=8642. Never put credentials in command arguments or the clipboard. Run hermes gateway in the foreground and keep Termux open. Android may suspend or stop it. Continuing only records your choice; it does not verify readiness.'**
+  String get platformLocalConfigureBody;
+
+  /// No description provided for @platformLocalApiDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Official authenticated API setup'**
+  String get platformLocalApiDocs;
+
+  /// No description provided for @platformLocalStartedAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'I started Agent — continue to connection'**
+  String get platformLocalStartedAgent;
+
+  /// No description provided for @platformLocalAuthenticateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Connect to Agent'**
+  String get platformLocalAuthenticateTitle;
+
+  /// No description provided for @platformLocalAuthenticateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to http://127.0.0.1:8642 on this phone. Type the Agent API token into the masked field below, not a provider key or dashboard token. Connection is checked only when you choose Add Hermes; guide completion is not a connected state.'**
+  String get platformLocalAuthenticateBody;
+
+  /// No description provided for @platformLocalGuideBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to guidance'**
+  String get platformLocalGuideBack;
+
+  /// No description provided for @platformLocalDocumentationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the official documentation. Try again when a browser is available.'**
+  String get platformLocalDocumentationFailed;
+
+  /// No description provided for @platformLocalBrowserExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This platform cannot inspect the Agent host\'s Hermes home. Use the direct authenticated Agent API below. In a full browser, loopback refers to the browser\'s device; browser transport rules still apply.'**
+  String get platformLocalBrowserExplanation;
+
+  /// No description provided for @welcomeEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'HERMES WING'**
+  String get welcomeEyebrow;
+
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Hermes Wing'**
+  String get welcomeTitle;
+
+  /// No description provided for @welcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.'**
+  String get welcomeSubtitle;
+
+  /// No description provided for @welcomeGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get welcomeGetStarted;
+
+  /// No description provided for @welcomeLocalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a running local Hermes Agent. Nothing is installed automatically.'**
+  String get welcomeLocalHint;
+
+  /// No description provided for @welcomeOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get welcomeOr;
+
+  /// No description provided for @welcomeSsh.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect via SSH'**
+  String get welcomeSsh;
+
+  /// No description provided for @managedSshInvalidToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a bounded access token without spaces or control characters.'**
+  String get managedSshInvalidToken;
+
+  /// No description provided for @managedSshPrivateKeyChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key'**
+  String get managedSshPrivateKeyChoice;
+
+  /// No description provided for @managedSshPasswordChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get managedSshPasswordChoice;
+
+  /// No description provided for @managedSshSelectKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Select private key'**
+  String get managedSshSelectKey;
+
+  /// No description provided for @managedSshKeyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a private key for this connection attempt.'**
+  String get managedSshKeyRequired;
+
+  /// No description provided for @managedSshPassphrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Private-key passphrase'**
+  String get managedSshPassphrase;
+
+  /// No description provided for @managedSshPassphraseRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a passphrase of at most 4096 characters without null characters.'**
+  String get managedSshPassphraseRequired;
+
+  /// No description provided for @managedSshUnlockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not unlock this private key. Check its passphrase or select another key.'**
+  String get managedSshUnlockFailed;
+
+  /// No description provided for @managedSshKeyUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the selected private key. Select it again.'**
+  String get managedSshKeyUnreadable;
+
+  /// No description provided for @managedSshKeyTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected private key exceeds 64 KiB.'**
+  String get managedSshKeyTooLarge;
+
+  /// No description provided for @managedSshKeyUnsupportedFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'This private-key format is not supported. Select an OpenSSH, RSA or EC private key.'**
+  String get managedSshKeyUnsupportedFormat;
+
+  /// No description provided for @managedSshKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected file is not a valid supported SSH private key.'**
+  String get managedSshKeyInvalid;
+
+  /// No description provided for @managedSshSelectedKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected private key'**
+  String get managedSshSelectedKey;
+
+  /// No description provided for @managedSshAuthenticationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH authentication was rejected. Check your username and authentication choice, then retry.'**
+  String get managedSshAuthenticationFailed;
+
+  /// No description provided for @managedSshHostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH host'**
+  String get managedSshHostLabel;
+
+  /// No description provided for @managedSshPortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH port'**
+  String get managedSshPortLabel;
+
+  /// No description provided for @managedSshUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get managedSshUsernameLabel;
+
+  /// No description provided for @managedSshPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH password'**
+  String get managedSshPasswordLabel;
+
+  /// No description provided for @managedSshAgentPortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent port'**
+  String get managedSshAgentPortLabel;
+
+  /// No description provided for @managedSshAgentTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent access token (optional)'**
+  String get managedSshAgentTokenLabel;
+
+  /// No description provided for @managedSshConnectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect via SSH'**
+  String get managedSshConnectAction;
+
+  /// No description provided for @managedSshConnectingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting via SSH…'**
+  String get managedSshConnectingAction;
+
+  /// No description provided for @managedSshInvalidHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a host name or IP address, not a URL or command.'**
+  String get managedSshInvalidHost;
+
+  /// No description provided for @managedSshInvalidPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a port from 1 to 65535.'**
+  String get managedSshInvalidPort;
+
+  /// No description provided for @managedSshUsernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your SSH username.'**
+  String get managedSshUsernameRequired;
+
+  /// No description provided for @managedSshPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your SSH password.'**
+  String get managedSshPasswordRequired;
+
+  /// No description provided for @managedSshHostKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify SSH host'**
+  String get managedSshHostKeyTitle;
+
+  /// No description provided for @managedSshHostKeyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.'**
+  String get managedSshHostKeyBody;
+
+  /// No description provided for @managedSshTrustAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this connection'**
+  String get managedSshTrustAction;
+
+  /// No description provided for @managedSshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not establish the SSH connection. Check the host and authentication, then retry.'**
+  String get managedSshFailed;
+
+  /// No description provided for @managedSshUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed SSH is not available in this browser. Use Wing on Android or desktop.'**
+  String get managedSshUnsupported;
+
+  /// No description provided for @welcomeRemote.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Remote Hermes'**
+  String get welcomeRemote;
+
+  /// No description provided for @welcomeStorageRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved connections could not be read. Retry'**
+  String get welcomeStorageRetry;
+
   /// No description provided for @profilesSearchLabel.
   ///
   /// In en, this message translates to:
@@ -297,6 +825,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dictate a draft'**
   String get chatVoiceDictateAction;
+
+  /// No description provided for @chatVoiceCancelDraftAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel draft dictation'**
+  String get chatVoiceCancelDraftAction;
 
   /// No description provided for @chatVoiceDictateHint.
   ///
@@ -753,6 +1287,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading saved Hermes gateways'**
   String get chatSavedEndpointsLoading;
+
+  /// No description provided for @chatSavedEndpointEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit saved Agent connection'**
+  String get chatSavedEndpointEdit;
+
+  /// No description provided for @chatSavedEndpointEditBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit this saved connection only. Saving does not connect or change the active conversation. A changed Agent URL drops its Wing Link association.'**
+  String get chatSavedEndpointEditBody;
+
+  /// No description provided for @chatSavedEndpointReplacementKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Replacement Agent credential'**
+  String get chatSavedEndpointReplacementKey;
+
+  /// No description provided for @chatSavedEndpointKeyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to keep the saved credential only while the URL is unchanged. A changed URL needs its own credential. Saved credentials are never shown here.'**
+  String get chatSavedEndpointKeyHelp;
+
+  /// No description provided for @chatSavedEndpointRemoveKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved Agent credential'**
+  String get chatSavedEndpointRemoveKey;
+
+  /// No description provided for @chatSavedEndpointTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get chatSavedEndpointTest;
+
+  /// No description provided for @chatSavedEndpointCancelTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel test'**
+  String get chatSavedEndpointCancelTest;
+
+  /// No description provided for @chatSavedEndpointTestCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Test cancelled. No connection was saved or activated.'**
+  String get chatSavedEndpointTestCancelled;
+
+  /// No description provided for @chatSavedEndpointTestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported Agent discovery responded. No connection was saved or activated. This does not verify chat or inference permissions.'**
+  String get chatSavedEndpointTestSuccess;
+
+  /// No description provided for @chatSavedEndpointTestDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent discovery denied this credential. Check the draft and explicitly test again.'**
+  String get chatSavedEndpointTestDenied;
+
+  /// No description provided for @chatSavedEndpointTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent discovery could not be verified. Check the URL, network and credential, then explicitly test again.'**
+  String get chatSavedEndpointTestFailed;
+
+  /// No description provided for @chatSavedEndpointStale.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection owner or draft changed. Close this editor and open the saved connection again.'**
+  String get chatSavedEndpointStale;
+
+  /// No description provided for @chatSavedEndpointSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved connection updated. The active conversation is unchanged.'**
+  String get chatSavedEndpointSaved;
+
+  /// No description provided for @chatSavedEndpointSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save this connection. Check the URL and secure storage, then explicitly save again. Another saved host cannot be replaced by this edit.'**
+  String get chatSavedEndpointSaveFailed;
 
   /// No description provided for @chatSavedEndpointsLoadFailedTitle.
   ///
@@ -2168,6 +2786,18 @@ abstract class AppLocalizations {
   /// **'The selected model is no longer available. Choose a model from the current catalog.'**
   String get sessionModelSelectionUnavailable;
 
+  /// No description provided for @sessionModelIdentityNotReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes Agent does not report this session’s confirmed provider and model. Choose a model explicitly to change this session; cancelling leaves it unchanged.'**
+  String get sessionModelIdentityNotReported;
+
+  /// No description provided for @sessionModelChooseExplicitly.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a provider and model from the current catalog.'**
+  String get sessionModelChooseExplicitly;
+
   /// No description provided for @sessionModelResultCount.
   ///
   /// In en, this message translates to:
@@ -2563,6 +3193,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reasoning'**
   String get reasoningTitle;
+
+  /// No description provided for @chatReasoningThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get chatReasoningThinking;
+
+  /// No description provided for @chatReasoningThought.
+  ///
+  /// In en, this message translates to:
+  /// **'Thought'**
+  String get chatReasoningThought;
 
   /// No description provided for @localCommandsTitle.
   ///
@@ -3348,8 +3990,14 @@ abstract class AppLocalizations {
   /// No description provided for @enrollIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose where Hermes Agent will run. Wing will guide you through setup, pairing, and checking the connection.'**
+  /// **'Connect directly to an existing Hermes Agent using Local, SSH, or Remote. Installation and Wing Link pairing are optional, separate setup paths.'**
   String get enrollIntro;
+
+  /// No description provided for @enrollOptionalSetupAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional setup and pairing'**
+  String get enrollOptionalSetupAction;
 
   /// No description provided for @enrollPairHeading.
   ///
@@ -4110,7 +4758,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayContactsConnectAction.
   ///
   /// In en, this message translates to:
-  /// **'Add gateway or profile'**
+  /// **'Add Hermes'**
   String get gatewayContactsConnectAction;
 
   /// No description provided for @chatGroupsNewAction.
@@ -4990,8 +5638,14 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeLocalLabel.
   ///
   /// In en, this message translates to:
-  /// **'This device'**
+  /// **'Local'**
   String get chatLayoutConnectionModeLocalLabel;
+
+  /// No description provided for @chatLayoutConnectionPrimaryRemoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote'**
+  String get chatLayoutConnectionPrimaryRemoteLabel;
 
   /// No description provided for @chatLayoutConnectionModeRemoteLabel.
   ///
@@ -5008,7 +5662,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeSshLabel.
   ///
   /// In en, this message translates to:
-  /// **'SSH tunnel'**
+  /// **'SSH'**
   String get chatLayoutConnectionModeSshLabel;
 
   /// No description provided for @chatLayoutConnectionModeLocalBody.
@@ -5022,6 +5676,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.'**
   String get chatLayoutConnectionModeRemoteBody;
+
+  /// No description provided for @chatLayoutRemoteAuthExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect directly to a Hermes Agent endpoint with its Agent access token. Wing Link pairing is not required. A Wing Link token or provider API key is not an Agent access token.\n\nBrowser OAuth sign-in is not supported in Wing. An OAuth-only server cannot currently connect through this flow. If access is denied, check the endpoint and its Agent token with the server administrator, then retry explicitly or cancel. A denial does not identify the server\'s sign-in method.'**
+  String get chatLayoutRemoteAuthExplanation;
 
   /// No description provided for @chatLayoutConnectionModeVpnBody.
   ///
@@ -5140,7 +5800,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutTokenStorageBody.
   ///
   /// In en, this message translates to:
-  /// **'Your token is stored in secure device storage and is never shown after connecting.'**
+  /// **'Saving a connection uses secure device storage. Connecting alone does not confirm that your token was saved.'**
   String get chatLayoutTokenStorageBody;
 
   /// No description provided for @chatLayoutCredentialBoundaryTitle.
@@ -5710,7 +6370,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatShellConnectAnotherGatewayTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Add gateway or profile'**
+  /// **'Add Hermes'**
   String get chatShellConnectAnotherGatewayTooltip;
 
   /// No description provided for @chatShellSessionsLabel.
@@ -6180,6 +6840,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open or create. Manage sessions in Chat.'**
   String get shellSessionScope;
+
+  /// No description provided for @shellSessionSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}'**
+  String shellSessionSource(String source);
 
   /// No description provided for @shellNewSession.
   ///

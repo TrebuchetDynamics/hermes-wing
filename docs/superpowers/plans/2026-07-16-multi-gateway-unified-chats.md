@@ -1,5 +1,7 @@
 # Multi-Gateway Unified Chats Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Earlier contact-model receipts prove only their Wing behavior.
+
 > **Status: foundation implemented; preserved execution history.** The current
 > gateway directory and secure endpoint store implement the one-active-channel
 > contact model. Current profile discovery may also come from Wing Link's fixed

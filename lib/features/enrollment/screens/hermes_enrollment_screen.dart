@@ -10,6 +10,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
 import '../widgets/computer_setup_guide.dart';
 import '../widgets/enrollment_readiness.dart';
+import '../widgets/hermes_welcome.dart';
+import '../../hermes_chat/screens/hermes_chat_screen.dart';
+import '../../local_setup/providers/local_hermes_setup_provider.dart';
 import '../models/hermes_enrollment_payload.dart';
 import '../providers/hermes_enrollment_provider.dart';
 import '../services/hermes_connect_intent_source.dart';
@@ -253,14 +256,34 @@ class _HermesEnrollmentScreenState
     if (mounted && pair == true) _showPairing();
   }
 
-  void _openManualConnection() {
+  void _openManualConnection([
+    HermesConnectionMode mode = HermesConnectionMode.remote,
+  ]) {
     ref.read(hermesEnrollmentControllerProvider).cancel();
-    context.push(AppRoutes.addHermes);
+    context.push('${AppRoutes.addHermes}?mode=${mode.name}&welcome=1');
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(hermesEnrollmentControllerProvider);
+    if (_page == _EnrollmentPage.choose &&
+        _payloadError == null &&
+        controller.status == HermesEnrollmentStatus.idle) {
+      return Scaffold(
+        body: SafeArea(
+          child: HermesWelcome(
+            onConnect: _openManualConnection,
+            optionalSetup: ExpansionTile(
+              key: const ValueKey('hermes-welcome-optional'),
+              title: Text(
+                AppLocalizations.of(context).enrollOptionalSetupAction,
+              ),
+              children: [_chooserActions()],
+            ),
+          ),
+        ),
+      );
+    }
     return PopScope<Object?>(
       canPop:
           _page == _EnrollmentPage.choose ||
@@ -582,7 +605,7 @@ class _HermesEnrollmentScreenState
   Widget _chooserActions() {
     final s = AppLocalizations.of(context);
     final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final linux = !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
+    final linux = ref.watch(localLinuxSetupAvailableProvider);
     Widget choice(
       String key,
       IconData icon,

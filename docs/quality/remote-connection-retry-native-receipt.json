@@ -1,0 +1,2129 @@
+{
+  "status": "NATIVE_REMOTE_CONNECTION_RETRY_PASS",
+  "duration_seconds": 460.506,
+  "live_authentication": "NOT_CHECKED",
+  "physical_keychain": "NOT_CHECKED",
+  "source_archive": {
+    "filename": "executed-source.tar.gz",
+    "sha256": "642d00fae39e286d34ff71e34f79e2ea4a53bb420006bbd702ac85892fbb2d7e",
+    "bytes": 7657822,
+    "candidate_files": 759,
+    "captured_before_checks": true,
+    "missing_inputs": [],
+    "source_manifest_sha256": "0bddf698e09cfc4a81d072e547926f96849d3252d97ad8574809b853b6cea030"
+  },
+  "dependencies": {
+    "archive_sha256": "ea4844adb658d1d8b08e4b70b3ced9d29f7e1fbe7777155efc82da53d8aa0345",
+    "manifest_sha256": "9352b7bdb45fdfbf9d48af2f0bbaf9986bb65e7d5ff7332db4c7d1ec8a1e2060",
+    "package_config_sha256": "ab6e2eb80f7bb0d2918e65592ed93d5a59a6c99371ae239d6fb7eccb99e72ae0",
+    "plugins_sha256": "e18ab9af124424b64e6ba51d10fdba9ddf3aa3ba2d9884e8b2cdd4dbaddaab65"
+  },
+  "display": {
+    "authenticated": true,
+    "wrong_missing_authority_rejected": true,
+    "owned_group_gone": true
+  },
+  "isolated_state_deleted_after_teardown": true,
+  "renders": {
+    "auth-390.0-1.0.png": "18fa3e763ddfa3ef4e96370b2c40802a7f7b275169d94b82954ba2f419a0ce2a",
+    "auth-390.0-2.0.png": "8fc9e4f393219232ba7ebf719dbb79f5fe038d06a08d15b0c4461abfbd02e99b",
+    "auth-1280.0-2.0.png": "60d1acbd8e440480c9ecfa740df078fa1b292f2bdcce755b06165acea1db760b",
+    "connected-1280.0-2.0.png": "1c4bf5e2f78425db5aa1f11048d4228da51658d9c9c4f6c1f382d5b16873b1c5",
+    "uncertain-1280.0-2.0.png": "3010f8a32b443ae99e8f39f9ded91dd05045a3af3198a410f06c746cb45edc25",
+    "connected-1280.0-1.0.png": "9278ace58660ec92973ee4d6bcd3cfe16e3fb8c2cadfccf7d27825496e4a7699",
+    "connected-390.0-2.0.png": "23db00bc4a57a5988fd24a2b1295b528978c15e86d8fc214279c5fb7b7648a64",
+    "uncertain-390.0-2.0.png": "d02207f0116b93b5ee436fadc66dffc44ab4d74245130194d55faf178b0eafd0",
+    "uncertain-1280.0-1.0.png": "55a54094d839eed73ddee10a2bd9769a535dbff3f577108d13c72af1b279c8e1",
+    "connected-390.0-1.0.png": "6b572a8bc014d05e9a9fdac3ee32a680aad15a3799ed349e8c6c6b74d354244f",
+    "uncertain-390.0-1.0.png": "6b2649821412bbc6960709104ff75e73b1e398dfabeb1902badbd9ffc811dc94",
+    "auth-1280.0-1.0.png": "698ea8dd1e114de110359647b9388de871439168d38527946e21b8b111636afd"
+  },
+  "base_revision": "b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319",
+  "inherited_dirty_inputs": 115,
+  "evidence_directory": "build/t_2d93a7e9/attempt-k98schlk",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "test/tooling",
+        "-p",
+        "remote_connection_retry_native_test.py"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.133,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "bash",
+        "-n",
+        "scripts/run_linux_remote_connection_retry.sh"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.022,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "integration_test/linux_remote_connection_retry_test.dart",
+        "integration_test/support/remote_connection_retry_native_fixture.dart"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.133,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "flutter",
+        "analyze",
+        "--no-pub"
+      ],
+      "exit": 0,
+      "duration_seconds": 15.747,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart",
+        "test/features/enrollment/hermes_direct_first_run_test.dart",
+        "test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart"
+      ],
+      "exit": 0,
+      "duration_seconds": 28.179,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "-d",
+        "linux",
+        "integration_test/linux_remote_connection_retry_test.dart"
+      ],
+      "exit": 0,
+      "duration_seconds": 378.363,
+      "owned_group_gone": true
+    }
+  ],
+  "environment": {
+    "platform": "Linux x86_64 GTK X11 on owned authenticated Xvfb",
+    "flutter": "3.44.2",
+    "dart": "3.12.2",
+    "gtk": "3.24.41",
+    "gstreamer": "1.24.2",
+    "libsecret": "0.21.4",
+    "logical_keyboard_size_text_injection": true,
+    "physical_input_resize_text_settings": "NOT_CHECKED",
+    "prerequisite_archives": {
+      "libdw-dev_0.190-1.1ubuntu0.1_amd64.deb": "048a3e8444958a013545b7364c5bb339e665fccfd2f504bf5ea62bcaabf575d8",
+      "libelf-dev_0.190-1.1ubuntu0.1_amd64.deb": "81affb95c29f7323f2ae24386aaa1f61d311578e3e27c5f78ef7b7d55cd3cf49",
+      "libgcrypt20-dev_1.10.3-2ubuntu0.2_amd64.deb": "06cecc29957bdf1a2731dc74e12c64af7d8ef67798c9225aeb211f3d5b9f7f7c",
+      "libgpg-error-dev_1.47-3build2.1_amd64.deb": "54e6a40671bd698e260be85765429fe42111b2aac3357c89ee3e1d78a5379b7b",
+      "libgstreamer-plugins-base1.0-0_1.24.2-1ubuntu0.5_amd64.deb": "3c5826eee14cb5077c7e53707fbe86cc0882c787ffe79b330cad636c0009473d",
+      "libgstreamer-plugins-base1.0-dev_1.24.2-1ubuntu0.5_amd64.deb": "cd533bf6b8f92746c1ab0bb18b6932d59aaca686ffe25f2de7bfd8138934d0eb",
+      "libgstreamer1.0-0_1.24.2-1ubuntu0.1_amd64.deb": "306a6a5cff08630b79b8a68e5f888da7d8e209a452e9b5e24449cca95d8e71f5",
+      "libgstreamer1.0-dev_1.24.2-1ubuntu0.1_amd64.deb": "1beff145cb5fa0152eb145a9a9b97210c88108993887396fe926d14d952680c7",
+      "liborc-0.4-0t64_1%3a0.4.38-1ubuntu0.1_amd64.deb": "a546ca6e237748693596ba469e84a2e0581bc39113abc62b718931df00a4c682",
+      "liborc-0.4-dev_1%3a0.4.38-1ubuntu0.1_amd64.deb": "aad1da0ba4f0c1d992eea2549dd70461f40fdef8a82c7797a15bc099ef037e8d",
+      "libsecret-1-0_0.21.4-1build3_amd64.deb": "7d7263ffc92c33042328f99c93433a846e8d9e549876dab18ba18606e6541ecd",
+      "libsecret-1-dev_0.21.4-1build3_amd64.deb": "54d8d5bca0a94450723e4ca529e0fdfa98dacb5c5808336adcc724e07148e358",
+      "libunwind-dev_1.6.2-3build1.1_amd64.deb": "ede507c1da4f00f439fffd5e4dd08bda541331385fc949d6b67008a804649e8d"
+    },
+    "go": "go version go1.26.1 linux/amd64"
+  },
+  "journeys": [
+    {
+      "width": 1280.0,
+      "text_scale": 1.0,
+      "public_entry": true,
+      "denial_sanitized": true,
+      "explicit_keyboard_retry": true,
+      "connected_draft_retained": true,
+      "auth_connects": 1,
+      "auth_saves": 0,
+      "auth_profile": "default",
+      "auth_session": "synthetic-history",
+      "retry_connects": 1,
+      "retry_saves": 1,
+      "save_attempts": 6,
+      "save_commits": 3,
+      "profile": "synthetic-qa",
+      "session": "synthetic-history",
+      "late_cases": [
+        {
+          "reject": false,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": false,
+          "replacement": true,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": true,
+          "fenced": true
+        }
+      ],
+      "management_attempts": 0,
+      "mutation_attempts": 0,
+      "forbidden_read_attempts": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        }
+      ],
+      "denied_reads": [
+        {
+          "status": 401,
+          "path": "/v1/capabilities",
+          "profile": null
+        }
+      ]
+    },
+    {
+      "width": 1280.0,
+      "text_scale": 2.0,
+      "public_entry": true,
+      "denial_sanitized": true,
+      "explicit_keyboard_retry": true,
+      "connected_draft_retained": true,
+      "auth_connects": 1,
+      "auth_saves": 0,
+      "auth_profile": "default",
+      "auth_session": "synthetic-history",
+      "retry_connects": 1,
+      "retry_saves": 1,
+      "save_attempts": 6,
+      "save_commits": 3,
+      "profile": "synthetic-qa",
+      "session": "synthetic-history",
+      "late_cases": [
+        {
+          "reject": false,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": false,
+          "replacement": true,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": true,
+          "fenced": true
+        }
+      ],
+      "management_attempts": 0,
+      "mutation_attempts": 0,
+      "forbidden_read_attempts": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        }
+      ],
+      "denied_reads": [
+        {
+          "status": 401,
+          "path": "/v1/capabilities",
+          "profile": null
+        }
+      ]
+    },
+    {
+      "width": 390.0,
+      "text_scale": 1.0,
+      "public_entry": true,
+      "denial_sanitized": true,
+      "explicit_keyboard_retry": true,
+      "connected_draft_retained": true,
+      "auth_connects": 1,
+      "auth_saves": 0,
+      "auth_profile": "default",
+      "auth_session": "synthetic-history",
+      "retry_connects": 1,
+      "retry_saves": 1,
+      "save_attempts": 6,
+      "save_commits": 3,
+      "profile": "synthetic-qa",
+      "session": "synthetic-history",
+      "late_cases": [
+        {
+          "reject": false,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": false,
+          "replacement": true,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": true,
+          "fenced": true
+        }
+      ],
+      "management_attempts": 0,
+      "mutation_attempts": 0,
+      "forbidden_read_attempts": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        }
+      ],
+      "denied_reads": [
+        {
+          "status": 401,
+          "path": "/v1/capabilities",
+          "profile": null
+        }
+      ]
+    },
+    {
+      "width": 390.0,
+      "text_scale": 2.0,
+      "public_entry": true,
+      "denial_sanitized": true,
+      "explicit_keyboard_retry": true,
+      "connected_draft_retained": true,
+      "auth_connects": 1,
+      "auth_saves": 0,
+      "auth_profile": "default",
+      "auth_session": "synthetic-history",
+      "retry_connects": 1,
+      "retry_saves": 1,
+      "save_attempts": 6,
+      "save_commits": 3,
+      "profile": "synthetic-qa",
+      "session": "synthetic-history",
+      "late_cases": [
+        {
+          "reject": false,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": false,
+          "replacement": true,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": false,
+          "fenced": true
+        },
+        {
+          "reject": true,
+          "replacement": true,
+          "fenced": true
+        }
+      ],
+      "management_attempts": 0,
+      "mutation_attempts": 0,
+      "forbidden_read_attempts": 0,
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/v1/capabilities",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "default",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "default",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/profiles",
+          "query": {}
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "50",
+            "offset": "0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/sessions/synthetic-history/messages",
+          "query": {
+            "profile": "synthetic-qa",
+            "limit": "500",
+            "offset": "0",
+            "order": "latest"
+          }
+        }
+      ],
+      "denied_reads": [
+        {
+          "status": 401,
+          "path": "/v1/capabilities",
+          "profile": null
+        }
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "directory": "attempt-vij2j3lv",
+      "result": "FAIL",
+      "reason": "Missing provider import; analysis exit 1"
+    },
+    {
+      "directory": "attempt-dtefsqzg",
+      "result": "FAIL",
+      "reason": "Empty-only Add control used after saved contact; GTK exit 1"
+    },
+    {
+      "directory": "attempt-l3rhlx74",
+      "result": "INTERRUPTED",
+      "reason": "Foreground tool timeout at 420s; pending spinner awaited with pumpAndSettle; no passing receipt"
+    },
+    {
+      "directory": "attempt-risgx03c",
+      "result": "PASS_SUPERSEDED",
+      "duration_seconds": 460.822
+    },
+    {
+      "directory": "attempt-qb7yndec",
+      "result": "FAIL",
+      "reason": "Unsupported non-default advertised query context; GTK rejected fixture before save"
+    },
+    {
+      "directory": "attempt-c316tryg",
+      "result": "FAIL",
+      "reason": "Missing flow-control braces; analyzer lint exit 1"
+    },
+    {
+      "directory": "attempt-d5jcbmje",
+      "result": "PASS_SUPERSEDED_INCOMPLETE_GO_ATTRIBUTION",
+      "duration_seconds": 458.423
+    },
+    {
+      "directory": "attempt-mu4oavki",
+      "result": "FAIL",
+      "reason": "Disposable development prerequisites absent; read-only Go directories prevented teardown; owned leftover subsequently removed"
+    },
+    {
+      "directory": "attempt-9sstddtw",
+      "result": "FAIL",
+      "reason": "All focused checks/GTK passed, final source check rejected go.sum rewrite from download all"
+    },
+    {
+      "directory": "attempt-k98schlk",
+      "result": "PASS",
+      "duration_seconds": 460.506
+    }
+  ],
+  "render_inspection": {
+    "inspected": [
+      "uncertain-1280.0-1.0.png",
+      "uncertain-390.0-2.0.png",
+      "connected-390.0-2.0.png",
+      "auth-390.0-2.0.png"
+    ],
+    "result": "Recovery notice and Add Hermes readable; compact title and unsupported composer labels ellipsize; fixture history/profile visible."
+  },
+  "remaining": [
+    "live Agent authentication/generation/approval/Stop/relaunch",
+    "physical keychain persistence",
+    "automatic model-pair readback",
+    "managed SSH",
+    "protected-main delivery",
+    "full repository gate",
+    "physical keyboard/IME/OS resize/screen readers"
+  ],
+  "dependency_archive_verified_files": 17239,
+  "go_dependencies": {
+    "modules": [
+      {
+        "Path": "github.com/mdp/qrterminal/v3",
+        "Version": "v3.2.1",
+        "Sum": "h1:6+yQjiiOsSuXT5n9/m60E54vdgFsw0zhADHhHLrFet4=",
+        "GoModSum": "h1:jOTmXvnBsMy5xqLniO0R++Jmjs2sTm9dFSuQ5kpz/SU="
+      },
+      {
+        "Path": "golang.org/x/sys",
+        "Version": "v0.35.0",
+        "Sum": "h1:vz1N37gP5bs89s7He8XuIYXpyY0+QlsKmzipCbUtyxI=",
+        "GoModSum": "h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k="
+      },
+      {
+        "Path": "rsc.io/qr",
+        "Version": "v0.2.0",
+        "Sum": "h1:6vBLea5/NRMVTz8V66gipeLycZMl/+UlFmk8DvqQ6WY=",
+        "GoModSum": "h1:IF+uZjkb9fqyeF/4tlBoynqmQxUoPfWEKh921coOuXs="
+      },
+      {
+        "Path": "golang.org/x/term",
+        "Version": "v0.13.0",
+        "Sum": "h1:bb+I9cTfFazGW51MZqBVmZy7+JEJMouUHTUSKVQLBek=",
+        "GoModSum": "h1:LTmsnFJwVN6bCy1rVCoS+qHT1HhALEFxKncY3WNNh4U="
+      }
+    ],
+    "files": 677,
+    "archive_sha256": "a8806569d276e48b5ee36e044cb777ea24a1fb40bc40116c1f997ea5d2a20821",
+    "manifest_sha256": "f8efb3e0c4029037bbe8e5f8af3a4ee94573cf859741dc5de222fc0973a4c68a",
+    "toolchain": "go version go1.26.1 linux/amd64",
+    "isolated_module_cache": true,
+    "offline_readonly_build": true
+  },
+  "go_dependency_archive_verified_files": 677
+}

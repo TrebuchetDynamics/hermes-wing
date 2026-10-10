@@ -1,5 +1,10 @@
 # Hermes Desktop Capability Parity Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Rebuild the withdrawn mapping before executing reference-derived slices.
+
+> Reference correction: [official Desktop authority](../../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Deliver Hermes Desktop user outcomes in Hermes Wing through typed Hermes Agent APIs, reviewed Wing Link operations, and platform-native Flutter implementations without duplicating Agent state.
@@ -45,7 +50,7 @@ Hermes Agent 0.20 currently exposes read-only skills/toolsets/models and documen
 
 **Interfaces:**
 
-- Consumes: `hermes-desktop/README.md`, `hermes-desktop/src/renderer/src/screens/`, Wing route status, `HermesCapabilityDocument`, and `HermesSurfaceReadiness`.
+- Consumes: `withdrawn source citation`, `withdrawn source citation`, Wing route status, `HermesCapabilityDocument`, and `HermesSurfaceReadiness`.
 - Produces: one table mapping every Desktop screen/action to `implemented`, `read-only`, `contract-blocked`, or `local-native`, with the required exact API or host operation named for every non-implemented action.
 
 - [ ] **Step 1: Write the failing contract test**

@@ -77,7 +77,10 @@ test('daily seed preserves one owner through explicit model lock and authoritati
     assert.equal(lock.body.session_id, session);
     assert.equal(lock.body.runtime.model, pair.model);
     const metadata = await request(`/api/sessions/${session}?profile=default`);
-    assert.deepEqual(metadata.body.session.runtime, lock.body.runtime);
+    assert.equal(metadata.body.session.runtime, undefined);
+    assert.equal(metadata.body.session.model, pair.model);
+    assert.equal(metadata.body.session.has_model_config, true);
+    assert.deepEqual({ provider: lock.body.runtime.provider, model: lock.body.runtime.model }, pair);
     const inventory = await request('/api/sessions?profile=default&offset=0&limit=50');
     assert.equal(inventory.body.has_more, true);
     assert.ok(!inventory.body.data.some(item => item.id === session));
@@ -134,6 +137,28 @@ test('daily seed preserves one owner through explicit model lock and authoritati
     assert.ok(after.restoration.metadata_reads.some(read => read.returned_session_id === session));
     console.log(JSON.stringify({ synthetic: true, submits: after.submits.length,
       approvals: after.approvals.length, stops: after.stops.length, model_locks: after.model_locks.length }));
+    // Explicit reselection is a new acknowledged write, not metadata persistence.
+    assert.equal((await request(modelRoute, 'POST', pair)).status, 200);
+    assert.equal((await request('/v1/runs?profile=default', 'POST', {
+      session_id: session, message: 'Deterministic resumed prompt', input: 'Deterministic resumed prompt',
+    })).status, 202);
+    const continuation = await fetch(`${origin}/v1/runs/run_3/events?profile=default`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    const continuationEvents = await continuation.text();
+    assert.ok(continuationEvents.includes('run.completed'));
+    assert.ok(continuationEvents.includes('Deterministic fixture reply 3.'));
+    assert.ok(!continuationEvents.includes('approval.request'));
+    const resumed = (await request(control)).body;
+    assert.equal(resumed.submits.length - after.submits.length, 1);
+    assert.equal(resumed.model_locks.length - after.model_locks.length, 1);
+    for (const key of ['approvals', 'stops', 'unexpected_mutations']) {
+      assert.deepEqual(resumed[key], after[key]);
+    }
+    const history = (await request(`/api/sessions/${session}/messages?profile=default`)).body;
+    assert.ok(JSON.stringify(history).includes('canonical_run_3'));
+    assert.ok(JSON.stringify(history).includes('Deterministic fixture reply 3.'));
+    assert.equal((await request(`/api/sessions/${session}?profile=default`)).body.session.runtime, undefined);
   });
 });
 
@@ -162,7 +187,9 @@ test('daily model exception rejects wrong owners, raw pairs and unrelated domain
     assert.equal((await request(control, 'POST', { scenario: 'unknown' })).status, 400);
     assert.equal((await request(control, 'POST', { scenario: 'desktop-daily', extra: true })).status, 400);
     assert.deepEqual((await request(control)).body.model_locks, stable.model_locks);
-    assert.equal((await request(`/api/sessions/${session}?profile=default`)).body.session.runtime.model, pair.model);
+    const metadata = (await request(`/api/sessions/${session}?profile=default`)).body.session;
+    assert.equal(metadata.runtime, undefined);
+    assert.equal(metadata.model, pair.model);
     // The fixed receipt cap rejects before state mutation, not after recording.
     for (let i = 2; i < 128; i++) assert.equal((await request(modelRoute, 'POST', pair)).status, 200);
     assert.equal((await request(modelRoute, 'POST', pair)).status, 409);

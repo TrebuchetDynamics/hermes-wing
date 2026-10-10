@@ -4,6 +4,12 @@ Status: current decision
 
 ## Decision
 
+Wing Link is deprecated under the [product decision](product.md#wing-link-deprecation).
+The retained pairing, credentials and listener contracts below remain enforced
+until removal. Deprecation does not authorize deleting paired state, merging
+credentials, disabling trust checks or exposing Agent without authentication.
+Agent-only and native replacements must retain the relevant security properties.
+
 A pairing handoff may carry a random single-use pairing code in a QR code,
 `wing://connect` intent, explicit Android share, or the ephemeral local handoff
 page, which must use `Cache-Control: no-store`. The code expires after

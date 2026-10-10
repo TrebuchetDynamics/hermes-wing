@@ -1,0 +1,29 @@
+# Optional local evidence and generated analysis, not tracked product dependencies.
+# These targets exist in the inspected worktree and are Git-ignored.
+# Current tracked quality reports retain their scope and qualification limits.
+docs/README.md: link ../.task-evidence/t_4e4a4f7d/review-414.json
+docs/README.md: link ../.task-evidence/t_53f0d91e/report.md
+docs/README.md: link ../.task-evidence/t_d06ef06d/review-run/review-validation.json
+docs/analysis/understand-anything/README.md: link agent-graph.json
+docs/analysis/understand-anything/README.md: link conduit-graph.json
+docs/analysis/understand-anything/README.md: link desktop-graph.json
+docs/analysis/understand-anything/README.md: link tooling/summary.json
+docs/analysis/understand-anything/README.md: link wing-graph.json
+docs/analysis/understand-anything/README.md: path tools/understand-anything
+docs/spec.md: link ../.task-evidence/t_3a5135a8/review-398-validation.json
+docs/spec.md: link ../.task-evidence/t_4e4a4f7d/review-414.json
+docs/spec.md: link ../.task-evidence/t_cd72a5d5/review-404-validation.json
+docs/spec.md: link ../.task-evidence/t_cd72a5d5/review-404.md
+docs/test-plan.md: link ../.task-evidence/repo-docs-npm-test.log
+docs/test-plan.md: link ../.task-evidence/t_3a5135a8/review-398-npm-validation.json
+docs/test-plan.md: link ../.task-evidence/t_3a5135a8/review-398-validation.json
+docs/test-plan.md: link ../.task-evidence/t_3c5078de/review-validation.json
+docs/test-plan.md: link ../.task-evidence/t_41606eec/probes.json
+docs/test-plan.md: link ../.task-evidence/t_41606eec/validation.json
+docs/test-plan.md: link ../.task-evidence/t_4e4a4f7d/review-414.json
+docs/test-plan.md: link ../.task-evidence/t_53f0d91e/report.md
+docs/test-plan.md: link ../.task-evidence/t_b00feca2/review-440-tests.json
+docs/test-plan.md: link ../.task-evidence/t_bef84284/validation.json
+docs/test-plan.md: link ../.task-evidence/t_cd72a5d5/review-404-validation.json
+docs/test-plan.md: link ../.task-evidence/t_cd72a5d5/review-404.md
+docs/test-plan.md: link ../.task-evidence/t_d06ef06d/review-run/review-validation.json

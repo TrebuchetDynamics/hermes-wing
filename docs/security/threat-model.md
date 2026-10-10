@@ -2,6 +2,12 @@
 
 Status: alpha baseline; not an independent security assessment
 
+Wing Link is deprecated under the [product decision](../adr/product.md#wing-link-deprecation).
+Its legacy assets and attack boundaries remain relevant until code and packaging
+are retired. Removal must not erase paired state, merge credentials, expose Agent
+unauthenticated or add an unrestricted native command bridge. Reassess the native
+Linux discovery and Android setup surfaces as they are implemented.
+
 ## Assets
 
 - Hermes Agent and Wing Link credentials

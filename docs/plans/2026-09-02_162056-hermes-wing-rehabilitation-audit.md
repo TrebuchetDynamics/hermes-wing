@@ -1,5 +1,10 @@
 # Hermes Wing rehabilitation audit and verified-slice roadmap
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Retain the dated audit as Wing evidence, not official-app parity.
+
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 > Historical planning record. Findings, status, commands, and proposals below
 > describe the dated snapshot, not current support or authorization to expand
 > Wing Link. Follow the [living ADRs](../../docs/adr/README.md) and
@@ -13,7 +18,7 @@ Status: audit baseline complete; Slices 1-3 verified; next slice P0-002 run-id-o
 - Branch: `main`
 - HEAD: `5cd4400e582590e6d1d6337a2bbfc32291b36f0e`
 - Worktree: substantially dirty before this audit. The baseline included modified Flutter, localization, docs, test, asset, and Wing Link files plus untracked plans/specs. Those changes are pre-existing and must not be reset, cleaned, overwritten, staged, or attributed to this audit.
-- Upstream references: `hermes-agent/` and `hermes-desktop/` are read-only evidence. A route found in either source is not a supported Wing contract unless the connected Agent advertises the exact operation with compatible semantics and authorization.
+- Upstream references: `hermes-agent/` and `withdrawn source citation` are read-only evidence. A route found in either source is not a supported Wing contract unless the connected Agent advertises the exact operation with compatible semantics and authorization.
 - Historical plans, specs, screenshots, and receipts are leads. Current code, current tests, living ADRs, advertised capabilities, and fresh executable receipts are the authority.
 
 Commands captured before editing:

@@ -5,7 +5,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     stopApp: true
 - setOrientation: PORTRAIT
 - extendedWaitUntil:
-    visible: '(?s).*Message Hermes.*'
+    visible: '(?s)^Message .*[.…]$'
     timeout: 30000
 - takeScreenshot: chat-empty
 - runFlow: open.yaml

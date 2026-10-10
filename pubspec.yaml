@@ -25,6 +25,8 @@ dependencies:
   markdown: ^7.3.1
   file_selector: ^1.1.0
   crypto: ^3.0.7
+  dartssh2: ^4.1.0
+  pinenacl: 0.6.0
 
 dev_dependencies:
   flutter_test:
@@ -37,4 +39,5 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
+    - assets/branding/hermes-emblem.png
     - assets/config/termux_bootstrap.json

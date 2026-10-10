@@ -94,7 +94,7 @@ Future<void> main() async {
         ),
         routerProvider.overrideWithValue(fixture.router),
       ],
-      child: _FixtureApp(fixture: fixture),
+      child: fixture.buildApp(),
     ),
   );
 }
@@ -110,6 +110,7 @@ class FeatureFixture {
   late GoRouter router;
   final scale = ValueNotifier<double>(1);
   final reviewStep = ValueNotifier<int>(-1);
+  Widget buildApp() => _FixtureApp(fixture: this);
   static const reviewRoutes = [
     '/profiles',
     '/tools',
@@ -366,6 +367,8 @@ class FeatureFixture {
                 Text('Persona writes: ${channel.soulWrites}'),
                 Text('Deleted sessions: ${channel.deleteSessionCalls.length}'),
                 Text('Submitted turns: ${channel.submittedTurns}'),
+                Text('Stop calls: ${channel.stopActiveTurnCalls}'),
+                Text('Active session: ${channel.state.activeSessionId}'),
                 Text(
                   'Approval decisions: ${channel.respondToApprovalCalls.length}',
                 ),
@@ -389,6 +392,8 @@ class FeatureFixture {
                   'Secondary credential present: ${directory.configForGateway('secondary')?.apiKey?.isNotEmpty == true}',
                 ),
                 Text('Picker calls: ${interactions.pickerCalls}'),
+                Text('Picker pending: ${interactions.pendingPick != null}'),
+                Text('Picker completions: ${interactions.pickerCompletions}'),
                 Text('Emoji submitted: ${channel.emojiSubmitted}'),
                 Text('Text attachment sent: ${channel.textAttachmentSent}'),
                 Text('Image attachment sent: ${channel.imageAttachmentSent}'),

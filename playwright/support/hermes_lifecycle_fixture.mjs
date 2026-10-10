@@ -132,6 +132,15 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*' });
     const event = (name, payload) => res.write(`event: ${name}\ndata: ${JSON.stringify({ ...owner, ...payload })}\n\n`);
+    // The fixed daily continuation is a no-tool turn. Legacy approval/recovery
+    // scenarios retain their original behavior, including run_4 transport EOF.
+    if (fixture.scenario === 'desktop-daily' && run.id === 'run_3') {
+      terminal(run, 'completed', run.reply);
+      event('message.delta', { delta: run.reply });
+      event('run.completed', { status: 'completed' });
+      res.end('data: [DONE]\n\n');
+      return;
+    }
     event('message.delta', { delta: 'Synthetic streamed prelude.' });
     event('tool.started', { call_id: `tool_${run.id}`, tool: 'bash', preview: 'synthetic fixture tool' });
     if (run.id === 'run_4') {

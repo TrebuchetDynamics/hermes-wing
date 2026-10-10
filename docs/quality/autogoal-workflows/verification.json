@@ -1,0 +1,41 @@
+{
+  "checks": [
+    {
+      "name": "goal-selection",
+      "command": "python -m unittest discover -s <home>/.hermes/shared-skills/repo-docs/scripts -p \"test_goals.py\" -v",
+      "exit_code": 0,
+      "wall_seconds": 1.033,
+      "output": "test_add_task_registers_and_validates (test_goals.GoalsTests.test_add_task_registers_and_validates) ... ok\ntest_executed_pass_promotes_only_when_tasks_done (test_goals.GoalsTests.test_executed_pass_promotes_only_when_tasks_done) ... ok\ntest_fmt_is_byte_stable (test_goals.GoalsTests.test_fmt_is_byte_stable) ... ok\ntest_met_without_executed_evidence_is_invalid_then_downgraded (test_goals.GoalsTests.test_met_without_executed_evidence_is_invalid_then_downgraded) ... ok\ntest_next_orders_by_priority_then_status_and_respects_dependencies (test_goals.GoalsTests.test_next_orders_by_priority_then_status_and_respects_dependencies) ... ok\ntest_non_met_goal_without_open_task_is_invalid (test_goals.GoalsTests.test_non_met_goal_without_open_task_is_invalid) ... ok\ntest_render_replaces_only_the_marked_block (test_goals.GoalsTests.test_render_replaces_only_the_marked_block) ... ok\ntest_section_moves_task_out_of_selection (test_goals.GoalsTests.test_section_moves_task_out_of_selection) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.817s\n\nOK"
+    },
+    {
+      "name": "milestone-focus",
+      "command": "python -m unittest discover -s <home>/.hermes/shared-skills/repo-docs/scripts -p \"test_milestone_focus.py\" -v",
+      "exit_code": 0,
+      "wall_seconds": 0.633,
+      "output": "test_all_focused_tasks_precede_all_fallback_tasks (test_milestone_focus.MilestoneFocusTests.test_all_focused_tasks_precede_all_fallback_tasks) ... ok\ntest_clear_focus_restores_legacy_selection_and_is_idempotent (test_milestone_focus.MilestoneFocusTests.test_clear_focus_restores_legacy_selection_and_is_idempotent) ... ok\ntest_cli_focus_roundtrip_survives_fmt_and_task_mutations (test_milestone_focus.MilestoneFocusTests.test_cli_focus_roundtrip_survives_fmt_and_task_mutations) ... ok\ntest_focus_does_not_admit_done_decision_or_met_work (test_milestone_focus.MilestoneFocusTests.test_focus_does_not_admit_done_decision_or_met_work) ... ok\ntest_focus_json_query_is_read_only_before_and_after_setting (test_milestone_focus.MilestoneFocusTests.test_focus_json_query_is_read_only_before_and_after_setting) ... ok\ntest_focus_respects_task_and_goal_dependencies_before_falling_back (test_milestone_focus.MilestoneFocusTests.test_focus_respects_task_and_goal_dependencies_before_falling_back) ... ok\ntest_focused_next_beats_unrelated_now_without_changing_priorities (test_milestone_focus.MilestoneFocusTests.test_focused_next_beats_unrelated_now_without_changing_priorities) ... ok\ntest_legacy_ledger_keeps_shape_and_section_priority_status_order (test_milestone_focus.MilestoneFocusTests.test_legacy_ledger_keeps_shape_and_section_priority_status_order) ... ok\ntest_unknown_cli_focus_is_rejected_without_rewriting_ledger (test_milestone_focus.MilestoneFocusTests.test_unknown_cli_focus_is_rejected_without_rewriting_ledger) ... ok\ntest_validate_rejects_unknown_or_malformed_focus (test_milestone_focus.MilestoneFocusTests.test_validate_rejects_unknown_or_malformed_focus) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.521s\n\nOK"
+    },
+    {
+      "name": "worker-handoff",
+      "command": "python -m unittest discover -s <home>/.hermes/shared-skills/autogoal/scripts -p \"test_workflow_handoff.py\" -v",
+      "exit_code": 0,
+      "wall_seconds": 0.172,
+      "output": "test_body_separates_card_and_product_delivery (test_workflow_handoff.WorkflowHandoffTests.test_body_separates_card_and_product_delivery) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK"
+    },
+    {
+      "name": "native-handoff-regressions",
+      "command": "python <home>/.hermes/shared-skills/autogoal/scripts/test_goal_handoff.py",
+      "exit_code": 0,
+      "wall_seconds": 0.179,
+      "output": "....................\n----------------------------------------------------------------------\nRan 20 tests in 0.008s\n\nOK"
+    },
+    {
+      "name": "picker-policy",
+      "command": "python <home>/.hermes/shared-skills/autogoal/scripts/test_picker_policy.py",
+      "exit_code": 0,
+      "wall_seconds": 0.136,
+      "output": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK"
+    }
+  ],
+  "usage": "Token and monetary usage unavailable; no savings inferred.",
+  "scope": "Local orchestration regressions, not product/runtime qualification."
+}

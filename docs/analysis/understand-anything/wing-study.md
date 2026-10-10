@@ -1,5 +1,8 @@
 # Hermes Wing: current-source Understand Anything study
 
+> Reference correction: [official Desktop authority](../../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Verdict
 
 Wing already has a substantial production Chat path, not just a navigation prototype. Its strongest design is the enforced separation between Agent-owned domain state and Wing Link host management, combined with explicit asynchronous ownership fences. The highest-value next work is **closing current-source qualification and acceptance gaps**, not replacing transports or adding a generic administration framework.
@@ -11,7 +14,7 @@ The concrete small code candidate found here is **readiness-report authorization
 - Audience: maintainers and implementers deciding the next bounded slice.
 - Analysis timestamp: `2026-10-04T00:09:17Z` (UTC, obtained with `date -u`). Base HEAD: `ca149a82189c8c9e5abd98b376bfeae1e43f6f3f` (obtained with `git rev-parse HEAD`). **This is a dirty working-tree study, including modified and untracked source/tests; HEAD does not identify these contents.** The tree was not frozen atomically during inspection.
 - Read root AGENTS, CONTEXT, CONTRIBUTING, all five living ADRs, SECURITY, threat model, current routes and ROADMAP. Reviewed live core, Chat, Profiles, Tools, Settings, adjacent Providers/Schedules, Wing Link and nearest tests. [Living ADR index](../../../docs/adr/README.md) and [Contribution/validation rules](../../../CONTRIBUTING.md) remain authoritative over this generated map.
-- Excluded `hermes-agent/`, `hermes-desktop/`, `hermes-conduit/`, `tools/`, `vendor/`, `third_party/`, `build/` from Wing inventory and graph. Only the explicitly requested UA methodology/schema under tools was read as analysis tooling, never counted as Wing product code. No upstream contract or remote-latest verification is claimed.
+- Excluded `hermes-agent/`, `withdrawn source citation`, `hermes-conduit/`, `tools/`, `vendor/`, `third_party/`, `build/` from Wing inventory and graph. Only the explicitly requested UA methodology/schema under tools was read as analysis tooling, never counted as Wing product code. No upstream contract or remote-latest verification is claimed.
 - **Observed implementation** means source was inspected; **regression specified** means assertions/tests were inspected. Neither means those tests passed in this study. Roadmap/route receipts are attributed documentation claims, not independently rerun evidence.
 - No Flutter/Go/product runtime suites, live Agent/provider inference, physical Android, desktop app, service, microphone, store or release qualification were run. No private endpoints, credentials, transcript content or runtime logs were copied into either artifact.
 - Only this study and [wing-graph.json](wing-graph.json) were written by this task. No feature, roadmap, guide, upstream or unrelated dirty changes were altered; no staging or commits.

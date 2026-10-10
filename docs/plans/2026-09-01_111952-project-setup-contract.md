@@ -1,5 +1,7 @@
 # Hermes Project Setup Contract Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Historical contracts below do not authorize upstream changes or legacy expansion.
+
 > Historical planning record. Findings, status, commands, and proposals below
 > describe the dated snapshot, not current support or authorization to expand
 > Wing Link. Follow the [living ADRs](../../docs/adr/README.md) and

@@ -1,5 +1,8 @@
 # M2 exact-owner recovery read admission — 2026-10-06
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Card: `t_3c5078de`. Ledger task: `DOC-M2-RECOVERY-READ-ADMISSION`.
 Disposition: **bounded deterministic characterization delivered; unconditional recovery admission refused**.
 The exact completed-status + successful history path is demonstrated. Two current
@@ -12,7 +15,7 @@ An additional declared-history-grant control exposes an admission-policy gap.
 Agent is the authoritative data plane. Wing Link is neither involved nor a fallback.
 The read-only reference is `hermes-agent/`, HEAD
 `158fd638da1629c8e62caf9ade1515d162def8ab`; its root instructions were read before
-inspection. Desktop is the separately documented `hermes-desktop/` reference;
+inspection. Desktop is the separately documented `withdrawn source citation` reference;
 no Desktop source or runtime was needed for this HTTP contract slice.
 Wing branch is `main`, HEAD `4acdb4e1f51262ccfdca5174776eed1e3ef65188`.
 These revisions describe checkouts, not installed runtimes. Dirty source bytes

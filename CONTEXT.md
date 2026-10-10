@@ -1,8 +1,13 @@
 # Hermes Wing project context
 
-Hermes Wing is an independent Flutter client for Hermes Agent. Hermes Agent owns
-agent state. Wing Link is the authenticated remote management API that runs on
-the Hermes host.
+The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
+locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
+[withdrawn as official parity evidence](docs/quality/official-desktop-reference.md).
+Existing Wing test results do not establish parity with this corrected reference.
+
+Hermes Wing is a Flutter port of Hermes Desktop, not a separately designed client
+with similar features. Hermes Agent owns agent state. Wing Link is the deprecated
+legacy remote management API, retained until removal and never a prerequisite for Agent use.
 
 ## Product language
 
@@ -28,7 +33,8 @@ do not invent a Wing-owned profile `workdir`.
 opaque handles. It is not an unrestricted saved path.
 
 **Capability parity** — a 1:1 Hermes Desktop product port: feature coverage,
-navigation, terminology, interaction and recovery behavior are the reference.
+welcome, navigation, screen structure, terminology, layout, visual hierarchy,
+interaction and recovery behavior are the reference.
 Flutter/native implementation may differ; product deviations must be explicit.
 Parity is a delivery goal, not evidence of implemented or accepted behavior.
 
@@ -45,8 +51,8 @@ is reconciled on return.
   boundaries or left unavailable; see the
   [hard ADR](docs/adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
 - Prefer the advertised Hermes Agent API.
-- Use Wing Link only for host work or a reviewed typed compatibility operation
-  missing from the Agent API.
+- Wing Link is deprecated. New product flows must not use its host operations
+  or compatibility catalog. Preserve existing checks until consumer retirement.
 - Compatibility operations use fixed executable/argument shapes, bounded output,
   no shell, no global `profile use` or `project use`, and no shadow domain state.
 - Provider secrets are write-only and must not enter argv, responses, logs, or
@@ -59,7 +65,14 @@ is reconciled on return.
 
 ## Connections
 
-A paired host has two independent connections:
+Local / SSH / Remote must connect to Agent without Wing Link prerequisites.
+[Replacement requirements](docs/product/prd.md#connection-path-requirements)
+and [retirement work](TODO.md#now--next) distinguish intent from current code.
+
+### Retained legacy pairing
+
+The following contract describes deprecated code, not supported new-user setup.
+A legacy paired host has two independent connections:
 
 1. a Hermes Agent origin and profile-bound credential; and
 2. a Wing Link origin and management credential.
@@ -123,9 +136,14 @@ bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
 text, command arguments, and ordinary preferences. Recognized speech remains
 secret, and diagnostics must redact credentials, host paths, and content.
 
-## Setup catalog
+## Legacy setup catalog (pending retirement)
 
-Provider/model setup autocomplete uses Wing Link's typed, profile-scoped
+The retained compatibility contract below is not the new-product direction.
+New profile/model flows must use supported Agent contracts or explain missing
+capabilities. [The Profiles candidate](docs/quality/profiles-agent-only-follow-through.md)
+removes one consumer, but is not integrated into the canonical source.
+
+Legacy provider/model setup autocomplete uses Wing Link's typed, profile-scoped
 `model-options` read backed by Hermes Agent's advertised inventory. This approved
 setup exception returns display fields only, including unconfigured providers,
 without caching domain state or expanding provider mutation permissions. Chat,

@@ -1,5 +1,7 @@
 # Voice Ownership Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Voice tests retain their platform limits and do not establish official-app parity.
+
 > **For agentic workers:** Use executing-plans task-by-task. Checkboxes track future implementation; no commit, external mutation, or delegation authorization is implied.
 
 **Goal:** Make capture, send, assistant reply, playback, and interruption belong to one explicit conversation operation.

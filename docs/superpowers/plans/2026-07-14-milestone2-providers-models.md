@@ -1,5 +1,7 @@
 # Milestone 2 — Providers & Models Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). This does not reactivate superseded Agent contract proposals.
+
 > **Status: superseded planning history (2026-08-14).** The proposed
 > `/api/providers` and `/api/models/*` administration contract was not added to
 > supported Hermes Agent releases. Hermes Agent 0.20 advertises read-only

@@ -1,5 +1,7 @@
 # Hermes Wing Next Do/Test Roadmap
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Historical priorities below do not override the current roadmap.
+
 > **For Hermes:** Use subagent-driven-development and test-driven-development when executing this roadmap. Do not implement the deferred Nostr Relay Link.
 
 **Goal:** Turn the current broad, partially qualified Hermes Wing worktree into an honestly documented, physically verified Android alpha with a safe Hermes/Wing Link authority boundary, then expand installation, configuration, channels, voice, and platform support in that order.
@@ -283,9 +285,9 @@ Do not claim microphone capture, audible quality, acoustic echo cancellation, or
 ## Broad verification gate before an alpha release
 
 ```bash
-/home/xel/flutter/bin/dart format --output=none --set-exit-if-changed lib test integration_test
-/home/xel/flutter/bin/flutter analyze --no-pub
-/home/xel/flutter/bin/flutter test --concurrency=1
+<home>/flutter/bin/dart format --output=none --set-exit-if-changed lib test integration_test
+<home>/flutter/bin/flutter analyze --no-pub
+<home>/flutter/bin/flutter test --concurrency=1
 cd wing_link && go test ./... && go vet ./...
 ```
 

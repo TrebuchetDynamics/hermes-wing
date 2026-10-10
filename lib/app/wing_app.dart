@@ -45,7 +45,9 @@ class _WingMaterialAppState extends ConsumerState<_WingMaterialApp> {
   }
 
   void _openEnrollment(String _) {
-    if (mounted) ref.read(routerProvider).go(AppRoutes.enroll);
+    if (mounted) {
+      ref.read(routerProvider).go('${AppRoutes.enroll}?step=pair');
+    }
   }
 
   @override

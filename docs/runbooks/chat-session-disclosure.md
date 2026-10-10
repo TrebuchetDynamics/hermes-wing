@@ -1,5 +1,8 @@
 # Chat session section disclosure
 
+> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Chat's wide session rail and compact Sessions panel expose independent **Pinned**
 and **Chats** buttons over the already-loaded session inventory. Both start
 expanded. Pinned appears only when the current search/source filter has pinned
@@ -41,8 +44,8 @@ expanded by this change.
 ## Reference and intentional differences
 
 The read-only Desktop reference is
-[SidebarRecentSessions.tsx](../../hermes-desktop/src/renderer/src/screens/Layout/SidebarRecentSessions.tsx)
-at `2ed89070bc6c9e8231a37bb55df8a7722a3776b8` (Pinned disclosure around lines
+[SidebarRecentSessions.tsx](../quality/official-desktop-reference.md#withdrawn-evidence)
+at `withdrawn reference revision` (Pinned disclosure around lines
 791–823; Chats around 899–935). This is checkout evidence, not a latest-release
 or running Desktop claim. The reference's `lat` executable was unavailable;
 no tooling was installed or reference files changed.

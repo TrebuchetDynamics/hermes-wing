@@ -1,5 +1,7 @@
 # Approved Directory Browsing and Hermes Project Readiness Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Agent remains the Project authority; historical adapters do not define port scope.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a paired Hermes Wing client browse locally approved host folders through device-bound opaque handles, while keeping folder selection and Hermes Project creation unavailable until Hermes Agent exposes a released machine-readable Project mutation contract.

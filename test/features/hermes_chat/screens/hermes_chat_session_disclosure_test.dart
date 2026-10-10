@@ -55,6 +55,19 @@ void main() {
       find.byKey(const ValueKey('hermes-session-group-yesterday')),
       findsOneWidget,
     );
+    // Later date groups are lazily built below the short viewport.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('hermes-session-group-this-week')),
+      100,
+      scrollable: find.descendant(
+        of: list,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
+      ),
+    );
     expect(
       find.byKey(const ValueKey('hermes-session-group-this-week')),
       findsOneWidget,
@@ -486,7 +499,11 @@ void additionalCases(double width) {
             width < 600 ? 'hermes-sessions-list' : 'hermes-session-rail-list',
           ),
         ),
-        matching: find.byType(Scrollable),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -588,7 +605,11 @@ Future<DisclosureChannel> pumpChat(
             width < 600 ? 'hermes-sessions-list' : 'hermes-session-rail-list',
           ),
         ),
-        matching: find.byType(Scrollable),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
       ),
     );
   } else {

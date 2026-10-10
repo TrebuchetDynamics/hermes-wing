@@ -11,6 +11,7 @@ class InteractionFixture {
   String pickerMode = 'text';
   Completer<XFile?>? pendingPick;
   int pickerCalls = 0;
+  int pickerCompletions = 0;
   bool textExportMatches = false;
   bool markdownExportMatches = false;
   bool groupSaved = false;
@@ -64,6 +65,7 @@ class InteractionFixture {
       throw StateError('No pending fixture pick');
     }
     pending.complete(textFile());
+    pickerCompletions++;
     pendingPick = null;
   }
 

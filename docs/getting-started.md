@@ -1,67 +1,130 @@
 # Your first conversation with Hermes Wing
 
-This guide walks through **Wing on an Android phone and Hermes on a Linux
-computer**. It includes the build commands and explains where to run each step.
+Wing connects directly to Hermes Agent. **Wing Link is not required.**
+Wing Link is deprecated. This guide describes the existing direct path.
+Retained management procedures are not a supported new-user setup path.
+The development chooser implements Linux Hermes-home discovery and Android
+guided same-phone setup. Native discovery, chooser and phone setup remain
+unqualified.
 If the names are unfamiliar, start with [What is Hermes?](../README.md#what-is-hermes-agent).
+
+## Direct Agent connection
+
+Have a reachable Hermes Agent API and its approved profile-bound credential.
+Configure Agent and provider access through supported Agent procedures. See the
+[official Agent documentation](https://hermes-agent.nousresearch.com/docs/).
+Do not copy personal credentials or expose an API to a public interface to bypass
+setup. Remote native HTTP requires the existing explicit review and trusted
+encrypted network; browser access requires trusted HTTPS and permitted CORS.
+
+In the current development worktree:
+
+1. On a fresh launch, choose **Get Started** for Local, **Connect via SSH**, or
+   **Connect to Remote Hermes** from the welcome screen. With a saved connection,
+   choose **Add Hermes** from Chat. Older builds use **I have a QR code or pairing link**,
+   then **Connect one profile manually**. None of these direct paths needs pairing.
+2. For Linux Local, review default Hermes-home discovery or choose another folder;
+   this does not start Agent or bind its runtime to that folder. For Android Local,
+   follow **This phone** guidance or skip for an already-running Agent, then enter
+   its separate credential. For Remote, enter the Agent endpoint and credential.
+   **Help** explains how to obtain connection information and offers **Copy instructions**. For native SSH,
+   enter host, SSH port, username, a selected private key or password, Agent port and its separate access
+   token. Verify the host fingerprint before trusting the connection. Wing owns
+   the forward; no external tunnel or CLI QR is needed. This uses the direct
+   Agent channel, not Wing Link.
+3. Select the configured profile/session and supported model, then send one
+   deliberate message. A reply, not saved credentials alone, confirms generation.
+
+The development chooser keeps **Optional setup and pairing** separate from direct
+connection. The [first-run receipt](quality/direct-first-run.md) records passing
+widget and compiled Chromium checks on Linux, including explicit authentication
+retry without management requests. This pass inspects that evidence; it does not
+rerun those checks. The [native first-run receipt](quality/direct-first-run-native.md)
+also records Linux GTK fixture journeys. The
+[welcome recovery receipt](quality/desktop-welcome-recovery.md) adds keyboard
+Back/cancel, explicit connection retry and saved-owner restoration in a fresh
+Linux process. Its endpoint store is synthetic, not physical keychain proof.
+Main delivery, Android and live authentication remain open.
+The managed SSH form offers Private key and Password in this worktree. Choose
+a key file/document explicitly and enter its passphrase when required. Selected
+imported keys are attempt-scoped, not saved. Alternatively, choose **Generate SSH key**,
+review consent, then **Copy public key**. Add only that public key to the SSH
+account on the host; never share the private key. Wing retains the generated key
+in secure storage and **Use saved Wing key** deliberately selects it again.
+Existing valid generated keys are reused, not replaced. Storage failure prevents
+selection; there is no plaintext fallback. Cancel does not delete an already-created key.
+Saved SSH connection relaunch remains planned. Browser SSH is unsupported. Native Linux
+and Android full-app SSH authentication remain NOT_CHECKED; terminal login is not
+app qualification. See the
+[key-UX plan](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations).
+Missing Agent APIs leave their features unavailable, not a Wing Link requirement.
+
+Remote HTTPS and VPN use the Agent access token, not a Wing Link token or provider
+API key. Browser OAuth sign-in is unsupported. An OAuth-only server cannot use
+this flow. If access is denied, confirm the endpoint and Agent token with the
+server administrator. Then retry explicitly or cancel. A denial does not identify
+the server's sign-in method. The [explanation receipt](quality/remote-auth-explanation.md)
+records widget and Linux GTK fixture checks, not live authentication or Android qualification.
+
+Legacy pairing controls remain in development code pending removal. Do not use
+them as a prerequisite or substitute for a missing Agent capability.
+
+## Repair a saved direct connection
+
+In the current development worktree, open **Add Hermes**, then choose
+**Edit saved Agent connection** on the saved row. This does not switch Chat.
+
+1. Edit the Agent endpoint or enter an obscured replacement credential.
+   Saved credentials are not prefilled. A blank replacement retains the credential
+   only when the canonical Agent URL is unchanged. A changed URL never reuses that
+   credential and removes the saved Wing Link association. Supply its credential
+   separately if authentication requires one.
+2. Choose **Test** for direct read-only capabilities discovery. Test does not
+   save, connect Chat or prove generation. Cancel discards late test feedback;
+   it does not recall an already dispatched request.
+3. Choose **Save** to update that saved connection, or **Cancel** to discard the
+   draft. A save error keeps the draft for explicit retry. Successful Save means
+   local persistence, not remote readiness; connect deliberately afterwards.
+
+The [editor receipt](quality/saved-endpoint-edit.md) records passing widgets and
+compiled Chromium fixtures. The [native editor receipt](quality/saved-endpoint-edit-native.md)
+also records passing Linux GTK fixture journeys with fake endpoint storage.
+The later [real-storage receipt](quality/saved-endpoint-storage-native.md) records
+passing isolated Linux GTK secure-storage repair, explicit retry after write denial
+and persistence across two processes. It qualifies its frozen candidate, not every
+keyring failure or later editor change. Android and live authentication remain
+unqualified. Complete credential guidance and Test/Save outcomes are keyboard
+focus stops in the later [feedback correction](quality/saved-endpoint-feedback-accessibility.md).
+New outcomes receive focus and scroll into view. Use Page Down when the text
+exceeds the dialog viewport, then Tab to return to actions. Linux GTK fixture
+checks cover compact/wide windows at 100/200% text, not screen readers or the
+real-storage backend after this editor change. This workflow requires no Wing Link connection.
 
 ## What you need
 
-The main path is **Hermes on a Linux computer, Wing on your Android phone**.
+- A running, reachable Hermes Agent and its approved profile-bound credential.
+- A Wing build for the chosen platform. The web alpha supplies the interface,
+  not an assistant, provider account or model.
+- A configured provider and model. Model access and credits are not included.
+  Your provider may charge for use and process conversation data.
+- A trusted connection. Remote browser access needs trusted HTTPS and permitted
+  CORS. Native remote access must satisfy the existing transport review.
 
-- **A Linux computer that stays on.** It runs the assistant. Your phone needs to
-  be able to reach it while you chat.
-- **The Wing app.** Android is the most exercised version. Web and desktop
-  versions are available too, with different setup requirements.
-- **Access to an AI provider and model.** The provider supplies the AI service;
-  the model is the particular AI that generates replies. Hermes' wizard helps
-  you choose and enter the required sign-in or credential.
-- **A private connection between the devices.** The phone setup uses NetBird or
-  Tailscale, which connect your devices through an encrypted private network.
-  Set up one of them on both devices before pairing.
-
-Wing is MIT-licensed open-source software. **Model access and provider credits
-are not included.** Your provider may charge for use, and conversation data may
-be sent to the provider you configure.
-
-<details>
-<summary><strong>Technical requirements for the person setting this up</strong></summary>
-
-The tested host path uses Linux with a working **systemd user session** (the
-service manager for your account), Git, `curl`, **Go 1.26 or newer**
-([Go installation guide](https://go.dev/doc/install)), and internet access.
-
-Building Wing requires **Flutter 3.44.2** and the tools for the chosen platform.
-Follow the [Flutter installation guide](https://docs.flutter.dev/install) and,
-for a phone build, [Android setup](https://docs.flutter.dev/platform-integration/android/setup).
-This alpha still requires terminal work; someone comfortable with development
-tools may need to help with the initial installation.
-
-</details>
+Agent installation and provider configuration belong to the
+[official Agent documentation](https://hermes-agent.nousresearch.com/docs/).
+Wing does not require a Wing Link service, token or pairing bootstrap.
 
 <a id="your-first-conversation"></a>
 <a id="get-the-client"></a>
-
-## Getting started
-
-### 1. Get Wing ready
-
-For the Android path, build and open Wing using the instructions below. Then
-choose where the assistant will run:
-
-- **Use another computer:** follow steps 2–4 below for a Linux computer.
-- **Use this phone:** follow the [phone-only tutorial](#same-phone-android--termux)
-  using Termux and the repository's setup script.
-
+<a id="getting-started"></a>
 <a id="build-the-alpha-from-source"></a>
 
-<details>
-<summary><strong>Build and open Wing on Android</strong></summary>
+## Build and open the client
 
-On your development computer, install Flutter 3.44.2 and the Android development
-tools linked above. Connect your phone with USB debugging enabled, authorize the
-computer on the phone, and run `flutter doctor` to check your tools.
-
-Then run in a terminal:
+Use Flutter 3.44.2 and the development tools for your chosen platform. See
+[contributor setup](../CONTRIBUTING.md#setup) and the
+[Flutter installation guide](https://docs.flutter.dev/install).
+For Android, enable USB debugging and authorize your development computer.
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/hermes-wing.git
@@ -71,230 +134,91 @@ flutter devices
 flutter run -d <device-id>
 ```
 
-Replace `<device-id>` with the phone's ID from `flutter devices`, without the
-angle brackets. These commands build and launch Wing; the next step sets up the
-assistant itself.
+Replace `<device-id>` with a target listed by `flutter devices`. These commands
+build and launch Wing. They do not install Agent or configure provider access.
+For Linux packaging, `./scripts/install_linux.sh` builds the client and creates
+`hermes-wing` in `~/.local/bin`. Add that directory to `PATH` if needed.
 
-</details>
-
-**Just want to open the interface?** [Launch the web alpha](https://trebuchetdynamics.github.io/hermes-wing/app/).
-It does not supply an assistant. Connecting through a browser also requires
-trusted HTTPS and permission for the Wing website to reach your Hermes computer
-(CORS). See [connection help](#need-help).
+[Open the web alpha](https://trebuchetdynamics.github.io/hermes-wing/app/) to inspect
+its interface. Chat still needs your reachable Agent and browser connection access.
 
 <a id="connect-your-agent"></a>
 <a id="pair-a-phone-or-another-computer"></a>
 
-### 2. Set up the assistant on your computer
+## Start the conversation
 
-Run this step **on the Linux computer that will run Hermes**, not in the phone
-app. Wing Link installs Hermes or reuses a supported existing installation. Then
-Hermes' setup wizard asks which provider and model to use.
-
-<details>
-<summary><strong>Show the computer setup commands</strong></summary>
-
-If the repository is not already on this computer:
-
-```bash
-git clone https://github.com/TrebuchetDynamics/hermes-wing.git
-cd hermes-wing
-```
-
-Otherwise, open a terminal in the existing `hermes-wing` folder. Run:
-
-```bash
-./install-wing-link.sh
-export PATH="$HOME/.local/bin:$PATH"
-hermes setup
-```
-
-The installer prepares the connections Wing needs and starts Hermes if needed.
-It leaves an already-running gateway undisturbed. In the wizard, choose your
-provider and model and enter any required credential directly there.
-
-If your existing Hermes setup already has a working provider and model, skip
-`hermes setup`. Use `--release` with the installer to select a published Wing
-Link alpha instead of building the checkout; this is for the host helper, not a
-phone app download.
-
-</details>
-
-**Before continuing:** setup should finish without an error, and your assistant
-should have a provider and model selected. A provider credential is a secret for
-accessing your AI service. Do not paste it into pairing links or GitHub issues.
-
-### 3. Connect your phone
-
-**Pairing** gives Wing permission to connect to your Hermes installation.
-With both devices on your NetBird or Tailscale network, run this command on the
-Linux computer:
-
-```bash
-wing-link pair
-```
-
-**Leave that terminal open.** On the phone, choose **I have a QR code or pairing
-link**, paste the connection text from the terminal, review the computer's
-identity and requested access, and confirm. Compare the displayed fingerprint
-with the host's value; it is the identity check for that computer.
-
-Use `wing-link pair --qr` if you prefer to scan a QR code from the computer's
-screen. The pairing code expires after five minutes; run the command again if
-it expires. Pairing may restart Hermes when it prepares the network connection.
-
-### 4. Have your first conversation
-
-Open **Default**, or another configured profile, and send:
-
-> Reply with one sentence introducing yourself. Do not use any tools.
-
-**You are ready to chat when an assistant reply appears.** Try a follow-up such
-as “Make that introduction shorter.” Keep it in the same conversation.
-
-“Paired” means your connection was saved. It does not guarantee that your
-provider can answer yet. If you connect but get no reply, check provider/model
-setup on the computer before pairing again.
+Use the [direct connection steps](#direct-agent-connection). Select the configured
+profile and session, then deliberately select a supported model when requested.
+Send a short message and check for an assistant reply. Saved credentials and a
+successful connection probe do not prove that generation works.
 
 ## Common questions
 
 ### Do I need to know or install Hermes first?
 
-No prior Hermes knowledge is needed to follow the guide. Wing Link can install
-Hermes for you, and it reuses a supported existing installation. You still need
-to complete the initial computer, app, and provider setup.
+No prior Hermes knowledge is required, but Wing needs a running Agent. Follow
+supported Agent installation and provider setup before connecting. Wing's current
+Local discovery does not start Agent or prove that installation is ready.
 
 ### Does my computer need to stay on?
 
-Yes, when that computer is running Hermes. It must remain on and reachable for
-the phone to use the assistant. Closing Wing does not move Hermes onto the phone.
+Yes, when that computer runs Agent. It must remain reachable while you chat.
+Closing Wing does not move Agent onto the phone.
 
 <a id="same-phone-android--termux"></a>
 
 ### Can everything run on the phone instead?
 
-Yes, experimentally, on an ARM64 Android phone with **Termux**, a terminal app.
-Hermes Agent does the assistant's work; Wing Link prepares its local connection;
-Wing is where you chat. You run the installer in Termux yourself.
-
-1. Open Wing and choose **Use this phone**. Install Termux using the linked
-   official installation guide, then open it once.
-2. Follow the [script download steps](runbooks/android-termux-local-agent.md#install-from-this-repository).
-   If you already have this repository checked out inside Termux, open its
-   `hermes-wing` folder and run:
-
-   ```bash
-   bash install-termux.sh
-   ```
-
-   The script installs required packages, downloads and verifies the pinned
-   installers, and prepares Hermes Agent and Wing Link. Keep Termux in the
-   foreground. The first run builds Wing Link and can take a while.
-3. When setup prints its local `/open` link, tap it, choose **Open Hermes Wing**,
-   review the host and requested access, and confirm pairing.
-4. Configure a provider and model. For the existing Default profile, run
-   `hermes setup` in Termux. To configure a new profile in Wing, follow the
-   [profile setup steps](runbooks/android-termux-local-agent.md#hermes-profile-configuration),
-   including local approval and pairing again for that profile when required.
-5. Open the configured profile in Wing and send a short message. An assistant
-   reply confirms that model access works; a saved pairing alone does not.
-
-Keep Termux running while you use the assistant. If Android stops it, return to
-Termux and rerun `bash install-termux.sh` from the folder containing the script.
-If setup fails, read the error before retrying; do not remove the integrity checks.
-See [Termux recovery](runbooks/android-termux-local-agent.md#recovery).
-To install the script’s reviewed Hermes revision again, run
-`bash install-termux.sh --update-hermes` in Termux. Ordinary reruns reuse a healthy
-Hermes installation.
-The script was tested on a physical Samsung phone with an existing Hermes
-installation: both normal setup and `--update-hermes` completed through pairing
-without changing configuration. See the [physical test report](quality/termux-entrypoint-physical-2026-09-05.md).
-Installation into an empty Termux environment and persistent background hosting
-remain unverified.
+Guided same-phone Android setup is accepted replacement work, not a qualified
+installation or background-hosting path. The current **This phone** guidance can
+lead into direct connection to an already-running Agent. Retained Termux scripts
+still include deprecated management setup and are not the recommended path.
+Do not treat their historical pairing receipts as Agent-only installation proof.
 
 ### Can I use the same computer for Wing and Hermes?
 
-Yes. For the Linux desktop path, build Wing with `./scripts/install_linux.sh`,
-then start it with `hermes-wing`. The installer creates the command in
-`~/.local/bin`; add that directory to `PATH` if needed.
-Use `wing-link pair --local` for pairing on that same computer.
+Yes. Run Agent through supported Agent procedures and open Wing on that computer.
+Use Local to enter its approved loopback endpoint and separate Agent credential.
+No management pairing is needed.
 
 ### What are profiles, sessions, and runs?
 
-A **profile** is a named assistant setup; start with Default. A **session** is
-one conversation and its history. A **run** is the assistant working on one
-request. An **approval** asks you to decide whether an action may proceed.
-“Gateway” in Wing's connection controls refers to a saved Hermes connection.
+A **profile** is a named assistant setup. A **session** is a conversation and its
+history. A **run** is Agent working on a request. An **approval** asks you to decide
+whether an action may proceed. Agent owns these resources.
 
 <a id="when-a-connection-needs-attention"></a>
 
 ## Need help?
 
-- **`wing-link` is not found:** try `~/.local/bin/wing-link inspect` on the Linux
-  computer, or add `~/.local/bin` to `PATH`.
-- **Phone cannot connect:** check that the computer is on, Hermes is running,
-  and both devices are on the private network. `127.0.0.1` means the device you
-  are using, so that address on the phone does not point to your computer.
-- **Connected, but no answer:** check the provider's credentials and model choice
-  with `hermes setup` on the computer. A saved connection alone is not a chat test.
-- **A profile change is waiting for approval:** review `wing-link approvals list`
-  locally on the Hermes computer, approve the exact request, then retry it
-  unchanged in Wing.
-- **Web app opens but cannot connect:** your Hermes computer must accept HTTPS
-  the browser trusts and explicitly allow the Wing website to contact it (CORS).
-  A native phone build can use Wing Link's certificate-review flow instead.
+- **Cannot connect:** check that Agent is running and the endpoint is reachable
+  from the Wing device. `127.0.0.1` refers to that device, not another computer.
+- **Access denied:** confirm the Agent endpoint and token with its administrator.
+  Retry explicitly or cancel. OAuth-only authentication is unsupported here.
+- **Connected, but no answer:** check the configured provider/model through
+  supported Agent procedures. A saved connection alone is not a generation test.
+- **Web interface cannot connect:** Agent must offer browser-trusted HTTPS and
+  explicitly permit the Wing website through CORS. Do not bypass browser trust.
+- **Saving failed:** distinguish live connection from confirmed persistence.
+  Use the explicit save retry or [saved-connection repair](#repair-a-saved-direct-connection).
+- **Operation unavailable:** inspect the connected Agent's exact capability.
+  Do not install deprecated management software to simulate missing support.
 
-[Full connection troubleshooting](runbooks/android-hermes-setup.md) ·
-[Profile guide](product/gateway-profile-management.md) ·
-[Report a problem](https://github.com/TrebuchetDynamics/hermes-wing/issues)
-
-When reporting a problem, include the platform, what you tried, and what happened.
-Keep credentials, pairing links, and private conversations out of reports.
+[Report a problem](https://github.com/TrebuchetDynamics/hermes-wing/issues) with
+platform, actions and visible result. Keep credentials, private endpoints and
+conversations out of reports.
 
 ## Your data and permissions
 
-Hermes keeps your assistant's state on its computer; your selected AI provider
-may also process conversation data. Wing connects directly to Hermes for chat
-and separately to Wing Link for computer management. Hermes remains the source of truth.
-The two connections use separate credentials stored through platform secure storage.
+Agent remains the source of truth for assistant state. Your chosen provider may
+process conversation data. Wing connects directly to Agent and stores credentials
+through platform secure storage. Secure-storage qualification varies by platform.
+Retained legacy management credentials remain separate until migration; this
+guide does not delete them or authorize changing personal runtime state.
 
-Pairing links carry a short-lived, single-use code, never your bearer credential.
-Review the computer identity before confirming. Sensitive Wing Link actions still
-require local approval on the Hermes computer.
+Server state wins after reconnect. Wing must not silently resend prompts,
+approvals or configuration changes. Confirm destructive or sensitive actions
+explicitly. There has been no independent security audit.
 
-<details>
-<summary><strong>Connection security and advanced setup</strong></summary>
-
-Wing Link is the authenticated remote management API for installation, pairing,
-lifecycle, health, and diagnostics. It does not forward Agent chat traffic.
-Its HTTP listeners are loopback-only; remote listeners use TLS 1.3. Native Wing
-pins the reviewed key; browser clients require normally trusted HTTPS. Server
-state wins after reconnect, and administrative changes are not silently replayed.
-
-Today, Wing Link's Agent-domain compatibility surface covers fixed profile
-list/create/clone/rename/delete and transactional new-profile setup.
-Through this compatibility path, existing-profile credential edits remain blocked;
-general provider operations are planned. Hermes Project creation is not shipped.
-The folder picker returns only child folders under locally approved roots through
-opaque handles, never file names, file metadata, or file contents.
-
-For custom VPN selection, follow the [full setup runbook](runbooks/android-hermes-setup.md),
-including listener configuration and restart steps. Its fixed Agent command is:
-
-```bash
-hermes config set --force platforms.api_server.extra.host <trusted-vpn-ip>
-```
-
-Follow that guide when setting `WING_HERMES_URL` and `WING_LINK_URL`; never bind
-the Agent API to a public interface. Manual Agent URL/token entry connects one
-profile only and does not import Wing Link management.
-
-[Wing Link contract](product/wing-link.md) · [Security policy](../SECURITY.md) ·
-[Threat model](security/threat-model.md)
-
-</details>
-
-There has been no independent security audit.
-
-
-[Back to the project overview](../README.md) · [All documentation](README.md)
+[Security policy](../SECURITY.md) · [Threat model](security/threat-model.md) ·
+[Project overview](../README.md) · [All documentation](README.md)

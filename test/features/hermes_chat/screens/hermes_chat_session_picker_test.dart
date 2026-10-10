@@ -122,6 +122,29 @@ final pickerRows = find.descendant(
   matching: find.byType(ListTile),
 );
 
+Future<void> selectModel(WidgetTester tester, String model) async {
+  await tester.tap(find.byKey(ValueKey('session-model-synthetic/$model')));
+  await tester.pumpAndSettle();
+}
+
+void expectExplicitSelection(WidgetTester tester) {
+  expect(
+    find.text('Choose a provider and model from the current catalog.'),
+    findsOneWidget,
+  );
+  expect(
+    tester
+        .widget<FilledButton>(
+          find.ancestor(
+            of: find.text('Use for session'),
+            matching: find.byType(FilledButton),
+          ),
+        )
+        .onPressed,
+    isNull,
+  );
+}
+
 Future<void> confirm(WidgetTester tester) async {
   await tester.ensureVisible(find.text('Use for session'));
   await tester.tap(find.text('Use for session'));
@@ -136,9 +159,9 @@ void main() {
     final channel = PickerChannel();
     addTearDown(channel.dispose);
     await open(tester, channel);
-    await tester.tap(
-      find.byKey(const ValueKey('session-model-synthetic/model-b')),
-    );
+    expectExplicitSelection(tester);
+    expect(channel.submissions, 0);
+    await selectModel(tester, 'model-b');
     await confirm(tester);
     expect(channel.lockSessionModelCalls, [
       {'sessionId': 'sess_1', 'provider': 'synthetic', 'model': 'model-b'},
@@ -201,10 +224,9 @@ void main() {
     final channel = PickerChannel();
     addTearDown(channel.dispose);
     await open(tester, channel);
-    expect(
-      find.text('Selected: Synthetic (synthetic) — model-a'),
-      findsOneWidget,
-    );
+    expectExplicitSelection(tester);
+    expect(channel.submissions, 0);
+    await selectModel(tester, 'model-a');
     await confirm(tester);
     expect(channel.lockSessionModelCalls.single['sessionId'], 'sess_1');
   });
@@ -274,7 +296,7 @@ void main() {
     ),
   ]) {
     testWidgets(
-      'unconfirmed or mismatched session lock uses catalog fallback ${lock.sessionId}/${lock.accepted}',
+      'unconfirmed or mismatched session lock requires explicit selection ${lock.sessionId}/${lock.accepted}',
       (tester) async {
         final channel = PickerChannel();
         addTearDown(channel.dispose);
@@ -282,10 +304,9 @@ void main() {
           channel.state.copyWith(sessionModelLocks: {'sess_1': lock}),
         );
         await open(tester, channel);
-        expect(
-          find.text('Selected: Synthetic (synthetic) — model-a'),
-          findsOneWidget,
-        );
+        expectExplicitSelection(tester);
+        expect(channel.submissions, 0);
+        await selectModel(tester, 'model-a');
         await confirm(tester);
         expect(channel.lockSessionModelCalls.single['model'], 'model-a');
       },
@@ -332,6 +353,7 @@ void main() {
         final channel = PickerChannel();
         addTearDown(channel.dispose);
         await open(tester, channel);
+        await selectModel(tester, 'model-a');
         final original = channel.state;
         channel.replace(switch (change) {
           'profile' => original.copyWith(selectedProfileId: 'other'),
@@ -363,6 +385,7 @@ void main() {
     final channel = PickerChannel()..pending = Completer<void>();
     addTearDown(channel.dispose);
     await open(tester, channel);
+    await selectModel(tester, 'model-a');
     await confirm(tester);
     channel.replace(channel.state.copyWith(activeSessionId: 'other-session'));
     channel.pending!.complete();

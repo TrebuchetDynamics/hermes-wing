@@ -1,5 +1,35 @@
 # Routes
 
+The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
+locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
+[withdrawn as official parity evidence](../quality/official-desktop-reference.md).
+Existing Wing test results do not establish parity with this corrected reference.
+
+Profiles has an [Agent-only removal candidate](../quality/profiles-agent-only-follow-through.md)
+on an isolated branch. It removes one legacy consumer, not the canonical route
+implementation described below. Fixture results, full-analysis failure, native/live
+qualification, review and main delivery remain distinct.
+
+Required direction: first-run Local / SSH / Remote connects directly to Agent
+without requiring Wing Link installation, pairing or credentials. The route table
+below describes current code, including unmerged worktree changes. `/enroll`
+now shows the Desktop-guided welcome with Get Started and SSH/Remote actions
+before optional setup/pairing. Fresh `/hermes` entry resolves secure saved ownership
+before exposing the shell. The [welcome receipt](../quality/desktop-welcome.md)
+records widget/Chromium qualification. The [welcome recovery receipt](../quality/desktop-welcome-recovery.md)
+adds isolated Linux GTK keyboard cancellation, sanitized denial, deliberate retry
+and fresh-process owner restoration. Android, live authentication, physical
+keychain and protected-main delivery remain unqualified. The
+[first-run receipt](../quality/direct-first-run.md) records bounded widget/Chromium
+qualification on Linux. The [native first-run receipt](../quality/direct-first-run-native.md)
+adds Linux GTK fixture proof, not main delivery, Android or live authentication. Native managed SSH key/password UI is
+implemented with focused regressions; full native SSH qualification remains open.
+Missing Agent APIs remain explicitly unavailable. Wing Link management routes are
+deprecated but still implemented. Their authorization remains enforced until
+removal; they never gate a supported direct Agent connection. Linux Hermes-home
+discovery and Android guided same-phone setup remain replacement work, not current
+route qualification.
+
 Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles, and Connections in the compact bottom bar and places the other working slices in More. Desktop and wide web separate **Workflow** (Chat, Office, Schedules) from **Utilities** (Providers, Connections, Tools, Profiles, Persona, Settings) in the sidebar. All nine working destinations remain explicit, named and route-selected when expanded or icon-only; short windows scroll the groups while keeping the collapse control available. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands. See the [desktop navigation runbook](../runbooks/desktop-navigation-groups.md) for evidence and deliberate Desktop differences.
 
 | Route          | Android placement | Purpose                                                                                                                                                                                                                                                                                            | State       |
@@ -10,7 +40,7 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/tasks`       | More              | Gateway-scoped scheduled-job inventory with refresh and recovery. Agent mutation routes are not yet advertised as exact scoped operations, so create/edit/pause/run/delete controls and Kanban remain hidden.                                                                                                                                                                  | partial     |
 | `/profiles`    | Profiles              | Profile inventory and lifecycle, Agent-backed provider/model autocomplete through Wing Link during setup, plus approved child-folder browsing through device-bound opaque handles (`/agents` redirects for compatibility). Project creation remains unavailable until Hermes Agent advertises a suitable machine-readable operation; Project-aware Chat is separately gated. | partial     |
 | `/soul`        | More              | Standalone profile persona editor, available only when the selected Agent advertises exact scoped SOUL read/write operations.                                                                                                                                                                  | partial     |
-| `/enroll`      | (deep link)       | Guided phone/computer setup, QR/link pairing, transaction recovery, and endpoint-bound readiness checks outside the shell; advanced manual connection remains available within pairing.                                                                                                                                                                                                                                               | implemented |
+| `/enroll`      | (deep link)       | Desktop-guided welcome with Get Started and SSH/Remote actions before optional phone/computer setup and QR/link pairing outside the shell; pairing retains transaction recovery, endpoint-bound readiness checks and manual Agent fallback. Bounded Linux widget/Chromium and GTK fixture first-run checks pass; main delivery, Android and live authentication remain open.                                                                                                                                                                                                                                               | implemented |
 | `/setup/local` | enrollment        | Platform-specific guided local setup: qualified Linux service flow or unqualified Android/Termux Tier 2 explicit bootstrap; no command bridge.                                                                                                                                                     | partial     |
 | `/providers`   | More              | Capability-gated provider inventory, write-only API-key management, credential validation, runtime-model inventory, and model assignment through advertised Agent operations. OAuth providers are labeled as host sign-in rather than opening an API-key form; remote OAuth and multi-credential flows remain contract-gated.                                                            | partial     |
 | `/tools`       | More              | Gateway-scoped searchable installed-skill metadata and resolved toolsets with exact-scoped refresh; mutation, MCP administration, and discovery remain contract-gated.                                                                                                                             | partial     |
@@ -20,12 +50,26 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Chat's shared connection form now groups **Local**, **SSH** and
+**Remote** as three primary choices. Remote contains **Remote HTTPS** and VPN /
+NetBird / Tailscale subchoices. Selecting SSH does not launch OpenSSH. The
+[entry-label receipt](../quality/connection-entry-labels.md) records bounded
+widget and compiled-browser checks, not native/Android qualification. Existing setup/enrollment
+routes are reused. Route presence does not establish managed SSH or remote OAuth.
+See the [connection comparison](desktop-connection-paths.md) and
+[requirements](prd.md#connection-path-requirements).
+
 Expanded desktop/wide-web sidebars also expose **Loaded sessions** with exact
 **Open** and explicit **New Session** actions from working feature routes. This
 bounded surface uses only the current owner's loaded inventory and navigates to
 Chat after acknowledged success; collapse removes its controls from focus and
-semantics. Compact Chat retains the full route-local picker. Search, pins,
-pagination and management remain in Chat, not this global section. Executor
+semantics. Compact Chat retains the full route-local picker. The later
+[global session modal](../quality/global-session-modal.md) adds Sessions and
+Ctrl/Command+K over feature routes. It reuses loaded search, pins, explicit
+pagination and gated management without mounting Chat or adding opening reads.
+Escape/Close restores focus; exact activation navigates only after acknowledgement.
+Its deterministic widget/Chromium evidence does not qualify native/live use or
+screen readers. The original loaded-section executor
 verification and independent same-card review on `t_1c1e6f37` are complete (review run 169).
 This does not qualify native desktop execution or the full daily workflow. See the
 [global session access runbook](../runbooks/global-session-access.md) for ownership,
@@ -160,6 +204,12 @@ management capability or native/live/screen-reader qualification; see the
 New-profile setup explains inherited configuration and shows naming rules before
 submission. Chat labels the host and names the selected profile in the composer.
 The composer menu exposes **Dictate a draft** without requiring a long press.
+The wide composer also places a keyboard-operable **Dictate a draft** button
+between attachment and model controls. **Cancel draft dictation** discards pending
+recognition and preserves the draft; Send and hands-free remain separate actions.
+Owner or voice-gate changes reject stale callbacks and late recognition. See the
+[bounded delivery evidence](../quality/chat-direct-dictation.md); browser recovery
+is qualified only for unavailable capture, not physical recognition.
 Hands-free voice shows simultaneous listening and playback with separate labeled
 controls. After interruption, **Resume hands-free** requires an explicit tap and
 waits for teardown; **Continue in text** dismisses the notice. See the

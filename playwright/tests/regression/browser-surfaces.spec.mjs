@@ -19,27 +19,20 @@ async function openConnected(page, route) {
   await page.evaluate(() => globalThis.wingE2EHermesConnect());
 }
 
-test("Hermes empty state opens secure web enrollment", async ({ page }) => {
+test("Hermes empty state opens direct Agent connection", async ({ page }) => {
   await open(page, "/hermes");
-  await page
-    .getByRole("button", { name: "Add gateway or profile" })
-    .first()
-    .click();
-
   await expect(
-    page.getByRole("heading", { name: "Connect to Hermes" }),
+    page.getByRole("heading", { name: "Welcome to Hermes Wing", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /I have a QR code or pairing link/ }).click();
-  await expect(
-    page.getByRole("button", { name: "Connect one profile manually" }),
-  ).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(
-    0,
-  );
+  await page.getByRole("button", { name: "Connect to Remote Hermes", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: /^Hermes Agent URL/ })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "Remote", exact: true })).toBeChecked();
+  await expect(page.getByRole("button", { name: "Paste pairing link" })).toHaveCount(0);
 });
 
 test("enrollment guides computer setup back to pairing", async ({ page }) => {
   await open(page, "/enroll");
+  await page.getByRole("button", { name: /Optional setup and pairing/ }).click();
   await page.getByRole("button", { name: /Use another computer/ }).click();
   await expect(page.getByText("Set up Wing Link and pair")).toBeVisible();
   const installCommand = page.getByText(

@@ -1,5 +1,1100 @@
 # Documentation and goal-ledger maintenance
 
+Latest correction: [OmniRoute retirement follow-through](../../todo.archive.md#omniroute-retirement-documentation-follow-through--2026-10-10).
+Current design, verification, Unreleased history and the existing security successor
+no longer require deleted installer inputs. Source retirement is committed on main;
+this pass does not qualify its runtime checks or promote SECURITY. Connection focus,
+worker leases, resolved owner decisions and historical failures remain unchanged.
+
+Latest delta: [idle approval withdrawal](../../todo.archive.md#idle-approval-withdrawal-documentation-follow-through--2026-10-09).
+Spec, verification and Unreleased history distinguish the internal adapter fix
+from production wiring. The existing workflow task carries the next check and
+candidate inputs; no goal or task is promoted from source inspection.
+
+Latest follow-through: [production connection browser completion](../../todo.archive.md#production-connection-browser-completion-follow-through--2026-10-08).
+Design, verification and navigation now distinguish the completed combined browser
+candidate from current-tree, replacement Local, native/live and main-delivery gaps.
+The completed task body is preserved verbatim in the archive. The SSH design also
+states that the native Dart adapter exists without claiming full-app qualification.
+
+Earlier follow-through: [native production Local enrollment](../../todo.archive.md#native-local-enrollment-follow-through--2026-10-08).
+Design, verification and navigation now expose passing Linux GTK production-router
+fixture checks. The completed task body is preserved verbatim in the archive.
+Actual installation/adoption, live authentication, Android and protected-main
+integration remain separate. The existing setup/auth matrix carries remaining work.
+
+Earlier follow-through: [optional Local setup recovery](../../todo.archive.md#optional-local-setup-recovery-follow-through--2026-10-08).
+Its disposed-controller repair and isolated-screen browser checks remain qualified
+only against their recorded candidate. Native production enrollment now has the
+separate receipt above, not retroactive qualification from the earlier harness.
+
+Earlier follow-through: [two-host recovery completion](../../todo.archive.md#two-host-recovery-completion-follow-through--2026-10-08).
+Design, verification, navigation and Unreleased history now expose the bounded
+Linux fixture selection/retry result. The completed task body is preserved
+verbatim in the archive; broader setup/authentication and main delivery remain open.
+
+Earlier follow-through: [Linux welcome recovery](../../todo.archive.md#linux-welcome-recovery-follow-through--2026-10-08).
+Orientation, design, verification and Unreleased history now distinguish passing
+Linux fixture cancellation/retry and process restoration from Android, physical
+keychain, live authentication and protected-main delivery. The completed task
+body is preserved verbatim in the archive. The existing Android task carries
+the remaining welcome checks; no duplicate task or worker is added. The archive
+records core-role coverage, goal/task counts, conservation and offline checks.
+The earlier [integrated native restart](../../todo.archive.md#integrated-native-restart-follow-through--2026-10-08)
+remains synthetic qualification, not actual authentication/generation, enforceable
+provider-call admission or authoritative model-pair readback.
+
+## Native continuation and panel completion follow-through
+
+Mode: Bootstrap + Maintain; Wing documentation, TODO and goals only. The monitor
+reports changed agent branches and a daily tick at unchanged HEAD
+`b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319`, with zero listed path drift.
+The inspected branches are `agent/wing/t_d6467f03` at `7cf7f8b4` and
+`agent/wing/t_5ca5f71b` at `af08808c`. Existing dirty source, staged changes and
+BLOCKERS entries are preserved. No worker, card, schedule or external state changes.
+
+The [resumed-send receipt](native-resumed-send.md) records two passing Linux GTK
+processes, deliberate model reselection and one resumed send to the exact restored
+session. Restart, Cancel and route reopening add no mutations. Native and focused
+manifests each match all 644 copied inputs. Retained terminal logs confirm both
+native phases and 340 focused tests passed. This is synthetic qualification, not
+live inference, authoritative pair persistence, full-shell startup or main delivery.
+The historical browser exact-pair failure remains historical, not repaired evidence.
+
+The [native panel receipt](global-session-modal-native.md) records a passing
+Linux GTK keyboard/adaptive journey with twelve phases and 89 focused passes.
+It uses injected input and synthetic feature-route bodies. Its three dedicated
+inputs still match recorded hashes. Of 644 copied inputs, 640 match; four later
+daily-workflow inputs changed. Do not reuse the result for the whole current tree.
+Live profiles, physical input and screen readers remain unqualified. This pass
+inspects retained receipts and terminal logs; it reruns no product tests.
+
+Spec, test plan, parity checkpoint, daily-use plan and navigation now expose these
+completed bounded checks instead of describing native continuation/panel proof as
+wholly pending. The workflow policy distinguishes completed synthetic continuation
+from the remaining live M1 journey. No product requirement or API changes.
+
+| Core role | Canonical owner | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for orientation/setup; `docs/README.md` maintained for evidence navigation. |
+| PRD | `docs/product/prd.md` | unchanged_verified for Desktop-first intent, exact capability gates and private/public release limits. |
+| ADRs | `docs/adr/README.md` and five living decisions | unchanged_verified for current boundaries and history; no new decision. |
+| Spec | `docs/spec.md` | maintained for bounded native continuation and panel evidence. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership; YAML syntax checked, runtime conformance not executed. |
+| Test plan | `docs/test-plan.md` | maintained for passing native scenarios and exact historical source-binding limits. |
+| Runbooks | `docs/getting-started.md`, `docs/runbooks/android-hermes-setup.md`, `docs/runbooks/release-alpha.md` | unchanged_verified for inspected prerequisites and recovery limits; no operational action. |
+| Changelog | `CHANGELOG.md` | unchanged_verified; this pass adds no runtime feature or release and needs no routine documentation entry. |
+
+All applicable core owners exist; none needs creation. No new owner question is
+required. Existing owner questions and their defaults remain in root BLOCKERS.
+Full platform qualification and API runtime conformance remain open.
+
+Root `TODO.md` removes stale unchecked bodies for the already-done
+VERIFY-NATIVE-RESUMED-SEND and VERIFY-GLOBAL-SESSION-MODAL-NATIVE. Their exact
+original bodies, including the former checkbox and ownership wording, are appended
+to [the archive](../../todo.archive.md) with an explicit historical-state wrapper.
+Archive prefix bytes and each moved block's multiplicity are preserved. All 65
+unrelated live task bodies and continuations remain unchanged. Footer qualification
+moves to Now after its completed dependency. Two nonduplicate successors are added:
+VERIFY-LIVE-WORKFLOW-RECOVERY and VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY. They retain
+predecessor dependencies and are not eligible before those checks pass. No task is
+claimed or closed by this pass.
+
+Root `goals.json` retains focus M1. Coverage: 35 goals, 148 tasks; two met,
+17 partial, nine unmet and seven unverified. Both met goals retain executed passing
+journey evidence; all 33 non-met goals retain at least two unfinished slices.
+The next helper-eligible task is PARITY-LIVE-WORKFLOW; current tracker ownership
+and supported QA authentication must still be checked before execution. This
+receipt records queued work, not worker dispatch or protected-main delivery.
+
+Executed repository checks: `python3 <home>/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .`
+→ `validate .` → `render .`, with validation printing `ok`; `goals.py next .`
+selects the live workflow. `git diff --check` passes. Offline local links/anchors,
+goal/task body coverage, source fingerprints and archive conservation pass.
+YAML parsing with `/usr/bin/python3` passes for OpenAPI 3.1.0 and 20 paths. An
+initial JSON parse rejected the YAML syntax; the tool interpreter also lacked
+PyYAML. The installed system interpreter supplied the successful YAML check
+without installation or contract edits. This is syntax, not schema or runtime proof.
+A repeated canonical cycle preserves TODO, goals and archive bytes.
+
+Mechanical review checks changed prose structure, table formatting and protected
+identifiers. Language/meaning review applies the STE-inspired profile and preserves
+synthetic/live, injected/physical, source-binding and qualification/delivery limits.
+Full ASD-STE100 dictionary compliance is not verified. Repository checks run
+offline on Linux. Product tests, builds, devices, live requests, network links,
+installs, API standards/runtime conformance and release procedures are not run.
+
+## Remote retry and native recents branch follow-through
+
+Bootstrap + Maintain starts from the changed agent-branch digest at unchanged
+HEAD `1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. The latest branch,
+`agent/wing/t_96242625` at `939cea52`, clarifies screenshot retention in the
+[Remote retry report](remote-connection-retry.md). The preceding
+`agent/wing/t_3a6bafe4` at `e527fa70` delivers
+[native grouped-recents qualification](grouped-recents-native.md).
+The monitor reports zero path drift. Existing dirty source and documentation
+changes are preserved. This pass changes documentation and the backlog only.
+
+Spec, test plan, navigation and Unreleased history now distinguish delivered
+Remote auth/save retry from the remaining Local setup, endpoint edit/test,
+OAuth and native/live authentication matrix. Nine tested source/test/localization
+fingerprints match the current tree. The report's fingerprint differs only after
+its screenshot-location clarification. Browser receipts record explicit save
+retry, identical synthetic profile/session labels across two hosts and no mutation
+or page errors. Injected storage failures do not qualify physical secure storage.
+
+The native recents evidence records six phases, 18 focus assertions, ten completed
+exact-row Opens and 73 GET-only app requests. Retained analyzer, focused-test and
+native logs show successful exits, including 71 focused passes. All ten scoped
+shell/channel/native inputs still match. Of 640 full input fingerprints, 633
+match; seven Chat/E2E/localization inputs changed with the later Remote slice.
+The earlier native result does not qualify that full current dirty tree.
+The test mounts production shell/channel with synthetic route content and injected
+keys under Linux GTK/Xvfb. It does not qualify full feature screens, physical
+input, OS minimization, Android, screen readers or live inference. These are
+inspected executor receipts, not product tests rerun by this pass or card approval.
+
+| Core role | Canonical owner | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for orientation/setup; `docs/README.md` maintained for evidence navigation. |
+| PRD | `docs/product/prd.md` | unchanged_verified for accepted Desktop-first and exact-capability requirements. |
+| ADRs | `docs/adr/README.md` and five living decisions | unchanged_verified for authority and existing decisions; no new decision. |
+| Spec | `docs/spec.md` | maintained for Remote save ownership and bounded native recents evidence. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership; no API change. Schema/runtime conformance not rerun. |
+| Test plan | `docs/test-plan.md` | maintained for retry/native scenarios and historical source-binding limits. |
+| Runbooks | `docs/getting-started.md`, `docs/runbooks/android-hermes-setup.md`, `docs/runbooks/release-alpha.md` | unchanged_verified for inspected prerequisites and operation limits; no procedure change. |
+| Changelog | `CHANGELOG.md` | maintained for implemented Unreleased retry behavior, not release publication. |
+
+All applicable core owners exist; none needs creation. Root `TODO.md` adds the
+missing full entry for the already-done CONNECTION-REMOTE-AUTH-STORAGE-RETRY and
+narrows CONNECTION-SETUP-AUTH-MATRIX so workers do not repeat that delivered slice.
+VERIFY-GLOBAL-SESSION-MODAL-NATIVE moves to Now after its completed native recents
+predecessor. VERIFY-PROFILE-FOOTER-NATIVE is added in Next as an ordered native
+qualification successor. It tests the existing passive footer, not new edit/switch
+behavior. Existing task status and ownership are preserved. No worker, card or
+schedule is started or changed. Existing BLOCKERS entries/defaults are preserved;
+no new owner question is needed.
+
+Root `goals.json` and `TODO.md` cover 35 goals and 146 tasks: two met, 17 partial,
+nine unmet and seven unverified. All 33 non-met goals retain at least two unfinished
+slices. Both met goals retain executed passing evidence. No goal is promoted here.
+The helper's first candidate is PARITY-MAESTRO-ANDROID-DEVICE; current tracker
+ownership still needs checking before execution. The native modal is independently
+queued as the smallest next composition slice, not observed running.
+
+Repository verification on Linux: the canonical
+`python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .` →
+`validate .` → `render .` cycle prints `ok`. Repetition preserves TODO/goals bytes.
+Offline checks resolve 889 local links/anchors across 24 core/affected documents;
+55 optional local-artifact links are excluded from availability checks. All 146
+full task entries match ledger checkbox status. Goal-source paths, two-slice
+coverage and met evidence checks pass. `git diff --check` and
+`git show --format= --check` for both monitored branches exit 0.
+
+Mechanical review checks scoped Markdown, punctuation and protected identifiers.
+Language/meaning review applies the STE-inspired profile to changed prose. It
+preserves connection versus persistence, current versus obsolete owner, inspected
+receipts versus fresh execution and native versus physical/live qualification.
+Full ASD-STE100 dictionary compliance is not verified. API schema/runtime checks,
+product tests/builds, network requests, installs, device and operational actions
+are not run in this documentation pass.
+
+## Focused npm receipt after the session-panel branch update
+
+Bootstrap + Maintain starts from `agent/wing/t_493629fd` at `b9528e2f`.
+The shared HEAD remains `1afe1307`; the monitor reports zero path drift.
+The new branch commit changes only TODO and goals evidence. Its added npm
+command is already present in the current ledger. The retained focused log
+confirms 103 passes, and all 203 source/test/manifest fingerprints still match.
+The separate full-suite log has no completion result. Neither its filename nor
+canonical `npm run test` metadata establishes a full-suite pass.
+
+The adaptive receipt, test plan and TODO delivery now state that distinction.
+TODO also replaces the recents task's stale unclaimed wording with its current
+`in_progress` ledger status. This does not assert a newly observed worker run.
+No implementation, accepted requirement, HTTP contract or release changes here.
+
+Core-role coverage:
+- Orientation: `README.md` and `docs/README.md`, unchanged_verified for setup and navigation.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent and limits.
+- Decisions: `docs/adr/README.md` and relevant living records, unchanged_verified; no new decision.
+- Design: `docs/spec.md`, unchanged_verified against the existing shared-panel design.
+- Owned HTTP API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for code-first ownership and relevant routes, not full conformance.
+- Verification: `docs/test-plan.md`, maintained for focused versus incomplete full-suite evidence.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`, unchanged_verified for inspected setup and workflow prerequisites.
+- History: `CHANGELOG.md`, unchanged_verified; this evidence clarification adds no product change.
+
+All applicable core owners already exist. None needs creation.
+Root `TODO.md` updates VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE and
+VERIFY-GROUPED-RECENTS-NATIVE without adding tasks or changing their status.
+Helper-managed `goals.json` remains byte-identical after normalization/render.
+Coverage remains 35 goals and 144 tasks: two met, 17 partial, nine unmet and
+seven unverified. All 33 non-met goals retain at least two unfinished tasks.
+Every met goal retains executed passing evidence; none is promoted here.
+The first helper candidate is PARITY-MAESTRO-ANDROID-DEVICE. Actual tracker
+ownership must still be checked before dispatch. Native recents is already
+in_progress in the ledger, and its native-panel successor remains queued.
+Existing BLOCKERS entries and defaults are preserved. No new owner question arises.
+
+Executed offline checks: `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .`,
+then `validate .`, then `render .`, all exit 0 and print `ok`.
+A repeated cycle preserves TODO/goals bytes. Local path/anchor checks, task
+checkbox consistency, two-task coverage and met evidence checks pass.
+`git diff --check` and `git show --format= --check agent/wing/t_493629fd` pass.
+Mechanical review checks the changed Markdown, punctuation and protected literals.
+Language/meaning review applies the STE-inspired profile to the changed prose,
+preserving focused versus full-suite scope and inspection versus execution.
+Full ASD-STE100 dictionary compliance is not verified.
+Product tests/builds, API schema/runtime conformance, native/device/live checks
+and operational actions are not run in this documentation pass.
+
+## Adaptive session-panel completion after agent-branch change
+
+Bootstrap + Maintain follows `agent/wing/t_493629fd` at `fcb0a256`, with
+unchanged shared HEAD and zero monitor path drift. Four scoped branch files
+match the working tree. All 203 retained source/test/manifest fingerprints match.
+Final retained logs confirm 103 focused widget passes, clean analysis, formatter
+stability, a JavaScript build and four Chromium journeys. These are inspected
+executor receipts, not new product execution or independent review approval.
+The removed web output cannot be rehashed. See the
+[adaptive receipt](global-session-modal-adaptive.md).
+
+Design, verification, the session runbook, parity/UI-gap summaries, navigation
+and Unreleased history now describe the shared panel's stacking, unified scroll
+surface and current-focus reveal. Compact/short-window access at 200% Flutter
+text and separate Chromium zoom no longer appears as queued verification.
+Native/live, screen-reader and standalone-branch checks remain separate gaps.
+No domain operation, accepted requirement or HTTP contract changes here.
+
+Core-role outcomes:
+- Orientation: `README.md`, unchanged_verified; `docs/README.md`, maintained for navigation.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent and limits.
+- Decisions: `docs/adr/README.md` and relevant living decisions, unchanged_verified; no boundary change.
+- Design: `docs/spec.md`, maintained for adaptive panel presentation.
+- Owned HTTP API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for manual
+  code-first ownership and relevant references; no schema/runtime conformance run.
+- Verification: `docs/test-plan.md`, maintained for retained execution and remaining proof.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`,
+  unchanged_verified for inspected procedures; `docs/runbooks/global-session-access.md`, maintained.
+- History: `CHANGELOG.md`, maintained for the implemented Unreleased presentation repair.
+
+All applicable core owners exist; none needs creation. Root `TODO.md` reconciles
+VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE with its existing done ledger status.
+VERIFY-GROUPED-RECENTS-NATIVE moves to Now. Its ordered successor,
+VERIFY-GLOBAL-SESSION-MODAL-NATIVE, is added in Next to prove the delivered panel
+in an isolated Linux app without duplicating the broad all-feature task.
+Helper-managed `goals.json` and root TODO cover 35 goals and 144 tasks: two met,
+17 partial, nine unmet and seven unverified. Every non-met goal retains at least
+two unfinished slices; every met goal retains executed passing evidence.
+No goal is promoted by receipt inspection. The next helper candidate remains
+PARITY-MAESTRO-ANDROID-DEVICE; eligibility does not establish tracker ownership.
+Existing BLOCKERS questions/defaults are preserved. No new owner question arises.
+No worker, card or schedule is started or changed.
+
+Executed offline checks on Linux: the canonical
+`python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .` →
+`validate .` → `render .` cycle prints `ok`; repetition preserves TODO/goals bytes.
+Local checks resolve 863 links/anchors across core owners, relevant decisions,
+coordination and the adaptive receipt. The 56 optional local evidence links are
+excluded from availability checks, not receipt inspection. All 144 task checkboxes,
+goal-source paths, two-slice coverage and the met evidence rule pass.
+`git diff --check` exits 0. Mechanical review checks scoped Markdown, sentence
+structure, punctuation and protected identifiers. Language/meaning review applies
+the STE-inspired profile and preserves text scaling versus whole-render zoom,
+current focus versus replacement focus, explicit actions and qualification limits.
+Full ASD-STE100 dictionary compliance is not verified. Product tests/builds,
+API conformance, native/device/live checks and operational actions are not run
+in this documentation pass. No source/test, install or upstream changes occur.
+
+## Saved-host completion and recents recovery reconciliation
+
+Bootstrap + Maintain starts from `agent/wing/t_90ae659f` at `ada15740`,
+with unchanged shared HEAD and zero reported path drift. All four selected
+saved-host source/test fingerprints match. Retained logs confirm 122 focused
+widget passes, clean analysis, a JavaScript build and two Chromium journeys.
+The removed generated build cannot be rehashed. This pass inspects executor
+receipts; it does not rerun product checks or infer independent approval.
+
+Spec, test plan, parity summary, navigation and Unreleased history now distinguish
+Chat saved-host rename/remove consent and delayed-storage fencing from the
+unfinished setup/authentication/edit/test matrix. The spec also matches the current
+Local/SSH labels and nested Remote HTTPS transport. Removal forgets only the local
+endpoint, not remote Agent data. Existing connection task status and ownership
+remain intact. CONNECTION-SETUP-AUTH-MATRIX gains sources, observable acceptance
+and an explicit successor-ownership warning; no duplicate task is added.
+
+The recents recovery task was already done in goals but remained unchecked in
+TODO. Its checkbox and delivery now agree. Retained logs confirm 71 focused
+passes and one Chromium journey. Of 570 recorded inputs, 568 match; the two
+changed Chat connection files belong to the later saved-host repair. These
+historical receipts do not qualify the full current dirty tree. Spec, test plan
+and navigation distinguish existing sidebar hide/return from absent group disclosure.
+The UI-gap summary also stops listing delivered enlarged-text transcript checks
+as missing; native/live and screen-reader qualification remain open.
+
+Core-role outcomes:
+- Orientation: `README.md`, unchanged_verified; `docs/README.md`, maintained for navigation.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent and current gaps.
+- Decisions: `docs/adr/README.md` and five living records, unchanged_verified; no boundary change.
+- Design: `docs/spec.md`, maintained for saved-host ownership and recents recovery.
+- Owned API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for manual code-first ownership; no HTTP change.
+- Verification: `docs/test-plan.md`, maintained for inspected receipts and remaining proof.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`, unchanged_verified for inspected procedures and limits.
+- History: `CHANGELOG.md`, maintained for the implemented Unreleased saved-host repair.
+
+All applicable core owners exist; none needs creation. Root `TODO.md` and
+helper-managed `goals.json` contain 35 goals and 143 tasks: two met, 17 partial,
+nine unmet and seven unverified. All 33 non-met goals retain at least two unfinished
+slices. Every met goal retains executed passing evidence; none is promoted here.
+VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE moves to Now. The new ordered successor,
+VERIFY-GROUPED-RECENTS-NATIVE, queues actual native keyboard/owner qualification
+in Next without duplicating the broad all-feature Linux task.
+The first helper candidate remains PARITY-MAESTRO-ANDROID-DEVICE; eligibility
+does not establish tracker ownership. The modal-adaptation slice is dependency-ready.
+No worker or card is started or changed.
+Existing BLOCKERS entries and defaults are preserved. No new owner question arises.
+
+Executed offline checks on Linux: canonical `goals.py fmt .` → `validate .` →
+`render .` prints `ok`; repeating the cycle preserves TODO/goals bytes.
+Local checks resolve 920 links/anchors across core owners, relevant living ADRs,
+coordination and the two delivery receipts. The 55 optional local artifact links
+are excluded from availability checks, not receipt inspection. All 143 task
+checkboxes, goal-source paths, two-slice coverage and the met evidence rule pass.
+`git diff --check` passes. Mechanical review checks scoped Markdown, punctuation,
+sentence structure and protected identifiers. Language/meaning review applies
+the STE-inspired profile and preserves consent versus settlement, explicit retry,
+local versus remote removal and fixture versus native/live qualification.
+Full ASD-STE100 dictionary compliance is not verified. API schema/runtime checks,
+product tests/builds, native/device/live execution and operational actions are not
+run here. No source/test, install, upstream, card or schedule changes occur.
+
+## Android fixture completion after agent-branch change
+
+Bootstrap + Maintain starts from `agent/wing/t_be855c75` at `69af19d5`,
+with unchanged shared HEAD and zero reported path drift. All seven selected
+source hashes in the [fixture receipt](android-approval-attachment-fixture.md)
+match this snapshot. Retained logs confirm seven widget passes and clean analysis.
+This is receipt inspection, not a new product run or Android qualification.
+Android startup failed before launch; actual device assertions remain NOT_CHECKED.
+
+Core-role outcomes for this pass:
+- Orientation: `README.md`, unchanged_verified; `docs/README.md`, maintained for navigation.
+- Requirements: `docs/product/prd.md`, unchanged_verified; accepted target qualification remains required.
+- Decisions: `docs/adr/README.md` and relevant living ADRs, unchanged_verified; no boundary changes.
+- Design: `docs/spec.md`, unchanged_verified; integration-only fixture controls do not change product design.
+- Owned API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for code-first ownership; no HTTP change.
+- Verification: `docs/test-plan.md`, maintained for bounded widget evidence and unexecuted Android assertions.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`, unchanged_verified;
+  `docs/runbooks/desktop-feature-qualification.md`, maintained for bounded selection and current access limits.
+- History: `CHANGELOG.md`, unchanged_verified; fixture/tooling repairs need no user-visible product entry.
+
+All applicable core owners exist; none needs creation. The feature matrix retains
+its Android not-run cells. Root TODO reconciles PARITY-MAESTRO-ANDROID with its
+existing done ledger status and adds the full entry for the already-registered
+PARITY-MAESTRO-ANDROID-DEVICE. No task is duplicated, reopened or closed here.
+Coverage is two met, 17 partial, nine unmet and seven unverified across 35 goals.
+All 33 non-met goals retain at least two unfinished slices. The next helper
+candidate is PARITY-MAESTRO-ANDROID-DEVICE; eligibility does not establish ownership.
+BLOCKERS entries/defaults are preserved. No new owner question arises.
+
+Executed offline checks: canonical `goals.py fmt .` → `validate .` → `render .`
+prints `ok`; repeating the cycle preserves TODO/goals bytes. All 880 checked local
+links/anchors resolve; 62 optional local artifact links are excluded from availability
+checks. All 140 task checkboxes, two-slice coverage and the met evidence rule pass.
+`git diff --check` passes. Mechanical review checks scoped Markdown, sentence
+structure and protected literals. Language/meaning review applies the STE-inspired
+profile and preserves counts, owner replacement, authentication and platform limits.
+Full ASD-STE100 dictionary compliance is not verified. API schema/runtime checks,
+product tests/builds, native/device/live execution and operational actions are not
+run here. No source/test, install, card, worker, schedule or upstream changes occur.
+
+## Native acceptance reconciliation and acknowledged-New recovery
+
+Bootstrap + Maintain follows `agent/wing/t_158c055a` at `c0a64544` and
+`agent/wing/t_ec0f2f99` at `0cb92da8`, with unchanged shared HEAD.
+Both native manifests still match all 628 inputs. This is source-freshness
+inspection, not a new GTK launch or exact-pair restoration qualification.
+The bounded native task stays done. Its already-written resumed-send successor
+was absent from `goals.json`; it is now registered in Next and moved into the
+eligible TODO section. M1 remains partial with two unfinished slices.
+
+The acknowledged-New repair now appears in design, verification, navigation and
+Unreleased history. All four rework fingerprints match. Retained executor and
+review widget logs each confirm 122 passes. Both retained Chromium retry receipts
+show one creation and two history reads for the same acknowledged session.
+No product checks or review approvals are inferred from this inspection.
+
+FIX-NPM-AUDIT now matches the existing BLK-20261007-006 decision section in both
+ledgers. The default retains reviewed pins and records known risk, not a passing
+audit. The dependency review and test plan distinguish this decision from the
+technical upstream gap. BLOCKERS entries and unrelated work are preserved.
+No new owner question, source/test edit, worker, card or schedule change occurs.
+
+Core-role outcomes:
+- Orientation: `README.md`, unchanged_verified; `docs/README.md`, maintained.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent.
+- Decisions: `docs/adr/README.md` and relevant living ADRs, unchanged_verified.
+- Design: `docs/spec.md`, maintained for acknowledged-session read recovery.
+- Owned HTTP API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for
+  code-first ownership; no route/schema change or new conformance claim.
+- Verification: `docs/test-plan.md`, maintained for recovery and audit limits.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`,
+  unchanged_verified; current native reproduction remains in the bounded receipt.
+- History: `CHANGELOG.md`, maintained for the implemented Unreleased repair.
+
+All applicable core owners exist; none needs creation. Coverage remains two met,
+17 partial, nine unmet and seven unverified. Every non-met goal has at least two
+unfinished slices. The next helper candidate is PARITY-MAESTRO-ANDROID;
+current tracker ownership must be checked before execution.
+
+The STE-inspired profile applies only to changed prose. Mechanical review covers
+punctuation, sentence structure and protected identifiers. Meaning review keeps
+acknowledgment, retry, cancellation, source attribution and qualification separate.
+Full ASD-STE100 dictionary compliance is not verified. Repository verification
+covers local links/anchors, task consistency, source fingerprints, the met rule,
+canonical fmt/validate/render and byte stability. Both helper cycles print `ok`
+and preserve TODO/goals bytes on repetition. All 13 checked changed links/anchors,
+task checkboxes, two-slice coverage and scoped `git diff --check` pass.
+No API runtime, product suite, platform, release, install or network operation
+is run by this documentation pass.
+
+## Native relaunch and transcript reconnect follow-through
+
+Bootstrap + Maintain starts from `agent/wing/t_eb5c693d`, commit
+`d70cc5dd01287d3f78e5fc4404be6a998634f998`, and concurrent completed transcript
+recovery. Five native branch files match this snapshot. All 628 native manifest
+inputs match. Retained logs confirm two distinct GTK processes, exact off-page
+history and zero replay. The 56-test focused manifest predates two helper/test
+refinements; it does not qualify those refinements. Ten available selected reconnect
+hashes match; its removed generated build cannot be rehashed. Final retained logs
+confirm 391 focused passes in both workspaces and two Chromium journeys.
+These are inspected executor receipts, not new product runs or independent approval.
+
+Design, test plan, parity/UI-gap summaries, navigation and workflow plans now
+separate these delivered subsets from model persistence, combined live workflow,
+unfinished-tool/reasoning recovery, enlarged text and native transcript gaps.
+Unreleased history records only the actual category-only history repair.
+BLK-20261005-003 moves to Resolved: the demonstrated user-space prefix requires
+no sudo. The owner's no-system-install decision remains unchanged; all-feature
+native qualification and recreation of compatible temporary tooling remain separate.
+
+Core-role outcomes:
+- Orientation: `README.md`, unchanged_verified for setup/navigation boundaries.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent.
+- Decisions: `docs/adr/README.md` and living ADRs, unchanged_verified for relevant boundaries.
+- Design: `docs/spec.md`, maintained for bounded restoration and canonical tool activity.
+- Owned API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for manual code-first ownership; no API change.
+- Verification: `docs/test-plan.md`, maintained for receipts and remaining proof.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`, unchanged_verified for ownership/limits; `docs/runbooks/desktop-feature-qualification.md`, maintained for the non-root prerequisite path.
+- History: `CHANGELOG.md`, maintained for the implemented Unreleased repair.
+
+All applicable core owners exist; no missing owner needs creation. Root TODO
+reconciles two already-done ledger entries and adds VERIFY-NATIVE-MODEL-RELAUNCH
+and VERIFY-CHAT-TRANSCRIPT-NATIVE. Transcript accessibility moves to Now.
+Every non-met goal retains two unfinished slices. No goal is promoted by inspection.
+Coverage remains two met, 17 partial, nine unmet and seven unverified.
+The helper selects VERIFY-NATIVE-MODEL-RELAUNCH; eligibility grants no lease.
+No worker/card/schedule changes or new owner questions occur.
+
+Offline verification uses canonical `goals.py fmt .` → `validate .` → `render .`,
+second-cycle byte stability, local links/anchors, task checkboxes, goal-source paths,
+met-rule/two-slice coverage and `git diff --check`. Validation prints `ok`.
+Mechanical review checks scoped punctuation, sentence structure and protected IDs.
+Language/meaning review applies the STE-inspired profile, preserving authority,
+executor attribution, separate scenarios and qualification limits. Full ASD-STE100
+dictionary compliance is not verified. Repository checks do not establish full API
+conformance, product tests/builds, native/live execution, devices or release support;
+none is rerun here. No source/test, install, upstream or external-system changes.
+
+## Streamed transcript completion follow-through
+
+Bootstrap + Maintain starts from `agent/wing/t_b9368977`, commit
+`de9192726819d0570486078bebf7bdbb117d28ff`, at unchanged shared HEAD.
+Eleven available fingerprints match the [streamed-order receipt](chat-transcript-order.md).
+The exercised web output was removed, so its hash cannot be rechecked.
+Retained final logs confirm 129 widget passes, clean analysis, a JavaScript build
+and two Chromium journeys. These are inspected executor receipts, not new product
+execution, independent approval or standalone-branch qualification.
+
+Design, test plan, parity/UI-gap summaries, navigation and Unreleased history now
+separate the explicit-profile approval repair and deterministic ordering evidence
+from history reconnect, enlarged-text whole-transcript and native/live gaps.
+Nullable-profile compatibility is unchanged. The timeline required no repair.
+Composer summaries also reconcile their stale queued enlarged-text wording with
+its existing delivered receipt. No accepted requirement or API changes.
+TODO reconciles the already-done VERIFY-CHAT-TRANSCRIPT-ORDER entry.
+VERIFY-CHAT-TRANSCRIPT-RECONNECT moves to Now; its ordered accessibility successor
+is added in Next. Concurrent security questions and tasks retain their owners.
+
+Core-role outcomes:
+- Orientation: `README.md`, unchanged_verified for setup and navigation boundaries.
+- Requirements: `docs/product/prd.md`, unchanged_verified for accepted intent and limits.
+- Decisions: `docs/adr/README.md` and five living records, unchanged_verified for relevant boundaries.
+- Design: `docs/spec.md`, maintained for approval identity and qualification limits.
+- Owned HTTP API: `docs/api/wing-link.openapi.yaml`, unchanged_verified for manual code-first ownership and no API change.
+- Verification: `docs/test-plan.md`, maintained for retained checks and remaining gaps.
+- Operations: `docs/getting-started.md` and `docs/runbooks/release-alpha.md`, unchanged_verified for setup/release ownership and limits.
+- History: `CHANGELOG.md`, maintained with the implemented Unreleased approval repair.
+
+All applicable owners exist; none needs creation. No new owner question arises.
+Existing BLOCKERS entries/defaults are preserved. Coverage remains two met,
+17 partial, nine unmet and seven unverified across 35 goals. Every non-met goal
+retains two unfinished slices. No goal is promoted by documentation inspection.
+The helper first returns PARITY-NATIVE-RELAUNCH with its no-system-install default;
+VERIFY-CHAT-TRANSCRIPT-RECONNECT is ready without native packages or live credentials.
+Eligibility does not establish tracker ownership. No worker or card is started.
+
+Executed offline checks: canonical `goals.py fmt .` → `validate .` → `render .`
+prints `ok`; repetition preserves TODO/goals bytes. Local link/anchor, task-checkbox,
+goal-source, two-slice and met-rule checks pass. `git diff --check` passes.
+Mechanical review checks changed prose punctuation and protected identifiers.
+Language/meaning review applies the STE-inspired profile and preserves identity,
+nullable compatibility, executor attribution and qualification limits.
+Full ASD-STE100 dictionary compliance is not verified. API conformance, release
+procedures, product tests/builds, native/live, screen-reader and physical audio
+are not run here. No source/test, installs, cards, schedules or upstream changes occur.
+
+## Enlarged-text reasoning follow-through
+
+Bootstrap + Maintain starts from `agent/wing/t_5a14d085`, commit
+`f8adbac384754c505c66fa49eaacc5e3bab03a7c`, at unchanged shared HEAD.
+The three branch files match this snapshot. All 215 retained input fingerprints
+match the [receipt](reasoning-disclosure-accessibility.md). The generated web build
+has been removed, so its recorded hash cannot be rechecked. Final logs confirm
+two focused widget passes, 98 nearest-test passes, clean analysis, a JavaScript
+build and one compiled Chromium journey. This pass inspects executor receipts;
+it does not rerun product checks or infer independent approval.
+
+Design, verification, parity/UI-gap summaries and navigation now distinguish
+200% widget text scaling from browser whole-render zoom. Owner replacement resets
+expansion, while current-owner adaptive return retains it. Native/live and
+screen-reader qualification remain open. No production change needs a changelog entry.
+TODO reconciles the already-done VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY task,
+moves VERIFY-CHAT-TRANSCRIPT-ORDER to Now and adds its ordered reconnect successor.
+The modal task's stale qualification anchor is repaired.
+Executed offline checks: the canonical `goals.py fmt .` → `validate .` →
+`render .` cycle prints `ok`; repetition preserves TODO/goals bytes.
+All 799 checked local links/anchors, task checkboxes, goal-source paths and
+two-slice coverage pass. The 56 optional local receipt links are excluded from
+availability checks, not receipt inspection. `git diff --check` passes.
+
+Core-role coverage:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| Orientation | `README.md` | unchanged_verified: setup and navigation boundaries |
+| Requirements | `docs/product/prd.md` | unchanged_verified: accepted intent and limits |
+| Decisions | `docs/adr/README.md` and five living records | unchanged_verified: relevant authority and accessibility boundaries |
+| Design | `docs/spec.md` | maintained: enlarged-text reasoning qualification |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified: manual code-first ownership; no API change |
+| Verification | `docs/test-plan.md` | maintained: retained execution versus remaining gaps |
+| Operations | `docs/getting-started.md`, `docs/runbooks/release-alpha.md`, `docs/runbooks/global-session-access.md` | unchanged_verified: relevant setup, release and operation limits |
+| History | `CHANGELOG.md` | unchanged_verified: no production change in this test slice |
+
+All applicable owners exist; none needs creation. Existing BLOCKERS entries and
+defaults are preserved. No new owner question arises. The ledger has 35 goals
+and 133 tasks: two met, 17 partial, nine unmet and seven unverified. Every non-met
+goal has two unfinished slices. No goal is promoted by documentation inspection.
+The helper first returns in-progress FIX-NPM-AUDIT, then open
+PARITY-NATIVE-RELAUNCH with its no-system-install default. The ready transcript-order
+slice needs neither live credentials nor native packages. Check tracker ownership;
+no worker or card is started.
+
+Mechanical and meaning review apply the STE-inspired profile to this pass's prose,
+preserving exact identifiers, ownership and qualification limits. Full ASD-STE100
+dictionary compliance is not verified. API conformance, release procedures,
+native/live execution and physical audio are not run. No source/test changes,
+installs, devices, schedules, publication or upstream modifications occur here.
+
+## Global modal and enlarged-text composer follow-through
+
+Bootstrap + Maintain starts from the changed agent-branch digest at shared HEAD
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. Branch
+`agent/wing/t_ec0f2f99` delivers the global owner-bound session panel.
+All eight scoped source/test fingerprints and branch files match this snapshot.
+The retained widget log records 120 passing cases; the compiled-browser receipt
+records keyboard/focus traces, exact requests and zero captured errors.
+This pass inspects those receipts. It does not rerun product checks, infer
+independent approval or qualify the standalone branch build. Predecessor localization
+was consumed from the shared tree; native/live and screen-reader checks remain separate.
+
+The already-completed composer accessibility slice also needed reconciliation.
+All eight fingerprints in its [receipt](chat-composer-accessibility.md) match.
+Retained final logs confirm seven widget passes, a web build and one Chromium
+journey at native 200% whole-render zoom. Widgets separately exercise text-only
+scaling. Local widget-order traversal and zero-duration reduced-motion switching
+are implemented; enlarged-text reasoning disclosure remains queued.
+
+Design, verification, route/parity summaries, the focused runbook, navigation and
+Unreleased history now distinguish these deliveries from remaining qualification.
+TODO reconciles PORT-GLOBAL-SESSION-MODAL and VERIFY-CHAT-COMPOSER-ACCESSIBILITY
+with their existing done ledger status. It adds VERIFY-GLOBAL-SESSION-MODAL-ADAPTIVE
+and VERIFY-CHAT-TRANSCRIPT-ORDER as bounded implementation/regression successors.
+VERIFY-GROUPED-RECENTS-RECOVERY and VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY move to
+Now; check tracker ownership before work. No worker or card is started.
+
+Core-role coverage:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| Orientation | `README.md` | unchanged_verified: setup boundaries and navigation |
+| Requirements | `docs/product/prd.md` | unchanged_verified: accepted intent and limits |
+| Decisions | `docs/adr/README.md` and five living records | unchanged_verified: relevant authority and accessibility boundaries |
+| Design | `docs/spec.md` | maintained: modal composition and composer accessibility |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified: code-first ownership; no HTTP contract change |
+| Verification | `docs/test-plan.md` | maintained: retained checks versus remaining proof |
+| Operations | `docs/getting-started.md`, `docs/runbooks/release-alpha.md`, `docs/runbooks/global-session-access.md` | maintained: modal operation; setup/release ownership and limits unchanged |
+| History | `CHANGELOG.md` | maintained: implemented Unreleased behavior only |
+
+All applicable core owners already exist; none needs creation. Existing BLOCKERS
+questions and defaults remain unchanged. No new owner question arises.
+The ledger has 35 goals and 132 tasks: two met, 17 partial, nine unmet and
+seven unverified. Every non-met goal retains two unfinished slices. No goal is
+promoted from inspection. FIX-NPM-AUDIT remains the helper's in-progress first
+result. Its first open result, PARITY-NATIVE-RELAUNCH, retains the no-system-install
+default. Grouped-recents recovery is ready without live/device/native prerequisites.
+
+Executed offline checks on Linux: `goals.py fmt .` → `validate .` → `render .`
+prints `ok`; repetition preserves TODO/goals bytes. Static checks pass for 792
+local links/anchors, goal-source paths, all task checkboxes, two-slice coverage
+and the met evidence rule. The 56 optional local receipt links are excluded from
+availability checks, not receipt inspection. `git diff --check` passes.
+The initial anchor checker collapsed repeated spaces and removed underscores;
+GitHub-compatible handling resolves those false positives without document edits.
+Monitor path drift is zero; this pass repairs supported status drift.
+
+Mechanical review checks scoped sentence structure, punctuation and protected
+identifiers. Language/meaning review applies the STE-inspired profile and preserves
+ownership, cancellation, acknowledgement and qualification limits. Full ASD-STE100
+dictionary compliance is not verified. Full API conformance, release procedures,
+native/live, devices and physical audio are not executed. No source/test changes,
+installs, cards, schedules, publication or upstream modifications occur in this pass.
+
+## Adaptive composer recovery after agent-branch change
+
+Bootstrap + Maintain starts from `agent/wing/t_9e45aaf2`, commit
+`cbba45dfa75b3e79c755975b2614cca8a77fe06e`. Shared HEAD remains
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. Its three new test/report files
+match this snapshot byte-for-byte. All seven receipt fingerprints match.
+Retained final logs confirm seven recovery widgets, 68 focused widget passes,
+clean analysis, a JavaScript build and one compiled Chromium journey.
+These are inspected executor receipts, not product checks rerun in this pass.
+Earlier failed harness/browser attempts remain recorded; final approval is not inferred.
+
+Spec, test plan, parity/UI-gap ledgers and docs navigation now separate qualified
+adaptive return and pending-owner rejection from remaining large-text/native gaps.
+Capture cancellation stays distinct from current-owner Agent Stop. Compact layout,
+Stop placement, follow-up queuing and hands-free differences remain explicit.
+No production change was needed; no changelog entry is warranted for this test slice.
+
+TODO reconciles the already-done VERIFY-CHAT-COMPOSER-ORDER-RECOVERY task.
+VERIFY-CHAT-COMPOSER-ACCESSIBILITY moves to Now. The new ordered successor,
+VERIFY-CHAT-DISCLOSURE-ACCESSIBILITY, keeps the accepted accessibility outcome
+queued in Next. No duplicate or reopened completed task is added.
+
+Core-role coverage:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| Orientation | `README.md` | unchanged_verified: setup boundaries and navigation |
+| Requirements | `docs/product/prd.md` | unchanged_verified: Desktop-first intent and acceptance limits |
+| Decisions | `docs/adr/README.md` and its five living records | unchanged_verified: ownership and relevant hard boundaries |
+| Design | `docs/spec.md` | maintained: adaptive composer recovery and explicit deviations |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified: manual code-first ownership; no API change |
+| Verification | `docs/test-plan.md` | maintained: retained recovery checks and remaining gaps |
+| Operations | `docs/getting-started.md`, `docs/runbooks/release-alpha.md` and focused setup runbooks | unchanged_verified: ownership, references and relevant qualification limits |
+| History | `CHANGELOG.md` | unchanged_verified: no new behavior in this slice |
+
+All applicable owners exist; none needs creation. Existing BLOCKERS entries and
+defaults remain unchanged. No new owner question arises. Full API conformance,
+release procedures, native/live execution and physical audio are not checked here.
+
+The ledger has 35 goals and 130 tasks: two met, 17 partial, nine unmet and
+seven unverified. Every non-met goal retains at least two unfinished slices.
+No goal is promoted from inspection evidence. The helper first returns
+FIX-NPM-AUDIT, already in progress, then the open PARITY-NATIVE-RELAUNCH,
+subject to the existing no-system-install default. The dependency-ready
+VERIFY-CHAT-COMPOSER-ACCESSIBILITY needs neither a live target nor native packages.
+Check tracker ownership before work. No worker is started.
+
+Executed offline checks on Linux: `goals.py fmt .` → `validate .` → `render .`
+prints `ok`. The in-process static checker verifies 766 local links/anchors,
+goal-source paths, task checkboxes and two-slice coverage with no failures.
+Optional ignored receipts are excluded from link availability checks, not receipt
+inspection. `git diff --check` passes. Monitor path drift is zero; this pass
+corrects stale qualification status, not broken paths.
+
+Mechanical review checks scoped sentence structure, punctuation and protected
+identifiers. Language/meaning review applies the STE-inspired profile and preserves
+ownership, explicit deviations and qualification limits. Full ASD-STE100 dictionary
+compliance is not verified. No source/tests, installs, builds, cards, schedules,
+devices, live requests, publication or upstream modifications run in this pass.
+
+## Wide composer qualification after agent-branch change
+
+Bootstrap + Maintain starts from `agent/wing/t_1aee2792`, commit
+`143fcdcb976086ae2501847e81751c4cec56fa3d`. Shared HEAD remains
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. The branch's three new
+source/test/report files match this snapshot. All 13 receipt fingerprints match.
+Retained final logs confirm 59 widget passes, clean analysis, a JavaScript build
+and one compiled Chromium journey. These are inspected executor receipts, not
+product checks rerun here, native qualification or independent final approval.
+
+Spec, test plan, parity/UI-gap ledgers and docs navigation now distinguish the
+qualified supported composer subset from adaptive return and full Desktop parity.
+Stop placement, follow-up queuing and hands-free additions remain explicit deviations.
+The existing order needed no production change; no new changelog entry is warranted.
+The completed PORT-CHAT-COMPOSER-ORDER entry is preserved. Its recovery successor
+moves to Now, with VERIFY-CHAT-COMPOSER-ACCESSIBILITY queued in Next.
+
+The concurrent INTEGRATION goal retains its existing owner and partial status.
+TODO now indexes its completed status-bar repair and MT-RERUN-TRAIN. The added
+MT-VERIFY-BROWSER-GATES entry separates the remaining compiled-browser phase
+from non-browser gates; it creates no board lane, merge action or waived check.
+The repaired historical candidate does not qualify the later combined source.
+
+Core-role coverage:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| Orientation | `README.md` | unchanged_verified: setup boundaries and navigation |
+| Requirements | `docs/product/prd.md` | unchanged_verified: Desktop-first intent and acceptance limits |
+| Decisions | `docs/adr/README.md` and its five living records | unchanged_verified: ownership and relevant hard boundaries |
+| Design | `docs/spec.md` | maintained: supported composer and explicit deviations |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified: manual code-first ownership, no API change |
+| Verification | `docs/test-plan.md` | maintained: retained composer checks and remaining gaps |
+| Operations | `docs/getting-started.md`, `docs/runbooks/release-alpha.md` and focused setup runbooks | unchanged_verified: ownership, references and relevant qualification limits |
+| History | `CHANGELOG.md` | unchanged_verified: implemented draft/disclosure entries; no new behavior in this slice |
+
+All applicable owners exist; none needs creation. Full API conformance, release
+procedures, native/live execution and physical audio are not checked here.
+Existing BLOCKERS questions and defaults remain unchanged. No new owner question arises.
+
+The ledger has 35 goals and 129 tasks: two met, 17 partial, nine unmet and
+seven unverified. Every non-met goal has at least two unfinished slices.
+No goal is promoted from inspection evidence. The helper first returns
+FIX-NPM-AUDIT, already in progress, then the open PARITY-NATIVE-RELAUNCH,
+subject to the existing no-system-install default. VERIFY-CHAT-COMPOSER-ORDER-RECOVERY
+is dependency-ready without that prerequisite. Check tracker ownership before work.
+No worker is started.
+
+Executed offline checks on Linux: the canonical `goals.py fmt .` → `validate .`
+→ `render .` cycle prints `ok`; repetition preserves TODO/goals bytes.
+The in-process static checker verifies 731 local links/anchors, goal-source paths,
+all task checkboxes, two-slice coverage and the met evidence rule with no failures.
+Optional ignored receipts are excluded from link availability checks, not from
+receipt inspection. `git diff --check` passes. Monitor path drift is zero;
+this pass corrects status drift rather than broken paths.
+
+Mechanical review checks scoped prose punctuation, sentence structure and protected
+identifiers. Language/meaning review applies the STE-inspired profile, preserving
+history, ownership and qualification limits. Full ASD-STE100 dictionary compliance
+is not verified. No source/tests, installs, builds, cards, schedules, devices,
+live requests, publication or upstream modifications run in this pass.
+
+## Reasoning recovery completion after agent-branch change
+
+Bootstrap + Maintain starts from branch `agent/wing/t_0b5660ab`, commit
+`8963edcba055db55f097f326e3af21b9c46b0029`. Shared HEAD remains
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. Four new branch test/report files
+match this snapshot. The fixture differs only in the predecessor session-metadata
+edit excluded from that branch. All eight retained source fingerprints match
+this working tree. Final logs record 100 widget passes, clean analysis, a completed
+JavaScript build and two Chromium recovery journeys. These are inspected executor
+receipts, not a new product run or independent approval.
+
+Spec, test plan, parity/UI-gap ledgers, navigation and Unreleased history now
+separate mounted retention, collapsed remount and owner replacement from HTTP
+reconnect, which drops transient reasoning. Adaptive return and native/live
+qualification remain open. TODO reconciles the already completed
+VERIFY-CHAT-DISCLOSURE-RECOVERY task; PORT-CHAT-COMPOSER-ORDER adds its ordered
+implementation successor after adaptive qualification. No completed gate is reopened.
+
+Core-role outcomes: design (`docs/spec.md`), verification (`docs/test-plan.md`)
+and history (`CHANGELOG.md`) are maintained, with `docs/README.md` navigation.
+Orientation (`README.md`), requirements (`docs/product/prd.md`), living decisions
+(`docs/adr/README.md` and five records), manual code-first HTTP contract
+(`docs/api/wing-link.openapi.yaml`) and operations (`docs/getting-started.md`
+and setup/release runbooks) are unchanged_verified for inspected ownership,
+references and relevant boundaries. All applicable owners exist; none needs
+creation. API standards/runtime conformance and release procedures are not executed.
+
+Root TODO/goals cover 34 goals and 124 tasks: two met, 16 partial, nine unmet
+and seven unverified. Every non-met goal retains two unfinished slices; all task
+checkboxes match the ledger. No goal is promoted from inspection evidence.
+The helper's first result is FIX-NPM-AUDIT, already in progress. Its first open
+result is PARITY-NATIVE-RELAUNCH, subject to the existing no-system-install default.
+VERIFY-CHAT-DISCLOSURE-ADAPTIVE is dependency-ready without that prerequisite;
+check tracker and continuation ownership before execution. Existing BLOCKERS
+entries/defaults are preserved; no new owner question arises. No worker is started.
+
+Executed offline checks on Linux: the canonical `goals.py fmt .` → `validate .`
+→ `render .` cycle prints `ok`; repeating it preserves TODO/goals bytes.
+All 789 inspected local links/anchors, goal-source paths, task/status and two-slice
+checks pass. The initial anchor checker incorrectly removed underscores from task
+IDs; correcting that checker resolves its five false positives without link edits.
+`git diff --check` passes. Monitor drift is zero; corrected status prose is not
+new path drift. Mechanical review checks scoped sentence structure, punctuation
+and protected identifiers. Language/meaning review applies the STE-inspired
+profile and preserves history, authority and qualification limits. Full ASD-STE100
+dictionary compliance is not verified. No source/tests, installs, builds, cards,
+schedules, devices, live requests, publication or upstream modifications run here.
+
+## Reasoning disclosure completion after agent-branch change
+
+Bootstrap + Maintain starts from the changed branch digest at HEAD
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. Branch `agent/wing/t_8c01bd65`
+delivers active/completed reasoning summaries and keyboard disclosure focus.
+Five scoped branch source/test/report files match this working-tree snapshot.
+The executor report records 91 transcript passes and a fresh Chromium journey.
+Retained browser JSON records named focus, exact requests and no page errors.
+However, retained widget logs show intermediate semantics-handle failures, and
+the build log is incomplete. This pass does not verify those reported final
+widget/build passes or infer independent approval. Recovery work reconciles
+final log custody before fresh qualification.
+
+Spec, test plan, parity/UI-gap ledgers, docs navigation and Unreleased history
+now separate delivered disclosure from eviction/reconnect and adaptive gaps.
+TODO reconciles PORT-CHAT-TRANSCRIPT-DISCLOSURE with its existing done status;
+VERIFY-CHAT-DISCLOSURE-RECOVERY retains open proof and adds evidence reconciliation.
+VERIFY-CHAT-DISCLOSURE-ADAPTIVE adds the ordered compact/wide reduced-motion slice.
+No goal is promoted from inspection evidence. Existing BLOCKERS defaults remain;
+no new owner decision is needed for these deterministic checks.
+
+Core-role outcomes: design (`docs/spec.md`), verification (`docs/test-plan.md`)
+and history (`CHANGELOG.md`) are maintained, with navigation (`docs/README.md`).
+Orientation (`README.md`), requirements (`docs/product/prd.md`), living decisions
+(`docs/adr/README.md`), manual code-first API (`docs/api/wing-link.openapi.yaml`)
+and operations (`docs/getting-started.md` and setup/release runbooks) are
+unchanged_verified for inspected ownership, references and relevant boundaries.
+All applicable owners exist; none needs creation. Full API conformance,
+release procedures, native/live execution and screen-reader results are not checked.
+
+Root TODO/goals cover 34 goals and 123 tasks: two met, 16 partial, nine unmet
+and seven unverified. Every non-met goal has two unfinished slices; full task
+entries match ledger checkboxes. The helper's first result is FIX-NPM-AUDIT,
+already in progress; do not duplicate it. Its first open task is
+PARITY-NATIVE-RELAUNCH, subject to the existing no-system-install default.
+VERIFY-CHAT-DISCLOSURE-RECOVERY is dependency-ready without that prerequisite;
+check tracker and continuation ownership before execution. No worker is started.
+
+Executed offline checks: `goals.py fmt .` → `validate .` → `render .` prints
+`ok`; a repeated cycle preserves TODO/goals bytes. All 773 inspected local
+links/anchors and goal-source paths resolve. Task coverage/status checks and
+`git diff --check` pass. Mechanical review checks scoped sentence structure,
+punctuation and protected identifiers. Language/meaning review applies the
+STE-inspired profile and preserves authority, historical versus delivered behavior,
+and execution limits. Full ASD-STE100 dictionary compliance is not verified.
+No source/test changes, installs, product tests, builds, cards, schedules,
+live requests, device actions, publication or upstream modifications run here.
+
+## Passive-footer completion and recents follow-through
+
+Bootstrap + Maintain starts from the changed agent-branch digest at HEAD
+`1afe1307e37ee1ddfa1f7d67ad047509e99c8784`. Branch `agent/wing/t_82b3229c`
+delivers the [passive footer](profile-footer-implementation.md), not full
+profile edit/switch parity. Its three scoped source/test fingerprints match.
+Retained logs record 63 shell widget passes and compiled Chromium navigation
+with unchanged owner state, no incidental domain requests and no errors.
+These are inspected executor receipts, not new runtime execution or final approval.
+
+Spec, test plan, parity/UI-gap ledgers, docs navigation and Unreleased history now
+separate delivered display/navigation from missing edit/switch, recents and modal
+outcomes. TODO matches the existing done PORT-PROFILE-FOOTER ledger entry.
+PORT-GROUPED-RECENTS adds the implementation successor to the existing comparison;
+its dependency prevents premature execution. No completed work is reopened.
+
+Core-role outcomes: design (`docs/spec.md`), verification (`docs/test-plan.md`)
+and history (`CHANGELOG.md`) are maintained, with navigation (`docs/README.md`).
+Orientation (`README.md`), requirements (`docs/product/prd.md`), living decisions
+(`docs/adr/README.md`), manual code-first HTTP contract
+(`docs/api/wing-link.openapi.yaml`), and operations (`docs/getting-started.md`
+and setup/release runbooks) are unchanged_verified for inspected ownership,
+references and relevant limits. All applicable core owners exist; none needs
+creation. Full API standards/runtime conformance and release procedures are not run.
+
+Root TODO/goals contain 120 tasks and 34 goals: two met, 16 partial, nine unmet
+and seven unverified. Each non-met goal retains at least two unfinished slices.
+All task checkboxes match ledger status. Met outcomes retain attributed execution
+receipts, not new full-tree qualification. The helper selects the in-progress
+FIX-NPM-AUDIT; do not dispatch a duplicate. Its first open result is
+PARITY-NATIVE-RELAUNCH, subject to the existing package question.
+DOC-PARITY-RECENTS-REFERENCE remains dependency-ready and independent of that
+question. Existing BLOCKERS entries/defaults are preserved; no new question arises.
+
+Executed offline checks on Linux: the canonical
+`python ~/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .` → `validate .`
+→ `render .` cycle prints `ok`. A repeated cycle preserves TODO/goals bytes.
+Local links/anchors, goal-source paths, task/status coverage and `git diff --check`
+are checked separately. No source/tests, cards, schedules, installs, builds,
+live requests or devices are changed or exercised. No worker is started.
+
+Mechanical review checks scoped sentence structure, punctuation and identifiers.
+Language/meaning review applies the STE-inspired profile and preserves delivered
+versus planned behavior, domain ownership and qualification limits. Full
+ASD-STE100 dictionary compliance is not verified. Repository checks above do not
+establish native runtime, complete API conformance or full product parity.
+
+## Local-artifact drift classification
+
+Mode: Bootstrap + Maintain, starting from the 26 reported drift findings.
+Every listed target exists in this development worktree and is Git-ignored.
+These are optional local execution receipts, generated study graphs/census and
+an analysis tool checkout, not missing product source or planned implementation.
+The exact findings now appear in `.repo-docs-drift-ignore`. Docs navigation and
+the study index explain that fresh clones do not include these artifacts.
+No missing receipt is treated as a new passing check.
+
+Core-role coverage: orientation (`README.md`), requirements (`docs/product/prd.md`),
+ADRs (`docs/adr/README.md`), design (`docs/spec.md`), owned API
+(`docs/api/wing-link.openapi.yaml`), verification (`docs/test-plan.md`), operations
+(`docs/getting-started.md` and setup/release runbooks), and history (`CHANGELOG.md`)
+retain their existing owners. All are unchanged_verified for the inspected
+ownership, local references and scoped evidence-availability boundary.
+Navigation (`docs/README.md`) and the analysis index are maintained.
+All applicable core owners exist; no new core document is needed.
+This pass does not claim complete implementation or API runtime conformance.
+
+Goal-gap review preserves 34 goals and 109 task entries. Every non-met goal has
+at least two unfinished slices, and TODO checkboxes match ledger status.
+Counts remain one met, 16 partial, nine unmet and eight unverified.
+The met loaded-session goal retains its executed bounded review receipt, not a
+new current-tree pass. No task is added, closed, reopened or duplicated.
+The helper selects FIX-NPM-AUDIT, already in_progress. Its first open result is
+PARITY-NATIVE-RELAUNCH, which retains the recorded system-package question.
+CONNECTION-PRIMARY-ENTRY is the next open Now entry independent of that question;
+confirm tracker ownership before execution.
+Existing BLOCKERS questions and defaults remain unchanged. No new question arises.
+
+Executed offline checks on Linux: fmt → validate → render prints `ok`.
+Repeating the cycle preserves TODO/goals bytes. All 26 ignored targets exist
+and pass `git check-ignore`. All 328 inspected local links/anchors in core
+orientation, requirements, design, verification, setup/release, history and
+changed navigation resolve. Task/status and two-slice checks pass.
+`git diff --check` passes. No product tests, builds, installs, live requests,
+device checks, release actions, tracker changes or schedules run here.
+
+Mechanical review checks the scoped prose for short sentences, punctuation and
+protected identifiers. Language/meaning review applies the STE-inspired profile
+and preserves historical evidence, optional-artifact and qualification limits.
+Full ASD-STE100 dictionary compliance was not verified. Repository checks above
+are separate from language review and do not establish product qualification.
+
+## Safe-picker completion after agent-branch change
+
+Mode: Bootstrap + Maintain; documentation, TODO and helper-managed goals only.
+Monitor HEAD remains `1afe1307e37ee1ddfa1f7d67ad047509e99c8784`.
+Branch `agent/wing/t_3ad70dd4` delivers a safe fallback, not exact-pair restoration.
+All nine retained scoped source hashes match this snapshot. Inspected logs record
+358 focused Flutter passes and two compiled daily-workflow failures at the
+exact-pair assertion. Later resumed-send and final mutation counts are NOT_CHECKED.
+No new product test, native/live check or review verdict is inferred.
+
+Spec, test plan, parity ledger, docs navigation and Unreleased history now describe
+explicit selection for unknown identity. TODO removes contradictory future-work
+and authority wording from the already completed PARITY-PAIR-READ entry.
+The test plan also corrects its stale open Gateway harness repair reference.
+No task is added, reopened, claimed or closed; no source/test/card/schedule changes.
+
+Core-role outcomes: spec (`docs/spec.md`), verification (`docs/test-plan.md`) and
+history (`CHANGELOG.md`) are maintained. Orientation (`README.md`), requirements
+(`docs/product/prd.md`), living ADRs (`docs/adr/README.md`), manual code-first API
+(`docs/api/wing-link.openapi.yaml`) and operations (`docs/getting-started.md`,
+setup/release runbooks) are unchanged_verified for ownership, relevant limits and
+references. All applicable owners exist; no new core document is needed.
+Full API standards/runtime conformance and release procedures are not executed.
+
+Root TODO and goals retain 109 task entries with matching checkboxes. Every
+non-met goal has at least two unfinished tasks. Coverage is one met, 16 partial,
+nine unmet and eight unverified. M1 remains partial; goals adds inspection evidence,
+not a new executed product pass. The helper lists FIX-NPM-AUDIT first, already
+in_progress; do not dispatch a duplicate. CONNECTION-PRIMARY-ENTRY is the next
+open Now entry that does not depend on the recorded native-package answer.
+Existing BLOCKERS questions/defaults remain unchanged; no new question arises.
+
+Offline checks: fmt → validate → render prints `ok`. A repeated cycle preserves
+TODO/goals bytes. All goal-source paths and 711 inspected local links/anchors
+resolve. `git diff --check` passes. Mechanical review checks scoped sentences,
+punctuation and protected identifiers. Language/meaning review applies the
+STE-inspired profile and preserves contract absence, fallback and qualification
+limits. Full ASD-STE100 dictionary compliance is not verified. No product tests,
+builds, installs, live requests, device actions or release operations run here.
+
+## Shell inventory completion after agent-branch change
+
+Mode: Bootstrap + Maintain; documentation, TODO and helper-managed goals only.
+Monitor HEAD remains `1afe1307e37ee1ddfa1f7d67ad047509e99c8784`.
+The changed branch set includes `agent/wing/t_65ce1e31`, whose receipt and
+inventory harness match the current working-tree files. All 14 retained evidence
+hashes match. Logs record eight inventory widget passes, 73 focused shell passes,
+clean analysis, a JS-release build and two Chromium journeys.
+
+TODO now marks FINISH-DESKTOP-SHELL complete, matching goals.json.
+The test plan, shell runbook and docs index distinguish this completed check
+from remaining composition parity. No task is added or duplicated.
+The 201-file source manifest has five later differences: Chat layout, model
+picker, two generated localization files and the fixture server. Therefore these
+receipts do not qualify the entire current dirty worktree. No production repair,
+new product execution or independent final approval is inferred.
+
+Core-role outcomes: README (`README.md`), PRD (`docs/product/prd.md`), living ADRs
+(`docs/adr/README.md`), manual code-first API (`docs/api/wing-link.openapi.yaml`),
+spec (`docs/spec.md`) and history (`CHANGELOG.md`) are unchanged_verified for
+inspected ownership and relevant support limits. Verification (`docs/test-plan.md`)
+and operations (`docs/runbooks/desktop-shell-reference-fidelity.md`) are maintained,
+with navigation (`docs/README.md`). All applicable core owners already exist.
+No API standards or runtime conformance check is claimed.
+
+The executed fmt → validate → render cycle prints `ok`; repeating it preserves
+TODO/goals bytes. All 109 ledger tasks have matching TODO checkboxes. Every
+non-met goal retains at least two unfinished tasks. Coverage is one met,
+16 partial, nine unmet and eight unverified. The helper selects FIX-NPM-AUDIT
+next, subject to current tracker ownership. No card or worker is changed.
+Existing BLOCKERS entries/defaults remain unchanged; no new owner question arises.
+
+Mechanical review checks scoped prose and protected identifiers. Language/meaning
+review applies the STE-inspired profile and preserves receipt and platform limits.
+Full ASD-STE100 dictionary compliance is not verified. Repository verification
+is offline on Linux: retained hashes, branch identity, links/anchors, checkbox
+status and `git diff --check`. Product tests, builds, devices, installs, live
+requests, API standards checks and release operations are not run in this pass.
+
+## Merged fleet snapshot and concurrent task reconciliation
+
+Mode: Bootstrap + Maintain; documentation, TODO and helper-managed goals only.
+Monitor HEAD changed from `b045e044b06eb8ebdc811959140a9832e376b235` to
+`25408b79733a2462220bec7383d1b262b06d4045`. The merge tree matches its first
+parent; this pass also inspects concurrent working-tree documentation and ledger
+changes. No code, test, card, schedule or upstream checkout is changed.
+
+All applicable core owners already exist. README (`README.md`), PRD
+(`docs/product/prd.md`), living ADRs (`docs/adr/README.md`), manual code-first HTTP
+contract (`docs/api/wing-link.openapi.yaml`), operations (`docs/getting-started.md`,
+setup/release runbooks) and changelog (`CHANGELOG.md`) are unchanged_verified for
+ownership, local references and the scoped status boundary. Spec (`docs/spec.md`)
+and verification (`docs/test-plan.md`) are maintained, with `docs/README.md`
+navigation. No missing core owner needs creation. API standards validation and
+complete runtime conformance remain unverified.
+
+TODO adds full entries for five existing ledger tasks, not duplicate task IDs:
+FINISH-DESKTOP-SHELL, FIX-GATEWAY-KEYBOARD-390, FIX-NPM-AUDIT,
+M2-DEVICE-QUALIFICATION and FIX-APPROVAL-SETTLEMENT-OWNER. Two stale unchecked
+entries now match the ledger's done status: PARITY-APPROVAL-DISMISSAL and
+DOC-M2-CPU-ENVELOPE-PROOF. Task completion is not independent approval.
+The test plan separates the repaired approval harness from historical timeouts
+and routes shell follow-through to its open task rather than the completed
+loaded-session check. The approval receipt's test blob and retained 12/405-pass
+logs match the inspected evidence. Spec, test plan and navigation index the
+CPU-envelope assessment's first unestablished term, `B_setup`; M2 remains unverified.
+
+Checks use fmt → validate → render, repeated for byte stability, plus local
+path/anchor, task-checkbox and whitespace checks. Every non-met goal retains
+unfinished work. Existing BLOCKERS entries and defaults are preserved; no new
+owner question is needed. No product test, build, device, install, live request
+or API runtime check runs in this pass. STE-inspired mechanical and meaning
+review preserves source-only, proposal and qualification limits. Full ASD-STE100
+dictionary compliance is not verified.
+
 ## CPU-feasibility completion and two-slice backlog coverage
 
 Mode: Bootstrap + Maintain. Scope: Wing documentation, TODO and goals only.
@@ -544,6 +1639,49 @@ not verified. No product tests, builds, device actions or live requests run here
 A fresh read-only pkg-config check still fails for all six Linux prerequisites.
 BLOCKERS retains its no-install default without a date-only edit. No new owner
 question arises. No card, schedule, source, test or upstream file was changed.
+
+## Enlarged-text transcript branch follow-through
+
+Bootstrap + Maintain inspected the changed `agent/wing/t_42880105` branch and
+its integrated worktree receipt. All eight selected source fingerprints match.
+The completed accessibility slice records two widget tests and two compiled
+Chromium journeys at 200% scaling/zoom. This pass inspected those receipts;
+it did not rerun product checks or grant native/live or screen-reader support.
+The native model-relaunch reconciliation already appears in the spec, test plan
+and TODO. Its supported unknown-pair boundary needs no further correction.
+
+Core-role outcomes for this pass:
+
+- `README.md`: unchanged_verified; orientation and canonical navigation remain present.
+- `docs/product/prd.md`: unchanged_verified; accepted intent and qualification limits remain distinct.
+- `docs/adr/README.md` and living decisions: unchanged_verified; no architectural decision changes.
+- `docs/spec.md`: maintained; wrapping and bounded enlarged-text recovery are explicit.
+- `docs/api/wing-link.openapi.yaml`: unchanged_verified for ownership and references only;
+  manual code-first contract. Schema/runtime conformance was not executed.
+- `docs/test-plan.md`: maintained; delivered accessibility checks no longer appear missing.
+- `docs/getting-started.md` and focused runbooks: unchanged_verified for inspected
+  setup/recovery boundaries; no deployment or operational command was executed.
+- `CHANGELOG.md`: maintained; implemented title wrapping is Unreleased, not a new release.
+
+All applicable core owners exist. `docs/README.md` now links the accessibility
+receipt. `TODO.md` aligns its completed checkbox with the existing goal task.
+`VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART` provides the ordered second native slice;
+no existing task, tracker lease, card or schedule was reopened or changed.
+All 33 non-met goals have at least two remaining task slices. Coverage is
+2 met, 17 partial, 9 unmet and 7 unverified. Each met goal has executed passing
+evidence; receipt inspection alone does not upgrade any goal.
+The first eligible ledger task is `PARITY-MAESTRO-ANDROID`; eligibility does not
+establish tracker ownership or dispatch a worker. Existing BLOCKERS defaults remain.
+No new owner question is needed.
+
+Repository checks passed: `goals.py fmt .` → `validate .` → `render .` printed
+`ok`; `git diff --check` exited 0. Local checks found no unresolved paths/anchors
+across 746 links in core owners, index and TODO, and no task-checkbox mismatch.
+Optional ignored receipts remain subject to the documented availability boundary.
+Mechanical review checked changed Markdown, terminology and protected literals.
+Language/meaning review applied the STE-inspired profile and retained exact-owner,
+no-replay, fixture and platform limits. Full dictionary compliance was not verified.
+No source/test changes, installs, builds, live requests or publication ran here.
 
 ## Core-role coverage
 
@@ -1262,6 +2400,44 @@ live evidence, final-review uncertainty, exact owner and no-replay limits under
 the STE-inspired profile. Full ASD-STE100 dictionary compliance was not verified.
 No product, device, live provider, API-runtime or release check ran in this pass.
 
+## Committed shell delivery follow-through
+
+Bootstrap + Maintain starts from commit `1afe1307`. All applicable core owners
+already exist. README (`README.md`), PRD (`docs/product/prd.md`), living ADRs
+(`docs/adr/README.md`) and the code-first API (`docs/api/wing-link.openapi.yaml`)
+remain unchanged for inspected ownership and relevant scope. Full API conformance
+is not established. Spec (`docs/spec.md`), verification (`docs/test-plan.md`),
+operations (`docs/runbooks/desktop-shell-reference-fidelity.md`) and change history
+(`CHANGELOG.md`) are maintained. Existing setup and release procedures are unchanged.
+No missing core owner requires creation.
+
+The index and UI gap ledger no longer describe the bounded correction review
+and design output as pending. The shell runbook now distinguishes the committed
+full Flutter pass from earlier failed snapshots and today's dirty worktree.
+Receipt inspection matched the commit tree, 14 committed source hashes and seven
+log hashes. Retained logs record 3,469 full Flutter passes, 57 focused passes and
+two Chromium journeys. This pass runs no product tests or privileged procedures.
+
+`TODO.md` narrows FINISH-DESKTOP-SHELL to its remaining inventory keyboard check;
+the untracked harness was absent from the committed tree. No task is added,
+closed, claimed or reopened. `goals.json` gains inspection evidence only for
+PARITY-COMPOSITION; its status remains partial. Coverage is one met, 15 partial,
+nine unmet and eight unverified. Existing tasks cover all non-met goals.
+The helper's first eligible task is FIX-NPM-AUDIT, subject to current ownership;
+root audit evidence does not qualify embedded OmniRoute dependency changes.
+Existing BLOCKERS entries and defaults are preserved; no new owner question arises.
+
+Mechanical review checks scoped prose, protected commands and identifiers.
+Language/meaning review preserves committed versus dirty-source evidence,
+bounded review versus whole-app acceptance, and native/live qualification limits.
+The STE-inspired profile applies only to changed prose. Full ASD-STE100 dictionary
+compliance is not verified. Repository verification passed: fmt → validate → render
+printed `ok`; a repeated cycle preserved TODO/goals bytes. Offline checks resolved
+580 local links/anchors and all goal source paths. All 106 indexed tasks have one
+full TODO entry. `git diff --check` passed. Product tests and full API schema/runtime
+checks were not run.
+No source/test, install, card, schedule or upstream change is made by this pass.
+
 ## Coordination and remaining gaps
 
 [BLOCKERS](../../BLOCKERS.md) retains `BLK-20261005-003` and both resolved entries.
@@ -1286,7 +2462,7 @@ No source, tests, dependencies, agent instructions or upstream clones changed.
 
 Repository checks for this pass:
 
-- `python3 /home/xel/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .` →
+- `python3 <home>/.hermes/shared-skills/repo-docs/scripts/goals.py fmt .` →
   `validate .` → `render .`: each returned `ok`, exit 0. A second cycle preserved
   `goals.json` and `TODO.md` byte-for-byte, verified with SHA-256 hashes.
 - Offline checks passed for 197 affected local links/anchors and goal source
@@ -1943,3 +3119,421 @@ validation is not performed in this pass.
 Mechanical review checks scoped sentences, identifiers and table structure.
 Language/meaning review preserves proposal, metadata, enforcement and platform
 limits under the STE-inspired profile. Full dictionary compliance is not verified.
+
+## Patched OmniRoute branch follow-through
+
+Mode: Bootstrap + Maintain. The monitor reports changed agent branches with no
+listed path drift. Branch `agent/wing/t_ed5ca7b4` delivers the patched OmniRoute
+closure at `a12f863f`; its source pins and installer review also appear in the
+pre-existing dirty worktree. This pass preserves those changes and all unrelated
+source, test and coordination edits.
+
+Core-role coverage for this change:
+
+| Role | Canonical path | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for setup boundaries and document navigation. |
+| PRD | `docs/product/prd.md` | unchanged_verified; no new product requirement. |
+| ADR | `docs/adr/README.md` and five living decisions | unchanged_verified; no new architecture decision. |
+| Spec | `docs/spec.md` | maintained for the separate embedded dependency closure and local-only installer. |
+| OpenAPI | `docs/api/wing-link.openapi.yaml` | unchanged_verified for code-first ownership; the local installer adds no HTTP operation. Full conformance remains unverified. |
+| Test plan | `docs/test-plan.md` | maintained for independent embedded audit and consumer checks. |
+| Runbook | `docs/getting-started.md`, setup/release runbooks and `docs/runbooks/android-termux-local-agent.md` | unchanged_verified for inspected procedure boundaries; the existing dirty OmniRoute update already describes the new pins and remaining findings. |
+| Changelog | `CHANGELOG.md` | maintained for the implemented Unreleased partial security repair, not a release. |
+
+All applicable core owners exist. No missing document requires creation.
+FIX-NPM-AUDIT in root `TODO.md` now explicitly covers both dependency locks,
+remaining embedded high findings and refusal of an unsafe downgrade. No task is
+added, closed or claimed. `goals.json` retains existing evidence and statuses:
+one met, 15 partial, nine unmet and eight unverified. The retained loaded-session
+review command receipt supports the one met goal's bounded historical acceptance;
+it does not qualify the later dirty snapshot. All 106 indexed tasks have one full
+TODO entry, and every non-met goal has open or in-progress work.
+The helper selects FIX-NPM-AUDIT, subject to existing tracker ownership.
+Existing BLOCKERS entries and defaults remain unchanged. No new owner question
+arises, and no worker or schedule is started.
+
+Repository verification: fmt → validate → render printed `ok`; offline checks
+resolved 630 local links/anchors and all goal-source paths. `git diff --check`
+passed. The installer pins and test symbols were inspected, not executed.
+No audit, install, product test, native interaction, release or deployment ran.
+Full API syntax/runtime validation was not performed.
+
+Mechanical review checked scoped sentences, identifiers and table structure.
+Language/meaning review preserved root versus embedded audits, source versus
+release status, and consumer versus live-service evidence. The STE-inspired
+profile applies only to changed prose. Full dictionary compliance was not verified.
+
+## Chat selector branch follow-through
+
+Mode: Bootstrap + Maintain. The changed branch `agent/wing/t_4df15a47`
+contains the browser selector repair at `413ec9a7`. Both final test fingerprints
+in its [receipt](chat-new-session-selector-repair.md) match the inspected files.
+Retained logs show two strict-selector failures before repair and 28 passes
+across the final smoke/speech suites. This pass inspected those logs, not a new
+browser run. Independent review and broader qualification remain separate.
+
+Core owners remain the paths in the Document ownership map in
+[the documentation index](../README.md#document-ownership). README, PRD, living
+ADRs, spec, OpenAPI, runbooks and CHANGELOG are unchanged_verified for this
+harness-only change. No product behavior, HTTP operation or release changed.
+The test plan and navigation index now link the bounded receipt. All applicable
+core owners exist; none needs creation. Full API conformance remains unverified.
+
+Root `TODO.md` updates FIX-NPM-AUDIT with its delivered harness slice and existing
+in-progress ownership. No task is added, closed or claimed. Embedded high
+findings remain, and SECURITY stays partial. The current `goals.json` has
+34 goals: one met, 16 partial, nine unmet and eight unverified. All 109 ledger
+tasks have full TODO entries; every non-met goal has open or in-progress work.
+The helper lists FIX-NPM-AUDIT first, already in progress. PARITY-PAIR-READ is
+an open M1 slice that does not require the native Linux package answer.
+Existing BLOCKERS entries and defaults are preserved. No new owner question arises.
+
+Verification: fmt → validate → render printed `ok`; a repeat cycle preserved
+TODO/goals bytes. Goal-source paths resolve. Scoped offline links and anchors
+and `git diff --check` pass. No product tests, installs, audits, deployment,
+release or worker dispatch ran. Mechanical review checked scoped sentences and
+protected identifiers. Language/meaning review preserved historical versus
+current execution, harness versus product behavior, and speech qualification
+limits under the STE-inspired profile. Full dictionary compliance was not verified.
+
+## Completed rename journey follow-through
+
+Bootstrap + Maintain starts from the changed agent branches, including
+`agent/wing/t_afa78f46` at `222be4ee`. The delivered
+[rename receipt](session-rename-journey.md) and new regression match that commit
+byte-for-byte. Retained logs record three journey passes, 136 mutation-owner
+passes, three selected channel passes and clean analysis. Receipt inspection
+is not a new test run or complete session/native/live qualification.
+
+Core-role coverage: README (`README.md`), PRD (`docs/product/prd.md`), ADRs
+(`docs/adr/README.md` and living decisions), spec (`docs/spec.md`), manual
+code-first OpenAPI (`docs/api/wing-link.openapi.yaml`) and changelog
+(`CHANGELOG.md`) are unchanged_verified for relevant ownership and boundaries.
+Verification (`docs/test-plan.md`) and operations
+(`docs/runbooks/chat-session-mutation-intent.md`) are maintained for rename
+readback and its limits. Existing setup/release runbooks remain unchanged.
+All applicable core owners exist; none requires creation. Full API conformance,
+platform acceptance and release readiness remain unverified.
+
+Root TODO reconciles DOC-SESSION-ACTIONS-EVIDENCE with its existing done status,
+updates the delete journey's scope and queues DOC-SESSION-FORK-JOURNEY after it.
+No completed task is reopened or card transitioned. Every non-met goal retains
+open work. The helper's first result is FIX-NPM-AUDIT, already in progress;
+CONNECTION-PRIMARY-ENTRY is an open client slice independent of the recorded
+native package/device questions. Verify tracker ownership before execution.
+BLOCKERS entries and defaults are preserved; no new owner question arises.
+
+Repository verification: fmt → validate → render prints `ok`; `git diff --check`
+passes. Offline checks resolve 316 local paths across core and affected owners,
+excluding 24 optional receipt links. All ledger tasks have one full TODO entry
+with matching checkbox status. Source/receipt equality is inspected separately
+from runtime qualification. No source/test edits, installs, product test runs,
+worker dispatch, card, schedule, deployment or publication action occurs.
+Mechanical review checks scoped sentences and protected identifiers.
+Language/meaning review preserves fixture versus live persistence and full-goal
+limits under the STE-inspired profile. Full dictionary compliance is not verified.
+
+## Completed connection-entry branch follow-through
+
+Bootstrap + Maintain starts from `agent/wing/t_22ea1211` at `0795af6b`.
+The tracked receipt and three regression files match that commit byte-for-byte.
+Retained logs record 13 widget passes, four compiled Chromium journeys, clean
+analysis and a successful web build. This pass inspected those logs; it did not
+rerun product checks or qualify the full dirty worktree.
+
+Core-role coverage: README (`README.md`), living ADRs (`docs/adr/README.md`),
+manual code-first OpenAPI (`docs/api/wing-link.openapi.yaml`) and setup/release
+runbooks are unchanged_verified for inspected ownership and relevant boundaries.
+PRD (`docs/product/prd.md`), spec (`docs/spec.md`), verification
+(`docs/test-plan.md`), connection comparison (`docs/product/desktop-connection-paths.md`)
+and change history (`CHANGELOG.md`) are maintained. The docs index links the
+entry receipt. All applicable core owners exist; none requires creation.
+Full API conformance, native setup, managed SSH and live authentication remain
+unverified or unimplemented; no architecture or requirement is added.
+
+The stale four-primary-choice and planned-grouping descriptions now match the
+implemented three-primary-path grouping. Four transport modes remain available.
+Root TODO reconciles CONNECTION-PRIMARY-ENTRY with its existing done ledger status.
+CONNECTION-ENTRY-LABELS queues the remaining shortened-label delta, alongside
+CONNECTION-SAVED-WORKFLOWS, without duplicating native SSH work. CONNECTION-PATHS
+stays partial. Existing goal evidence and completed gates are preserved.
+Every non-met goal retains open or in-progress work. Native/device/live owner
+questions and defaults remain unchanged; no new question is required.
+
+Repository verification: `goals.py fmt .` → `validate .` → `render .` each
+printed `ok`. A second cycle preserved both ledger files byte-for-byte.
+Offline checks resolved 586 local references, excluding 55 optional artifact
+links. All 114 tasks have matching full TODO entries across 34 goals:
+2 met, 16 partial, 9 unmet and 7 unverified. Every non-met goal has work queued.
+The helper lists FIX-NPM-AUDIT first, already in progress. CONNECTION-ENTRY-LABELS
+is a small dependency-ready slice independent of device/package questions;
+verify tracker ownership before execution. `git diff --check` passes after
+removing an added blank line at EOF. These checks do not establish runtime conformance. No code, tests, installs, cards, workers, schedules,
+services or publication are changed by this pass.
+
+Mechanical review checks scoped sentences, protected identifiers and task entries.
+Language/meaning review preserves transport versus entry identity, implemented
+versus planned scope, retained versus new execution, and platform limits.
+The STE-inspired profile applies to changed prose only.
+Full ASD-STE100 dictionary compliance was not verified.
+
+## Composer and security proof handoff
+
+Bootstrap + Maintain starts from changed agent branches at unchanged HEAD
+`1afe1307`. The composer receipt matches `agent/wing/t_98e84581` byte-for-byte;
+all seven selected source/test hashes match. The security receipt matches
+`agent/wing/t_0ad69d39` byte-for-byte. These are inspected source-bound reports,
+not product tests rerun by this pass or qualification of the complete dirty tree.
+
+Core-role coverage: orientation (`README.md`), product requirements
+(`docs/product/prd.md`), living decisions (`docs/adr/README.md`), technical design
+(`docs/spec.md`), manual code-first API (`docs/api/wing-link.openapi.yaml`),
+setup/operations (`docs/getting-started.md` and existing setup/release runbooks)
+and change history (`CHANGELOG.md`) retain their existing owners and relevant
+boundaries. No applicable owner is missing. Verification (`docs/test-plan.md`)
+is maintained for bounded composer/security evidence and remaining oracles.
+The index and UI gap ledger now expose direct-dictation's concrete wide-layout gap.
+No requirement, architecture, release or operational procedure is changed.
+Full API conformance and native/live qualification remain unverified.
+
+Root TODO reconciles three stale unchecked entries with existing done ledger
+statuses and adds the missing full PORT-CHAT-DIRECT-DICTATION entry. Its goal task
+already exists; no duplicate is registered. The transcript comparison's completed
+prerequisite is explicit. Goals retains 34 outcomes: 2 met, 16 partial, 9 unmet
+and 7 unverified. All 115 task IDs have matching full TODO checkbox entries.
+Every non-met goal retains work. FIX-NPM-AUDIT is the helper's first result,
+already in progress. PORT-CHAT-DIRECT-DICTATION is a small dependency-ready
+implementation slice independent of device/package questions; verify ownership
+before execution. No card, worker or schedule is changed. Existing BLOCKERS
+entries/defaults are preserved; no new owner question is needed.
+
+Repository verification: fmt → validate → render prints `ok`; a repeated cycle
+preserves TODO/goals bytes. Offline checks resolve 650 local references across
+13 owner/affected documents, excluding 57 optional artifact references.
+The initial link check omitted explicit HTML IDs and falsely rejected the
+existing Termux anchor; recognizing those IDs resolves it without a doc change.
+The composer receipt helper passes its ten links, anchors and whitespace checks.
+`git diff --check` passes. No source/test edit, install, product test, device,
+network, service or publication action occurs.
+
+Mechanical review checks scoped sentences, table structure and protected IDs.
+Language/meaning review preserves draft versus hands-free behavior, planned
+versus implemented status, exact owner and receipt versus runtime evidence.
+The STE-inspired profile applies only to changed prose; full ASD-STE100 dictionary
+compliance is not verified.
+
+## Wide draft action and reasoning comparison follow-through
+
+Bootstrap + Maintain starts from the changed agent-branch digest at unchanged
+HEAD `1afe1307`. The delivered draft-action receipt matches nine retained artifact
+fingerprints in the current checkout. Retained review logs record 109 widget passes
+and a JavaScript release build. Wide/compact browser receipts record keyboard
+unavailable-service recovery with zero mutations, remote audio, management requests
+or page errors. This pass inspected receipts; it did not rerun product checks.
+The standalone card branch requires its approved model-selection predecessor.
+Physical capture, native runtime, live Agent and full transcript/IME parity remain
+unqualified. Cancellation discards results rather than Desktop finalize-on-stop.
+
+During this pass, the reasoning comparison finished concurrently. Its done ledger
+status is preserved; TODO now matches it. The comparison itself reports a summary
+label deviation and unproven keyboard/focus/recovery. An executed backlog check
+rejected `CHAT-FIDELITY` being met while acceptance work remained open. The
+supported evidence helper recorded that real failure and restored partial status.
+No comparison receipt, card or worker is rewritten or transitioned by this pass.
+
+Core-role outcomes:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for setup/navigation and alpha limits. |
+| PRD | `docs/product/prd.md` | unchanged_verified for Desktop-first acceptance and platform limits. |
+| ADRs | `docs/adr/README.md` and its five living records | unchanged_verified for authority and existing decisions; no new decision. |
+| Spec | `docs/spec.md` | maintained for current draft intent, teardown and focus behavior. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership; API conformance not rerun. |
+| Test plan | `docs/test-plan.md` | maintained for delivered draft proof and reasoning gaps. |
+| Runbooks | `docs/getting-started.md`, setup/release runbooks | unchanged_verified for relevant operation/qualification boundaries; no procedure change. |
+| Changelog | `CHANGELOG.md` | maintained with implemented Unreleased draft action, not a release claim. |
+
+All applicable core owners exist; none needs creation. Index, route availability
+and UI gap ledger now distinguish the delivered wide button from remaining parity.
+Existing BLOCKERS entries and defaults are preserved; no new owner question arises.
+
+`TODO.md` reconciles two existing done entries and adds three bounded follow-ups:
+`PORT-CHAT-TRANSCRIPT-DISCLOSURE`, `VERIFY-CHAT-DISCLOSURE-RECOVERY` and
+`VERIFY-OMNIROUTE-NODE22-CLOSURE`. The latter verifies the supported Node.js 22
+consumer closure instead of extrapolating the dependency receipt's Node 26 run.
+No duplicate task is added. `goals.json` remains the machine-readable owner.
+Every non-met goal retains work; the two queues shortened by completed cards now
+have follow-on implementation/verification slices. FIX-NPM-AUDIT is already in
+progress. PORT-CHAT-TRANSCRIPT-DISCLOSURE is the small newly dependency-ready slice;
+verify tracker ownership before execution. No autonomous worker was started.
+
+Verification passed: the canonical fmt → validate → render sequence prints `ok`.
+Offline checks resolve 725 local references, including all 34 goal sources and
+anchors; 55 optional artifact references are excluded. All 118 ledger task IDs
+have matching full TODO entries and checkboxes. Coverage is 2 met, 16 partial,
+9 unmet and 7 unverified. A second canonical cycle preserves TODO/goals bytes.
+`git diff --check` passes. Runtime/API, device, install and release actions are not run.
+Mechanical review checks changed sentences, tables and protected identifiers.
+Language/meaning review preserves draft/hands-free/cancel differences, current
+versus historical scope, owner identity and receipt versus runtime evidence.
+The STE-inspired profile applies only to changed prose. Full ASD-STE100 dictionary
+compliance was not verified.
+
+
+## Source-grouped recents delivery follow-through
+
+Bootstrap + Maintain starts from the changed agent-branch digest at unchanged
+HEAD `1afe1307`. The recents comparison is delivered. A concurrent implementation
+also finished: the existing goal ledger records PORT-GROUPED-RECENTS done.
+This pass inspected its retained receipt, not a new product run. All ten selected
+source hashes match. Logs record 72 shell widget passes and one freshly built
+Chromium journey, with no unexpected failures, skips or browser errors.
+Source grouping is implemented. Project/folder grouping, disclosure, native/live
+and screen-reader qualification are not established. No monitor path drift was
+supplied; the repaired drift was stale implementation status in current docs.
+
+| Core role | Canonical owner | Outcome |
+| --- | --- | --- |
+| Orientation | `README.md` | unchanged_verified for alpha setup and navigation. |
+| Requirements | `docs/product/prd.md` | unchanged_verified for Desktop-first intent and acceptance boundaries. |
+| Decisions | `docs/adr/README.md` and five living ADRs | unchanged_verified for existing authority and decisions; no new decision. |
+| Design | `docs/spec.md` | maintained for source-group projection and remaining composition gaps. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership; runtime conformance not rerun. |
+| Verification | `docs/test-plan.md` | maintained for retained grouped-controls evidence and remaining limits. |
+| Operations | `docs/getting-started.md` and setup/release runbooks | unchanged_verified for inspected setup and qualification boundaries; no procedure change. |
+| History | `CHANGELOG.md` | maintained for implemented Unreleased source grouping, not publication. |
+
+All applicable core owners exist; none needs creation. The index and parity/UI
+ledgers distinguish loaded source groups from Desktop Project/folder grouping.
+Historical comparisons retain their original evidence boundary. TODO matches the
+completed implementation and adds PORT-GLOBAL-SESSION-MODAL, a bounded global
+panel slice based on existing composition oracles. Composition again retains two
+open implementation/verification slices. No duplicate task, card transition,
+worker or schedule change occurs. Existing BLOCKERS questions/defaults are
+preserved; no new owner question is needed.
+
+Repository verification: fmt → validate → render prints `ok`; `git diff --check`
+passes. All 122 task IDs have one full TODO entry with matching checkbox status.
+All 34 goal-source paths exist. Offline checks resolve 696 local links and anchors
+across 14 core/affected documents, excluding 55 optional local-artifact references.
+Coverage remains two met, 16 partial, nine unmet and seven unverified; every
+non-met goal has remaining work. No goal is promoted from a document receipt.
+FIX-NPM-AUDIT is already in progress. PARITY-NATIVE-RELAUNCH is the helper's
+first open task, with its existing native-package prerequisite. The new global
+panel slice is dependency-ready independently of privileged platform setup.
+Tracker ownership must be checked before execution; no worker was started.
+
+Mechanical review checks changed table structure, sentences and protected IDs.
+Language/meaning review preserves exact source versus Project identity, explicit
+Open/New versus incidental reads, and inspected receipts versus fresh execution.
+The STE-inspired profile applies to changed prose only. Full ASD-STE100 dictionary
+compliance was not verified. No Flutter, Go, browser, device, live API, install,
+release or network check ran in this documentation pass.
+
+## Compact Profiles and grouped-recents handoff
+
+Bootstrap + Maintain starts from changed agent branches at unchanged HEAD
+`1afe1307`. The compact Profiles receipt matches all eight source fingerprints.
+Its retained navigation log records two passing Linux-hosted widget checks.
+The recents comparison records eight existing Open/lifetime checks and a bounded
+source-grouping contract, not implementation. This pass inspects receipts only.
+Mobile keyboard, real destination recovery, Android/native and full parity remain
+unqualified. The monitor supplied no broken-path findings.
+
+Core-role outcomes:
+
+| Role | Canonical owner | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for orientation and existing navigation. |
+| PRD | `docs/product/prd.md` | unchanged_verified for Desktop-first intent and target-specific acceptance. |
+| ADRs | `docs/adr/README.md` and living decisions | unchanged_verified for authority and existing decisions; no new decision. |
+| Spec | `docs/spec.md` | unchanged_verified for current shell composition and planned boundaries. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership and paths; schema/runtime conformance not rerun. |
+| Test plan | `docs/test-plan.md` | maintained for compact navigation evidence and recents recovery gaps. |
+| Runbooks | `docs/getting-started.md` and existing setup/release runbooks | unchanged_verified for inspected scope and qualification limits; no operation change. |
+| Changelog | `CHANGELOG.md` | unchanged_verified for implemented Unreleased scope; no runtime or release change. |
+
+All applicable core owners exist; none needs creation. The docs index exposes
+compact Profiles access as an adaptation, not selected-profile persistence.
+TODO reconciles two completed comparison entries with the existing goal ledger
+and makes PORT-GROUPED-RECENTS' completed prerequisite explicit. It adds one
+bounded follow-on, VERIFY-GROUPED-RECENTS-RECOVERY, for disclosure, focus and
+adaptive-return invalidation. Composition retains two implementation/verification
+slices. No task status, card, worker or schedule is transitioned by this pass.
+Existing BLOCKERS entries and defaults are preserved; no new owner question arises.
+
+Root `goals.json` and `TODO.md` cover 34 goals and 121 tasks: two met, 16 partial,
+nine unmet and seven unverified. Every non-met goal retains open work. No parent
+outcome is promoted on a documentation receipt. FIX-NPM-AUDIT is in progress;
+do not duplicate it. The helper's first open task is PARITY-NATIVE-RELAUNCH,
+with the existing native-package prerequisite. PORT-GROUPED-RECENTS is now a
+small dependency-ready implementation option without that platform prerequisite.
+Check tracker and continuation ownership before execution; no worker is started.
+
+Repository verification: fmt → validate → render each prints `ok`.
+All 121 task IDs have one full TODO entry and matching checkbox status.
+Offline checks resolve 652 local references across 13 owner/receipt documents;
+55 optional local-artifact references are excluded. All goal-source paths exist.
+The explicit HTML anchor in the phone-only tutorial is valid, not drift.
+`git diff --check` passes. These checks do not establish product/runtime parity.
+No Flutter, Go, browser, device, live API, installation or release checks ran.
+Mechanical review checks changed prose, task identifiers and table shape.
+Language/meaning review preserves direct-management versus profile selection,
+source versus Project grouping, historical execution and platform limits.
+The STE-inspired profile applies to changed prose only. Full ASD-STE100 dictionary
+compliance was not verified.
+
+
+## Adaptive reasoning delivery follow-through
+
+Bootstrap + Maintain starts from the changed `agent/wing/t_e3589e12` branch at
+`089e25dfa3ebc2c75a71866636d7f79d6a7407c6`, with unchanged shared HEAD `1afe1307`.
+The [adaptive receipt](reasoning-disclosure-adaptive.md) matches all six source
+fingerprints. Retained final logs record 101 widget passes, clean analysis,
+a completed JavaScript build and three compiled Chromium journeys. This pass
+inspected receipts; it did not rerun product checks or approve native cards.
+
+The spec, test plan, changelog, index and parity/UI ledgers now distinguish
+qualified compact/wide keyboard return from unqualified native/live and
+screen-reader behavior. Retained expansion seeds the remounted inner tile;
+old actionable focus releases, and keyboard traversal reaches its replacement.
+No relaunch persistence, Agent mutation or full transcript parity is inferred.
+The monitor supplied no broken-path findings; corrected drift was stale status.
+
+| Core role | Canonical owner | Outcome |
+| --- | --- | --- |
+| README | `README.md` | unchanged_verified for orientation, alpha boundaries and navigation. |
+| PRD | `docs/product/prd.md` | unchanged_verified for accepted Desktop-first intent and acceptance limits. |
+| ADRs | `docs/adr/README.md` and five living decisions | unchanged_verified for existing ownership and relevant authority; no new decision. |
+| Spec | `docs/spec.md` | maintained for adaptive tile remount and focus policy. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified for manual code-first ownership and cited paths; schema/runtime conformance not rerun. |
+| Test plan | `docs/test-plan.md` | maintained for retained adaptive execution and remaining qualification gaps. |
+| Runbooks | `docs/getting-started.md`, `docs/runbooks/android-hermes-setup.md`, `docs/runbooks/release-alpha.md` | unchanged_verified for inspected paths and operation boundaries; no procedure change. |
+| Changelog | `CHANGELOG.md` | maintained for the implemented Unreleased remount fix, not publication. |
+
+All applicable core owners exist; none needs creation. Root TODO reconciles
+VERIFY-CHAT-DISCLOSURE-ADAPTIVE with its existing done ledger status. It adds
+VERIFY-CHAT-COMPOSER-ORDER-RECOVERY after PORT-CHAT-COMPOSER-ORDER, preserving two
+bounded remaining fidelity slices. Every non-met goal retains remaining work.
+Coverage is two met, 16 partial, nine unmet and seven unverified across 34 goals.
+All 125 indexed tasks have one full TODO entry with matching checkbox status.
+CHAT-FIDELITY remains partial. Existing BLOCKERS entries/defaults are preserved;
+no new owner question, card, worker or schedule change is needed.
+
+Repository verification: `goals.py fmt .` → `validate .` → `render .` prints `ok`.
+Offline checks resolve 744 local links/anchors across 21 owner/coordination/receipt
+files, excluding 55 optional local-artifact references. All 34 goal-source paths
+exist. A second ledger cycle preserves TODO/goals bytes; scoped `git diff --check`
+passes for this documentation scope. FIX-NPM-AUDIT is already in progress; the helper's
+first open candidate is PARITY-NATIVE-RELAUNCH, with its existing native-package
+prerequisite. PORT-CHAT-COMPOSER-ORDER is a dependency-ready fidelity alternative.
+Check current tracker ownership before execution; no worker was started.
+
+Mechanical review checks scoped sentences, protected identifiers and table shape.
+Language/meaning review preserves remount versus eviction, exact owner identity,
+focus release versus retention and inspected receipts versus fresh execution.
+The STE-inspired profile applies to changed prose only; full ASD-STE100 dictionary
+compliance was not verified. Product, API-runtime, device, install and release
+checks were not run. No source/test or upstream reference file was changed.

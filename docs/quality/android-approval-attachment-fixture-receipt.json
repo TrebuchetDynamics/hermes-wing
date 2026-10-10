@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "card": "t_be855c75",
+  "goal": "PARITY",
+  "source_head": "1afe1307e37ee1ddfa1f7d67ad047509e99c8784",
+  "source_kind": "dirty working tree; not isolated branch qualification",
+  "source_scope_sha256": "a3bfbaefc4621b7fcaa9d168cb11ac83f19b9783fa64224bb3fc91eac849e389",
+  "source_manifest": ".task-evidence/t_be855c75/source-manifest.json",
+  "owned_source_sha256": {
+    "scripts/run_android_maestro_features.sh": "38966f19a8f788c36e2a8959d7be5aab9943a798e20198f29d0060c24be3b813",
+    "scripts/maestro/fixture/approvals_recovery.yaml": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+    "scripts/maestro/fixture/attachment_picker_race.yaml": "6b79d41ae9ecf6f52a7576a1ddb06351c7f5e8c43729230c5ceb7364352582ed",
+    "integration_test/hermes_features_maestro_main.dart": "ccd6bc142d25403dc99420d164cfc1d5e1a018245fc8af5d9133c4c6cdf070f4",
+    "integration_test/support/maestro/interaction_fixture.dart": "084f032d271e32aa7d27cd739eded7d5772e72e3eff5d3b51a406ccd36a25984",
+    "test/integration/maestro_approval_attachment_controls_test.dart": "928826127a8273f54b783d18c061f1d3463b7a8a1446f703a04a605ebaf9aece",
+    "test/tooling/android_maestro_features_wrapper_test.py": "fbc2fcece09c2b36f9ab4a5490bc4f9ad7f5d13fec7d4205dca706c3fa842d3e"
+  },
+  "platform": "Linux-hosted Flutter widget tests; Android Maestro startup attempted only",
+  "device_selection": "Previously enrolled disposable Waydroid target only; serial redacted",
+  "adb_authentication_current": "NOT_CHECKED; unreachable, devices list empty",
+  "apk_build": "NOT_CHECKED; no build/install/reset performed",
+  "app_id_expected": "com.trebuchetdynamics.hermes.wing.qa",
+  "maestro_version": "2.4.0",
+  "flows": [
+    {
+      "flow": "scripts/maestro/fixture/approvals_recovery.yaml",
+      "attempted_flow_sha256": "1871e03fa0adfdf82ebc9c8ef58175cb87cd741d216faa76cc0fe10266e0f093",
+      "current_flow_sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+      "command": "timeout 45s env XDG_CACHE_HOME=\"$PWD/.task-evidence/t_be855c75/maestro-cache\" \"$HOME/.maestro/bin/maestro\" --device \"$WING_QA_DEVICE\" test --no-reinstall-driver --test-output-dir \"$OUTPUT_DIR\" scripts/maestro/fixture/approvals_recovery.yaml",
+      "exit_code": 1,
+      "first_failure": "Requested selected device is not connected; no flow steps executed",
+      "runtime_outcome": "NOT_CHECKED",
+      "assertion_outcomes": "NOT_CHECKED",
+      "apk_sha256": null,
+      "installed_app_identity": "NOT_CHECKED"
+    },
+    {
+      "flow": "scripts/maestro/fixture/attachment_picker_race.yaml",
+      "attempted_flow_sha256": "c48a85ec74f7dd059332e5d589f1d73dffd943296b35c9009e73f3c678db45a2",
+      "current_flow_sha256": "6b79d41ae9ecf6f52a7576a1ddb06351c7f5e8c43729230c5ceb7364352582ed",
+      "command": "timeout 45s env XDG_CACHE_HOME=\"$PWD/.task-evidence/t_be855c75/maestro-cache\" \"$HOME/.maestro/bin/maestro\" --device \"$WING_QA_DEVICE\" test --no-reinstall-driver --test-output-dir \"$OUTPUT_DIR\" scripts/maestro/fixture/attachment_picker_race.yaml",
+      "exit_code": 1,
+      "first_failure": "Requested selected device is not connected; no flow steps executed",
+      "runtime_outcome": "NOT_CHECKED",
+      "assertion_outcomes": "NOT_CHECKED",
+      "apk_sha256": null,
+      "installed_app_identity": "NOT_CHECKED"
+    }
+  ],
+  "checks": [
+    {
+      "command": "flutter test --concurrency=1 test/integration/maestro_approval_attachment_controls_test.dart test/integration/maestro_feature_fixture_test.dart",
+      "exit_code": 0,
+      "result": "7 tests passed",
+      "log": ".task-evidence/t_be855c75/flutter-tests-passing.log"
+    },
+    {
+      "command": "flutter analyze",
+      "exit_code": 0,
+      "result": "No issues found",
+      "log": ".task-evidence/t_be855c75/analyze-passing.log"
+    },
+    {
+      "command": "dart format --output=none --set-exit-if-changed integration_test/hermes_features_maestro_main.dart integration_test/support/maestro/interaction_fixture.dart test/integration/maestro_approval_attachment_controls_test.dart",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m unittest test/tooling/android_maestro_features_wrapper_test.py -v",
+      "exit_code": 0,
+      "result": "4 tests passed; mocked tool dispatch only"
+    },
+    {
+      "command": "bash -n scripts/run_android_maestro_features.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "maestro check-syntax scripts/maestro/fixture/approvals_recovery.yaml",
+      "exit_code": 0
+    },
+    {
+      "command": "maestro check-syntax scripts/maestro/fixture/attachment_picker_race.yaml",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "widget_observations": {
+    "submitted_turns": 3,
+    "approval_decisions": 2,
+    "stop_calls": 1,
+    "restored_session": "sess_1",
+    "stale_attachment_staged": false,
+    "picker_calls": 2,
+    "picker_completions": 1,
+    "attachment_submitted_turns": 0
+  },
+  "remaining": [
+    "Real Android approvals/Stop/reconnect and history assertions",
+    "Real Android deferred attachment owner-race assertions",
+    "Other mapped Android feature flows",
+    "Live Agent run/Stop/reconnect and native file picker qualification"
+  ],
+  "questions": []
+}

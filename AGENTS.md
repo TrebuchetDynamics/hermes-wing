@@ -1,8 +1,8 @@
 # Hermes Wing Agent Guide
 
 Hermes Wing is an independent cross-platform Flutter client for Hermes Agent
-and is developed with local upstream reference clones of Hermes Agent and
-Hermes Desktop. Hermes Agent owns agent/domain state; Wing Link is the
+and is developed with local upstream reference checkout of Hermes Agent and its official
+Desktop app under `apps/desktop/`. Hermes Agent owns agent/domain state; Wing Link is the
 authenticated host management plane. Preserve that boundary in every design,
 implementation, test, and user-facing claim.
 
@@ -27,17 +27,20 @@ screenshots, and generated maps are not proof that a capability ships.
 
 ## Permanent upstream references
 
-Two full upstream repositories are cloned inside this worktree for development
-reference:
+The official Desktop subtree is the only product reference. Prior comparisons
+from the retired separate checkout are not official parity evidence. See
+[reference correction](docs/quality/official-desktop-reference.md).
+
+One read-only upstream repository provides both authoritative references:
 
 - `hermes-agent/` → `https://github.com/NousResearch/hermes-agent`
-- `hermes-desktop/` → `https://github.com/fathah/hermes-desktop`
+- `hermes-agent/apps/desktop/` → `https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop`
 
 Use these clones before guessing Hermes contracts or Desktop behavior:
 
 - Inspect `hermes-agent/` for current APIs, models, profile/configuration
   authority, session semantics, gateway behavior, CLI compatibility, and tests.
-- Inspect `hermes-desktop/` for interaction patterns, terminology, and parity
+- Inspect `hermes-agent/apps/desktop/` for interaction patterns, terminology, and parity
   research. Reproduce user outcomes with Flutter and platform-native Wing
   patterns; do not port Electron internals line-for-line.
 - Read each reference repository's own `AGENTS.md` before inspecting it deeply.
@@ -46,7 +49,7 @@ Use these clones before guessing Hermes contracts or Desktop behavior:
   Wing-specific Agent builds; do not request an upstream-edit exception to unblock
   missing capabilities. See the
   [hard ADR](docs/adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
-- Treat both directories as read-only reference material. Do not include them in Wing formatting,
+- Treat the Agent checkout and its Desktop subtree as read-only reference material. Do not include them in Wing formatting,
   tests, staging, commits, searches intended only for Wing, or dependency graphs.
 - Their current checkout is evidence of that checkout only. Hermes Agent remains
   authoritative at runtime, and advertised API capabilities remain more reliable
@@ -221,8 +224,7 @@ rollback behavior to reduce implementation effort.
   ownership.
 - `hermes-agent/`: permanent, read-only upstream Agent reference clone; not part
   of the Wing product, build, validation, or commit scope.
-- `hermes-desktop/`: permanent, read-only upstream Desktop reference clone for
-  parity and UX research; not part of the Wing product, build, or commit scope.
+- `hermes-agent/apps/desktop/`: official Desktop product and UX reference inside the read-only Agent checkout.
 - `test/`: Dart unit, widget, source-contract, and platform tests; mirror the
   production area when practical.
 - `integration_test/`: Flutter integration flows and deterministic support code.
@@ -250,9 +252,17 @@ setup is `flutter pub get` and `npm ci`.
   wide formatting to solve a scoped task.
 - Do not commit or stage credentials, transcripts, private endpoint URLs, generated
   Agent/runtime state, local tool state, build output, or test screenshots.
-- A request to commit, push, or ship (including `git-commit-push`) authorizes the
-  necessary delivery branch, commits, push, and pull request. Follow repository
-  protection and required checks without asking again for those steps.
+- Development is **main-only**, as explicitly required by the owner. Work in
+  the canonical checkout on `main`; do not create development branches,
+  branch-based worktrees, or pull requests. Use immutable filesystem snapshots
+  for QA. Keep one writer; parallel agents investigate or review read-only.
+- A request to commit, push, or ship (including `git-commit-push`) authorizes
+  scoped commits and a normal fast-forward push to `main`, not another branch
+  or PR. Preserve required checks and remote protection; if direct delivery is
+  blocked, report it rather than bypassing protection or creating a branch.
+- Before deleting legacy branch refs, retain a verified private archive of
+  unmerged commits. Branch deletion never means discarding dirty files or
+  treating unqualified work as integrated.
 - Merging, releases, deployments, destructive history changes, and unrelated
   external-system changes require separate explicit authorization.
 - Keep comments focused on invariants and reasons; do not narrate obvious code.

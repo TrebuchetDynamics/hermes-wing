@@ -1,0 +1,68 @@
+{
+  "card": "t_90ae659f",
+  "goal": "CONNECTION-PATHS",
+  "status": "partial",
+  "scope": "first independently verifiable saved-host rename/remove owner-safety part; full workflow not complete",
+  "tasks": [
+    {
+      "depends_on": [
+        "CONNECTION-PRIMARY-ENTRY"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SAVED-WORKFLOWS",
+      "section": "Now",
+      "status": "in_progress",
+      "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-SAVED-HOST-OWNER-SAFETY"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SETUP-AUTH-MATRIX",
+      "section": "Now",
+      "status": "open",
+      "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SAVED-HOST-OWNER-SAFETY",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify saved-host rename/remove cancellation, storage retry and delayed owner settlement"
+    }
+  ],
+  "executed_evidence": [
+    {
+      "kind": "executed",
+      "ref": "CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:8897/ NODE_OPTIONS=--max-old-space-size=2048 timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/saved-connection-workflows.spec.mjs --workers=1 --output=.dart_tool/receipts/t_90ae659f/browser",
+      "result": "pass"
+    },
+    {
+      "kind": "executed",
+      "ref": "dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/widgets/hermes_chat_error.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart",
+      "result": "pass"
+    },
+    {
+      "kind": "executed",
+      "ref": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "kind": "executed",
+      "ref": "timeout 10m flutter analyze",
+      "result": "pass"
+    },
+    {
+      "kind": "executed",
+      "ref": "timeout 10m flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart",
+      "result": "pass"
+    },
+    {
+      "kind": "executed",
+      "ref": "timeout 15m flutter build web --release -t lib/main_e2e.dart",
+      "result": "pass"
+    }
+  ]
+}

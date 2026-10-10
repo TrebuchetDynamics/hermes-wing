@@ -1,5 +1,7 @@
 # Release Evidence Implementation Plan
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Packaging evidence does not establish app fidelity.
+
 > **For agentic workers:** Use executing-plans task-by-task. This plan does not authorize publishing, signing-key changes, tags, commits, or workflow dispatch.
 
 **Goal:** Bind validation and platform qualification to immutable build inputs and the exact artifacts exercised.

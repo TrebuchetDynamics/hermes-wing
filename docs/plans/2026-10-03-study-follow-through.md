@@ -1,5 +1,7 @@
 # Four-repository study follow-through
 
+> Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Secondary studies inform techniques, not the product baseline.
+
 Status: delivery direction adopted on 2026-10-03; bounded readiness correction
 implemented, focused deterministic checks passed and the review finding was
 resolved (receipt below). Broader/runtime qualification remains pending. This plan closes no

@@ -1,6 +1,12 @@
 # Wing Link
 
-Status: current behavior plus approved target
+Status: deprecated product component; retained implementation reference
+
+The owner requires removal of Wing Link from Wing's product flows and eventual
+retirement of its packaging and service. This document records legacy behavior,
+not the target setup architecture. Use direct Hermes Agent connection instead.
+See the [deprecation decision](../adr/product.md#wing-link-deprecation). Existing
+code and installed state have not been removed by this documentation change.
 
 Wing Link is the authenticated **remote management API** that runs beside Hermes
 Agent. Hermes Wing uses it for host operations that the Agent API cannot perform.

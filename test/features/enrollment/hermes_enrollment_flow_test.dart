@@ -1855,6 +1855,10 @@ void main() {
       final computer = find.byKey(
         const ValueKey('hermes-enrollment-computer-setup'),
       );
+      final optional = find.byKey(const ValueKey('hermes-welcome-optional'));
+      await tester.ensureVisible(optional);
+      await tester.tap(optional);
+      await tester.pumpAndSettle();
       await tester.ensureVisible(computer);
       await tester.tap(computer);
       await tester.pumpAndSettle();
@@ -1898,6 +1902,9 @@ void main() {
         findsOneWidget,
       );
       await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(optional);
+      await tester.tap(optional);
       await tester.pumpAndSettle();
       await tester.ensureVisible(computer);
       await tester.tap(computer);
@@ -2204,6 +2211,7 @@ void main() {
       'Linux chooser offers pairing, local setup, and manual actions',
       (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
         final store = FakeHermesEndpointStore();
         final source = _FakeConnectIntentSource();
         addTearDown(source.dispose);
@@ -2225,6 +2233,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
+        final optional = find.byKey(const ValueKey('hermes-welcome-optional'));
+        await tester.ensureVisible(optional);
+        await tester.tap(optional);
+        await tester.pumpAndSettle();
         expect(
           find.byKey(const ValueKey('hermes-enrollment-local-setup')),
           findsOneWidget,

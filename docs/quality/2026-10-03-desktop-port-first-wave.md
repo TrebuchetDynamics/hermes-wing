@@ -1,5 +1,8 @@
 # Desktop port first wave — 2026-10-03
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Delivered bounded scope
 
 Owner priority: a 1:1 Hermes Desktop product port in Flutter. Documentation now
@@ -27,16 +30,16 @@ Plan/ownership manifest: `docs/plans/2026-10-03-desktop-port-first-wave.md`.
 Audit: `docs/analysis/2026-10-03-desktop-port-next-gaps.md`.
 
 Read-only Desktop reference:
-`2ed89070bc6c9e8231a37bb55df8a7722a3776b8`.
+`withdrawn reference revision`.
 Collapse behavior/persistence reference:
-`hermes-desktop/src/renderer/src/screens/Layout/Layout.tsx:255–261,670–713`.
+`withdrawn source citation,670–713`.
 Upstream reference code/tooling was not edited. No removal or optionality of the
 current Wing Link dependencies is claimed.
 
 ## Verification evidence
 
 Builder logs inspected by parent:
-`/home/xel/.hermes/profiles/wing/cache/scratch/desktop-port-shell/`.
+`<home>/.hermes/profiles/wing/cache/scratch/desktop-port-shell/`.
 
 - `red.log`: original missing-toggle regression failed (0 passed, 1 failed);
   the independent reviewer inspected this historical RED, not a new RED rerun.
@@ -53,7 +56,7 @@ high/medium bugs attributable to the wave. Reviewer independently ran
 (exit 0, 3 passed) and scoped `git diff --check` (exit 0).
 
 Parent verification logs:
-`/home/xel/.hermes/profiles/wing/cache/scratch/desktop-port-first-wave-parent/`.
+`<home>/.hermes/profiles/wing/cache/scratch/desktop-port-first-wave-parent/`.
 Exact commands, exits and UTC timestamps are captured in `results.json`.
 
 - `dart format --output=none --set-exit-if-changed lib test integration_test`:

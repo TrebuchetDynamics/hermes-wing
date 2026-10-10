@@ -39,6 +39,54 @@ mutation-confirmation invalidations; see the
 [session settlement runbook](chat-session-settlement.md) for scoped behavior,
 production error characterization and deterministic verification.
 
+## Authoritative rename readback
+
+The [rename journey receipt](../quality/session-rename-journey.md) adds three
+Linux-hosted Flutter widget journeys through the production screen, channel and
+client with a deterministic HTTP recorder. One deliberate rename submits one
+profile-scoped PATCH and displays the returned title, not the submitted draft.
+Disconnect/reconnect clears session state; reopening reads the title and history
+from the same fixture owner without another write. Cancel and same-ID profile
+replacement submit no mutation. Retained logs record three journey passes,
+136 nearest ownership passes and three selected channel passes. This is not
+live database persistence, full-router, browser or native relaunch qualification.
+The later search/resume receipt below completes the recorded deterministic slices, not full Desktop parity.
+
+## Authoritative delete readback
+
+The [delete journey receipt](../quality/session-delete-journey.md) adds three
+Linux-hosted Flutter widget journeys through the production screen, channel and
+client. Deliberate confirmation submits one profile-scoped DELETE. Reconnect
+reads the fixture's remaining rows and current history without another mutation.
+Cancel and same-ID profile replacement submit nothing. Retained logs record
+three journey passes, 136 mutation-owner passes and five channel-delete passes.
+The receipt also records three selected ownership passes and two client passes.
+These deterministic checks do not establish live database persistence, full-router,
+browser or native qualification.
+
+## Authoritative branch readback
+
+The [branch journey receipt](../quality/session-fork-journey.md) records three
+production-screen/channel/client widget passes. Confirmation submits one explicitly
+scoped fork POST and reads the returned child's authoritative history. Reconnect
+and explicit reopen read changed fixture history without another mutation.
+Cancel and same-ID owner replacement submit nothing. This does not qualify
+automatic remembered-session restoration, live database copying or native/browser
+interaction.
+
+## Authoritative search and explicit resume
+
+The [search/resume receipt](../quality/session-search-resume-journey.md) records
+four production-screen/channel/client journeys and 111 nearest passes.
+Loaded-row search and clear do not mutate the selection or submit writes.
+Deliberate selection reads exact profile/session history. Reconnect and explicit
+reopen display changed fixture history without replay. Late old-selection and
+same-ID old-profile results cannot replace the current owner.
+SESSIONS is met only for the recorded deterministic search/resume/fork/rename/delete
+journeys. Full-text/corpus-wide search, automatic restoration, native/browser
+interaction and live persistence remain unqualified. Root TODO preserves these
+completed tasks rather than requesting duplicate work.
+
 ## Executed regression evidence
 
 On the pre-repair dirty source at HEAD

@@ -1,0 +1,50 @@
+{
+  "lib/l10n/app_en.arb": {
+    "tested_sha256": "5c6c0e7a11dfb67ae086282c6bf2bdeda582f45594449eff4133d22ef7de2275",
+    "scoped_sha256": "869d90f4e0c9c2f548f5ade705479cfb621e70d013907bf2bc6d56ee8ae60334"
+  },
+  "lib/l10n/app_localizations.dart": {
+    "tested_sha256": "95e14d742823946b88a4bc01d02415f966317e6baddf795148c77b005a20927e",
+    "scoped_sha256": "03a6177fd39157962657853ae87eafb5b594602b15f6e6bfb4b023fd5c7b5f36"
+  },
+  "lib/l10n/app_localizations_en.dart": {
+    "tested_sha256": "7b2ca12704956e72f3febf71094d6288170d1e83651c656d719e9c5a7673927d",
+    "scoped_sha256": "92ca4d49feef618b2b5c2e4d597b0dd85eef277d2ebbff950911e8474c20250d"
+  },
+  "test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart": {
+    "tested_sha256": "05ed55ac526a1c15bc27f82c20d47474cd4d3610d0a1f68d4b27f0f4899cfff0",
+    "scoped_sha256": "05ed55ac526a1c15bc27f82c20d47474cd4d3610d0a1f68d4b27f0f4899cfff0"
+  },
+  "playwright/tests/regression/remote-connection-retry.spec.mjs": {
+    "tested_sha256": "1c566906d6443bffd283d292ababb46a142b5a480f34af7edfb82e8399f3bd6e",
+    "scoped_sha256": "1c566906d6443bffd283d292ababb46a142b5a480f34af7edfb82e8399f3bd6e"
+  },
+  "docs/quality/remote-connection-retry.md": {
+    "tested_sha256": "6d83406721198d094901ae54b0c02c9f5d92387be77a6a3d24fc8a65101a1853",
+    "scoped_sha256": "6d83406721198d094901ae54b0c02c9f5d92387be77a6a3d24fc8a65101a1853"
+  },
+  "lib/features/hermes_chat/screens/hermes_chat_screen.dart": {
+    "tested_sha256": "3adebc5aebcf5706f123e3faa10b269aabd3c55654cd9014a8dd4b018e312cf7",
+    "scoped_sha256": "75c9600cd754c8f2cff68fff074beed0d300f21708a122c658ad6a0a825764f7"
+  },
+  "lib/features/hermes_chat/screens/state/hermes_chat_connection.dart": {
+    "tested_sha256": "11685744f3f15f6707e99a98382f9d45aa73e27bbb17f6ffdacc07f36df91a06",
+    "scoped_sha256": "df50268458b41edd789b709af8aa0baacacfe85abda92542b844daf4f8f04ee9"
+  },
+  "lib/features/hermes_chat/screens/state/hermes_chat_layout.dart": {
+    "tested_sha256": "f5b9f3cc9ebdc43fc8160dce9199ae7fba8ace34b3ca6a86956fbbf77faeb5d5",
+    "scoped_sha256": "61c035c7c99d129424ee30433217a290e3a86c1ec246f7aeb64b1b80b40dbbac"
+  },
+  "lib/main_e2e.dart": {
+    "tested_sha256": "18ba25fd2d0920563edd8ea281342940c2dc9c3a9b4a3b241043c7de73b36ac4",
+    "scoped_sha256": "7e316dbf1fd977356d54fcee760142960a9f509c4e86b44eb3e9bae0dc41d352"
+  },
+  "lib/features/hermes_chat/screens/state/hermes_chat_lifecycle.dart": {
+    "tested_sha256": "19976075f4b59b4fd642280fb8d232f52a5935187e11a9d8649565345144b553",
+    "scoped_sha256": "9e58b6f0ac8ee61a56f5fa8aaf974a9df256ce8cbce7fad0625f36c64232ea36"
+  },
+  "serve_web.mjs": {
+    "tested_sha256": "4b70918cad51b44afed0d82ece43fd65c01a8031d29393a5007e8cc4afeb0100",
+    "scoped_sha256": "975c42f433f8e357ac24d92b8025ec0e95d627a7f74d05c7e1d128730f656ed1"
+  }
+}

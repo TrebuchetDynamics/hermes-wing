@@ -9,6 +9,7 @@ import '../../features/gateway/screens/gateway_screen.dart';
 import '../../features/hermes_chat/screens/hermes_add_screen.dart';
 import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/local_setup/screens/local_hermes_setup_screen.dart';
+import '../../features/local_setup/providers/local_hermes_setup_provider.dart';
 import '../../features/local_setup/screens/termux_hermes_setup_screen.dart';
 import '../../features/office/screens/office_screen.dart';
 import '../../features/providers/screens/providers_screen.dart';
@@ -20,6 +21,8 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../shared/widgets/wing_empty_state.dart';
 import '../app_routes.dart';
+import '../widgets/connection_entry_gate.dart';
+import '../widgets/chat_workspace_overlay.dart';
 
 /// The shared shell-route page: a motion-free 200ms fade-through, so route
 /// changes read as one surface and stay comfortable under reduced motion.
@@ -38,6 +41,22 @@ Page<void> wingFadeThroughPage({
   child: child,
 );
 
+Page<void> _chatOverlayPage(
+  BuildContext context, {
+  required LocalKey key,
+  required Widget child,
+}) => CustomTransitionPage<void>(
+  key: key,
+  opaque: false,
+  barrierColor: Colors.black54,
+  barrierDismissible: false,
+  transitionDuration: const Duration(milliseconds: 200),
+  reverseTransitionDuration: const Duration(milliseconds: 200),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+      FadeTransition(opacity: animation, child: child),
+  child: ChatWorkspaceOverlay(child: child),
+);
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.hermes,
@@ -48,9 +67,17 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       ShellRoute(
-        builder: (context, state, child) => _SelectableRoute(
-          child: AppShell(location: state.matchedLocation, child: child),
-        ),
+        builder: (context, state, child) {
+          final shell = _SelectableRoute(
+            child: AppShell(location: state.matchedLocation, child: child),
+          );
+          // Explicit auxiliary routes remain usable without an Agent connection.
+          if (state.uri.path != AppRoutes.hermes ||
+              state.uri.queryParameters['connect'] == '1') {
+            return shell;
+          }
+          return ConnectionEntryGate(child: shell);
+        },
         routes: [
           GoRoute(
             path: AppRoutes.hermes,
@@ -69,15 +96,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: const OfficeScreen(),
             ),
           ),
-          GoRoute(
-            path: AppRoutes.profiles,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: ProfilesScreen(
-                startSetup: state.uri.queryParameters['setup'] == 'new',
-              ),
-            ),
-          ),
+
           GoRoute(
             path: AppRoutes.soul,
             pageBuilder: (context, state) => wingFadeThroughPage(
@@ -113,28 +132,41 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: const GatewayScreen(),
             ),
           ),
-          GoRoute(
-            path: AppRoutes.settings,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: const SettingsScreen(),
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.settingsVoice,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: const VoiceSettingsScreen(),
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.settingsDiagnostics,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: const DiagnosticsSettingsScreen(),
-            ),
-          ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.profiles,
+        pageBuilder: (context, state) => _chatOverlayPage(
+          context,
+          key: state.pageKey,
+          child: ProfilesScreen(
+            startSetup: state.uri.queryParameters['setup'] == 'new',
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        pageBuilder: (context, state) => _chatOverlayPage(
+          context,
+          key: state.pageKey,
+          child: const SettingsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.settingsVoice,
+        pageBuilder: (context, state) => _chatOverlayPage(
+          context,
+          key: state.pageKey,
+          child: const VoiceSettingsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.settingsDiagnostics,
+        pageBuilder: (context, state) => _chatOverlayPage(
+          context,
+          key: state.pageKey,
+          child: const DiagnosticsSettingsScreen(),
+        ),
       ),
       // Enrollment is above the shell. Manual setup needs its own root page
       // so pushing it preserves Back without pushing a second shell instance.
@@ -142,12 +174,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.addHermes,
         pageBuilder: (context, state) => wingFadeThroughPage(
           key: state.pageKey,
-          child: _SelectableRoute(
-            child: AppShell(
-              location: state.matchedLocation,
-              child: const HermesAddScreen(),
-            ),
-          ),
+          child: state.uri.queryParameters['welcome'] == '1'
+              ? HermesAddScreen(mode: _entryMode(state), fromWelcome: true)
+              : _SelectableRoute(
+                  child: AppShell(
+                    location: state.matchedLocation,
+                    child: HermesAddScreen(mode: _entryMode(state)),
+                  ),
+                ),
         ),
       ),
       GoRoute(
@@ -159,9 +193,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.localSetup,
         redirect: (_, _) =>
-            !kIsWeb &&
-                (defaultTargetPlatform == TargetPlatform.android ||
-                    defaultTargetPlatform == TargetPlatform.linux)
+            ref.read(localLinuxSetupAvailableProvider) ||
+                (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
             ? null
             : AppRoutes.enroll,
         builder: (context, state) => _SelectableRoute(
@@ -198,6 +231,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
   );
 });
+
+HermesConnectionMode _entryMode(GoRouterState state) =>
+    switch (state.uri.queryParameters['mode']) {
+      'local' => HermesConnectionMode.local,
+      'ssh' => HermesConnectionMode.ssh,
+      _ => HermesConnectionMode.remote,
+    };
 
 class _SelectableRoute extends StatelessWidget {
   const _SelectableRoute({required this.child});

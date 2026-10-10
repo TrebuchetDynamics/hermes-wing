@@ -427,9 +427,10 @@ extension _ConnectionExtension on HermesApiChannel {
     required List<HermesChatTurn> unmatched,
     required DateTime fetchedAt,
   }) {
-    // Tool results are model context, not user-visible transcript text.
+    // A persisted tool result records finished activity in canonical order.
+    // Project only its category; model-context content must never become prose.
     return [
-      for (final message in history.where((message) => message.role != 'tool'))
+      for (final message in history)
         (() {
           final author = switch (message.role) {
             'user' => HermesTurnAuthor.user,
@@ -467,7 +468,16 @@ extension _ConnectionExtension on HermesApiChannel {
             sessionId: sessionId,
             author: author,
             createdAt: serverTimestamp ?? existing?.createdAt ?? fetchedAt,
-            text: message.content,
+            text: message.role == 'tool' ? '' : message.content,
+            kind: message.role == 'tool'
+                ? HermesTurnKind.toolCall
+                : HermesTurnKind.text,
+            toolCall: message.role == 'tool'
+                ? HermesToolCall(
+                    name: message.toolName ?? 'unknown',
+                    status: 'completed',
+                  )
+                : null,
             attachment: reconciledAttachment,
             usage: message.usage ?? existing?.usage,
           );

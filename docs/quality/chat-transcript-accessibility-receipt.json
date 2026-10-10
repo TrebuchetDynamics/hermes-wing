@@ -1,0 +1,352 @@
+{
+  "schema": 1,
+  "card": "t_42880105",
+  "baseline": "1afe1307e37ee1ddfa1f7d67ad047509e99c8784",
+  "qualification_scope": "integrated Wing-only source snapshot; deterministic widget and Chromium JS",
+  "source_sha256": {
+    "lib/features/hermes_chat/presentation/hermes_chat_timeline.dart": "3e5dd9d58b17ead2217067bd74683178269c8b2178b6fe07e2db7a1d6c092df7",
+    "test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart": "73c100cd708680b4503c7167b647d56bc6cb4aaa7fac778b5bbe28c8acc5cd70",
+    "lib/main_e2e.dart": "2dbe7e5f481cef73e43262e2f8b9070cf4bc611f74f4e6496a0284d1a255d687",
+    "serve_web.mjs": "4b70918cad51b44afed0d82ece43fd65c01a8031d29393a5007e8cc4afeb0100",
+    "playwright/tests/regression/chat-transcript-accessibility.spec.mjs": "f7cc388e865578c8a5eb24126475c29399a8e540aec092fee72693647e5568c1",
+    "playwright/support/hermes_transcript_accessibility_fixture.mjs": "30bdf7c20725cb02d4c8d23ca782aa7ff68601c7304584d85d5a34ce8e3b7084",
+    "playwright/support/hermes_transcript_accessibility_server.mjs": "a8abc6fb9915b792af0c547a8f560e3100a8e55fcc135d63d157a3f7e90a7d49",
+    "playwright/transcript_accessibility.config.mjs": "2a0b225120397343f701ae7ffc7d66a01bf5e6543c153c3dd8dcaaf00de2dbac"
+  },
+  "lib_manifest_sha256": "3295a5dbcc5d074f684cd8237a9485d40429db1a7eb1da7b7a0714edba906cff",
+  "widget": {
+    "passed": 2,
+    "recovery_mutation_delta": 0,
+    "prompts": 2,
+    "decisions": 1,
+    "stops": 0
+  },
+  "browser": [
+    {
+      "recovery": "reconnect",
+      "recovery_mutations": [
+        {
+          "method": "POST",
+          "path": "/v1/runs",
+          "session_id": "synthetic-accessibility",
+          "message": "Synthetic accessibility request"
+        }
+      ],
+      "canonical_ids": [
+        "canonical-user",
+        "canonical-commentary",
+        "canonical-read",
+        "canonical-web",
+        "canonical-answer"
+      ],
+      "final_mutation_paths": [
+        "/v1/runs",
+        "/v1/runs",
+        "/v1/runs/run_2/approval"
+      ],
+      "explicit_prompts": 2,
+      "explicit_decisions": [
+        "once"
+      ],
+      "stops": 0,
+      "errors": [],
+      "focus_checks": [
+        {
+          "assertion": "zoomed rendered focus differs and keyboard returns",
+          "role": "group",
+          "name": "Hermes host activity \u00b7 2 steps",
+          "clip": {
+            "x": 1154,
+            "y": 1498,
+            "width": 1136,
+            "height": 164
+          },
+          "zoom": 2,
+          "steps": 1
+        },
+        {
+          "assertion": "zoomed rendered focus differs and keyboard returns",
+          "role": "button",
+          "name": "Approve once",
+          "clip": {
+            "x": 2007.29296875,
+            "y": 1628,
+            "width": 258.703125,
+            "height": 96
+          },
+          "zoom": 2,
+          "steps": 1
+        }
+      ],
+      "layouts": [
+        {
+          "label": "recovered",
+          "viewport": {
+            "width": 2560,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 541,
+              "y": 657,
+              "width": 729,
+              "height": 45
+            },
+            {
+              "x": 541,
+              "y": 702,
+              "width": 729,
+              "height": 49
+            },
+            {
+              "x": 581,
+              "y": 753,
+              "width": 560,
+              "height": 74
+            },
+            {
+              "x": 541,
+              "y": 829,
+              "width": 729,
+              "height": 49
+            }
+          ]
+        },
+        {
+          "label": "remount-390",
+          "viewport": {
+            "width": 780,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 10,
+              "y": 697,
+              "width": 370,
+              "height": 45
+            },
+            {
+              "x": 10,
+              "y": 742,
+              "width": 370,
+              "height": 45
+            },
+            {
+              "x": 10,
+              "y": 787,
+              "width": 370,
+              "height": 74
+            },
+            {
+              "x": 10,
+              "y": 861,
+              "width": 370,
+              "height": 45
+            }
+          ]
+        },
+        {
+          "label": "remount-1280",
+          "viewport": {
+            "width": 2560,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 541,
+              "y": 657,
+              "width": 729,
+              "height": 45
+            },
+            {
+              "x": 541,
+              "y": 702,
+              "width": 729,
+              "height": 49
+            },
+            {
+              "x": 581,
+              "y": 753,
+              "width": 560,
+              "height": 74
+            },
+            {
+              "x": 541,
+              "y": 829,
+              "width": 729,
+              "height": 49
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recovery": "reload",
+      "recovery_mutations": [
+        {
+          "method": "POST",
+          "path": "/v1/runs",
+          "session_id": "synthetic-accessibility",
+          "message": "Synthetic accessibility request"
+        }
+      ],
+      "canonical_ids": [
+        "canonical-user",
+        "canonical-commentary",
+        "canonical-read",
+        "canonical-web",
+        "canonical-answer"
+      ],
+      "final_mutation_paths": [
+        "/v1/runs",
+        "/v1/runs",
+        "/v1/runs/run_2/approval"
+      ],
+      "explicit_prompts": 2,
+      "explicit_decisions": [
+        "once"
+      ],
+      "stops": 0,
+      "errors": [],
+      "focus_checks": [
+        {
+          "assertion": "zoomed rendered focus differs and keyboard returns",
+          "role": "group",
+          "name": "Hermes host activity \u00b7 2 steps",
+          "clip": {
+            "x": 1154,
+            "y": 1498,
+            "width": 1136,
+            "height": 164
+          },
+          "zoom": 2,
+          "steps": 1
+        },
+        {
+          "assertion": "zoomed rendered focus differs and keyboard returns",
+          "role": "button",
+          "name": "Approve once",
+          "clip": {
+            "x": 2007.29296875,
+            "y": 1628,
+            "width": 258.703125,
+            "height": 96
+          },
+          "zoom": 2,
+          "steps": 1
+        }
+      ],
+      "layouts": [
+        {
+          "label": "recovered",
+          "viewport": {
+            "width": 2560,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 541,
+              "y": 657,
+              "width": 729,
+              "height": 45
+            },
+            {
+              "x": 541,
+              "y": 702,
+              "width": 729,
+              "height": 49
+            },
+            {
+              "x": 581,
+              "y": 753,
+              "width": 560,
+              "height": 74
+            },
+            {
+              "x": 541,
+              "y": 829,
+              "width": 729,
+              "height": 49
+            }
+          ]
+        },
+        {
+          "label": "remount-390",
+          "viewport": {
+            "width": 780,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 10,
+              "y": 697,
+              "width": 370,
+              "height": 45
+            },
+            {
+              "x": 10,
+              "y": 742,
+              "width": 370,
+              "height": 45
+            },
+            {
+              "x": 10,
+              "y": 787,
+              "width": 370,
+              "height": 74
+            },
+            {
+              "x": 10,
+              "y": 861,
+              "width": 370,
+              "height": 45
+            }
+          ]
+        },
+        {
+          "label": "remount-1280",
+          "viewport": {
+            "width": 2560,
+            "height": 2200
+          },
+          "boxes": [
+            {
+              "x": 541,
+              "y": 657,
+              "width": 729,
+              "height": 45
+            },
+            {
+              "x": 541,
+              "y": 702,
+              "width": 729,
+              "height": 49
+            },
+            {
+              "x": 581,
+              "y": 753,
+              "width": 560,
+              "height": 74
+            },
+            {
+              "x": 541,
+              "y": 829,
+              "width": 729,
+              "height": 49
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "not_checked": [
+    "native desktop",
+    "live Agent/provider",
+    "physical screen reader",
+    "mobile",
+    "Wasm",
+    "packaged delivery",
+    "full suite",
+    "merge train"
+  ]
+}

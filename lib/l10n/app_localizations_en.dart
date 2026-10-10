@@ -9,6 +9,308 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatConnectionSaveUnconfirmed =>
+      'Connected to Hermes, but saving this connection could not be confirmed. Keep this form open and retry Add Hermes to connect and save again.';
+
+  @override
+  String get managedSshGenerateKey => 'Generate SSH key';
+
+  @override
+  String get managedSshUseGeneratedKey => 'Use saved Wing key';
+
+  @override
+  String get managedSshGenerateKeyConsentTitle =>
+      'Create a key on this device?';
+
+  @override
+  String get managedSshGenerateKeyConsentBody =>
+      'Wing keeps the private key in secure storage on this device. Only its public key is copied. Add that public key to the SSH account on your host. An existing Wing key is reused, never replaced.';
+
+  @override
+  String get managedSshGenerateKeyConfirm => 'Create or reuse key';
+
+  @override
+  String get managedSshCopyPublicKey => 'Copy public key';
+
+  @override
+  String get managedSshPublicKeyCopied => 'Public key copied';
+
+  @override
+  String get managedSshGeneratedKeyStorageFailure =>
+      'Secure key storage is unavailable. No key was selected. Retry or select your own key file.';
+
+  @override
+  String get managedSshGeneratedKeySelected => 'Wing key selected';
+
+  @override
+  String get managedSshGeneratingKey => 'Creating SSH key…';
+
+  @override
+  String get connectionInformationHelpTitle => 'Connection help';
+
+  @override
+  String get connectionInformationCopy => 'Copy instructions';
+
+  @override
+  String get connectionInformationCopied =>
+      'Public instructions copied. No connection values were included.';
+
+  @override
+  String get connectionInformationCopyFailed =>
+      'Could not copy the instructions. You can select the help text instead.';
+
+  @override
+  String get connectionInformationClose => 'Close';
+
+  @override
+  String get connectionInformationHelpText =>
+      'LOCAL — THIS DEVICE\nLinux: Wing checks ~/.hermes directory metadata. Another Hermes home is not a Project, current working directory or a binding to the running Agent. Discovery does not prove Agent is installed, running, authenticated or model-ready. Configure and start Agent yourself.\nAndroid: localhost and 127.0.0.1 refer to this phone, not your computer. Prepare Agent in Termux using official documentation. The official native Termux package is currently documented broken; a fresh install is not qualified by Wing.\n\nSSH — A NATIVE FORWARD\nHost/IP: use the computer\'s reachable hostname or IP provided by its administrator. SSH username: your account on that computer, not the Agent profile. User-run, non-secret Linux examples are whoami (account), hostname -I (candidate addresses) and ss -ltn (listening TCP ports). Addresses may not be reachable from this device. A listening port does not prove it is SSH: verify the actual SSH listener with the administrator.\nSSH port: 22 is a default, not a guarantee. Enter the actual SSH listener port. Review the host-key fingerprint through a trusted administrator before accepting. Authenticate using your SSH password or selected private key, with its passphrase if required. SSH authentication is separate from Agent authentication. For public-key authentication, have the host administrator add only your public key to that SSH account\'s authorized_keys. Never copy, share or install the private key on the host. These commands describe information lookup only, not setup actions.\nAgent port: 8642 is the default API port, but it is configurable. Enter the API listener port on the SSH host, not the SSH port. Wing forwards that listener; an SSH login does not prove Agent readiness.\n\nREMOTE — DIRECT AGENT API\nAgent URL: obtain the full HTTPS API URL from the host administrator, including the configured port or profile path when required. Do not guess an address from network location. A VPN does not replace Agent authentication.\nAgent API token: use the credential supplied separately through Agent-approved configuration. This is not an SSH password, provider key or dashboard token. Type it into the masked Agent token field. Never place secrets in the clipboard, QR codes, URLs or command arguments.\n\nCONNECTING\nConfigure an authenticated Agent API using official Agent documentation. Local uses http://127.0.0.1:8642 by default; that port is configurable on the host. Linux advanced local endpoint controls can select a different configured API endpoint. Android This phone uses the fixed loopback endpoint. Nothing in this help installs, starts, restarts or configures a service. Only an explicit Add Hermes action checks the connection; finishing guidance is not a connected or model-ready state. These copyable instructions contain no current form values or credentials.';
+
+  @override
+  String get platformLocalConnectBody =>
+      'Connect directly to Hermes Agent on this device. Preparing Agent and discovering its home are separate from an authenticated connection.';
+
+  @override
+  String get platformLocalTokenLabel => 'Agent API token';
+
+  @override
+  String get platformLocalTokenHelper =>
+      'Agent API authentication is required even on loopback. Enter your API token, not a provider key or SSH password.';
+
+  @override
+  String get platformLocalHomeTitle => 'Hermes home';
+
+  @override
+  String get platformLocalHomeExplanation =>
+      'Wing checks ~/.hermes directory metadata on this device. Choose another Hermes home if needed. No files are read, and this choice is not saved or sent to Agent. A found directory does not prove an installation, running service, authentication or model readiness, or bind the running Agent to that home.';
+
+  @override
+  String get platformLocalHomeInspecting => 'Checking default Hermes home…';
+
+  @override
+  String get platformLocalHomeFound => 'Directory found — discovery only';
+
+  @override
+  String get platformLocalHomeMissing =>
+      'Hermes home was not found. Select another directory or prepare Agent separately.';
+
+  @override
+  String get platformLocalHomeNotDirectory =>
+      'The selected location is not a directory.';
+
+  @override
+  String get platformLocalHomeUnreadable =>
+      'Could not inspect this directory. Check access or choose another Hermes home.';
+
+  @override
+  String get platformLocalHomeUnsupported =>
+      'Directory inspection is unavailable on this platform.';
+
+  @override
+  String get platformLocalChooseHome => 'Choose another Hermes home';
+
+  @override
+  String get platformLocalAdvancedEndpoint => 'Advanced local endpoint';
+
+  @override
+  String get platformLocalPhoneTitle => 'This phone';
+
+  @override
+  String get platformLocalPhoneBoundary =>
+      'Prepare Hermes Agent in Termux yourself, then connect directly. Wing cannot inspect Termux files and does not install, configure, start or restart Agent. Loopback still requires authentication.';
+
+  @override
+  String get platformLocalPackageWarning =>
+      'Known package issue: official Agent documentation currently warns that native Termux is broken. Fresh installation may fail or produce a non-running package. Wing does not provide a tested fresh installer. Debian/proot is a separate, unqualified setup path.';
+
+  @override
+  String get platformLocalPrepareTitle => '1. Termux and Agent';
+
+  @override
+  String get platformLocalPrepareBody =>
+      'Install or open Termux using its official guide. For a fresh Agent installation, read the package warning and current official documentation first. If Agent is already installed, check hermes --version and hermes doctor in Termux before continuing.';
+
+  @override
+  String get platformLocalTermuxDocs => 'Official Termux installation guide';
+
+  @override
+  String get platformLocalAgentDocs => 'Official Agent Termux documentation';
+
+  @override
+  String get platformLocalExistingAgent => 'Agent is installed — configure it';
+
+  @override
+  String get platformLocalSkipGuide => 'Agent already running — skip guide';
+
+  @override
+  String get platformLocalConfigureTitle => '2. Configure and start Agent';
+
+  @override
+  String get platformLocalConfigureBody =>
+      'In Termux, run hermes setup to configure your provider and model. Follow Agent\'s API documentation to enable API_SERVER_ENABLED=true, set a strong API_SERVER_KEY in Agent-owned configuration, and use API_SERVER_HOST=127.0.0.1 and API_SERVER_PORT=8642. Never put credentials in command arguments or the clipboard. Run hermes gateway in the foreground and keep Termux open. Android may suspend or stop it. Continuing only records your choice; it does not verify readiness.';
+
+  @override
+  String get platformLocalApiDocs => 'Official authenticated API setup';
+
+  @override
+  String get platformLocalStartedAgent =>
+      'I started Agent — continue to connection';
+
+  @override
+  String get platformLocalAuthenticateTitle => '3. Connect to Agent';
+
+  @override
+  String get platformLocalAuthenticateBody =>
+      'Connect to http://127.0.0.1:8642 on this phone. Type the Agent API token into the masked field below, not a provider key or dashboard token. Connection is checked only when you choose Add Hermes; guide completion is not a connected state.';
+
+  @override
+  String get platformLocalGuideBack => 'Back to guidance';
+
+  @override
+  String get platformLocalDocumentationFailed =>
+      'Could not open the official documentation. Try again when a browser is available.';
+
+  @override
+  String get platformLocalBrowserExplanation =>
+      'This platform cannot inspect the Agent host\'s Hermes home. Use the direct authenticated Agent API below. In a full browser, loopback refers to the browser\'s device; browser transport rules still apply.';
+
+  @override
+  String get welcomeEyebrow => 'HERMES WING';
+
+  @override
+  String get welcomeTitle => 'Welcome to Hermes Wing';
+
+  @override
+  String get welcomeSubtitle =>
+      'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.';
+
+  @override
+  String get welcomeGetStarted => 'Get Started';
+
+  @override
+  String get welcomeLocalHint =>
+      'Connect to a running local Hermes Agent. Nothing is installed automatically.';
+
+  @override
+  String get welcomeOr => 'or';
+
+  @override
+  String get welcomeSsh => 'Connect via SSH';
+
+  @override
+  String get managedSshInvalidToken =>
+      'Use a bounded access token without spaces or control characters.';
+
+  @override
+  String get managedSshPrivateKeyChoice => 'Private key';
+
+  @override
+  String get managedSshPasswordChoice => 'Password';
+
+  @override
+  String get managedSshSelectKey => 'Select private key';
+
+  @override
+  String get managedSshKeyRequired =>
+      'Select a private key for this connection attempt.';
+
+  @override
+  String get managedSshPassphrase => 'Private-key passphrase';
+
+  @override
+  String get managedSshPassphraseRequired =>
+      'Enter a passphrase of at most 4096 characters without null characters.';
+
+  @override
+  String get managedSshUnlockFailed =>
+      'Could not unlock this private key. Check its passphrase or select another key.';
+
+  @override
+  String get managedSshKeyUnreadable =>
+      'Could not read the selected private key. Select it again.';
+
+  @override
+  String get managedSshKeyTooLarge =>
+      'The selected private key exceeds 64 KiB.';
+
+  @override
+  String get managedSshKeyUnsupportedFormat =>
+      'This private-key format is not supported. Select an OpenSSH, RSA or EC private key.';
+
+  @override
+  String get managedSshKeyInvalid =>
+      'The selected file is not a valid supported SSH private key.';
+
+  @override
+  String get managedSshSelectedKey => 'Selected private key';
+
+  @override
+  String get managedSshAuthenticationFailed =>
+      'SSH authentication was rejected. Check your username and authentication choice, then retry.';
+
+  @override
+  String get managedSshHostLabel => 'SSH host';
+
+  @override
+  String get managedSshPortLabel => 'SSH port';
+
+  @override
+  String get managedSshUsernameLabel => 'Username';
+
+  @override
+  String get managedSshPasswordLabel => 'SSH password';
+
+  @override
+  String get managedSshAgentPortLabel => 'Hermes Agent port';
+
+  @override
+  String get managedSshAgentTokenLabel => 'Agent access token (optional)';
+
+  @override
+  String get managedSshConnectAction => 'Connect via SSH';
+
+  @override
+  String get managedSshConnectingAction => 'Connecting via SSH…';
+
+  @override
+  String get managedSshInvalidHost =>
+      'Enter a host name or IP address, not a URL or command.';
+
+  @override
+  String get managedSshInvalidPort => 'Enter a port from 1 to 65535.';
+
+  @override
+  String get managedSshUsernameRequired => 'Enter your SSH username.';
+
+  @override
+  String get managedSshPasswordRequired => 'Enter your SSH password.';
+
+  @override
+  String get managedSshHostKeyTitle => 'Verify SSH host';
+
+  @override
+  String get managedSshHostKeyBody =>
+      'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.';
+
+  @override
+  String get managedSshTrustAction => 'Trust this connection';
+
+  @override
+  String get managedSshFailed =>
+      'Could not establish the SSH connection. Check the host and authentication, then retry.';
+
+  @override
+  String get managedSshUnsupported =>
+      'Managed SSH is not available in this browser. Use Wing on Android or desktop.';
+
+  @override
+  String get welcomeRemote => 'Connect to Remote Hermes';
+
+  @override
+  String get welcomeStorageRetry =>
+      'Saved connections could not be read. Retry';
+
+  @override
   String get profilesSearchLabel => 'Search profiles';
 
   @override
@@ -127,6 +429,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatVoiceDictateAction => 'Dictate a draft';
+
+  @override
+  String get chatVoiceCancelDraftAction => 'Cancel draft dictation';
 
   @override
   String get chatVoiceDictateHint => 'Review the text before sending';
@@ -389,6 +694,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSavedEndpointsLoading => 'Loading saved Hermes gateways';
+
+  @override
+  String get chatSavedEndpointEdit => 'Edit saved Agent connection';
+
+  @override
+  String get chatSavedEndpointEditBody =>
+      'Edit this saved connection only. Saving does not connect or change the active conversation. A changed Agent URL drops its Wing Link association.';
+
+  @override
+  String get chatSavedEndpointReplacementKey => 'Replacement Agent credential';
+
+  @override
+  String get chatSavedEndpointKeyHelp =>
+      'Leave blank to keep the saved credential only while the URL is unchanged. A changed URL needs its own credential. Saved credentials are never shown here.';
+
+  @override
+  String get chatSavedEndpointRemoveKey => 'Remove saved Agent credential';
+
+  @override
+  String get chatSavedEndpointTest => 'Test connection';
+
+  @override
+  String get chatSavedEndpointCancelTest => 'Cancel test';
+
+  @override
+  String get chatSavedEndpointTestCancelled =>
+      'Test cancelled. No connection was saved or activated.';
+
+  @override
+  String get chatSavedEndpointTestSuccess =>
+      'Supported Agent discovery responded. No connection was saved or activated. This does not verify chat or inference permissions.';
+
+  @override
+  String get chatSavedEndpointTestDenied =>
+      'Agent discovery denied this credential. Check the draft and explicitly test again.';
+
+  @override
+  String get chatSavedEndpointTestFailed =>
+      'Agent discovery could not be verified. Check the URL, network and credential, then explicitly test again.';
+
+  @override
+  String get chatSavedEndpointStale =>
+      'The connection owner or draft changed. Close this editor and open the saved connection again.';
+
+  @override
+  String get chatSavedEndpointSaved =>
+      'Saved connection updated. The active conversation is unchanged.';
+
+  @override
+  String get chatSavedEndpointSaveFailed =>
+      'Could not save this connection. Check the URL and secure storage, then explicitly save again. Another saved host cannot be replaced by this edit.';
 
   @override
   String get chatSavedEndpointsLoadFailedTitle => 'Saved gateways unavailable';
@@ -1222,6 +1578,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The selected model is no longer available. Choose a model from the current catalog.';
 
   @override
+  String get sessionModelIdentityNotReported =>
+      'Hermes Agent does not report this session’s confirmed provider and model. Choose a model explicitly to change this session; cancelling leaves it unchanged.';
+
+  @override
+  String get sessionModelChooseExplicitly =>
+      'Choose a provider and model from the current catalog.';
+
+  @override
   String sessionModelResultCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1460,6 +1824,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reasoningTitle => 'Reasoning';
+
+  @override
+  String get chatReasoningThinking => 'Thinking…';
+
+  @override
+  String get chatReasoningThought => 'Thought';
 
   @override
   String get localCommandsTitle => 'Wing commands';
@@ -1937,7 +2307,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollIntro =>
-      'Choose where Hermes Agent will run. Wing will guide you through setup, pairing, and checking the connection.';
+      'Connect directly to an existing Hermes Agent using Local, SSH, or Remote. Installation and Wing Link pairing are optional, separate setup paths.';
+
+  @override
+  String get enrollOptionalSetupAction => 'Optional setup and pairing';
 
   @override
   String get enrollPairHeading => 'I have a QR code or pairing link';
@@ -2402,7 +2775,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Connect a gateway to see its profiles and start a conversation.';
 
   @override
-  String get gatewayContactsConnectAction => 'Add gateway or profile';
+  String get gatewayContactsConnectAction => 'Add Hermes';
 
   @override
   String get chatGroupsNewAction => 'New group';
@@ -2990,7 +3363,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutConnectionModeLabel => 'How will Wing reach Hermes?';
 
   @override
-  String get chatLayoutConnectionModeLocalLabel => 'This device';
+  String get chatLayoutConnectionModeLocalLabel => 'Local';
+
+  @override
+  String get chatLayoutConnectionPrimaryRemoteLabel => 'Remote';
 
   @override
   String get chatLayoutConnectionModeRemoteLabel => 'Remote HTTPS';
@@ -2999,7 +3375,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatLayoutConnectionModeVpnLabel => 'VPN / NetBird / Tailscale';
 
   @override
-  String get chatLayoutConnectionModeSshLabel => 'SSH tunnel';
+  String get chatLayoutConnectionModeSshLabel => 'SSH';
 
   @override
   String get chatLayoutConnectionModeLocalBody =>
@@ -3008,6 +3384,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatLayoutConnectionModeRemoteBody =>
       'Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.';
+
+  @override
+  String get chatLayoutRemoteAuthExplanation =>
+      'Connect directly to a Hermes Agent endpoint with its Agent access token. Wing Link pairing is not required. A Wing Link token or provider API key is not an Agent access token.\n\nBrowser OAuth sign-in is not supported in Wing. An OAuth-only server cannot currently connect through this flow. If access is denied, check the endpoint and its Agent token with the server administrator, then retry explicitly or cancel. A denial does not identify the server\'s sign-in method.';
 
   @override
   String get chatLayoutConnectionModeVpnBody =>
@@ -3078,7 +3458,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatLayoutTokenStorageBody =>
-      'Your token is stored in secure device storage and is never shown after connecting.';
+      'Saving a connection uses secure device storage. Connecting alone does not confirm that your token was saved.';
 
   @override
   String get chatLayoutCredentialBoundaryTitle => 'Two separate connections';
@@ -3419,7 +3799,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatShellHermesTitle => 'Hermes';
 
   @override
-  String get chatShellConnectAnotherGatewayTooltip => 'Add gateway or profile';
+  String get chatShellConnectAnotherGatewayTooltip => 'Add Hermes';
 
   @override
   String get chatShellSessionsLabel => 'Sessions';
@@ -3724,6 +4104,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shellSessionScope => 'Open or create. Manage sessions in Chat.';
+
+  @override
+  String shellSessionSource(String source) {
+    return 'Source: $source';
+  }
 
   @override
   String get shellNewSession => 'New Session';

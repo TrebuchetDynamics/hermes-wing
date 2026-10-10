@@ -1,5 +1,8 @@
 # M2 declared history-read admission — 2026-10-06
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 Card: `t_4e4a4f7d`. Ledger task: `DOC-M2-HISTORY-ADMISSION`.
 Disposition: bounded shared-path repair, ready for native same-card review.
 **M2 remains unverified; authoritative_counts_unavailable.**
@@ -28,7 +31,7 @@ metadata/history probes. Those predecessor boundaries were not weakened.
 ## Inspected reference and shared caller trace
 
 Read-only reference locations were confirmed as `hermes-agent/` and
-`hermes-desktop/`; their root instructions were read. No reference or installed
+`withdrawn source citation`; their root instructions were read. No reference or installed
 runtime was patched or executed. This is an HTTP contract repair, not an Electron
 interaction port. Agent `gateway/platforms/api_server.py:94,1768,3294–3328` registers
 and authenticates the baseline history read, resolves the canonical compression

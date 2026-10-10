@@ -130,6 +130,17 @@ class _HermesTranscriptList extends StatelessWidget {
         )
         .toList(growable: false);
     final uniqueIds = HermesTurnPresentationIdentity.uniqueIds(turns);
+    // Agent reasoning.available is a completed block inserted before an empty
+    // streaming assistant placeholder. Only trailing content in the current
+    // streaming turn is still Thinking; an answer/tool or history is Thought.
+    final trailingContent = eligibleTurns
+        .where(
+          (turn) =>
+              turn.kind != HermesTurnKind.text ||
+              turn.text.trim().isNotEmpty ||
+              turn.attachment != null,
+        )
+        .lastOrNull;
     final visibleTurns = viewport.project(eligibleTurns, uniqueIds: uniqueIds);
     final rows = <Widget>[];
     viewport.retainRows({
@@ -187,6 +198,9 @@ class _HermesTranscriptList extends StatelessWidget {
         rows.add(
           _ReasoningCard(
             turn: turn,
+            active:
+                identical(turn, trailingContent) &&
+                turns.lastOrNull?.status == HermesTurnStatus.streaming,
             profileId: profileId,
             profileColor: profileColor,
             showAvatar: showAssistantAvatar,
@@ -460,41 +474,72 @@ class _AssistantTimelineItem extends StatelessWidget {
   }
 }
 
-class _ReasoningCard extends StatelessWidget {
+class _ReasoningCard extends StatefulWidget {
   const _ReasoningCard({
     required this.turn,
+    required this.active,
     required this.profileId,
     required this.showAvatar,
     this.profileColor,
   });
 
   final HermesChatTurn turn;
+  final bool active;
   final String profileId;
   final String? profileColor;
   final bool showAvatar;
 
   @override
+  State<_ReasoningCard> createState() => _ReasoningCardState();
+}
+
+class _ReasoningCardState extends State<_ReasoningCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     return _AssistantTimelineItem(
-      profileId: profileId,
-      profileColor: profileColor,
-      showAvatar: showAvatar,
+      profileId: widget.profileId,
+      profileColor: widget.profileColor,
+      showAvatar: widget.showAvatar,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Card(
-            key: ValueKey('hermes-reasoning-${turn.id}'),
+            key: ValueKey('hermes-reasoning-${widget.turn.id}'),
             margin: const EdgeInsets.symmetric(vertical: 4),
             child: ExpansionTile(
-              leading: const Icon(Icons.psychology_outlined),
-              title: Text(AppLocalizations.of(context).reasoningTitle),
+              // The avatar layout can remount the tile inside a retained row.
+              // Keep its visible body aligned with the row's expanded semantics.
+              initiallyExpanded: _expanded,
+              onExpansionChanged: (expanded) =>
+                  setState(() => _expanded = expanded),
+              leading: widget.active
+                  ? ExcludeSemantics(
+                      child: MediaQuery.disableAnimationsOf(context)
+                          ? const Icon(Icons.hourglass_top)
+                          : const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                    )
+                  : const Icon(Icons.psychology_outlined),
+              title: Semantics(
+                expanded: _expanded,
+                liveRegion: true,
+                child: Text(
+                  widget.active
+                      ? AppLocalizations.of(context).chatReasoningThinking
+                      : AppLocalizations.of(context).chatReasoningThought,
+                ),
+              ),
               childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
                   child: HermesRichText(
-                    _safeHermesUiText(turn.text),
+                    _safeHermesUiText(widget.turn.text),
                     selectable: true,
                   ),
                 ),
@@ -655,20 +700,12 @@ class _ToolActivityGroup extends StatelessWidget {
                     leading: Icon(
                       _hostToolCategoryIcon(categories.single) ?? aggregateIcon,
                     ),
-                    title: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    title: Text(title),
                     subtitle: statusText,
                   )
                 : ExpansionTile(
                     leading: Icon(aggregateIcon),
-                    title: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    title: Text(title),
                     subtitle: statusText,
                     childrenPadding: const EdgeInsets.only(bottom: 8),
                     children: [

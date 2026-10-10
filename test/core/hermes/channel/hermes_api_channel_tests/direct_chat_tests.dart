@@ -1,7 +1,7 @@
 part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelDirectChatTests() {
-  test('historical tool results stay out of the visible transcript', () async {
+  test('historical tools hide model-context results', () async {
     final channel = HermesApiChannel(
       clientBuilder: (config) => HermesApiClient(
         config: config,
@@ -27,8 +27,14 @@ void _hermesApiChannelDirectChatTests() {
     await channel.connect(baseUrl: 'http://127.0.0.1:8642');
 
     expect(channel.state.activeMessages.map((turn) => turn.text), [
+      '',
       'Visible answer',
     ]);
+    final activity = channel.state.activeMessages.first;
+    expect(activity.kind, HermesTurnKind.toolCall);
+    expect(activity.toolCall?.name, 'unknown');
+    expect(activity.toolCall?.preview, isNull);
+    expect(activity.toolCall?.result, isNull);
   });
 
   test('sendText fails an SSE stream that stays open but idle', () async {

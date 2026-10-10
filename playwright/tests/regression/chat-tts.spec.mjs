@@ -470,7 +470,7 @@ test("Agent speech is cancelled when leaving chat", async ({
   await page.evaluate(() => {
     location.hash = "/hermes";
   });
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Message Hermes…", exact: true })).toBeVisible();
   await sendChat(page, "silent after navigation browser turn", {
     testInfo,
     screenshotPrefix: "silent-after-navigation",
@@ -871,8 +871,7 @@ test("Agent speech stops on disconnect", async ({ page }, testInfo) => {
   await expect(disconnectDialog).toContainText("Disconnect from Hermes?");
   await screenshot(page, testInfo, "disconnect-speech-confirmation");
   await disconnectDialog.getByRole("button", { name: "Disconnect" }).click();
-  await expect(page.getByRole("heading", { name: "Profiles" })).toBeVisible();
-  await expect(page.getByText("Gateway: Disconnected")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to Hermes Wing", exact: true })).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => globalThis.wingE2EAgentAudio.pauseCount))
     .toBeGreaterThan(pausesBeforeDisconnect);

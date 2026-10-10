@@ -1,5 +1,8 @@
 # Desktop continuation — model display restoration, 2026-10-04 00:46
 
+> Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+
+
 ## Result
 
 Implemented a display-only composer fallback to the active session's recovered
@@ -45,7 +48,7 @@ under `.claude/`, left untouched. Dirty HEAD is not a content snapshot.
    inside the same ProviderScope, chip text is asserted at 390/1280px, and selecting
    B removes A's label. Both lock map and mutation recorder remain empty. This is
    a widget remount, not native process relaunch or live server qualification.
-4. [Desktop Chat:358–409](../../hermes-desktop/src/renderer/src/screens/Chat/Chat.tsx)
+4. [Desktop Chat:358–409](official-desktop-reference.md#withdrawn-evidence)
    restores a separate session-local provider/model override for presentation,
    with `persist:false`; it does not justify copying privileged IPC/local storage
    or treating model-name-only metadata as an authoritative runtime pair in Wing.
@@ -53,7 +56,7 @@ under `.claude/`, left untouched. Dirty HEAD is not a content snapshot.
 
 ## Executed commands
 
-Scratch root: `/home/xel/.hermes/profiles/wing/cache/scratch/desktop-cron-0046-model/`.
+Scratch root: `<home>/.hermes/profiles/wing/cache/scratch/desktop-cron-0046-model/`.
 `red-results.json`, `green-results.json`, `browser-results.json` record exact arrays
 and exits; browser records also include UTC timestamps. `owned-layout.diff` binds
 only this occurrence's five added lines against the pre-edit dirty layout.
@@ -96,7 +99,7 @@ Playwright initial selector. Integrated browser/native/live acceptance remains o
 A repeated explicit request then ran literal `npm run test` directly: exit **0**,
 `05:10 +2400: All tests passed!`. The host now returns verification evidence
 `status: passed`, `kind: test`, `scope: full`, `canonical_command: npm run test`.
-Full log: `/home/xel/.hermes/profiles/wing/cache/terminal-output/out-1791097245-1789145-b820.log`.
+Full log: `<home>/.hermes/profiles/wing/cache/terminal-output/out-1791097245-1789145-b820.log`.
 No implementation repair was required; direct-command verification lease released.
 
 ## Browser boundary and ranked continuation

@@ -76,10 +76,11 @@ provider credential input, and a bounded readiness probe. Existing-profile confi
 Project, and general provider operations remain blocked; arbitrary commands,
 config keys, and paths remain prohibited.
 
-The accepted next slice is the
-[existing-profile provider compatibility direction](api-and-state.md#existing-profile-provider-compatibility-direction).
-It is a design checkpoint, not an enabled compatibility operation; the conditions
-there must be verified before expanding the current advertised capability set.
+The earlier
+[existing-profile provider compatibility direction](api-and-state.md#existing-profile-provider-compatibility-direction)
+is superseded by Wing Link deprecation. Its Agent-owned mutation acceptance
+criteria remain in force, but it no longer authorizes compatibility expansion.
+Assess direct Agent contracts or separately reviewed bounded native operations.
 
 A profile's repository is represented as an Agent-owned per-profile Hermes
 Project. Wing Link may translate an approved opaque directory handle into a path

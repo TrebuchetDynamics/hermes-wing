@@ -26,9 +26,10 @@ records passing widget and compiled-browser checks on Linux, not delivery to mai
 The [native first-run receipt](docs/quality/direct-first-run-native.md) also records
 passing deterministic Linux GTK journeys. Live authentication, Android and main
 delivery remain separate. Managed native SSH with key/password controls is
-implemented in the worktree; native full-app qualification remains open. Linux
-Hermes-home discovery and Android same-phone guided setup are the replacement
-Local direction, not yet qualified. See the
+implemented in the current source; native full-app qualification remains open.
+Linux Hermes-home directory inspection and Android **This phone** guidance are
+also implemented. Native discovery/chooser, same-phone installation and
+background-hosting qualification remain open. See the
 [deprecation decision](docs/adr/product.md#wing-link-deprecation).
 See the [direct connection steps](docs/getting-started.md#direct-agent-connection).
 
@@ -124,9 +125,9 @@ not automatically keep every AI request local.
 
 1. **Build and open Wing.** Prepare a reachable, authenticated Hermes Agent.
    Configure the provider in Hermes, not through a mandatory Wing Link install.
-2. **Open direct connection.** In the current development worktree, choose
-   **Add Hermes**. Older builds use **I have a QR code or pairing link**, then
-   **Connect one profile manually**. Neither path needs a pairing link.
+2. **Open direct connection.** On a fresh launch, choose **Get Started** for Local,
+   **Connect via SSH**, or **Connect to Remote Hermes**. With a saved connection,
+   choose **Add Hermes** from Chat. None of these direct paths requires pairing.
 3. **Connect to Agent.** Enter its approved endpoint and profile-bound credential.
    This path grants no Wing Link management access.
 4. **Open the configured profile and send a message:** “Reply with one sentence introducing
@@ -156,7 +157,7 @@ Public signed distribution and automatic app updates remain unqualified.
 
 The retained Termux installer still includes deprecated management setup. It is
 not the new-user installation path. Follow supported Agent installation guidance;
-[phone setup status](docs/getting-started.md#same-phone-android--termux) records
+[phone setup status](docs/getting-started.md#can-everything-run-on-the-phone-instead) records
 the remaining replacement and qualification gap.
 
 See [feature availability](docs/product/routes.md) and

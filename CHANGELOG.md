@@ -268,6 +268,8 @@ All notable user-visible changes will be documented here.
   VPN within Remote. Existing labels and external-tunnel instructions remain;
   Wing does not manage SSH. See the
   [bounded entry evidence](docs/quality/connection-primary-entry.md).
+  This earlier entry predates the native managed-forward implementation under
+  Added. External-tunnel instructions are no longer the native SSH onboarding path.
 
 - Removed Wing-managed OmniRoute installation, discovery, bundled dependencies
   and special profile setup. Existing external installations, credentials and

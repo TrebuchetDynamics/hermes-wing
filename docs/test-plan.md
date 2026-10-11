@@ -244,6 +244,18 @@ Existing test directories are coverage entry points, not proof that every scenar
 is automated or passing. Inspect the nearest tests and receipts before advancing
 a claim. The daily-use matrix defines more specific failure and boundary cases.
 
+## Existing-profile credential acceptance gap
+
+Compare the current direct Set/Remove/Validate client, channel gates and provider
+sheet with the [Agent-owned mutation criteria](adr/api-and-state.md#required-agent-owned-mutation-contract).
+Existing provider-sheet fixtures verify dispatch and owner/capability fencing, not
+exact credential-ID replacement, expected-revision conflicts or crash-safe
+idempotency. Preserve those regressions while assessing the missing guarantees.
+Require separate validation consent/effect disclosure and authoritative outcome
+reconciliation. Unsupported operations must fail closed, without invented upstream
+fields or new Link adapters. The existing `DOC-M3-PROVIDER-CONTRACT` and removal
+successor own this gap; no credential mutation or new runtime check ran here.
+
 ## SSH private-key qualification
 
 The later [generation/Help receipt](quality/connection-key-generation-help.md)

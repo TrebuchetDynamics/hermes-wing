@@ -2526,6 +2526,7 @@
         "DOC-SECURITY-CURRENT-BOUNDARY",
         "DOC-SECURITY-REPLAY-EVIDENCE",
         "FIX-NPM-AUDIT",
+        "SECURITY-RETAINED-RELEASE-AUDIT",
         "VERIFY-OMNIROUTE-NODE22-CLOSURE"
       ],
       "title": "Preserve exact authority, isolation, privacy and no replay"
@@ -4018,16 +4019,6 @@
         },
         {
           "kind": "executed",
-          "ref": "CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 5m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1 --grep \"390px text 1\"",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
           "ref": "CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19077/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-entry-labels/browser-accepted",
           "result": "pass"
         },
@@ -4069,6 +4060,16 @@
         {
           "kind": "executed",
           "ref": "CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:8997/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-primary-entry/review-browser",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 5m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1 --grep \"390px text 1\"",
           "result": "pass"
         },
         {
@@ -7227,6 +7228,16 @@
       "section": "Next",
       "status": "open",
       "title": "Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons"
+    },
+    {
+      "depends_on": [
+        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
+      ],
+      "goal": "SECURITY",
+      "id": "SECURITY-RETAINED-RELEASE-AUDIT",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify retained root dependencies and release audit after retirement closure"
     },
     {
       "depends_on": [

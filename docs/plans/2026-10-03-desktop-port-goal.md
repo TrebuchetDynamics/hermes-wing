@@ -21,7 +21,9 @@ Accepted in the Telegram interview, 2026-10-03:
 Repository: `<repo>`.
 Active Hermes profile: wing; never edit other profiles' data.
 Agent, Desktop and Conduit references including tooling/hooks remain read-only.
-Preserve unrelated dirty edits, no commits/push/releases or acceptance-card changes.
+Preserve unrelated dirty edits. The initial pass excluded commits, pushes, releases
+and acceptance-card changes. The later local-commit authorization below supersedes
+only that commit restriction; pushes/releases and unrelated card changes remain excluded.
 No personal credential copying, secret scanning, personal runtime changes,
 package installs or security bypasses. Live qualification must use an approved
 isolated target and supported private auth provisioning; do not switch the owner's
@@ -29,6 +31,38 @@ isolated target and supported private auth provisioning; do not switch the owner
 Fixtures/widget tests are not live generation/native acceptance.
 
 ## Current checkpoint
+
+Current continuation authorization: the owner requested autogoal every 15 minutes
+and local commits of verified progress. This supersedes the earlier 10-minute
+cadence for the new continuation, not the archived job or its historical receipts.
+Follow canonical main-only policy, required checks, exact-candidate commit
+verification and current ownership. No push, branch/PR creation, release, personal
+credential discovery or service mutation is authorized by that scheduling request.
+Native main-only writer admission remains a prerequisite, not something a prompt
+or read-only snapshot proves. Configuration of a job is not observed worker execution.
+
+### Current connection frontier
+
+Planning-and-task-breakdown is applied here to dependency order and observable
+outcomes in the existing TODO bodies, without changing ledger focus or leases.
+
+| Existing IDs | Evidence / remaining outcome | Decision and dependency |
+| --- | --- | --- |
+| CONNECTION-LINK-REMOVAL; CONNECTION-OFFICIAL-DESKTOP-PORT; CONNECTION-SAVED-WORKFLOWS | Existing in-progress ledger tasks; full bodies retain exact source/transport and owner-safe connection acceptance. | Now: reconcile existing owners first, never launch an overlapping replacement. |
+| CONNECTION-SETUP-AUTH-MATRIX | First eligible open CONNECTION-PATHS slice; public setup/auth recovery is only partly qualified. | Next available open slice after ownership/admission checks. Reuse completed fixture subsets; prove only remaining cancellation/auth/storage/owner outcomes. |
+| CONNECTION-LINK-RETIREMENT | Deprecated packaging and compatibility consumers remain; source removal is not replacement acceptance. | Next after CONNECTION-LINK-REMOVAL. Preserve stored records and retained security checks. |
+
+Verification checkpoint: exact-source focused production-control regressions and
+named-platform fixture checks precede task closure; live authentication and native
+SSH remain separate. Local commits must carry the outcome, regressions and necessary
+docs after applicable gates, not an empty progress marker. The consumer handoff
+check is currently unable to parse this repository’s bold task IDs and combined
+Now / Next layout; its refusal does not prove the bodies are absent. Repair of the
+external helper requires a separate authorized tooling task, not an instruction
+edit or broad backlog reformat in this documentation pass. Selection eligibility
+never establishes native writer admission or live lease availability.
+
+### Existing daily-use checkpoint
 
 Wing owns implementation and QA for the complete daily-use milestone. The owner
 selected a disposable local QA Agent/profile and at most three short generations

@@ -4,7 +4,7 @@
 > and must not be used as current product or Hermes Agent documentation. Use the
 > [evidence matrix](../quality/evidence-matrix.md),
 > [Hermes compatibility contract](../product/hermes-compatibility.md), and
-> [Wing Link design](../product/wing-link.md) for current status.
+> [direct Agent connection](../getting-started.md#direct-agent-connection) for current setup.
 
 Last updated: 2026-07-29.
 

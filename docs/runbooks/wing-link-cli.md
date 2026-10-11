@@ -1,5 +1,10 @@
 # Wing Link CLI guide
 
+> **Retained legacy procedure—not current-user setup.** Wing Link is deprecated
+> and is not required for direct Agent connections. These commands document
+> existing legacy behavior pending retirement. Use
+> [direct Agent connection](../getting-started.md#direct-agent-connection) for current setup.
+
 Running `wing-link` without arguments prints a short first-run guide and exits
 successfully without changing the host. Use `wing-link help` for every command,
 or `wing-link help setup` / `wing-link setup --help` for focused instructions.

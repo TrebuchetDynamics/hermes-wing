@@ -155,6 +155,18 @@ Project is Agent-owned; directory grants do not create a Wing-owned workspace.
 See [API and state](adr/api-and-state.md) for exact operation/grant gating,
 concurrency rules and the bounded setup-catalog exception.
 
+## Existing-profile credential contract gap
+
+Current direct `HermesApiClient` Set/Remove/Validate methods and
+`ProviderCredentialSheet` dispatch already exist. Their request shapes use
+provider/profile and environment-variable identity, not the opaque credential IDs,
+expected revisions and idempotency required by the
+[mutation acceptance contract](adr/api-and-state.md#required-agent-owned-mutation-contract).
+Source presence and exact capability gates do not qualify those stronger guarantees.
+`DOC-M3-PROVIDER-CONTRACT` owns the current caller/test comparison and bounded
+fail-closed correction assessment. This documentation pass changes no controls,
+reads no credentials and does not establish a runtime vulnerability or safe mutation.
+
 ## Terminal working-directory files (planned design)
 
 The [feasibility study](analysis/terminal-files-feasibility.md) traces existing

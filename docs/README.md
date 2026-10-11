@@ -63,8 +63,8 @@ these intentional references; it does not exempt unrelated broken links.
 - [Hermes Agent compatibility](product/hermes-compatibility.md)
 - [Security policy](../SECURITY.md) and [threat model](security/threat-model.md)
 
-Use these first when installing, pairing, troubleshooting a connection, or
-checking whether a Hermes Agent release exposes the routes Wing needs.
+Use these first when building Wing, connecting directly, troubleshooting a
+connection, or checking the Agent capabilities Wing needs.
 
 ## Product and architecture
 
@@ -96,7 +96,7 @@ checking whether a Hermes Agent release exposes the routes Wing needs.
 - [Native production Local enrollment](quality/local-setup-enrollment-native.md) — four Linux GTK keyboard journeys through the real app/router, separate pairing and direct Agent selection without management requests; synthetic host operations, not actual installation, live authentication, Android or main delivery
 - [Two-host selection and recovery](quality/two-host-recovery-native.md) — Linux GTK fixture keyboard selection, colliding identities and explicit read-only retry; frozen-source evidence, not live authentication or main delivery
 - [Production connection browser matrix](quality/connection-production-browser-matrix.md) — real welcome/router, legacy Local setup, Remote retry and saved-owner recovery in one compiled candidate; retained Flutter/Chromium passes, not current-tree, replacement Local, native/live or main-delivery qualification
-- [Desktop connection paths](product/desktop-connection-paths.md) — Local / SSH / Remote source comparison, current external-tunnel support and planned bounded native delivery
+- [Desktop connection paths](product/desktop-connection-paths.md) — Local / SSH / Remote source comparison, implemented ephemeral native SSH forwarding and remaining native/live qualification limits
 - [Whole-transcript accessibility](quality/chat-transcript-accessibility.md) — enlarged-text widget/Chromium recovery and keyboard evidence; see the separate native subset below
 - [Native keyboard Stop recovery](quality/native-stop-recovery.md) — four Linux GTK fixture cases for uncertain/failed Stop, canonical recovery and replacement-owner fencing; no recovery replay, not live Stop or process-relaunch qualification
 - [Integrated native restart](quality/native-integrated-daily-restart.md) — compact/wide Linux GTK fixture sequence for approval, uncertain Stop, canonical recovery and exact-session process restart; explicit reselection before one resumed send, not live generation or main delivery

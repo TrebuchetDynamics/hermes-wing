@@ -1,5 +1,84 @@
 # Documentation and goal-ledger maintenance
 
+## Current core-owner reconciliation
+
+Mode: Bootstrap + Maintain, documentation and backlog only. Source baseline:
+`5f2bed91de77f35f0cb4198337da6904df41f852` on canonical `main`. No development
+branch, implementation dispatch, code change, credential read, service action or delivery.
+Parallel helpers reviewed source and documentation read-only.
+
+| Role | Existing owner | Outcome |
+| --- | --- | --- |
+| README | `README.md`, `docs/README.md` | maintained: fresh-launch actions, implemented Local preparation, native SSH limits and phone-setup anchor. |
+| PRD | `docs/product/prd.md` | unchanged_verified against accepted direct-entry, Desktop fidelity and capability boundaries; no requirement weakened. |
+| ADR | `docs/adr/api-and-state.md`, `docs/adr/runtime-and-delivery.md`, `docs/adr/product.md` | maintained: superseded Link provider-expansion direction and owner-confirmed deprecation acceptance metadata. Other living decisions unchanged. |
+| Spec | `docs/spec.md` | maintained: current direct provider request shapes do not establish required credential-ID, revision or idempotency guarantees. |
+| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | unchanged_verified as the retained manual code-first legacy owner; full runtime conformance remains unverified. No owned replacement API invented. |
+| Test plan | `docs/test-plan.md` | maintained: provider dispatch fixtures are distinct from stronger mutation acceptance. |
+| Runbook | `docs/getting-started.md`, `docs/runbooks/wing-link-cli.md`, `docs/runbooks/hermes-readiness-audit.md` | direct setup unchanged_verified; CLI warning and archived audit pointer maintained. Procedure bodies preserved; no operations executed. |
+| Changelog | `CHANGELOG.md` | maintained: earlier external-tunnel-only entry explicitly predates native forwarding. No release or runtime qualification added. |
+
+`TODO.md` retains every existing ID and status. Source labels and two goal IDs
+now match the ledger; missing workflow Ownership and matrix Scope fields are
+explicit. Existing provider, Project-assignment and discovery-selection bodies
+now cover current credential-call comparison, Project-to-Chat ownership and the
+installation contract gap. The host-lifecycle task is historical/retirement-only,
+not replacement qualification. The live-workflow body follows protected main
+rather than prohibited PR delivery.
+
+`goals.json` adds only `SECURITY-RETAINED-RELEASE-AUDIT`, a Next successor to
+`VERIFY-OMNIROUTE-NODE22-CLOSURE`. This preserves two remaining SECURITY slices
+without recreating removed installers or changing the temporary risk decision.
+All 188 prior task objects, goal statuses/evidence and CONNECTION-PATHS focus
+are conserved. Canonical formatting reorders two existing evidence entries only.
+Counts: 35 goals (2 met, 17 partial, 9 unmet, 7 unverified); 189 tasks
+(108 done, 77 open, 4 in_progress). All 81 unfinished bodies have Goal, Sources,
+Scope, Acceptance, Dependencies and Ownership fields. No archive move or blocker
+transition occurred; `todo.archive.md` and `BLOCKERS.md` remain unchanged.
+
+Executed: `goals.py fmt`, `validate` (`ok`) and `render`, with a second pass
+byte-identical for both ledger and TODO. The focused command
+`flutter test --no-pub --concurrency=1 test/tooling/wing_link_docs_contract_test.dart`
+passed all three tests. A scratch-only local file/anchor and task-body checker
+includes negative missing-file/anchor assertions. It passed in both the canonical
+checkout and a complete tracked-file export with exact documentation overlays:
+19 documents, 852 local links and 81 unfinished bodies. It excluded 34 optional
+private receipt links under the documented evidence-availability rule.
+
+Consumer follow-through: the owner-confirmed deprecation now has the exact
+`Status: Accepted` line in its existing ADR section. Its accepted scope and
+exclusions are unchanged. Rerunning the identical `goals.py backlog-check` for
+`docs/adr/product.md#wing-link-deprecation` and
+`CONNECTION-LINK-REMOVAL,CONNECTION-LINK-RETIREMENT` still returned `draft_saved`,
+exit 1, now with 81 missing-body diagnostics and no acceptance-status diagnostic.
+A minimal bold-ID versus plain-ID control reproduces the external helper parser
+defect. The bodies are present; independent checks do not replace consumer
+certification. External tooling code was not modified or the backlog broadly
+reformatted to force a passing receipt.
+
+The existing [goal plan](../plans/2026-10-03-desktop-port-goal.md#current-connection-frontier)
+now records an evidence-backed Now/Next frontier and the owner's 15-minute
+continuation with local verified-progress commits. Initial no-commit/10-minute
+restrictions are distinguished from current authorization; archived jobs, leases
+and receipts are unchanged. Planning-and-task-breakdown was applied to the
+existing task dependency order and verification checkpoint, not a competing plan.
+No code, commit, new worker or scheduler change occurred in this follow-through.
+The existing ledger selector still prioritizes active connection tasks; the first
+eligible open slice is CONNECTION-SETUP-AUTH-MATRIX. Eligibility is not native
+writer admission, live lease availability or dispatch.
+
+Follow-through checks cover 20 documents, 859 local links and all 81 unfinished
+bodies; 34 optional private receipt links remain excluded. TODO/goals are
+byte-identical to the preceding pass, with unchanged status counts and focus.
+
+Remaining: instruction-guide terminology conflicts are already within
+CONNECTION-LINK-RETIREMENT; this documentation command does not authorize instruction
+edits. Existing ledger titles retain some predecessor wording; full bodies define
+the bounded work. External links, live authentication, native SSH/Android hosting,
+physical speech, broad product gates and full ASD-STE100 dictionary compliance were
+not checked. Source inspection and documentation tests do not close those gaps.
+
+
 Latest correction: [OmniRoute retirement follow-through](../../todo.archive.md#omniroute-retirement-documentation-follow-through--2026-10-10).
 Current design, verification, Unreleased history and the existing security successor
 no longer require deleted installer inputs. Source retirement is committed on main;

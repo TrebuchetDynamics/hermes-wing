@@ -52,6 +52,12 @@ connection prerequisite, not welcome fidelity or the delivered APK's parity.
 
 ## Wing Link deprecation
 
+Status: Accepted
+
+Scope: retire Wing Link from current product setup and navigation. Preserve legacy
+state and security checks until removal. This records the owner-confirmed direction
+below, not approval for Agent changes, new compatibility adapters or deployment.
+
 ### Documentation retirement scope
 
 The owner confirmed that Wing Link is fully deprecated and must be removed from

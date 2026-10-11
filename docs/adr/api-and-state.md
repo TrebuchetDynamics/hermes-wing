@@ -74,9 +74,11 @@ entry; it never substitutes a Wing-maintained list of providers or models.
 
 ## Existing-profile provider compatibility direction
 
-Status: provider-first design direction accepted on 2026-09-07; not implemented
-or advertised. This records the next bounded compatibility slice, not shipping
-support or permission to modify personal runtime state.
+Status: superseded by [Wing Link deprecation](product.md#wing-link-deprecation).
+The provider-first direction was accepted on 2026-09-07 but was not implemented
+or advertised. The following compatibility design is retained as history, not
+permission to expand Wing Link. The required Agent-owned mutation contract below
+remains the acceptance bar for direct or separately reviewed native operations.
 
 Extend Wing Link's reviewed compatibility operations to existing-profile provider
 management only where a supported Hermes CLI or Agent API contract has been
@@ -192,11 +194,10 @@ Errors and audit events contain only allowlisted metadata, never upstream raw
 output, credentials or private paths. Local approval remains bound to requester,
 operation, resource, expected revision and payload; changes require fresh approval.
 
-Prefer direct advertised Agent administration with its own authorization. Only a
-verified fixed local CLI contract may justify the Wing Link compatibility adapter;
-Wing Link must not proxy an available Agent administration API. Each compatibility
-operation needs a qualified release window and is removed when the equivalent
-authoritative advertised API provides these guarantees.
+Prefer direct advertised Agent administration with its own authorization.
+Wing Link deprecation prohibits new compatibility adapters. Any replacement
+native operation requires separate bounded review against an unmodified Agent
+contract. Missing guarantees leave the affected operation unavailable.
 
 Acceptance requires behavioral tests for concurrent CLI/API edits, stale revisions,
 profile delete/recreate, exact-ID replacement/removal, preserved sibling credentials
@@ -206,7 +207,8 @@ implicit inference/restart. Then qualify the supported operations through live
 Linux UI journeys using isolated Agent state; fixtures alone are insufficient.
 
 The proposed upstream implementation checkpoint is withdrawn. Further work is
-limited to Wing/Wing Link changes over verified, unmodified Agent contracts.
+limited to Wing changes over verified, unmodified Agent contracts; retained
+Wing Link code may be secured or retired, not expanded.
 Until a supported authoritative contract meets these criteria, keep the affected
 existing-profile provider operations unavailable. Never modify Hermes Agent or
 implement a direct-file fallback to enable them.

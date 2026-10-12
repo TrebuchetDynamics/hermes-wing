@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
-import 'package:wing/core/wing_link/local_wing_link_host.dart';
+
 import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -87,18 +87,27 @@ void main() {
     }),
   );
 
-  for (final standalone in [false, true]) {
+  for (final (standalone, platformBack) in [
+    (false, false),
+    (false, true),
+    (true, false),
+    (true, true),
+  ]) {
     testWidgets(
-      'phone setup continues directly to Agent authentication without pairing (standalone: $standalone)',
+      'Local setup uses direct Agent authentication without pairing (standalone: $standalone, platform Back: $platformBack)',
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final channel = FakeHermesChannel.disconnected();
         addTearDown(channel.dispose);
+        final initialState = channel.state;
+        final store = FakeHermesEndpointStore();
+        final saved = await store.loadProfiles();
         final container = ProviderContainer(
           overrides: [
             hermesChannelProvider.overrideWithValue(channel),
-            hermesEndpointStoreProvider.overrideWithValue(
-              FakeHermesEndpointStore(),
+            hermesEndpointStoreProvider.overrideWithValue(store),
+            localWingLinkHostProvider.overrideWith(
+              (_) => throw StateError('Link forbidden'),
             ),
           ],
         );
@@ -121,6 +130,15 @@ void main() {
           findsNothing,
         );
         if (!standalone) {
+          if (defaultTargetPlatform == TargetPlatform.linux) {
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('hermes-welcome-optional')),
+            );
+            await tester.tap(
+              find.byKey(const ValueKey('hermes-welcome-optional')),
+            );
+            await tester.pumpAndSettle();
+          }
           await tester.ensureVisible(
             find.byKey(const ValueKey('hermes-enrollment-local-setup')),
           );
@@ -129,16 +147,26 @@ void main() {
           );
           await tester.pumpAndSettle();
         }
-        for (final key in [
-          'platform-local-existing-agent',
-          'platform-local-started-agent',
-        ]) {
+        for (final key
+            in defaultTargetPlatform == TargetPlatform.android
+                ? [
+                    'platform-local-existing-agent',
+                    'platform-local-started-agent',
+                  ]
+                : <String>[]) {
           final action = find.byKey(ValueKey(key));
           await tester.ensureVisible(action);
           await tester.tap(action);
           await tester.pumpAndSettle();
         }
-        expect(find.byType(TermuxHermesSetupScreen), findsOneWidget);
+        if (defaultTargetPlatform == TargetPlatform.android) {
+          expect(find.byType(TermuxHermesSetupScreen), findsOneWidget);
+        } else {
+          expect(
+            find.byKey(const ValueKey('platform-local-home-status')),
+            findsOneWidget,
+          );
+        }
         expect(
           find.byKey(const ValueKey('hermes-enrollment-paste-link')),
           findsNothing,
@@ -147,41 +175,46 @@ void main() {
           find.byKey(const ValueKey('hermes-api-key-field')),
           findsOneWidget,
         );
-        if (standalone) {
-          await tester.tap(find.byType(BackButton));
-        } else {
-          expect(router.canPop(), isTrue);
+        expect(router.canPop(), !standalone);
+        if (platformBack) {
           await tester.binding.handlePopRoute();
+        } else {
+          await tester.tap(find.byType(BackButton));
         }
         await tester.pumpAndSettle();
         expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
+        expect(channel.state, same(initialState));
+        expect(channel.connectCalls, isEmpty);
+        expect(channel.disconnectCalls, 0);
+        expect(await store.loadProfiles(), saved);
+        expect(store.saveCalls, isEmpty);
+        expect(store.saveAllCalls, isEmpty);
+        expect(store.deleteProfileCalls, isEmpty);
+        expect(store.clearCalls, 0);
         expect(tester.takeException(), isNull);
       },
-      variant: TargetPlatformVariant.only(TargetPlatform.android),
+      variant: TargetPlatformVariant({
+        TargetPlatform.android,
+        TargetPlatform.linux,
+      }),
     );
   }
 
   testWidgets(
-    'Linux setup opened from manual connection continues into pairing',
+    'Linux setup opened from manual connection authenticates directly and returns on cancel',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
-      final host = LocalWingLinkHost(
-        executablePath: '/opt/fixture/wing',
-        runner: (_, args) async => LocalWingLinkProcessResult(
-          exitCode: 0,
-          stdout: args.first == 'setup'
-              ? '{"protocol_version":2,"result":{"hermes_installed":true,"hermes_adopted":true,"gateway_started":true}}'
-              : '{"protocol_version":2,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"setup_available":true}',
-        ),
-      );
+
       final store = FakeHermesEndpointStore();
       final container = ProviderContainer(
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
-          localWingLinkHostProvider.overrideWithValue(host),
+          localWingLinkHostProvider.overrideWith(
+            (_) => throw StateError('Link forbidden'),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -198,12 +231,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      for (final key in [
-        'hermes-open-local-setup',
-        'local-hermes-setup-action',
-        'local-hermes-setup-confirm',
-        'local-hermes-setup-continue',
-      ]) {
+      for (final key in ['hermes-open-local-setup']) {
         final action = find.byKey(ValueKey(key));
         await tester.ensureVisible(action);
         await tester.tap(action);
@@ -211,7 +239,21 @@ void main() {
       }
       expect(
         find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('platform-local-home-status')),
         findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-api-key-field')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        AppRoutes.addHermes,
       );
       expect(store.saveCalls, isEmpty);
       expect(tester.takeException(), isNull);

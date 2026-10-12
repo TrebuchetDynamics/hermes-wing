@@ -4554,6 +4554,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "README.md#quickstart [value-first audit and editorial review; hosted and daa5b6bf cached-toolchain Chromium preview; no fresh-machine or authenticated generation qualification; stale Termux docs test retained in TODO]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/adr/product.md#complete-removal-including-legacy [owner-directed full retirement plan; inventory 159; independent planning review approved; no runtime qualification]",
           "result": "pass"
         },

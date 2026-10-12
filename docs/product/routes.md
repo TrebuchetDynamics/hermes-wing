@@ -28,7 +28,8 @@ Missing Agent APIs remain explicitly unavailable. Wing Link management routes ar
 deprecated but still implemented. Their authorization remains enforced until
 removal; they never gate a supported direct Agent connection. Linux Hermes-home
 discovery and Android guided same-phone setup remain replacement work, not current
-route qualification.
+route qualification. The isolated [Connections removal candidate](../quality/connections-agent-only-follow-through.md)
+removes its trust reads and device-revoke UI only; other legacy consumers remain.
 
 Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles, and Connections in the compact bottom bar and places the other working slices in More. Desktop and wide web separate **Workflow** (Chat, Office, Schedules) from **Utilities** (Providers, Connections, Tools, Profiles, Persona, Settings) in the sidebar. All nine working destinations remain explicit, named and route-selected when expanded or icon-only; short windows scroll the groups while keeping the collapse control available. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands. See the [desktop navigation runbook](../runbooks/desktop-navigation-groups.md) for evidence and deliberate Desktop differences.
 
@@ -45,7 +46,7 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/providers`   | More              | Capability-gated provider inventory, write-only API-key management, credential validation, runtime-model inventory, and model assignment through advertised Agent operations. OAuth providers are labeled as host sign-in rather than opening an API-key form; remote OAuth and multi-credential flows remain contract-gated.                                                            | partial     |
 | `/tools`       | More              | Gateway-scoped searchable installed-skill metadata and resolved toolsets with exact-scoped refresh; mutation, MCP administration, and discovery remain contract-gated.                                                                                                                             | partial     |
 | `/memory`      | More              | Memory entries, profile, capacity, and providers.                                                                                                                                                                                                                                                  | planned     |
-| `/gateway`     | Connections       | Saved hosts, explicit chat connect/disconnect, bounded Agent health, connection editing/removal, and independent Wing Link device trust/revocation; lifecycle, logs, peer administration, and messaging-platform administration remain contract-gated.                                                                      | partial     |
+| `/gateway`     | Connections       | Saved hosts, explicit chat connect/disconnect, bounded Agent health, connection editing/removal, without Wing Link device trust/revocation; lifecycle, logs, peer administration, and messaging-platform administration remain contract-gated.                                                                      | partial     |
 | `/settings`    | More              | Link to Connections, appearance, supported spellcheck, voice, and redacted diagnostics; also selected by Ctrl/Command+, and bounded Linux/Windows/macOS native Settings menu commands.                                                                                                        | implemented |
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
@@ -328,7 +329,7 @@ download readback evidence, size bounds and platform limits.
 See the [long-conversation runbook](../runbooks/chat-long-conversation.md) for
 Chromium fixture qualification and explicit platform/performance limitations.
 
-Connections owns saved-host management. Selecting a host only changes the management target; **Connect chat** opens its Agent connection explicitly. **Disconnect** closes the local chat connection and clears automatic startup restoration, while preserving saved credentials. It does not stop Hermes Agent or Wing Link. **Remove** forgets saved access locally; **Revoke this device** revokes Wing Link access through the host. Wing Link trust and profile inventory remain available while Agent chat is disconnected. Chat traffic continues directly to Hermes Agent.
+Connections owns saved-host management. Selecting a host only changes the inspection target; **Connect chat** opens its Agent connection explicitly. **Disconnect** closes the local chat connection and clears automatic startup restoration, while preserving saved credentials. It does not stop Hermes Agent or any host service. **Remove** forgets saved access locally. The isolated Connections removal candidate no longer reads Wing Link trust or offers device revocation, even when legacy credentials remain saved. Missing Agent lifecycle, logs and peer-management contracts remain unavailable; no replacement management service is simulated. Chat traffic continues directly to Hermes Agent. See the [bounded removal receipt](../quality/connections-agent-only-follow-through.md) for checks and exclusions.
 
 Connections health refresh and explicit retry belong to the current Agent channel,
 host/profile, selected management host and exact authorized read. Ownership loss

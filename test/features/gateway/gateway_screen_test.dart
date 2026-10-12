@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,8 +38,6 @@ HermesCapabilityDocument _capabilities({
 });
 
 const _testFingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-const _changedFingerprint =
-    'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB';
 
 const _initialHealth = HermesHealthStatus(
   status: 'ok',
@@ -50,40 +47,17 @@ const _initialHealth = HermesHealthStatus(
   activeAgents: 1,
 );
 
-WingLinkClient _trustClient({
-  void Function()? onDelete,
-  Object? getError,
-  Object? deleteError,
-  String reportedFingerprint = _testFingerprint,
-}) => WingLinkClient(
+WingLinkClient _unusedLinkClient(void Function() onRequest) => WingLinkClient(
   origin: Uri.parse('https://host.example:8654'),
   token: 'test-token',
   hostFingerprint: _testFingerprint,
   get: (uri, headers) async {
-    if (getError != null) throw getError;
-    return jsonEncode(
-      uri.path == '/meta'
-          ? {
-              'protocol_generation': 2,
-              'minimum_protocol_generation': 1,
-              'supported_protocol_generations': [1, 2],
-              'version': '1.2.3',
-              'host_fingerprint': reportedFingerprint,
-              'capabilities': ['device.self.read'],
-            }
-          : {
-              'device_id': 'cred_phone',
-              'name': 'Pixel',
-              'scopes': ['health.read', 'profile.read'],
-              'created_at': '2026-01-01T00:00:00Z',
-              'legacy': false,
-            },
-    );
+    onRequest();
+    throw StateError('Connections must not request legacy management');
   },
   delete: (uri, headers) async {
-    if (deleteError != null) throw deleteError;
-    onDelete?.call();
-    return '';
+    onRequest();
+    throw StateError('Connections must not revoke legacy management');
   },
 );
 
@@ -203,6 +177,107 @@ Future<HermesGatewayDirectory> _activeTrustDirectory(
 }
 
 void main() {
+  testWidgets('legacy metadata never opens management or erases saved access', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      basicHealth: _initialHealth,
+      refreshedDetailedHealth: _initialHealth,
+    );
+    addTearDown(channel.dispose);
+    const config = HermesEndpointConfig(
+      id: 'alpha',
+      label: 'Alpha',
+      baseUrl: 'https://alpha.example',
+      apiKey: 'fixture-agent-key',
+      wingLinkOrigin: 'https://link.example',
+      wingLinkToken: 'fixture-link-token',
+      wingLinkPendingCredentialId: 'fixture-pending',
+      wingLinkHostFingerprint: _testFingerprint,
+      wingLinkDeviceId: 'fixture-device',
+    );
+    var recoveries = 0;
+    final store = FakeHermesEndpointStore(profiles: const [config]);
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'alpha': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+      pendingCredentialRecovery: (_) async {
+        recoveries++;
+        return false;
+      },
+    );
+    await directory.refresh();
+    expect(recoveries, 1);
+    recoveries = 0; // Directory bootstrap is outside screen ownership.
+    await directory.activateGateway('alpha');
+    var constructions = 0;
+    var requests = 0;
+    await tester.pumpWidget(
+      _testApp(
+        channel,
+        directory: directory,
+        wingLinkClientBuilder: (_) {
+          constructions++;
+          return _unusedLinkClient(() => requests++);
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(constructions, 0);
+    expect(requests, 0);
+    expect(recoveries, 0);
+    expect(find.byKey(const ValueKey('gateway-trust-card')), findsNothing);
+    expect(find.text('Revoke this device'), findsNothing);
+    expect(find.textContaining('wing-link approvals'), findsNothing);
+    expect(find.text('Healthy'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('gateway-refresh-button')));
+    await tester.pumpAndSettle();
+    expect(channel.loadDetailedHealthCalls, 1);
+
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(channel.disconnectCalls, 0);
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gateway-disconnect-confirm')));
+    await tester.pumpAndSettle();
+    expect(channel.disconnectCalls, 1);
+    expect(directory.activeContactId, isNull);
+    final connects = channel.connectCalls.length;
+    await directory.renameGateway('alpha', 'Renamed');
+    await tester.pumpAndSettle();
+    expect(channel.connectCalls, hasLength(connects));
+    await tester.tap(find.byKey(const ValueKey('gateway-connect-chat-button')));
+    await tester.pumpAndSettle();
+    expect(channel.connectCalls, hasLength(connects + 1));
+    expect(channel.connectCalls.last.baseUrl, config.baseUrl);
+    expect(channel.connectCalls.last.apiKey, config.apiKey);
+    expect(directory.activeContactId?.gatewayId, 'alpha');
+    expect(constructions, 0);
+    expect(requests, 0);
+    expect(recoveries, 0);
+    final retained = (await store.loadProfiles()).single;
+    expect(retained.baseUrl, config.baseUrl);
+    expect(retained.apiKey, config.apiKey);
+    expect(retained.wingLinkOrigin, config.wingLinkOrigin);
+    expect(retained.wingLinkToken, config.wingLinkToken);
+    expect(
+      retained.wingLinkPendingCredentialId,
+      config.wingLinkPendingCredentialId,
+    );
+    expect(retained.wingLinkHostFingerprint, config.wingLinkHostFingerprint);
+    expect(retained.wingLinkDeviceId, config.wingLinkDeviceId);
+    expect(store.deleteProfileCalls, isEmpty);
+    expect(store.clearCalls, 0);
+  });
+
   testWidgets(
     'shows advertised bounded gateway status without admin controls',
     (tester) async {
@@ -550,7 +625,7 @@ void main() {
     expect(directory.gateways, hasLength(2));
   });
 
-  testWidgets('Wing Link trust stays available after chat disconnects', (
+  testWidgets('disconnected chat never loads legacy management', (
     tester,
   ) async {
     final channel = FakeHermesChannel.disconnected();
@@ -565,19 +640,19 @@ void main() {
         directory: directory,
         wingLinkClientBuilder: (_) {
           trustLoads++;
-          return _trustClient();
+          return _unusedLinkClient(() => fail('Unexpected Link request'));
         },
       ),
     );
     await tester.pumpAndSettle();
-    expect(trustLoads, 1);
+    expect(trustLoads, 0);
     expect(channel.connectCalls, hasLength(connections));
     expect(directory.activeContactId, isNull);
-    expect(find.byKey(const ValueKey('gateway-trust-revoke')), findsOneWidget);
+    expect(find.byKey(const ValueKey('gateway-trust-revoke')), findsNothing);
     expect(find.text('Chat disconnected'), findsOneWidget);
   });
 
-  testWidgets('trust reloads when the active gateway config is replaced', (
+  testWidgets('replacing saved config never reloads legacy management', (
     tester,
   ) async {
     final channel = FakeHermesChannel.disconnected();
@@ -608,17 +683,17 @@ void main() {
         directory: directory,
         wingLinkClientBuilder: (_) {
           trustLoads++;
-          return _trustClient();
+          return _unusedLinkClient(() => fail('Unexpected Link request'));
         },
       ),
     );
     await tester.pumpAndSettle();
-    expect(trustLoads, 1);
+    expect(trustLoads, 0);
 
     await directory.renameGateway('alpha', 'Renamed');
     await tester.pumpAndSettle();
 
-    expect(trustLoads, 2);
+    expect(trustLoads, 0);
   });
 
   testWidgets('disconnect preserves the saved gateway for reconnect', (
@@ -826,208 +901,6 @@ void main() {
       expect(channel.connectCalls, isEmpty);
     },
   );
-
-  testWidgets('shows changed identity, upgrade, and expired states at 100%', (
-    tester,
-  ) async {
-    final semantics = tester.ensureSemantics();
-    final cases = <({Object? error, String fingerprint, String message})>[
-      (
-        error: null,
-        fingerprint: _changedFingerprint,
-        message: 'host fingerprint changed',
-      ),
-      (
-        error: const WingLinkUpgradeRequired(),
-        fingerprint: _testFingerprint,
-        message: 'outside the supported compatibility window',
-      ),
-      (
-        error: const WingLinkHttpException(401),
-        fingerprint: _testFingerprint,
-        message: 'expired or revoked',
-      ),
-      (
-        error: Exception('Wing Link HTTP 401'),
-        fingerprint: _testFingerprint,
-        message: 'trust status is unavailable',
-      ),
-    ];
-    for (final testCase in cases) {
-      final channel = FakeHermesChannel(
-        capabilities: _capabilities(),
-        basicHealth: _initialHealth,
-      );
-      final directory = await _activeTrustDirectory(channel);
-      await tester.pumpWidget(
-        _testApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder: (_) => _trustClient(
-            getError: testCase.error,
-            reportedFingerprint: testCase.fingerprint,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(
-        find.textContaining(testCase.message, findRichText: true),
-        findsOneWidget,
-      );
-      final error = find.byKey(const ValueKey('gateway-trust-error'));
-      expect(tester.getSemantics(error).flagsCollection.isLiveRegion, isTrue);
-      await tester.pumpWidget(const SizedBox.shrink());
-      channel.dispose();
-    }
-    semantics.dispose();
-  });
-
-  testWidgets('shows host approval pending without request identifiers', (
-    tester,
-  ) async {
-    final semantics = tester.ensureSemantics();
-    final channel = FakeHermesChannel(
-      capabilities: _capabilities(),
-      basicHealth: _initialHealth,
-    );
-    addTearDown(channel.dispose);
-    final directory = await _activeTrustDirectory(channel);
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder: (_) => _trustClient(
-          deleteError: const WingLinkApprovalRequired(
-            approvalId: 'appr_test',
-            operationId: 'op_test',
-            idempotencyKey: 'retry-test',
-            expiresAt: 2000000000,
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const ValueKey('gateway-body-list')),
-      const Offset(0, -500),
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('gateway-trust-revoke')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('gateway-trust-revoke')));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('gateway-trust-revoke-confirm')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('gateway-trust-approval-pending')),
-      findsOneWidget,
-    );
-    expect(find.textContaining('appr_test'), findsNothing);
-    expect(find.textContaining('op_test'), findsNothing);
-    expect(
-      tester
-          .getSemantics(
-            find.byKey(const ValueKey('gateway-trust-approval-pending')),
-          )
-          .flagsCollection
-          .isLiveRegion,
-      isTrue,
-    );
-    semantics.dispose();
-  });
-
-  testWidgets('shows pinned trust and confirms self-revocation at 200% scale', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _capabilities(),
-      basicHealth: _initialHealth,
-      detailedHealth: _initialHealth,
-    );
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://alpha',
-          wingLinkOrigin: 'https://host.example:8654',
-          wingLinkToken: 'stored-token',
-          wingLinkHostFingerprint: _testFingerprint,
-          wingLinkDeviceId: 'cred_phone',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['default']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
-    await directory.activateGateway('alpha');
-    var revoked = false;
-
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        textScale: 2,
-        wingLinkClientBuilder: (_) =>
-            _trustClient(onDelete: () => revoked = true),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.drag(
-      find.byKey(const ValueKey('gateway-body-list')),
-      const Offset(0, -900),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text(_testFingerprint), findsNothing);
-    final details = find.byKey(const PageStorageKey('gateway-trust-details'));
-    await tester.ensureVisible(details);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Identity & permissions'));
-    await tester.pumpAndSettle();
-    expect(find.text(_testFingerprint), findsOneWidget);
-    expect(find.textContaining('Pixel'), findsNWidgets(2));
-    expect(find.textContaining('health.read'), findsOneWidget);
-    expect(find.textContaining('wing-link approvals list'), findsOneWidget);
-    await tester.drag(
-      find.byKey(const ValueKey('gateway-body-list')),
-      const Offset(0, -450),
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('gateway-trust-revoke')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('gateway-trust-revoke')));
-    await tester.pumpAndSettle();
-    expect(revoked, isFalse);
-    await tester.tap(
-      find.byKey(const ValueKey('gateway-trust-revoke-confirm')),
-    );
-    await tester.pumpAndSettle();
-    expect(revoked, isTrue);
-    final retainedAgentEndpoint = directory.configForGateway('alpha');
-    expect(retainedAgentEndpoint, isNotNull);
-    expect(retainedAgentEndpoint!.baseUrl, 'https://alpha');
-    expect(retainedAgentEndpoint.wingLinkOrigin, isNull);
-    expect(retainedAgentEndpoint.wingLinkToken, isNull);
-    expect(retainedAgentEndpoint.wingLinkHostFingerprint, isNull);
-    expect(retainedAgentEndpoint.wingLinkDeviceId, isNull);
-    expect(
-      find.text(
-        'This device was revoked. Pair it again from the host to restore '
-        'management access.',
-      ),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
 
   testWidgets('retains gateway status at 200% text scale', (tester) async {
     final channel = FakeHermesChannel(

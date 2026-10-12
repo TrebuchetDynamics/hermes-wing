@@ -207,7 +207,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.enroll,
         builder: (context, state) => _SelectableRoute(
           child: HermesEnrollmentScreen(
-            startPairing: state.uri.queryParameters['step'] == 'pair',
+            legacyHandoff: state.uri.queryParameters['step'] == 'pair',
           ),
         ),
       ),

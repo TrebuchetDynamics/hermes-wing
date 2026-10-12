@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 /// Surfaces the raw Hermes Wing connect pairing payload string carried by the
 /// Android activity's intent (an `ACTION_VIEW` deep link or `ACTION_SEND`
-/// shared text), so it can be handed to `HermesEnrollmentPayload.parse()`.
+/// shared text). Production consumers discard deprecated handoffs without parsing
+/// or exchanging them and show direct Agent reconnection guidance.
 /// Implementations must never throw: an inbound intent is untrusted input,
 /// and platforms without a native implementation simply have nothing to
 /// report.
@@ -55,9 +56,7 @@ class MethodChannelHermesConnectIntentSource
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
 
-  // The shell and enrollment screen share one native subscription. Creating a
-  // second EventChannel stream replaces the handler, and closing that screen
-  // would otherwise cancel handoff delivery to the still-running shell.
+  // Reuse the native stream: another EventChannel stream replaces its handler.
   late final Stream<String> _payloadEvents = _createPayloadEvents();
 
   bool get _supportsNativeChannel =>

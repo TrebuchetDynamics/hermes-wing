@@ -27,7 +27,7 @@ void main() {
       messenger.setMockMethodCallHandler(events, (_) async => null);
       addTearDown(() => messenger.setMockMethodCallHandler(events, null));
       messenger.setMockMethodCallHandler(channel, (call) async {
-        if (call.method != 'initialConnectIntent') return null;
+        if (call.method != 'consumeInitialConnectIntent') return null;
         return {
           'payload':
               'wing://connect?origin=https%3A%2F%2Fhermes.example&code=once',
@@ -60,6 +60,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Connect to Hermes'), findsOneWidget);
+      expect(
+        find.text('Pairing links are no longer supported'),
+        findsOneWidget,
+      );
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
     },

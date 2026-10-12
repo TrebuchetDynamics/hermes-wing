@@ -1061,6 +1061,8 @@
 
   "@enrollStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
   "enrollTitle": "Connect to Hermes",
+  "enrollLegacyHandoffTitle": "Pairing links are no longer supported",
+  "enrollLegacyHandoffBody": "This old link or shared text was discarded. Connect directly to Hermes Agent using Local, SSH or Remote. On Android, use SSH, Remote or the on-phone Termux guide. Existing saved connections are unchanged.",
   "enrollInvalidLinkTitle": "Pairing link couldn’t be opened",
   "enrollInvalidLinkBody": "Use the complete connection string from wing-link pair. An Agent URL alone belongs in manual connection.",
   "enrollClipboardEmpty": "The clipboard does not contain a pairing link.",

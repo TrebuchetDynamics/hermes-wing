@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/enrollment/providers/hermes_enrollment_provider.dart';
+import '../features/enrollment/services/hermes_connect_intent_source.dart';
 import '../features/settings/providers/theme_settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../router/app_router.dart';
@@ -36,17 +37,36 @@ class _WingMaterialAppState extends ConsumerState<_WingMaterialApp> {
   void initState() {
     super.initState();
     final source = ref.read(hermesConnectIntentSourceProvider);
-    _connectIntentSubscription = source.payloadEvents().listen(_openEnrollment);
-    unawaited(
-      source.initialPayload().then((payload) {
-        if (payload != null) _openEnrollment(payload);
-      }),
+    _connectIntentSubscription = source.payloadEvents().listen(
+      (_) => unawaited(_consumeHandoff(source, incoming: true)),
+      onError: (_) => _openEnrollment(incoming: true),
     );
+    unawaited(_consumeHandoff(source));
   }
 
-  void _openEnrollment(String _) {
+  Future<void> _consumeHandoff(
+    HermesConnectIntentSource source, {
+    bool incoming = false,
+  }) async {
+    try {
+      final present = await source.consumeInitialPayload() != null;
+      if (present || incoming) _openEnrollment(incoming: incoming);
+    } catch (_) {
+      _openEnrollment(incoming: incoming);
+    }
+  }
+
+  void _openEnrollment({bool incoming = false}) {
     if (mounted) {
-      ref.read(routerProvider).go('${AppRoutes.enroll}?step=pair');
+      final router = ref.read(routerProvider);
+      const route = '${AppRoutes.enroll}?step=pair';
+      if (!incoming) {
+        router.go(route);
+      } else if (router.state.uri.path != AppRoutes.enroll) {
+        unawaited(router.push<void>(route));
+      } else {
+        router.replace<void>(route);
+      }
     }
   }
 

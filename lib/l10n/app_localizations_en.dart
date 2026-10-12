@@ -2516,6 +2516,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollTitle => 'Connect to Hermes';
 
   @override
+  String get enrollLegacyHandoffTitle =>
+      'Pairing links are no longer supported';
+
+  @override
+  String get enrollLegacyHandoffBody =>
+      'This old link or shared text was discarded. Connect directly to Hermes Agent using Local, SSH or Remote. On Android, use SSH, Remote or the on-phone Termux guide. Existing saved connections are unchanged.';
+
+  @override
   String get enrollInvalidLinkTitle => 'Pairing link couldn’t be opened';
 
   @override

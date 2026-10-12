@@ -4335,6 +4335,18 @@ abstract class AppLocalizations {
   /// **'Connect to Hermes'**
   String get enrollTitle;
 
+  /// No description provided for @enrollLegacyHandoffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing links are no longer supported'**
+  String get enrollLegacyHandoffTitle;
+
+  /// No description provided for @enrollLegacyHandoffBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This old link or shared text was discarded. Connect directly to Hermes Agent using Local, SSH or Remote. On Android, use SSH, Remote or the on-phone Termux guide. Existing saved connections are unchanged.'**
+  String get enrollLegacyHandoffBody;
+
   /// No description provided for @enrollInvalidLinkTitle.
   ///
   /// In en, this message translates to:

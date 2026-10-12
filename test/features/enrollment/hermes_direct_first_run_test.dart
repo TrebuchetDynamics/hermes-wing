@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/shared/hermes_api_http.dart';
-import 'package:wing/features/enrollment/models/hermes_enrollment_payload.dart';
+
 import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -208,18 +208,14 @@ void main() {
           await activate(tester, 'hermes-optional-setup');
           await activate(tester, 'hermes-welcome-optional');
           expect(key('hermes-enrollment-pair-choice'), findsNothing);
-          // Retained explicit handoff failure cannot gate direct Agent access.
-          await enrollment.inspect(
-            HermesEnrollmentPayload(
-              origin: Uri.parse('https://management.example.invalid'),
-              code: 'fixture-once',
-            ),
-          );
+          // Legacy navigation never invokes management or gates direct access.
+          router.go('/enroll?step=pair');
           await tester.pumpAndSettle();
-          expect(key('hermes-enrollment-error'), findsOneWidget);
+          expect(key('hermes-enrollment-legacy-rejected'), findsOneWidget);
           await activate(tester, 'hermes-enrollment-manual-connect');
+          await activate(tester, 'hermes-enrollment-direct-connect');
           expect(key('hermes-primary-connection-modes'), findsOneWidget);
-          expect(managementRequests, 1);
+          expect(managementRequests, 0);
           expect(store.saveCalls, hasLength(1));
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox.shrink());

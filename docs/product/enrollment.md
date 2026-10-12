@@ -2,7 +2,7 @@
 
 `/enroll` lives outside the authenticated shell. A user can arrive without an
 Agent endpoint, through an explicit handoff, or while adding another host.
-`/enroll?step=pair` opens the retained explicit legacy pairing step, not a Local setup return. The query contains
+`/enroll?step=pair` rejects deprecated handoffs with generic direct Agent guidance, not a pairing review or Local setup return. The query contains
 only navigation state, never a handoff, credential, host address, or pairing code.
 
 ## Desktop connection-path alignment
@@ -23,8 +23,8 @@ Remote retains its HTTPS/VPN choices. This slice changes entry presentation, not
 installation, managed SSH, packaging or platform qualification.
 
 Reuse the direct Agent channel and secure endpoint storage, not a mandatory
-management exchange. Explicit legacy handoffs remain supported by retained code,
-not promoted as new-user setup.
+management exchange. Explicit legacy handoffs are discarded without parsing or exchanging them.
+Reconnect through the direct Agent controls; saved records are not migrated or deleted.
 Missing Agent APIs must leave affected features unavailable with an explanation.
 No new backend, shadow state or broader compatibility adapter is authorized.
 
@@ -42,9 +42,9 @@ host/profile/session ownership remain unchanged; restoration never replays sends
 
 The default chooser does not construct or invoke a Wing Link management client.
 Linux and Termux Local setup now reuse the direct Agent form, without installation
-or pairing completion. Explicit
-`/enroll?step=pair` and Android intent/share ingress remain legacy access paths. Their removal requires
-separate work; this is not whole-product Wing Link removal.
+or pairing completion. Explicit `/enroll?step=pair` and Android intent/share ingress now show generic
+reconnection guidance, with no controller construction or Link operations.
+This is one consumer retirement, not whole-product Wing Link removal.
 
 ### Local preparation and authentication
 
@@ -69,44 +69,27 @@ The computer setup widget and its localization remain legacy source, but the
 default enrollment screen neither imports nor constructs it. No stored data
 migration or deletion accompanies this presentation change.
 
-### Retained legacy pair and verify
+### Deprecated handoff rejection
 
-Paste works on every platform. Native Android also offers live QR scanning and
-QR-image import. Explicit links and Android shares retain the same ingress.
-A bounded, obscured input field provides a fallback when clipboard APIs fail.
-Raw input is cleared before parsing/inspection and when dismissed; it is not
-persisted, logged, analyzed, or included in errors.
+Cold and warm Android intent/share payloads are consumed and discarded. The UI
+never parses them, displays their contents or origins, reads the clipboard, opens
+QR scanning/import, or contacts Link. Malformed and expired inputs receive the
+same bounded guidance. Choose connection options to reconnect through Local,
+SSH or Remote (Android: SSH, Remote, then Termux).
 
-The existing transaction remains inspect → review → exchange → verify management
-identity → verify direct Agent access → securely save → acknowledge registration.
-The UI exposes these stages while confirming. It does not auto-confirm a host,
-merge credentials, weaken TLS/pinning, or bypass local approvals.
+WingApp alone consumes incoming handoffs; mounted enrollment screens do not
+subscribe or mutate their caller state. Warm handoffs are pushed above the current
+route so cancellation preserves its welcome, direct form or mounted Chat draft.
+Back/Cancel returns to that caller; a standalone legacy route
+returns to welcome. Direct options replace only the enrollment page. No saved
+credentials, records, active Agent endpoint/profile/session or sends are changed
+by rejection. No handoff is replayed on a later enrollment visit.
 
-Recovery distinguishes clipboard, scanner, image, network, timeout, TLS, refused
-handoff, unsupported operation, invalid response, secure-storage, direct Agent,
-and management/registration failures. Only bounded categories are rendered, not
-exception messages, URLs, credential bytes, or raw responses. Failed handoffs are
-not silently replayed. A fresh handoff still requires review.
-
-### Saved connection and readiness
-
-“Paired” means credentials were securely saved and required registration was
-acknowledged. It does not imply that the follow-up activation succeeded.
-Connection retry uses the saved endpoint and never repeats enrollment exchange,
-acknowledgment, or secure enrollment writes.
-
-The final screen distinguishes saved credentials, the live connection, and
-Agent-reported model configuration. It checks the enrolled endpoint identity and
-exact authorized detailed-health capability before using model readiness. An
-unrelated active endpoint, absent capability, or missing readiness field produces
-“not reported,” never a ready claim. A configured model does not prove provider
-authentication or successful inference; the screen says so and offers a fresh
-connection check, Chat, and profile navigation.
-
-The authoritative evidence is Agent's authenticated `/health/detailed` readiness
-model check (`gateway/platforms/api_server.py`, `gateway/readiness.py` in the
-read-only Agent checkout), Wing's existing capability-gated channel loading, and
-regressions in `hermes_enrollment_journey_test.dart`.
+The dormant parser/controller and readiness widget retain their security tests;
+this slice does not delete Link services, native scanner packaging or secure
+storage APIs. They are not constructed by production enrollment. Agent health
+and capability checks remain in the existing direct connection owner, and model
+configuration is not proof of successful inference.
 
 ## Why the first redesign was insufficient
 

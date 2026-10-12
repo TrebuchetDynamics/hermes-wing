@@ -193,6 +193,13 @@ preserve explicit host trust, connection ownership and cleanup. This research
 adds no remote-command or host-management authority.
 
 Reconnect must recover the same host/profile/session without mutation replay.
+The isolated saved-directory retirement candidate removes automatic legacy
+credential verification/acknowledgment during startup, refresh and reconnect.
+Saved Agent and Link fields remain unchanged; legacy host grouping is retained.
+The [directory regressions](../../test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart)
+cover pending bundles, foreground refresh and cancelled/replaced startup using
+Linux-hosted deterministic fixtures. Review, integration and native/live
+qualification remain separate; this does not retire enrollment or other consumers.
 Do not store an ephemeral forwarded origin as the durable remote-host identity
 without defining how restart and port replacement preserve ownership. Keep Agent
 and Wing Link credentials, connections and lifecycle authority separate.

@@ -212,8 +212,7 @@ void main() {
       },
     );
     await directory.refresh();
-    expect(recoveries, 1);
-    recoveries = 0; // Directory bootstrap is outside screen ownership.
+    expect(recoveries, 0);
     await directory.activateGateway('alpha');
     var constructions = 0;
     var requests = 0;

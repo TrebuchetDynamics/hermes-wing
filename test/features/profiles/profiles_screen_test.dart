@@ -441,7 +441,7 @@ void main() {
           },
         );
         await directory.refresh();
-        expect(legacyRecoveries, ['agent', 'other-agent']);
+        expect(legacyRecoveries, isEmpty);
         await directory.activateGateway('agent');
         expect(
           channel.state.isConnected,

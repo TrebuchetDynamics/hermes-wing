@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -232,7 +233,7 @@ void main() {
     expect(directory.contacts, isEmpty);
   });
   test(
-    'refresh resumes a securely stored pending Wing Link acknowledgment',
+    'refresh never recovers a stored pending Wing Link credential',
     () async {
       var acknowledged = false;
       const origin = 'http://127.0.0.1:8654';
@@ -268,13 +269,15 @@ void main() {
 
       await directory.refresh();
 
-      expect(acknowledged, isTrue);
-      expect(store.saveCalls.single.wingLinkPendingCredentialId, '');
+      expect(acknowledged, isFalse);
+      expect(store.saveCalls, isEmpty);
+      expect((await store.loadProfiles()).single, same(config));
+      expect(directory.configForGateway('pending'), same(config));
     },
   );
 
   test(
-    'bundle recovery acknowledges one credential once and clears every profile',
+    'startup and foreground reads preserve pending bundles without recovery',
     () async {
       const configs = [
         HermesEndpointConfig(
@@ -284,6 +287,8 @@ void main() {
           wingLinkOrigin: 'https://home.example:8654',
           wingLinkToken: 'control-token',
           wingLinkPendingCredentialId: 'bundle-credential',
+          wingLinkHostFingerprint: 'fixture-fingerprint',
+          wingLinkDeviceId: 'fixture-device',
         ),
         HermesEndpointConfig(
           id: 'link',
@@ -292,52 +297,142 @@ void main() {
           wingLinkOrigin: 'https://home.example:8654',
           wingLinkToken: 'control-token',
           wingLinkPendingCredentialId: 'bundle-credential',
+          wingLinkHostFingerprint: 'fixture-fingerprint',
+          wingLinkDeviceId: 'fixture-device',
         ),
       ];
       final store = FakeHermesEndpointStore(profiles: configs);
       var recoveryCalls = 0;
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      const selected = GatewayContactId(gatewayId: 'sidon', profileId: 'sidon');
+      final cache = FakeGatewayContactCache()
+        ..selection = const GatewayContactSelection(
+          contactId: selected,
+          sessionId: 'sess_1',
+        );
+      final timers = <_FakeTimer>[];
+      final blockedRecovery = Completer<bool>();
+      final loader = FakeGatewaySummaryLoader({
+        'sidon': gatewaySummary(['sidon']),
+        'link': gatewaySummary(['link']),
+      });
       final directory = HermesGatewayDirectory(
         store: store,
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          'sidon': gatewaySummary(['sidon']),
-          'link': gatewaySummary(['link']),
-        }),
-        activeChannel: FakeHermesChannel.disconnected(),
-        pendingCredentialRecovery: (_) async {
+        cache: cache,
+        loader: loader,
+        activeChannel: channel,
+        periodicTimer: (_, callback) {
+          final timer = _FakeTimer(callback);
+          timers.add(timer);
+          return timer;
+        },
+        pendingCredentialRecovery: (_) {
           recoveryCalls++;
-          if (recoveryCalls > 1) {
-            throw StateError('credential was already acknowledged');
-          }
-          return true;
+          return blockedRecovery.future;
         },
       );
       addTearDown(directory.dispose);
 
+      await directory.start().timeout(const Duration(seconds: 1));
+      expect(directory.activeContactId, selected);
+      expect(channel.state.activeSessionId, 'sess_1');
+      expect(channel.connectCalls.single.baseUrl, configs.first.baseUrl);
+      expect(channel.connectCalls.single.apiKey, configs.first.apiKey);
       await directory.refresh();
+      await directory.refresh();
+      directory.didChangeAppLifecycleState(AppLifecycleState.paused);
+      directory.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await Future<void>.delayed(Duration.zero);
+      timers.last.elapse();
+      await Future<void>.delayed(Duration.zero);
+      await directory.reconnectGateway('link');
 
-      expect(recoveryCalls, 1);
-      final saved = await store.loadProfiles();
+      expect(recoveryCalls, 0);
+      expect(blockedRecovery.isCompleted, isFalse);
+      expect(await store.loadProfiles(), orderedEquals(configs));
+      for (final config in configs) {
+        expect(directory.configForGateway(config.id!), same(config));
+      }
+      expect(store.saveCalls, isEmpty);
+      expect(store.saveAllCalls, isEmpty);
+      expect(directory.hosts, hasLength(1));
       expect(
-        saved.every(
-          (config) => (config.wingLinkPendingCredentialId ?? '').isEmpty,
-        ),
-        isTrue,
+        directory.contacts.map((c) => c.id),
+        containsAll([
+          selected,
+          const GatewayContactId(gatewayId: 'link', profileId: 'link'),
+        ]),
       );
+      expect(directory.activeContactId, selected);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(channel.connectCalls, hasLength(1));
       expect(
-        directory
-            .configForGateway('sidon')
-            ?.wingLinkPendingCredentialId
-            ?.isEmpty,
-        isTrue,
+        loader.calls.where((id) => id == 'link').length,
+        greaterThan(loader.calls.where((id) => id == 'sidon').length),
       );
-      expect(
-        directory
-            .configForGateway('link')
-            ?.wingLinkPendingCredentialId
-            ?.isEmpty,
-        isTrue,
+    },
+  );
+
+  test(
+    'default startup reads never construct recovery HTTP clients, even when cancelled and replaced',
+    () async {
+      const config = HermesEndpointConfig(
+        id: 'a',
+        label: 'Saved Agent',
+        baseUrl: 'https://agent.example',
+        apiKey: 'fixture-agent',
+        wingLinkOrigin: 'https://link.example',
+        wingLinkToken: 'fixture-link',
+        wingLinkPendingCredentialId: 'fixture-pending',
+        wingLinkHostFingerprint: 'fixture-pin',
+        wingLinkDeviceId: 'fixture-device',
       );
+      final store = FakeHermesEndpointStore(profiles: const [config]);
+      final loader = _SequencedGatewaySummaryLoader();
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final cache = FakeGatewayContactCache()
+        ..selection = const GatewayContactSelection(
+          contactId: GatewayContactId(gatewayId: 'a', profileId: 'default'),
+          sessionId: 'sess_1',
+        );
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: cache,
+        loader: loader,
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
+      var httpConstructions = 0;
+      await HttpOverrides.runZoned(
+        () async {
+          final startup = directory.start();
+          while (loader.calls == 0) {
+            await Future<void>.delayed(Duration.zero);
+          }
+          await directory.showDirectory();
+          await directory.refresh();
+          loader.first.complete(gatewaySummary(['default']));
+          await startup;
+          await directory.reconnectGateway('a');
+        },
+        createHttpClient: (_) {
+          httpConstructions++;
+          throw StateError('Unexpected recovery network access');
+        },
+      );
+      expect(httpConstructions, 0);
+      expect(directory.contacts.single.id.profileId, 'new');
+      expect(directory.activeContactId, isNull);
+      expect(channel.connectCalls, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(await store.loadProfiles(), [same(config)]);
+      expect(directory.configForGateway('a'), same(config));
+      expect(store.saveCalls, isEmpty);
+      expect(store.saveAllCalls, isEmpty);
     },
   );
 

@@ -11,7 +11,7 @@ import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/models/hermes_session.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
-import '../../../core/wing_link/wing_link_client.dart';
+
 import 'gateway_contact.dart';
 import 'gateway_contact_cache.dart';
 
@@ -128,6 +128,7 @@ class HermesGatewayDirectory extends ChangeNotifier
     required HermesChannel activeChannel,
     DateTime Function()? now,
     GatewayPeriodicTimerFactory? periodicTimer,
+    // Dormant test seam: saved-directory reads never recover Link credentials.
     PendingWingLinkCredentialRecovery? pendingCredentialRecovery,
     this.maxConcurrent = 3,
   }) : assert(maxConcurrent > 0),
@@ -136,9 +137,7 @@ class HermesGatewayDirectory extends ChangeNotifier
        _loader = loader,
        _activeChannel = activeChannel,
        _now = now ?? DateTime.now,
-       _periodicTimer = periodicTimer ?? Timer.periodic,
-       _pendingCredentialRecovery =
-           pendingCredentialRecovery ?? _verifyAndAcknowledgePendingCredential;
+       _periodicTimer = periodicTimer ?? Timer.periodic;
 
   final HermesEndpointStore _store;
   final GatewayContactCache _cache;
@@ -146,7 +145,7 @@ class HermesGatewayDirectory extends ChangeNotifier
   final HermesChannel _activeChannel;
   final DateTime Function() _now;
   final GatewayPeriodicTimerFactory _periodicTimer;
-  final PendingWingLinkCredentialRecovery _pendingCredentialRecovery;
+
   final int maxConcurrent;
   final Map<String, HermesEndpointConfig> _configsById = {};
   final Map<String, int> _gatewayRefreshGenerations = {};
@@ -385,8 +384,6 @@ class HermesGatewayDirectory extends ChangeNotifier
       return;
     }
     if (generation != _refreshGeneration) return;
-    configs = await _recoverPendingWingLinkCredentials(configs);
-    if (generation != _refreshGeneration) return;
 
     _configsById
       ..clear()
@@ -431,78 +428,6 @@ class HermesGatewayDirectory extends ChangeNotifier
     await _saveContacts();
     if (generation != _refreshGeneration) return;
     notifyListeners();
-  }
-
-  Future<List<HermesEndpointConfig>> _recoverPendingWingLinkCredentials(
-    List<HermesEndpointConfig> configs,
-  ) async {
-    final recovered = [...configs];
-    final groups = <(String, String, String), List<int>>{};
-    for (var index = 0; index < configs.length; index++) {
-      final config = configs[index];
-      final origin = Uri.tryParse(config.wingLinkOrigin ?? '');
-      final controlToken = config.wingLinkToken ?? '';
-      final credentialId = config.wingLinkPendingCredentialId ?? '';
-      if (origin == null ||
-          origin.host.isEmpty ||
-          controlToken.isEmpty ||
-          credentialId.isEmpty) {
-        continue;
-      }
-      groups
-          .putIfAbsent((
-            origin.toString(),
-            controlToken,
-            credentialId,
-          ), () => <int>[])
-          .add(index);
-    }
-
-    for (final entry in groups.entries) {
-      try {
-        if (!await _pendingCredentialRecovery(configs[entry.value.first])) {
-          continue;
-        }
-        for (final index in entry.value) {
-          final config = configs[index];
-          recovered[index] = HermesEndpointConfig(
-            id: config.id,
-            baseUrl: config.baseUrl,
-            apiKey: config.apiKey,
-            label: config.label,
-            wingLinkOrigin: config.wingLinkOrigin,
-            wingLinkToken: config.wingLinkToken,
-            wingLinkPendingCredentialId: '',
-            wingLinkHostFingerprint: config.wingLinkHostFingerprint,
-            wingLinkDeviceId: config.wingLinkDeviceId,
-          );
-        }
-        await _store.saveAll(recovered);
-      } catch (_) {
-        // Leave every securely stored bundle member pending for a later refresh.
-      }
-    }
-    return recovered;
-  }
-
-  static Future<bool> _verifyAndAcknowledgePendingCredential(
-    HermesEndpointConfig config,
-  ) async {
-    final origin = Uri.parse(config.wingLinkOrigin!);
-    await HermesApiClient(
-      config: HermesApiConfig.fromBaseUrl(
-        config.baseUrl,
-        apiKey: config.apiKey,
-      ),
-    ).health();
-    final client = WingLinkClient(
-      origin: origin,
-      token: config.wingLinkToken!,
-      hostFingerprint: config.wingLinkHostFingerprint,
-    );
-    await client.verifyPendingCredential();
-    await client.acknowledgeCredential(config.wingLinkPendingCredentialId!);
-    return true;
   }
 
   /// The contact cache is a best-effort local convenience that every refresh

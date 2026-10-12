@@ -1,5 +1,15 @@
 # Settings Information Architecture Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Original extraction is not reopened; current overlays, diagnostics and voice retain separate owners.
+
+Canonical owners: `WING-TASK-408`, `DOC-DIAGNOSTICS-CONTRACT`, `DOC-VOICE-QUALIFICATION`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Historical Settings layout is not official-app fidelity evidence.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,5 +1,15 @@
 # Bounded desktop-local integration design
 
+## Backlog connection
+
+Disposition: Proposal. Design review only; the proposed coordinator and old Link mechanism are not implementation authority.
+
+Canonical owners: `DOC-NATIVE-DESIGN-REVIEW`, `DOC-NATIVE-FAILURE-BOUNDARY`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). The old transport comparison below is withdrawn, not a finding about the official app.
 
 > Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.

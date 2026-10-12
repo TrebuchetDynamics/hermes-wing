@@ -1,5 +1,15 @@
 # Release Evidence Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Artifact-bound qualification successors, not signed distribution or old plan completion.
+
+Canonical owners: `DOC-M6-CHECKER-NODE22`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-DESKTOP-DELIVERY-EVIDENCE`, `DOC-DESKTOP-UNINSTALL-EVIDENCE`, `MT-RERUN-TRAIN`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Packaging evidence does not establish app fidelity.
 
 > **For agentic workers:** Use executing-plans task-by-task. This plan does not authorize publishing, signing-key changes, tags, commits, or workflow dispatch.

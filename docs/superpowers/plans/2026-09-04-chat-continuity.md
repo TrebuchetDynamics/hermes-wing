@@ -1,5 +1,15 @@
 # Chat Continuity Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Retained exact-owner recovery; durable drafts and provisional migration are not accepted implementation.
+
+Canonical owners: `CONNECTION-OWNER-RECONNECT`, `M1-MOBILE-AWAY-STATUS`, `WING-TASK-407`, `VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Reuse reliability techniques only within accepted official-app flows.
 
 > **For agentic workers:** Use executing-plans task-by-task. Checkboxes track future implementation. No commits, external writes, or delegation are authorized by this plan.

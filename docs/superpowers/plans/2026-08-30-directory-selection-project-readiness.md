@@ -1,5 +1,15 @@
 # Approved Directory Browsing and Hermes Project Readiness Implementation Plan
 
+## Backlog connection
+
+Disposition: Superseded. Retained Project assessment and browser retirement; no new Link Project adapter.
+
+Canonical owners: `DOC-M3-PROJECT-CONTRACT`, `DOC-M3-PROJECT-ASSIGNMENT-CONTRACT`, `CONNECTION-LINK-RETIREMENT`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Agent remains the Project authority; historical adapters do not define port scope.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,5 +1,15 @@
 # Wing Link remote management implementation plan
 
+## Backlog connection
+
+Disposition: Superseded. Retirement and Agent-contract successors only; no Link expansion.
+
+Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT`, `DOC-M3-PROVIDER-CONTRACT`, `DOC-M3-PROJECT-CONTRACT`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Wing Link is deprecated; this retained plan does not authorize expansion or make it a port prerequisite.
 
 Status: approved design; hardening, local grants, and remote directory browsing complete; Project mutation blocked on an Agent contract

@@ -1,5 +1,15 @@
 # Voice Ownership Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Physical voice and output cancellation remain bounded qualification, not old controller-test parity.
+
+Canonical owners: `DOC-VOICE-QUALIFICATION`, `DOC-VOICE-OUTPUT-CANCEL-EVIDENCE`, `PARITY-OFFICIAL-MATRIX`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Voice tests retain their platform limits and do not establish official-app parity.
 
 > **For agentic workers:** Use executing-plans task-by-task. Checkboxes track future implementation; no commit, external mutation, or delegation authorization is implied.

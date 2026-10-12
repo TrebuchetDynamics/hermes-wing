@@ -1,5 +1,15 @@
 # Hermes Wing rehabilitation audit and verified-slice roadmap
 
+## Backlog connection
+
+Disposition: Historical. Dated findings require fresh reproduction; successors are not historical completion proof.
+
+Canonical owners: `PARITY-OFFICIAL-MATRIX`, `VERIFY-CHAT-TRANSCRIPT-NATIVE`, `MT-RERUN-TRAIN`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Retain the dated audit as Wing evidence, not official-app parity.
 
 > Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.

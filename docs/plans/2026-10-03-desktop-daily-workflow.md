@@ -1,5 +1,15 @@
 # Desktop daily-use workflow — 2026-10-03
 
+## Backlog connection
+
+Disposition: Current. Accepted daily-use outcome remains incomplete; native/live acceptance stays separate.
+
+Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-LIVE-WORKFLOW`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-405`, `WING-TASK-406`, `WING-TASK-407`, `WING-TASK-408`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Re-trace official flows before claiming matched parity.
 
 Status: owner-accepted outcome and ordering; implementation/qualification open.

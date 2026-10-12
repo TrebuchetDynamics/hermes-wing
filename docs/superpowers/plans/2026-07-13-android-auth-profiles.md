@@ -1,5 +1,15 @@
 # Android Scoped Auth and Profiles Implementation Plan
 
+## Backlog connection
+
+Disposition: Superseded. Current supported enrollment/persona assessment only; no proposed Agent routes.
+
+Canonical owners: `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M3-ROLLBACK-EVIDENCE`, `DOC-PERSONA-EVIDENCE`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). This does not reactivate superseded Agent contract proposals.
 
 > **Status: superseded planning history (2026-08-14).** Supported Hermes Agent

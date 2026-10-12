@@ -1,5 +1,15 @@
 # Desktop 1:1 port — first implementation wave
 
+## Backlog connection
+
+Disposition: Historical. Current continuation owns re-baselining; original lanes are not redispatched.
+
+Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX`, `DOC-PARITY-TAB-CONTRACT`, `DOC-PARITY-TAB-RECONNECT-CONTRACT`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Earlier shell tests retain their Wing scope, not official Desktop fidelity.
 
 Owner decision: prioritize a 1:1 Hermes Desktop product port. Match feature coverage,

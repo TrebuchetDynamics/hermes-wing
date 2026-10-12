@@ -4583,6 +4583,8 @@
       "source": "docs/product/prd.md#connection-path-requirements",
       "status": "partial",
       "tasks": [
+        "CONNECTION-CRON-ADMISSION",
+        "CONNECTION-CRON-CANARY",
         "CONNECTION-ENTRY-LABELS",
         "CONNECTION-LINK-REMOVAL",
         "CONNECTION-LINK-RETIREMENT",
@@ -6602,6 +6604,14 @@
     {
       "depends_on": [],
       "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-ADMISSION",
+      "section": "Now",
+      "status": "open",
+      "title": "Repair and verify hermes-toolset-only full-lifecycle main-only writer admission"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-LINK-REMOVAL",
       "section": "Now",
       "status": "in_progress",
@@ -6673,6 +6683,16 @@
     },
     {
       "depends_on": [
+        "CONNECTION-CRON-ADMISSION"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-CANARY",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
+    },
+    {
+      "depends_on": [
         "CONNECTION-LINK-REMOVAL"
       ],
       "goal": "CONNECTION-PATHS",
@@ -6698,7 +6718,7 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-SETUP-AUTH-MATRIX",
       "section": "Next",
-      "status": "open",
+      "status": "in_progress",
       "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
     },
     {

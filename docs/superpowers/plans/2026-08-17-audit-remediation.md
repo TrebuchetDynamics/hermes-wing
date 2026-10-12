@@ -1,5 +1,15 @@
 # Audit Remediation Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Current gates and audit owners only; speculative refactors are not accepted debt.
+
+Canonical owners: `MT-RERUN-TRAIN`, `MT-VERIFY-BROWSER-GATES`, `SECURITY-RETAINED-RELEASE-AUDIT`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Internal repairs do not establish product parity.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

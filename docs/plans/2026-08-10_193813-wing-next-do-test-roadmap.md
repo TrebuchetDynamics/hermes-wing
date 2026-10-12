@@ -1,5 +1,15 @@
 # Hermes Wing Next Do/Test Roadmap
 
+## Backlog connection
+
+Disposition: Historical. Old priorities are superseded; current connection and device owners retain bounded outcomes.
+
+Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-SETUP-AUTH-MATRIX`, `PARITY-MAESTRO-ANDROID-DEVICE`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Historical priorities below do not override the current roadmap.
 
 > **For Hermes:** Use subagent-driven-development and test-driven-development when executing this roadmap. Do not implement the deferred Nostr Relay Link.

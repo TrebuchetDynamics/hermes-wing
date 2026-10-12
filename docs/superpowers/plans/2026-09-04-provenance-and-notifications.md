@@ -1,5 +1,15 @@
 # Provenance and Notifications Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Notification assessment is accepted; architecture/infrastructure remains proposed.
+
+Canonical owners: `M1-MOBILE-AWAY-STATUS`, `M1-NOTIFICATION-CONTRACT`, `VERIFY-PROFILE-FOOTER-NATIVE`, `DOC-M5-LARGE-TEXT-EVIDENCE`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Notifications remain a proposal, not automatically accepted port scope.
 
 > **For agentic workers:** Use executing-plans task-by-task. Notifications are a proposal deliverable only; no relay enrollment, infrastructure, external messages, or publishing are authorized.

@@ -1,5 +1,15 @@
 # Milestone 2 — Providers & Models Implementation Plan
 
+## Backlog connection
+
+Disposition: Superseded. Supported provider/OAuth assessment only; no upstream additions.
+
+Canonical owners: `DOC-M3-PROVIDER-CONTRACT`, `DOC-M3-PROVIDER-REMOVAL-CONTRACT`, `DOC-ACCOUNT-CONTRACT`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). This does not reactivate superseded Agent contract proposals.
 
 > **Status: superseded planning history (2026-08-14).** The proposed

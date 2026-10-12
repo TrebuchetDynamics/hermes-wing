@@ -1,5 +1,15 @@
 # Resource Consistency Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Owner isolation and terminal certainty retained; old race/performance matrices are not fully qualified.
+
+Canonical owners: `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-406`, `WING-TASK-407`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Preserve source-bound Wing checks without relabeling them as parity.
 
 ### Additional connection checkpoint (2026-09-04)

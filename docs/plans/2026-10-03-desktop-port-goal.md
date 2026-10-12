@@ -1,5 +1,15 @@
 # Desktop port continuous-work goal
 
+## Backlog connection
+
+Disposition: Current. Accepted port and gated restart plan; native admission and product completion remain unverified.
+
+Canonical owners: `CONNECTION-CRON-ADMISSION`, `CONNECTION-CRON-CANARY`, `CONNECTION-LINK-REMOVAL`, `CONNECTION-OFFICIAL-DESKTOP-PORT`, `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `CONNECTION-LINK-RETIREMENT`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Existing leases and daily-workflow acceptance remain unchanged.
 
 ## Owner decisions
@@ -38,8 +48,21 @@ cadence for the new continuation, not the archived job or its historical receipt
 Follow canonical main-only policy, required checks, exact-candidate commit
 verification and current ownership. No push, branch/PR creation, release, personal
 credential discovery or service mutation is authorized by that scheduling request.
-Native main-only writer admission remains a prerequisite, not something a prompt
-or read-only snapshot proves. Configuration of a job is not observed worker execution.
+Native main-only writer admission remains a prerequisite for scheduled worker
+execution, not something a prompt or read-only snapshot proves. Configuration of
+a job is not observed worker execution. The owner subsequently directed that the
+15-minute job remain paused during repair and that implementation proceed through
+explicit requests in this chat. Repairs stay inside Wing; Hermes Agent and the
+external hermes-toolset repository remain read-only. Resume requires a verified
+unblock, not backlog validation alone.
+
+The owner explicitly assigned this chat the complete daily-use milestone through
+implementation and verification, not just one connection slice. Reuse the accepted
+local connect → explicit profile/model → Chat → approval/Stop → exact-session
+restoration acceptance above. Keep cron paused, upstream references read-only,
+main-only development and one writer. Missing live authentication limits live
+qualification only; it does not suspend independent implementation or fixture QA.
+This mandate does not authorize pushes, releases, service changes or spending.
 
 ### Current connection frontier
 
@@ -55,12 +78,113 @@ outcomes in the existing TODO bodies, without changing ledger focus or leases.
 Verification checkpoint: exact-source focused production-control regressions and
 named-platform fixture checks precede task closure; live authentication and native
 SSH remain separate. Local commits must carry the outcome, regressions and necessary
-docs after applicable gates, not an empty progress marker. The consumer handoff
-check is currently unable to parse this repository’s bold task IDs and combined
-Now / Next layout; its refusal does not prove the bodies are absent. Repair of the
-external helper requires a separate authorized tooling task, not an instruction
-edit or broad backlog reformat in this documentation pass. Selection eligibility
-never establishes native writer admission or live lease availability.
+docs after applicable gates, not an empty progress marker. The current consumer
+recognizes bold task IDs. Wing's formatting repair makes field boundaries and
+Now/Next metadata explicit without changing ledger state or task acceptance.
+The Link-removal/retirement handoff now returns `backlog_reconciled_not_eligible`
+(exit 2): removal is already in progress and retirement depends on its completion.
+That is dependency/ownership gating, not a missing-body failure. Selection
+eligibility never establishes native writer admission or live lease availability.
+
+### Cron restart interview
+
+Status: Accepted
+
+This section accepts the restart plan and its gates, not immediate repair
+execution, a canary launch or scheduler resumption. Canonical owners are
+`CONNECTION-CRON-ADMISSION` (Now) and dependent `CONNECTION-CRON-CANARY` (Next).
+Their full scope, acceptance, prerequisites and ownership are in root TODO.
+
+Accepted scope decision: the owner now permits a separate, scoped hermes-toolset
+dispatcher repair to remove the main-only worker-admission blocker. This supersedes
+the earlier Wing-only repair restriction for that tooling repair only. Hermes
+Agent, including installed runtimes and reference copies, remains read-only.
+Main-only development, one writer, full-lifecycle admission, independent review
+and checked local progress commits remain required. No alternate cron writer,
+branch/worktree substitution or launch-only lock bypass is authorized. The current
+interview captures a restart plan; it has not resumed the job or implemented the
+external repair.
+
+Accepted restart scope: after cron safety is verified, resume eligible independent
+Desktop-port slices even while ordinary local WebSocket authentication remains
+blocked. Keep that gap explicit; fixtures and auth-gated connections are not full
+local parity. Preserve the existing 15-minute cadence and checked local-commit
+requirement; no push, release, service mutation or paid inference is added.
+
+Accepted restart proof: first run one manually triggered occurrence of the existing
+paused job. Require observed safe admission, an independently reviewed implementation
+commit on canonical main, passing relevant checks and observed worker release. A job
+status of `ok`, a documentation-only commit or a fixture lock test is insufficient.
+After resumption, a hard execution refusal must pause the job and notify the owner.
+
+#### Ordered restart plan
+
+1. Preserve and finish the current Wing candidate before admitting another writer.
+   Separate the backlog repair from the production approval fix. Keep scoped checks
+   and review evidence with the applicable local commit. Do not absorb unrelated
+   edits or count this existing chat work as the cron canary.
+2. Repair the installed dispatcher in hermes-toolset under its repository rules.
+   Keep canonical main-only execution and one writer. The admission guard must cover
+   workspace setup, task startup, editing, review, commit and worker release.
+   Test overlapping launch refusal, stale/crashed-owner recovery and failure cleanup.
+   Then prove the installed native path, not only a cooperative fixture lock.
+   If no supported hermes-toolset-only integration can cover that lifecycle,
+   leave cron paused and report the missing contract. Do not patch Agent/runtime
+   internals or present a launch-only wrapper as the repair.
+   Do not modify Hermes Agent or substitute a new scheduler/writer.
+3. Reconcile live ownership for CONNECTION-LINK-REMOVAL,
+   CONNECTION-OFFICIAL-DESKTOP-PORT and CONNECTION-SAVED-WORKFLOWS. Keep their IDs
+   and remaining acceptance. Select an existing eligible CONNECTION-PATHS
+   implementation slice. CONNECTION-SETUP-AUTH-MATRIX is a current ledger-eligible
+   candidate, but its restart-plan consumer gate returns
+   `backlog_reconciled_not_eligible` (exit 2): the current frontier
+   CONNECTION-CRON-ADMISSION precedes it. Admission repair is a prerequisite to
+   cron execution; reconcile existing connection ownership and source evidence
+   before the product canary, without a focus override. Live ownership is
+   unknown. The candidate is not a claimed worker or proof of live credentials.
+   Reuse completed fixture subsets and stop if no supported implementation slice
+   remains available. Do not silently switch to unrelated work or empty commits.
+4. Update the existing paused job's self-contained prompt. Include the current
+   backlog result, native-authentication limit, ownership requirements, source-bound
+   checks, reviewed local commits and hard-refusal pause/notification policy.
+   Read back the exact job before launching. Keep its existing 15-minute cadence.
+5. Trigger that existing paused job once only after installed admission is verified.
+   Check the exact task/run, relevant check output, review receipt, implementation
+   diff, local commit and released worker. Leave the job paused on any missing proof.
+6. Resume only after that canary passes. Read back enabled state and next scheduled
+   occurrence. Inspect the first scheduled occurrence for the same evidence.
+   Pause and notify on a hard refusal; do not repeat silent blocked occurrences.
+
+Acceptance: checked implementation commits advance the official Desktop port;
+only one writer is admitted across its full lifecycle; a refused occurrence causes
+an observed pause and notification. The local native transport gap remains open.
+No resume, canary, prompt update or tooling code change occurred in this interview.
+
+Skill application: `interview-me` resolved scope, restart work and refusal policy;
+`spec-driven-development` kept safety proof separate from product acceptance;
+`planning-and-task-breakdown` ordered repair, ownership, canary and scheduled proof;
+`documentation-and-adrs` saved decisions in this existing owner. The subsequent
+traceability repair booked the missing admission and canary outcomes in the
+canonical ledger. Existing task statuses, ownership and milestone focus remain
+unchanged; there is no competing backlog or new ADR. Graph evidence is
+partial: neither repository has a current graph at `graphify-out/graph.json`.
+The installed handoff contract and actual consumer output support these gates;
+this pass does not claim complete graph or dispatcher implementation analysis.
+
+### Native transport authentication frontier
+
+The current reference's `hermes_cli/web_server_chat.py::_ws_auth_reason` accepts
+an ungated loopback process token only through a WebSocket query parameter. Wing's
+credential-in-URL prohibition remains enforced; REST bearer support does not
+provide WebSocket admission or a process-token-to-ticket exchange. Do not modify
+Agent, force public binding or change its configuration to bypass this mismatch.
+
+An already auth-gated Agent supports native PKCE and bearer-authenticated
+`POST /api/auth/ws-ticket`, followed by a single-use ticket subprotocol on
+`/api/ws`. This is a separately supportable integration path, not ordinary
+Desktop-style local startup or proof of per-profile/device grants. Source review
+is not live authentication evidence. The production provider still selects the
+HTTP API channel; native RPC remains qualification-only.
 
 ### Existing daily-use checkpoint
 

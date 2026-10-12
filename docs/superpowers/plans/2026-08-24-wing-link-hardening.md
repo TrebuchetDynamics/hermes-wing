@@ -1,5 +1,15 @@
 # Wing Link Hardening Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Retained conformance and retirement checks; old updater qualification is not restarted.
+
+Canonical owners: `DOC-API-DEVICE-SELF-CONFORMANCE`, `DOC-API-PROTOCOL-ERROR-EVIDENCE`, `DOC-M4-HOST-LIFECYCLE-EVIDENCE`, `CONNECTION-LINK-RETIREMENT`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Wing Link is deprecated; preserve retained security checks without expanding it.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

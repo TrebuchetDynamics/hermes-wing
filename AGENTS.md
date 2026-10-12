@@ -252,19 +252,25 @@ setup is `flutter pub get` and `npm ci`.
   wide formatting to solve a scoped task.
 - Do not commit or stage credentials, transcripts, private endpoint URLs, generated
   Agent/runtime state, local tool state, build output, or test screenshots.
-- Development is **main-only**, as explicitly required by the owner. Work in
-  the canonical checkout on `main`; do not create development branches,
-  branch-based worktrees, or pull requests. Use immutable filesystem snapshots
-  for QA. Keep one writer; parallel agents investigate or review read-only.
-- A request to commit, push, or ship (including `git-commit-push`) authorizes
-  scoped commits and a normal fast-forward push to `main`, not another branch
-  or PR. Preserve required checks and remote protection; if direct delivery is
-  blocked, report it rather than bypassing protection or creating a branch.
+- Canonical `main` remains protected. The user explicitly authorizes isolated
+  task branches/worktrees for offline Wing work and scoped local commits. Use
+  the supported native isolated worker path; keep one writer per task workspace
+  and preserve unrelated canonical changes. This exception supersedes the former
+  blanket main-only development rule for offline task work only. No push, PR,
+  deployment, live operation, concurrent canonical implementation write or admission
+  bypass is authorized. Use isolated native execution, not the unsupported
+  main-only executor; canonical integration follows the Autowork policy below.
+  Parallel agents may investigate or review read-only.
+- Offline-task commit authority covers its owned task branch only. Canonical
+  local integration is authorized under the Autowork policy below after required
+  checks; remote delivery still needs applicable publication authorization.
+  The offline exception grants no push or PR authority; preserve remote protection and report a blocked delivery rather than bypassing it.
 - Before deleting legacy branch refs, retain a verified private archive of
   unmerged commits. Branch deletion never means discarding dirty files or
   treating unqualified work as integrated.
-- Merging, releases, deployments, destructive history changes, and unrelated
-  external-system changes require separate explicit authorization.
+- Local integration of verified Autowork work is authorized below. Releases,
+  deployments, destructive history changes and unrelated external-system changes
+  still require applicable explicit authorization.
 - Keep comments focused on invariants and reasons; do not narrate obvious code.
 - Update product docs when user-visible support or terminology changes. Update an
   ADR only for a cross-cutting, expensive-to-reverse decision.
@@ -284,7 +290,8 @@ the affected boundary.
 - Documentation-only changes: run `git diff --check` and verify changed local
   links/commands.
 
-Complete gate:
+Full release/cross-boundary gate (not a prerequisite for every documentation or
+focused local task; use the relevant checks above for those):
 
 ```bash
 dart format --output=none --set-exit-if-changed lib test integration_test
@@ -321,3 +328,44 @@ Before reporting completion:
 - state which platforms were actually exercised; and
 - note any unsupported or unverified behavior without upgrading it to a support
   claim.
+
+<!-- autowork-local-authority:start -->
+## Autowork: autonomous local progress
+
+An Autowork invocation or recurring Autowork job authorizes routine local
+repository improvement: plan, implement, test, document and make scoped local
+commits. Choose reasonable reversible implementation details without waiting for
+an owner, parent session or another profile to approve them. This section replaces
+older owner-acknowledgement and blanket main-only development requirements for
+that local work; it does not override product safety or explicit task exclusions.
+
+- Read the current task and repository state. Repair attributable task metadata,
+  links and missing backlog structure from source evidence; preserve existing
+  decisions and never invent acceptance, ownership release or completed checks.
+- If no task is runnable, inspect implementation, tests, docs and UI/accessibility
+  for a concrete improvement. Record a bounded task with acceptance criteria and
+  dependencies, then execute it. Keep a few independent ready tasks when evidence
+  supports them; do not manufacture busywork or count planning as implementation.
+- Separate offline implementation and tests from device, production and other
+  live qualification. Complete the local task while retaining an explicit pending
+  live task; never mark the combined feature qualified from offline evidence.
+- Use supported isolated task branches/worktrees when needed. Keep one writer per
+  workspace. A historical ACTIVE claim alone is not a permanent veto: check actual
+  worker/session activity and candidate changes. Preserve prior work; adopt an
+  idle candidate only after verifying it is no longer being written. If activity
+  cannot be established, select non-overlapping work instead of guessing.
+- The current Autowork coordinator may review and integrate its verified local
+  changes into canonical main without a separate parent/owner acknowledgement.
+  Serialize canonical writes, inspect fresh status, preserve unrelated dirty
+  work, and use the supported integration path. Do not bypass runtime guards,
+  repin evidence to hide drift, force-push, reset or discard another writer's work.
+- After a repeated blocker, take a different concrete action in the same run:
+  repair the local cause, execute independent work, or report one precise external
+  input that is genuinely unavailable. Do not repeatedly audit the same hold.
+- Run checks proportional to the change. Commit only attributable, verified work.
+  Report task ID/title, actual changes, checks, commit, next task and exact remaining
+  blocker. Distinguish local commit, integration, push and live acceptance.
+- Existing explicit publication authority remains valid; this policy alone does
+  not authorize remote publication, deployment, money movement, secret access or
+  destructive/live operations. Preserve paused jobs and task-specific exclusions.
+<!-- autowork-local-authority:end -->

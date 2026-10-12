@@ -1,5 +1,15 @@
 # Hermes Desktop Capability Parity Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Rebuild withdrawn reference mapping first; operation-specific ledger tasks own bounded successors.
+
+Canonical owners: `PARITY-OFFICIAL-MATRIX`, `PARITY-NATIVE-LINUX`, `PARITY-MAESTRO-ANDROID-DEVICE`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Rebuild the withdrawn mapping before executing reference-derived slices.
 
 > Reference correction: [official Desktop authority](../../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.

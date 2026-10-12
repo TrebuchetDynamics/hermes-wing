@@ -1,5 +1,15 @@
 # Multi-Gateway Unified Chats Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Foundation receipts remain historical; successors own current saved-host recovery.
+
+Canonical owners: `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-OWNER-RECONNECT`, `CONNECTION-LINK-REMOVAL`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Earlier contact-model receipts prove only their Wing behavior.
 
 > **Status: foundation implemented; preserved execution history.** The current

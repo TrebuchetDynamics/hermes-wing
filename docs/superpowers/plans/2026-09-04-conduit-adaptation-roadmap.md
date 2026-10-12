@@ -1,5 +1,15 @@
 # Conduit-Informed Reliability Roadmap Implementation Plan
 
+## Backlog connection
+
+Disposition: Historical. Secondary technique umbrella, not a separate program to restart or close.
+
+Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX`, `MT-RERUN-TRAIN`, `MT-VERIFY-BROWSER-GATES`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Conduit is secondary technique research, not a competing product reference.
 
 > **For agentic workers:** Use the available executing-plans skill task-by-task. Checkboxes track implementation, not planning completion. No commits, external tracker writes, or delegation are authorized by this document.

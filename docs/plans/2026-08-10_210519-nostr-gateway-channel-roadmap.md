@@ -1,5 +1,16 @@
 # Hermes Wing Nostr Gateway and Channel Roadmap Implementation Plan
 
+## Backlog connection
+
+Disposition: Deferred. No executable Nostr tasks. Reopening the decision is required before booking implementation.
+
+Canonical owners: none. This deferred proposal must not enter executable work
+until the owner reopens and accepts its scope.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). This does not reopen the deferred Nostr proposal.
 
 > **Decision status (2026-08-10): EXPLORATORY / DEFERRED.** Preserve this document as research, but do not implement the custom Nostr Relay Link as Wing's foundational gateway or control transport. Core Wing-to-gateway control remains the Hermes API over HTTPS using established secure reachability such as LAN, Tailscale, VPN, or a reviewed reverse proxy. Continue channel-centric UX as a transport-neutral product track; consider Buzz/Nostr later only as an optional Hermes messaging integration.

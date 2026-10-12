@@ -1,5 +1,15 @@
 # Hermes Desktop Study, Wing Roadmap, and Evidence Matrix
 
+## Backlog connection
+
+Disposition: Historical. Withdrawn comparison; successors rebuild official evidence, not the old work packages.
+
+Canonical owners: `PARITY-OFFICIAL-MATRIX`, `CONNECTION-OFFICIAL-DESKTOP-PORT`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). The versioned study below is withdrawn historical evidence, not the current baseline.
 
 > Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.

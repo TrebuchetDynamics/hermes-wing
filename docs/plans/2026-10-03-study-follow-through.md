@@ -1,5 +1,15 @@
 # Four-repository study follow-through
 
+## Backlog connection
+
+Disposition: Current. Retained follow-through uses current owners; M2 device work remains Needs decision.
+
+Canonical owners: `CONNECTION-OWNER-RECONNECT`, `PARITY-LIVE-WORKFLOW`, `M2-DEVICE-QUALIFICATION`, `DOC-M5-ANDROID-FIXTURE`, `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-NATIVE-DESIGN-REVIEW`.
+Use the [task bodies](../../TODO.md#now--next) and
+[plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Secondary studies inform techniques, not the product baseline.
 
 Status: delivery direction adopted on 2026-10-03; bounded readiness correction

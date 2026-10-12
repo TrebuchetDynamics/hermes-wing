@@ -1,5 +1,15 @@
 # Wing Link Local Runtime Bootstrap Implementation Plan
 
+## Backlog connection
+
+Disposition: Superseded. Retirement and retained security closure, not installer reconstruction.
+
+Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT`, `VERIFY-OMNIROUTE-NODE22-CLOSURE`, `SECURITY-RETAINED-RELEASE-AUDIT`.
+Use the [task bodies](../../../TODO.md#now--next) and
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
+These connections are not implementation, qualification or dispatch evidence.
+
+
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Wing Link is deprecated and is not a port prerequisite.
 
 > **Status: historical implementation plan; current boundaries live in the ADRs.**

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/features/local_setup/models/termux_bootstrap_command.dart';
 
 void main() {
   test('alpha releases publish Wing Link for desktop and Termux', () {
@@ -467,12 +466,7 @@ fi
 
     final developmentMetadata =
         jsonDecode(defaultMetadata) as Map<String, Object?>;
-    final developmentCommand = TermuxBootstrapCommand.fromJson(
-      developmentMetadata,
-    ).command;
     expect(developmentMetadata['mode'], 'source');
-    expect(developmentCommand, contains('--build --setup'));
-    expect(developmentCommand, contains('codeload.github.com'));
     expect(workflow, contains('needs: [validation, wing-link]'));
     expect(workflow, contains('name: wing-link-release'));
     expect(workflow, contains('assets/config/termux_bootstrap.json'));

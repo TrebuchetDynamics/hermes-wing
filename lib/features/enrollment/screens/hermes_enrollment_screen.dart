@@ -252,6 +252,10 @@ class _HermesEnrollmentScreenState
   }
 
   Future<void> _openLocalSetup() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      await context.push<void>(AppRoutes.localSetup);
+      return;
+    }
     final pair = await context.push<bool>(AppRoutes.localSetup);
     if (mounted && pair == true) _showPairing();
   }

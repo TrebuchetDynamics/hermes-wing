@@ -100,8 +100,7 @@ import '../test/features/hermes_chat/widgets/hermes_profile_identity_test.dart'
 import '../test/features/hermes_chat/widgets/session_model_picker_sheet_test.dart'
     as suite_45;
 import '../test/features/local_setup/local_hermes_setup_test.dart' as suite_46;
-import '../test/features/local_setup/termux_bootstrap_command_test.dart'
-    as suite_47;
+
 import '../test/features/local_setup/termux_hermes_setup_test.dart' as suite_48;
 import '../test/features/office/office_screen_test.dart' as suite_49;
 import '../test/features/profiles/profile_directory_browser_sheet_test.dart'
@@ -359,10 +358,7 @@ void main({bool includeHostChecks = true}) {
     'test/features/local_setup/local_hermes_setup_test.dart',
     suite_46.main,
   );
-  group(
-    'test/features/local_setup/termux_bootstrap_command_test.dart',
-    () => suite_47.main(includeHostChecks: includeHostChecks),
-  );
+
   group(
     'test/features/local_setup/termux_hermes_setup_test.dart',
     suite_48.main,

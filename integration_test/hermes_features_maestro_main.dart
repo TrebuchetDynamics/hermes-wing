@@ -208,10 +208,7 @@ class FeatureFixture {
           path: '/gateway',
           pageBuilder: (_, state) => _reviewPage(
             state,
-            AppShell(
-              location: '/gateway',
-              child: GatewayScreen(wingLinkClientBuilder: (_) => trustClient()),
-            ),
+            AppShell(location: '/gateway', child: const GatewayScreen()),
           ),
         ),
       ],

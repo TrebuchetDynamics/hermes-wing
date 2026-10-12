@@ -3,6 +3,25 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'Profiles and Connections screens have no legacy builder dependency',
+    () {
+      for (final path in [
+        'lib/features/profiles/screens/profiles_screen.dart',
+        'lib/features/gateway/screens/gateway_screen.dart',
+      ]) {
+        final source = File(path).readAsStringSync();
+        for (final forbidden in [
+          'core/wing_link/',
+          'WingLinkClient',
+          'wingLinkClientBuilder',
+        ]) {
+          expect(source, isNot(contains(forbidden)), reason: path);
+        }
+      }
+    },
+  );
+
   test('local setup and fixtures cannot construct legacy management', () {
     final sources = [
       ...Directory('lib/features/local_setup')

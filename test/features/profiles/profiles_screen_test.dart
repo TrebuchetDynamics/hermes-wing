@@ -14,7 +14,7 @@ import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
+
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
@@ -127,7 +127,6 @@ Widget _profilesTestApp(
   double textScale = 1.0,
   bool startSetup = false,
   HermesGatewayDirectory? directory,
-  WingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
@@ -141,8 +140,6 @@ Widget _profilesTestApp(
             activeChannel: channel,
           ),
     ),
-    if (wingLinkClientBuilder != null)
-      wingLinkClientBuilderProvider.overrideWithValue(wingLinkClientBuilder),
   ],
   child: MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -451,8 +448,7 @@ void main() {
         );
         await channel.selectProfile('default');
         legacyRecoveries.clear();
-        var linkConstructions = 0;
-        var linkRequests = 0;
+
         final router = GoRouter(
           initialLocation: AppRoutes.agents,
           routes: [
@@ -474,21 +470,6 @@ void main() {
               hermesGatewayDirectoryProvider.overrideWith((_) => directory),
               hermesVoiceCaptureServiceProvider.overrideWithValue(null),
               hermesTextToSpeechServiceProvider.overrideWithValue(null),
-              wingLinkClientBuilderProvider.overrideWithValue(({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) {
-                linkConstructions++;
-                return WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (_, _) async {
-                    linkRequests++;
-                    return '{"profiles":[]}';
-                  },
-                );
-              }),
             ],
             child: MaterialApp.router(
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -679,8 +660,7 @@ void main() {
           ),
           isTrue,
         );
-        expect(linkConstructions, 0);
-        expect(linkRequests, 0);
+
         expect(legacyRecoveries, isEmpty);
         expect(
           directory.configForGateway('agent')!.wingLinkToken,
@@ -724,30 +704,12 @@ void main() {
       );
       await directory.refresh();
       await directory.activateGateway('legacy');
-      var constructions = 0;
-      var requests = 0;
+
       await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          startSetup: true,
-          wingLinkClientBuilder:
-              ({required origin, required token, required hostFingerprint}) {
-                constructions++;
-                return WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (_, _) async {
-                    requests++;
-                    return '{"profiles":[]}';
-                  },
-                );
-              },
-        ),
+        _profilesTestApp(channel, directory: directory, startSetup: true),
       );
       await tester.pumpAndSettle();
-      expect(constructions, 0);
-      expect(requests, 0);
+
       expect(find.text('Profiles unavailable'), findsOneWidget);
       expect(find.byType(ProfileEditorSheet), findsNothing);
       expect(channel.createProfileCalls, isEmpty);

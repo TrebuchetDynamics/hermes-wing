@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
+
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
@@ -53,12 +53,10 @@ Widget _app(ProviderContainer container, {double scale = 1}) =>
 ProviderContainer _container(
   FakeHermesChannel channel,
   HermesGatewayDirectory directory,
-  WingLinkClientBuilder builder,
 ) => ProviderContainer(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
     hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
-    wingLinkClientBuilderProvider.overrideWithValue(builder),
   ],
 );
 Future<void> _query(WidgetTester tester, String value) async {
@@ -93,12 +91,7 @@ void main() {
           loader: FakeGatewaySummaryLoader({}),
           activeChannel: channel,
         );
-        final container = _container(
-          channel,
-          directory,
-          ({required origin, required token, required hostFingerprint}) =>
-              WingLinkClient(origin: origin, token: token),
-        );
+        final container = _container(channel, directory);
         addTearDown(container.dispose);
         addTearDown(channel.dispose);
         await tester.pumpWidget(_app(container));
@@ -135,12 +128,7 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
-      final container = _container(
-        channel,
-        directory,
-        ({required origin, required token, required hostFingerprint}) =>
-            WingLinkClient(origin: origin, token: token),
-      );
+      final container = _container(channel, directory);
       addTearDown(container.dispose);
       addTearDown(channel.dispose);
       await tester.pumpWidget(_app(container));
@@ -180,12 +168,7 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: first,
       );
-      final container = _container(
-        first,
-        directory,
-        ({required origin, required token, required hostFingerprint}) =>
-            WingLinkClient(origin: origin, token: token),
-      );
+      final container = _container(first, directory);
       addTearDown(container.dispose);
       // The ChangeNotifier provider owns directory disposal.
       addTearDown(first.dispose);
@@ -196,9 +179,6 @@ void main() {
       container.updateOverrides([
         hermesChannelProvider.overrideWithValue(second),
         hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
-        wingLinkClientBuilderProvider.overrideWithValue(
-          container.read(wingLinkClientBuilderProvider),
-        ),
       ]);
       await tester.pumpAndSettle();
       expect(_queryValue(tester), isEmpty);
@@ -230,12 +210,7 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
-      final container = _container(
-        channel,
-        directory,
-        ({required origin, required token, required hostFingerprint}) =>
-            WingLinkClient(origin: origin, token: token),
-      );
+      final container = _container(channel, directory);
       addTearDown(container.dispose);
       // The ChangeNotifier provider owns directory disposal.
       addTearDown(channel.dispose);

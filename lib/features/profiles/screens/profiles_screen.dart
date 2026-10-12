@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
-import '../../../core/wing_link/wing_link_client.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
@@ -18,21 +18,6 @@ import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../providers/profile_selection_provider.dart';
 import '../widgets/profile_editor_sheet.dart';
-
-typedef WingLinkClientBuilder =
-    WingLinkClient Function({
-      required Uri origin,
-      required String token,
-      required String? hostFingerprint,
-    });
-
-// Retained for legacy test callers during the scoped migration. ProfilesScreen
-// never reads this provider; attempted legacy construction fails closed.
-final wingLinkClientBuilderProvider = Provider<WingLinkClientBuilder>(
-  (ref) =>
-      ({required origin, required token, required hostFingerprint}) =>
-          throw UnsupportedError('Profiles requires the Hermes Agent API.'),
-);
 
 class ProfilesScreen extends ConsumerStatefulWidget {
   const ProfilesScreen({super.key, this.startSetup = false});
@@ -475,7 +460,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       ),
     );
     // Channel mutations reconcile Agent profiles with connection fencing.
-    // Directory refresh also recovers legacy Link credentials, even on Cancel.
   }
 
   Future<void> _selectProfile(

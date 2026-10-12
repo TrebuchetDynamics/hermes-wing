@@ -7,7 +7,7 @@ import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_health.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
+
 import 'package:wing/features/gateway/screens/gateway_screen.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -45,20 +45,6 @@ const _initialHealth = HermesHealthStatus(
   version: '0.18.0',
   gatewayState: 'running',
   activeAgents: 1,
-);
-
-WingLinkClient _unusedLinkClient(void Function() onRequest) => WingLinkClient(
-  origin: Uri.parse('https://host.example:8654'),
-  token: 'test-token',
-  hostFingerprint: _testFingerprint,
-  get: (uri, headers) async {
-    onRequest();
-    throw StateError('Connections must not request legacy management');
-  },
-  delete: (uri, headers) async {
-    onRequest();
-    throw StateError('Connections must not revoke legacy management');
-  },
 );
 
 const _richHealth = HermesHealthStatus(
@@ -131,7 +117,6 @@ Widget _testApp(
   FakeHermesChannel channel, {
   double textScale = 1,
   HermesGatewayDirectory? directory,
-  GatewayWingLinkClientBuilder? wingLinkClientBuilder,
 }) => ProviderScope(
   overrides: [
     hermesChannelProvider.overrideWithValue(channel),
@@ -147,7 +132,7 @@ Widget _testApp(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
-    home: GatewayScreen(wingLinkClientBuilder: wingLinkClientBuilder),
+    home: const GatewayScreen(),
   ),
 );
 
@@ -214,21 +199,8 @@ void main() {
     await directory.refresh();
     expect(recoveries, 0);
     await directory.activateGateway('alpha');
-    var constructions = 0;
-    var requests = 0;
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder: (_) {
-          constructions++;
-          return _unusedLinkClient(() => requests++);
-        },
-      ),
-    );
+    await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
-    expect(constructions, 0);
-    expect(requests, 0);
     expect(recoveries, 0);
     expect(find.byKey(const ValueKey('gateway-trust-card')), findsNothing);
     expect(find.text('Revoke this device'), findsNothing);
@@ -259,8 +231,6 @@ void main() {
     expect(channel.connectCalls.last.baseUrl, config.baseUrl);
     expect(channel.connectCalls.last.apiKey, config.apiKey);
     expect(directory.activeContactId?.gatewayId, 'alpha');
-    expect(constructions, 0);
-    expect(requests, 0);
     expect(recoveries, 0);
     final retained = (await store.loadProfiles()).single;
     expect(retained.baseUrl, config.baseUrl);
@@ -632,19 +602,8 @@ void main() {
     final directory = await _activeTrustDirectory(channel);
     await directory.showDirectory();
     final connections = channel.connectCalls.length;
-    var trustLoads = 0;
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder: (_) {
-          trustLoads++;
-          return _unusedLinkClient(() => fail('Unexpected Link request'));
-        },
-      ),
-    );
+    await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
-    expect(trustLoads, 0);
     expect(channel.connectCalls, hasLength(connections));
     expect(directory.activeContactId, isNull);
     expect(find.byKey(const ValueKey('gateway-trust-revoke')), findsNothing);
@@ -674,25 +633,17 @@ void main() {
     );
     await directory.refresh();
     await directory.activateGateway('alpha');
-    var trustLoads = 0;
-
-    await tester.pumpWidget(
-      _testApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder: (_) {
-          trustLoads++;
-          return _unusedLinkClient(() => fail('Unexpected Link request'));
-        },
-      ),
-    );
+    await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
-    expect(trustLoads, 0);
 
     await directory.renameGateway('alpha', 'Renamed');
     await tester.pumpAndSettle();
 
-    expect(trustLoads, 0);
+    expect(directory.configForGateway('alpha')!.label, 'Renamed');
+    expect(directory.configForGateway('alpha')!.wingLinkToken, 'token-old');
+    expect(channel.connectCalls, hasLength(1));
+    expect(channel.disconnectCalls, 0);
+    expect(find.byKey(const ValueKey('gateway-trust-card')), findsNothing);
   });
 
   testWidgets('disconnect preserves the saved gateway for reconnect', (

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
-import '../../../core/hermes/setup/hermes_endpoint_store.dart';
+
 import '../../../core/hermes/models/hermes_health.dart';
 import '../../../core/hermes/models/hermes_metadata_text.dart';
-import '../../../core/wing_link/wing_link_client.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
@@ -17,17 +17,11 @@ import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../widgets/saved_connections_section.dart';
 
-typedef GatewayWingLinkClientBuilder =
-    WingLinkClient Function(HermesEndpointConfig config);
-
 /// Gateway-selected, bounded, read-only health. Lifecycle, logs, and messaging
 /// platform administration are deliberately absent until dedicated scoped
 /// contracts are advertised.
 class GatewayScreen extends ConsumerStatefulWidget {
-  const GatewayScreen({super.key, this.wingLinkClientBuilder});
-
-  // Retained only for zero-construction regression probes; never invoked.
-  final GatewayWingLinkClientBuilder? wingLinkClientBuilder;
+  const GatewayScreen({super.key});
 
   @override
   ConsumerState<GatewayScreen> createState() => _GatewayScreenState();

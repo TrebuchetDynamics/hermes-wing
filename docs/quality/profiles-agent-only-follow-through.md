@@ -6,8 +6,12 @@ The new isolated implementation starts at
 `a0367aa996240eb08fb0c9cc87423c97058601a3`. It adapts the relevant Profiles
 screen, editor and public-control regressions from the reviewed historical
 candidate below; it does not restore removed OmniRoute discovery or copy that
-candidate's unrelated source. Independent same-card review is pending. The
-explicit review-before-commit restriction leaves this implementation uncommitted.
+candidate's unrelated source. The original implementation handoff deferred its
+commit until independent review. Run 116 subsequently approved the unchanged
+candidate after run 110's authentic gated replay; run 99's missed admission remains
+historical noncompliance, not a retrospective pass. The approved eight-file slice
+is locally committed at `02c728ce633e2887b2b993c32e4ccb306b57435a` on
+`agent/wing/t_e91b6cdd`. This is not canonical integration or remote publication.
 
 Profiles now uses only the connected Agent's exact profile capabilities for
 inventory, create, rename and delete. Missing operations remain unavailable;

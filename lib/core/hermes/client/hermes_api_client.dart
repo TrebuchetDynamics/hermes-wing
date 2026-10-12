@@ -547,41 +547,6 @@ class HermesApiClient {
     return HermesSessionModelLock.fromJson(response);
   }
 
-  /// Inspects a one-time pairing code against the operator-supplied
-  /// [origin] so the operator can review label/scopes/expiry before
-  /// exchanging it. Unauthenticated by design: this never sends this
-  /// client's configured bearer header, even when [origin] matches
-  /// [config].
-  Future<HermesEnrollmentPreview> inspectEnrollment({
-    required Uri origin,
-    required String code,
-  }) async {
-    final originConfig = HermesApiConfig.fromBaseUrl(origin.toString());
-    return HermesEnrollmentPreview.fromJson(
-      await _postJsonUnauthenticated(originConfig.enrollmentInspectUri, {
-        'origin': origin.toString(),
-        'code': code,
-      }),
-    );
-  }
-
-  /// Exchanges a one-time pairing code for a bearer token, once, after
-  /// operator confirmation. Unauthenticated by design; see
-  /// [inspectEnrollment]. The returned raw token must never be logged or
-  /// displayed — persist it only via `HermesEndpointStore.save`.
-  Future<HermesIssuedOperatorToken> exchangeEnrollment({
-    required Uri origin,
-    required String code,
-  }) async {
-    final originConfig = HermesApiConfig.fromBaseUrl(origin.toString());
-    return HermesIssuedOperatorToken.fromJson(
-      await _postJsonUnauthenticated(originConfig.enrollmentExchangeUri, {
-        'origin': origin.toString(),
-        'code': code,
-      }),
-    );
-  }
-
   Future<List<HermesProfile>> listProfiles() async {
     final body = await _getJson(config.profilesUri);
     return wingMapListFromJson(body['data'])
@@ -829,19 +794,6 @@ class HermesApiClient {
     return {hermesApiIfMatchHeader: value};
   }
 
-  /// Posts JSON without any bearer credential, regardless of [config]. Used
-  /// only by the unauthenticated one-time enrollment endpoints so a saved
-  /// API key is never attached to an inspect/exchange request.
-  Future<Map<String, Object?>> _postJsonUnauthenticated(
-    Uri uri,
-    Map<String, Object?> body,
-  ) async {
-    const headers = {hermesApiContentTypeHeader: hermesApiJsonContentType};
-    return _decodeObject(
-      await _bounded(_post(uri, headers, jsonEncode(body)), uri),
-    );
-  }
-
   Future<T> _bounded<T>(Future<T> request, Uri uri) {
     return request.timeout(
       requestTimeout,
@@ -859,162 +811,6 @@ class HermesApiClient {
     }
     return wingMapFromJson(decoded);
   }
-}
-
-/// Server-side inspection of a one-time pairing code: what an operator is
-/// about to grant before they confirm the exchange. Carries no secret.
-class HermesEnrollmentPreview {
-  const HermesEnrollmentPreview({
-    required this.label,
-    required this.origin,
-    required this.scopes,
-    this.connectionCount = 1,
-    this.expiresAt,
-    this.hostFingerprint = '',
-    this.protocolGeneration = 1,
-  });
-
-  factory HermesEnrollmentPreview.fromJson(Map<String, Object?> json) {
-    final connectionCount = json.containsKey('connection_count')
-        ? json['connection_count']
-        : 1;
-    if (connectionCount is! int ||
-        connectionCount < 1 ||
-        connectionCount > 100) {
-      throw const FormatException(
-        'Hermes enrollment connection count is invalid.',
-      );
-    }
-    return HermesEnrollmentPreview(
-      label: wingStringFromJson(json['label'], fallback: ''),
-      origin: wingStringFromJson(json['origin'], fallback: ''),
-      scopes: wingStringListFromJson(json['scopes']),
-      connectionCount: connectionCount,
-      expiresAt: _epochSecondsToUtcDateTime(json['expires_at']),
-      hostFingerprint: wingStringFromJson(
-        json['host_fingerprint'],
-        fallback: '',
-      ),
-      protocolGeneration: json['protocol_generation'] is int
-          ? json['protocol_generation']! as int
-          : 1,
-    );
-  }
-
-  final String label;
-  final String origin;
-  final List<String> scopes;
-  final int connectionCount;
-  final DateTime? expiresAt;
-  final String hostFingerprint;
-  final int protocolGeneration;
-}
-
-/// Result of a successful one-time enrollment exchange. [token] is the raw
-/// bearer credential, returned exactly once by the server; callers must
-/// persist it via `HermesEndpointStore.save` and never log or display it.
-class HermesIssuedOperatorToken {
-  const HermesIssuedOperatorToken({
-    required this.token,
-    this.label = '',
-    this.credentialId = '',
-    this.wingLinkOrigin = '',
-    this.wingLinkToken = '',
-    this.wingLinkCredentialId = '',
-    this.hostFingerprint = '',
-    this.deviceId = '',
-    this.deviceScopes = const [],
-    this.protocolGeneration = 1,
-    this.connections = const [],
-  });
-
-  factory HermesIssuedOperatorToken.fromJson(Map<String, Object?> json) {
-    final rawConnections = json['connections'];
-    final connections = <HermesIssuedConnection>[];
-    if (json.containsKey('connections')) {
-      if (rawConnections is! List || rawConnections.isEmpty) {
-        throw const FormatException('Hermes connection bundle is invalid.');
-      }
-      for (final row in rawConnections) {
-        if (row is! Map) {
-          throw const FormatException('Hermes connection bundle is invalid.');
-        }
-        final connection = HermesIssuedConnection.fromJson(
-          Map<String, Object?>.from(row),
-        );
-        if (connection.origin.isEmpty ||
-            connection.token.isEmpty ||
-            connection.profileId.isEmpty ||
-            connection.credentialId.isEmpty) {
-          throw const FormatException('Hermes connection bundle is invalid.');
-        }
-        connections.add(connection);
-      }
-    }
-    return HermesIssuedOperatorToken(
-      token: wingStringFromJson(json['token'], fallback: ''),
-      label: wingStringFromJson(json['label'], fallback: ''),
-      credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
-      wingLinkOrigin: wingStringFromJson(
-        json['wing_link_origin'],
-        fallback: '',
-      ),
-      wingLinkToken: wingStringFromJson(json['wing_link_token'], fallback: ''),
-      wingLinkCredentialId: wingStringFromJson(
-        json['wing_link_credential_id'],
-        fallback: '',
-      ),
-      hostFingerprint: wingStringFromJson(
-        json['host_fingerprint'],
-        fallback: '',
-      ),
-      deviceId: wingStringFromJson(json['device_id'], fallback: ''),
-      deviceScopes: wingStringListFromJson(json['device_scopes']),
-      protocolGeneration: json['protocol_generation'] is int
-          ? json['protocol_generation']! as int
-          : 1,
-      connections: List.unmodifiable(connections),
-    );
-  }
-
-  final String token;
-  final String label;
-  final String credentialId;
-  final String wingLinkOrigin;
-  final String wingLinkToken;
-  final String wingLinkCredentialId;
-  final String hostFingerprint;
-  final String deviceId;
-  final List<String> deviceScopes;
-  final int protocolGeneration;
-  final List<HermesIssuedConnection> connections;
-}
-
-/// One Hermes-owned endpoint included in a reviewed Wing Link pairing bundle.
-/// The token is write-only pairing material and must never reach presentation.
-class HermesIssuedConnection {
-  const HermesIssuedConnection({
-    required this.origin,
-    required this.token,
-    required this.label,
-    required this.profileId,
-    this.credentialId = '',
-  });
-
-  factory HermesIssuedConnection.fromJson(Map<String, Object?> json) =>
-      HermesIssuedConnection(
-        origin: wingStringFromJson(json['origin'], fallback: ''),
-        token: wingStringFromJson(json['token'], fallback: ''),
-        label: wingStringFromJson(json['label'], fallback: ''),
-        profileId: wingStringFromJson(json['profile_id'], fallback: ''),
-        credentialId: wingStringFromJson(json['credential_id'], fallback: ''),
-      );
-
-  final String origin;
-  final String token;
-  final String label;
-  final String profileId;
-  final String credentialId;
 }
 
 Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
@@ -1042,21 +838,4 @@ Uint8List _pcm16MonoWav(Uint8List pcm16, {required int sampleRate}) {
   wav.setUint32(40, pcm16.length, Endian.little);
   wav.buffer.asUint8List(44).setAll(0, pcm16);
   return wav.buffer.asUint8List();
-}
-
-DateTime? _epochSecondsToUtcDateTime(Object? value) {
-  final seconds = wingDoubleFromJson(value);
-  if (seconds == null || !seconds.isFinite || seconds < 0) return null;
-  final milliseconds = seconds * Duration.millisecondsPerSecond;
-  if (!milliseconds.isFinite || milliseconds > 8640000000000000) {
-    return null;
-  }
-  try {
-    return DateTime.fromMillisecondsSinceEpoch(
-      milliseconds.round(),
-      isUtc: true,
-    );
-  } on RangeError {
-    return null;
-  }
 }

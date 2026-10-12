@@ -91,51 +91,26 @@ Map<String, Object?> _providerModelReadinessCapabilities({
 }
 
 void main() {
-  test('enrollment preview defaults a missing connection count to one', () {
-    final preview = HermesEnrollmentPreview.fromJson({
-      'label': 'BlueBlack',
-      'origin': 'https://hermes.example',
-      'scopes': <String>[],
-    });
-
-    expect(preview.connectionCount, 1);
-  });
-
-  test('enrollment preview ignores unsafe expiry timestamps', () {
-    final preview = HermesEnrollmentPreview.fromJson({'expires_at': 1e100});
-    expect(preview.expiresAt, isNull);
-    expect(
-      HermesEnrollmentPreview.fromJson({'expires_at': -1}).expiresAt,
-      isNull,
-    );
-  });
-
-  test('enrollment preview accepts only bounded explicit integer counts', () {
-    expect(
-      HermesEnrollmentPreview.fromJson({'connection_count': 9}).connectionCount,
-      9,
-    );
-    for (final invalid in <Object?>[0, -1, 101, 1.0, '9', true, null]) {
-      expect(
-        () => HermesEnrollmentPreview.fromJson({'connection_count': invalid}),
+  test('authenticated Agent POST rejects malformed response objects', () async {
+    for (final response in ['not-json', '[]', 'null']) {
+      final client = HermesApiClient(
+        config: HermesApiConfig.fromBaseUrl(
+          'https://hermes.example',
+          apiKey: 'synthetic-test-credential',
+        ),
+        post: (uri, headers, body) async {
+          expect(uri.path, '/api/profiles');
+          expect(headers['Authorization'], 'Bearer synthetic-test-credential');
+          expect(headers['Content-Type'], 'application/json');
+          expect(jsonDecode(body), {'name': 'test-profile'});
+          return response;
+        },
+      );
+      await expectLater(
+        client.createProfile(name: 'test-profile'),
         throwsFormatException,
-        reason: 'connection_count=$invalid must fail closed',
       );
     }
-  });
-
-  test('an explicit malformed connection bundle fails closed', () {
-    expect(
-      () => HermesIssuedOperatorToken.fromJson({
-        'token': 'broad-compatibility-token',
-        'connections': [
-          {'profile_id': 'sidon', 'origin': 'https://hermes.example/p/sidon'},
-        ],
-      }),
-      throwsFormatException,
-      reason:
-          'an authoritative bundle must never downgrade to the top-level token',
-    );
   });
 
   test('summarizes multimodal history without exposing image data', () {

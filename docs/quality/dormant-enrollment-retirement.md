@@ -1,8 +1,11 @@
 # Dormant enrollment retirement — t_17a16299
 
-Status: implemented offline; independent same-card review pending. No commit was
-made: this card explicitly reserves the scoped commit for the coordinator after
-approval. CONNECTION-LINK-REMOVAL remains in progress; no ledger changes.
+Historical implementation receipt for t_17a16299: no worker commit was made;
+that card reserved the commit for the coordinator. The successor task context
+records approved review run 151 and integrated commit
+`edc9a109cc31e7c3628788c9ea24e835dfbbabcc`. The original evidence below is retained.
+See [the API retirement successor](#agent-enrollment-api-retirement--t_a50d813a)
+for current scope. CONNECTION-LINK-REMOVAL remains in progress; no ledger changes.
 
 ## Source and admission
 
@@ -114,10 +117,10 @@ Remaining product consumers to inspect in the next slice:
 `lib/features/profiles/widgets/profile_directory_browser_sheet.dart`, and retained
 `lib/features/local_setup/providers/local_hermes_setup_provider.dart` host provider.
 `lib/features/gateway/screens/gateway_screen.dart` retains legacy compatibility
-seams although its normal route no longer constructs management. Core
-`lib/core/hermes/client/hermes_api_client.dart` still contains enrollment API
-methods/models; `lib/core/hermes/setup/secure_hermes_endpoint_store.dart` retains
-legacy raw records. `lib/main_local_setup_recovery_e2e.dart` is an old fixture
+seams although its normal route no longer constructs management. The enrollment
+API methods/models were residual at this receipt's base and are removed by the
+successor below; `lib/core/hermes/setup/secure_hermes_endpoint_store.dart` retains
+legacy raw records unchanged. `lib/main_local_setup_recovery_e2e.dart` is an old fixture
 consumer. Wing Link service/installer/platform packaging, native scanner,
 obsolete localization and stale historical visual/fixture controls remain separate
 successors, not silently removed here.
@@ -127,3 +130,110 @@ widget variants. Native Linux integration, Android Maestro/device execution,
 physical secure storage, browser build/E2E and live authentication NOT_CHECKED.
 No commit, integration, push, PR, deployment or release. Review approval and
 coordinator-owned commit/integration remain pending; measured cost is unknown.
+
+## Agent enrollment API retirement — t_a50d813a
+
+Status: implemented offline; independent same-card review pending. Local task
+commit is produced by `finish_task.py` and its exact SHA/ref and check results
+are recorded in the native card handoff. No integration or publication by this
+worker. CONNECTION-PATHS / CONNECTION-LINK-REMOVAL remains incomplete;
+CONNECTION-LINK-RETIREMENT remains dependency-gated.
+
+### Source and admission
+
+Base: `edc9a109cc31e7c3628788c9ea24e835dfbbabcc`. Before the first file edit,
+the original pinned `pass_workspace.py` command returned `worker_start_admitted`
+using manifest SHA-256
+`7ca5e63ec980fc622b10e9e9df5374adc38a324e2d4a2b8d026cf86cd34594c2`.
+No admission replay, source repin, ledger edits or upstream edits.
+Correction recorded on the card: pinned `planning_context.files` contains only
+`goals.json`, not the promised TODO text. Its parent task is `in_progress`.
+
+Scoped source fingerprint, excluding this documentary receipt:
+`8d45ce76081ae77b82e12cd9cf3eef36a2a12edca7865ec5e09e2e805e117bc6`.
+SHA-256 over sorted paths, each UTF-8 path followed by NUL and file bytes:
+the four changed Dart files plus `pubspec.yaml` and `pubspec.lock`.
+Lockfile SHA-256 remains
+`f089602c321af4a65d6f1dc70b6adef724079bedc8e4f1d0496f7b8e22641c89`.
+Flutter 3.44.2 / Dart 3.12.2, Linux-hosted deterministic test VM.
+
+### Acceptance evidence and caller closure
+
+- All Wing Dart source callers (production, tests, integration and fixture
+  entrypoints) closed: inspect/exchange had no live caller; the preview and issued
+  token had four model-only tests. The issued connection and epoch conversion
+  helper were exclusively internal to those enrollment response models.
+- Removed `inspectEnrollment`, `exchangeEnrollment`, `_postJsonUnauthenticated`,
+  both enrollment URI getters, `HermesEnrollmentPreview`,
+  `HermesIssuedOperatorToken`, `HermesIssuedConnection` and its preview's timestamp
+  helper. Removed only the four obsolete model tests; no data migration.
+- Extended the existing source guard across `lib/core/hermes`, including the
+  enrollment route prefix, to prevent restoring the dead exchange elsewhere.
+  Observed RED on `enrollmentInspectUri` before deletion and GREEN afterward.
+- Added one authenticated POST regression asserting unchanged bearer/JSON
+  headers and request body, plus failure on invalid JSON and non-object replies.
+  Generic authenticated API helpers, profile/runtime/config operations,
+  concurrency headers, bounded decoding and transport errors are unchanged.
+- Direct entry, ingress/discard/rejection, accessible recovery, owner/profile/
+  session/draft preservation and exact stored records passed in the required
+  regression union. Secure store and its legacy fields are untouched.
+- Existing barrel exports remain valid; no imports, fixtures, dependencies,
+  platform/scanner packaging, localization, Wing Link or local_setup changes.
+- Read-only Agent reference at `158fd638da1629c8e62caf9ade1515d162def8ab`:
+  searches in gateway, tests and official Desktop source found no matching
+  inspect/exchange route/symbol. Inspected `gateway/platforms/api_server.py`
+  `_check_auth` and nearest `tests/gateway/test_api_server_bind_guard.py` tests:
+  bearer authentication and loopback key requirements remain upstream authority.
+  This is checkout inspection, not a current runtime qualification claim.
+
+### Executed checks
+
+All commands run in the admitted workspace; finish gate reruns the acceptance
+commands against the final owned files before creating the local task commit.
+
+```text
+timeout 3m flutter pub get --offline
+git diff --exit-code -- pubspec.yaml pubspec.lock
+timeout 3m flutter test --no-pub --concurrency=1 --reporter expanded test/tooling/enrollment_retirement_contract_test.dart
+timeout 10m flutter test --no-pub --concurrency=1 --reporter expanded test/core/hermes/hermes_api_test.dart test/core/hermes/setup test/shared/security test/features/enrollment test/router test/app/wing_app_connect_intent_test.dart test/app/hermes_connect_intent_stream_test.dart test/tooling/enrollment_retirement_contract_test.dart
+timeout 3m flutter test --no-pub --concurrency=1 --reporter expanded test/core/hermes/client/platform/hermes_api_transport_io_test.dart test/core/hermes/client/hermes_web_read_adversarial_test.dart
+timeout 3m flutter test --no-pub --concurrency=1 --reporter expanded test/core/hermes/hermes_api_test.dart --plain-name 'authenticated Agent POST rejects malformed response objects'
+timeout 5m flutter analyze --no-pub
+dart format --output=none --set-exit-if-changed lib/core/hermes/client/hermes_api_client.dart lib/core/hermes/client/hermes_api_config.dart test/core/hermes/hermes_api_test.dart test/tooling/enrollment_retirement_contract_test.dart
+git diff --check
+```
+
+Initial RED attempt lacked package configuration; cached offline dependency
+resolution succeeded without manifest/lock changes. Actual RED then failed only
+the new core guard; the older feature guard passed. First GREEN union: 235 tests
+passed in 1m32s. Transport/adversarial union: 38 passed in 5s, including typed HTTP
+status, socket failure, size bounds and malformed read replies. The later added
+authenticated POST regression passed separately (one test); the final gate reruns
+the union with it included. Analysis: no issues (9.5s). Format: four files,
+zero changes; diff check passed. Final gate results supersede these initial counts.
+Final caller scan found retired symbol names only in the negative source guard.
+The first finish gate passed 236 union tests, 38 transport/adversarial tests,
+analysis and format, but its overbroad route-prefix scan also matched the retained
+`wing-cli` broker test in `test/tooling/package_scripts_contract_test.dart`.
+That test calls a separate CLI broker, not the Agent client; CLI/packaging
+retirement is outside this card. Corrected the check to scan retired symbols
+through all Dart sources and the route prefix through `lib/core/hermes` only.
+No product change or validation bypass; the complete finish gate is rerun.
+Scoped local documentation links are checked before commit.
+
+### Skill application and limits
+
+Skill application: explicit minimal-deletion request;
+`ponytail:ponytail` from the verified installed skill path; delete unused code
+instead of adding an adapter or migration; source guard RED/GREEN, retained
+behavior tests and caller closure verify the decision.
+`hermes-toolset:engineering` and the bundled engineering cycle were read as
+requested; zero additional protocols applied because the accepted contract and
+repository checks already define the method. No unused protocol revision claim.
+
+Next separate slice: trace residual local_setup/Gateway compatibility consumers;
+broader profile/provider, service/installer, scanner, platform packaging and
+localization retirement remain outside this card. Saved legacy records remain.
+Devices, native Linux UI, physical secure storage, live Agent authentication and
+browser execution NOT_CHECKED. No production services or inference exercised.
+Review approval, canonical integration and delivery are pending; cost unknown.

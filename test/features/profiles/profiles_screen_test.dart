@@ -6,26 +6,35 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/client/hermes_api_client.dart';
+
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
-import 'package:wing/core/hermes/models/hermes_profile.dart';
+
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/routes/app_routes.dart';
 import 'package:wing/shared/widgets/wing_skeleton.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
+import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 HermesCapabilityDocument _profileCapabilities(
   List<String> scopes, {
   bool advertisesDelete = true,
   bool advertisesSoul = false,
+  bool advertisesRead = true,
+  bool advertisesModels = false,
+  bool advertisesModelLock = false,
 }) => HermesCapabilityDocument.fromJson({
   'schema_version': 1,
   'profile_context': {
@@ -36,11 +45,26 @@ HermesCapabilityDocument _profileCapabilities(
   },
   'auth': {'type': 'bearer', 'required': true, 'granted_scopes': scopes},
   'endpoints': {
-    'profiles': {
-      'method': 'GET',
-      'path': '/api/profiles',
-      'required_scopes': ['profiles:read'],
-    },
+    if (advertisesRead)
+      'profiles': {
+        'method': 'GET',
+        'path': '/api/profiles',
+        'required_scopes': ['profiles:read'],
+      },
+    if (advertisesModels)
+      'model_options': {
+        'method': 'GET',
+        'path': '/api/model/options',
+        'profile_scoped': true,
+        'required_scopes': ['models:read'],
+      },
+    if (advertisesModelLock)
+      'session_model_lock': {
+        'method': 'POST',
+        'path': '/api/sessions/{session_id}/model',
+        'profile_scoped': true,
+        'required_scopes': ['models:write'],
+      },
     'profile_create': {
       'method': 'POST',
       'path': '/api/profiles',
@@ -99,7 +123,7 @@ class _GatedProfileSelectionChannel extends FakeHermesChannel {
 }
 
 Widget _profilesTestApp(
-  FakeHermesChannel channel, {
+  HermesChannel channel, {
   double textScale = 1.0,
   bool startSetup = false,
   HermesGatewayDirectory? directory,
@@ -110,8 +134,9 @@ Widget _profilesTestApp(
     hermesGatewayDirectoryProvider.overrideWith(
       (ref) =>
           directory ??
-          directoryFor(
-            configs: const [],
+          HermesGatewayDirectory(
+            store: FakeHermesEndpointStore(profiles: const []),
+            cache: FakeGatewayContactCache(),
             loader: FakeGatewaySummaryLoader(const {}),
             activeChannel: channel,
           ),
@@ -134,6 +159,605 @@ Widget _profilesTestApp(
 );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+  for (final editing in [false, true]) {
+    testWidgets(
+      'provider replacement fences held ${editing ? 'edit' : 'create'} action',
+      (tester) async {
+        FakeHermesChannel owner(String name) => FakeHermesChannel(
+          capabilities: _profileCapabilities([
+            'profiles:read',
+            'profiles:write',
+          ]),
+          profiles: [
+            HermesProfile(id: 'default', displayName: name, revision: 'r1'),
+          ],
+          selectedProfileId: 'default',
+        );
+        final first = owner('First');
+        final second = owner('Second');
+        addTearDown(first.dispose);
+        addTearDown(second.dispose);
+        final directory = directoryFor(
+          configs: const [],
+          loader: FakeGatewaySummaryLoader(const {}),
+          activeChannel: first,
+        );
+        await tester.pumpWidget(_profilesTestApp(first, directory: directory));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          editing
+              ? find.widgetWithText(OutlinedButton, 'Edit')
+              : find.text('New Profile'),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Profile name'),
+          'Changed',
+        );
+        final action = tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, editing ? 'Save' : 'Create'),
+            )
+            .onPressed!;
+        await tester.pumpWidget(_profilesTestApp(second, directory: directory));
+        action();
+        await tester.pumpAndSettle();
+        expect(first.createProfileCalls, isEmpty);
+        expect(first.renameProfileCalls, isEmpty);
+        expect(second.createProfileCalls, isEmpty);
+        expect(second.renameProfileCalls, isEmpty);
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, editing ? 'Save' : 'Create'),
+              )
+              .onPressed,
+          isNull,
+        );
+        await tester.tap(find.text('Cancel').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Second'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('late selection from replaced Agent cannot open Chat', (
+    tester,
+  ) async {
+    final first = _GatedProfileSelectionChannel(
+      capabilities: _profileCapabilities(['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'coder', displayName: 'Coder', revision: 'r1'),
+      ],
+      selectedProfileId: 'default',
+    );
+    final second = FakeHermesChannel(
+      capabilities: _profileCapabilities(['profiles:read']),
+      profiles: const [
+        HermesProfile(id: 'default', displayName: 'Second', revision: 'r2'),
+      ],
+    );
+    addTearDown(first.dispose);
+    addTearDown(second.dispose);
+    final directory = directoryFor(
+      configs: const [],
+      loader: FakeGatewaySummaryLoader(const {}),
+      activeChannel: first,
+    );
+    final router = GoRouter(
+      initialLocation: AppRoutes.agents,
+      routes: [
+        GoRoute(
+          path: AppRoutes.agents,
+          builder: (_, _) => const ProfilesScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.hermes,
+          builder: (_, _) => const Scaffold(body: Text('Chat destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    Widget app(FakeHermesChannel channel) => ProviderScope(
+      overrides: [
+        hermesChannelProvider.overrideWithValue(channel),
+        hermesGatewayDirectoryProvider.overrideWith((ref) => directory),
+      ],
+      child: MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpWidget(app(first));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Chat'));
+    await tester.pump();
+    await tester.pumpWidget(app(second));
+    first.selectionGate.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Chat destination'), findsNothing);
+    expect(find.text('Second'), findsOneWidget);
+    expect(second.selectProfileCalls, isEmpty);
+  });
+
+  for (final modelSupport in ['absent', 'denied', 'supported']) {
+    testWidgets(
+      'direct Agent controls and catalog with legacy metadata $modelSupport',
+      (tester) async {
+        tester.view.physicalSize = const Size(900, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final caps = _profileCapabilities(
+          [
+            'profiles:read',
+            'profiles:write',
+            if (modelSupport == 'supported') 'models:read',
+            'models:write',
+          ],
+          advertisesModels: modelSupport != 'absent',
+          advertisesModelLock: true,
+        );
+        final requests =
+            <
+              ({
+                String method,
+                Uri uri,
+                Map<String, String> headers,
+                Object? body,
+              })
+            >[];
+        final profiles = <String, Map<String, Object?>>{
+          'default': {
+            'id': 'default',
+            'name': 'Default',
+            'revision': 'r-default',
+          },
+          'coder': {'id': 'coder', 'name': 'Coder', 'revision': 'r-coder'},
+        };
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              requests.add((
+                method: 'GET',
+                uri: uri,
+                headers: headers,
+                body: null,
+              ));
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => jsonEncode({
+                  'schema_version': 1,
+                  'profile_context': {
+                    'type': 'query',
+                    'name': 'profile',
+                    'required': true,
+                    'default_profile_id': 'default',
+                  },
+                  'auth': {
+                    'type': 'bearer',
+                    'required': true,
+                    'granted_scopes': caps.auth.grantedScopes,
+                  },
+                  'endpoints': {
+                    for (final entry in caps.endpoints.entries)
+                      entry.key: {
+                        'method': entry.value.method,
+                        'path': entry.value.path,
+                        'profile_scoped': entry.value.profileScoped,
+                        'required_scopes': entry.value.requiredScopes,
+                      },
+                  },
+                }),
+                '/api/profiles' => jsonEncode({
+                  'data': profiles.values.toList(),
+                }),
+                '/api/sessions' => '{"data":[{"id":"fixture-session"}]}',
+                '/api/sessions/fixture-session/messages' =>
+                  '{"object":"list","session_id":"fixture-session","data":[],"order":"latest"}',
+                '/api/model/options' =>
+                  '{"providers":[{"provider":"synthetic","label":"Synthetic","models":["example/model"],"authenticated":true}]}',
+                _ => throw StateError('Unexpected Agent read'),
+              };
+            },
+            post: (uri, headers, body) async {
+              requests.add((
+                method: 'POST',
+                uri: uri,
+                headers: headers,
+                body: jsonDecode(body),
+              ));
+              if (uri.path == '/api/sessions/fixture-session/model') {
+                return '{"session_id":"fixture-session","runtime":{"provider":"synthetic","model":"example/model","model_lock":"accepted"}}';
+              }
+              expect(uri.path, '/api/profiles');
+              profiles['writer'] = {
+                'id': 'writer',
+                'name': 'Writer',
+                'revision': 'r-writer',
+              };
+              return jsonEncode({'profile': profiles['writer']});
+            },
+            patch: (uri, headers, body) async {
+              requests.add((
+                method: 'PATCH',
+                uri: uri,
+                headers: headers,
+                body: jsonDecode(body),
+              ));
+              profiles['writer'] = {
+                'id': 'writer',
+                'name': 'Renamed',
+                'revision': 'r-renamed',
+              };
+              return jsonEncode({'profile': profiles['writer']});
+            },
+            delete: (uri, headers) async {
+              requests.add((
+                method: 'DELETE',
+                uri: uri,
+                headers: headers,
+                body: null,
+              ));
+              profiles.remove('writer');
+              return '{"id":"writer","deleted":true}';
+            },
+          ),
+        );
+        addTearDown(channel.dispose);
+        final legacyRecoveries = <String?>[];
+        final directory = HermesGatewayDirectory(
+          store: FakeHermesEndpointStore(
+            profiles: const [
+              HermesEndpointConfig(
+                id: 'agent',
+                baseUrl: 'https://agent.example',
+                apiKey: 'fixture-agent',
+                wingLinkOrigin: 'https://link.example',
+                wingLinkToken: 'fixture-legacy',
+                wingLinkPendingCredentialId: 'fixture-pending',
+              ),
+              HermesEndpointConfig(
+                id: 'other-agent',
+                baseUrl: 'https://other-agent.example',
+                wingLinkOrigin: 'https://other-link.example',
+                wingLinkToken: 'fixture-other-legacy',
+                wingLinkPendingCredentialId: 'fixture-other-pending',
+              ),
+            ],
+          ),
+          cache: FakeGatewayContactCache(),
+          loader: FakeGatewaySummaryLoader({
+            'agent': gatewaySummary(['default', 'coder']),
+          }),
+          activeChannel: channel,
+          pendingCredentialRecovery: (config) async {
+            legacyRecoveries.add(config.id);
+            return false;
+          },
+        );
+        await directory.refresh();
+        expect(legacyRecoveries, ['agent', 'other-agent']);
+        await directory.activateGateway('agent');
+        expect(
+          channel.state.isConnected,
+          isTrue,
+          reason:
+              '${channel.state.errorMessage}; ${requests.map((r) => r.uri.path).toList()}',
+        );
+        await channel.selectProfile('default');
+        legacyRecoveries.clear();
+        var linkConstructions = 0;
+        var linkRequests = 0;
+        final router = GoRouter(
+          initialLocation: AppRoutes.agents,
+          routes: [
+            GoRoute(
+              path: AppRoutes.agents,
+              builder: (_, _) => const ProfilesScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.hermes,
+              builder: (_, _) => const HermesChatScreen(),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              hermesChannelProvider.overrideWithValue(channel),
+              hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+              hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+              hermesTextToSpeechServiceProvider.overrideWithValue(null),
+              wingLinkClientBuilderProvider.overrideWithValue(({
+                required origin,
+                required token,
+                required hostFingerprint,
+              }) {
+                linkConstructions++;
+                return WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (_, _) async {
+                    linkRequests++;
+                    return '{"profiles":[]}';
+                  },
+                );
+              }),
+            ],
+            child: MaterialApp.router(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Coder'), findsOneWidget);
+        expect(
+          requests.where((r) => r.uri.path == '/api/profiles'),
+          isNotEmpty,
+        );
+        // No native profile-provider assignment contract exists. Do not expose
+        // the legacy setup catalog or configuration mutation in this editor.
+        await tester.tap(find.text('New Profile'));
+        await tester.pumpAndSettle();
+        final editor = tester.widget<ProfileEditorSheet>(
+          find.byType(ProfileEditorSheet),
+        );
+        expect(editor.canConfigure, isFalse);
+        expect(editor.loadModelOptions, isNull);
+        expect(requests.where((r) => r.method == 'POST'), isEmpty);
+        await tester.tap(find.text('Cancel').last);
+        await tester.pumpAndSettle();
+        expect(requests.where((r) => r.method != 'GET'), isEmpty);
+        expect(
+          legacyRecoveries,
+          isEmpty,
+          reason: 'Cancel must not recover Link',
+        );
+        await tester.tap(find.text('New Profile'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Profile name'),
+          'Writer',
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ProfileEditorSheet), findsNothing);
+        expect(
+          legacyRecoveries,
+          isEmpty,
+          reason: 'Create must not recover Link',
+        );
+        expect(find.text('Writer'), findsOneWidget);
+        Finder writerCard() => find.ancestor(
+          of: find.text(profiles['writer']!['name']! as String),
+          matching: find.byType(Card),
+        );
+        final edit = find.descendant(
+          of: writerCard(),
+          matching: find.widgetWithText(OutlinedButton, 'Edit'),
+        );
+        await tester.ensureVisible(edit);
+        await tester.tap(edit);
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Profile name'),
+          'Renamed',
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+        await tester.pumpAndSettle();
+        expect(legacyRecoveries, isEmpty, reason: 'Edit must not recover Link');
+        expect(find.text('Renamed'), findsOneWidget);
+        final chat = find.descendant(
+          of: writerCard(),
+          matching: find.widgetWithText(FilledButton, 'Chat'),
+        );
+        await tester.ensureVisible(chat);
+        await tester.tap(chat);
+        await tester.pumpAndSettle();
+        expect(channel.state.selectedProfileId, 'writer');
+        expect(channel.state.activeSessionId, 'fixture-session');
+        if (modelSupport == 'supported') {
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-composer-model-chip')),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.byKey(const ValueKey('session-model-synthetic/example/model')),
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text('Use for session'));
+          await tester.tap(find.text('Use for session'));
+          await tester.pumpAndSettle();
+          final lock = channel.state.sessionModelLocks['fixture-session']!;
+          expect(lock.accepted, isTrue);
+          expect(lock.provider, 'synthetic');
+          expect(lock.model, 'example/model');
+          expect(channel.state.selectedProfileId, 'writer');
+          expect(channel.state.activeSessionId, 'fixture-session');
+          final write = requests
+              .where((r) => r.uri.path == '/api/sessions/fixture-session/model')
+              .single;
+          expect(write.method, 'POST');
+          expect(write.uri.queryParameters['profile'], 'writer');
+          expect(write.body, {
+            'provider': 'synthetic',
+            'model': 'example/model',
+          });
+          expect(
+            channel.state.modelOptions!.providers.single.slug,
+            'synthetic',
+          );
+          expect(
+            requests
+                .where((r) => r.uri.path == '/api/model/options')
+                .single
+                .uri
+                .queryParameters['profile'],
+            'writer',
+          );
+        } else {
+          expect(
+            tester
+                .widget<ActionChip>(
+                  find.byKey(const ValueKey('hermes-composer-model-chip')),
+                )
+                .onPressed,
+            isNull,
+          );
+          expect(
+            requests.where((r) => r.uri.path == '/api/model/options'),
+            isEmpty,
+          );
+        }
+        expect(
+          legacyRecoveries,
+          isEmpty,
+          reason: 'Model selection must not recover Link',
+        );
+        router.pop();
+        await tester.pumpAndSettle();
+        final remove = find.descendant(
+          of: writerCard(),
+          matching: find.widgetWithText(TextButton, 'Delete profile'),
+        );
+        await tester.ensureVisible(remove);
+        await tester.tap(remove);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.widgetWithText(TextButton, 'Delete profile').last,
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField).last, 'Renamed');
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ProfileEditorSheet), findsNothing);
+        expect(
+          legacyRecoveries,
+          isEmpty,
+          reason: 'Delete must not recover Link',
+        );
+        expect(channel.state.profiles.any((p) => p.id == 'writer'), isFalse);
+        final writes = requests
+            .where(
+              (r) =>
+                  r.method != 'GET' && r.uri.path.startsWith('/api/profiles'),
+            )
+            .toList();
+        expect(
+          requests.where((r) => r.method != 'GET').length,
+          modelSupport == 'supported' ? 4 : 3,
+        );
+        expect(writes.map((r) => [r.method, r.uri.path, r.body]), [
+          [
+            'POST',
+            '/api/profiles',
+            {'name': 'Writer', 'clone_from': 'default'},
+          ],
+          [
+            'PATCH',
+            '/api/profiles/writer',
+            {'name': 'Renamed'},
+          ],
+          ['DELETE', '/api/profiles/writer', null],
+        ]);
+        expect(writes[1].headers['If-Match'], 'r-writer');
+        expect(writes[2].headers['If-Match'], 'r-renamed');
+        expect(
+          requests.every(
+            (r) =>
+                r.uri.host == 'agent.example' &&
+                r.headers['Authorization'] == 'Bearer fixture-agent',
+          ),
+          isTrue,
+        );
+        expect(linkConstructions, 0);
+        expect(linkRequests, 0);
+        expect(legacyRecoveries, isEmpty);
+        expect(
+          directory.configForGateway('agent')!.wingLinkToken,
+          'fixture-legacy',
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  for (final mode in ['denied', 'write-only', 'absent', 'no-document']) {
+    testWidgets('legacy metadata cannot restore denied Agent access $mode', (
+      tester,
+    ) async {
+      final channel = FakeHermesChannel(
+        capabilities: mode == 'no-document'
+            ? null
+            : _profileCapabilities(
+                mode == 'write-only'
+                    ? ['profiles:write']
+                    : mode == 'absent'
+                    ? ['profiles:read']
+                    : [],
+                advertisesRead: mode != 'absent',
+              ),
+      );
+      addTearDown(channel.dispose);
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'legacy',
+            baseUrl: 'https://agent.example',
+            wingLinkOrigin: 'https://link.example',
+            wingLinkToken: 'fixture-only',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'legacy': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await directory.activateGateway('legacy');
+      var constructions = 0;
+      var requests = 0;
+      await tester.pumpWidget(
+        _profilesTestApp(
+          channel,
+          directory: directory,
+          startSetup: true,
+          wingLinkClientBuilder:
+              ({required origin, required token, required hostFingerprint}) {
+                constructions++;
+                return WingLinkClient(
+                  origin: origin,
+                  token: token,
+                  get: (_, _) async {
+                    requests++;
+                    return '{"profiles":[]}';
+                  },
+                );
+              },
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(constructions, 0);
+      expect(requests, 0);
+      expect(find.text('Profiles unavailable'), findsOneWidget);
+      expect(find.byType(ProfileEditorSheet), findsNothing);
+      expect(channel.createProfileCalls, isEmpty);
+      expect(
+        directory.configForGateway('legacy')!.wingLinkToken,
+        'fixture-only',
+      );
+    });
+  }
+
   for (final width in [390.0, 1280.0]) {
     testWidgets(
       'local profile search metadata, literal clear and keyboard at $width',
@@ -302,137 +926,6 @@ void main() {
         {'name': 'coder', 'cloneFrom': 'default'},
       ]);
       expect(find.byType(ProfileEditorSheet), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'paired setup opens after saved hosts finish loading without connecting chat',
-    (tester) async {
-      final channel = FakeHermesChannel();
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'setup-host',
-            label: 'Setup host',
-            baseUrl: 'https://setup.example',
-            wingLinkOrigin: 'https://setup.example:8654',
-            wingLinkToken: 'fixture-only',
-            wingLinkHostFingerprint:
-                'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'setup-host': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      var writes = 0;
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          startSetup: true,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                hostFingerprint: hostFingerprint,
-                get: (uri, _) async {
-                  if (uri.path == '/v1/profiles') {
-                    return '{"profiles":[{"id":"default","name":"Default","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}';
-                  }
-                  throw StateError('catalog unavailable');
-                },
-                post: (uri, headers, body) async {
-                  writes++;
-                  return '{}';
-                },
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await directory.refresh();
-      await tester.pumpAndSettle();
-      expect(channel.connectCalls, isEmpty);
-      final editor = tester.widget<ProfileEditorSheet>(
-        find.byType(ProfileEditorSheet),
-      );
-      expect(editor.canConfigure, isTrue);
-      expect(editor.profile, isNull);
-      expect(writes, 0);
-      await tester.tap(find.text('Cancel').last);
-      await tester.pumpAndSettle();
-      directory.notifyListeners();
-      await tester.pumpAndSettle();
-      expect(find.byType(ProfileEditorSheet), findsNothing);
-      expect(writes, 0);
-    },
-  );
-
-  testWidgets(
-    'failed Wing Link inventory offers retry and clears revoked access',
-    (tester) async {
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'host',
-            baseUrl: 'https://agent.example',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkToken: 'fixture-token',
-            wingLinkHostFingerprint:
-                'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'host': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      var loads = 0;
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                hostFingerprint: hostFingerprint,
-                get: (uri, _) async {
-                  if (++loads == 1) throw StateError('private failure details');
-                  return '{"profiles":[{"id":"coder","name":"Coder","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{}}]}';
-                },
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Retry'), findsOneWidget);
-      expect(find.textContaining('private failure details'), findsNothing);
-      directory.notifyListeners();
-      await tester.pumpAndSettle();
-      expect(loads, 1);
-      await tester.tap(find.text('Retry'));
-      await tester.pumpAndSettle();
-      expect(find.text('Coder'), findsOneWidget);
-      expect(loads, 2);
-      await directory.clearWingLinkEnrollment('host');
-      await tester.pumpAndSettle();
-      expect(find.text('Coder'), findsNothing);
-      expect(find.text('New Profile'), findsNothing);
-      expect(loads, 2);
-      expect(channel.connectCalls, isEmpty);
     },
   );
 
@@ -646,908 +1139,6 @@ void main() {
     expect(channel.connectCalls.single.baseUrl, 'https://b');
     expect(directory.activeContactId?.gatewayId, 'beta');
   });
-
-  testWidgets(
-    'Wing Link profiles remain manageable without connecting Agent chat',
-    (tester) async {
-      tester.view.physicalSize = const Size(800, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final channel = FakeHermesChannel(
-        status: HermesConnectionStatus.disconnected,
-      );
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'alpha',
-            label: 'Alpha',
-            baseUrl: 'https://a.example:8642',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'alpha': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      final wingLinkCalls = <String>[];
-      var directoryCapabilities = const [
-        'directories.roots.read',
-        'directories.children.read',
-      ];
-      var directoryScopes = const ['directories:read'];
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (uri, _) async {
-                  wingLinkCalls.add(uri.path);
-                  return switch (uri.path) {
-                    '/v1/profiles' =>
-                      '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
-                    '/meta' => jsonEncode({
-                      'protocol_generation': 2,
-                      'minimum_protocol_generation': 1,
-                      'supported_protocol_generations': [1, 2],
-                      'version': 'test',
-                      'host_fingerprint': 'sha256/test',
-                      'capabilities': directoryCapabilities,
-                    }),
-                    '/v2/devices/self' => jsonEncode({
-                      'device_id': 'cred_phone',
-                      'name': 'Phone',
-                      'scopes': directoryScopes,
-                      'created_at': '2026-08-30T00:00:00Z',
-                      'legacy': false,
-                    }),
-                    '/v2/directories' => '{"directories":[]}',
-                    _ => throw StateError('unexpected GET $uri'),
-                  };
-                },
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(wingLinkCalls, ['/v1/profiles']);
-      expect(channel.connectCalls, isEmpty);
-      expect(directory.activeContactId, isNull);
-      expect(find.text('Profiles unavailable'), findsNothing);
-      expect(find.text('Link'), findsOneWidget);
-      expect(find.text('Selected'), findsNothing);
-      expect(find.text('Active chat'), findsNothing);
-      expect(find.text('New Profile'), findsOneWidget);
-      expect(find.text('Browse folders'), findsOneWidget);
-
-      final browseFolders = find.byKey(
-        const ValueKey('agent-browse-folders-link'),
-      );
-      await tester.scrollUntilVisible(
-        browseFolders,
-        200,
-        scrollable: find
-            .descendant(
-              of: find.byType(ListView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
-      await tester.tap(browseFolders);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Approved folders'), findsOneWidget);
-      expect(
-        find.textContaining('wing-link directories grant PATH'),
-        findsOneWidget,
-      );
-      expect(wingLinkCalls, [
-        '/v1/profiles',
-        '/meta',
-        '/v2/devices/self',
-        '/v2/directories',
-      ]);
-
-      await tester.tap(find.text('Close').last);
-      await tester.pumpAndSettle();
-
-      for (final capabilities in [
-        const ['directories.roots.read'],
-        const ['directories.children.read'],
-      ]) {
-        directoryCapabilities = capabilities;
-        directoryScopes = const ['directories:read'];
-        wingLinkCalls.clear();
-        await tester.tap(browseFolders);
-        await tester.pumpAndSettle();
-        expect(
-          find.textContaining('pair again with directory access'),
-          findsOneWidget,
-        );
-        expect(wingLinkCalls, ['/meta']);
-        await tester.pump(const Duration(seconds: 5));
-      }
-
-      directoryCapabilities = const [
-        'directories.roots.read',
-        'directories.children.read',
-      ];
-      directoryScopes = const [];
-      wingLinkCalls.clear();
-      await tester.tap(browseFolders);
-      await tester.pumpAndSettle();
-      expect(
-        find.textContaining('pair again with directory access'),
-        findsOneWidget,
-      );
-      expect(wingLinkCalls, ['/meta', '/v2/devices/self']);
-      expect(wingLinkCalls, isNot(contains('/v2/directories')));
-    },
-  );
-
-  testWidgets('late same-gateway Wing Link inventory cannot replace a newer load', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      status: HermesConnectionStatus.disconnected,
-    );
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://a.example:8642',
-          wingLinkOrigin: 'https://a.example:8654',
-          wingLinkToken: 'wlc-secret',
-        ),
-        HermesEndpointConfig(
-          id: 'beta',
-          label: 'Beta',
-          baseUrl: 'https://b.example:8642',
-          wingLinkOrigin: 'https://b.example:8654',
-          wingLinkToken: 'wlc-secret',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['default']),
-        'beta': gatewaySummary(['default']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
-    await directory.activateGateway('alpha');
-    final alphaResponses = [Completer<String>(), Completer<String>()];
-    var alphaCalls = 0;
-
-    await tester.pumpWidget(
-      _profilesTestApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder:
-            ({required origin, required token, required hostFingerprint}) =>
-                WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (_, _) {
-                    if (origin.host == 'a.example') {
-                      return alphaResponses[alphaCalls++].future;
-                    }
-                    return Future.value('{"profiles":[]}');
-                  },
-                ),
-      ),
-    );
-    await tester.pump();
-    expect(alphaCalls, 1);
-
-    await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
-    await tester.pump();
-    await tester.tap(find.text('Beta').last);
-    await tester.pump();
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('agents-gateway-picker')));
-    await tester.pump();
-    await tester.tap(find.text('Alpha').last);
-    await tester.pump();
-    await tester.pump();
-    expect(alphaCalls, 2);
-
-    alphaResponses[1].complete(
-      '''{"profiles":[{"id":"fresh","name":"Fresh","topology_revision":"fresh-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Fresh'), findsOneWidget);
-
-    alphaResponses[0].complete(
-      '''{"profiles":[{"id":"stale","name":"Stale","topology_revision":"stale-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Fresh'), findsOneWidget);
-    expect(find.text('Stale'), findsNothing);
-  });
-
-  testWidgets(
-    'Wing Link rows distinguish enrolled endpoints from inventory-only profiles',
-    (tester) async {
-      final channel = FakeHermesChannel(
-        status: HermesConnectionStatus.disconnected,
-      );
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'default-endpoint',
-            label: 'Alpha · default',
-            baseUrl: 'https://a.example:8642/p/default',
-            apiKey: 'default-secret',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-          HermesEndpointConfig(
-            id: 'link-endpoint',
-            label: 'Alpha · link',
-            baseUrl: 'https://a.example:8642/p/link',
-            apiKey: 'link-secret',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'default-endpoint': gatewaySummary(['default']),
-          'link-endpoint': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('default-endpoint');
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) async =>
-                    '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}},{"id":"newbie","name":"Newbie","topology_revision":"top-1","source":"cli","gateway_state":"stopped","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Enrolled'), findsOneWidget);
-      final enrolledChat = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('agent-chat-link')),
-      );
-      expect(enrolledChat.onPressed, isNotNull);
-
-      await tester.scrollUntilVisible(
-        find.text('Newbie'),
-        500,
-        scrollable: find
-            .descendant(
-              of: find.byType(ListView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
-      expect(find.text('Not enrolled'), findsOneWidget);
-      final inventoryOnlyChat = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('agent-chat-newbie')),
-      );
-      expect(inventoryOnlyChat.onPressed, isNull);
-      expect(find.text('Active chat'), findsNothing);
-      await directory.activateGateway('link-endpoint');
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Link'),
-        -500,
-        scrollable: find
-            .descendant(
-              of: find.byType(ListView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
-      expect(find.text('Active chat'), findsOneWidget);
-      final activeCard = find.ancestor(
-        of: find.text('Active chat'),
-        matching: find.byType(Card),
-      );
-      expect(
-        find.descendant(of: activeCard, matching: find.text('Link')),
-        findsOneWidget,
-      );
-      final activeBeforeSearch = directory.activeContactId;
-      final connectsBeforeSearch = channel.connectCalls.length;
-      await tester.ensureVisible(find.byKey(const ValueKey('profiles-search')));
-      await tester.enterText(
-        find.byKey(const ValueKey('profiles-search')),
-        'NEWBIE',
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Link'), findsNothing);
-      expect(find.text('Active chat'), findsNothing);
-      expect(directory.activeContactId, activeBeforeSearch);
-      expect(channel.connectCalls.length, connectsBeforeSearch);
-      expect(
-        tester
-            .widget<FilledButton>(
-              find.byKey(const ValueKey('agent-chat-newbie')),
-            )
-            .onPressed,
-        isNull,
-      );
-      await tester.tap(find.byTooltip('Clear profile search'));
-      await tester.pumpAndSettle();
-      expect(find.text('Active chat'), findsOneWidget);
-      await directory.showDirectory();
-      await tester.pumpAndSettle();
-      expect(find.text('Active chat'), findsNothing);
-    },
-  );
-
-  for (final fails in [false, true]) {
-    testWidgets(
-      'Wing Link enrolled profile chat reports connection outcome; failure $fails',
-      (tester) async {
-        final channel = FakeHermesChannel(
-          status: HermesConnectionStatus.disconnected,
-          connectErrorMessage: fails ? 'Unavailable' : null,
-        );
-        addTearDown(channel.dispose);
-        final directory = directoryFor(
-          configs: const [
-            HermesEndpointConfig(
-              id: 'default-endpoint',
-              label: 'Alpha · default',
-              baseUrl: 'https://a.example:8642/p/default',
-              apiKey: 'default-secret',
-              wingLinkOrigin: 'https://a.example:8654',
-              wingLinkToken: 'wlc-secret',
-              wingLinkHostFingerprint: 'sha256/reviewed-pin',
-            ),
-            HermesEndpointConfig(
-              id: 'link-endpoint',
-              label: 'Alpha · link',
-              baseUrl: 'https://a.example:8642/p/link',
-              apiKey: 'link-secret',
-              wingLinkOrigin: 'https://a.example:8654',
-              wingLinkToken: 'wlc-secret',
-              wingLinkHostFingerprint: 'sha256/reviewed-pin',
-            ),
-          ],
-          loader: FakeGatewaySummaryLoader({
-            'default-endpoint': gatewaySummary(['default']),
-            'link-endpoint': gatewaySummary(['default']),
-          }),
-          activeChannel: channel,
-        );
-        await directory.refresh();
-        await directory.activateGateway('default-endpoint');
-        channel.connectCalls.clear();
-
-        await tester.pumpWidget(
-          _profilesTestApp(
-            channel,
-            directory: directory,
-            wingLinkClientBuilder:
-                ({
-                  required origin,
-                  required token,
-                  required hostFingerprint,
-                }) => WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (_, _) async =>
-                      '''{"profiles":[{"id":"link","name":"Link","topology_revision":"top-1","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-1"},"delete":{"revision":"rev-1"}}}]}''',
-                ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        final chatButton = tester.widget<FilledButton>(
-          find.byKey(const ValueKey('agent-chat-link')),
-        );
-        await tester.enterText(
-          find.byKey(const ValueKey('profiles-search')),
-          'LINK',
-        );
-        await tester.pumpAndSettle();
-        expect(channel.connectCalls, isEmpty);
-        chatButton.onPressed!.call();
-        await tester.pumpAndSettle();
-
-        expect(channel.connectCalls, hasLength(1));
-        expect(
-          channel.connectCalls.single.baseUrl,
-          'https://a.example:8642/p/link',
-        );
-        expect(channel.connectCalls.single.apiKey, 'link-secret');
-        if (fails) {
-          expect(directory.activeContactId, isNull);
-          expect(
-            find.text('Could not connect to this gateway.'),
-            findsOneWidget,
-          );
-        } else {
-          expect(directory.activeContactId?.gatewayId, 'link-endpoint');
-        }
-      },
-    );
-  }
-
-  testWidgets(
-    'Wing Link profile approval retries the same body and idempotency key',
-    (tester) async {
-      tester.view.physicalSize = const Size(800, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final channel = FakeHermesChannel(
-        status: HermesConnectionStatus.disconnected,
-      );
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'alpha',
-            label: 'Alpha',
-            baseUrl: 'https://a.example:8642',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'alpha': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('alpha');
-      final requestBodies = <String>[];
-      final idempotencyKeys = <String>[];
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) async => '{"profiles":[]}',
-                post: (uri, headers, body) async {
-                  requestBodies.add(body);
-                  idempotencyKeys.add(headers['Idempotency-Key']!);
-                  if (requestBodies.length == 1) {
-                    return jsonEncode({
-                      'error': {'code': 'approval_required'},
-                      'approval_id': 'appr_pending',
-                      'operation_id': 'op_pending',
-                      'expires_at':
-                          DateTime.now()
-                              .add(const Duration(minutes: 1))
-                              .millisecondsSinceEpoch ~/
-                          1000,
-                    });
-                  }
-                  return '{"profile":{"id":"readyqa","name":"readyqa","revision":"rev-1"}}';
-                },
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('New Profile'));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Profile name'),
-        'readyqa',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Provider'),
-        'openrouter',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Model'),
-        'openai/gpt-5.2',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'New provider credential'),
-        'write-only-fixture',
-      );
-      final create = find.widgetWithText(FilledButton, 'Create');
-      await tester.ensureVisible(create);
-      await tester.tap(create);
-      await tester.pump();
-      final retry = find.text('Retry approved setup');
-      await tester.ensureVisible(retry);
-      await tester.tap(retry);
-      await tester.pumpAndSettle();
-
-      expect(requestBodies, hasLength(2));
-      expect(requestBodies.last, requestBodies.first);
-      expect(idempotencyKeys, hasLength(2));
-      expect(idempotencyKeys.last, idempotencyKeys.first);
-      expect(jsonDecode(requestBodies.first), {
-        'name': 'readyqa',
-        'provider': 'openrouter',
-        'model': 'openai/gpt-5.2',
-        'provider_api_key': 'write-only-fixture',
-      });
-      expect(find.text('write-only-fixture'), findsNothing);
-    },
-  );
-
-  testWidgets('successful create closes when authoritative reload fails', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final channel = FakeHermesChannel(
-      status: HermesConnectionStatus.disconnected,
-    );
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://a.example:8642',
-          wingLinkOrigin: 'https://a.example:8654',
-          wingLinkToken: 'wlc-secret',
-          wingLinkHostFingerprint: 'sha256/reviewed-pin',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['default']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
-    await directory.activateGateway('alpha');
-    var gets = 0;
-    var posts = 0;
-
-    await tester.pumpWidget(
-      _profilesTestApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder:
-            ({
-              required origin,
-              required token,
-              required hostFingerprint,
-            }) => WingLinkClient(
-              origin: origin,
-              token: token,
-              get: (uri, _) async {
-                if (uri.path != '/v1/profiles') {
-                  throw StateError('capability unavailable');
-                }
-                gets++;
-                if (gets == 1) return '{"profiles":[]}';
-                throw StateError('response lost');
-              },
-              post: (_, _, _) async {
-                posts++;
-                return '{"profile":{"id":"readyqa","name":"readyqa","revision":"rev-1"}}';
-              },
-            ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('New Profile'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Profile name'),
-      'readyqa',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Provider'),
-      'openrouter',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Model'),
-      'openai/gpt-5.2',
-    );
-    final create = find.widgetWithText(FilledButton, 'Create');
-    await tester.ensureVisible(create);
-    await tester.tap(create);
-    await tester.pumpAndSettle();
-
-    expect(posts, 1);
-    expect(gets, 2);
-    expect(find.text('Create profile'), findsNothing);
-    expect(find.text('Could not load local profiles.'), findsOneWidget);
-  });
-
-  testWidgets(
-    'Wing Link rename reconnects Chat using the returned profile identity',
-    (tester) async {
-      final channel = FakeHermesChannel(
-        status: HermesConnectionStatus.disconnected,
-      );
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'alpha',
-            label: 'Alpha',
-            baseUrl: 'http://localhost:8642/p/link',
-            apiKey: 'synthetic-agent',
-            wingLinkOrigin: 'http://localhost:8654',
-            wingLinkToken: 'wlc-secret',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({'alpha': gatewaySummary([])}),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('alpha');
-      var listCalls = 0;
-      var currentId = 'link';
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({
-                required origin,
-                required token,
-                required hostFingerprint,
-              }) => WingLinkClient(
-                origin: origin,
-                token: token,
-                get: (_, _) async {
-                  listCalls++;
-                  return '''{"profiles":[{"id":"$currentId","name":"$currentId","topology_revision":"rev-$listCalls","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-$listCalls"},"delete":{"revision":"rev-$listCalls"}}}]}''';
-                },
-                patch: (_, _, _) async {
-                  currentId = 'link-renamed';
-                  return '{"profile":{"id":"link-renamed","name":"link-renamed","topology_revision":"rev-2","source":"cli","gateway_state":"running","actions":{}}}';
-                },
-              ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      final editButton = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Edit').first,
-      );
-      editButton.onPressed!.call();
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField).first, 'link-renamed');
-      final save = find.widgetWithText(FilledButton, 'Save');
-      await tester.ensureVisible(save);
-      await tester.tap(save);
-      await tester.pumpAndSettle();
-
-      expect(
-        directory.configForGateway('alpha')!.baseUrl,
-        'http://localhost:8642/p/link-renamed',
-      );
-      expect(directory.contacts.single.id.profileId, 'link-renamed');
-      expect(directory.activeContactId?.profileId, 'link-renamed');
-      expect(find.text('link'), findsNothing);
-    },
-  );
-
-  testWidgets('Wing Link stale mutation refreshes inventory before retry', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      status: HermesConnectionStatus.disconnected,
-    );
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://a.example:8642',
-          wingLinkOrigin: 'https://a.example:8654',
-          wingLinkToken: 'wlc-secret',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['default']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
-    await directory.activateGateway('alpha');
-    var listCalls = 0;
-
-    await tester.pumpWidget(
-      _profilesTestApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder:
-            ({
-              required origin,
-              required token,
-              required hostFingerprint,
-            }) => WingLinkClient(
-              origin: origin,
-              token: token,
-              get: (_, _) async {
-                listCalls++;
-                return '''{"profiles":[{"id":"link","name":"link","topology_revision":"rev-$listCalls","source":"cli","gateway_state":"running","actions":{"rename":{"revision":"rev-$listCalls"},"delete":{"revision":"rev-$listCalls"}}}]}''';
-              },
-              patch: (_, _, _) async => throw const WingLinkHttpException(412),
-            ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final editButton = tester.widget<OutlinedButton>(
-      find.widgetWithText(OutlinedButton, 'Edit').first,
-    );
-    editButton.onPressed!.call();
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField).first, 'link-renamed');
-    final save = find.widgetWithText(FilledButton, 'Save');
-    await tester.ensureVisible(save);
-    await tester.tap(save);
-    await tester.pumpAndSettle();
-
-    expect(listCalls, 2);
-    expect(
-      find.text(
-        'This profile changed elsewhere. The latest version has been loaded; '
-        'review it before trying again.',
-      ),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('native Hermes profile API takes precedence over Wing Link', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _profileCapabilities(const [
-        'profiles:read',
-        'profiles:write',
-      ]),
-      profiles: const [
-        HermesProfile(
-          id: 'native',
-          displayName: 'Native profile',
-          revision: 'native-rev',
-        ),
-      ],
-      selectedProfileId: 'native',
-    );
-    addTearDown(channel.dispose);
-    final directory = directoryFor(
-      configs: const [
-        HermesEndpointConfig(
-          id: 'alpha',
-          label: 'Alpha',
-          baseUrl: 'https://a.example:8642',
-          wingLinkOrigin: 'https://a.example:8654',
-          wingLinkToken: 'wlc-secret',
-        ),
-      ],
-      loader: FakeGatewaySummaryLoader({
-        'alpha': gatewaySummary(['native']),
-      }),
-      activeChannel: channel,
-    );
-    await directory.refresh();
-    await directory.activateGateway('alpha');
-    var wingLinkCalls = 0;
-
-    await tester.pumpWidget(
-      _profilesTestApp(
-        channel,
-        directory: directory,
-        wingLinkClientBuilder:
-            ({required origin, required token, required hostFingerprint}) =>
-                WingLinkClient(
-                  origin: origin,
-                  token: token,
-                  get: (_, _) async {
-                    wingLinkCalls++;
-                    return '{"profiles":[]}';
-                  },
-                ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(wingLinkCalls, 0);
-    expect(find.text('Managed by Wing Link'), findsNothing);
-  });
-
-  testWidgets(
-    'late native profile contract supersedes an in-flight Wing Link load',
-    (tester) async {
-      final channel = FakeHermesChannel();
-      addTearDown(channel.dispose);
-      final directory = directoryFor(
-        configs: const [
-          HermesEndpointConfig(
-            id: 'alpha',
-            label: 'Alpha',
-            baseUrl: 'https://a.example:8642',
-            wingLinkOrigin: 'https://a.example:8654',
-            wingLinkToken: 'wlc-secret',
-            wingLinkHostFingerprint: 'sha256/reviewed-pin',
-          ),
-        ],
-        loader: FakeGatewaySummaryLoader({
-          'alpha': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      await directory.refresh();
-      await directory.activateGateway('alpha');
-      final wingLinkResponse = Completer<String>();
-
-      await tester.pumpWidget(
-        _profilesTestApp(
-          channel,
-          directory: directory,
-          wingLinkClientBuilder:
-              ({required origin, required token, required hostFingerprint}) =>
-                  WingLinkClient(
-                    origin: origin,
-                    token: token,
-                    get: (_, _) => wingLinkResponse.future,
-                  ),
-        ),
-      );
-      await tester.pump();
-      channel.replaceCapabilitiesAndProfiles(
-        _profileCapabilities(const ['profiles:read', 'profiles:write']),
-        const [
-          HermesProfile(
-            id: 'native',
-            displayName: 'Native profile',
-            revision: 'native-rev',
-          ),
-        ],
-      );
-      await tester.pump();
-      expect(find.text('Native profile'), findsOneWidget);
-
-      wingLinkResponse.complete(
-        '''{"profiles":[{"id":"link","name":"Link","topology_revision":"link-rev","source":"cli","gateway_state":"running","actions":{}}]}''',
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Native profile'), findsOneWidget);
-      expect(find.text('Link'), findsNothing);
-    },
-  );
 
   testWidgets('write access opens the create-agent editor', (tester) async {
     final channel = FakeHermesChannel(

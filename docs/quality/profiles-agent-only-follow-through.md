@@ -1,5 +1,50 @@
 # Profiles Agent-only removal: integration handoff
 
+## Current-source implementation on `t_e91b6cdd`
+
+The new isolated implementation starts at
+`a0367aa996240eb08fb0c9cc87423c97058601a3`. It adapts the relevant Profiles
+screen, editor and public-control regressions from the reviewed historical
+candidate below; it does not restore removed OmniRoute discovery or copy that
+candidate's unrelated source. Independent same-card review is pending. The
+explicit review-before-commit restriction leaves this implementation uncommitted.
+
+Profiles now uses only the connected Agent's exact profile capabilities for
+inventory, create, rename and delete. Missing operations remain unavailable;
+provider configuration and Project/folder management do not fall back to Link.
+Profile-model metadata remains Agent-owned. Supported model catalog reads use
+the existing direct channel, not the legacy setup catalog. Stored Link records
+are preserved. The unused throwing client-builder test seam is retained for
+excluded callers; Profiles never reads it or constructs a Link client.
+
+Public-control tests reproduce the old Cancel path recovering two stored pending
+credentials, then verify zero recovery on Cancel, create, edit, delete and
+selection. Direct Agent fixture writes retain exact IDs and `If-Match` revisions.
+Creation now shares the editor's mutation-owner fencing, so an owner roundtrip
+cannot admit a late completion or replay a write. Obsolete Link-specific screen
+fixtures are retired; direct ownership tests cover cached controls and late
+completion across host, authority, channel, directory and disposal transitions.
+Generic legacy client, directory and editor compatibility/security tests remain.
+
+Review rework replaces the stale tooling assertion with the Agent-only consumer
+boundary while retaining legacy client/service security assertions. The existing
+public-control fixture now follows Profiles → Chat, selects a catalog model and
+confirms **Use for session** through the real picker and direct API channel. It
+asserts the exact selected profile/session, model-lock request and authoritative
+confirmation, with zero Link construction, requests or pending recovery. Absent
+or denied catalog capabilities leave the model control disabled with no read.
+
+The original worker receipt is `.task-evidence/t_e91b6cdd/verification.json` in the
+assigned workspace. Review rework is separately frozen in `verification-rework.json`
+in that directory; the original source/check receipt is preserved, not repinned.
+Both record source hashes, lockfile identity and exact commands.
+Qualification is limited to Linux-hosted deterministic Flutter tests and analysis.
+The public Chat model-picker journey is covered by deterministic widget/API fixtures.
+Native Linux/Android, live Agent authentication,
+packaging, integration and delivery are not qualified by this slice. The broader
+`CONNECTION-LINK-REMOVAL` milestone remains in progress; enrollment, Connections,
+service packaging and live qualification remain separate work.
+
 ## Candidate and authority
 
 Bootstrap + Maintain follows the changed Wing branch, not a new product test run.

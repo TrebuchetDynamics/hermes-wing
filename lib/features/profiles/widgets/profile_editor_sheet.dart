@@ -114,12 +114,12 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   bool _mutationObsolete = false;
 
   void _observeMutationOwner() {
-    if (!_editing) return;
     final source = (
       widget.channel,
       widget.channel.state.connectedBaseUrl,
       widget.profile?.id,
       widget.profile?.revision,
+      widget.onCreate,
       widget.onRename,
       widget.onDelete,
       widget.isOwnerCurrent?.call() ?? true,
@@ -467,7 +467,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   Future<void> _save() async {
     _observeMutationOwner();
     final mutationOwner = _mutationOwner;
-    if (_editing && !_ownsMutation(mutationOwner)) return;
+    if (!_ownsMutation(mutationOwner)) return;
     _observePersonaOwner();
     if (_loadingPersona || _saving) return;
     if (widget.canEditSoul && (!_personaEligible || _personaRevision == null)) {
@@ -485,7 +485,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     final onRename = widget.onRename;
     bool current() =>
         mounted &&
-        (profile == null || _ownsMutation(mutationOwner)) &&
+        _ownsMutation(mutationOwner) &&
         (widget.isOwnerCurrent?.call() ?? true) &&
         (!editSoul || _ownsPersona(owner));
     if (_editing && _pendingApproval != null) return _deleteProfile();

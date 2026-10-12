@@ -8,6 +8,9 @@ void main() {
     final profiles = File(
       'lib/features/profiles/screens/profiles_screen.dart',
     ).readAsStringSync();
+    final editor = File(
+      'lib/features/profiles/widgets/profile_editor_sheet.dart',
+    ).readAsStringSync();
     final providers = File(
       'lib/features/providers/screens/providers_screen.dart',
     ).readAsStringSync();
@@ -25,7 +28,13 @@ void main() {
       authorityText,
       contains('const wingLinkProfileCompatibilityEnabled = true;'),
     );
-    expect(profiles, contains('wingLinkProfileCompatibilityEnabled'));
+    expect(profiles, isNot(contains('wingLinkProfileCompatibilityEnabled')));
+    expect(profiles, isNot(contains('WingLinkClient(')));
+    expect(profiles, isNot(contains('directory.refresh()')));
+    expect(profiles, contains('channel: channel,'));
+    expect(editor, contains('channel.createProfile('));
+    expect(editor, contains('channel.renameProfile('));
+    expect(editor, contains('channel.deleteProfile('));
     expect(providers, isNot(contains('WingLinkProvider')));
     expect(
       wingLinkClient,

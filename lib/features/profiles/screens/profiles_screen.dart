@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
-import '../../../core/hermes/hermes_domain_authority.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -18,7 +17,6 @@ import '../../../shared/widgets/wing_skeleton.dart';
 import '../../hermes_chat/gateways/hermes_gateway_directory.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../providers/profile_selection_provider.dart';
-import '../widgets/profile_directory_browser_sheet.dart';
 import '../widgets/profile_editor_sheet.dart';
 
 typedef WingLinkClientBuilder =
@@ -28,14 +26,12 @@ typedef WingLinkClientBuilder =
       required String? hostFingerprint,
     });
 
+// Retained for legacy test callers during the scoped migration. ProfilesScreen
+// never reads this provider; attempted legacy construction fails closed.
 final wingLinkClientBuilderProvider = Provider<WingLinkClientBuilder>(
   (ref) =>
       ({required origin, required token, required hostFingerprint}) =>
-          WingLinkClient(
-            origin: origin,
-            token: token,
-            hostFingerprint: hostFingerprint,
-          ),
+          throw UnsupportedError('Profiles requires the Hermes Agent API.'),
 );
 
 class ProfilesScreen extends ConsumerStatefulWidget {
@@ -52,20 +48,15 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   late HermesChannel _channel;
   Object? _searchSource;
   Object _searchOwner = Object();
+  Object? _connectionSource;
+  Object _connectionOwner = Object();
   final _editorSourceChanges = ValueNotifier<Object>(Object());
-  ({String? gateway, String? origin, String? token, String? pin, bool native})?
-  _profileSource;
   bool _sourceCheckScheduled = false;
-  bool _profileLoadFailed = false;
   bool _setupOpened = false;
   String? _actionError;
   String? _switchingGatewayId;
   String? _switchingProfileId;
   bool _chatRouteOpen = false;
-  String? _wingLinkGatewayId;
-  WingLinkClient? _wingLinkClient;
-  List<WingLinkProfile>? _wingLinkProfiles;
-  int _wingLinkLoadGeneration = 0;
 
   @override
   void initState() {
@@ -85,23 +76,43 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     super.dispose();
   }
 
-  ({String? gateway, String? origin, String? token, String? pin, bool native})
-  get _currentProfileSource {
+  Object get _currentConnectionSource {
     final gateway = _directory.managementGatewayId;
     final config = gateway == null
         ? null
         : _directory.configForGateway(gateway);
+    final state = _channel.state;
     return (
-      gateway: gateway,
-      origin: config?.wingLinkOrigin,
-      token: config?.wingLinkToken,
-      pin: config?.wingLinkHostFingerprint,
-      native:
-          _channel.state.isConnected &&
-          _directory.activeContactId?.gatewayId == gateway &&
-          _canReadProfiles(_channel.state.capabilities),
+      gateway,
+      config?.baseUrl,
+      config?.apiKey,
+      state.connectedBaseUrl,
+      state.isConnected,
+      _directory.activeContactId?.gatewayId,
     );
   }
+
+  Object get _currentProfileSource {
+    final state = _channel.state;
+    return (
+      _currentConnectionSource,
+      _canReadProfiles(state.capabilities),
+      state.canReadModelOptions,
+      state.canEditProfileSoul,
+      _canMutateProfile('profile_create', 'POST', '/api/profiles'),
+      _canMutateProfile('profile_update', 'PATCH', '/api/profiles/{name}'),
+      _canMutateProfile('profile_delete', 'DELETE', '/api/profiles/{name}'),
+    );
+  }
+
+  bool _canMutateProfile(String name, String method, String path) =>
+      _canUseEndpoint(
+        _channel.state.capabilities,
+        scope: 'profiles:write',
+        name: name,
+        method: method,
+        path: path,
+      );
 
   void _scheduleProfileSourceCheck() {
     _profileSearchKey();
@@ -109,72 +120,37 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     _sourceCheckScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _sourceCheckScheduled = false;
-      if (mounted) unawaited(_syncProfileSource());
+      if (mounted) setState(() {});
     });
   }
 
   Key _profileSearchKey() {
     // Compare credentials privately, never place them or an endpoint in UI keys.
     // Observe every notification, including A -> B -> A before the next frame.
-    final source = (
-      _directory,
-      _channel,
-      _currentProfileSource,
-      _currentProfileSource.native ? _channel.state.connectedBaseUrl : null,
-      ref.read(wingLinkClientBuilderProvider),
-    );
+    final connection = (_directory, _channel, _currentConnectionSource);
+    if (_connectionSource != connection) {
+      _connectionSource = connection;
+      _connectionOwner = Object();
+    }
+    final source = (_directory, _channel, _currentProfileSource);
     if (_searchSource != source) {
       _searchSource = source;
       _searchOwner = Object();
-      _profileSource = null;
       _actionError = null;
-      _profileLoadFailed = false;
-      ++_wingLinkLoadGeneration;
       _editorSourceChanges.value = _searchOwner;
     }
     return ObjectKey(_searchOwner);
-  }
-
-  Future<void> _syncProfileSource({bool force = false}) async {
-    final source = _currentProfileSource;
-    if (!force && source == _profileSource) return;
-    setState(() {
-      _profileSource = source;
-      if (_profileLoadFailed) _actionError = null;
-      _profileLoadFailed = false;
-    });
-    final gatewayId = source.gateway;
-    if (gatewayId == null) {
-      ++_wingLinkLoadGeneration;
-      setState(() {
-        _wingLinkGatewayId = null;
-        _wingLinkClient = null;
-        _wingLinkProfiles = null;
-      });
-      return;
-    }
-    try {
-      await _loadWingLinkProfiles(_directory, gatewayId);
-    } catch (_) {
-      if (!mounted || source != _currentProfileSource) return;
-      setState(() {
-        _profileLoadFailed = true;
-        _actionError = AppLocalizations.of(context).agentsLocalLoadError;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final channel = ref.watch(hermesChannelProvider);
     final directory = ref.watch(hermesGatewayDirectoryProvider);
-    ref.watch(wingLinkClientBuilderProvider);
     ref.listen(hermesChannelProvider, (previous, next) {
       if (identical(previous, next)) return;
       _channel.removeListener(_scheduleProfileSourceCheck);
       _channel = next;
       _channel.addListener(_scheduleProfileSourceCheck);
-      _profileSource = null;
       _scheduleProfileSourceCheck();
     });
     ref.listen(hermesGatewayDirectoryProvider, (previous, next) {
@@ -182,12 +158,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       _directory.removeListener(_scheduleProfileSourceCheck);
       _directory = next;
       _directory.addListener(_scheduleProfileSourceCheck);
-      _profileSource = null;
-      _scheduleProfileSourceCheck();
-    });
-    ref.listen(wingLinkClientBuilderProvider, (previous, next) {
-      if (identical(previous, next)) return;
-      _profileSource = null;
       _scheduleProfileSourceCheck();
     });
     final strings = AppLocalizations.of(context);
@@ -221,12 +191,6 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                     child: Text(_actionError!),
                   ),
                   actions: [
-                    if (_profileLoadFailed)
-                      TextButton(
-                        onPressed: () =>
-                            unawaited(_syncProfileSource(force: true)),
-                        child: Text(strings.retryAction),
-                      ),
                     TextButton(
                       onPressed: () => setState(() => _actionError = null),
                       child: Text(strings.doneAction),
@@ -267,21 +231,10 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final selectedAgent =
         directory.activeContactId?.gatewayId == activeGatewayId;
     final capabilities = selectedAgent ? state.capabilities : null;
-    final usingWingLink =
-        !_canReadProfiles(capabilities) &&
-        _profileSource == _currentProfileSource &&
-        _wingLinkClient != null &&
-        _wingLinkGatewayId == activeGatewayId;
-
-    if (!usingWingLink &&
-            selectedAgent &&
-            state.status == HermesConnectionStatus.connecting ||
-        usingWingLink && _wingLinkProfiles == null) {
+    if (selectedAgent && state.status == HermesConnectionStatus.connecting) {
       return WingSkeletonList(semanticLabel: strings.agentsLoading);
     }
-    if (!usingWingLink &&
-        selectedAgent &&
-        state.status == HermesConnectionStatus.error) {
+    if (selectedAgent && state.status == HermesConnectionStatus.error) {
       return WingEmptyState(
         icon: Icons.cloud_off_outlined,
         liveRegion: true,
@@ -291,8 +244,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         onAction: () => context.go(AppRoutes.hermes),
       );
     }
-    if (!usingWingLink &&
-        (!selectedAgent || state.status != HermesConnectionStatus.connected)) {
+    if (!selectedAgent || state.status != HermesConnectionStatus.connected) {
       return WingEmptyState(
         icon: Icons.hub_outlined,
         title: strings.gatewaySelectPromptTitle,
@@ -305,7 +257,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
             : () => unawaited(_selectGateway(directory, activeGatewayId)),
       );
     }
-    if (!_canReadProfiles(capabilities) && !usingWingLink) {
+    if (!_canReadProfiles(capabilities)) {
       return WingEmptyState(
         icon: Icons.lock_outline,
         title: strings.agentsUnavailableTitle,
@@ -313,101 +265,18 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       );
     }
 
-    final wingLinkRows = usingWingLink
-        ? _wingLinkProfiles ?? const <WingLinkProfile>[]
-        : const <WingLinkProfile>[];
-    final wingLinkRowsById = {for (final row in wingLinkRows) row.id: row};
     final mutationOwner = _searchOwner;
-    final mutationClient = _wingLinkClient;
-
     bool currentMutationOwner() {
-      if (!mounted) return false;
-      // Provider replacement can precede the next widget frame/listener flush.
-      if (!identical(directory, ref.read(hermesGatewayDirectoryProvider)) ||
+      if (!mounted ||
+          !identical(directory, ref.read(hermesGatewayDirectoryProvider)) ||
           !identical(channel, ref.read(hermesChannelProvider))) {
         return false;
       }
       _profileSearchKey();
-      return identical(mutationOwner, _searchOwner) &&
-          identical(directory, _directory) &&
-          identical(channel, _channel) &&
-          identical(mutationClient, _wingLinkClient);
+      return identical(mutationOwner, _searchOwner);
     }
 
-    ProfileRenameCallback renameManaged(HermesProfile profile) {
-      final actionRevision =
-          wingLinkRowsById[profile.id]?.renameRevision ?? profile.revision;
-      return ({required profileId, required name, required revision}) async {
-        if (!currentMutationOwner() || profileId != profile.id) return;
-        await _runWingLinkMutation(
-          directory,
-          activeGatewayId!,
-          currentMutationOwner,
-          () async {
-            final renamed = await mutationClient!.renameProfile(
-              id: profile.id,
-              name: name,
-              revision: actionRevision,
-            );
-            if (!currentMutationOwner()) return;
-            await directory.reconcileManagedProfileRename(
-              sourceGatewayId: activeGatewayId,
-              previousProfileId: profile.id,
-              profileId: renamed.id,
-              displayName: renamed.name,
-            );
-          },
-        );
-        if (currentMutationOwner()) {
-          await _loadWingLinkProfiles(
-            directory,
-            activeGatewayId,
-            existingClient: mutationClient,
-          );
-        }
-      };
-    }
-
-    ProfileDeleteCallback deleteManaged(HermesProfile profile) {
-      final actionRevision =
-          wingLinkRowsById[profile.id]?.deleteRevision ?? profile.revision;
-      return (id, revision, {idempotencyKey}) async {
-        if (!currentMutationOwner() || id != profile.id) return;
-        await _runWingLinkMutation(
-          directory,
-          activeGatewayId!,
-          currentMutationOwner,
-          () => mutationClient!.deleteProfile(
-            id: profile.id,
-            revision: actionRevision,
-            idempotencyKey: idempotencyKey,
-          ),
-        );
-        if (currentMutationOwner()) {
-          await _loadWingLinkProfiles(
-            directory,
-            activeGatewayId,
-            existingClient: mutationClient,
-          );
-        }
-      };
-    }
-
-    final profiles = usingWingLink
-        ? [
-            for (final row in wingLinkRows)
-              HermesProfile(
-                id: row.id,
-                displayName: row.name,
-                revision: row.revision,
-                description: row.description,
-                model: row.model,
-                skillsCount: row.skillsCount,
-                gatewayRunning: row.gatewayState == 'running',
-              ),
-          ]
-        : state.profiles;
-    bool isWingLinkRow(HermesProfile profile) => usingWingLink;
+    final profiles = state.profiles;
     final visibleProfiles = profiles
         .where(
           (profile) => [
@@ -418,92 +287,23 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           ].any((value) => value.toLowerCase().contains(query)),
         )
         .toList();
-    bool hasStableLocalName(HermesProfile profile) =>
-        wingLinkRowsById[profile.id]?.source != 'api';
-
-    final canCreateNatively = _canUseEndpoint(
+    final canCreate = _canUseEndpoint(
       capabilities,
       scope: 'profiles:write',
       name: 'profile_create',
       method: 'POST',
       path: '/api/profiles',
     );
-    final createViaWingLink = usingWingLink;
-    final canCreate = createViaWingLink || canCreateNatively;
-    final enrolledGatewayIdsByProfile = <String, String?>{
-      if (usingWingLink && activeGatewayId != null)
-        for (final profile in profiles)
-          profile.id: directory.enrolledGatewayIdForManagedProfile(
-            sourceGatewayId: activeGatewayId,
-            profileId: profile.id,
-          ),
-    };
-    // Inventory order is not chat identity. A managed host can stay selected
-    // while chat is disconnected or connected to another enrolled endpoint.
-    final activeContact = directory.activeContactId;
-    final selectedId = state.status != HermesConnectionStatus.connected
-        ? null
-        : usingWingLink
-        ? profiles
-              .where(
-                (profile) =>
-                    activeContact != null &&
-                    profile.id == activeContact.profileId &&
-                    enrolledGatewayIdsByProfile[profile.id] ==
-                        activeContact.gatewayId,
-              )
-              .firstOrNull
-              ?.id
-        : effectiveSelectedProfileId(state);
-    VoidCallback? wingLinkChatAction(HermesProfile profile) {
-      final enrolledGatewayId = enrolledGatewayIdsByProfile[profile.id];
-      if (enrolledGatewayId == null) return null;
-      return () => unawaited(
-        _openEnrolledProfileChat(directory, profile, enrolledGatewayId),
-      );
-    }
-
-    final creationClient = createViaWingLink ? _wingLinkClient : null;
+    final selectedId = effectiveSelectedProfileId(state);
     Future<void> openCreate() => _openEditor(
       channel: channel,
       profiles: profiles,
-      stableNames: createViaWingLink,
-      canConfigure: createViaWingLink,
-      onCreate: createViaWingLink
-          ? ({
-              required name,
-              cloneFrom,
-              description,
-              provider,
-              model,
-              providerApiKey,
-              idempotencyKey,
-            }) async {
-              await creationClient!.createProfile(
-                name: name,
-                cloneFrom: cloneFrom,
-                description: description,
-                provider: provider,
-                model: model,
-                providerApiKey: providerApiKey,
-                idempotencyKey: idempotencyKey,
-              );
-              await _reloadWingLinkProfilesAfterCreate(
-                directory,
-                activeGatewayId!,
-              );
-            }
-          : null,
+      isMutationOwnerCurrent: currentMutationOwner,
     );
-    if (widget.startSetup && !_setupOpened && createViaWingLink) {
+    if (widget.startSetup && !_setupOpened && canCreate) {
       _setupOpened = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted ||
-            directory.managementGatewayId != activeGatewayId ||
-            _wingLinkClient != creationClient) {
-          return;
-        }
-        unawaited(openCreate());
+        if (currentMutationOwner()) unawaited(openCreate());
       });
     }
 
@@ -512,9 +312,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
       children: [
         _ProfilesHeader(
           subtitle: strings.agentsSubtitle,
-          readOnly:
-              !createViaWingLink &&
-              !(capabilities?.auth.allows('profiles:write') ?? false),
+          readOnly: !(capabilities?.auth.allows('profiles:write') ?? false),
           readOnlyLabel: strings.readOnlyAccess,
           action: canCreate
               ? FilledButton.icon(
@@ -560,102 +358,50 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
                         width: cardWidth,
                         child: _ProfileCard(
                           profile: profiles[index],
-                          managedByWingLink:
-                              isWingLinkRow(profiles[index]) &&
-                              wingLinkRowsById[profiles[index].id]?.source !=
-                                  'api',
-                          gatewayStateUnknown:
-                              isWingLinkRow(profiles[index]) &&
-                              wingLinkRowsById[profiles[index].id]
-                                      ?.gatewayState ==
-                                  'unknown',
-                          enrolled: isWingLinkRow(profiles[index])
-                              ? enrolledGatewayIdsByProfile[profiles[index]
-                                        .id] !=
-                                    null
-                              : null,
                           selected: profiles[index].id == selectedId,
-                          canEdit: isWingLinkRow(profiles[index])
-                              ? wingLinkRowsById[profiles[index].id]
-                                        ?.canRename ??
-                                    false
-                              : _canUseEndpoint(
-                                  capabilities,
-                                  scope: 'profiles:write',
-                                  name: 'profile_update',
-                                  method: 'PATCH',
-                                  path: '/api/profiles/{name}',
-                                ),
-                          canDelete: isWingLinkRow(profiles[index])
-                              ? wingLinkRowsById[profiles[index].id]
-                                        ?.canDelete ??
-                                    false
-                              : profiles[index].id != 'default' &&
-                                    _canUseEndpoint(
-                                      capabilities,
-                                      scope: 'profiles:write',
-                                      name: 'profile_delete',
-                                      method: 'DELETE',
-                                      path: '/api/profiles/{name}',
-                                    ),
+                          canEdit: _canUseEndpoint(
+                            capabilities,
+                            scope: 'profiles:write',
+                            name: 'profile_update',
+                            method: 'PATCH',
+                            path: '/api/profiles/{name}',
+                          ),
+                          canDelete:
+                              profiles[index].id != 'default' &&
+                              _canUseEndpoint(
+                                capabilities,
+                                scope: 'profiles:write',
+                                name: 'profile_delete',
+                                method: 'DELETE',
+                                path: '/api/profiles/{name}',
+                              ),
                           strings: strings,
                           switching: _switchingProfileId == profiles[index].id,
-                          onChat: isWingLinkRow(profiles[index])
-                              ? wingLinkChatAction(profiles[index])
-                              : _switchingProfileId == null
+                          onChat: _switchingProfileId == null
                               ? () => _selectProfile(channel, profiles[index])
-                              : null,
-                          onBrowseDirectories:
-                              isWingLinkRow(profiles[index]) &&
-                                  wingLinkRowsById[profiles[index].id]
-                                          ?.source !=
-                                      'api'
-                              ? () => unawaited(_browseWingLinkDirectories())
                               : null,
                           onEdit: () => _openEditor(
                             isMutationOwnerCurrent: currentMutationOwner,
                             channel: channel,
                             profiles: profiles,
                             profile: profiles[index],
-                            stableNames:
-                                isWingLinkRow(profiles[index]) &&
-                                hasStableLocalName(profiles[index]),
-                            canEditSoul:
-                                !usingWingLink && state.canEditProfileSoul,
-                            canDelete: isWingLinkRow(profiles[index])
-                                ? wingLinkRowsById[profiles[index].id]
-                                          ?.canDelete ??
-                                      false
-                                : profiles[index].id != 'default' &&
-                                      _canUseEndpoint(
-                                        capabilities,
-                                        scope: 'profiles:write',
-                                        name: 'profile_delete',
-                                        method: 'DELETE',
-                                        path: '/api/profiles/{name}',
-                                      ),
-                            // Existing profile configuration is intentionally fail-closed:
-                            // the released CLI cannot roll back provider credentials.
-                            canConfigure: false,
-                            onRename: isWingLinkRow(profiles[index])
-                                ? renameManaged(profiles[index])
-                                : null,
-                            onDelete: isWingLinkRow(profiles[index])
-                                ? deleteManaged(profiles[index])
-                                : null,
+                            canEditSoul: state.canEditProfileSoul,
+                            canDelete:
+                                profiles[index].id != 'default' &&
+                                _canUseEndpoint(
+                                  capabilities,
+                                  scope: 'profiles:write',
+                                  name: 'profile_delete',
+                                  method: 'DELETE',
+                                  path: '/api/profiles/{name}',
+                                ),
                           ),
                           onDelete: () => _openEditor(
                             isMutationOwnerCurrent: currentMutationOwner,
                             channel: channel,
                             profiles: profiles,
                             profile: profiles[index],
-                            stableNames:
-                                isWingLinkRow(profiles[index]) &&
-                                hasStableLocalName(profiles[index]),
                             canDelete: true,
-                            onDelete: isWingLinkRow(profiles[index])
-                                ? deleteManaged(profiles[index])
-                                : null,
                           ),
                         ),
                       ),
@@ -677,12 +423,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     });
     try {
       directory.selectManagementGateway(gatewayId);
-      final config = directory.configForGateway(gatewayId);
-      if (!wingLinkProfileCompatibilityEnabled ||
-          config?.wingLinkToken == null) {
-        await directory.activateGateway(gatewayId);
-      }
-      await _syncProfileSource();
+      await directory.activateGateway(gatewayId);
     } catch (_) {
       if (mounted) {
         setState(
@@ -696,210 +437,28 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     }
   }
 
-  Future<void> _loadWingLinkProfiles(
-    HermesGatewayDirectory directory,
-    String gatewayId, {
-    WingLinkClient? existingClient,
-  }) async {
-    final generation = ++_wingLinkLoadGeneration;
-    final source = _currentProfileSource;
-    final channel = ref.read(hermesChannelProvider);
-    if (!wingLinkProfileCompatibilityEnabled ||
-        (channel.state.isConnected &&
-            directory.activeContactId?.gatewayId == gatewayId &&
-            _canReadProfiles(channel.state.capabilities))) {
-      if (mounted) {
-        setState(() {
-          _wingLinkGatewayId = null;
-          _wingLinkClient = null;
-          _wingLinkProfiles = null;
-        });
-      }
-      return;
-    }
-    final config = directory.configForGateway(gatewayId);
-    final originValue = config?.wingLinkOrigin?.trim() ?? '';
-    final token = config?.wingLinkToken?.trim() ?? '';
-    final origin = Uri.tryParse(originValue);
-    if (origin == null || origin.host.isEmpty || token.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _wingLinkGatewayId = null;
-          _wingLinkClient = null;
-          _wingLinkProfiles = null;
-        });
-      }
-      return;
-    }
-    final client =
-        existingClient ??
-        ref.read(wingLinkClientBuilderProvider)(
-          origin: origin,
-          token: token,
-          hostFingerprint: config?.wingLinkHostFingerprint,
-        );
-    if (mounted) {
-      setState(() {
-        _wingLinkGatewayId = gatewayId;
-        _wingLinkClient = client;
-        _wingLinkProfiles = null;
-      });
-    }
-    try {
-      final profiles = await client.listProfiles();
-      if (!mounted ||
-          generation != _wingLinkLoadGeneration ||
-          source != _currentProfileSource ||
-          _wingLinkGatewayId != gatewayId) {
-        return;
-      }
-      if (channel.state.isConnected &&
-          directory.activeContactId?.gatewayId == gatewayId &&
-          _canReadProfiles(channel.state.capabilities)) {
-        setState(() {
-          _wingLinkGatewayId = null;
-          _wingLinkClient = null;
-          _wingLinkProfiles = null;
-        });
-        return;
-      }
-      setState(() => _wingLinkProfiles = profiles);
-    } catch (error) {
-      if (!mounted ||
-          generation != _wingLinkLoadGeneration ||
-          source != _currentProfileSource ||
-          _wingLinkGatewayId != gatewayId) {
-        return;
-      }
-      setState(() {
-        if (error is WingLinkHttpException &&
-            (error.statusCode == 401 || error.statusCode == 403)) {
-          _searchOwner = Object();
-        }
-        _wingLinkGatewayId = null;
-        _wingLinkClient = null;
-        _wingLinkProfiles = null;
-      });
-      rethrow;
-    }
-  }
-
-  Future<void> _reloadWingLinkProfilesAfterCreate(
-    HermesGatewayDirectory directory,
-    String gatewayId,
-  ) async {
-    final client = _wingLinkClient;
-    if (client == null) return;
-    final generation = _wingLinkLoadGeneration;
-    final source = _currentProfileSource;
-    try {
-      final profiles = await client.listProfiles();
-      if (!mounted ||
-          generation != _wingLinkLoadGeneration ||
-          source != _currentProfileSource ||
-          directory.managementGatewayId != gatewayId ||
-          _wingLinkGatewayId != gatewayId ||
-          _wingLinkClient != client) {
-        return;
-      }
-      setState(() => _wingLinkProfiles = profiles);
-    } catch (error) {
-      if (!mounted ||
-          generation != _wingLinkLoadGeneration ||
-          source != _currentProfileSource ||
-          _wingLinkClient != client) {
-        return;
-      }
-      setState(() {
-        if (error is WingLinkHttpException &&
-            (error.statusCode == 401 || error.statusCode == 403)) {
-          _searchOwner = Object();
-          _wingLinkClient = null;
-          _wingLinkProfiles = null;
-          _profileLoadFailed = true;
-        }
-        _actionError = AppLocalizations.of(context).agentsLocalLoadError;
-      });
-    }
-  }
-
-  Future<void> _runWingLinkMutation(
-    HermesGatewayDirectory directory,
-    String gatewayId,
-    bool Function() isOwnerCurrent,
-    Future<void> Function() mutation,
-  ) async {
-    try {
-      await mutation();
-    } on WingLinkPreconditionFailed {
-      if (!isOwnerCurrent()) rethrow;
-      final client = _wingLinkClient;
-      try {
-        await _loadWingLinkProfiles(
-          directory,
-          gatewayId,
-          existingClient: client,
-        );
-      } catch (_) {
-        // The loader already clears stale compatibility state on failure.
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> _browseWingLinkDirectories() async {
-    final client = _wingLinkClient;
-    if (client == null) return;
-    final strings = AppLocalizations.of(context);
-    try {
-      final metadata = await client.getMetadata();
-      if (!metadata.capabilities.contains('directories.roots.read') ||
-          !metadata.capabilities.contains('directories.children.read')) {
-        throw const WingLinkException('Directory capabilities unavailable');
-      }
-      final device = await client.getCurrentDevice();
-      if (!device.scopes.contains('directories:read')) {
-        throw const WingLinkException('Directory scope unavailable');
-      }
-      if (!mounted) return;
-      await showProfileDirectoryBrowser(
-        context,
-        loadRoots: client.listDirectoryRoots,
-        loadChildren: (handle, offset) =>
-            client.listChildDirectories(handle: handle, offset: offset),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(strings.directoryBrowserUnavailable)),
-      );
-    }
-  }
-
   Future<void> _openEditor({
     required HermesChannel channel,
     required List<HermesProfile> profiles,
     HermesProfile? profile,
     bool canEditSoul = false,
     bool canDelete = false,
-    bool stableNames = false,
-    bool canConfigure = false,
-    ProfileCreateCallback? onCreate,
-    ProfileRenameCallback? onRename,
-    ProfileDeleteCallback? onDelete,
     bool Function()? isMutationOwnerCurrent,
   }) async {
     if (!(isMutationOwnerCurrent?.call() ?? true)) return;
     _profileSearchKey();
     final editorOwner = _searchOwner;
-    final catalogClient = _wingLinkClient;
-    bool currentOwner() =>
-        mounted &&
-        identical(editorOwner, _searchOwner) &&
-        identical(channel, _channel) &&
-        (profile == null ||
-            (identical(catalogClient, _wingLinkClient) &&
-                (isMutationOwnerCurrent?.call() ?? true)));
+    bool currentOwner() {
+      if (!mounted ||
+          !identical(channel, ref.read(hermesChannelProvider)) ||
+          !(isMutationOwnerCurrent?.call() ?? true)) {
+        return false;
+      }
+      _profileSearchKey();
+      return identical(editorOwner, _searchOwner) &&
+          identical(channel, _channel);
+    }
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -910,25 +469,13 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
         profiles: profiles,
         profile: profile,
         canEditSoul: canEditSoul,
-        ownerChanges: canEditSoul || profile != null
-            ? _editorSourceChanges
-            : null,
-        isOwnerCurrent: canEditSoul || profile != null ? currentOwner : null,
+        ownerChanges: _editorSourceChanges,
+        isOwnerCurrent: currentOwner,
         canDelete: canDelete,
-        stableNames: stableNames,
-        canConfigure: canConfigure,
-
-        loadModelOptions: stableNames
-            ? catalogClient?.getProfileModelOptions
-            : null,
-        onCreate: onCreate,
-        onRename: onRename,
-        onDelete: onDelete,
       ),
     );
-    if (currentOwner() && !stableNames) {
-      await ref.read(hermesGatewayDirectoryProvider).refresh();
-    }
+    // Channel mutations reconcile Agent profiles with connection fencing.
+    // Directory refresh also recovers legacy Link credentials, even on Cancel.
   }
 
   Future<void> _selectProfile(
@@ -937,12 +484,24 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   ) async {
     final profileId = profile.id;
     if (_switchingProfileId != null) return;
+    final directory = ref.read(hermesGatewayDirectoryProvider);
+    _profileSearchKey();
+    final owner = _connectionOwner;
+    bool currentOwner() {
+      if (!mounted ||
+          !identical(channel, ref.read(hermesChannelProvider)) ||
+          !identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+        return false;
+      }
+      _profileSearchKey();
+      return identical(owner, _connectionOwner);
+    }
+
     setState(() {
       _switchingProfileId = profileId;
       _actionError = null;
     });
     try {
-      final directory = ref.read(hermesGatewayDirectoryProvider);
       if (directory.activeContactId == null) {
         await channel.selectProfile(profileId);
       } else {
@@ -951,55 +510,17 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           discoveredProfile: profile,
         );
       }
-      if (mounted) {
+      if (currentOwner() && channel.state.selectedProfileId == profileId) {
         unawaited(_openChat());
       }
     } catch (_) {
-      if (mounted) {
+      if (currentOwner()) {
         setState(() {
           _actionError = AppLocalizations.of(context).profileOperationFailed;
         });
       }
     } finally {
       if (mounted && _switchingProfileId == profileId) {
-        setState(() => _switchingProfileId = null);
-      }
-    }
-  }
-
-  Future<void> _openEnrolledProfileChat(
-    HermesGatewayDirectory directory,
-    HermesProfile profile,
-    String gatewayId,
-  ) async {
-    if (_switchingProfileId != null || _chatRouteOpen) return;
-    setState(() {
-      _switchingProfileId = profile.id;
-      _actionError = null;
-    });
-    try {
-      await directory.activateGateway(gatewayId);
-      if (!mounted) return;
-      if (!_channel.state.isConnected ||
-          directory.activeContactId?.gatewayId != gatewayId) {
-        setState(
-          () => _actionError = AppLocalizations.of(
-            context,
-          ).agentsGatewayConnectError,
-        );
-        return;
-      }
-      if (mounted) await _openChat();
-    } catch (_) {
-      if (mounted) {
-        setState(
-          () => _actionError = AppLocalizations.of(
-            context,
-          ).agentsGatewayConnectError,
-        );
-      }
-    } finally {
-      if (mounted && _switchingProfileId == profile.id) {
         setState(() => _switchingProfileId = null);
       }
     }
@@ -1038,6 +559,8 @@ bool _canUseEndpoint(
     capabilities.supportsSchema &&
     capabilities.auth.allows(scope) &&
     capabilities.advertisesScopedEndpoint(name, method, path, scope) &&
+    (!capabilities.endpoints[name]!.profileScoped ||
+        capabilities.profileContext.isSupportedQueryContext) &&
     capabilities.endpoints[name]!.requiredScopes.every(
       capabilities.auth.allows,
     );
@@ -1144,9 +667,6 @@ class _ProfilesHeader extends StatelessWidget {
 class _ProfileCard extends StatelessWidget {
   const _ProfileCard({
     required this.profile,
-    required this.managedByWingLink,
-    required this.gatewayStateUnknown,
-    required this.enrolled,
     required this.selected,
     required this.canEdit,
     required this.canDelete,
@@ -1154,21 +674,16 @@ class _ProfileCard extends StatelessWidget {
     required this.switching,
     required this.onChat,
     required this.onEdit,
-    this.onBrowseDirectories,
     required this.onDelete,
   });
 
   final HermesProfile profile;
-  final bool managedByWingLink;
-  final bool gatewayStateUnknown;
-  final bool? enrolled;
   final bool selected;
   final bool canEdit;
   final bool canDelete;
   final AppLocalizations strings;
   final bool switching;
   final VoidCallback? onChat;
-  final VoidCallback? onBrowseDirectories;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -1260,25 +775,6 @@ class _ProfileCard extends StatelessWidget {
                     ),
                   if (profile.id == 'default')
                     WingMetadata(label: Text(strings.defaultAgent)),
-                  if (managedByWingLink)
-                    WingMetadata(
-                      avatar: const Icon(Icons.link_outlined, size: 18),
-                      label: Text(strings.managedByWingLink),
-                    ),
-                  if (enrolled case final enrolled?)
-                    WingMetadata(
-                      avatar: Icon(
-                        enrolled
-                            ? Icons.verified_user_outlined
-                            : Icons.person_off_outlined,
-                        size: 18,
-                      ),
-                      label: Text(
-                        enrolled
-                            ? strings.profileEnrolled
-                            : strings.profileNotEnrolled,
-                      ),
-                    ),
                   WingMetadata(
                     avatar: const Icon(Icons.psychology_outlined, size: 14),
                     label: Text(
@@ -1293,17 +789,13 @@ class _ProfileCard extends StatelessWidget {
                   ),
                   WingMetadata(
                     avatar: Icon(
-                      gatewayStateUnknown
-                          ? Icons.help_outline
-                          : profile.gatewayRunning
+                      profile.gatewayRunning
                           ? Icons.check_circle_outline
                           : Icons.pause_circle_outline,
                       size: 18,
                     ),
                     label: Text(
-                      gatewayStateUnknown
-                          ? strings.agentGatewayUnknown
-                          : profile.gatewayRunning
+                      profile.gatewayRunning
                           ? strings.agentGatewayRunning
                           : strings.agentGatewayOff,
                     ),
@@ -1320,13 +812,6 @@ class _ProfileCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   if (!inlineChat) chatAction,
-                  if (onBrowseDirectories != null)
-                    OutlinedButton.icon(
-                      key: ValueKey('agent-browse-folders-${profile.id}'),
-                      onPressed: onBrowseDirectories,
-                      icon: const Icon(Icons.folder_open_outlined),
-                      label: Text(strings.profileBrowseFoldersAction),
-                    ),
                   if (canEdit)
                     Semantics(
                       container: true,

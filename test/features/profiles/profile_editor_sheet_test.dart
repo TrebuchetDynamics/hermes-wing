@@ -25,6 +25,66 @@ final class _TestHermesStatusException implements HermesApiStatusException {
 }
 
 void main() {
+  testWidgets('create owner roundtrip ignores late completion without replay', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
+    final ownerChanges = ValueNotifier<Object>(Object());
+    addTearDown(ownerChanges.dispose);
+    var ownerCurrent = true;
+    var saved = 0;
+    var writes = 0;
+    final gate = Completer<void>();
+    await tester.pumpWidget(
+      _editorTestApp(
+        ProfileEditorSheet(
+          channel: channel,
+          profiles: const [],
+          ownerChanges: ownerChanges,
+          isOwnerCurrent: () => ownerCurrent,
+          onSaved: () => saved++,
+          onCreate:
+              ({
+                required name,
+                cloneFrom,
+                description,
+                provider,
+                model,
+                providerApiKey,
+                idempotencyKey,
+              }) async {
+                writes++;
+                await gate.future;
+              },
+        ),
+      ),
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Profile name'),
+      'Writer',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Create'));
+    await tester.pump();
+    ownerCurrent = false;
+    ownerChanges.value = Object();
+    await tester.pump();
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Create'))
+          .onPressed,
+      isNull,
+    );
+    ownerCurrent = true;
+    ownerChanges.value = Object();
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(saved, 0);
+    expect(writes, 1);
+    expect(channel.createProfileCalls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('clone selection fits a narrow screen with a long profile name', (
     tester,
   ) async {

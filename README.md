@@ -14,7 +14,7 @@ are [withdrawn as parity evidence](docs/quality/official-desktop-reference.md).
 > a Wing build, a reachable Hermes Agent and access to an AI provider.
 > There is no app-store installation yet.
 
-**Wing Link is deprecated and is not required to use Wing.** The accepted Local / SSH / Remote
+**Wing connects directly to Hermes Agent.** The accepted Local / SSH / Remote
 flow connects directly to Hermes Agent. The current development worktree shows
 **Get Started** and SSH/Remote actions on a Desktop-guided fresh-launch welcome.
 Chat keeps **Add Hermes**. Legacy setup/pairing remains in code pending removal. The
@@ -30,7 +30,7 @@ implemented in the current source; native full-app qualification remains open.
 Linux Hermes-home directory inspection and Android **This phone** guidance are
 also implemented. Native discovery/chooser, same-phone installation and
 background-hosting qualification remain open. See the
-[deprecation decision](docs/adr/product.md#wing-link-deprecation).
+[connection requirements](docs/product/prd.md#connection-path-requirements).
 See the [direct connection steps](docs/getting-started.md#direct-agent-connection).
 
 **[Set up your first chat →](docs/getting-started.md)**
@@ -39,13 +39,6 @@ The next product priority is reliable away-and-return chat, clear job status,
 then notifications—not more decorative screens. This is
 [accepted delivery direction](docs/product/prd.md#user-demand-emphasis), not a claim
 of qualified mobile background recovery or notification delivery.
-
-<p align="center">
-  <picture>
-    <source media="(max-width: 600px)" srcset="./assets/readme/overview-mobile.svg">
-    <img src="./assets/readme/overview.svg" width="100%" alt="Hermes Wing is the app on your phone. Hermes Agent runs your assistant; Wing connects directly. The illustration predates Wing Link deprecation.">
-  </picture>
-</p>
 
 <a id="new-to-hermes-start-here"></a>
 
@@ -63,9 +56,8 @@ knowledge. The setup guide links to official Agent installation and provider set
 | --- | --- |
 | **Wing** | The app you open to chat and follow work. |
 | **Hermes Agent** | Runs the assistant and keeps its conversations on your computer. |
-| **Wing Link** | Deprecated legacy integration, still present pending removal. Not needed for direct Agent use. |
 
-Chat goes directly from Wing to Hermes Agent, separately from Wing Link.
+Chat goes directly from Wing to Hermes Agent.
 Hermes remains the source of truth.
 
 ## What can I do with it?
@@ -124,12 +116,12 @@ not automatically keep every AI request local.
 ## Your first chat on Android
 
 1. **Build and open Wing.** Prepare a reachable, authenticated Hermes Agent.
-   Configure the provider in Hermes, not through a mandatory Wing Link install.
+   Configure the provider in Hermes.
 2. **Open direct connection.** On a fresh launch, choose **Get Started** for Local,
    **Connect via SSH**, or **Connect to Remote Hermes**. With a saved connection,
    choose **Add Hermes** from Chat. None of these direct paths requires pairing.
 3. **Connect to Agent.** Enter its approved endpoint and profile-bound credential.
-   This path grants no Wing Link management access.
+   Use the credential for the selected Agent profile.
 4. **Open the configured profile and send a message:** “Reply with one sentence introducing
    yourself. Do not use any tools.” A reply confirms chat works. Try a follow-up.
 
@@ -155,8 +147,7 @@ direction, not a qualified hosting path. An isolated, privately signed Android t
 artifact-check evidence; see the [private release handoff](docs/runbooks/android/release-handoff.md#private-release-apk-handoff).
 Public signed distribution and automatic app updates remain unqualified.
 
-The retained Termux installer still includes deprecated management setup. It is
-not the new-user installation path. Follow supported Agent installation guidance;
+Follow official Agent installation guidance;
 [phone setup status](docs/getting-started.md#can-everything-run-on-the-phone-instead) records
 the remaining replacement and qualification gap.
 

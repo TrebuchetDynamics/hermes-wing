@@ -54,8 +54,8 @@ connection prerequisite, not welcome fidelity or the delivered APK's parity.
 
 Status: Accepted
 
-Scope: retire Wing Link from current product setup and navigation. Preserve legacy
-state and security checks until removal. This records the owner-confirmed direction
+Scope: remove Wing Link entirely, including legacy runtime and compatibility paths.
+Preserve user data and security checks while retiring their consumers. This records the owner-confirmed direction
 below, not approval for Agent changes, new compatibility adapters or deployment.
 
 ### Documentation retirement scope
@@ -94,6 +94,91 @@ an unrestricted shell or shadow domain backend. See the removal tasks in
 
 This accepted direction is not evidence of removal, native discovery integration
 or phone setup qualification.
+
+### Complete removal including legacy
+
+Status: Accepted
+
+Source: owner `/autoresearch plan` direction: “remove wing-link even for legacy.
+In readme mentions it”. This extends retirement to all legacy implementation, not
+only new-user promotion. Planning saves requirements and work; it does not launch
+implementation or authorize personal service removal.
+
+Decision: remove rather than keep an optional legacy mode or rename the service.
+Hermes Agent remains authoritative. Missing Agent capabilities stay unavailable;
+no replacement shell bridge or shadow backend is permitted.
+
+The existing queue owns the complete plan:
+
+1. **CONNECTION-LINK-REMOVAL — finish consumer removal.** Preserve the current
+   enrollment worker and its frozen contract. Then retire explicit QR/handoff routes,
+   payload/controller APIs, computer setup guide, Local/Termux bootstrap, dormant
+   Profiles/Connections builders and directory adapters, saved-contact metadata and
+   Link credential APIs. Trace router, cancellation, reconnect and reload callers.
+   Remove obsolete fixtures and localization input, then regenerate outputs. Existing
+   Agent endpoint/profile/session identity and credentials must survive upgrade.
+   Records lacking a usable Agent credential require explicit direct reauthentication,
+   not recovery through Link. Old pairing input must fail safely with direct-connection
+   guidance. Preserve raw user stores; do not auto-delete records or contact services.
+2. **CONNECTION-LINK-RETIREMENT — delete delivery and service closure.** After the
+   last caller is gone, remove `lib/core/wing_link/`, `wing_link/`,
+   `install-wing-link.sh`, platform bundling and service hooks, release/smoke jobs,
+   packaging dependencies and old test/fixture exports. Update current README, landing
+   visuals, getting-started, routes, security/design/runbooks and contributor/agent
+   guidance so none offers a legacy mode. Preserve Git history, archived plans and
+   authentic qualification receipts as history, not navigation or shipped dependencies.
+   Do not uninstall or stop an already installed personal service in this task.
+3. **Verify and deliver each bounded slice.** Exercise fresh and previously saved
+   Agent connections, rejected old pairing input, cancel/back, reconnect, exact-session
+   restoration, credential isolation and no mutation replay. Require zero Link
+   construction, network requests, subprocesses or fallback after absent/denied Agent
+   capabilities. Keep TLS, origin validation, redaction, secure storage, accessibility
+   and owner fencing. Delete service-specific tests only with the retired service;
+   preserve or adapt still-relevant Agent security tests. Use independent review,
+   scoped commits, affected integrated-tree checks and verified `origin/main` delivery.
+   Native/device/provider qualification remains distinct from fixture tests.
+
+Observed baseline at `312b929290eb3bab7ded7daf4063c9522aa1501b`: 159 owned
+source/delivery files contain a Link identifier or have a Link-named path. This is
+conservative text inventory, not 159 active consumers or observed usage. The scan
+includes service tests within `wing_link/`; it excludes upstream, vendor/imported
+assets, generated localization and historical docs. Target: zero shipped runtime
+compatibility/dependencies, with historical evidence and privacy-only safeguards
+classified rather than erased to improve a text count. README orientation and
+first-chat instructions no longer name or illustrate the retired integration.
+
+Graph evidence: fresh local Graphify AST for 11 `lib/core/wing_link/` files,
+252 nodes; query `WingLinkClient LocalWingLinkHost setup credentials devices
+directories transport` identifies `WingLinkClient` at `wing_link_client.dart:198`,
+`LocalWingLinkHost` at `local_wing_link_host.dart:53` and setup at line 93.
+Coverage is partial: docs, service/packaging and callers are source-inspected, not
+semantically graphed; diagnostics report three collapsed import/export pairs and
+one self-loop (274 raw edges versus 271 graph edges). Graph
+relationships are leads, not proof of usage or acceptance.
+
+Ready-to-run planning configuration (not execution):
+
+```text
+Goal: Remove Wing Link, including legacy runtime and packaging, without losing Agent access or user data.
+Scope: lib/core/wing_link; enrollment/local_setup/profiles/gateway/saved-contact callers; wing_link; installers/platform hosts/.github/scripts; affected tests/localization/current docs.
+Metric: Remaining owned source/delivery files with Link identifiers or Link-named paths; classify safety-only remnants and require zero runtime dependencies.
+Direction: lower_is_better
+Verify: Run the read-only inventory command below; confirm dependency/public-control guards separately.
+Guard: flutter analyze --no-pub; focused caller/security tests; full affected integrated suite; deterministic web build/E2E; packaging/artifact closure; git diff --check.
+Iterations: 6 bounded consumer/delivery slices, checkpoint and rescan after each.
+```
+
+Read-only inventory command, run from the repository root:
+
+```bash
+python3 -c 'import pathlib,re,subprocess; roots=("lib/","wing_link/","scripts/","android/","ios/","linux/","macos/","windows/","web/",".github/"); skip=("vendor/","third_party/","omniroute_assets/","app_localizations"); rx=re.compile(r"wing[_ -]?link|WingLink",re.I); files=subprocess.check_output(["git","ls-files"],text=True).splitlines(); print(sum(1 for f in files if (f.startswith(roots) or f in ("install-wing-link.sh","pubspec.yaml","package.json","serve_web.mjs")) and not any(s in f for s in skip) and pathlib.Path(f).is_file() and (rx.search(f) or rx.search(pathlib.Path(f).read_bytes().decode("utf-8",errors="ignore")))))'
+```
+
+Verification commands above are planned guards, not newly executed feature checks.
+The inventory command was exercised and returned a numeric baseline. Skill
+application: deprecation-and-migration bound data preservation and caller closure;
+planning-and-task-breakdown ordered the two existing task IDs; documentation-and-adrs
+kept the decision in this living owner and removed misleading README orientation.
 
 ## Flexible guidance
 

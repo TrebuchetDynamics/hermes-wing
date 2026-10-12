@@ -4554,6 +4554,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "docs/adr/product.md#complete-removal-including-legacy [owner-directed full retirement plan; inventory 159; independent planning review approved; no runtime qualification]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences",
           "result": "pass"
         },

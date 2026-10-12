@@ -10,7 +10,7 @@ import 'package:wing/features/hermes_chat/widgets/platform_local_connection_pane
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/router/providers/app_router.dart';
 
 import '../../test/features/hermes_chat/support/fake_hermes_endpoint_store.dart';
@@ -64,7 +64,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   WidgetTester tester, {
   required Future<void> Function(String) capture,
 }) async {
-  var linkConstructions = 0;
   final home = _FixtureHomeDiscovery();
   final data = DirectFirstRunNativeFixture();
   final store = FakeHermesEndpointStore();
@@ -72,10 +71,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
 
   final container = ProviderContainer(
     overrides: [
-      localWingLinkHostProvider.overrideWith((_) {
-        linkConstructions++;
-        throw StateError('Link construction forbidden');
-      }),
       platformLocalHomeDiscoveryProvider.overrideWithValue(home),
       hermesChannelProvider.overrideWith((_) => channel),
       hermesEndpointStoreProvider.overrideWithValue(store),
@@ -145,7 +140,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   final deniedRequests = data.requests.length;
   await tester.pump(const Duration(seconds: 2));
   expect(data.requests.length, deniedRequests);
-  expect(linkConstructions, 0);
   await capture('direct-denied');
   data.deniedBootstrapStatus = null;
   await activate('hermes-connect-button');
@@ -170,7 +164,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   expect(store.saveCalls.single.wingLinkToken, isNull);
   expect(store.saveCalls.single.wingLinkOrigin, isNull);
   expect(router.routeInformationProvider.value.uri.path, '/hermes');
-  expect(linkConstructions, 0);
   expect(home.inspections, 3);
   expect(data.mutationAttempts, 0);
   expect(data.forbiddenReadAttempts, 0);
@@ -178,8 +171,7 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   expect(tester.takeException(), isNull);
   final result = <String, Object?>{
     'inspect': home.inspections,
-    'link_constructions': linkConstructions,
-    'management': linkConstructions,
+
     'mutations': data.mutationAttempts,
     'forbidden_reads': data.forbiddenReadAttempts,
     'route': router.routeInformationProvider.value.uri.path,

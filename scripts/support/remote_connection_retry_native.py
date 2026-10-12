@@ -56,7 +56,7 @@ def read_receipt(path):
             value['physical_keychain'] != 'NOT_CHECKED' or value['late_cases'] != cases or
             any(type(value[k]) is not int or value[k] != n for k, n in {
                 'auth_connects': 1, 'auth_saves': 0, 'retry_connects': 1, 'retry_saves': 1,
-                'save_attempts': 6, 'save_commits': 3, 'management_attempts': 0,
+                'save_attempts': 6, 'save_commits': 3,
                 'mutation_attempts': 0, 'forbidden_read_attempts': 0}.items()) or
             not value['requests'] or any(set(r) != {'method', 'path', 'query'} or
                 r['method'] != 'GET' or r['path'] not in {

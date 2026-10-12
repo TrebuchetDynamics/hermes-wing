@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/app/wing_app.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -48,17 +48,13 @@ Future<Map<String, Object?>> runRemoteAuthExplanationJourney(
     loader: HermesApiGatewaySummaryLoader(clientBuilder: fixture.client),
     activeChannel: channel,
   );
-  var managementAttempts = 0;
 
   final container = ProviderContainer(
     overrides: [
       hermesChannelProvider.overrideWith((_) => channel),
       hermesEndpointStoreProvider.overrideWithValue(store),
       hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-      localWingLinkHostProvider.overrideWith((_) {
-        managementAttempts++;
-        throw StateError('Management forbidden');
-      }),
+
       hermesVoiceCaptureServiceProvider.overrideWithValue(null),
       hermesTextToSpeechServiceProvider.overrideWithValue(null),
     ],
@@ -201,7 +197,7 @@ Future<Map<String, Object?>> runRemoteAuthExplanationJourney(
   expect(store.saveCalls.single.wingLinkToken, isNull);
   expect(fixture.mutationAttempts, 0);
   expect(fixture.forbiddenReadAttempts, 0);
-  expect(managementAttempts, 0);
+
   final contact = directory.contacts.single;
   await activate(
     'gateway-contact-${contact.id.gatewayId}-${contact.id.profileId}',
@@ -229,7 +225,7 @@ Future<Map<String, Object?>> runRemoteAuthExplanationJourney(
     'connects': channel.connects,
     'saves': store.attempts,
     'token_reads': fixture.tokenReads,
-    'management_attempts': managementAttempts,
+
     'mutation_attempts': fixture.mutationAttempts,
     'forbidden_read_attempts': fixture.forbiddenReadAttempts,
     'denied_reads': fixture.deniedReads,

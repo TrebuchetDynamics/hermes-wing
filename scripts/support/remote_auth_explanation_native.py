@@ -55,7 +55,7 @@ def read_receipt(path):
         any(value[k] is not True for k in ('public_entry', 'denial_sanitized',
             'keyboard_explanation', 'explicit_retry_cancel', 'form_draft_retained')) or
         any(type(value[k]) is not int or value[k] != n for k, n in {
-            'connects': 4, 'saves': 1, 'management_attempts': 0,
+            'connects': 4, 'saves': 1,
             'mutation_attempts': 0, 'forbidden_read_attempts': 0}.items()) or
         type(value['token_reads']) is not int or value['token_reads'] <= 0 or
         value['physical_keychain'] != 'NOT_CHECKED' or

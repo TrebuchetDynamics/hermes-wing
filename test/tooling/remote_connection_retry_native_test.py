@@ -100,7 +100,7 @@ class RemoteRetryNativeTests(unittest.TestCase):
 
     def test_receipt_requires_every_recovery_and_zero_forbidden_operations(self):
         value = dict(native_pid=1, width=390.0, text_scale=2.0, profile='synthetic-qa',
-            session='synthetic-history', management_attempts=0, mutation_attempts=0, forbidden_read_attempts=0,
+            session='synthetic-history', mutation_attempts=0, forbidden_read_attempts=0,
             auth_connects=1, auth_saves=0, retry_connects=1, retry_saves=1, save_attempts=6, save_commits=3,
             auth_profile='default', auth_session='synthetic-history',
             physical_keychain='NOT_CHECKED',
@@ -114,7 +114,7 @@ class RemoteRetryNativeTests(unittest.TestCase):
             path = pathlib.Path(tmp) / 'receipt.json'
             path.write_text(json.dumps(value))
             self.assertEqual(module.read_receipt(path), value)
-            for key, changed in [('mutation_attempts', 1), ('management_attempts', 1),
+            for key, changed in [('mutation_attempts', 1), ('forbidden_read_attempts', 1),
                                  ('late_cases', []), ('width', 800), ('retry_saves', 2),
                                  ('physical_keychain', 'PASS'),
                                  ('requests', [{'method': 'POST', 'path': '/health', 'query': {}}])]:

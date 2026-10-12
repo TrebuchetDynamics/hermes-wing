@@ -9,7 +9,6 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
@@ -106,9 +105,6 @@ void main() {
           overrides: [
             hermesChannelProvider.overrideWithValue(channel),
             hermesEndpointStoreProvider.overrideWithValue(store),
-            localWingLinkHostProvider.overrideWith(
-              (_) => throw StateError('Link forbidden'),
-            ),
           ],
         );
         addTearDown(container.dispose);
@@ -212,9 +208,6 @@ void main() {
         overrides: [
           hermesChannelProvider.overrideWithValue(channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
-          localWingLinkHostProvider.overrideWith(
-            (_) => throw StateError('Link forbidden'),
-          ),
         ],
       );
       addTearDown(container.dispose);

@@ -75,7 +75,7 @@ def read_receipt(path):
             not all(value[k] is True for k in booleans) or
             value['keyboard_modes'] != ['local', 'ssh', 'remote', 'vpn'] or
             value['profile'] != 'synthetic-qa' or value['session'] != 'synthetic-history' or
-            any(type(value[k]) is not int or value[k] != 0 for k in ('management_attempts', 'mutation_attempts', 'forbidden_read_attempts')) or
+            any(type(value[k]) is not int or value[k] != 0 for k in ('mutation_attempts', 'forbidden_read_attempts')) or
             not value['requests'] or any(r['method'] != 'GET' or r['path'] not in ROUTES or
                                        set(r) != {'method', 'path', 'query'} or
                                        not set(r['query']) <= {'profile', 'limit', 'offset', 'order'}

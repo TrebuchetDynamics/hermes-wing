@@ -12,7 +12,6 @@ import 'core/hermes/channel/hermes_api_channel.dart';
 import 'core/hermes/setup/secure_hermes_endpoint_store.dart';
 import 'features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'features/local_setup/providers/local_hermes_setup_provider.dart';
-import 'main_local_setup_recovery_e2e.dart' show SetupRecoveryFixture;
 
 @JS('wingConnectionMatrixControl')
 external set _control(JSFunction callback);
@@ -65,7 +64,6 @@ class MatrixEndpointStore extends SecureHermesEndpointStore {
 }
 
 void main() {
-  final host = SetupRecoveryFixture();
   final store = MatrixEndpointStore();
   final channel = HermesApiChannel();
   _saveControl = ((JSString action) {
@@ -101,14 +99,6 @@ void main() {
   _reduceMotion = (() {}).toJS;
   _control = ((JSString action) {
     switch (action.toDart) {
-      case 'installed':
-        host.installed = true;
-      case 'missing':
-        host.installed = false;
-      case 'success':
-        host.finish(true);
-      case 'failure':
-        host.finish(false);
       case 'fail-save':
         store.failNext = true;
       case 'park-save':
@@ -123,9 +113,6 @@ void main() {
     }
     final state = channel.state;
     return jsonEncode({
-      'inspect': host.inspects,
-      'setup': host.setups,
-      'cancel': host.cancels,
       'save': {
         'attempts': store.attempts,
         'completed': store.completed,
@@ -144,7 +131,7 @@ void main() {
       overrides: [
         hermesChannelProvider.overrideWithValue(channel),
         hermesEndpointStoreProvider.overrideWithValue(store),
-        localWingLinkHostProvider.overrideWithValue(host.host),
+
         localLinuxSetupAvailableProvider.overrideWithValue(true),
       ],
       child: const _MatrixApp(),

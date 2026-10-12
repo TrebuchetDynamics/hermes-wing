@@ -81,7 +81,7 @@ def read_receipt(path):
             value['endpoint_storage'] != 'SYNTHETIC_FIXTURE_NOT_KEYCHAIN' or
             value['canonical_route'] != '/hermes' or
             value['profile'] != 'synthetic-qa' or value['session'] != 'synthetic-history' or
-            any(type(value[k]) is not int or value[k] != 0 for k in ('management_attempts', 'mutation_attempts', 'forbidden_read_attempts')) or
+            any(type(value[k]) is not int or value[k] != 0 for k in ('mutation_attempts', 'forbidden_read_attempts')) or
             not value['requests'] or any(r['method'] != 'GET' or r['path'] not in ROUTES or
                                        set(r) != {'method', 'path', 'query'} or
                                        not set(r['query']) <= {'profile', 'limit', 'offset', 'order'}

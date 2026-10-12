@@ -9,18 +9,21 @@ PATH = pathlib.Path(__file__).resolve().parents[2] / 'scripts/support/local_setu
 
 
 class ReceiptTest(unittest.TestCase):
-    def test_replayed_setup_is_rejected(self):
+    def test_direct_receipt_requires_explicit_retry_and_zero_mutations(self):
         spec = importlib.util.spec_from_file_location('local_native', PATH)
         assert spec is not None and spec.loader is not None
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         value = dict(native_pid=123, width=390.0, text_scale=2.0,
-                     inspect=9, setup=7, cancel=4, management=0, mutations=0,
-                     forbidden_reads=0, route='/hermes', consent=True,
-                     explicit_continue=True, late_results_fenced=True,
-                     inspection_only_retry=True, direct_without_management=True)
-        with self.assertRaises(ValueError):
-            module.validate_receipt(value)
+                     inspect=3, mutations=0, forbidden_reads=0, route='/hermes',
+                     direct_retry=True, no_automatic_replay=True,
+                     direct_without_management=True)
+        self.assertEqual(module.validate_receipt(value), value)
+        for key, changed in [('inspect', 4), ('mutations', 1),
+                             ('forbidden_reads', 1), ('no_automatic_replay', False),
+                             ('direct_retry', False)]:
+            with self.assertRaises(ValueError):
+                module.validate_receipt(value | {key: changed})
 
     def test_packages_are_copied_and_plugin_paths_rebound(self):
         spec = importlib.util.spec_from_file_location('local_native', PATH)

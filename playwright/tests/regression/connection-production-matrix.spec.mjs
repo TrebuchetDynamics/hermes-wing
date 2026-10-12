@@ -1,7 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { writeFile, rm } from 'node:fs/promises';
 import { enableFlutterAccessibility, APP_URL } from '../../support/flutter_semantics.mjs';
-import { activate, fill, counts, control, observeMatrixPage, recordMatrixBoundary, verifyMatrixNegativeControl } from '../../support/connection_production_matrix_fixture.mjs';
+import { activate, fill, control, observeMatrixPage, recordMatrixBoundary, verifyMatrixNegativeControl } from '../../support/connection_production_matrix_fixture.mjs';
 // Re-execute existing public recovery workflows against this exact WingApp build,
 // rather than copying tests or borrowing receipts from a different composition.
 import './remote-connection-retry.spec.mjs';
@@ -18,8 +18,7 @@ test('matrix detects management on a persistent saved-editor page', async ({}, i
     const observed = await observeMatrixPage(actualPage);
     await actualPage.goto(APP_URL);
     await actualPage.waitForFunction(() => typeof globalThis.wingConnectionMatrixControl === 'function');
-    const state = await control(actualPage);
-    expect([state.inspect, state.setup, state.cancel]).toEqual([0, 0, 0]);
+    expect((await control(actualPage)).save.completed).toBe(0);
     await verifyMatrixNegativeControl(actualPage, observed, info);
   } finally {
     await context.close();
@@ -34,75 +33,7 @@ test.afterEach(async ({ page }, info) => {
   if (!ownsPersistentPage(info)) await recordMatrixBoundary(page, observations.get(page), info);
 });
 
-for (const width of [390, 1280]) for (const installed of [false, true]) {
-  test(`production optional Local ${width}px 200% ${installed ? 'existing' : 'missing'} to direct Remote`, async ({ page, request }, info) => {
-    await request.post(`${APP_URL}e2e/hermes/session-restoration`);
-    await page.setViewportSize({ width, height: 1100 });
-    await page.goto('/?e2eTextScale=2');
-    await page.waitForFunction(() => typeof globalThis.wingConnectionMatrixControl === 'function');
-    await enableFlutterAccessibility(page, { delay: 0 });
-    await control(page, installed ? 'installed' : 'missing');
-    // All navigation uses the actual public welcome, setup and direct form.
-    const optional = page.getByText('Local setup', { exact: true });
-    await optional.scrollIntoViewIfNeeded();
-    await optional.click();
-    await activate(page, /^Set up Hermes on this computer /);
-    const action = installed ? 'Adopt this installation' : 'Install Hermes Agent here';
-    await counts(page, 1, 0, 0);
-    await activate(page, action);
-    await expect(page.getByText('Allow local Hermes setup?', { exact: true })).toBeVisible();
-    await page.screenshot({ path: info.outputPath('consent.png') });
-    await activate(page, 'Cancel');
-    await counts(page, 1, 0, 0);
-    await activate(page, action);
-    await activate(page, 'Run setup');
-    await counts(page, 1, 1, 0);
-    await activate(page, 'Stop setup');
-    await counts(page, 1, 1, 1);
-    await control(page, 'success');
-    await expect(page.getByRole('group', { name: /^Setup stopped/ })).toBeVisible();
-    await counts(page, 1, 1, 1);
-    await activate(page, 'Check again');
-    await counts(page, 2, 1, 1);
-    await activate(page, 'Adopt this installation');
-    await activate(page, 'Run setup');
-    await control(page, 'failure');
-    await expect(page.getByRole('group', { name: /^Setup needs attention/ })).toBeVisible();
-    await page.screenshot({ path: info.outputPath('failure.png') });
-    await counts(page, 2, 2, 1);
-    await activate(page, 'Check again');
-    await counts(page, 3, 2, 1);
-    await activate(page, 'Adopt this installation');
-    await activate(page, 'Run setup');
-    // Public Back disposes setup; late success must not select pairing.
-    await activate(page, 'Back');
-    await counts(page, 3, 3, 2);
-    await activate(page, 'Get Started');
-    await expect(page.getByRole('checkbox', { name: 'Local', exact: true })).toBeChecked();
-    await counts(page, 3, 3, 2);
-    await page.getByRole('checkbox', { name: 'Remote', exact: true }).click();
-    await control(page, 'success');
-    await expect(page.getByRole('textbox', { name: 'Hermes Agent URL', exact: true })).toBeVisible();
-    await counts(page, 3, 3, 2);
-    await expect(page.getByRole('group', { name: /^Hermes gateway is ready/ })).toHaveCount(0);
-    // Flutter exports the labeled noninteractive explanation as static text,
-    // not a group. Assert the actual accessible text, not an invented role.
-    const explanation = page.getByText(/Browser OAuth sign-in is not supported in Wing/);
-    await expect(explanation).toBeVisible();
-    await explanation.scrollIntoViewIfNeeded();
-    await page.mouse.move(width / 2, 900);
-    await page.mouse.wheel(0, 650);
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    await page.screenshot({ path: info.outputPath('auth-explanation.png') });
-    await fill(page, 'Hermes Agent URL', new URL(APP_URL).origin);
-    await fill(page, 'Connection name (optional)', 'Synthetic direct after setup');
-    await activate(page, 'Add Hermes');
-    await expect(page.getByLabel(/Synthetic direct after setup.*online/)).toBeVisible();
-    await counts(page, 3, 3, 2);
-    expect((await control(page)).save.completed).toBe(1);
-    await page.screenshot({ path: info.outputPath('direct-ready.png') });
-  });
-}
+
 
 for (const width of [390, 1280]) {
   test(`production two saved owners reject delayed old discovery ${width}px`, async ({ page, request }, info) => {

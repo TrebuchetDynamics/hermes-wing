@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -54,17 +54,13 @@ void main() {
           loader: HermesApiGatewaySummaryLoader(clientBuilder: fixture.client),
           activeChannel: channel,
         );
-        var managementAttempts = 0;
 
         final container = ProviderContainer(
           overrides: [
             hermesChannelProvider.overrideWith((_) => channel),
             hermesEndpointStoreProvider.overrideWithValue(store),
             hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-            localWingLinkHostProvider.overrideWith((_) {
-              managementAttempts++;
-              throw StateError('Management forbidden in direct qualification');
-            }),
+
             hermesVoiceCaptureServiceProvider.overrideWithValue(null),
             hermesTextToSpeechServiceProvider.overrideWithValue(null),
           ],
@@ -253,7 +249,7 @@ void main() {
         await capture('connected');
         expect(fixture.mutationAttempts, 0);
         expect(fixture.forbiddenReadAttempts, 0);
-        expect(managementAttempts, 0);
+
         expect(tester.takeException(), isNull);
         final receipt = {
           'native_pid': pid,
@@ -269,7 +265,7 @@ void main() {
           'agent_only_save': true,
           'profile': channel.state.selectedProfileId,
           'session': channel.state.activeSessionId,
-          'management_attempts': managementAttempts,
+
           'mutation_attempts': fixture.mutationAttempts,
           'forbidden_read_attempts': fixture.forbiddenReadAttempts,
           'requests': fixture.requests,

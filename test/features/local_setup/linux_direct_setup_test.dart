@@ -10,7 +10,7 @@ import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/features/hermes_chat/widgets/platform_local_connection_panel.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/features/local_setup/screens/local_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -43,9 +43,6 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              localWingLinkHostProvider.overrideWith(
-                (_) => throw StateError('Link construction forbidden'),
-              ),
               platformLocalHomeDiscoveryProvider.overrideWithValue(
                 LocalHermesHomeDiscovery(platform: home),
               ),

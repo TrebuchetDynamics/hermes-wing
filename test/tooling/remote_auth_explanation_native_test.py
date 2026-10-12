@@ -36,7 +36,7 @@ class RemoteAuthNativeTests(unittest.TestCase):
 
     def test_receipt_requires_both_denials_explicit_controls_and_zero_mutations(self):
         value = dict(native_pid=1, width=390.0, text_scale=2.0, connects=4, saves=1,
-            token_reads=12, management_attempts=0, mutation_attempts=0, forbidden_read_attempts=0,
+            token_reads=12, mutation_attempts=0, forbidden_read_attempts=0,
             physical_keychain='NOT_CHECKED',
             requests=[{'method': 'GET', 'path': '/health', 'query': {}}],
             denied_reads=[{'status': status, 'path': '/v1/capabilities', 'profile': None}
@@ -48,7 +48,7 @@ class RemoteAuthNativeTests(unittest.TestCase):
             path = pathlib.Path(tmp) / 'receipt.json'
             path.write_text(json.dumps(value))
             self.assertEqual(module.read_receipt(path), value)
-            for key, changed in [('mutation_attempts', 1), ('management_attempts', 1),
+            for key, changed in [('mutation_attempts', 1), ('forbidden_read_attempts', 1),
                 ('denied_reads', []), ('keyboard_explanation', False), ('token_reads', 0),
                 ('saves', 2), ('physical_keychain', 'PASS'),
                 ('requests', [{'method': 'GET', 'path': '/oauth', 'query': {}}])]:

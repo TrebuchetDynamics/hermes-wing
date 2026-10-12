@@ -74,10 +74,10 @@ class DirectNativeTests(unittest.TestCase):
             with mock.patch.object(helper.subprocess, 'check_output', return_value=b''), self.assertRaisesRegex(ValueError, 'Linked source'):
                 helper.freeze(source, pathlib.Path(tmp) / 'rejected')
 
-    def test_receipt_rejects_mutation_management_missing_coverage(self):
+    def test_receipt_rejects_mutation_forbidden_reads_missing_coverage(self):
         value = dict(native_pid=1, width=390.0, text_scale=2.0,
             keyboard_modes=['local', 'ssh', 'remote', 'vpn'], profile='synthetic-qa',
-            session='synthetic-history', management_attempts=0, mutation_attempts=0, forbidden_read_attempts=0,
+            session='synthetic-history', mutation_attempts=0, forbidden_read_attempts=0,
             requests=[{'method': 'GET', 'path': '/health', 'query': {}}],
             denied_reads=[{'status': 401, 'path': '/v1/capabilities', 'profile': None}])
         for key in ('public_entry', 'optional_pairing_reachable', 'back_no_save', 'pending_owner_fenced',
@@ -87,7 +87,7 @@ class DirectNativeTests(unittest.TestCase):
             path = pathlib.Path(tmp) / 'receipt.json'
             path.write_text(json.dumps(value))
             self.assertEqual(module.read_receipt(path), value)
-            for key, changed in [('mutation_attempts', 1), ('management_attempts', 1),
+            for key, changed in [('mutation_attempts', 1), ('forbidden_read_attempts', 1),
                                  ('pending_owner_fenced', False), ('width', 800), ('requests', [{'method': 'POST', 'path': '/health', 'query': {}}])]:
                 path.write_text(json.dumps(value | {key: changed}))
                 with self.assertRaises(ValueError):

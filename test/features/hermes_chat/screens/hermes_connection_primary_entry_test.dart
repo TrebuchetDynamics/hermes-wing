@@ -10,12 +10,12 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
-import 'package:wing/core/wing_link/local_wing_link_host.dart';
+
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_add_screen.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/features/local_setup/screens/local_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/core/hermes/local_discovery/local_hermes_home_discovery.dart';
@@ -102,18 +102,7 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
-      final hostCalls = <List<String>>[];
-      final host = LocalWingLinkHost(
-        executablePath: '/opt/hermes-wing/wing',
-        runner: (_, args) async {
-          hostCalls.add(args);
-          return const LocalWingLinkProcessResult(
-            exitCode: 0,
-            stdout:
-                '{"protocol_version":2,"platform":"linux","hermes_installed":true,"hermes_healthy":true,"setup_available":true}',
-          );
-        },
-      );
+
       final router = GoRouter(
         initialLocation: '/hermes',
         routes: [
@@ -135,7 +124,7 @@ void main() {
             hermesChannelProvider.overrideWith((_) => channel),
             hermesEndpointStoreProvider.overrideWithValue(store),
             hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-            localWingLinkHostProvider.overrideWithValue(host),
+
             platformLocalHomeDiscoveryProvider.overrideWithValue(
               _MetadataDiscovery(),
             ),
@@ -233,12 +222,10 @@ void main() {
         _key('hermes-base-url-field'),
         'https://other.example.invalid',
       );
-      expect(hostCalls, isEmpty);
       expect(_key('hermes-primary-connection-modes'), findsOneWidget);
       unawaited(router.push<void>(AppRoutes.localSetup));
       await tester.pumpAndSettle();
       expect(_key('platform-local-home-status'), findsOneWidget);
-      expect(hostCalls, isEmpty);
       expect(channel.state, same(owner));
       expect(requests, before);
       await tester.pageBack();

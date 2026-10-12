@@ -22,8 +22,8 @@ void main() {
             capture: (_) async {},
           );
           expect(receipt['inspect'], 3);
-          expect(receipt['link_constructions'], 0);
-          expect(receipt['management'], 0);
+          expect(receipt['mutations'], 0);
+          expect(receipt['forbidden_reads'], 0);
         },
         variant: TargetPlatformVariant.only(TargetPlatform.linux),
       );

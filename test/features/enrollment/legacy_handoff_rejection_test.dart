@@ -11,7 +11,7 @@ import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.da
 import 'package:wing/features/enrollment/services/hermes_connect_intent_source.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
+
 import 'package:wing/router/providers/app_router.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
@@ -59,7 +59,7 @@ void main() {
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
       final originalState = channel.state;
-      var forbiddenConstructions = 0;
+
       final directory = directoryFor(
         configs: [],
         loader: FakeGatewaySummaryLoader({}),
@@ -73,10 +73,6 @@ void main() {
           hermesGatewayDirectoryProvider.overrideWith((_) => directory),
           hermesVoiceCaptureServiceProvider.overrideWithValue(null),
           hermesTextToSpeechServiceProvider.overrideWithValue(null),
-          localWingLinkHostProvider.overrideWith((_) {
-            forbiddenConstructions++;
-            throw StateError('Link forbidden');
-          }),
         ],
       );
       addTearDown(container.dispose);
@@ -144,7 +140,7 @@ void main() {
       expect(store.deleteProfileCalls, isEmpty);
       expect(channel.connectCalls, isEmpty);
       expect(channel.state.messages, isEmpty);
-      expect(forbiddenConstructions, 0);
+
       expect(source.scans, 0);
       expect(source.imports, 0);
       expect(tester.takeException(), isNull);
@@ -192,7 +188,7 @@ void main() {
           selectedProfileId: 'owner',
           activeSessionId: 'session-owner',
         );
-        var linkConstructions = 0;
+
         final directory = directoryFor(
           configs: [],
           loader: FakeGatewaySummaryLoader({}),
@@ -221,10 +217,6 @@ void main() {
             hermesGatewayDirectoryProvider.overrideWith((_) => directory),
             hermesVoiceCaptureServiceProvider.overrideWithValue(null),
             hermesTextToSpeechServiceProvider.overrideWithValue(null),
-            localWingLinkHostProvider.overrideWith((_) {
-              linkConstructions++;
-              throw StateError('Link forbidden');
-            }),
           ],
         );
         addTearDown(container.dispose);
@@ -328,7 +320,6 @@ void main() {
           channel.state.messages.values.every((turns) => turns.isEmpty),
           isTrue,
         );
-        expect(linkConstructions, 0);
 
         expect(clipboard, 0);
         expect(source.scans, 0);

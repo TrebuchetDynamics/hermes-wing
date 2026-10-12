@@ -93,10 +93,9 @@ def validate_receipt(value):
             value.get('width') not in (390.0, 1280.0) or
             value.get('text_scale') not in (1.0, 2.0) or value.get('route') != '/hermes' or
             any(type(value.get(k)) is not int or value[k] != expected
-                for k, expected in dict(inspect=12, setup=6, cancel=4,
-                                        management=0, mutations=0, forbidden_reads=0).items()) or
-            any(value.get(k) is not True for k in ('consent', 'explicit_continue',
-                'late_results_fenced', 'inspection_only_retry', 'direct_without_management'))):
+                for k, expected in dict(inspect=3, mutations=0, forbidden_reads=0).items()) or
+            any(value.get(k) is not True for k in ('direct_retry',
+                'no_automatic_replay', 'direct_without_management'))):
         raise ValueError('Incomplete or replaying Local enrollment journey')
     return value
 

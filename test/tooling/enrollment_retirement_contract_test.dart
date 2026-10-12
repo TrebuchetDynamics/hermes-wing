@@ -3,6 +3,21 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('profile editor has no legacy management approval dependency', () {
+    final source = File(
+      'lib/features/profiles/widgets/profile_editor_sheet.dart',
+    ).readAsStringSync();
+    for (final forbidden in [
+      'core/wing_link/',
+      'WingLink',
+      '_PendingProfileApproval',
+      '_pendingApproval',
+      '_approvalExpiryTimer',
+    ]) {
+      expect(source, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
   test(
     'Profiles and Connections screens have no legacy builder dependency',
     () {

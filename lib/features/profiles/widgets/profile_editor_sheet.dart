@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import 'catalog_autocomplete_field.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
-import '../../../core/wing_link/wing_link_client.dart';
 import '../../../l10n/app_localizations.dart';
 
 typedef ProfileCreateCallback =
@@ -16,13 +15,7 @@ typedef ProfileCreateCallback =
       String? provider,
       String? model,
       String? providerApiKey,
-      String? idempotencyKey,
     });
-typedef _PendingProfileApproval = ({
-  String approvalId,
-  String idempotencyKey,
-  int expiresAt,
-});
 
 typedef ProfileRenameCallback =
     Future<void> Function({
@@ -31,11 +24,7 @@ typedef ProfileRenameCallback =
       required String revision,
     });
 typedef ProfileDeleteCallback =
-    Future<void> Function(
-      String profileId,
-      String revision, {
-      String? idempotencyKey,
-    });
+    Future<void> Function(String profileId, String revision);
 
 class ProfileEditorSheet extends StatefulWidget {
   const ProfileEditorSheet({
@@ -102,8 +91,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   int _catalogGeneration = 0;
   bool _saving = false;
   bool _loadingPersona = false;
-  _PendingProfileApproval? _pendingApproval;
-  Timer? _approvalExpiryTimer;
 
   Object? _personaSource;
   Object _personaOwner = Object();
@@ -128,7 +115,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     _mutationSource = source;
     _mutationOwner = Object();
     _mutationObsolete = !(widget.isOwnerCurrent?.call() ?? true);
-    _clearPendingApproval();
+    _credentialController.clear();
     _saving = false;
     _error = null;
   }
@@ -198,8 +185,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   }
 
   bool get _editing => widget.profile != null;
-  bool get _payloadFrozen =>
-      _saving || _loadingPersona || _pendingApproval != null;
+  bool get _payloadFrozen => _saving || _loadingPersona;
 
   @override
   void initState() {
@@ -242,7 +228,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   void dispose() {
     widget.channel.removeListener(_personaOwnerChanged);
     widget.ownerChanges?.removeListener(_personaOwnerChanged);
-    _approvalExpiryTimer?.cancel();
     _credentialController.clear();
     _nameController.dispose();
     _personaController.dispose();
@@ -350,29 +335,17 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     if (!_ownsMutation(owner)) return;
     final profile = widget.profile;
     if (profile == null || profile.id == 'default' || _saving) return;
-    final pendingApproval = _pendingApproval;
-    if (pendingApproval != null && _approvalExpired(pendingApproval)) {
-      setState(() {
-        _clearPendingApproval();
-        _error = _editing
-            ? AppLocalizations.of(context).profileDeletionApprovalExpired
-            : AppLocalizations.of(context).profileApprovalExpired;
-      });
-      return;
-    }
     final strings = AppLocalizations.of(context);
     final expectedName = profile.displayName.isEmpty
         ? profile.id
         : profile.displayName;
-    final confirmed = pendingApproval != null
-        ? true
-        : await showDialog<bool>(
-            context: context,
-            builder: (dialogContext) => _DeleteConfirmationDialog(
-              expectedName: expectedName,
-              strings: strings,
-            ),
-          );
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => _DeleteConfirmationDialog(
+        expectedName: expectedName,
+        strings: strings,
+      ),
+    );
     if (confirmed != true || !_ownsMutation(owner)) return;
 
     setState(() {
@@ -387,30 +360,15 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
           revision: profile.revision,
         );
       } else {
-        await onDelete(
-          profile.id,
-          profile.revision,
-          idempotencyKey: pendingApproval?.idempotencyKey,
-        );
+        await onDelete(profile.id, profile.revision);
       }
       if (!_ownsMutation(owner)) return;
-      _clearPendingApproval();
+      _credentialController.clear();
       if (mounted) await Navigator.of(context).maybePop();
-    } on WingLinkApprovalRequired catch (approval) {
-      if (!_ownsMutation(owner)) return;
-      setState(() {
-        if (pendingApproval != null &&
-            approval.idempotencyKey != pendingApproval.idempotencyKey) {
-          _clearPendingApproval();
-          _error = strings.profileOperationFailed;
-        } else {
-          _holdPendingApproval(approval);
-        }
-      });
     } catch (error) {
       if (!_ownsMutation(owner)) return;
       setState(() {
-        _clearPendingApproval();
+        _credentialController.clear();
         _error = _isProfileRevisionConflict(error)
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
@@ -420,42 +378,8 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
     }
   }
 
-  bool _approvalExpired(_PendingProfileApproval approval) =>
-      DateTime.now().millisecondsSinceEpoch >= approval.expiresAt * 1000;
-
-  void _clearPendingApproval({bool clearCredential = true}) {
-    _approvalExpiryTimer?.cancel();
-    _approvalExpiryTimer = null;
-    _pendingApproval = null;
-    if (clearCredential) _credentialController.clear();
-  }
-
-  void _holdPendingApproval(WingLinkApprovalRequired approval) {
-    _approvalExpiryTimer?.cancel();
-    _pendingApproval = (
-      approvalId: approval.approvalId,
-      idempotencyKey: approval.idempotencyKey,
-      expiresAt: approval.expiresAt,
-    );
-    final delay = DateTime.fromMillisecondsSinceEpoch(
-      approval.expiresAt * 1000,
-    ).difference(DateTime.now());
-    _approvalExpiryTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
-      if (!mounted ||
-          _pendingApproval?.idempotencyKey != approval.idempotencyKey) {
-        return;
-      }
-      setState(() {
-        _clearPendingApproval();
-        _error = _editing
-            ? AppLocalizations.of(context).profileDeletionApprovalExpired
-            : AppLocalizations.of(context).profileApprovalExpired;
-      });
-    });
-  }
-
   void _cancelEditor() {
-    setState(() => _clearPendingApproval());
+    setState(() => _credentialController.clear());
     final onCancel = widget.onCancel;
     if (onCancel != null) {
       onCancel();
@@ -488,17 +412,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         _ownsMutation(mutationOwner) &&
         (widget.isOwnerCurrent?.call() ?? true) &&
         (!editSoul || _ownsPersona(owner));
-    if (_editing && _pendingApproval != null) return _deleteProfile();
-    final pendingApproval = _pendingApproval;
-    if (pendingApproval != null && _approvalExpired(pendingApproval)) {
-      setState(() {
-        _clearPendingApproval();
-        _error = _editing
-            ? AppLocalizations.of(context).profileDeletionApprovalExpired
-            : AppLocalizations.of(context).profileApprovalExpired;
-      });
-      return;
-    }
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _saving = true;
@@ -520,7 +433,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
             providerApiKey: _credentialController.text.isEmpty
                 ? null
                 : _credentialController.text,
-            idempotencyKey: pendingApproval?.idempotencyKey,
           );
         }
       } else {
@@ -556,26 +468,12 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
         }
       }
       if (!mounted || !current()) return;
-      _clearPendingApproval();
+      _credentialController.clear();
       final onSaved = widget.onSaved;
       if (onSaved != null) {
         onSaved();
       } else {
         await Navigator.of(context).maybePop();
-      }
-    } on WingLinkApprovalRequired catch (approval) {
-      if (!current()) return;
-      if (pendingApproval != null &&
-          approval.idempotencyKey != pendingApproval.idempotencyKey) {
-        setState(() {
-          _clearPendingApproval();
-          _error = AppLocalizations.of(context).profileOperationFailed;
-        });
-      } else {
-        setState(() {
-          _holdPendingApproval(approval);
-          _error = null;
-        });
       }
     } catch (error) {
       if (!current()) return;
@@ -588,7 +486,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
       if (!mounted || !current()) return;
       final strings = AppLocalizations.of(context);
       setState(() {
-        _clearPendingApproval();
+        _credentialController.clear();
         _error = conflict
             ? strings.profileRevisionConflict
             : strings.profileOperationFailed;
@@ -921,17 +819,6 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                             const SizedBox(height: 16),
                             Text(strings.defaultAgentCannotDelete),
                           ],
-                          if (_pendingApproval != null) ...[
-                            const SizedBox(height: 16),
-                            Semantics(
-                              liveRegion: true,
-                              child: Text(
-                                strings.profileApprovalRequired(
-                                  _pendingApproval!.approvalId,
-                                ),
-                              ),
-                            ),
-                          ],
                           if (_error != null) ...[
                             const SizedBox(height: 12),
                             Semantics(
@@ -966,11 +853,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                     children: [
                       TextButton(
                         onPressed: _saving ? null : _cancelEditor,
-                        child: Text(
-                          _pendingApproval == null || _editing
-                              ? strings.cancelAction
-                              : strings.profileCancelSetup,
-                        ),
+                        child: Text(strings.cancelAction),
                       ),
                       FilledButton(
                         onPressed:
@@ -996,11 +879,7 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
                                 ),
                               )
                             : Text(
-                                _pendingApproval != null
-                                    ? (_editing
-                                          ? strings.profileRetryApprovedDeletion
-                                          : strings.profileRetryApprovedSetup)
-                                    : profile == null
+                                profile == null
                                     ? strings.createAction
                                     : strings.saveAction,
                               ),
@@ -1017,15 +896,14 @@ class _ProfileEditorSheetState extends State<ProfileEditorSheet> {
   }
 }
 
+bool _isProfileRevisionConflict(Object error) =>
+    error is HermesApiStatusException && error.statusCode == 412;
+
 /// High-emphasis destructive confirmation that requires the operator to type
 /// the agent's display name before the delete action is enabled. Owns its own
 /// [TextEditingController] so it is disposed only after the dialog is fully
 /// gone from the tree (a synchronous dispose after `showDialog` returns races
 /// the exit transition).
-bool _isProfileRevisionConflict(Object error) =>
-    (error is HermesApiStatusException && error.statusCode == 412) ||
-    error is WingLinkPreconditionFailed;
-
 class _DeleteConfirmationDialog extends StatefulWidget {
   const _DeleteConfirmationDialog({
     required this.expectedName,

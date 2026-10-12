@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/core/hermes/shared/hermes_api_http.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
@@ -151,60 +150,71 @@ void main() {
     ]);
   });
 
-  testWidgets('delete retains host approval for an explicit retry', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel();
-    addTearDown(channel.dispose);
-    final requests = <(String, String, String?)>[];
-    await tester.pumpWidget(
-      _editorTestApp(
-        ProfileEditorSheet(
-          channel: channel,
-          profiles: const [],
-          profile: const HermesProfile(
-            id: 'cycle',
-            displayName: 'cycle',
-            revision: 'rev-1',
+  for (final failure in [
+    const _TestHermesStatusException(412),
+    const _TestHermesStatusException(403),
+    const {'approval_id': 'unknown', 'idempotency_key': 'not-authority'},
+  ]) {
+    testWidgets('failed delete needs fresh typed confirmation: $failure', (
+      tester,
+    ) async {
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final requests = <(String, String, String?)>[];
+      await tester.pumpWidget(
+        _editorTestApp(
+          ProfileEditorSheet(
+            channel: channel,
+            profiles: const [],
+            profile: const HermesProfile(
+              id: 'cycle',
+              displayName: 'cycle',
+              revision: 'rev-1',
+            ),
+            canDelete: true,
+            onDelete: (id, revision, {idempotencyKey}) async {
+              requests.add((id, revision, idempotencyKey));
+              if (requests.length == 1) throw failure;
+            },
           ),
-          canDelete: true,
-          onDelete: (id, revision, {idempotencyKey}) async {
-            requests.add((id, revision, idempotencyKey));
-            if (requests.length > 1) return;
-            throw WingLinkApprovalRequired(
-              approvalId: 'appr_delete_cycle',
-              operationId: 'op_delete_cycle',
-              idempotencyKey: 'delete-cycle-key',
-              expiresAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 300,
-            );
-          },
         ),
-      ),
-    );
-    await tester.tap(find.text('Delete profile'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, 'cycle');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
-    await tester.pumpAndSettle();
-    expect(
-      find.textContaining('wing-link approvals approve appr_delete_cycle'),
-      findsOneWidget,
-    );
-    expect(
-      tester.widget<TextFormField>(find.byType(TextFormField).first).enabled,
-      isFalse,
-    );
-    await tester.ensureVisible(find.text('Retry approved deletion'));
-    await tester.tap(find.text('Retry approved deletion'));
-    await tester.pumpAndSettle();
-    expect(requests, [
-      ('cycle', 'rev-1', null),
-      ('cycle', 'rev-1', 'delete-cycle-key'),
-    ]);
-    expect(channel.deleteProfileCalls, isEmpty);
-    await tester.pumpWidget(const SizedBox());
-  });
+      );
+      await tester.tap(find.text('Delete profile'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'cycle');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          failure is HermesApiStatusException && failure.statusCode == 412
+              ? 'This profile changed elsewhere'
+              : 'Hermes could not complete that profile change.',
+        ),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(minutes: 6));
+      expect(requests, [('cycle', 'rev-1', null)]);
+      // Save is never an approval shortcut to deletion.
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+      expect(requests, hasLength(1));
+      await tester.tap(find.text('Delete profile'));
+      await tester.pumpAndSettle();
+      final confirm = find.widgetWithText(FilledButton, 'Delete profile');
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await tester.enterText(find.byType(TextField).last, 'wrong');
+      await tester.pump();
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      expect(requests, hasLength(1));
+      await tester.enterText(find.byType(TextField).last, 'cycle');
+      await tester.pump();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(requests, [('cycle', 'rev-1', null), ('cycle', 'rev-1', null)]);
+      expect(channel.deleteProfileCalls, isEmpty);
+    });
+  }
 
   testWidgets('create validates a name and clones from the selected agent', (
     tester,
@@ -347,25 +357,95 @@ void main() {
     },
   );
 
+  for (final failure in [
+    const _TestHermesStatusException(403),
+    const {'approval_id': 'unknown', 'idempotency_key': 'not-authority'},
+  ]) {
+    testWidgets(
+      'create failure clears credential and never replays: $failure',
+      (tester) async {
+        final channel = FakeHermesChannel();
+        addTearDown(channel.dispose);
+        final calls = <(String?, String?)>[];
+        var saved = 0;
+        await tester.pumpWidget(
+          _editorTestApp(
+            ProfileEditorSheet(
+              channel: channel,
+              profiles: const [],
+              canConfigure: true,
+              onSaved: () => saved++,
+              onCreate:
+                  ({
+                    required name,
+                    cloneFrom,
+                    description,
+                    provider,
+                    model,
+                    providerApiKey,
+                    idempotencyKey,
+                  }) async {
+                    calls.add((providerApiKey, idempotencyKey));
+                    if (calls.length == 1) throw failure;
+                  },
+            ),
+          ),
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Profile name'),
+          'writer',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Provider'),
+          'fixture-provider',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Model'),
+          'fixture-model',
+        );
+        final field = find.widgetWithText(
+          TextFormField,
+          'New provider credential',
+        );
+        await tester.enterText(field, 'write-only-fixture');
+        final create = find.widgetWithText(FilledButton, 'Create');
+        await tester.ensureVisible(create);
+        await tester.tap(create);
+        await tester.pumpAndSettle();
+        expect(
+          find.text('Hermes could not complete that profile change.'),
+          findsOneWidget,
+        );
+        expect(tester.widget<TextFormField>(field).controller!.text, isEmpty);
+        expect(saved, 0);
+        await tester.pump(const Duration(minutes: 6));
+        expect(calls, [('write-only-fixture', null)]);
+        await tester.tap(create);
+        await tester.pumpAndSettle();
+        expect(calls, [('write-only-fixture', null), (null, null)]);
+        expect(saved, 1);
+      },
+    );
+  }
+
   testWidgets(
-    'approval retry preserves the exact frozen request and idempotency key',
+    'owner loss clears credential immediately and fences late failure',
     (tester) async {
       final channel = FakeHermesChannel();
       addTearDown(channel.dispose);
-      final calls = <Map<String, String?>>[];
-      final expiresAt =
-          DateTime.now()
-              .add(const Duration(minutes: 1))
-              .millisecondsSinceEpoch ~/
-          1000;
-
+      final changes = ValueNotifier<Object>(Object());
+      addTearDown(changes.dispose);
+      var current = true;
+      var writes = 0;
+      final gate = Completer<void>();
       await tester.pumpWidget(
         _editorTestApp(
           ProfileEditorSheet(
             channel: channel,
             profiles: const [],
-            stableNames: true,
             canConfigure: true,
+            ownerChanges: changes,
+            isOwnerCurrent: () => current,
             onCreate:
                 ({
                   required name,
@@ -375,168 +455,54 @@ void main() {
                   model,
                   providerApiKey,
                   idempotencyKey,
-                }) async {
-                  calls.add({
-                    'name': name,
-                    'cloneFrom': cloneFrom,
-                    'description': description,
-                    'provider': provider,
-                    'model': model,
-                    'providerApiKey': providerApiKey,
-                    'idempotencyKey': idempotencyKey,
-                  });
-                  if (calls.length == 1) {
-                    throw WingLinkApprovalRequired(
-                      approvalId: 'apr_local_test',
-                      operationId: 'op_local_test',
-                      idempotencyKey: 'profile-mutation-approved-key',
-                      expiresAt: expiresAt,
-                    );
-                  }
+                }) {
+                  writes++;
+                  return gate.future;
                 },
           ),
         ),
       );
-
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Profile name'),
-        'readyqa',
+        'writer',
       );
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Provider'),
-        'openrouter',
+        'fixture-provider',
       );
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Model'),
-        'openai/gpt-5.2',
+        'fixture-model',
       );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'New provider credential'),
-        'write-only-fixture',
+      final field = find.widgetWithText(
+        TextFormField,
+        'New provider credential',
       );
+      await tester.enterText(field, 'write-only-fixture');
+      final controller = tester.widget<TextFormField>(field).controller!;
       final create = find.widgetWithText(FilledButton, 'Create');
       await tester.ensureVisible(create);
+      final staleCreate = tester.widget<FilledButton>(create).onPressed!;
       await tester.tap(create);
       await tester.pump();
-
-      expect(find.textContaining('Wing Link host'), findsOneWidget);
-      expect(find.textContaining('wing-link approvals list'), findsOneWidget);
-      expect(
-        find.textContaining('wing-link approvals approve apr_local_test'),
-        findsOneWidget,
-      );
-      expect(find.text('Retry approved setup'), findsOneWidget);
-      expect(find.text('Cancel setup'), findsOneWidget);
-      expect(find.widgetWithText(Text, 'write-only-fixture'), findsNothing);
-      for (final field in tester.widgetList<TextFormField>(
-        find.byType(TextFormField),
-      )) {
-        expect(field.enabled, isFalse);
-      }
-
-      final retry = find.text('Retry approved setup');
-      await tester.ensureVisible(retry);
-      await tester.tap(retry);
+      current = false;
+      changes.value = Object();
+      expect(controller.text, isEmpty);
+      // Exercise the previously rendered callback before the next frame.
+      staleCreate();
+      expect(writes, 1);
+      current = true;
+      changes.value = Object();
+      gate.completeError(const _TestHermesStatusException(403));
       await tester.pumpAndSettle();
-
-      expect(calls, hasLength(2));
-      expect(calls.first['idempotencyKey'], isNull);
       expect(
-        calls.last,
-        equals({
-          ...calls.first,
-          'idempotencyKey': 'profile-mutation-approved-key',
-        }),
+        find.text('Hermes could not complete that profile change.'),
+        findsNothing,
       );
-      expect(calls.last['providerApiKey'], 'write-only-fixture');
-      expect(find.text('write-only-fixture'), findsNothing);
-      final credential = tester.widget<EditableText>(
-        find.descendant(
-          of: find.widgetWithText(TextFormField, 'New provider credential'),
-          matching: find.byType(EditableText),
-        ),
-      );
-      expect(credential.controller.text, isEmpty);
+      expect(writes, 1);
+      expect(tester.takeException(), isNull);
     },
   );
-
-  testWidgets('expired approval clears the retained credential', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel();
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(
-      _editorTestApp(
-        ProfileEditorSheet(
-          channel: channel,
-          profiles: const [],
-          stableNames: true,
-          canConfigure: true,
-          onCreate:
-              ({
-                required name,
-                cloneFrom,
-                description,
-                provider,
-                model,
-                providerApiKey,
-                idempotencyKey,
-              }) async => throw WingLinkApprovalRequired(
-                approvalId: 'apr_expired',
-                operationId: 'op_expired',
-                idempotencyKey: 'profile-mutation-expired-key',
-                expiresAt:
-                    DateTime.now()
-                        .add(const Duration(seconds: 2))
-                        .millisecondsSinceEpoch ~/
-                    1000,
-              ),
-        ),
-      ),
-    );
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Profile name'),
-      'readyqa',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Provider'),
-      'openrouter',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Model'),
-      'openai/gpt-5.2',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'New provider credential'),
-      'write-only-fixture',
-    );
-    final create = find.widgetWithText(FilledButton, 'Create');
-    await tester.ensureVisible(create);
-    await tester.tap(create);
-    await tester.pump();
-
-    final credential = tester.widget<EditableText>(
-      find.descendant(
-        of: find.widgetWithText(TextFormField, 'New provider credential'),
-        matching: find.byType(EditableText),
-      ),
-    );
-    expect(credential.controller.text, 'write-only-fixture');
-    expect(find.text('Retry approved setup'), findsOneWidget);
-    for (final field in tester.widgetList<TextFormField>(
-      find.byType(TextFormField),
-    )) {
-      expect(field.enabled, isFalse);
-    }
-
-    await tester.pump(const Duration(seconds: 3));
-
-    expect(find.textContaining('approval expired'), findsOneWidget);
-    expect(credential.controller.text, isEmpty);
-    expect(find.text('Retry approved setup'), findsNothing);
-  });
 
   testWidgets('cancel and dispose clear an in-memory credential', (
     tester,
@@ -544,25 +510,6 @@ void main() {
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
 
-    Future<void> approvalRequired({
-      required String name,
-      String? cloneFrom,
-      String? description,
-      String? provider,
-      String? model,
-      String? providerApiKey,
-      String? idempotencyKey,
-    }) async => throw WingLinkApprovalRequired(
-      approvalId: 'appr_cancel',
-      operationId: 'op_cancel',
-      idempotencyKey: 'profile-mutation-cancel-key',
-      expiresAt:
-          DateTime.now()
-              .add(const Duration(minutes: 1))
-              .millisecondsSinceEpoch ~/
-          1000,
-    );
-
     await tester.pumpWidget(
       _editorTestApp(
         ProfileEditorSheet(
@@ -570,7 +517,7 @@ void main() {
           profiles: const [],
           stableNames: true,
           canConfigure: true,
-          onCreate: approvalRequired,
+          onCancel: () {},
         ),
       ),
     );
@@ -599,11 +546,7 @@ void main() {
           ),
         )
         .controller;
-    final create = find.widgetWithText(FilledButton, 'Create');
-    await tester.ensureVisible(create);
-    await tester.tap(create);
-    await tester.pump();
-    final cancel = find.text('Cancel setup');
+    final cancel = find.widgetWithText(TextButton, 'Cancel');
     await tester.ensureVisible(cancel);
     await tester.tap(cancel);
     await tester.pump();

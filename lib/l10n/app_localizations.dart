@@ -193,7 +193,7 @@ abstract class AppLocalizations {
   /// No description provided for @connectionInformationHelpText.
   ///
   /// In en, this message translates to:
-  /// **'LOCAL — THIS DEVICE\nLinux: Wing checks ~/.hermes directory metadata. Another Hermes home is not a Project, current working directory or a binding to the running Agent. Discovery does not prove Agent is installed, running, authenticated or model-ready. Configure and start Agent yourself.\nAndroid: localhost and 127.0.0.1 refer to this phone, not your computer. Prepare Agent in Termux using official documentation. The official native Termux package is currently documented broken; a fresh install is not qualified by Wing.\n\nSSH — A NATIVE FORWARD\nHost/IP: use the computer\'s reachable hostname or IP provided by its administrator. SSH username: your account on that computer, not the Agent profile. User-run, non-secret Linux examples are whoami (account), hostname -I (candidate addresses) and ss -ltn (listening TCP ports). Addresses may not be reachable from this device. A listening port does not prove it is SSH: verify the actual SSH listener with the administrator.\nSSH port: 22 is a default, not a guarantee. Enter the actual SSH listener port. Review the host-key fingerprint through a trusted administrator before accepting. Authenticate using your SSH password or selected private key, with its passphrase if required. SSH authentication is separate from Agent authentication. For public-key authentication, have the host administrator add only your public key to that SSH account\'s authorized_keys. Never copy, share or install the private key on the host. These commands describe information lookup only, not setup actions.\nAgent port: 8642 is the default API port, but it is configurable. Enter the API listener port on the SSH host, not the SSH port. Wing forwards that listener; an SSH login does not prove Agent readiness.\n\nREMOTE — DIRECT AGENT API\nAgent URL: obtain the full HTTPS API URL from the host administrator, including the configured port or profile path when required. Do not guess an address from network location. A VPN does not replace Agent authentication.\nAgent API token: use the credential supplied separately through Agent-approved configuration. This is not an SSH password, provider key or dashboard token. Type it into the masked Agent token field. Never place secrets in the clipboard, QR codes, URLs or command arguments.\n\nCONNECTING\nConfigure an authenticated Agent API using official Agent documentation. Local uses http://127.0.0.1:8642 by default; that port is configurable on the host. Linux advanced local endpoint controls can select a different configured API endpoint. Android This phone uses the fixed loopback endpoint. Nothing in this help installs, starts, restarts or configures a service. Only an explicit Add Hermes action checks the connection; finishing guidance is not a connected or model-ready state. These copyable instructions contain no current form values or credentials.'**
+  /// **'LOCAL — THIS DEVICE\nLinux: Wing checks ~/.hermes directory metadata. Another Hermes home is not a Project, current working directory or a binding to the running Agent. Discovery does not prove Agent is installed, running, authenticated or model-ready. Configure and start Agent yourself.\nAndroid: localhost and 127.0.0.1 refer to this phone, not your computer. Prepare Agent in Termux using official documentation for current installation steps and limitations. Automatic installation is unavailable in Wing; a fresh install is not qualified by Wing.\n\nSSH — A NATIVE FORWARD\nHost/IP: use the computer\'s reachable hostname or IP provided by its administrator. SSH username: your account on that computer, not the Agent profile. User-run, non-secret Linux examples are whoami (account), hostname -I (candidate addresses) and ss -ltn (listening TCP ports). Addresses may not be reachable from this device. A listening port does not prove it is SSH: verify the actual SSH listener with the administrator.\nSSH port: 22 is a default, not a guarantee. Enter the actual SSH listener port. Review the host-key fingerprint through a trusted administrator before accepting. Authenticate using your SSH password or selected private key, with its passphrase if required. SSH authentication is separate from Agent authentication. For public-key authentication, have the host administrator add only your public key to that SSH account\'s authorized_keys. Never copy, share or install the private key on the host. These commands describe information lookup only, not setup actions.\nAgent port: 8642 is the default API port, but it is configurable. Enter the API listener port on the SSH host, not the SSH port. Wing forwards that listener; an SSH login does not prove Agent readiness.\n\nREMOTE — DIRECT AGENT API\nAgent URL: obtain the full HTTPS API URL from the host administrator, including the configured port or profile path when required. Do not guess an address from network location. A VPN does not replace Agent authentication.\nAgent API token: use the credential supplied separately through Agent-approved configuration. This is not an SSH password, provider key or dashboard token. Type it into the masked Agent token field. Never place secrets in the clipboard, QR codes, URLs or command arguments.\n\nCONNECTING\nConfigure an authenticated Agent API using official Agent documentation. Local uses http://127.0.0.1:8642 by default; that port is configurable on the host. Linux advanced local endpoint controls can select a different configured API endpoint. Android This phone uses the fixed loopback endpoint. Nothing in this help installs, starts, restarts or configures a service. Only an explicit Add Hermes action checks the connection; finishing guidance is not a connected or model-ready state. These copyable instructions contain no current form values or credentials.'**
   String get connectionInformationHelpText;
 
   /// No description provided for @platformLocalConnectBody.
@@ -289,7 +289,7 @@ abstract class AppLocalizations {
   /// No description provided for @platformLocalPackageWarning.
   ///
   /// In en, this message translates to:
-  /// **'Known package issue: official Agent documentation currently warns that native Termux is broken. Fresh installation may fail or produce a non-running package. Wing does not provide a tested fresh installer. Debian/proot is a separate, unqualified setup path.'**
+  /// **'Automatic installation is unavailable in Wing. Follow the official Agent Termux documentation for current installation steps and limitations. Fresh installation and persistent background operation are not qualified by Wing. Debian/proot is a separate, unqualified setup path.'**
   String get platformLocalPackageWarning;
 
   /// No description provided for @platformLocalPrepareTitle.
@@ -4329,60 +4329,6 @@ abstract class AppLocalizations {
   /// **'In a browser, the host must use normally trusted HTTPS. For a self-signed Wing Link host, use the native Wing app to review and pin its identity.'**
   String get enrollBrowserPairingHelp;
 
-  /// No description provided for @termuxPrepareStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Prepare Termux'**
-  String get termuxPrepareStep;
-
-  /// No description provided for @termuxInstallStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Install or detect Hermes'**
-  String get termuxInstallStep;
-
-  /// No description provided for @termuxPairStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Return to Wing and pair'**
-  String get termuxPairStep;
-
-  /// No description provided for @termuxPrerequisites.
-  ///
-  /// In en, this message translates to:
-  /// **'Install Termux from the official guide and open it once. Already installed? Continue below. Keep internet access available.'**
-  String get termuxPrerequisites;
-
-  /// No description provided for @termuxReadyAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Termux is installed and opens'**
-  String get termuxReadyAction;
-
-  /// No description provided for @termuxAdoptionHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Already have Hermes Agent? Use this same setup command to detect and reuse a healthy installation. Wing cannot inspect Termux’s files directly. Leave Termux open until it displays the local pairing link.'**
-  String get termuxAdoptionHelp;
-
-  /// No description provided for @termuxSetupFinished.
-  ///
-  /// In en, this message translates to:
-  /// **'Termux is showing the pairing link'**
-  String get termuxSetupFinished;
-
-  /// No description provided for @termuxPairRecovery.
-  ///
-  /// In en, this message translates to:
-  /// **'If the link expired or either service stopped, return to the setup step and rerun the same verified command. Do not paste an Agent API key as a pairing link.'**
-  String get termuxPairRecovery;
-
-  /// No description provided for @termuxReturnToSetup.
-  ///
-  /// In en, this message translates to:
-  /// **'Return to the setup command'**
-  String get termuxReturnToSetup;
-
   /// No description provided for @enrollTitle.
   ///
   /// In en, this message translates to:
@@ -7717,89 +7663,11 @@ abstract class AppLocalizations {
   /// **'Run setup'**
   String get localSetupConsentAction;
 
-  /// No description provided for @termuxSetupTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up Hermes on this phone'**
-  String get termuxSetupTitle;
-
-  /// No description provided for @termuxSetupBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Run Hermes Agent and Wing Link on your phone using Termux. You run the setup command yourself; it installs missing components or reuses a healthy installation.'**
-  String get termuxSetupBody;
-
-  /// No description provided for @termuxInstallAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Install Termux'**
-  String get termuxInstallAction;
-
-  /// No description provided for @termuxOpeningInstallGuide.
-  ///
-  /// In en, this message translates to:
-  /// **'Opening the Termux installation guide'**
-  String get termuxOpeningInstallGuide;
-
-  /// No description provided for @termuxInstallGuideFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'The Termux installation guide could not be opened. Open it manually at github.com/termux/termux-app.'**
-  String get termuxInstallGuideFailedMessage;
-
-  /// No description provided for @termuxCopyAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Copy setup command'**
-  String get termuxCopyAction;
-
-  /// No description provided for @termuxCopyingCommand.
-  ///
-  /// In en, this message translates to:
-  /// **'Copying the setup command'**
-  String get termuxCopyingCommand;
-
-  /// No description provided for @termuxPreparingCommand.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing the verified setup command…'**
-  String get termuxPreparingCommand;
-
-  /// No description provided for @termuxCopiedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup command copied. Open Termux and run it without changes.'**
-  String get termuxCopiedMessage;
-
   /// No description provided for @termuxCopyFailedMessage.
   ///
   /// In en, this message translates to:
   /// **'The setup command could not be copied. Select the command and copy it manually.'**
   String get termuxCopyFailedMessage;
-
-  /// No description provided for @termuxMetadataUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'This build cannot install the matching Wing Link release.'**
-  String get termuxMetadataUnavailable;
-
-  /// No description provided for @termuxRunStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Termux and run the copied command. Keep Termux in the foreground while setup finishes.'**
-  String get termuxRunStep;
-
-  /// No description provided for @termuxReturnStep.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap the local link shown by Termux, then choose Open Hermes Wing. Review the host and confirm the connection. Choose Set up a profile in Wing to configure a new profile with a provider and model through Wing Link.'**
-  String get termuxReturnStep;
-
-  /// No description provided for @termuxTierTwoNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep Termux running. If Android stops Hermes in the background, rerun the setup command to recover.'**
-  String get termuxTierTwoNotice;
 
   /// No description provided for @enrollInstallOnPhoneAction.
   ///

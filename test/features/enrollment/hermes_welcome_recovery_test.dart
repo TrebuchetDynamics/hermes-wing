@@ -140,7 +140,9 @@ void main() {
               contains('Termux'),
             );
             await activate('hermes-enrollment-local-setup');
-            expect(control('termux-ready'), findsOneWidget);
+            expect(control('platform-local-package-warning'), findsOneWidget);
+            expect(control('platform-local-existing-agent'), findsOneWidget);
+            expect(control('termux-copy-command'), findsNothing);
             await tester.pageBack();
             await tester.pumpAndSettle();
             expect(control('hermes-welcome'), findsOneWidget);

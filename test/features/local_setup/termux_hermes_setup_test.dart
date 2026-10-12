@@ -1,361 +1,111 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wing/features/local_setup/models/termux_bootstrap_command.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
-class _DeferredAssetBundle extends CachingAssetBundle {
-  _DeferredAssetBundle(this.metadata);
+import '../hermes_chat/support/fake_hermes_channel.dart';
+import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 
-  final Map<String, Object?> metadata;
-  final release = Completer<void>();
-
-  @override
-  Future<ByteData> load(String key) async {
-    await release.future;
-    final bytes = Uint8List.fromList(utf8.encode(jsonEncode(metadata)));
-    return ByteData.sublistView(bytes);
-  }
-}
-
-class _MemoryAssetBundle extends CachingAssetBundle {
-  _MemoryAssetBundle(this.metadata);
-
-  final Map<String, Object?> metadata;
-
-  @override
-  Future<ByteData> load(String key) async {
-    final bytes = Uint8List.fromList(utf8.encode(jsonEncode(metadata)));
-    return ByteData.sublistView(bytes);
-  }
-}
-
-Map<String, Object?> _validMetadata() => {
-  'available': true,
-  'tag': 'v0.1.0-alpha.9',
-  'installer_commit': '0123456789abcdef0123456789abcdef01234567',
-  'installer_sha256': List.filled(64, 'a').join(),
-  'asset_sha256': List.filled(64, 'b').join(),
-  'asset_size': 1234567,
-};
-
-Widget _testApp(Map<String, Object?> metadata, {double textScale = 1}) =>
-    DefaultAssetBundle(
-      bundle: _MemoryAssetBundle(metadata),
-      child: MaterialApp(
-        theme: ThemeData(platform: TargetPlatform.android),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
-        ),
-        home: const TermuxHermesSetupScreen(),
-      ),
-    );
-
-Widget _packagedApp() => MaterialApp(
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: const TermuxHermesSetupScreen(),
-);
-
-Future<void> _showCommand(WidgetTester tester) async {
-  final ready = find.byKey(const ValueKey('termux-ready'));
-  await tester.ensureVisible(ready);
-  await tester.tap(ready);
-  await tester.pump();
-}
+Finder key(String value) => find.byKey(ValueKey(value));
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  testWidgets('announces setup command preparation while metadata loads', (
-    tester,
-  ) async {
-    final semantics = tester.ensureSemantics();
-    final bundle = _DeferredAssetBundle(_validMetadata());
-    await tester.pumpWidget(
-      DefaultAssetBundle(
-        bundle: bundle,
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: TermuxHermesSetupScreen(),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    await _showCommand(tester);
-    final loading = find.byKey(const ValueKey('termux-command-loading'));
-    expect(loading, findsOneWidget);
-    await tester.ensureVisible(loading);
-    await tester.pump();
-    final loadingSemantics = tester.getSemantics(loading);
-    expect(
-      loadingSemantics.label,
-      contains('Preparing the verified setup command…'),
-    );
-    expect(loadingSemantics.flagsCollection.isLiveRegion, isTrue);
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.byKey(const ValueKey('termux-copy-command')),
-          )
-          .onPressed,
-      isNull,
-    );
-
-    bundle.release.complete();
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const ValueKey('termux-command-loading')), findsNothing);
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.byKey(const ValueKey('termux-copy-command')),
-          )
-          .onPressed,
-      isNotNull,
-    );
-    semantics.dispose();
-  });
-
-  testWidgets('copies only the validated release-pinned command after a tap', (
-    tester,
-  ) async {
-    String? clipboardText;
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (call) async {
-        if (call.method == 'Clipboard.setData') {
-          clipboardText =
-              (call.arguments as Map<Object?, Object?>)['text'] as String?;
-        }
-        return null;
-      },
-    );
-    addTearDown(
-      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        null,
-      ),
-    );
-
-    final metadata = _validMetadata();
-    await tester.pumpWidget(_testApp(metadata));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Set up Hermes on this phone'), findsOneWidget);
-    expect(
-      find.textContaining('reuses a healthy installation'),
-      findsOneWidget,
-    );
-    expect(clipboardText, isNull);
-    await _showCommand(tester);
-
-    await tester.tap(find.byKey(const ValueKey('termux-copy-command')));
-    await tester.pump();
-
-    expect(clipboardText, TermuxBootstrapCommand.fromJson(metadata).command);
-    expect(find.textContaining('Setup command copied'), findsOneWidget);
-    for (final forbidden in [
-      'API_SERVER_KEY',
-      'Bearer',
-      'wing://connect',
-      'code=',
-      '/data/data/',
-    ]) {
-      expect(find.textContaining(forbidden), findsNothing);
-      expect(clipboardText, isNot(contains(forbidden)));
-    }
-  });
-
-  testWidgets('blocks duplicate command copies while clipboard is pending', (
-    tester,
-  ) async {
-    final gate = Completer<void>();
-    addTearDown(() {
-      if (!gate.isCompleted) gate.complete();
-    });
-    var copyCalls = 0;
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-          if (call.method == 'Clipboard.setData') {
-            copyCalls += 1;
-            await gate.future;
+  for (final width in [320.0, 1024.0]) {
+    testWidgets(
+      'phone setup never offers Link bootstrap or pairing at ${width}dp',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final channel = FakeHermesChannel.disconnected();
+        final store = FakeHermesEndpointStore(profiles: const []);
+        addTearDown(channel.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              hermesChannelProvider.overrideWithValue(channel),
+              hermesEndpointStoreProvider.overrideWithValue(store),
+              hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+              hermesTextToSpeechServiceProvider.overrideWithValue(null),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(2)),
+                child: child!,
+              ),
+              home: const TermuxHermesSetupScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final semantics = tester.ensureSemantics();
+        expect(key('platform-local-package-warning'), findsOneWidget);
+        final warning = tester
+            .widget<Text>(key('platform-local-package-warning'))
+            .data!;
+        expect(
+          warning,
+          contains('Automatic installation is unavailable in Wing'),
+        );
+        expect(warning, contains('current installation steps and limitations'));
+        expect(warning, isNot(contains('currently warns')));
+        expect(find.textContaining('Wing Link'), findsNothing);
+        expect(key('termux-copy-command'), findsNothing);
+        expect(key('hermes-api-key-field'), findsNothing);
+        for (final action in [
+          'platform-local-existing-agent',
+          'platform-local-started-agent',
+        ]) {
+          await tester.ensureVisible(key(action));
+          for (
+            var tab = 0;
+            tab < 30 &&
+                tester.getSemantics(key(action)).flagsCollection.isFocused !=
+                    Tristate.isTrue;
+            tab++
+          ) {
+            await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+            await tester.pump();
           }
-          return null;
-        });
-    addTearDown(
-      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null),
-    );
-
-    await tester.pumpWidget(_testApp(_validMetadata()));
-    await tester.pumpAndSettle();
-    await _showCommand(tester);
-    final copy = find.byKey(const ValueKey('termux-copy-command'));
-    await tester.tap(copy);
-    await tester.pump();
-
-    expect(copyCalls, 1);
-    expect(tester.widget<FilledButton>(copy).onPressed, isNull);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    gate.complete();
-    await tester.pumpAndSettle();
-    expect(copyCalls, 1);
-    expect(find.textContaining('Setup command copied'), findsOneWidget);
-  });
-
-  testWidgets('clipboard failure shows an explicit recovery message', (
-    tester,
-  ) async {
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (call) async {
-        if (call.method == 'Clipboard.setData') {
-          throw PlatformException(code: 'clipboard-unavailable');
+          expect(
+            tester.getSemantics(key(action)).flagsCollection.isFocused,
+            Tristate.isTrue,
+          );
+          // Invoke the public control via keyboard, not its callback.
+          await tester.sendKeyEvent(LogicalKeyboardKey.space);
+          await tester.pumpAndSettle();
         }
-        return null;
+        await tester.ensureVisible(key('hermes-api-key-field'));
+        expect(
+          tester.widget<TextField>(key('hermes-api-key-field')).obscureText,
+          isTrue,
+        );
+        expect(find.text('http://127.0.0.1:8642'), findsOneWidget);
+        expect(key('hermes-open-qr-scanner'), findsNothing);
+        expect(key('hermes-enrollment-paste-link'), findsNothing);
+        expect(find.textContaining('Wing Link'), findsNothing);
+        expect(store.saveCalls, isEmpty);
+        expect(channel.connectCalls, isEmpty);
+        await tester.ensureVisible(key('platform-local-guide-back'));
+        await tester.tap(key('platform-local-guide-back'));
+        await tester.pumpAndSettle();
+        expect(key('hermes-api-key-field'), findsNothing);
+        expect(tester.takeException(), isNull);
+        semantics.dispose();
       },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
     );
-    addTearDown(
-      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        null,
-      ),
-    );
-
-    await tester.pumpWidget(_testApp(_validMetadata()));
-    await tester.pumpAndSettle();
-    await _showCommand(tester);
-    await tester.tap(find.byKey(const ValueKey('termux-copy-command')));
-    await tester.pump();
-
-    expect(find.textContaining('could not be copied'), findsOneWidget);
-    expect(find.textContaining('Setup command copied'), findsNothing);
-  });
-
-  testWidgets('development build packages a usable verified command', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_packagedApp());
-    await tester.pumpAndSettle();
-    await _showCommand(tester);
-
-    // Native asset I/O can finish after the last scheduled animation frame.
-    for (var attempt = 0; attempt < 50; attempt++) {
-      final action = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('termux-copy-command')),
-      );
-      if (action.onPressed != null ||
-          find
-              .text('This build cannot install the matching Wing Link release.')
-              .evaluate()
-              .isNotEmpty) {
-        break;
-      }
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-
-    final button = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('termux-copy-command')),
-    );
-    expect(button.onPressed, isNotNull);
-    expect(
-      find.text('This build cannot install the matching Wing Link release.'),
-      findsNothing,
-    );
-    expect(find.textContaining('codeload.github.com'), findsOneWidget);
-  });
-
-  testWidgets('unqualified build disables command copy', (tester) async {
-    await tester.pumpWidget(_testApp({'available': false}));
-    await tester.pumpAndSettle();
-    await _showCommand(tester);
-
-    final button = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('termux-copy-command')),
-    );
-    expect(button.onPressed, isNull);
-    expect(
-      find.text('This build cannot install the matching Wing Link release.'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('install guide action has an async callback', (tester) async {
-    await tester.pumpWidget(_testApp(_validMetadata()));
-    await tester.pumpAndSettle();
-
-    final button = tester.widget<OutlinedButton>(
-      find.byKey(const ValueKey('termux-install')),
-    );
-    expect(button.onPressed, isNotNull);
-  });
-
-  testWidgets(
-    'actions remain reachable at 320dp and 200 percent text',
-    (tester) async {
-      tester.view.physicalSize = const Size(320, 640);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(_testApp(_validMetadata(), textScale: 2));
-      await tester.pumpAndSettle();
-
-      expect(tester.takeException(), isNull);
-      final semantics = tester.ensureSemantics();
-      final installButton = find.byKey(const ValueKey('termux-install'));
-      for (
-        var attempt = 0;
-        attempt < 8 && installButton.evaluate().isEmpty;
-        attempt++
-      ) {
-        await tester.drag(
-          find.byType(SingleChildScrollView).first,
-          const Offset(0, -150),
-        );
-        await tester.pump();
-      }
-      expect(installButton, findsOneWidget);
-      expect(tester.getSize(installButton).height, greaterThanOrEqualTo(48));
-      expect(tester.widget<OutlinedButton>(installButton).onPressed, isNotNull);
-      expect(find.bySemanticsLabel('Install Termux'), findsOneWidget);
-
-      await _showCommand(tester);
-      final copyButton = find.byKey(const ValueKey('termux-copy-command'));
-      await tester.ensureVisible(copyButton);
-      expect(copyButton, findsOneWidget);
-      expect(tester.getSize(copyButton).height, greaterThanOrEqualTo(48));
-      expect(tester.widget<FilledButton>(copyButton).onPressed, isNotNull);
-      expect(find.bySemanticsLabel('Copy setup command'), findsOneWidget);
-      final tierNotice = find.textContaining('If Android stops Hermes');
-      for (
-        var attempt = 0;
-        attempt < 12 && tierNotice.evaluate().isEmpty;
-        attempt++
-      ) {
-        await tester.drag(
-          find.byType(SingleChildScrollView).first,
-          const Offset(0, -300),
-        );
-        await tester.pump();
-      }
-      expect(tierNotice, findsOneWidget);
-      expect(tester.takeException(), isNull);
-      semantics.dispose();
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+  }
 }

@@ -87,65 +87,79 @@ void main() {
     }),
   );
 
-  testWidgets(
-    'phone setup returns to the pairing step of the existing chooser',
-    (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final container = ProviderContainer(
-        overrides: [
-          hermesChannelProvider.overrideWithValue(channel),
-          hermesEndpointStoreProvider.overrideWithValue(
-            FakeHermesEndpointStore(),
+  for (final standalone in [false, true]) {
+    testWidgets(
+      'phone setup continues directly to Agent authentication without pairing (standalone: $standalone)',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final channel = FakeHermesChannel.disconnected();
+        addTearDown(channel.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesEndpointStoreProvider.overrideWithValue(
+              FakeHermesEndpointStore(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        final router = container.read(routerProvider);
+        router.go(standalone ? AppRoutes.localSetup : AppRoutes.enroll);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
           ),
-        ],
-      );
-      addTearDown(container.dispose);
-      final router = container.read(routerProvider);
-      router.go(AppRoutes.enroll);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp.router(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            routerConfig: router,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-        findsNothing,
-      );
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
-      );
-      await tester.tap(
-        find.byKey(const ValueKey('hermes-enrollment-local-setup')),
-      );
-      await tester.pumpAndSettle();
-      for (final key in [
-        'termux-ready',
-        'termux-setup-finished',
-        'termux-open-pairing',
-      ]) {
-        final action = find.byKey(ValueKey(key));
-        await tester.ensureVisible(action);
-        await tester.tap(action);
+        );
         await tester.pumpAndSettle();
-      }
-      expect(find.byType(TermuxHermesSetupScreen), findsNothing);
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-        findsOneWidget,
-      );
-      expect(router.routeInformationProvider.value.uri.path, AppRoutes.enroll);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          findsNothing,
+        );
+        if (!standalone) {
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+          );
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-enrollment-local-setup')),
+          );
+          await tester.pumpAndSettle();
+        }
+        for (final key in [
+          'platform-local-existing-agent',
+          'platform-local-started-agent',
+        ]) {
+          final action = find.byKey(ValueKey(key));
+          await tester.ensureVisible(action);
+          await tester.tap(action);
+          await tester.pumpAndSettle();
+        }
+        expect(find.byType(TermuxHermesSetupScreen), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-api-key-field')),
+          findsOneWidget,
+        );
+        if (standalone) {
+          await tester.tap(find.byType(BackButton));
+        } else {
+          expect(router.canPop(), isTrue);
+          await tester.binding.handlePopRoute();
+        }
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+  }
 
   testWidgets(
     'Linux setup opened from manual connection continues into pairing',

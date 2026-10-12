@@ -24,7 +24,15 @@ class HermesAddScreen extends StatelessWidget {
       onConnectionSaved: fromWelcome
           ? () => context.go(AppRoutes.hermes)
           : null,
-      onConnectionCancelled: fromWelcome ? () => context.pop() : null,
+      onConnectionCancelled: fromWelcome
+          ? () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.enroll);
+              }
+            }
+          : null,
     );
     // Scrolling enlarged form fields changes their screen-space reading order.
     // Keep traversal stable so cycling the form can still reach AppBar Back.

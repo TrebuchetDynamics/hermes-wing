@@ -3990,13 +3990,13 @@ abstract class AppLocalizations {
   /// No description provided for @enrollIntro.
   ///
   /// In en, this message translates to:
-  /// **'Connect directly to an existing Hermes Agent using Local, SSH, or Remote. Installation and Wing Link pairing are optional, separate setup paths.'**
+  /// **'Connect directly to an existing Hermes Agent using Local, SSH, or Remote.'**
   String get enrollIntro;
 
   /// No description provided for @enrollOptionalSetupAction.
   ///
   /// In en, this message translates to:
-  /// **'Optional setup and pairing'**
+  /// **'Local setup'**
   String get enrollOptionalSetupAction;
 
   /// No description provided for @enrollPairHeading.
@@ -4020,7 +4020,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollPhoneHelp.
   ///
   /// In en, this message translates to:
-  /// **'Install or reuse Hermes Agent in Termux, then return to pair.'**
+  /// **'Manual on-phone Hermes Agent setup in Termux. Installation and readiness are not verified by Wing.'**
   String get enrollPhoneHelp;
 
   /// No description provided for @enrollComputerAction.
@@ -4086,7 +4086,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollLinuxHelp.
   ///
   /// In en, this message translates to:
-  /// **'Detect Hermes Agent on this Linux computer, then install or reuse it with Wing Link.'**
+  /// **'Review local setup on this Linux computer. Installation and readiness require separate checks.'**
   String get enrollLinuxHelp;
 
   /// No description provided for @enrollStepProgress.
@@ -7804,7 +7804,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollInstallOnPhoneAction.
   ///
   /// In en, this message translates to:
-  /// **'Use this phone'**
+  /// **'Use this phone (Termux)'**
   String get enrollInstallOnPhoneAction;
 
   /// No description provided for @enrollSetupProfileAction.

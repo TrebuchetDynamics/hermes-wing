@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../router/routes/app_routes.dart';
-import '../widgets/computer_setup_guide.dart';
+
 import '../widgets/enrollment_readiness.dart';
 import '../widgets/hermes_welcome.dart';
 import '../../hermes_chat/screens/hermes_chat_screen.dart';
@@ -25,7 +25,7 @@ enum _EnrollmentInputError {
   imageUnavailable,
 }
 
-enum _EnrollmentPage { choose, pair, computer }
+enum _EnrollmentPage { choose, pair }
 
 /// Reviews a one-time Hermes Wing connect pairing request before exchanging it.
 /// Opened from setup, saved connections, or explicit handoffs; it lives outside the
@@ -273,13 +273,18 @@ class _HermesEnrollmentScreenState
         body: SafeArea(
           child: HermesWelcome(
             onConnect: _openManualConnection,
-            optionalSetup: ExpansionTile(
-              key: const ValueKey('hermes-welcome-optional'),
-              title: Text(
-                AppLocalizations.of(context).enrollOptionalSetupAction,
-              ),
-              children: [_chooserActions()],
-            ),
+            optionalSetup:
+                !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                ? _chooserActions()
+                : ref.watch(localLinuxSetupAvailableProvider)
+                ? ExpansionTile(
+                    key: const ValueKey('hermes-welcome-optional'),
+                    title: Text(
+                      AppLocalizations.of(context).enrollOptionalSetupAction,
+                    ),
+                    children: [_chooserActions()],
+                  )
+                : const SizedBox.shrink(),
           ),
         ),
       );
@@ -361,9 +366,6 @@ class _HermesEnrollmentScreenState
     }
     switch (controller.status) {
       case HermesEnrollmentStatus.idle:
-        if (_page == _EnrollmentPage.computer) {
-          return ComputerSetupGuide(onPair: _showPairing);
-        }
         if (_page == _EnrollmentPage.pair) return _entryActions();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -638,20 +640,6 @@ class _HermesEnrollmentScreenState
             android ? s.enrollPhoneHelp : s.enrollLinuxHelp,
             () => unawaited(_openLocalSetup()),
           ),
-        choice(
-          'hermes-enrollment-computer-setup',
-          Icons.dns_outlined,
-          s.enrollComputerAction,
-          s.enrollComputerHelp,
-          () => setState(() => _page = _EnrollmentPage.computer),
-        ),
-        choice(
-          'hermes-enrollment-pair-choice',
-          Icons.qr_code,
-          s.enrollPairHeading,
-          s.enrollPairChoiceHelp,
-          _showPairing,
-        ),
       ],
     );
   }

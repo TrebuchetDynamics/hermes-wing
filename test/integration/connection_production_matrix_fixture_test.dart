@@ -30,9 +30,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Optional setup and pairing'));
-      await tester.tap(find.text('Optional setup and pairing'));
-      await tester.pumpAndSettle();
+      expect(find.text('Local setup'), findsNothing);
       expect(find.text('Set up Hermes on this computer'), findsNothing);
       expect(find.text('Get Started'), findsOneWidget);
     },

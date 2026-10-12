@@ -2307,10 +2307,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollIntro =>
-      'Connect directly to an existing Hermes Agent using Local, SSH, or Remote. Installation and Wing Link pairing are optional, separate setup paths.';
+      'Connect directly to an existing Hermes Agent using Local, SSH, or Remote.';
 
   @override
-  String get enrollOptionalSetupAction => 'Optional setup and pairing';
+  String get enrollOptionalSetupAction => 'Local setup';
 
   @override
   String get enrollPairHeading => 'I have a QR code or pairing link';
@@ -2324,7 +2324,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollPhoneHelp =>
-      'Install or reuse Hermes Agent in Termux, then return to pair.';
+      'Manual on-phone Hermes Agent setup in Termux. Installation and readiness are not verified by Wing.';
 
   @override
   String get enrollComputerAction => 'Use another computer';
@@ -2363,7 +2363,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollLinuxHelp =>
-      'Detect Hermes Agent on this Linux computer, then install or reuse it with Wing Link.';
+      'Review local setup on this Linux computer. Installation and readiness require separate checks.';
 
   @override
   String enrollStepProgress(int step, int total) {
@@ -4710,7 +4710,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep Termux running. If Android stops Hermes in the background, rerun the setup command to recover.';
 
   @override
-  String get enrollInstallOnPhoneAction => 'Use this phone';
+  String get enrollInstallOnPhoneAction => 'Use this phone (Termux)';
 
   @override
   String get enrollSetupProfileAction => 'Set up a profile';

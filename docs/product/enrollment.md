@@ -7,20 +7,24 @@ only navigation state, never a handoff, credential, host address, or pairing cod
 
 ## Desktop connection-path alignment
 
-The [connection requirements](prd.md#connection-path-requirements) call for Local,
-SSH and Remote primary first-run entry without mandatory Wing Link installation,
-pairing or credentials. In the current development worktree, Chat Add and
-connect-another actions open the direct endpoint form. The enrollment chooser
-also offers **Add Hermes** before **Optional setup and pairing**. The form keeps
-Local/SSH/Remote grouping. The [first-run receipt](../quality/direct-first-run.md)
-records passing widgets and compiled Chromium journeys on Linux. This is bounded
-deterministic qualification. The [native first-run receipt](../quality/direct-first-run-native.md)
-also records Linux GTK fixture journeys. Main delivery, Android and live
-authentication remain separate gaps.
-Wing does not yet manage SSH processes.
+The [connection requirements](prd.md#connection-path-requirements) require direct
+Agent entry without Wing Link prerequisites. The default welcome no longer offers
+**Use another computer** or **I have a QR code or pairing link**, and no longer
+constructs the computer setup guide. Its primary actions reuse the existing
+**Add Hermes** form and direct Agent connection modes.
+
+Android follows the accepted owner correction: **Connect via SSH** first,
+**Connect to Remote Hermes** second, **Use this phone (Termux)** third, as distinct
+actions. SSH and Remote open their corresponding existing connection forms;
+Termux opens the unchanged manual on-phone guide. Android does not present the
+desktop Local/Get Started action ahead of SSH. Desktop/web retain Get Started,
+SSH and Remote; native Linux retains Local setup in a separate disclosure.
+Remote retains its HTTPS/VPN choices. This slice changes entry presentation, not
+installation, managed SSH, packaging or platform qualification.
 
 Reuse the direct Agent channel and secure endpoint storage, not a mandatory
-management exchange. Retain pairing only as a separate optional management flow.
+management exchange. Explicit legacy handoffs remain supported by retained code,
+not promoted as new-user setup.
 Missing Agent APIs must leave affected features unavailable with an explanation.
 No new backend, shadow state or broader compatibility adapter is authorized.
 
@@ -31,17 +35,16 @@ Keep the manual single-profile Agent connection available. See the
 
 ## Journey
 
-The current development chooser offers direct **Add Hermes** access first.
-The following describes the separate **optional management enrollment** choices.
-Their existing trust and transaction contracts remain unchanged:
+Choose a direct Agent action, complete its existing authenticated form, or cancel
+back to welcome. Opening or cancelling an entry does not save a connection or
+exchange management credentials. Existing saved records and selected
+host/profile/session ownership remain unchanged; restoration never replays sends.
 
-- **Use this phone** on native Android (or local setup on native Linux).
-- **Use another computer** for a Linux host reached through a trusted VPN.
-- **I have a QR code or pairing link** for an existing host.
-
-Pairing retains advanced manual single-profile Agent connection as a recovery
-alternative. Primary **Add Hermes** and that recovery path both use direct Agent
-connection; neither imports Wing Link management access.
+The default chooser does not construct or invoke a Wing Link management client.
+The retained Local setup guide is not retired by this slice. Explicit
+`/enroll?step=pair`, Android intent/share ingress, Local setup completion and the
+Android Local form's QR action remain legacy access paths. Their removal requires
+separate work; this is not whole-product Wing Link removal.
 
 ### This phone
 
@@ -60,24 +63,11 @@ approved `setup --json`, now with progress from the existing bounded operation.
 Its completion action enters pairing directly. No new installer protocol or
 remote execution surface was introduced.
 
-### Another computer
+The computer setup widget and its localization remain legacy source, but the
+default enrollment screen neither imports nor constructs it. No stored data
+migration or deletion accompanies this presentation change.
 
-One screen combines the host/VPN prerequisites with the setup-and-pair command.
-An existing Wing Link installation runs its idempotent setup followed by
-`wing-link pair`; otherwise the guide uses the established repository installer
-and then starts pairing. The pairing command is visible before the user leaves
-the guide, and the copy action copies the complete sequence. The guide never
-reads a clipboard in the background.
-
-The action does not run a remote command or mark the host verified. Back returns
-to the connection choices. The final action opens pairing while the host terminal
-remains active. A live handoff can interrupt the guide and open review
-immediately.
-
-See the [computer setup runbook](../runbooks/android-hermes-setup.md) and
-[phone setup runbook](../runbooks/android-termux-local-agent.md).
-
-### Pair and verify
+### Retained legacy pair and verify
 
 Paste works on every platform. Native Android also offers live QR scanning and
 QR-image import. Explicit links and Android shares retain the same ingress.
@@ -137,7 +127,7 @@ separate readiness evidence.
 - Wing does not bundle or manage optional model gateways. Configure provider
   access through Hermes Agent; the UI does not promise free or unlimited models.
 
-## Completion evidence
+## Historical completion evidence (before default-entry retirement)
 
 | Requirement | Evidence |
 | --- | --- |
@@ -154,7 +144,10 @@ Physical Android installation, Termux process survival, native QR hardware, live
 VPN pairing, and successful model inference were not exercised. Deterministic
 evidence here establishes client behavior, not those platform qualifications.
 
-### Validation commands
+These receipts describe the earlier chooser, not this candidate's qualification.
+Current candidate checks and source fingerprints are recorded on card t_22e074db.
+
+### Historical validation commands
 
 - `flutter gen-l10n`: generated localization outputs from `app_en.arb`.
 - `dart format --output=none --set-exit-if-changed lib test integration_test`: 329 files, unchanged.

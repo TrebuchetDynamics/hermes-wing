@@ -514,35 +514,16 @@ void main() {
         }
         await visit('/enroll');
         expect(
-          await click(
-            find.byKey(const ValueKey('hermes-enrollment-computer-setup')),
-          ),
-          isTrue,
-        );
-        await capture(
-          'computer-setup-install',
-          'One-screen host setup and pairing instructions',
+          find.byKey(const ValueKey('hermes-enrollment-computer-setup')),
+          findsNothing,
         );
         expect(
-          await click(
-            find.byKey(const ValueKey('computer-wing-link-installed')),
-          ),
-          isTrue,
+          find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
+          findsNothing,
         );
         await capture(
-          'computer-setup-existing-host',
-          'Existing host setup and pairing command',
-        );
-        expect(find.textContaining('wing-link pair'), findsWidgets);
-        expect(
-          await click(
-            find.byKey(const ValueKey('hermes-enrollment-computer-ready')),
-          ),
-          isTrue,
-        );
-        await capture(
-          'computer-setup-pairing-entry',
-          'Computer tutorial reaches pairing entry',
+          'direct-agent-entry',
+          'Welcome exposes direct Agent choices without legacy computer or QR setup',
         );
         await visit('/enroll?step=pair');
         await capture(

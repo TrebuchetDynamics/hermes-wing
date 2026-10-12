@@ -139,7 +139,13 @@ Owner correction, 2026-10-07: Local, SSH and Remote must connect directly to
 Hermes Agent without mandatory Wing Link installation, pairing or credentials.
 This is accepted intent, not a shipped first-run redesign or managed SSH claim.
 
-Wing now groups three primary choices in this order: **Local**, **SSH**
+Android default welcome follows the accepted correction: **SSH**, **Remote
+server**, then **on-phone Termux**, as separate actions. The enrollment candidate
+removes default computer/QR pairing promotions while retaining explicit legacy
+handoffs and unchanged Local setup. Its Linux-hosted widget checks are not native
+Android, installation or managed-SSH qualification. See [enrollment](enrollment.md).
+
+The existing Add Hermes form groups three primary choices in this order: **Local**, **SSH**
 and **Remote**. Remote contains **Remote HTTPS** and **VPN / NetBird /
 Tailscale** subchoices. Selecting Remote preserves an already selected VPN mode.
 The [connection layout](../../lib/features/hermes_chat/screens/state/hermes_chat_layout.dart)
@@ -159,8 +165,8 @@ adds four passing Linux GTK fixture journeys with synthetic denial, explicit
 keyboard retry and zero management/mutation attempts. Managed connection parity
 remains incomplete.
 
-- Current optional management setup uses existing typed Wing Link inspect/setup operations where
-  supported. See [enrollment](enrollment.md).
+- Retained Local setup still uses legacy contracts; the default enrollment
+  chooser no longer promotes computer setup or QR pairing. See [enrollment](enrollment.md).
 - Remote and VPN modes connect to an explicitly supplied Agent endpoint.
   Pairing separately establishes Wing Link management authority. Remote browser
   OAuth is not established by Desktop's OAuth implementation.

@@ -166,21 +166,14 @@ void main() {
         await activate('hermes-optional-setup');
         expect(control('hermes-enrollment-direct-connect'), findsOneWidget);
         expect(control('hermes-enrollment-local-setup'), findsOneWidget);
-        await activate('hermes-enrollment-pair-choice');
-        expect(control('hermes-enrollment-type-link'), findsOneWidget);
-        await activate('hermes-enrollment-manual-connect');
-        expect(control('hermes-primary-connection-modes'), findsOneWidget);
+        expect(control('hermes-enrollment-pair-choice'), findsNothing);
+        expect(control('hermes-enrollment-computer-setup'), findsNothing);
         // Back through the actual production stack; no endpoint or domain mutation.
         await tester.pageBack();
         await tester.pumpAndSettle();
         await tester.pageBack();
         await tester.pumpAndSettle();
-        await tester.pageBack();
-        await tester.pumpAndSettle();
         expect(router.routeInformationProvider.value.uri.path, '/hermes');
-        // Enrollment consumes Back once to return from pairing to its chooser.
-        await tester.pageBack();
-        await tester.pumpAndSettle();
         expect(control('gateway-contacts-add'), findsOneWidget);
         expect(store.saveCalls, isEmpty);
         expect(fixture.requests, isEmpty);

@@ -1704,6 +1704,62 @@ void main() {
     bool anyTextContainsToken(WidgetTester tester) =>
         anyTextContains(tester, _secretToken);
 
+    testWidgets(
+      'default chooser does not promote legacy computer or QR pairing',
+      (tester) async {
+        final store = FakeHermesEndpointStore();
+        final source = _FakeConnectIntentSource();
+        addTearDown(source.dispose);
+        var inspections = 0;
+        final controller = HermesEnrollmentController(
+          inspectEnrollment: ({required origin, required code}) async {
+            inspections++;
+            return _preview;
+          },
+          exchangeEnrollment: ({required origin, required code}) async =>
+              _issued,
+          endpointStore: store,
+        );
+        await tester.pumpWidget(
+          buildApp(
+            controller: controller,
+            source: source,
+            store: store,
+            chooser: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final optional = find.byKey(const ValueKey('hermes-welcome-optional'));
+        if (optional.evaluate().isNotEmpty) {
+          await tester.ensureVisible(optional);
+          await tester.tap(optional);
+          await tester.pumpAndSettle();
+        }
+        for (final name in [
+          'hermes-enrollment-computer-setup',
+          'hermes-enrollment-pair-choice',
+          'hermes-enrollment-paste-link',
+          'hermes-enrollment-scan-qr',
+        ]) {
+          expect(find.byKey(ValueKey(name)), findsNothing);
+        }
+        expect(
+          find.byKey(const ValueKey('hermes-welcome-ssh')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('hermes-welcome-remote')),
+          findsOneWidget,
+        );
+        expect(inspections, 0);
+        expect(store.saveCalls, isEmpty);
+      },
+      variant: TargetPlatformVariant({
+        TargetPlatform.android,
+        TargetPlatform.linux,
+      }),
+    );
+
     testWidgets('initial intent source failure stays recoverable and bounded', (
       tester,
     ) async {
@@ -1820,7 +1876,7 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('computer setup returns to pairing and accepts a live handoff', (
+    testWidgets('default chooser still accepts an explicit legacy handoff', (
       tester,
     ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
@@ -1852,63 +1908,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final computer = find.byKey(
-        const ValueKey('hermes-enrollment-computer-setup'),
-      );
-      final optional = find.byKey(const ValueKey('hermes-welcome-optional'));
-      await tester.ensureVisible(optional);
-      await tester.tap(optional);
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(computer);
-      await tester.tap(computer);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-computer-guide')),
-        findsOneWidget,
-      );
       expect(inspections, 0);
-      expect(find.text('hermes setup'), findsNothing);
-      expect(find.textContaining('wing-link pair'), findsWidgets);
-      expect(
-        find.text(
-          'git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git\n'
-          'cd hermes-wing\n'
-          './install-wing-link.sh &&\n'
-          '~/.local/bin/wing-link pair',
-        ),
-        findsOneWidget,
-      );
-      final installed = find.byKey(
-        const ValueKey('computer-wing-link-installed'),
-      );
-      await tester.ensureVisible(installed);
-      await tester.tap(installed);
-      await tester.pumpAndSettle();
-      expect(
-        find.text(
-          '~/.local/bin/wing-link setup &&\n~/.local/bin/wing-link pair',
-        ),
-        findsOneWidget,
-      );
-      expect(find.textContaining('wing-link inspect'), findsNothing);
-      final ready = find.byKey(
-        const ValueKey('hermes-enrollment-computer-ready'),
-      );
-      await tester.ensureVisible(ready);
-      await tester.tap(ready);
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-        findsOneWidget,
-      );
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(optional);
-      await tester.tap(optional);
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(computer);
-      await tester.tap(computer);
-      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
+      expect(find.textContaining('wing-link pair'), findsNothing);
       source.emit(_validPayload);
       await tester.pumpAndSettle();
       expect(controller.status, HermesEnrollmentStatus.ready);
@@ -2208,7 +2210,7 @@ void main() {
     });
 
     testWidgets(
-      'Linux chooser offers pairing, local setup, and manual actions',
+      'Linux chooser offers direct Agent entry and local setup without pairing',
       (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.linux;
         addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -2243,11 +2245,11 @@ void main() {
         );
         expect(
           find.byKey(const ValueKey('hermes-enrollment-computer-setup')),
-          findsOneWidget,
+          findsNothing,
         );
         expect(
           find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
-          findsOneWidget,
+          findsNothing,
         );
         debugDefaultTargetPlatformOverride = null;
       },

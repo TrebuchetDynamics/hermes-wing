@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../hermes_chat/screens/hermes_chat_screen.dart';
 import '../../../l10n/app_localizations.dart';
@@ -17,6 +18,7 @@ class HermesWelcome extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     return Container(
       key: const ValueKey('hermes-welcome'),
       decoration: BoxDecoration(
@@ -73,30 +75,32 @@ class HermesWelcome extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
                     ),
-                    const SizedBox(height: 32),
-                    FilledButton.icon(
-                      key: const ValueKey('hermes-enrollment-direct-connect'),
-                      onPressed: () => onConnect(HermesConnectionMode.local),
-                      icon: const Icon(Icons.arrow_forward),
-                      label: Text(s.welcomeGetStarted),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      s.welcomeLocalHint,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(s.welcomeOr),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
+                    if (!android) ...[
+                      const SizedBox(height: 32),
+                      FilledButton.icon(
+                        key: const ValueKey('hermes-enrollment-direct-connect'),
+                        onPressed: () => onConnect(HermesConnectionMode.local),
+                        icon: const Icon(Icons.arrow_forward),
+                        label: Text(s.welcomeGetStarted),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        s.welcomeLocalHint,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(s.welcomeOr),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     Wrap(
                       alignment: WrapAlignment.center,

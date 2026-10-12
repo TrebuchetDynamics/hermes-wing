@@ -43,7 +43,7 @@ for (const width of [390, 1280]) for (const installed of [false, true]) {
     await enableFlutterAccessibility(page, { delay: 0 });
     await control(page, installed ? 'installed' : 'missing');
     // All navigation uses the actual public welcome, setup and direct form.
-    const optional = page.getByText('Optional setup and pairing', { exact: true });
+    const optional = page.getByText('Local setup', { exact: true });
     await optional.scrollIntoViewIfNeeded();
     await optional.click();
     await activate(page, /^Set up Hermes on this computer /);

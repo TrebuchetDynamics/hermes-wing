@@ -63,21 +63,7 @@ void main() {
       await tester.pumpAndSettle();
       unawaited(router.push(AppRoutes.enroll));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('hermes-welcome-optional')),
-      );
-      await tester.tap(find.byKey(const ValueKey('hermes-welcome-optional')));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
-      );
-      await tester.tap(
-        find.byKey(const ValueKey('hermes-enrollment-pair-choice')),
-      );
-      await tester.pumpAndSettle();
-      final manual = find.byKey(
-        const ValueKey('hermes-enrollment-manual-connect'),
-      );
+      final manual = find.byKey(const ValueKey('hermes-welcome-remote'));
       await tester.ensureVisible(manual);
       await tester.tap(manual);
       await tester.pumpAndSettle();
@@ -89,9 +75,7 @@ void main() {
       expect(router.canPop(), isTrue);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Connect to Hermes'), findsOneWidget);
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
       router.pop();
       await tester.pumpAndSettle();
       expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
@@ -135,11 +119,6 @@ void main() {
         find.byKey(const ValueKey('hermes-enrollment-paste-link')),
         findsNothing,
       );
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('hermes-welcome-optional')),
-      );
-      await tester.tap(find.byKey(const ValueKey('hermes-welcome-optional')));
-      await tester.pumpAndSettle();
       await tester.ensureVisible(
         find.byKey(const ValueKey('hermes-enrollment-local-setup')),
       );

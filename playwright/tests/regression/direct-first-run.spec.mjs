@@ -81,10 +81,10 @@ for (const width of [390, 1280]) {
       await expect(page.getByRole('group', { name: /Canonical history for synthetic-restoration-000\.$/ })).toBeVisible();
       expect(management).toEqual([]);
       expect(mutations).toEqual([]);
-      // Public enrollment route is also direct-first; pairing remains separate.
+      // Default enrollment does not promote legacy pairing.
       await page.evaluate(() => { location.hash = '#/enroll'; });
-      await expect(page.getByText('Optional setup and pairing', { exact: true })).toBeVisible();
-      await activate(page, 'button', /^Add Hermes/);
+      await expect(page.getByRole('heading', { name: 'Welcome to Hermes Wing', exact: true })).toBeVisible();
+      await activate(page, 'button', 'Connect to Remote Hermes');
       await expect(page.getByRole('checkbox', { name: 'SSH', exact: true })).toBeVisible();
       const optional = page.getByRole('button', { name: 'Optional setup and pairing', exact: true });
       await focus(page, optional);
@@ -93,8 +93,9 @@ for (const width of [390, 1280]) {
       expect(await optional.evaluate(el => el === document.activeElement || el.contains(document.activeElement))).toBeTruthy();
       await page.screenshot({ path: info.outputPath(`optional-${mode}-${width}.png`) });
       await activate(page, 'button', 'Optional setup and pairing');
-      await activate(page, 'button', /^I have a QR code or pairing link/);
-      await expect(page.getByRole('button', { name: 'Enter connection string instead', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Welcome to Hermes Wing', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: /^I have a QR code or pairing link/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /Use another computer/ })).toHaveCount(0);
       expect(errors).toEqual([]);
       await writeFile(info.outputPath('receipt.json'), JSON.stringify({ width, mode, reads, mutations, management, attempts, errors, managedSsh: 'not implemented', liveAgent: 'NOT_CHECKED', native: 'NOT_CHECKED' }, null, 2));
     });

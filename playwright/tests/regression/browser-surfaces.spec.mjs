@@ -30,28 +30,15 @@ test("Hermes empty state opens direct Agent connection", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Paste pairing link" })).toHaveCount(0);
 });
 
-test("enrollment guides computer setup back to pairing", async ({ page }) => {
+test("enrollment exposes direct Agent entry without legacy setup promotions", async ({ page }) => {
   await open(page, "/enroll");
-  await page.getByRole("button", { name: /Optional setup and pairing/ }).click();
-  await page.getByRole("button", { name: /Use another computer/ }).click();
-  await expect(page.getByText("Set up Wing Link and pair")).toBeVisible();
-  const installCommand = page.getByText(
-    "git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git\ncd hermes-wing\n./install-wing-link.sh &&\n~/.local/bin/wing-link pair",
-    { exact: true },
-  );
-  await expect(installCommand).toBeVisible();
-  const existing = page.getByRole("checkbox", { name: "Wing Link already installed" });
-  await existing.click();
-  await expect(existing).toBeChecked();
-  await expect(page.getByText("~/.local/bin/wing-link setup &&\n~/.local/bin/wing-link pair", { exact: true })).toBeVisible();
-  await expect(installCommand).toHaveCount(0);
-  await existing.click();
-  await expect(existing).not.toBeChecked();
-  await expect(installCommand).toBeVisible();
-  await expect(page.getByText("hermes setup", { exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "Open pairing in Wing" }).click();
-  await expect(page.getByRole("button", { name: "Paste pairing link" })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Access token" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Local setup", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Use another computer/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^I have a QR code or pairing link/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Paste pairing link" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Connect to Remote Hermes", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: /^Hermes Agent URL/ })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "Remote", exact: true })).toBeChecked();
 });
 
 test("unknown routes render a bounded not-found screen", async ({ page }) => {

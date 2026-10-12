@@ -39,7 +39,10 @@ part 'api_channel/hermes_api_channel_errors.dart';
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
 /// API server. See docs/adr/client.md.
 class HermesApiChannel extends ChangeNotifier
-    implements HermesChannel, HermesAudioChannel {
+    implements
+        HermesChannel,
+        HermesAudioChannel,
+        HermesApprovalLifecycleChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,
     String Function()? sessionIdFactory,
@@ -99,6 +102,13 @@ class HermesApiChannel extends ChangeNotifier
   String? _pendingProfileSelectionId;
   final _approvalController =
       StreamController<HermesApprovalRequest>.broadcast();
+  final _approvalInvalidationController =
+      StreamController<HermesApprovalRequest>.broadcast();
+  final _pendingApprovals = <String, HermesApprovalRequest>{};
+
+  @override
+  Stream<HermesApprovalRequest> get invalidatedApprovals =>
+      _approvalInvalidationController.stream;
   final _deletingSessionOperations = <String, Object>{};
   final _renamingSessionOperations = <String, Object>{};
   final _forkingSessionOperations = <String, Object>{};
@@ -123,6 +133,7 @@ class HermesApiChannel extends ChangeNotifier
     _runHistorySnapshots.clear();
     _messageHistoryPagination.clear();
     _approvalController.close();
+    _approvalInvalidationController.close();
     super.dispose();
   }
 
@@ -246,6 +257,7 @@ class HermesApiChannel extends ChangeNotifier
     _activeStreamCompleters.clear();
     _activeRunIds.clear();
     _approvalResponder.clear();
+    _pendingApprovals.clear();
     _sessionStreamGenerations.clear();
   }
 

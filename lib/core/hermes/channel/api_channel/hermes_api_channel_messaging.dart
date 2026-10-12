@@ -611,6 +611,15 @@ extension _MessagingExtension on HermesApiChannel {
             _setTurns(sessionId, List.of(turns));
             return;
           }
+          if (event.name == 'approval.responded') {
+            _settleApprovalFromEvent(
+              event,
+              runId: runId,
+              sessionId: sessionId,
+              profileId: profileId,
+            );
+            return;
+          }
           if (_isApprovalRequestEvent(event.name)) {
             final request = _approvalRequestFromEvent(
               event,
@@ -621,7 +630,7 @@ extension _MessagingExtension on HermesApiChannel {
             if (runId != null && request.id.isNotEmpty) {
               _approvalResponder.registerApproval(request.id, runId);
             }
-            _approvalController.add(request);
+            _emitApprovalRequest(request);
             return;
           }
           if (_isStreamErrorEvent(event.name)) {
@@ -759,7 +768,7 @@ extension _MessagingExtension on HermesApiChannel {
       _activeRunIds.remove(sessionId);
     }
     if (runId != null) {
-      _approvalResponder.forgetApprovalsForRun(runId);
+      _invalidateApprovalsForRun(runId);
       if (terminalRunLifecycleReceived) {
         await _releaseDetachedRunBestEffort(
           runId: runId,
@@ -1141,6 +1150,57 @@ extension _MessagingExtension on HermesApiChannel {
       break;
     }
     return merged;
+  }
+
+  void _invalidateApprovalsForRun(String runId) {
+    final retired = _pendingApprovals.values
+        .where((request) => request.runId == runId)
+        .toList();
+    for (final request in retired) {
+      _pendingApprovals.remove(request.identityKey);
+      _approvalInvalidationController.add(request);
+    }
+    _approvalResponder.forgetApprovalsForRun(runId);
+  }
+
+  void _emitApprovalRequest(HermesApprovalRequest request) {
+    // Legacy stream requests have no run settlement contract to track.
+    if (request.runId == null) {
+      _approvalController.add(request);
+      return;
+    }
+    final pending = _pendingApprovals.putIfAbsent(
+      request.identityKey,
+      () => request,
+    );
+    _approvalController.add(pending);
+  }
+
+  void _settleApprovalFromEvent(
+    HermesStreamEvent event, {
+    required String? runId,
+    required String sessionId,
+    required String? profileId,
+  }) {
+    final requestId = wingOptionalStringFromJson(event.payload['request_id']);
+    // Legacy FIFO receipts do not identify which pending request was answered.
+    if (requestId == null || requestId.isEmpty || runId == null) return;
+    final settled = _pendingApprovals.values
+        .where(
+          (request) =>
+              request.id == requestId &&
+              request.runId == runId &&
+              request.sessionId == sessionId &&
+              request.profileId == profileId &&
+              request.connectionGeneration == _connectionGeneration &&
+              request.profileSelectionGeneration == _profileSelectionGeneration,
+        )
+        .toList();
+    for (final request in settled) {
+      _pendingApprovals.remove(request.identityKey);
+      _approvalResponder.forgetApproval(request.id);
+      _approvalInvalidationController.add(request);
+    }
   }
 
   bool _isApprovalRequestEvent(String name) {
@@ -1920,6 +1980,15 @@ extension _MessagingExtension on HermesApiChannel {
                 _setTurns(sessionId, List.of(turns));
                 return;
               }
+              if (event.name == 'approval.responded') {
+                _settleApprovalFromEvent(
+                  event,
+                  runId: runId,
+                  sessionId: sessionId,
+                  profileId: profileId,
+                );
+                return;
+              }
               if (_isApprovalRequestEvent(event.name)) {
                 final request = _approvalRequestFromEvent(
                   event,
@@ -1930,7 +1999,7 @@ extension _MessagingExtension on HermesApiChannel {
                 if (request.id.isNotEmpty) {
                   _approvalResponder.registerApproval(request.id, runId);
                 }
-                _approvalController.add(request);
+                _emitApprovalRequest(request);
                 return;
               }
               if (_isSuccessfulTerminalRunEvent(event.name)) {
@@ -2012,7 +2081,7 @@ extension _MessagingExtension on HermesApiChannel {
       _setTurns(sessionId, List.of(turns));
       return;
     }
-    _approvalResponder.forgetApprovalsForRun(runId);
+    _invalidateApprovalsForRun(runId);
     try {
       final serverTurns = await _fetchTurns(
         client,
@@ -2388,7 +2457,7 @@ extension _MessagingExtension on HermesApiChannel {
     if (stream != null) unawaited(stream.cancel());
     final runId = _activeRunIds.remove(sessionId);
     if (runId != null) {
-      _approvalResponder.forgetApprovalsForRun(runId);
+      _invalidateApprovalsForRun(runId);
     }
     final completer = _activeStreamCompleters.remove(sessionId);
     if (completer != null && !completer.isCompleted) {

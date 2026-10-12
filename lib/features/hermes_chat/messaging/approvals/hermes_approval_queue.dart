@@ -31,6 +31,7 @@ class HermesApprovalQueue extends ChangeNotifier {
   final HermesApprovalErrorSink _onResolveError;
   final Queue<HermesApprovalRequest> _pending = Queue();
   StreamSubscription<HermesApprovalRequest>? _subscription;
+  StreamSubscription<HermesApprovalRequest>? _invalidationSubscription;
   String? _answeringId;
   bool _disposed = false;
   int _generation = 0;
@@ -63,6 +64,23 @@ class HermesApprovalQueue extends ChangeNotifier {
     reset();
     unawaited(_subscription?.cancel());
     _subscription = channel.approvalRequests.listen(add);
+    unawaited(_invalidationSubscription?.cancel());
+    _invalidationSubscription = channel is HermesApprovalLifecycleChannel
+        ? (channel as HermesApprovalLifecycleChannel).invalidatedApprovals
+              .listen(_invalidate)
+        : null;
+  }
+
+  void _invalidate(HermesApprovalRequest request) {
+    if (_disposed || !_pending.any((pending) => identical(pending, request))) {
+      return;
+    }
+    _pending.removeWhere((pending) => identical(pending, request));
+    if (_answeringId == _requestKey(request)) {
+      _generation++;
+      _answeringId = null;
+    }
+    notifyListeners();
   }
 
   /// Queues [request] unless it duplicates a pending or in-flight approval.
@@ -184,6 +202,8 @@ class HermesApprovalQueue extends ChangeNotifier {
     _disposed = true;
     unawaited(_subscription?.cancel());
     _subscription = null;
+    unawaited(_invalidationSubscription?.cancel());
+    _invalidationSubscription = null;
     super.dispose();
   }
 }

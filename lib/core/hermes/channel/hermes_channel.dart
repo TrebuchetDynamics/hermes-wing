@@ -237,3 +237,8 @@ abstract interface class HermesChannel implements Listenable {
   void cancelVoiceRun(String voiceRunId, {String reason = 'cancelled'});
   void failVoiceRun(String voiceRunId, {required String reason});
 }
+
+/// Server settlement or run retirement invalidates the exact emitted request.
+abstract interface class HermesApprovalLifecycleChannel {
+  Stream<HermesApprovalRequest> get invalidatedApprovals;
+}

@@ -9,13 +9,13 @@ class HermesApprovalResponder {
   HermesApprovalResponder();
 
   final Map<String, String> _approvalRunIds = <String, String>{};
-  final Set<String> _respondingApprovalIds = <String>{};
+  final _responseOwners = <String, Object>{};
   int _generation = 0;
 
   bool isPendingApproval(String approvalId, String? runId) =>
       runId != null &&
       _approvalRunIds[approvalId] == runId &&
-      !_respondingApprovalIds.contains(approvalId);
+      !_responseOwners.containsKey(approvalId);
 
   /// Registers an approval raised by [runId]. Returns whether this approval
   /// is new (false when already registered; the mapping is still refreshed).
@@ -36,20 +36,27 @@ class HermesApprovalResponder {
   }
 
   /// Forgets the mapping for [approvalId]. Returns whether a mapping existed.
-  bool forgetApproval(String approvalId) =>
-      _approvalRunIds.remove(approvalId) != null;
+  bool forgetApproval(String approvalId) {
+    _responseOwners.remove(approvalId);
+    return _approvalRunIds.remove(approvalId) != null;
+  }
 
   /// Forgets every approval raised by [runId], mirroring the terminal-run
   /// cleanup the channel previously expressed as `removeWhere(... == runId)`.
   void forgetApprovalsForRun(String runId) {
-    _approvalRunIds.removeWhere((_, approvalRunId) => approvalRunId == runId);
+    final ids = _approvalRunIds.keys
+        .where((id) => _approvalRunIds[id] == runId)
+        .toList();
+    for (final id in ids) {
+      forgetApproval(id);
+    }
   }
 
   /// Clears every mapping (connect/disconnect/dispose teardown).
   void clear() {
     _generation += 1;
     _approvalRunIds.clear();
-    _respondingApprovalIds.clear();
+    _responseOwners.clear();
   }
 
   /// Executes the response. [client] must be a client of the connected
@@ -100,8 +107,9 @@ class HermesApprovalResponder {
     }
     // Teardown retires settlement ownership, not the already-started POST.
     final generation = _generation;
+    final responseOwner = Object();
     if (trimmedApprovalId.isNotEmpty) {
-      _respondingApprovalIds.add(trimmedApprovalId);
+      _responseOwners[trimmedApprovalId] = responseOwner;
     }
     try {
       await client.respondApproval(
@@ -110,11 +118,17 @@ class HermesApprovalResponder {
         decision: decision.name,
         profile: selectedProfileId,
       );
-      if (generation == _generation && trimmedApprovalId.isNotEmpty) {
+      if (generation == _generation &&
+          trimmedApprovalId.isNotEmpty &&
+          identical(_responseOwners[trimmedApprovalId], responseOwner)) {
         _approvalRunIds.remove(trimmedApprovalId);
       }
     } catch (error) {
-      if (generation != _generation) return;
+      if (generation != _generation ||
+          (trimmedApprovalId.isNotEmpty &&
+              !identical(_responseOwners[trimmedApprovalId], responseOwner))) {
+        return;
+      }
       final runStillActive = activeRunIds.contains(resolvedRunId);
       final approvalStillMapped =
           trimmedApprovalId.isNotEmpty &&
@@ -128,8 +142,9 @@ class HermesApprovalResponder {
       );
       rethrow;
     } finally {
-      if (generation == _generation) {
-        _respondingApprovalIds.remove(trimmedApprovalId);
+      if (generation == _generation &&
+          identical(_responseOwners[trimmedApprovalId], responseOwner)) {
+        _responseOwners.remove(trimmedApprovalId);
       }
     }
   }

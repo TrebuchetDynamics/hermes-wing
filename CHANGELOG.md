@@ -6,6 +6,13 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Production HTTP run Chat now retires exact approvals settled elsewhere and
+  drops approvals when their owned run is retired. Reattachment processes
+  `approval.responded` instead of leaving historical requests actionable.
+  Exact request ownership remains required; idless legacy settlement receipts
+  do not guess which request was answered. This does not enable the Desktop
+  native WebSocket transport or establish live/device qualification.
+
 - The internal native-web lifecycle adapter now retires withdrawn approval
   requests even when no local turn is running. This is a qualification-adapter
   correction, not enabled production transport or live approval support. See the

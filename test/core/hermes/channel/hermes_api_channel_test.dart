@@ -9,6 +9,8 @@ import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/core/protocol/voice/models/wing_voice_run.dart';
 
+import 'package:wing/features/hermes_chat/messaging/approvals/hermes_approval_queue.dart';
+
 import '../../../features/hermes_chat/support/fake_hermes_channel.dart';
 
 part 'hermes_api_channel_tests/connection_tests.dart';
